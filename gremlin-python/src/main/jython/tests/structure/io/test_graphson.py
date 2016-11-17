@@ -69,13 +69,46 @@ class TestGraphSONReader(TestCase):
         assert 31.2 == x
 
     def test_graph(self):
-        vertex = self.graphson_reader.readObject(
-            """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
+        vertex = self.graphson_reader.readObject("""
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        ##
+        vertex = self.graphson_reader.readObject("""
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Float","@value":45.23}}}""")
+        assert isinstance(vertex, Vertex)
+        assert 45.23 == vertex.id
+        assert isinstance(vertex.id, FloatType)
+        assert "vertex" == vertex.label
+        assert vertex == Vertex(45.23)
+        ##
+        vertex_property = self.graphson_reader.readObject("""
+        {"@type":"g:VertexProperty", "@value":{"id":"anId","label":"aKey","value":true,"vertex":{"@type":"g:Int32","@value":9}}}""")
+        assert isinstance(vertex_property, VertexProperty)
+        assert "anId" == vertex_property.id
+        assert "aKey" == vertex_property.label
+        assert vertex_property.value
+        assert vertex_property.vertex == Vertex(9)
+        ##
+        vertex_property = self.graphson_reader.readObject("""
+        {"@type":"g:VertexProperty", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"name","value":"marko"}}""")
+        assert isinstance(vertex_property, VertexProperty)
+        assert 1 == vertex_property.id
+        assert "name" == vertex_property.label
+        assert "marko" == vertex_property.value
+        assert vertex_property.vertex is None
+        ##
+        edge = self.graphson_reader.readObject("""
+        {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}""")
+        # print edge
+        assert isinstance(edge, Edge)
+        assert 17 == edge.id
+        assert "knows" == edge.label
+        assert edge.inV == Vertex("x", "xLabel")
+        assert edge.outV == Vertex("y", "vertex")
 
     def test_path(self):
         path = self.graphson_reader.readObject(
@@ -156,25 +189,25 @@ class TestGraphSONWriter(TestCase):
                 "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(
             self.graphson_writer.writeObject(Vertex(12l, "person")))
         assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
-                                              "outV": {"@type": "g:Vertex",
-                                                       "@value": {"id": {
-                                                           "@type": "g:Int32",
-                                                           "@value": 0}, "label": "vertex"}},
+                                              "outV": {"@type": "g:Int32", "@value": 0},
+                                              "outVLabel": "person",
                                               "label": "knows",
-                                              "inV": {"@type": "g:Vertex", "@value": {
-                                                  "id": {"@type": "g:Int32", "@value": 1},
-                                                  "label": "vertex"}}}} == json.loads(
-            self.graphson_writer.writeObject(Edge(7, Vertex(0), "knows", Vertex(1))))
+                                              "inV": {"@type": "g:Int32", "@value": 1},
+                                              "inVLabel": "dog"}} == json.loads(
+            self.graphson_writer.writeObject(Edge(7, Vertex(0, "person"), "knows", Vertex(1, "dog"))))
         assert {"@type": "g:VertexProperty", "@value": {"id": "blah", "label": "keyA", "value": True,
-                                                        "vertex": {"@type": "g:Vertex",
-                                                                   "@value": {"id": "stephen",
-                                                                              "label": "vertex"}}}} == json.loads(
+                                                        "vertex": "stephen"}} == json.loads(
             self.graphson_writer.writeObject(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
-        assert {"@type": "g:Property", "@value": {"key": "name", "value": "marko", "element": {"@type": "g:Vertex",
-                                                                                               "@value": {
-                                                                                                   "id": "bob",
-                                                                                                   "label": "guy"}}}} == json.loads(
-            self.graphson_writer.writeObject(Property("name", "marko", Vertex("bob", "guy"))))
+
+        assert {"@type": "g:Property",
+                "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
+                                                                        "@value": {
+                                                                            "vertex": "vertexId",
+                                                                            "value": True,
+                                                                            "id": "anId",
+                                                                            "label": "aKey"}}}} == json.loads(
+            self.graphson_writer.writeObject(
+                Property("name", "marko", VertexProperty("anId", "aKey", True, Vertex("vertexId")))))
 
     def test_custom_mapping(self):
         # extended mapping
