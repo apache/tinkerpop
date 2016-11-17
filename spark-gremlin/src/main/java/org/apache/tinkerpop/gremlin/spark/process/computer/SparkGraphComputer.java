@@ -71,11 +71,16 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -90,6 +95,16 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     private final org.apache.commons.configuration.Configuration sparkConfiguration;
     private boolean workersSet = false;
     private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SparkGraphComputer.class.getSimpleName() + "-boss").build();
+
+    private static final Set<String> KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES;
+
+    static
+    {
+        Set<String> s = new HashSet<>();
+        s.add(KryoShimServiceLoader.KRYO_SHIM_SERVICE);
+        s.add(IoRegistry.IO_REGISTRY);
+        KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES = Collections.unmodifiableSet(s);
+    }
 
     /**
      * An {@code ExecutorService} that schedules up background work. Since a {@link GraphComputer} is only used once
@@ -146,7 +161,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             ///////////
             final StringBuilder params = new StringBuilder();
             this.sparkConfiguration.getKeys().forEachRemaining(key -> {
-                if (key.startsWith("gremlin") || key.startsWith("spark")) {
+                if (KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES.contains(key)) {
                     params.append(" -D").append("tinkerpop.").append(key).append("=").append(this.sparkConfiguration.getProperty(key));
                     System.setProperty("tinkerpop." + key, this.sparkConfiguration.getProperty(key).toString());
                 }
