@@ -250,7 +250,7 @@ public class GraphSONMessageSerializerV2d0Test {
 
         final JsonNode properties = edgeAsJson.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-        assertEquals(123, properties.get("abc").get(GraphSONTokens.VALUEPROP).get("value").get(GraphSONTokens.VALUEPROP).asInt());
+        assertEquals(123, properties.get("abc").get(GraphSONTokens.VALUEPROP).asInt());
     }
 
     @Test

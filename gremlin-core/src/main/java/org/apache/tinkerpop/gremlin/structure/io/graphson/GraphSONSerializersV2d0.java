@@ -64,8 +64,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil.safeWriteObjectField;
-
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
  * present a generalized way to serialize the implementations of core interfaces.
@@ -154,13 +152,16 @@ class GraphSONSerializersV2d0 {
         }
 
         private void writeProperties(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
-            final Iterator<Property<Object>> elementProperties = normalize ?
+            final Iterator<Property<Object>> edgeProperties = normalize ?
                     IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
-            if (elementProperties.hasNext()) {
+            if (edgeProperties.hasNext()) {
                 jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
 
                 jsonGenerator.writeStartObject();
-                elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop));
+                while (edgeProperties.hasNext()) {
+                    final Property<?> property = edgeProperties.next();
+                    jsonGenerator.writeObjectField(property.key(), property.value());
+                }
                 jsonGenerator.writeEndObject();
             }
         }
@@ -231,31 +232,31 @@ class GraphSONSerializersV2d0 {
             jsonGenerator.writeEndObject();
         }
 
-        private static void tryWriteMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
+        private static void tryWriteMetaProperties(final VertexProperty vertexProperty, final JsonGenerator jsonGenerator,
                                                    final boolean normalize) throws IOException {
             // when "detached" you can't check features of the graph it detached from so it has to be
             // treated differently from a regular VertexProperty implementation.
-            if (property instanceof DetachedVertexProperty) {
+            if (vertexProperty instanceof DetachedVertexProperty) {
                 // only write meta properties key if they exist
-                if (property.properties().hasNext()) {
-                    writeMetaProperties(property, jsonGenerator, normalize);
+                if (vertexProperty.properties().hasNext()) {
+                    writeMetaProperties(vertexProperty, jsonGenerator, normalize);
                 }
             } else {
                 // still attached - so we can check the features to see if it's worth even trying to write the
                 // meta properties key
-                if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
-                    writeMetaProperties(property, jsonGenerator, normalize);
+                if (vertexProperty.graph().features().vertex().supportsMetaProperties() && vertexProperty.properties().hasNext()) {
+                    writeMetaProperties(vertexProperty, jsonGenerator, normalize);
                 }
             }
         }
 
-        private static void writeMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
+        private static void writeMetaProperties(final VertexProperty vertexProperty, final JsonGenerator jsonGenerator,
                                                 final boolean normalize) throws IOException {
             jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
             jsonGenerator.writeStartObject();
 
             final Iterator<Property<Object>> metaProperties = normalize ?
-                    IteratorUtils.list((Iterator<Property<Object>>) property.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : property.properties();
+                    IteratorUtils.list((Iterator<Property<Object>>) vertexProperty.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : vertexProperty.properties();
             while (metaProperties.hasNext()) {
                 final Property<Object> metaProperty = metaProperties.next();
                 jsonGenerator.writeObjectField(metaProperty.key(), metaProperty.value());
@@ -454,7 +455,7 @@ class GraphSONSerializersV2d0 {
             return new DetachedVertex(
                     vertexData.get(GraphSONTokens.ID),
                     (String) vertexData.getOrDefault(GraphSONTokens.LABEL, Vertex.DEFAULT_LABEL),
-                    (Map<String, Object>) vertexData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap())
+                    (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES)
             );
         }
     }
@@ -470,7 +471,7 @@ class GraphSONSerializersV2d0 {
             return new DetachedEdge(
                     edgeData.get(GraphSONTokens.ID),
                     (String) edgeData.getOrDefault(GraphSONTokens.LABEL, Edge.DEFAULT_LABEL),
-                    (Map<String, Object>) edgeData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()),
+                    (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES),
                     Pair.with(edgeData.get(GraphSONTokens.OUT), (String) edgeData.getOrDefault(GraphSONTokens.OUT_LABEL, Vertex.DEFAULT_LABEL)),
                     Pair.with(edgeData.get(GraphSONTokens.IN), (String) edgeData.getOrDefault(GraphSONTokens.IN_LABEL, Vertex.DEFAULT_LABEL))
             );
@@ -485,23 +486,7 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Property createObject(final Map<String, Object> propData) {
-            return propData.containsKey(GraphSONTokens.ELEMENT) ?
-                    new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE), getElement(propData.get(GraphSONTokens.ELEMENT))) :
-                    new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
-        }
-
-        private Element getElement(final Object element) {
-            if (element instanceof Edge)
-                return (Edge) element;
-            if (element instanceof Map) {
-                final String type = (String) ((Map<String, Object>) element).get(GraphSONTokens.VALUETYPE);
-                final Map<String, Object> elementMap = (Map<String, Object>) ((Map) element).get(GraphSONTokens.VALUEPROP);
-                if ("g:VertexProperty".equals(type))
-                    return new VertexPropertyJacksonDeserializer().createObject(elementMap);
-                else if ("g:Edge".equals(type))
-                    return new EdgeJacksonDeserializer().createObject(elementMap);
-            }
-            throw new IllegalArgumentException("Unknown element structure: " + element);
+            return new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
         }
     }
 
@@ -517,13 +502,13 @@ class GraphSONSerializersV2d0 {
                     new DetachedVertexProperty<>(
                             propData.get(GraphSONTokens.ID),
                             (String) propData.get(GraphSONTokens.LABEL),
-                            propData.get(GraphSONTokens.VALUE), (Map<String, Object>) propData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()),
+                            propData.get(GraphSONTokens.VALUE), (Map<String, Object>) propData.get(GraphSONTokens.PROPERTIES),
                             new DetachedVertex(propData.get(GraphSONTokens.VERTEX), Vertex.DEFAULT_LABEL, Collections.emptyMap())) :
                     new DetachedVertexProperty<>(
                             propData.get(GraphSONTokens.ID),
                             (String) propData.get(GraphSONTokens.LABEL),
                             propData.get(GraphSONTokens.VALUE),
-                            (Map<String, Object>) propData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()));
+                            (Map<String, Object>) propData.get(GraphSONTokens.PROPERTIES));
 
         }
     }
@@ -558,13 +543,13 @@ class GraphSONSerializersV2d0 {
             final MutableMetrics m = new MutableMetrics((String) metricsData.get(GraphSONTokens.ID), (String) metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
-            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.COUNTS, new HashMap<>(0))).entrySet()) {
+            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.COUNTS, Collections.emptyMap())).entrySet()) {
                 m.setCount(count.getKey(), count.getValue());
             }
-            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, new HashMap<>(0))).entrySet()) {
+            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, Collections.emptyMap())).entrySet()) {
                 m.setAnnotation(count.getKey(), count.getValue());
             }
-            for (MutableMetrics nested : (List<MutableMetrics>) metricsData.getOrDefault(GraphSONTokens.METRICS, new ArrayList<>(0))) {
+            for (MutableMetrics nested : (List<MutableMetrics>) metricsData.getOrDefault(GraphSONTokens.METRICS, Collections.emptyList())) {
                 m.addNested(nested);
             }
             return m;

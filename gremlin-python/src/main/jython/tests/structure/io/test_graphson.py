@@ -102,13 +102,21 @@ class TestGraphSONReader(TestCase):
         assert vertex_property.vertex is None
         ##
         edge = self.graphson_reader.readObject("""
-        {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}""")
+        {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab","properties":{"aKey":"aValue","bKey":true}}}""")
         # print edge
         assert isinstance(edge, Edge)
         assert 17 == edge.id
         assert "knows" == edge.label
         assert edge.inV == Vertex("x", "xLabel")
         assert edge.outV == Vertex("y", "vertex")
+        ##
+        property = self.graphson_reader.readObject("""
+        {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17},"element":{"@type":"g:Edge","@value":{"id":{"@type":"g:Int64","@value":122},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}}}""")
+        # print property
+        assert isinstance(property, Property)
+        assert "aKey" == property.key
+        assert 17 == property.value
+        assert Edge(122, Vertex("x"), "knows", Vertex("y")) == property.element
 
     def test_path(self):
         path = self.graphson_reader.readObject(
@@ -203,11 +211,10 @@ class TestGraphSONWriter(TestCase):
                 "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
                                                                         "@value": {
                                                                             "vertex": "vertexId",
-                                                                            "value": True,
                                                                             "id": "anId",
                                                                             "label": "aKey"}}}} == json.loads(
             self.graphson_writer.writeObject(
-                Property("name", "marko", VertexProperty("anId", "aKey", True, Vertex("vertexId")))))
+                Property("name", "marko", VertexProperty("anId", "aKey", 21345, Vertex("vertexId")))))
 
     def test_custom_mapping(self):
         # extended mapping

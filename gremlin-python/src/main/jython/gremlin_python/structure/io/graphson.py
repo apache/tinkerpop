@@ -217,6 +217,8 @@ class PropertySerializer(_GraphSONTypeIO):
                 del valueDict["inVLabel"]
             if "properties" in valueDict:
                 del valueDict["properties"]
+            if "value" in valueDict:
+                del valueDict["value"]
         return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
                                                     "value": writer.toDict(property.value),
                                                     "element": writer.toDict(elementDict)})

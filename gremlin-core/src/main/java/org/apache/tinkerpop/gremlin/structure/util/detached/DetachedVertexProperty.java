@@ -67,7 +67,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         this.value = value;
         this.vertex = DetachedFactory.detach(vertex, true);
 
-        if (!properties.isEmpty()) {
+        if (null != properties && !properties.isEmpty()) {
             this.properties = new HashMap<>();
             properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }
@@ -81,7 +81,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         super(id, label);
         this.value = value;
 
-        if (properties != null && !properties.isEmpty()) {
+        if (null != properties && !properties.isEmpty()) {
             this.properties = new HashMap<>();
             properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }

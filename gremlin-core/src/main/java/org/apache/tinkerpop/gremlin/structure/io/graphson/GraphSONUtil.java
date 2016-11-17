@@ -32,7 +32,8 @@ import java.io.IOException;
  */
 public final class GraphSONUtil {
 
-    private GraphSONUtil() {}
+    private GraphSONUtil() {
+    }
 
     public static void writeWithType(final Object object, final JsonGenerator jsonGenerator,
                                      final SerializerProvider serializerProvider,
@@ -85,11 +86,4 @@ public final class GraphSONUtil {
             jsonGenerator.writeEndArray();
     }
 
-    static void safeWriteObjectField(final JsonGenerator jsonGenerator, final String key, final Object value) {
-        try {
-            jsonGenerator.writeObjectField(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
