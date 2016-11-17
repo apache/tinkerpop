@@ -579,6 +579,12 @@ TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fully shutdown metrics services in Gremlin Server on shutdown.
 * Deprecated `tryRandomCommit()` in `AbstractGremlinTest` - the annotation was never added in 3.1.1, and was only deprecated via javadoc.
 * Minor fixes to various test feature requirements in `gremlin-test`.
+* Allow developers to pass options to `docker run` with DOCKER_OPTS environment variable
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-1556 Allow Hadoop to run on IPv6 systems
 
 [[release-3-1-5]]
 TinkerPop 3.1.5 (Release Date: October 17, 2016)
