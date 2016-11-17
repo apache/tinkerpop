@@ -1543,13 +1543,13 @@ service gremlin-server start
 Systemd
 +++++++
 
-To install, copy the this service template to /etc/systemd/system/gremlin.service
-and update the paths `/path/to/apache-tinkerpop-gremlin-server` with the actual install path of gremlin server.
+To install, copy the service template below to /etc/systemd/system/gremlin.service
+and update the paths `/path/to/apache-tinkerpop-gremlin-server` with the actual install path of Gremlin Server.
 
 [source,bash]
 ----
 [Unit]
-Description=Apache Tinkerpop Gremlin server daemon
+Description=Apache TinkerPop Gremlin Server daemon
 Documentation=http://tinkerpop.apache.org/
 After=network.target
 
