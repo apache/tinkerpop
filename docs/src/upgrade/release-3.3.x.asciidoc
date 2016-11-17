@@ -122,7 +122,7 @@ How to install as a service has been added to the link:http://tinkerpop.apache.o
 
 The switch name has changed for installing dependencies. `-i` has been deprecated and replaced by `install`.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_configuring_2[Reference Documentation - Server Configuration].
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_configuring_2[Reference Documentation - Server Configuration].
 
 Gremlin-server.bat
 ^^^^^^^^^^^^^^^^^^
