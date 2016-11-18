@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -55,10 +54,7 @@ final class GryoTranslator<S extends TraversalSource, T extends Traversal.Admin<
     public T translate(final Bytecode bytecode) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            this.writer.writeObject(outputStream, BytecodeHelper.filterInstructions(bytecode,
-                    instruction -> !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                            instruction.getArguments()[0].toString().contains("TranslationStrategy"))));
-            //System.out.println(new String(outputStream.toByteArray()));
+            this.writer.writeObject(outputStream, bytecode);
             return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

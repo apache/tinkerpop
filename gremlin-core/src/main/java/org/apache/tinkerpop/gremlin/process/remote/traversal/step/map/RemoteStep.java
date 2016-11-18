@@ -38,8 +38,6 @@ import java.util.NoSuchElementException;
  */
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
-    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
-
     private transient RemoteConnection remoteConnection;
     private RemoteTraversal<?, E> remoteTraversal;
 
@@ -57,9 +55,7 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (null == this.remoteTraversal) {
             try {
-                this.remoteTraversal = this.remoteConnection.submit(IS_TESTING ? BytecodeHelper.filterInstructions(this.traversal.getBytecode(),
-                        instruction -> !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                                instruction.getArguments()[0].toString().contains("TranslationStrategy"))) : this.traversal.getBytecode());
+                this.remoteTraversal = this.remoteConnection.submit(this.traversal.getBytecode());
                 this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);

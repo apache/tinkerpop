@@ -49,8 +49,6 @@ import java.util.Set;
  */
 public final class GroovyTranslator implements Translator.ScriptTranslator {
 
-    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
-
     private final String traversalSource;
 
     private GroovyTranslator(final String traversalSource) {
@@ -89,10 +87,6 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
-            if (IS_TESTING &&
-                    instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
-                continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
             else {

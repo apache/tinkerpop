@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
@@ -58,9 +57,7 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
     public T translate(final Bytecode bytecode) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            this.writer.writeObject(outputStream, BytecodeHelper.filterInstructions(bytecode,
-                    instruction -> !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                            instruction.getArguments()[0].toString().contains("TranslationStrategy"))));
+            this.writer.writeObject(outputStream, bytecode);
             // System.out.println(new String(outputStream.toByteArray()));
             return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         } catch (final Exception e) {

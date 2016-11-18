@@ -353,7 +353,7 @@ class GraphSONSerializersV2d0 {
         @Override
         public void serialize(final Integer integer, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException {
-            jsonGenerator.writeNumber(((Integer) integer).intValue());
+            jsonGenerator.writeNumber(integer.intValue());
         }
     }
 
@@ -486,7 +486,10 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Property createObject(final Map<String, Object> propData) {
-            return new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
+            final Object element = propData.get(GraphSONTokens.ELEMENT);
+            return element instanceof Element ? // graphson-non-embedded is treated differently, but since this is a hard coded embedding...
+                    new DetachedProperty<>((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE), (Element) element) :
+                    new DetachedProperty<>((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
         }
     }
 
@@ -503,7 +506,7 @@ class GraphSONSerializersV2d0 {
                             propData.get(GraphSONTokens.ID),
                             (String) propData.get(GraphSONTokens.LABEL),
                             propData.get(GraphSONTokens.VALUE), (Map<String, Object>) propData.get(GraphSONTokens.PROPERTIES),
-                            new DetachedVertex(propData.get(GraphSONTokens.VERTEX), Vertex.DEFAULT_LABEL, Collections.emptyMap())) :
+                            new DetachedVertex(propData.get(GraphSONTokens.VERTEX), Vertex.DEFAULT_LABEL, null)) :
                     new DetachedVertexProperty<>(
                             propData.get(GraphSONTokens.ID),
                             (String) propData.get(GraphSONTokens.LABEL),

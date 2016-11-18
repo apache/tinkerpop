@@ -78,16 +78,16 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
         // verifications to ensure unsupported steps do not exist in the traversal
         if (IS_TESTING) {
-            if (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier"))
+            if (traversal.getBytecode().toString().contains("$$Lambda$") || traversal.getBytecode().toString().contains("Supplier@"))
                 throw new VerificationException("Test suite does not support lambdas", traversal);
             if (TraversalHelper.hasStepOfAssignableClassRecursively(ProgramVertexProgramStep.class, traversal))
                 throw new VerificationException("Test suite does not support embedded vertex programs", traversal);
         }
 
         final Traversal.Admin<?, ?> translatedTraversal;
-        final Bytecode bytecode = IS_TESTING ?
+        final Bytecode bytecode = removeTranslationStrategy(IS_TESTING ?
                 insertBindingsForTesting(traversal.getBytecode()) :
-                traversal.getBytecode();
+                traversal.getBytecode());
         ////////////////
         if (this.translator instanceof Translator.StepTranslator) {
             // reflection based translation
@@ -107,19 +107,15 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             throw new IllegalArgumentException("TranslationStrategy does not know how to process the provided translator type: " + this.translator.getClass().getSimpleName());
         }
         ////////////////
-        if (IS_TESTING && // this tests to ensure that the bytecode going in is the same as the bytecode coming out
-                !BytecodeHelper.getLambdaLanguage(traversal.getBytecode()).isPresent())
-            assertEquals(BytecodeHelper.filterInstructions(traversal.getBytecode(),
-                    instruction ->
-                            !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                                    instruction.getArguments()[0] instanceof TranslationStrategy)),
-                    translatedTraversal.getBytecode());
-        ////////////////
         assert !translatedTraversal.isLocked();
         assert !traversal.isLocked();
         traversal.setSideEffects(translatedTraversal.getSideEffects());
         TraversalHelper.removeAllSteps(traversal);
         TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
+        ////////////////
+        if (IS_TESTING && !BytecodeHelper.getLambdaLanguage(bytecode).isPresent())
+            // this tests to ensure that the bytecode being translated is the same as the bytecode of the generated traversal
+            assertEquals(removeTranslationStrategy(traversal.getBytecode()), translatedTraversal.getBytecode());
     }
 
 
@@ -128,9 +124,17 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         return POSTS;
     }
 
+    private static final Bytecode removeTranslationStrategy(final Bytecode bytecode) {
+        if (bytecode.getSourceInstructions().size() > 0)
+            bytecode.getSourceInstructions().remove(0);
+        return bytecode;
+    }
+
     private static final Bytecode insertBindingsForTesting(final Bytecode bytecode) {
         final Bytecode newBytecode = new Bytecode();
-        bytecode.getSourceInstructions().forEach(instruction -> newBytecode.addSource(instruction.getOperator(), instruction.getArguments()));
+        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+            newBytecode.addSource(instruction.getOperator(), instruction.getArguments());
+        }
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final Object[] args = instruction.getArguments();
             final Object[] newArgs = new Object[args.length];
