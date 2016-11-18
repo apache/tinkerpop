@@ -41,7 +41,7 @@ public interface Scoping {
 
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().<S>get(key);
+            return traverser.getSideEffects().get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
@@ -49,14 +49,14 @@ public interface Scoping {
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
-            return null == pop ? path.get(key) : path.get(pop, key);
+            return path.get(pop, key);
         ///
         throw new IllegalArgumentException("Neither the sideEffects, map, nor path has a " + key + "-key: " + this);
     }
 
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
         if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().<S>get(key);
+            return traverser.getSideEffects().get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
@@ -64,7 +64,7 @@ public interface Scoping {
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
-            return null == pop ? path.get(key) : path.get(pop, key);
+            return path.get(pop, key);
         ///
         return null;
     }

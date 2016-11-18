@@ -213,21 +213,20 @@ public final class StringFactory {
         final List<String> strings = Stream.of(arguments)
                 .filter(o -> null != o)
                 .filter(o -> {
-                    if (o instanceof TraversalRing) {
-                        return ((TraversalRing) o).size() > 0;
-                    } else if (o instanceof Collection) {
-                        return ((Collection) o).size() > 0;
-                    } else if (o instanceof Map) {
-                        return ((Map) o).size() > 0;
-                    } else {
-                        return o.toString().length() > 0;
-                    }
+                    if (o instanceof TraversalRing)
+                        return !((TraversalRing) o).isEmpty();
+                    else if (o instanceof Collection)
+                        return !((Collection) o).isEmpty();
+                    else if (o instanceof Map)
+                        return !((Map) o).isEmpty();
+                    else
+                        return !o.toString().isEmpty();
                 })
                 .map(o -> {
                     final String string = o.toString();
                     return string.contains("$") ? "lambda" : string;
                 }).collect(Collectors.toList());
-        if (strings.size() > 0) {
+        if (!strings.isEmpty()) {
             builder.append('(');
             builder.append(String.join(",", strings));
             builder.append(')');

@@ -20,7 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -93,28 +97,23 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         }
     }
 
-    protected boolean testId(Element element)
-    {
+    protected boolean testId(Element element) {
         return this.predicate.test(element.id());
     }
 
-    protected boolean testIdAsString(Element element)
-    {
+    protected boolean testIdAsString(Element element) {
         return this.predicate.test(element.id().toString());
     }
 
-    protected boolean testLabel(Element element)
-    {
+    protected boolean testLabel(Element element) {
         return this.predicate.test(element.label());
     }
 
-    protected boolean testValue(Property property)
-    {
+    protected boolean testValue(Property property) {
         return this.predicate.test(property.value());
     }
 
-    protected boolean testKey(Property property)
-    {
+    protected boolean testKey(Property property) {
         return this.predicate.test(property.key());
     }
 
@@ -177,6 +176,11 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         return true;
     }
 
+
+    /**
+     * @deprecated As of release 3.2.4. Providers should handle composite {@link P#and} predicates and not rely on splitting.
+     */
+    @Deprecated
     public static HasContainer[] makeHasContainers(final String key, final P<?> predicate) {
         if (predicate instanceof AndP) {
             final List<P<?>> predicates = ((AndP) predicate).getPredicates();

@@ -38,9 +38,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
@@ -60,7 +58,6 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -111,6 +108,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
         setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g");
         setProperty("hidden.for.testing.only", graphGetter);
+        setProperty("clusterConfiguration.port", TestClientFactory.PORT);
+        setProperty("clusterConfiguration.hosts", "localhost");
     }};
 
     @Before
@@ -163,7 +162,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl.overrideSslContext(createServerSslContext());
                 break;
             case "shouldStartWithDefaultSettings":
-                return new Settings();
+                // test with defaults exception for port because we want to keep testing off of 8182
+                final Settings defaultSettings = new Settings();
+                defaultSettings.port = TestClientFactory.PORT;
+                return settings;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
                 break;
@@ -237,7 +239,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldUseBaseScript() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         assertEquals("hello, stephen", client.submit("hello('stephen')").all().get().get(0).getString());
@@ -247,7 +249,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldUseInterpreterMode() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         client.submit("def subtractAway(x,y){x-y};[]").all().get();
@@ -269,7 +271,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldNotUseInterpreterMode() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         client.submit("def subtractAway(x,y){x-y};[]").all().get();
@@ -291,7 +293,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldUseSimpleSandbox() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -311,7 +313,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldStartWithDefaultSettings() {
         // just quickly validate that results are returning given defaults. no graphs are config'd with defaults
         // so just eval a groovy script.
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -323,7 +325,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSsl() {
-        final Cluster cluster = Cluster.build().enableSsl(true).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
         final Client client = cluster.connect();
 
         try {
@@ -341,7 +343,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         builder.sslProvider(SslProvider.JDK);
 
-        final Cluster cluster = Cluster.build().enableSsl(true).sslContext(builder.build()).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).sslContext(builder.build()).create();
         final Client client = cluster.connect();
 
         try {
@@ -354,7 +356,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
-        final Cluster cluster = Cluster.build().enableSsl(false).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(false).create();
         final Client client = cluster.connect();
 
         try {
@@ -376,7 +378,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
                 System.getProperty("assertNonDeterministic"), is("true"));
 
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -422,7 +424,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReturnInvalidRequestArgsWhenGremlinArgIsNotSupplied() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL).create();
             final ResponseMessage result = client.submit(request).get(0);
             assertThat(result.getStatus().getCode(), is(not(ResponseStatusCode.PARTIAL_CONTENT)));
@@ -432,7 +434,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReturnInvalidRequestArgsWhenInvalidReservedBindingKeyIsUsed() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -452,7 +454,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(pass.get(), is(true));
         }
 
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("id", "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -475,7 +477,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReturnInvalidRequestArgsWhenInvalidTypeBindingKeyIsUsed() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final Map<Object, Object> bindings = new HashMap<>();
             bindings.put(1, "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -498,7 +500,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReturnInvalidRequestArgsWhenInvalidNullBindingKeyIsUsed() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(null, "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -522,7 +524,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]").create();
 
@@ -544,7 +546,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]")
                     .addArg(Tokens.ARGS_BATCH_SIZE, 1).create();
@@ -558,7 +560,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldWorkOverNioTransport() throws Exception {
-        try (SimpleClient client = new NioClient()) {
+        try (SimpleClient client = TestClientFactory.createNioClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9,]").create();
 
@@ -571,7 +573,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldNotThrowNoSuchElementException() throws Exception {
-        try (SimpleClient client = new WebSocketClient()){
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             // this should return "nothing" - there should be no exception
             final List<ResponseMessage> responses = client.submit("g.V().has('name','kadfjaldjfla')");
             assertNull(responses.get(0).getResult().getData());
@@ -581,7 +583,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
-        try (SimpleClient client = new WebSocketClient()){
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 200 ms"));
 
@@ -593,7 +595,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEvalUsingOverride() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage msg = RequestMessage.build("eval")
                     .addArg(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100)
                     .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
@@ -608,7 +610,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop() throws Exception {
-        try (SimpleClient client = new WebSocketClient()){
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             // timeout configured for 1 second so the timed interrupt should trigger prior to the
             // scriptEvaluationTimeout which is at 30 seconds by default
             final List<ResponseMessage> responses = client.submit("while(true){}");
@@ -626,7 +628,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     @Deprecated
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
-        try (SimpleClient client = new WebSocketClient()){
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             final List<ResponseMessage> responses = client.submit("(0..<100000)");
 
             // the last message should contain the error
@@ -640,14 +642,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldLoadInitScript() throws Exception {
-        try (SimpleClient client = new WebSocketClient()){
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             assertEquals(2, ((List<Integer>) client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0).intValue());
         }
     }
 
     @Test
     public void shouldGarbageCollectPhantomButNotHard() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         assertEquals(2, client.submit("addItUp(1,1)").all().join().get(0).getInt());
@@ -670,7 +672,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
         try {
@@ -689,7 +691,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGryoSerialization() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRYO_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V1D0).create();
         final Client client = cluster.connect();
 
         try {
@@ -709,7 +711,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     @Test
     public void shouldBlockRequestWhenTooBig() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -736,7 +738,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         // ensure that connection to server is good
@@ -772,7 +774,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldNotHavePartialContentWithOneResult() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "10").create();
             final List<ResponseMessage> responses = client.submit(request);
@@ -783,7 +785,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailWithBadScriptEval() throws Exception {
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "new String().doNothingAtAllBecauseThis is a syntax error").create();
             final List<ResponseMessage> responses = client.submit(request);
@@ -796,7 +798,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldStillSupportDeprecatedRebindingsParameterOnServer() throws Exception {
         // this test can be removed when the rebindings arg is removed
-        try (SimpleClient client = new WebSocketClient()) {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final Map<String,String> rebindings = new HashMap<>();
             rebindings.put("xyz", "graph");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -881,7 +883,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(localSideEffects.isEmpty(), is(false));
 
         // Try to get side effect from server
-        final Cluster cluster = Cluster.build("localhost").create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
         final Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
         field.setAccessible(true);

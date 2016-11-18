@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
@@ -125,10 +124,10 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
-        final Cluster cluster1 = Cluster.build().create();
+        final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
-        final Cluster cluster2 = Cluster.build().create();
+        final Cluster cluster2 = TestClientFactory.open();
         final Client client2 = cluster2.connect(name.getMethodName());
         client2.submit("1+1").all().join();
 
@@ -158,10 +157,10 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
-        final Cluster cluster1 = Cluster.build().create();
+        final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
-        final Cluster cluster2 = Cluster.build().create();
+        final Cluster cluster2 = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
                 .sessionId(name.getMethodName())
                 .forceClosed(true).create();
@@ -189,12 +188,11 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster2.close();
     }
 
-
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName(), true);
 
         try {
@@ -215,7 +213,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldCloseSessionOnceOnRequest() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -249,7 +247,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -285,7 +283,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
-        final Cluster cluster = Cluster.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
+        final Cluster cluster = TestClientFactory.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
         final Client client = cluster.connect(name.getMethodName());
 
         client.submitAsync("a=100;b=1000;c=10000;null");
@@ -318,7 +316,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
         assumeNeo4jIsPresent();
 
-        try (final SimpleClient client = new WebSocketClient()) {
+        try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
 
             //open a transaction, create a vertex, commit
             final RequestMessage openRequest = RequestMessage.build(Tokens.OPS_EVAL)
@@ -385,7 +383,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
         assumeNeo4jIsPresent();
 
-        try (final SimpleClient client = new WebSocketClient()) {
+        try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
                     .processor("session")
                     .addArg(Tokens.ARGS_SESSION, name.getMethodName())

@@ -418,19 +418,36 @@ classes being serialized.
 RemoteConnection Implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A `RemoteConnection` is an interface that is important for usage with
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteGraph]. A `RemoteGraph` takes
-a `RemoteConnection` implementation and submits constructed traversals to it for processing through a single method:
+A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[withRemote()] option. A `Traversal`
+that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
+step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
+iterate.
+
+There is one method to implement on `RemoteConnection`:
 
 [source,java]
-public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException;
+public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
 
-TinkerPop provides the `DriverRemoteConnection` as a useful and example implementation. `DriverRemoteConnection`
-serializes the `Traversal` and then submits it for remote processing on Gremlin Server. Gremlin Server rebinds the
-`Traversal` to a configured `Graph` instance and then iterates the results back as it would normally do.
+Note that it returns a `RemoteTraversal`. This interface should also be implemented and in most cases implementers can
+simply extend the `AbstractRemoteTraversal`, which provides default implementations for all the `Traversal` methods
+except for the important one `getSideEffects()`.
+
+[source,java]
+public RemoteTraversalSideEffects getSideEffects();
+
+This method has been overriden from `Traversal` to return `RemoteTraversalSideEffects` and this interface allows a user
+to do a retrieval of any side-effects produced by the `Traversal`. The assumption, of course, is that the
+`RemoteConnection` is communicating with a server that supports side-effect retreival (as Gremlin Server does).
+
+TinkerPop provides the `DriverRemoteConnection` as a useful and
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/remote[example implementation].
+`DriverRemoteConnection` serializes the `Traversal` and then submits it for remote processing on Gremlin Server.
+Gremlin Server rebinds the `Traversal` to a configured `Graph` instance and then iterates the results back as it would
+normally do.
 
 Implementing `RemoteConnection` is not something routinely done for those implementing `gremlin-core`. It is only
-something required if there is a need to exploit `RemoteGraph` in some way. If a graph provider has a "graph server"
+something required if there is a need to exploit `withRemote()` in some way. If a graph provider has a "graph server"
 similar to Gremlin Server that can accept a serialized `Traversal` instance, then that would be one example of a
 reason to implement this interface.
 

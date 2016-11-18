@@ -61,13 +61,39 @@ Upgrading for Providers
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+HasContainer AndP Splitting
++++++++++++++++++++++++++++
+
+Previously, `GraphTraversal` made it easy for providers to analyze `P`-predicates in `HasContainers`, but always
+splitting `AndP` predicates into their component parts. This helper behavior is no longer provided because,
+1.) `AndP` can be inserted into a `XXXStep` in other ways, 2.) the providers `XXXStep` should process `AndP`
+regardless of `GraphTraversal` helper, and 3.) the `GraphTraversal` helper did not recursively split.
+A simple way to split `AndP` in any custom `XXXStep` that implements `HasContainerHolder` is to use the following method:
+
+[source,java]
+----
+@Override
+public void addHasContainer(final HasContainer hasContainer) {
+  if (hasContainer.getPredicate() instanceof AndP) {
+    for (final P<?> predicate : ((AndP<?>) hasContainer.getPredicate()).getPredicates()) {
+      this.addHasContainer(new HasContainer(hasContainer.getKey(), predicate));
+    }
+  } else
+    this.hasContainers.add(hasContainer);
+}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1482[TINKERPOP-1482],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1502[TINKERPOP-1502]
+
+
 Duplicate Multi-Properties
 ++++++++++++++++++++++++++
 
 Added `supportsDuplicateMultiProperties` to `VertexFeatures` so that graph provider who only support unique values as
 multi-properties have more flexibility in describing their graph capabilities.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-919[TINKERPOP-919]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-919[TINKERPOP-919]
 
 Deprecated Performance OptIn
 ++++++++++++++++++++++++++++

@@ -83,7 +83,7 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                         saslResponse = Base64.getDecoder().decode((String) saslObject);
                     } else {
                         final ResponseMessage error = ResponseMessage.build(request.get())
-                                .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + ". byte[] or String is expected")
+                                .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - byte[] or base64 encoded String is expected")
                                 .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).create();
                         ctx.writeAndFlush(error);
                         return;

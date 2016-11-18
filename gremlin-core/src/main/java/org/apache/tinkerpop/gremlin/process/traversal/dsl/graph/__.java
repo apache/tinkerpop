@@ -353,6 +353,14 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#selectV3d2(String)
+     */
+    @Deprecated
+    public static <A, B> GraphTraversal<A, B> selectV3d2(final String selectKey) {
+        return __.<A>start().selectV3d2(selectKey);
+    }
+
+    /**
      * @see GraphTraversal#select(Pop, String, String, String...)
      */
     public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
@@ -364,6 +372,14 @@ public class __ {
      */
     public static <A, B> GraphTraversal<A, Map<String, B>> select(final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
         return __.<A>start().select(selectKey1, selectKey2, otherSelectKeys);
+    }
+
+    /**
+     * @see GraphTraversal#selectV3d2(String, String, String...)
+     */
+    @Deprecated
+    public static <A, B> GraphTraversal<A, Map<String, B>> selectV3d2(final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
+        return __.<A>start().selectV3d2(selectKey1, selectKey2, otherSelectKeys);
     }
 
     /**
@@ -465,7 +481,7 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#group()
+     * @see GraphTraversal#groupV3d0()
      */
     @Deprecated
     public static <A, K, V> GraphTraversal<A, Map<K, V>> groupV3d0() {
@@ -661,31 +677,45 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#has(T, Object, Object...)
+     * @see GraphTraversal#hasLabel(String, String...)
      */
-    public static <A> GraphTraversal<A, A> has(final T accessor, final Object value, Object... values) {
-        return __.<A>start().has(accessor, value, values);
+    public static <A> GraphTraversal<A, A> hasLabel(final String label, String... otherLabels) {
+        return __.<A>start().hasLabel(label, otherLabels);
     }
 
     /**
-     * @see GraphTraversal#hasLabel(Object, Object...)
+     * @see GraphTraversal#hasLabel(P)
      */
-    public static <A> GraphTraversal<A, A> hasLabel(final Object value, Object... values) {
-        return __.<A>start().hasLabel(value, values);
+    public static <A> GraphTraversal<A, A> hasLabel(final P<String> predicate) {
+        return __.<A>start().hasLabel(predicate);
     }
 
     /**
      * @see GraphTraversal#hasId(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasId(final Object value, Object... values) {
-        return __.<A>start().hasId(value, values);
+    public static <A> GraphTraversal<A, A> hasId(final Object id, Object... otherIds) {
+        return __.<A>start().hasId(id, otherIds);
     }
 
     /**
-     * @see GraphTraversal#hasKey(Object, Object...)
+     * @see GraphTraversal#hasId(P)
      */
-    public static <A> GraphTraversal<A, A> hasKey(final Object value, Object... values) {
-        return __.<A>start().hasKey(value, values);
+    public static <A> GraphTraversal<A, A> hasId(final P<Object> predicate) {
+        return __.<A>start().hasId(predicate);
+    }
+
+    /**
+     * @see GraphTraversal#hasKey(String, String...)
+     */
+    public static <A> GraphTraversal<A, A> hasKey(final String label, String... otherLabels) {
+        return __.<A>start().hasKey(label, otherLabels);
+    }
+
+    /**
+     * @see GraphTraversal#hasKey(P)
+     */
+    public static <A> GraphTraversal<A, A> hasKey(final P<String> predicate) {
+        return __.<A>start().hasKey(predicate);
     }
 
     /**
@@ -693,6 +723,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> hasValue(final Object value, Object... values) {
         return __.<A>start().hasValue(value, values);
+    }
+
+    /**
+     * @see GraphTraversal#hasValue(P)
+     */
+    public static <A> GraphTraversal<A, A> hasValue(final P<Object> predicate) {
+        return __.<A>start().hasValue(predicate);
     }
 
     /**

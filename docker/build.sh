@@ -47,6 +47,6 @@ CMD ["sh", "-c", "docker/scripts/build.sh $@"]
 EOF
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run --rm -ti tinkerpop:${BUILD_TAG}
+docker run ${DOCKER_OPTS} --rm -ti tinkerpop:${BUILD_TAG}
 
 popd > /dev/null

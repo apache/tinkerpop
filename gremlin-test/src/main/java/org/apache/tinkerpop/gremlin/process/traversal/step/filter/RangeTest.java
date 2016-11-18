@@ -21,24 +21,25 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,15 +62,15 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X();
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X();
+    public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X();
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X();
+    public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X();
 
@@ -174,50 +175,58 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
     }
 
-    /** Scenario: limit step, Scope.local, >1 item requested, List<String> input, List<String> output */
+    /**
+     * Scenario: limit step, Scope.local, >1 item requested, List<String> input, List<String> output
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
-        final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X();
+    public void g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
+        final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X();
         printTraversalForm(traversal);
         final Set<List<String>> expected =
-            new HashSet(Arrays.asList(
-                            Arrays.asList("ripple", "josh"),
-                            Arrays.asList("lop", "josh")));
+                new HashSet(Arrays.asList(
+                        Arrays.asList("ripple", "josh"),
+                        Arrays.asList("lop", "josh")));
         final Set<List<String>> actual = new HashSet(traversal.toList());
         assertEquals(expected, actual);
     }
 
-    /** Scenario: limit step, Scope.local, 1 item requested, List input, String output */
+    /**
+     * Scenario: limit step, Scope.local, 1 item requested, List input, String output
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X();
+    public void g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X();
         printTraversalForm(traversal);
         final Set<String> expected = new HashSet<>(Arrays.asList("ripple", "lop"));
         final Set<List<String>> actual = new HashSet(traversal.toList());
         assertEquals(expected, actual);
     }
 
-    /** Scenario: range step, Scope.local, >1 item requested, List<String> input, List<String> output */
+    /**
+     * Scenario: range step, Scope.local, >1 item requested, List<String> input, List<String> output
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
-        final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
+        final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X();
         printTraversalForm(traversal);
         final Set<List<String>> expected =
-            new HashSet<>(Arrays.asList(
-                            Arrays.asList("josh", "ripple"),
-                            Arrays.asList("josh", "lop")));
+                new HashSet<>(Arrays.asList(
+                        Arrays.asList("josh", "ripple"),
+                        Arrays.asList("josh", "lop")));
         final Set<List<String>> actual = new HashSet(traversal.toList());
         assertEquals(expected, actual);
     }
 
-    /** Scenario: range step, Scope.local, 1 item requested, List input, String output */
+    /**
+     * Scenario: range step, Scope.local, 1 item requested, List input, String output
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -228,16 +237,20 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
-    /** Scenario: range step, Scope.local, 1 item requested, List input, no items selected, stop traversal */
+    /**
+     * Scenario: range step, Scope.local, 1 item requested, List input, no items selected, stop traversal
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X();
         printTraversalForm(traversal);
         assertEquals(Arrays.asList(), traversal.toList());
     }
 
-    /** Scenario: limit step, Scope.local, >1 item requested, Map input, Map output */
+    /**
+     * Scenario: limit step, Scope.local, >1 item requested, Map input, Map output
+     */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
@@ -250,33 +263,39 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(expected, actual);
     }
 
-    /** Scenario: limit step, Scope.local, 1 item requested, Map input, Map output */
+    /**
+     * Scenario: limit step, Scope.local, 1 item requested, Map input, Map output
+     */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet<>(makeMapList(1,
-                 "a", "ripple",
-                 "a", "lop"));
+                "a", "ripple",
+                "a", "lop"));
         final Set<Map<String, String>> actual = new HashSet<>(traversal.toList());
         assertEquals(expected, actual);
     }
 
-    /** Scenario: range step, Scope.local, >1 item requested, Map input, Map output */
+    /**
+     * Scenario: range step, Scope.local, >1 item requested, Map input, Map output
+     */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet<>(makeMapList(2,
-                 "b", "josh", "c", "ripple",
-                 "b", "josh", "c", "lop"));
+                "b", "josh", "c", "ripple",
+                "b", "josh", "c", "lop"));
         final Set<Map<String, String>> actual = new HashSet<>(traversal.toList());
         assertEquals(expected, actual);
     }
 
-    /** Scenario: range step, Scope.local, 1 item requested, Map input, Map output */
+    /**
+     * Scenario: range step, Scope.local, 1 item requested, Map input, Map output
+     */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
@@ -332,48 +351,48 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
-            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).limit(local, 2);
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
+            return g.V().as("a").in().as("a").in().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).limit(local, 2);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).limit(local, 1);
+        public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
+            return g.V().as("a").in().as("a").in().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).limit(local, 1);
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 1, 3);
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 1, 3);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 1, 2);
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 1, 2);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 4, 5);
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 4, 5);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a","b","c").by("name").limit(local, 2);
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a", "b", "c").by("name").limit(local, 2);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a","b","c").by("name").limit(local, 1);
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a", "b", "c").by("name").limit(local, 1);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a","b","c").by("name").range(local, 1, 3);
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a", "b", "c").by("name").range(local, 1, 3);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a","b","c").by("name").range(local, 1, 2);
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a", "b", "c").by("name").range(local, 1, 2);
         }
     }
 }
