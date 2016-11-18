@@ -104,9 +104,9 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
                     assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
                     assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
-                    if (ioType.equals("graphson-v2-embedded") || ioType.equals("graphson-v2")) { // TODO: make this work with Gryo
+                    if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
+                        assertEquals(p, propertyAttachable.get());
                         assertEquals(p.element(), propertyAttachable.get().element());
-                        assertEquals(p.element(), v);
                     }
                     called.set(true);
                     return propertyAttachable.get();
@@ -133,9 +133,9 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
                     assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
-                    if (ioType.equals("graphson-v2-embedded") || ioType.equals("graphson-v2")) { // TODO: make this work with Gryo
+                    if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
+                        assertEquals(p, propertyAttachable.get());
                         assertEquals(p.element(), propertyAttachable.get().element());
-                        assertEquals(p.element(), v);
                     }
                     called.set(true);
                     return propertyAttachable.get();
@@ -162,8 +162,8 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
                     if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
+                        assertEquals(p, propertyAttachable.get());
                         assertEquals(p.element(), propertyAttachable.get().element());
-                        assertEquals(p.element(), e);
                     }
                     called.set(true);
                     return propertyAttachable.get();

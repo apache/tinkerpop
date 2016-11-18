@@ -31,14 +31,17 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
+import org.apache.tinkerpop.shaded.jackson.core.JsonFactory;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,9 +89,11 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
                 BytecodeHelper.detachElements(bytecode); // this is to get the minimal necessary representation
                 this.writer.writeObject(output, bytecode);
                 final String originalGraphSONBytecode = new String(output.toByteArray());
-                // sometimes the Java Map and Python dict are sorted differently. (equals() is too strict -- only a few tests cases require this)
-                if (originalGraphSONBytecode.length() != translatedGraphSONBytecode.length())
-                    fail(originalGraphSONBytecode + "\n   does not equal\n" + translatedGraphSONBytecode);
+                final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                final Map<String, Object> original = mapper.readValue(originalGraphSONBytecode, Map.class);
+                final Map<String, Object> translated = mapper.readValue(translatedGraphSONBytecode, Map.class);
+                assertEquals(originalGraphSONBytecode.length(), translatedGraphSONBytecode.length());
+                assertEquals(original, translated);
             }
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(translatedGraphSONBytecode.getBytes()), Bytecode.class));
 
