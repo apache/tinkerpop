@@ -83,7 +83,7 @@ public class GremlinExecutor implements AutoCloseable {
      */
     private ScriptEngines scriptEngines;
 
-    private GremlinScriptEngineManager manager;
+    private GremlinScriptEngineManager gremlinScriptEngineManager;
 
     private final Map<String, EngineSettings> settings;
     private final Map<String, Map<String, Map<String,Object>>> modules;
@@ -117,7 +117,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.globalBindings = builder.globalBindings;
         this.enabledPlugins = builder.enabledPlugins;
 
-        this.manager = new CachedGremlinScriptEngineManager();
+        this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
         initializeGremlinScriptEngineManager();
 
         // this is temporary so that we can have backward compatibilty to the old plugin system and ScriptEngines
@@ -306,7 +306,7 @@ public class GremlinExecutor implements AutoCloseable {
 
                 // do this weirdo check until the now deprecated ScriptEngines is gutted
                 final Object o = useGremlinScriptEngineManager ?
-                        manager.getEngineByName(lang).eval(script, bindings) : scriptEngines.eval(script, bindings, lang);
+                        gremlinScriptEngineManager.getEngineByName(lang).eval(script, bindings) : scriptEngines.eval(script, bindings, lang);
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some
@@ -349,8 +349,16 @@ public class GremlinExecutor implements AutoCloseable {
         return evaluationFuture;
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #getScriptEngineManager()}.
+     */
+    @Deprecated
     public ScriptEngines getScriptEngines() {
         return this.scriptEngines;
+    }
+
+    public GremlinScriptEngineManager getScriptEngineManager() {
+        return this.gremlinScriptEngineManager;
     }
 
     public ExecutorService getExecutorService() {
@@ -450,7 +458,7 @@ public class GremlinExecutor implements AutoCloseable {
                     }
 
                     final Method create = builderClazz.getMethod("create");
-                    manager.addModule((GremlinModule) create.invoke(moduleBuilder));
+                    gremlinScriptEngineManager.addModule((GremlinModule) create.invoke(moduleBuilder));
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -542,6 +550,8 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * Create a {@code Builder} and specify the first ScriptEngine to be included.
+     *
+     * @deprecated As of release 3.2.4, replaced by {@link #build()}.
      */
     public static Builder build(final String engineName, final List<String> imports,
                                 final List<String> staticImports, final List<String> scripts,
@@ -580,7 +590,10 @@ public class GremlinExecutor implements AutoCloseable {
          * @param staticImports A list of static imports for the engine.
          * @param scripts       A list of scripts to execute in the engine to initialize it.
          * @param config        Custom configuration map for the ScriptEngine
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)}.
          */
+        @Deprecated
         public Builder addEngineSettings(final String engineName, final List<String> imports,
                                          final List<String> staticImports, final List<String> scripts,
                                          final Map<String, Object> config) {
@@ -593,6 +606,12 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Add a configuration for a {@link GremlinModule} to the executor. The key is the fully qualified class name
+         * of the {@link GremlinModule} instance and the value is a map of configuration values. In that map, the key
+         * is the name of a builder method on the {@link GremlinModule} and the value is some argument to pass to that
+         * method.
+         */
         public Builder addModules(final String engineName, final Map<String, Map<String,Object>> modules) {
             this.modules.put(engineName, modules);
             return this;
@@ -623,7 +642,10 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Replaces any settings provided.
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)}.
          */
+        @Deprecated
         public Builder engineSettings(final Map<String, EngineSettings> settings) {
             this.settings = settings;
             return this;
@@ -681,7 +703,10 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * A set of maven coordinates for dependencies to be applied for the script engine instances.
+         *
+         * @deprecated As of release 3.2.4, not replaced.
          */
+        @Deprecated
         public Builder use(final List<List<String>> use) {
             this.use = use;
             return this;
@@ -689,7 +714,11 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Set of the names of plugins that should be enabled for the engine.
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)} though behavior is not quite
+         *             the same.
          */
+        @Deprecated
         public Builder enabledPlugins(final Set<String> enabledPlugins) {
             this.enabledPlugins = enabledPlugins;
             return this;
