@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,7 +25,7 @@ import java.util.function.BiFunction;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class NumberHelper {
+public final class NumberHelper {
 
     static final NumberHelper BYTE_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.byteValue() + b.byteValue(),
@@ -40,7 +40,6 @@ public class NumberHelper {
                 final byte x = a.byteValue(), y = b.byteValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper SHORT_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.shortValue() + b.shortValue(),
             (a, b) -> a.shortValue() - b.shortValue(),
@@ -54,7 +53,6 @@ public class NumberHelper {
                 final short x = a.shortValue(), y = b.shortValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper INTEGER_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.intValue() + b.intValue(),
             (a, b) -> a.intValue() - b.intValue(),
@@ -68,7 +66,6 @@ public class NumberHelper {
                 final int x = a.intValue(), y = b.intValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper LONG_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.longValue() + b.longValue(),
             (a, b) -> a.longValue() - b.longValue(),
@@ -82,7 +79,6 @@ public class NumberHelper {
                 final long x = a.longValue(), y = b.longValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper BIG_INTEGER_NUMBER_HELPER = new NumberHelper(
             (a, b) -> bigIntegerValue(a).add(bigIntegerValue(b)),
             (a, b) -> bigIntegerValue(a).subtract(bigIntegerValue(b)),
@@ -96,7 +92,6 @@ public class NumberHelper {
                 final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
                 return x.compareTo(y) >= 0 ? x : y;
             });
-
     static final NumberHelper FLOAT_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.floatValue() + b.floatValue(),
             (a, b) -> a.floatValue() - b.floatValue(),
@@ -110,7 +105,6 @@ public class NumberHelper {
                 final float x = a.floatValue(), y = b.floatValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper DOUBLE_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.doubleValue() + b.doubleValue(),
             (a, b) -> a.doubleValue() - b.doubleValue(),
@@ -124,7 +118,6 @@ public class NumberHelper {
                 final double x = a.doubleValue(), y = b.doubleValue();
                 return x >= y ? x : y;
             });
-
     static final NumberHelper BIG_DECIMAL_NUMBER_HELPER = new NumberHelper(
             (a, b) -> bigDecimalValue(a).add(bigDecimalValue(b)),
             (a, b) -> bigDecimalValue(a).subtract(bigDecimalValue(b)),
@@ -138,7 +131,6 @@ public class NumberHelper {
                 final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
                 return x.compareTo(y) >= 0 ? x : y;
             });
-
     public final BiFunction<Number, Number, Number> add;
     public final BiFunction<Number, Number, Number> sub;
     public final BiFunction<Number, Number, Number> mul;

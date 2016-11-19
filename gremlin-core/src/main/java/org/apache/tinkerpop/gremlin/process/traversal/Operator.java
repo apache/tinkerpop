@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BinaryOperator;
