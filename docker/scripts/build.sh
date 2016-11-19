@@ -56,6 +56,13 @@ TINKERPOP_BUILD_OPTIONS=""
 [ -z "${INCLUDE_NEO4J}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DincludeNeo4j"
 [ -z "${BUILD_JAVA_DOCS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -Dmaven.javadoc.skip=true"
 
+# If the tmpfs (in-memory filesystem exists, use it)
+if [ -d "/usr/src/tinkermem" ]; then
+  echo Copying source to in-memory tmpfs
+  rsync -a . /usr/src/tinkermem
+  cd /usr/src/tinkermem
+fi
+
 mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
