@@ -959,8 +959,51 @@ can be cached for faster evaluation on the next submission.
 Configuring
 ~~~~~~~~~~~
 
+The `gremlin-server.sh` file serves multiple purposes.  It can be used to "install" dependencies to the Gremlin
+Server path.  For example, to be able to configure and use other `Graph` implementations, the dependencies must be
+made available to Gremlin Server.  To do this, use the `install` switch and supply the Maven coordinates for the dependency
+to "install".  For example, to use Neo4j in Gremlin Server:
+
+[source,text]
+----
+bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin x.y.z
+----
+
+This command will "grab" the appropriate dependencies and copy them to the `ext` directory of Gremlin Server, which
+will then allow them to be "used" the next time the server is started.  To uninstall dependencies, simply delete them
+from the `ext` directory.
+
+`bin/gremlin-server.sh` has several other options.
+
+[width="100%",cols="3,10",options="header"]
+|=========================================================
+|Parameter|Description
+|start|Start the server in the background.
+|stop|Shutdown the server.
+|restart|Shutdown a running server then start it again.
+|status|Check if the server is running.
+|console|Start the server in the foreground. Use ^C to kill it.
+|install <group> <artifact> <version>| Install dependencies into the server. "-i" exists for backwards compatibility but is deprecated.
+|<conf file>| Start the server in the foreground using the provided YAML config file.
+|=========================================================
+
+The `bin/gremlin-server.sh` script can be customized with environment variables in `bin/gremlin-server.conf`.
+
+[width="100%",cols="3,10",options="header"]
+|=========================================================
+|Variable |Description
+|DEBUG| Enable debugging of the startup script
+|GREMLIN_HOME| The Gremlin Server install directory. Use this if the script has trouble finding itself.
+|GREMLIN_YAML| The default server YAML file (conf/gremlin-server.yaml)
+|LOG_DIR| Location of gremlin.log where stdout/stderr are captured (logs/)
+|PID_DIR| Location of gremlin.pid
+|RUNAS| User to run the server as
+|JAVA_HOME| Java install location. Will use $JAVA_HOME/bin/java
+|JAVA_OPTIONS| Options passed to the JVM
+|=========================================================
+
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
-file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
+file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, set GREMLIN_YAML in `bin/gemlin-server.conf` or supply the file
 to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
@@ -968,21 +1011,9 @@ to use to `bin/gremlin-server.sh` as in:
 bin/gremlin-server.sh conf/gremlin-server-min.yaml
 ----
 
-The `gremlin-server.sh` file also serves a second purpose.  It can be used to "install" dependencies to the Gremlin
-Server path.  For example, to be able to configure and use other `Graph` implementations, the dependencies must be
-made available to Gremlin Server.  To do this, use the `-i` switch and supply the Maven coordinates for the dependency
-to "install".  For example, to use Neo4j in Gremlin Server:
+WARNING: On Windows, gremlin-server.bat will always start in the foreground. When no parameter is provided, it will start with the default `conf/gremlin-server.yaml` file.
 
-[source,text]
-----
-bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z
-----
-
-This command will "grab" the appropriate dependencies and copy them to the `ext` directory of Gremlin Server, which
-will then allow them to be "used" the next time the server is started.  To uninstall dependencies, simply delete them
-from the `ext` directory.
-
-The following table describes the various configuration options that Gremlin Server expects:
+The following table describes the various YAML configuration options that Gremlin Server expects:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1482,6 +1513,62 @@ and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th a
 mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
 times.
 
+As A Service
+^^^^^^^^^^^^
+
+Gremlin server can be configured to run as a service.
+
+Init.d (SysV)
++++++++++++++
+
+Link `bin/gremlin-server.sh` to `init.d`
+Be sure to set RUNAS to the service user in `bin/gremlin-server.conf`
+
+[source,bash]
+----
+# Install
+ln -s /path/to/apache-tinkerpop-gremlin-server-x.y.z/bin/gremlin-server.sh /etc/init.d/gremlin-server
+
+# Systems with chkconfig/service. E.g. Fedora, Red Hat
+chkconfig --add gremlin-server
+
+# Start
+service gremlin-server start
+
+# Or call directly
+/etc/init.d/gremlin-server restart
+
+----
+
+Systemd
++++++++
+
+To install, copy the service template below to /etc/systemd/system/gremlin.service
+and update the paths `/path/to/apache-tinkerpop-gremlin-server` with the actual install path of Gremlin Server.
+
+[source,bash]
+----
+[Unit]
+Description=Apache TinkerPop Gremlin Server daemon
+Documentation=http://tinkerpop.apache.org/
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/path/to/apache-tinkerpop-gremlin-server/bin/gremlin-server.sh start
+ExecStop=/path/to/apache-tinkerpop-gremlin-server/bin/gremlin-server.sh stop
+PIDFile=/path/to/apache-tinkerpop-gremlin-server/run/gremlin.pid
+
+[Install]
+WantedBy=multi-user.target
+----
+
+
+Enable the service with `systemctl enable gremlin-server`
+
+Start the service with `systemctl start gremlin-server`
+
+
 Best Practices
 ~~~~~~~~~~~~~~
 
@@ -1492,7 +1579,7 @@ Tuning
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
-* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
+* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.conf`.
 * When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in

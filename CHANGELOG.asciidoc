@@ -44,6 +44,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `gremlin-tools` and its submodule `gremlin-coverage`.
 * Removed `tryRandomCommit()` from `AbstractGremlinTest`.
 * Changed `gremlin-benchmark` system property for the report location to `benchmarkReportDir` for consistency.
+* Added SysV and systemd init scripts.
 
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------
