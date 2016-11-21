@@ -149,12 +149,12 @@ file.withWriter { writer ->
   writer.write(toJson(Operator.sum, "Operator"))
   writer.write(toJson(Order.incr, "Order"))
   writer.write(toJson(Pop.all, "Pop"))
-  writer.write(toJson(Pick.any, "Pick"))
-  writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda"))
+  writer.write(toJson(any, "Pick"))
+  writer.write(toJson(Lambda.function("{ it.get() }"), "Lambda"))
   tm = g.V().hasLabel('person').out().out().tree().profile().next()
   metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
-  writer.write(toJson(m, "Metrics"))
+  writer.write(toJson(tm, "Metrics"))
   writer.write(toJson(P.gt(0), "P"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or"))
@@ -1533,7 +1533,7 @@ Date
 ----
 {
   "@type" : "g:Date",
-  "@value" : 1475583442552
+  "@value" : 1479742679835
 }
 ----
 
@@ -1588,7 +1588,7 @@ Timestamp
 ----
 {
   "@type" : "g:Timestamp",
-  "@value" : 1475583442558
+  "@value" : 1479742679839
 }
 ----
 
@@ -1632,14 +1632,8 @@ Edge
     },
     "properties" : {
       "since" : {
-        "@type" : "g:Property",
-        "@value" : {
-          "key" : "since",
-          "value" : {
-            "@type" : "g:Int32",
-            "@value" : 2009
-          }
-        }
+        "@type" : "g:Int32",
+        "@value" : 2009
       }
     }
   }
@@ -1672,6 +1666,10 @@ Path
                 "@value" : 0
               },
               "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "name"
             }
           } ],
@@ -1683,6 +1681,10 @@ Path
                 "@value" : 6
               },
               "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -1703,6 +1705,10 @@ Path
                 "@value" : 7
               },
               "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -1723,6 +1729,10 @@ Path
                 "@value" : 8
               },
               "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -1743,6 +1753,10 @@ Path
                 "@value" : 9
               },
               "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -1771,6 +1785,10 @@ Path
                 "@value" : 4
               },
               "value" : "gremlin",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 10
+              },
               "label" : "name"
             }
           } ]
@@ -1793,6 +1811,10 @@ Path
                 "@value" : 5
               },
               "value" : "tinkergraph",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 11
+              },
               "label" : "name"
             }
           } ]
@@ -1815,6 +1837,24 @@ Property
     "value" : {
       "@type" : "g:Int32",
       "@value" : 2009
+    },
+    "element" : {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 13
+        },
+        "label" : "develops",
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        }
+      }
     }
   }
 }
@@ -1995,6 +2035,10 @@ TinkerGraph
                 "@value" : 0
               },
               "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "name"
             }
           } ],
@@ -2006,6 +2050,10 @@ TinkerGraph
                 "@value" : 6
               },
               "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2026,6 +2074,10 @@ TinkerGraph
                 "@value" : 7
               },
               "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2046,6 +2098,10 @@ TinkerGraph
                 "@value" : 8
               },
               "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2066,6 +2122,10 @@ TinkerGraph
                 "@value" : 9
               },
               "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2094,6 +2154,10 @@ TinkerGraph
                 "@value" : 1
               },
               "value" : "stephen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "name"
             }
           } ],
@@ -2105,6 +2169,10 @@ TinkerGraph
                 "@value" : 10
               },
               "value" : "centreville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2125,6 +2193,10 @@ TinkerGraph
                 "@value" : 11
               },
               "value" : "dulles",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2145,6 +2217,10 @@ TinkerGraph
                 "@value" : 12
               },
               "value" : "purcellville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2173,6 +2249,10 @@ TinkerGraph
                 "@value" : 2
               },
               "value" : "matthias",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "name"
             }
           } ],
@@ -2184,6 +2264,10 @@ TinkerGraph
                 "@value" : 13
               },
               "value" : "bremen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2204,6 +2288,10 @@ TinkerGraph
                 "@value" : 14
               },
               "value" : "baltimore",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2224,6 +2312,10 @@ TinkerGraph
                 "@value" : 15
               },
               "value" : "oakland",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2244,6 +2336,10 @@ TinkerGraph
                 "@value" : 16
               },
               "value" : "seattle",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2272,6 +2368,10 @@ TinkerGraph
                 "@value" : 3
               },
               "value" : "daniel",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "name"
             }
           } ],
@@ -2283,6 +2383,10 @@ TinkerGraph
                 "@value" : 17
               },
               "value" : "spremberg",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2303,6 +2407,10 @@ TinkerGraph
                 "@value" : 18
               },
               "value" : "kaiserslautern",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2323,6 +2431,10 @@ TinkerGraph
                 "@value" : 19
               },
               "value" : "aachen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2351,6 +2463,10 @@ TinkerGraph
                 "@value" : 4
               },
               "value" : "gremlin",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 10
+              },
               "label" : "name"
             }
           } ]
@@ -2373,6 +2489,10 @@ TinkerGraph
                 "@value" : 5
               },
               "value" : "tinkergraph",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 11
+              },
               "label" : "name"
             }
           } ]
@@ -2399,14 +2519,8 @@ TinkerGraph
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "since",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 2009
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 2009
           }
         }
       }
@@ -2430,14 +2544,8 @@ TinkerGraph
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "since",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 2010
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 2010
           }
         }
       }
@@ -2461,14 +2569,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 4
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 4
           }
         }
       }
@@ -2492,14 +2594,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 5
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 5
           }
         }
       }
@@ -2523,14 +2619,8 @@ TinkerGraph
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "since",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 2010
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 2010
           }
         }
       }
@@ -2554,14 +2644,8 @@ TinkerGraph
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "since",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 2011
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 2011
           }
         }
       }
@@ -2585,14 +2669,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 5
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 5
           }
         }
       }
@@ -2616,14 +2694,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 4
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 4
           }
         }
       }
@@ -2647,14 +2719,8 @@ TinkerGraph
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "since",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 2012
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 2012
           }
         }
       }
@@ -2678,14 +2744,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 3
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 3
           }
         }
       }
@@ -2709,14 +2769,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 3
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 3
           }
         }
       }
@@ -2740,14 +2794,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 5
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 5
           }
         }
       }
@@ -2771,14 +2819,8 @@ TinkerGraph
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Property",
-            "@value" : {
-              "key" : "skill",
-              "value" : {
-                "@type" : "g:Int32",
-                "@value" : 3
-              }
-            }
+            "@type" : "g:Int32",
+            "@value" : 3
           }
         }
       }
@@ -2831,6 +2873,10 @@ Tree
                 "@value" : 0
               },
               "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "name"
             }
           } ],
@@ -2842,6 +2888,10 @@ Tree
                 "@value" : 6
               },
               "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2862,6 +2912,10 @@ Tree
                 "@value" : 7
               },
               "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2882,6 +2936,10 @@ Tree
                 "@value" : 8
               },
               "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2902,6 +2960,10 @@ Tree
                 "@value" : 9
               },
               "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -2934,6 +2996,10 @@ Tree
                     "@value" : 4
                   },
                   "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
                   "label" : "name"
                 }
               } ]
@@ -2960,6 +3026,10 @@ Tree
                         "@value" : 5
                       },
                       "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
                       "label" : "name"
                     }
                   } ]
@@ -2992,6 +3062,10 @@ Tree
                 "@value" : 1
               },
               "value" : "stephen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "name"
             }
           } ],
@@ -3003,6 +3077,10 @@ Tree
                 "@value" : 10
               },
               "value" : "centreville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3023,6 +3101,10 @@ Tree
                 "@value" : 11
               },
               "value" : "dulles",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3043,6 +3125,10 @@ Tree
                 "@value" : 12
               },
               "value" : "purcellville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3075,6 +3161,10 @@ Tree
                     "@value" : 4
                   },
                   "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
                   "label" : "name"
                 }
               } ]
@@ -3101,6 +3191,10 @@ Tree
                         "@value" : 5
                       },
                       "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
                       "label" : "name"
                     }
                   } ]
@@ -3133,6 +3227,10 @@ Tree
                 "@value" : 2
               },
               "value" : "matthias",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "name"
             }
           } ],
@@ -3144,6 +3242,10 @@ Tree
                 "@value" : 13
               },
               "value" : "bremen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3164,6 +3266,10 @@ Tree
                 "@value" : 14
               },
               "value" : "baltimore",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3184,6 +3290,10 @@ Tree
                 "@value" : 15
               },
               "value" : "oakland",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3204,6 +3314,10 @@ Tree
                 "@value" : 16
               },
               "value" : "seattle",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3236,6 +3350,10 @@ Tree
                     "@value" : 4
                   },
                   "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
                   "label" : "name"
                 }
               } ]
@@ -3262,6 +3380,10 @@ Tree
                         "@value" : 5
                       },
                       "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
                       "label" : "name"
                     }
                   } ]
@@ -3294,6 +3416,10 @@ Tree
                 "@value" : 3
               },
               "value" : "daniel",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "name"
             }
           } ],
@@ -3305,6 +3431,10 @@ Tree
                 "@value" : 17
               },
               "value" : "spremberg",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3325,6 +3455,10 @@ Tree
                 "@value" : 18
               },
               "value" : "kaiserslautern",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3345,6 +3479,10 @@ Tree
                 "@value" : 19
               },
               "value" : "aachen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -3377,6 +3515,10 @@ Tree
                     "@value" : 4
                   },
                   "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
                   "label" : "name"
                 }
               } ]
@@ -3403,6 +3545,10 @@ Tree
                         "@value" : 5
                       },
                       "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
                       "label" : "name"
                     }
                   } ]
@@ -3443,6 +3589,10 @@ Vertex
             "@value" : 0
           },
           "value" : "marko",
+          "vertex" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
           "label" : "name"
         }
       } ],
@@ -3454,6 +3604,10 @@ Vertex
             "@value" : 6
           },
           "value" : "san diego",
+          "vertex" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -3474,6 +3628,10 @@ Vertex
             "@value" : 7
           },
           "value" : "santa cruz",
+          "vertex" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -3494,6 +3652,10 @@ Vertex
             "@value" : 8
           },
           "value" : "brussels",
+          "vertex" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -3514,6 +3676,10 @@ Vertex
             "@value" : 9
           },
           "value" : "santa fe",
+          "vertex" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -3541,6 +3707,10 @@ VertexProperty
       "@value" : 0
     },
     "value" : "marko",
+    "vertex" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    },
     "label" : "name"
   }
 }
@@ -3590,16 +3760,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:Bytecode",
   "@value" : {
-    "step" : [ [ "V" ], [ "has", {
-      "@type" : "g:T",
-      "@value" : "label"
-    }, {
-      "@type" : "g:P",
-      "@value" : {
-        "predicate" : "eq",
-        "value" : "person"
-      }
-    } ], [ "out" ], [ "in" ], [ "tree" ] ]
+    "step" : [ [ "V" ], [ "hasLabel", "person" ], [ "out" ], [ "in" ], [ "tree" ] ]
   }
 }
 ----
@@ -3670,6 +3831,17 @@ Pop
 }
 ----
 
+Pick
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
 Lambda
 ^^^^^^
 
@@ -3691,36 +3863,44 @@ Metrics
 [source,json]
 ----
 {
-  "@type" : "g:Metrics",
+  "@type" : "g:TraversalMetrics",
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 0.163871
+      "@value" : 0.895327
     },
-    "counts" : {
-      "traverserCount" : {
-        "@type" : "g:Int64",
-        "@value" : 4
-      },
-      "elementCount" : {
-        "@type" : "g:Int64",
-        "@value" : 4
-      }
-    },
-    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
-    "annotations" : {
-      "percentDur" : {
-        "@type" : "g:Double",
-        "@value" : 14.805689498929809
-      }
-    },
-    "id" : "7.0.0()",
     "metrics" : [ {
       "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.293702
+          "@value" : 0.124737
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          }
+        },
+        "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 13.932004731232276
+          }
+        },
+        "id" : "7.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.237774
         },
         "counts" : {
           "traverserCount" : {
@@ -3736,10 +3916,62 @@ Metrics
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 26.535876495625722
+            "@value" : 26.557224343731395
           }
         },
         "id" : "2.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.177646
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 19.841465743800867
+          }
+        },
+        "id" : "3.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.35517
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          }
+        },
+        "name" : "TreeStep",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 39.66930518123546
+          }
+        },
+        "id" : "4.0.0()"
       }
     } ]
   }
@@ -3865,14 +4097,14 @@ TraversalMetrics
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 1.10424
+      "@value" : 0.533286
     },
     "metrics" : [ {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.162194
+          "@value" : 0.07467
         },
         "counts" : {
           "traverserCount" : {
@@ -3888,17 +4120,17 @@ TraversalMetrics
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 14.688292400202855
+            "@value" : 14.001867665755336
           }
         },
         "id" : "7.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.304753
+          "@value" : 0.162635
         },
         "counts" : {
           "traverserCount" : {
@@ -3914,17 +4146,17 @@ TraversalMetrics
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 27.59843874520032
+            "@value" : 30.49676908825658
           }
         },
         "id" : "2.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.196628
+          "@value" : 0.143941
         },
         "counts" : {
           "traverserCount" : {
@@ -3940,17 +4172,17 @@ TraversalMetrics
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 17.80663623849888
+            "@value" : 26.991332980802046
           }
         },
         "id" : "3.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.440665
+          "@value" : 0.15204
         },
         "counts" : {
           "traverserCount" : {
@@ -3966,7 +4198,7 @@ TraversalMetrics
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 39.90663261609795
+            "@value" : 28.510030265186035
           }
         },
         "id" : "4.0.0()"
@@ -4005,6 +4237,10 @@ Traverser
                 "@value" : 0
               },
               "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "name"
             }
           } ],
@@ -4016,6 +4252,10 @@ Traverser
                 "@value" : 6
               },
               "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4036,6 +4276,10 @@ Traverser
                 "@value" : 7
               },
               "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4056,6 +4300,10 @@ Traverser
                 "@value" : 8
               },
               "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4076,6 +4324,10 @@ Traverser
                 "@value" : 9
               },
               "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4106,7 +4358,7 @@ The following `RequestMessage` is an example of the response that should be made
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "79fcec2e-62f3-4cb4-82a6-7f879bc04c42"
+    "@value" : "df63880c-0536-4970-b62e-c1a4047643d3"
   },
   "op" : "authentication",
   "processor" : "",
@@ -4127,7 +4379,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "c4183c83-8cd5-4058-ae9d-53e74f383031"
+    "@value" : "42303520-b2a0-4bb9-af4c-c1efc7048af8"
   },
   "op" : "eval",
   "processor" : "session",
@@ -4158,7 +4410,7 @@ The following `RequestMessage` is an example of a session request for a script e
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "11944916-6fbb-4746-9bf1-53e9754dbe28"
+    "@value" : "4bec1a7d-12db-462a-96fc-a119a4d94873"
   },
   "op" : "eval",
   "processor" : "session",
@@ -4192,7 +4444,7 @@ The following `RequestMessage` is an example of a request to close a session.
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "4b5c19fa-3bb5-482c-bca1-ac8ae408c95b"
+    "@value" : "601db6d3-cee7-4208-8079-f83c028da3f0"
   },
   "op" : "close",
   "processor" : "session",
@@ -4215,7 +4467,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "3304b3e0-9995-4eca-b8fb-14bbef01f7b8"
+    "@value" : "2c950e45-77bd-49b6-b7b1-4a6be486f30d"
   },
   "op" : "eval",
   "processor" : "",
@@ -4242,7 +4494,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 {
   "requestId" : {
     "@type" : "g:UUID",
-    "@value" : "0b93d54e-4124-4401-8b8f-addb18a213ea"
+    "@value" : "63ce1355-e284-4826-8b03-8b67c1d77fe2"
   },
   "op" : "eval",
   "processor" : "",
@@ -4319,6 +4571,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                 "@value" : 0
               },
               "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "name"
             }
           } ],
@@ -4330,6 +4586,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                 "@value" : 6
               },
               "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4350,6 +4610,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                 "@value" : 7
               },
               "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4370,6 +4634,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                 "@value" : 8
               },
               "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4390,6 +4658,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                 "@value" : 9
               },
               "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
               "label" : "location",
               "properties" : {
                 "startTime" : {
@@ -4507,7 +4779,7 @@ Instant
 ----
 {
   "@type" : "gx:Instant",
-  "@value" : "2016-10-04T12:17:22.696Z"
+  "@value" : "2016-11-21T15:37:59.931Z"
 }
 ----
 
@@ -4562,7 +4834,7 @@ OffsetDateTime
 ----
 {
   "@type" : "gx:OffsetDateTime",
-  "@value" : "2016-10-04T08:17:22.699-04:00"
+  "@value" : "2016-11-21T08:37:59.933-07:00"
 }
 ----
 
@@ -4573,7 +4845,7 @@ OffsetTime
 ----
 {
   "@type" : "gx:OffsetTime",
-  "@value" : "08:17:22.701-04:00"
+  "@value" : "08:37:59.933-07:00"
 }
 ----
 
@@ -4634,7 +4906,7 @@ ZonedDateTime
 ----
 {
   "@type" : "gx:ZonedDateTime",
-  "@value" : "2016-10-04T08:17:22.708-04:00[America/New_York]"
+  "@value" : "2016-11-21T08:37:59.936-07:00[America/Denver]"
 }
 ----
 
