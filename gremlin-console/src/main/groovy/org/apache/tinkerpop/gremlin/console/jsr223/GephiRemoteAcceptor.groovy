@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.plugin
+package org.apache.tinkerpop.gremlin.console.jsr223
 
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import org.apache.http.client.methods.CloseableHttpResponse
 import org.apache.http.client.methods.HttpUriRequest
@@ -27,20 +28,19 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy
+import org.apache.tinkerpop.gremlin.jsr223.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.jsr223.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import groovy.json.JsonSlurper
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Randall Barnhart (randompi@gmail.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.GephiRemoteAcceptor}
  */
 class GephiRemoteAcceptor implements RemoteAcceptor {
 

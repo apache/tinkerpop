@@ -16,17 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 /**
- * A mapper {@link Exception} to be thrown when there are problems with processing a command given to a
- * {@link org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor}.  The message provided to the exception will
+ * A mapper {@code Exception} to be thrown when there are problems with processing a command given to a
+ * {@link RemoteAcceptor}.  The message provided to the exception will
  * be displayed to the user in the Console.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.RemoteException};
  */
-@Deprecated
 public class RemoteException extends Exception {
     public RemoteException(final String message) {
         super(message);

@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin;
-
-import org.codehaus.groovy.tools.shell.Groovysh;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import java.io.Closeable;
 import java.util.List;
@@ -29,13 +27,11 @@ import java.util.List;
  * A "remote connection" does not necessarily have to be a remote server.  It simply refers to a resource that is
  * external to the console.
  * <p/>
- * By implementing this interface and returning an instance of it through {@link GremlinPlugin#remoteAcceptor()} a
+ * By implementing this interface and returning an instance of it through {@link GremlinModule#remoteAcceptor()} a
  * plugin can hook into those commands and provide remoting features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.RemoteAcceptor};
  */
-@Deprecated
 public interface RemoteAcceptor extends Closeable {
 
     public static final String RESULT = "result";
@@ -45,7 +41,7 @@ public interface RemoteAcceptor extends Closeable {
      * implementation to decide how additional arguments on the line should be treated after "connect".
      *
      * @return an object to display as output to the user
-     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with connecting
+     * @throws RemoteException if there is a problem with connecting
      */
     public Object connect(final List<String> args) throws RemoteException;
 
@@ -54,7 +50,7 @@ public interface RemoteAcceptor extends Closeable {
      * implementation to decide how additional arguments on the line should be treated after {@code config}.
      *
      * @return an object to display as output to the user
-     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with configuration
+     * @throws RemoteException if there is a problem with configuration
      */
     public Object configure(final List<String> args) throws RemoteException;
 
@@ -63,7 +59,7 @@ public interface RemoteAcceptor extends Closeable {
      * arguments on the line should be treated after {@code :submit}.
      *
      * @return an object to display as output to the user
-     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with submission
+     * @throws RemoteException if there is a problem with submission
      */
     public Object submit(final List<String> args) throws RemoteException;
 
@@ -81,12 +77,5 @@ public interface RemoteAcceptor extends Closeable {
      */
     public default boolean allowRemoteConsole() {
         return false;
-    }
-
-    /**
-     * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
-     */
-    public static String getScript(final String submittedScript, final Groovysh shell) {
-        return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
     }
 }
