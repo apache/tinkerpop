@@ -438,7 +438,7 @@ public class GremlinExecutor implements AutoCloseable {
                     // first try instance() and if that fails try to use build()
                     try {
                         final Method instanceMethod = clazz.getMethod("instance");
-                        gremlinScriptEngineManager.addModule((GremlinPlugin) instanceMethod.invoke(null));
+                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) instanceMethod.invoke(null));
                     } catch (Exception ex) {
                         final Method builderMethod = clazz.getMethod("build");
                         Object moduleBuilder = builderMethod.invoke(null);
@@ -463,7 +463,7 @@ public class GremlinExecutor implements AutoCloseable {
                         }
 
                         final Method create = builderClazz.getMethod("create");
-                        gremlinScriptEngineManager.addModule((GremlinPlugin) create.invoke(moduleBuilder));
+                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) create.invoke(moduleBuilder));
                     }
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
