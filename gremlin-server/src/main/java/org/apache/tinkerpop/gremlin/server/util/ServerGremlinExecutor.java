@@ -161,14 +161,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         // re-apply those references back
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> this.graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
+                .forEach(kv -> this.graphManager.addGraph(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    this.graphManager.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
+                    this.graphManager.addTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
                 });
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them

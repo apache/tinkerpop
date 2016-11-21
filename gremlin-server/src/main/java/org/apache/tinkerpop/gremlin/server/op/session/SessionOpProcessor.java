@@ -211,18 +211,18 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     boolean found = false;
 
                     // first check if the alias refers to a Graph instance
-                    final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
-                    if (graphs.containsKey(aliasKv.getValue())) {
-                        bindings.put(aliasKv.getKey(), graphs.get(aliasKv.getValue()));
+                    final Graph graph = context.getGraphManager().getGraph(aliasKv.getValue());
+                    if (null != graph) {
+                        bindings.put(aliasKv.getKey(), graph);
                         found = true;
                     }
 
                     // if the alias wasn't found as a Graph then perhaps it is a TraversalSource - it needs to be
                     // something
                     if (!found) {
-                        final Map<String, TraversalSource> traversalSources = context.getGraphManager().getTraversalSources();
-                        if (traversalSources.containsKey(aliasKv.getValue())) {
-                            bindings.put(aliasKv.getKey(), traversalSources.get(aliasKv.getValue()));
+                        final TraversalSource ts = context.getGraphManager().getTraversalSource(aliasKv.getValue());
+                        if (null != ts) {
+                            bindings.put(aliasKv.getKey(), ts);
                             found = true;
                         }
                     }

@@ -76,6 +76,14 @@ public final class BasicGraphManager implements GraphManager {
         return graphs;
     }
 
+    public Graph getGraph(String gName) {
+        return graphs.get(gName);
+    }
+
+    public void addGraph(String gName, Graph g) {
+        graphs.put(gName, g);
+    }
+
     /**
      * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
      * initialization scripts.
@@ -85,6 +93,14 @@ public final class BasicGraphManager implements GraphManager {
      */
     public Map<String, TraversalSource> getTraversalSources() {
         return traversalSources;
+    }
+
+    public TraversalSource getTraversalSource(String tsName) {
+        return traversalSources.get(tsName);
+    }
+
+    public void addTraversalSource(String tsName, TraversalSource ts) {
+        traversalSources.put(tsName, ts);
     }
 
     /**

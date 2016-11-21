@@ -33,6 +33,19 @@ public interface GraphManager {
      * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
      */
     public Map<String, Graph> getGraphs();
+    
+    /**
+     * Get {@link Graph} instance whose name matches {@link gName}
+     *
+     * @return {@link Graph} if exists, else null 
+     */
+    public Graph getGraph(String gName);
+
+    /**
+     * Add {@link Graph} g with name {@link String} gName to 
+     * {@link Map<String, Graph>} returned by call to getGraphs()
+     */
+    public void addGraph(String gName, Graph g);
 
     /**
      * Get a list of the {@link TraversalSource} instances and their binding names
@@ -43,8 +56,22 @@ public interface GraphManager {
     public Map<String, TraversalSource> getTraversalSources();
 
     /**
+     * Get {@link TraversalSource} instance whose name matches {@link tsName}
+     *
+     * @return {@link TraversalSource} if exists, else null
+     */
+    
+    public TraversalSource getTraversalSource(String tsName);
+    /**
      * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
      */
+    
+    /**
+     * Add {@link TraversalSource} ts with name {@link String} tsName to 
+     * {@link Map<String, TraversalSource>} returned by call to getTraversalSources()
+     */
+    public void addTraversalSource(String tsName, TraversalSource ts);
+    
     public Bindings getAsBindings();
 
     /**
