@@ -325,7 +325,6 @@ class GraphSONSerializersV2d0 {
                 intermediate.put(GraphSONTokens.STRATEGY, pair.getValue0().toString());
                 intermediate.put(GraphSONTokens.CATEGORY, pair.getValue0().getTraversalCategory().getSimpleName());
                 intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
-                intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
                 intermediates.add(intermediate);
             }
             m.put(GraphSONTokens.INTERMEDIATE, intermediates);
