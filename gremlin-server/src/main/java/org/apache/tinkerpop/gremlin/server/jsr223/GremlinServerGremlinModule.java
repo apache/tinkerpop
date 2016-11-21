@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.util;
+package org.apache.tinkerpop.gremlin.server.jsr223;
 
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinModule;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinModule;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 
 /**
  * A {@link GremlinModule} implementation that adds Gremlin Server specific classes to the imports.
@@ -31,7 +32,7 @@ public final class GremlinServerGremlinModule extends AbstractGremlinModule {
     private static final String MODULE_NAME = "tinkerpop.server";
     private static final GremlinServerGremlinModule instance = new GremlinServerGremlinModule();
 
-    public GremlinServerGremlinModule() {
+    private GremlinServerGremlinModule() {
         super(MODULE_NAME, ImportCustomizer.build().addClassImports(LifeCycleHook.class, LifeCycleHook.Context.class).create());
     }
 
