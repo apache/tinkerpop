@@ -19,6 +19,14 @@
 package org.apache.tinkerpop.gremlin.console.plugin
 
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin
+import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
@@ -54,5 +62,76 @@ class PluggedIn {
 
     void deactivate() {
         this.activated = false
+    }
+
+    public static class GremlinPluginAdapter implements GremlinPlugin {
+        org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin
+
+        public GremlinPluginAdapter(final org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin) {
+            this.corePlugin = corePlugin
+        }
+
+        @Override
+        String getName() {
+            return corePlugin.getName()
+        }
+
+        @Override
+        void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
+            // TODO: handle script customizer
+            corePlugin.getCustomizers("gremlin-groovy").each {
+                if (it instanceof ImportCustomizer) {
+                    def imports = [] as Set
+                    it.classImports.each { imports.add("import " + it.canonicalName )}
+                    it.methodImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name) }
+                    it.enumImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name()) }
+                    pluginAcceptor.addImports(imports)
+                }
+            }
+        }
+
+        @Override
+        boolean requireRestart() {
+            return corePlugin.requireRestart()
+        }
+
+        @Override
+        Optional<RemoteAcceptor> remoteAcceptor() {
+            // find a consoleCustomizer if available
+            if (!corePlugin.getCustomizers("gremlin-groovy").any{ it instanceof ConsoleCustomizer })
+                Optional.empty()
+
+            ConsoleCustomizer customizer = (ConsoleCustomizer) corePlugin.getCustomizers("gremlin-groovy").find{ it instanceof ConsoleCustomizer }
+            return Optional.of(new RemoteAcceptorAdapter(customizer.remoteAcceptor))
+        }
+    }
+
+    public static class RemoteAcceptorAdapter implements RemoteAcceptor {
+
+        private org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor remoteAcceptor
+
+        public RemoteAcceptorAdapter(org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor remoteAcceptor) {
+            this.remoteAcceptor = remoteAcceptor
+        }
+
+        @Override
+        Object connect(final List<String> args) throws RemoteException {
+            return remoteAcceptor.connect(args)
+        }
+
+        @Override
+        Object configure(final List<String> args) throws RemoteException {
+            return remoteAcceptor.configure(args)
+        }
+
+        @Override
+        Object submit(final List<String> args) throws RemoteException {
+            return remoteAcceptor.submit(args)
+        }
+
+        @Override
+        void close() throws IOException {
+            remoteAcceptor.close()
+        }
     }
 }

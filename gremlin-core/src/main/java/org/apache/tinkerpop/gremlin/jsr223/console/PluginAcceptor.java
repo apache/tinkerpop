@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.jsr223.console;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 
 import javax.script.ScriptException;
 import java.util.Collections;
@@ -31,14 +31,9 @@ import java.util.Set;
  * and provides the abstractions required for a plugin to work regardless of the environmental implementations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.PluginAcceptor}.
  */
-@Deprecated
 public interface PluginAcceptor {
-    /**
-     * If the {@code PluginAcceptor} implements the {@link DependencyManager} interface it will try to import the
-     * specified import statements.
-     */
+
     public void addImports(final Set<String> importStatements);
 
     /**

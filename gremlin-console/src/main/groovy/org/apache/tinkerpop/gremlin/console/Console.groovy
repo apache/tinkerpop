@@ -103,6 +103,8 @@ class Console {
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
 
+        // TODO: register CoreGremlinPlugin if using v3d3
+
         // add the default imports
         new ConsoleImportCustomizerProvider().getCombinedImports().stream()
                 .collect { IMPORT_SPACE + it }.each { groovy.execute(it) }
@@ -123,9 +125,17 @@ class Console {
 
         // check for available plugins.  if they are in the "active" plugins strategies then "activate" them
         def activePlugins = Mediator.readPluginState()
-        ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
+        def pluginClass = mediator.useV3d3 ? org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin : GremlinPlugin
+        ServiceLoader.load(pluginClass, groovy.getInterp().getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
-                def pluggedIn = new PluggedIn(plugin, groovy, io, false)
+                def pluggedIn
+
+                if (Mediator.useV3d3) {
+                    pluggedIn = new PluggedIn(new PluggedIn.GremlinPluginAdapter(plugin), groovy, io, false)
+                } else {
+                    pluggedIn = new PluggedIn(plugin, groovy, io, false)
+                }
+
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
 
                 if (activePlugins.contains(plugin.class.name)) {

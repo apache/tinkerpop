@@ -16,25 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.jsr223;
+package org.apache.tinkerpop.gremlin.jsr223.console;
+
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 
 /**
- * A mapper {@code Exception} to be thrown when there are problems with processing a command given to a
- * {@link RemoteAcceptor}.  The message provided to the exception will
- * be displayed to the user in the Console.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteException extends Exception {
-    public RemoteException(final String message) {
-        super(message);
-    }
-
-    public RemoteException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
-
-    public RemoteException(final Throwable cause) {
-        super(cause);
-    }
+public interface ConsoleCustomizer extends Customizer {
+    /**
+     * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
+     * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
+     * if it does not intend to take advantage of those commands.
+     */
+    public RemoteAcceptor getRemoteAcceptor();
 }

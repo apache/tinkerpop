@@ -16,15 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.jsr223;
+package org.apache.tinkerpop.gremlin.jsr223.console;
 
 /**
- * The {@code Customizer} provides a general way to provide configurations to a {@link GremlinScriptEngine}. This is an
- * "internal" interface that acts as a marker and should not be implemented directly. Those wishing to write a
- * {@code Customizer} should use one of its sub-interfaces, like {@link ImportCustomizer}
+ * A mapper {@code Exception} to be thrown when there are problems with processing a command given to a
+ * {@link RemoteAcceptor}.  The message provided to the exception will
+ * be displayed to the user in the Console.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Customizer {
+public class RemoteException extends Exception {
+    public RemoteException(final String message) {
+        super(message);
+    }
 
+    public RemoteException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public RemoteException(final Throwable cause) {
+        super(cause);
+    }
 }

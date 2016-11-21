@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
+
 import java.util.Optional;
 
 /**

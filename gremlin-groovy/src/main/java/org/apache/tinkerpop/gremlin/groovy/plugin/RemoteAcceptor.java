@@ -33,7 +33,7 @@ import java.util.List;
  * plugin can hook into those commands and provide remoting features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.RemoteAcceptor};
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor};
  */
 @Deprecated
 public interface RemoteAcceptor extends Closeable {

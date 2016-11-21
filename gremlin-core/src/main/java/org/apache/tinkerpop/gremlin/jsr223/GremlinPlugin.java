@@ -58,13 +58,4 @@ public interface GremlinPlugin {
      * @param scriptEngineName The name of the {@code ScriptEngine} or null to get all the available {@code Customizers}
      */
     public Optional<Customizer[]> getCustomizers(final String scriptEngineName);
-
-    /**
-     * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
-     * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
-     * if it does not intend to take advantage of those commands.
-     */
-    public default Optional<RemoteAcceptor> remoteAcceptor() {
-        return Optional.empty();
-    }
 }

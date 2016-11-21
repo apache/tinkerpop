@@ -19,12 +19,23 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 /**
- * The {@code Customizer} provides a general way to provide configurations to a {@link GremlinScriptEngine}. This is an
- * "internal" interface that acts as a marker and should not be implemented directly. Those wishing to write a
- * {@code Customizer} should use one of its sub-interfaces, like {@link ImportCustomizer}
+ * Base exception for {@link GremlinPlugin}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Customizer {
+public abstract class GremlinPluginException extends Exception {
+    public GremlinPluginException() {
+    }
 
+    public GremlinPluginException(final String message) {
+        super(message);
+    }
+
+    public GremlinPluginException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public GremlinPluginException(final Throwable cause) {
+        super(cause);
+    }
 }
