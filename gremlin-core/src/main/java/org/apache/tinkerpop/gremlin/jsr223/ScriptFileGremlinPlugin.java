@@ -27,10 +27,10 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ScriptFileModule extends AbstractGremlinModule {
+public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.script";
 
-    public ScriptFileModule(final Builder builder) {
+    public ScriptFileGremlinPlugin(final Builder builder) {
         super(MODULE_NAME, builder.appliesTo, new ScriptCustomizer(builder.files));
     }
 
@@ -64,8 +64,8 @@ public final class ScriptFileModule extends AbstractGremlinModule {
             return this;
         }
 
-        public ScriptFileModule create() {
-            return new ScriptFileModule(this);
+        public ScriptFileGremlinPlugin create() {
+            return new ScriptFileGremlinPlugin(this);
         }
     }
 }

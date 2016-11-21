@@ -28,17 +28,17 @@ import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphWorkerContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.MemoryAggregator;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.PassThroughMemory;
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinModule;
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GiraphGremlinModule extends AbstractGremlinModule {
+public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.giraph";
-    private static final GiraphGremlinModule instance = new GiraphGremlinModule();
+    private static final GiraphGremlinPlugin instance = new GiraphGremlinPlugin();
 
-    private GiraphGremlinModule() {
+    private GiraphGremlinPlugin() {
         super(MODULE_NAME, ImportCustomizer.build().addClassImports(
                 EmptyOutEdges.class,
                 GiraphComputation.class,
@@ -52,7 +52,7 @@ public final class GiraphGremlinModule extends AbstractGremlinModule {
                 PassThroughMemory.class).create());
     }
 
-    public static GiraphGremlinModule instance() {
+    public static GiraphGremlinPlugin instance() {
         return instance;
     }
 }

@@ -27,7 +27,7 @@ import java.util.Optional;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class CoreGremlinModule implements GremlinModule {
+public final class CoreGremlinPlugin implements GremlinPlugin {
 
     private static final String MODULE_NAME = "tinkerpop.core";
 
@@ -42,11 +42,11 @@ public final class CoreGremlinModule implements GremlinModule {
      * @deprecated As of 3.2.4, replaced by {@link #instance()} as this field will later become private.
      */
     @Deprecated
-    public static final CoreGremlinModule INSTANCE = new CoreGremlinModule();
+    public static final CoreGremlinPlugin INSTANCE = new CoreGremlinPlugin();
 
-    private CoreGremlinModule() {}
+    private CoreGremlinPlugin() {}
 
-    public static CoreGremlinModule instance() {
+    public static CoreGremlinPlugin instance() {
         return INSTANCE;
     }
 

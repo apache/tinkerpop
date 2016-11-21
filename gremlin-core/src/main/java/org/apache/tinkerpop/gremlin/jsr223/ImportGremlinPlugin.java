@@ -36,10 +36,10 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ImportGremlinModule extends AbstractGremlinModule {
+public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.import";
 
-    private ImportGremlinModule(final Builder builder) {
+    private ImportGremlinPlugin(final Builder builder) {
         super(MODULE_NAME, builder.appliesTo, ImportCustomizer.build()
                                                 .addClassImports(builder.classImports)
                                                 .addEnumImports(builder.enumImports)
@@ -138,11 +138,11 @@ public final class ImportGremlinModule extends AbstractGremlinModule {
             return this;
         }
 
-        public ImportGremlinModule create() {
+        public ImportGremlinPlugin create() {
             if (enumImports.isEmpty() && classImports.isEmpty() && methodImports.isEmpty())
                 throw new IllegalStateException("At least one import must be specified");
 
-            return new ImportGremlinModule(this);
+            return new ImportGremlinPlugin(this);
         }
 
         private static List<Enum> allEnums(final Class<?> clazz) {

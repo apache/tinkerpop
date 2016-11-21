@@ -95,7 +95,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
      * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
      * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
      */
-    private List<GremlinModule> modules = new ArrayList<>();
+    private List<GremlinPlugin> modules = new ArrayList<>();
 
     /**
      * The effect of calling this constructor is the same as calling
@@ -125,7 +125,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     @Override
-    public void addModule(final GremlinModule module) {
+    public void addModule(final GremlinPlugin module) {
         // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
         if (module != null) modules.add(module);
     }
@@ -378,7 +378,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
     private void initEngines(final ClassLoader loader) {
         // always need this module for a scriptengine to be "Gremlin-enabled"
-        modules.add(CoreGremlinModule.INSTANCE);
+        modules.add(CoreGremlinPlugin.INSTANCE);
 
         Iterator<GremlinScriptEngineFactory> itty;
         try {

@@ -37,16 +37,16 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ImportGremlinModuleTest {
+public class ImportGremlinPluginTest {
 
     @Test(expected = IllegalStateException.class)
     public void shouldImportSomething() {
-        ImportGremlinModule.build().create();
+        ImportGremlinPlugin.build().create();
     }
 
     @Test
     public void shouldImportClass() {
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .classImports(Collections.singletonList(Graph.class.getCanonicalName())).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -58,7 +58,7 @@ public class ImportGremlinModuleTest {
     @Test
     public void shouldImportWildcardMethod() throws Exception {
         final Method zeroArgs = Gremlin.class.getMethod("version");
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(Gremlin.class.getCanonicalName() + "#*")).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -72,7 +72,7 @@ public class ImportGremlinModuleTest {
     @Test
     public void shouldImportZeroArgMethod() throws Exception {
         final Method zeroArgs = Gremlin.class.getMethod("version");
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(toMethodDescriptor(zeroArgs))).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -84,7 +84,7 @@ public class ImportGremlinModuleTest {
     @Test
     public void shouldImportSingleArgMethod() throws Exception {
         final Method singleArg = IoCore.class.getMethod("createIoBuilder", String.class);
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(toMethodDescriptor(singleArg))).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -97,7 +97,7 @@ public class ImportGremlinModuleTest {
     public void shouldThrowExceptionIfInvalidMethodDescriptor() throws Exception {
         final String badDescriptor = "Gremlin*version";
         try {
-            ImportGremlinModule.build()
+            ImportGremlinPlugin.build()
                     .methodImports(Collections.singletonList(badDescriptor)).create();
             fail("Should have failed parsing the method descriptor");
         } catch (IllegalArgumentException iae) {
@@ -107,7 +107,7 @@ public class ImportGremlinModuleTest {
 
     @Test
     public void shouldImportWildcardEnum() throws Exception {
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .enumImports(Collections.singletonList(T.class.getCanonicalName() + "#*")).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -118,7 +118,7 @@ public class ImportGremlinModuleTest {
 
     @Test
     public void shouldImportEnum() throws Exception {
-        final ImportGremlinModule module = ImportGremlinModule.build()
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .enumImports(Collections.singletonList(T.class.getCanonicalName() + "#" + T.id.name())).create();
 
         final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
@@ -130,7 +130,7 @@ public class ImportGremlinModuleTest {
     public void shouldThrowExceptionIfInvalidEnumDescriptor() throws Exception {
         final String badDescriptor = "T*id";
         try {
-            ImportGremlinModule.build()
+            ImportGremlinPlugin.build()
                     .enumImports(Collections.singletonList(badDescriptor)).create();
             fail("Should have failed parsing the enum descriptor");
         } catch (IllegalArgumentException iae) {

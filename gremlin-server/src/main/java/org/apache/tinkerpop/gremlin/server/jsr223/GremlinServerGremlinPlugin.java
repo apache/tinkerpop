@@ -18,25 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.server.jsr223;
 
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinModule;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinModule;
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 
 /**
- * A {@link GremlinModule} implementation that adds Gremlin Server specific classes to the imports.
+ * A {@link GremlinPlugin} implementation that adds Gremlin Server specific classes to the imports.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GremlinServerGremlinModule extends AbstractGremlinModule {
+public final class GremlinServerGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.server";
-    private static final GremlinServerGremlinModule instance = new GremlinServerGremlinModule();
+    private static final GremlinServerGremlinPlugin instance = new GremlinServerGremlinPlugin();
 
-    private GremlinServerGremlinModule() {
+    private GremlinServerGremlinPlugin() {
         super(MODULE_NAME, ImportCustomizer.build().addClassImports(LifeCycleHook.class, LifeCycleHook.Context.class).create());
     }
 
-    public static GremlinServerGremlinModule instance() {
+    public static GremlinServerGremlinPlugin instance() {
         return instance;
     }
 }

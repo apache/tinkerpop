@@ -118,9 +118,9 @@ public interface GremlinScriptEngineManager {
     public List<GremlinScriptEngineFactory> getEngineFactories();
 
     /**
-     * Add {@link GremlinModule} instances to customize newly created {@link GremlinScriptEngine} instances.
+     * Add {@link GremlinPlugin} instances to customize newly created {@link GremlinScriptEngine} instances.
      */
-    public void addModule(final GremlinModule module);
+    public void addModule(final GremlinPlugin module);
 
     /**
      * Registers a {@link GremlinScriptEngineFactory} to handle a language name.  Overrides any such association found

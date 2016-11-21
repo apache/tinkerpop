@@ -27,7 +27,7 @@ import java.util.List;
  * A "remote connection" does not necessarily have to be a remote server.  It simply refers to a resource that is
  * external to the console.
  * <p/>
- * By implementing this interface and returning an instance of it through {@link GremlinModule#remoteAcceptor()} a
+ * By implementing this interface and returning an instance of it through {@link GremlinPlugin#remoteAcceptor()} a
  * plugin can hook into those commands and provide remoting features.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

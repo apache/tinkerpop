@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.giraph.groovy.plugin;
 
-import org.apache.tinkerpop.gremlin.giraph.jsr223.GiraphGremlinModule;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
@@ -33,7 +32,7 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.4, replaced by {@link GiraphGremlinModule}.
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.giraph.jsr223.GiraphGremlinPlugin}.
  */
 @Deprecated
 public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {

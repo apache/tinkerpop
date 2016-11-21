@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface GremlinModule {
+public interface GremlinPlugin {
     /**
      * The name of the module.  This name should be unique (use a namespaced approach) as naming clashes will
      * prevent proper module operations. Modules developed by TinkerPop will be prefixed with "tinkerpop."

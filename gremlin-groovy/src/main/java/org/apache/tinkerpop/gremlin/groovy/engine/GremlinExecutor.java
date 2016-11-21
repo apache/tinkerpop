@@ -20,10 +20,9 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinModule;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -439,7 +438,7 @@ public class GremlinExecutor implements AutoCloseable {
                     // first try instance() and if that fails try to use build()
                     try {
                         final Method instanceMethod = clazz.getMethod("instance");
-                        gremlinScriptEngineManager.addModule((GremlinModule) instanceMethod.invoke(null));
+                        gremlinScriptEngineManager.addModule((GremlinPlugin) instanceMethod.invoke(null));
                     } catch (Exception ex) {
                         final Method builderMethod = clazz.getMethod("build");
                         Object moduleBuilder = builderMethod.invoke(null);
@@ -464,7 +463,7 @@ public class GremlinExecutor implements AutoCloseable {
                         }
 
                         final Method create = builderClazz.getMethod("create");
-                        gremlinScriptEngineManager.addModule((GremlinModule) create.invoke(moduleBuilder));
+                        gremlinScriptEngineManager.addModule((GremlinPlugin) create.invoke(moduleBuilder));
                     }
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
@@ -475,8 +474,8 @@ public class GremlinExecutor implements AutoCloseable {
 
     private ScriptEngines createScriptEngines() {
         // plugins already on the path - ones static to the classpath
-        final List<GremlinPlugin> globalPlugins = new ArrayList<>();
-        ServiceLoader.load(GremlinPlugin.class).forEach(globalPlugins::add);
+        final List<org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin> globalPlugins = new ArrayList<>();
+        ServiceLoader.load(org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin.class).forEach(globalPlugins::add);
 
         return new ScriptEngines(se -> {
             // this first part initializes the scriptengines Map
@@ -487,7 +486,7 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             // use grabs dependencies and returns plugins to load
-            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
+            final List<org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -614,9 +613,9 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Add a configuration for a {@link GremlinModule} to the executor. The key is the fully qualified class name
-         * of the {@link GremlinModule} instance and the value is a map of configuration values. In that map, the key
-         * is the name of a builder method on the {@link GremlinModule} and the value is some argument to pass to that
+         * Add a configuration for a {@link GremlinPlugin} to the executor. The key is the fully qualified class name
+         * of the {@link GremlinPlugin} instance and the value is a map of configuration values. In that map, the key
+         * is the name of a builder method on the {@link GremlinPlugin} and the value is some argument to pass to that
          * method.
          */
         public Builder addModules(final String engineName, final Map<String, Map<String,Object>> modules) {

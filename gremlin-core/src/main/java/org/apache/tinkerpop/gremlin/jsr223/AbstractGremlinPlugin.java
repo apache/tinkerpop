@@ -25,21 +25,21 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGremlinModule implements GremlinModule {
+public abstract class AbstractGremlinPlugin implements GremlinPlugin {
     protected final String moduleName;
     protected final Customizer[] customizers;
     protected final Set<String> appliesTo;
 
     /**
-     * Creates a base {@link GremlinModule} that will apply to all {@link GremlinScriptEngine} instances.
+     * Creates a base {@link GremlinPlugin} that will apply to all {@link GremlinScriptEngine} instances.
      */
-    public AbstractGremlinModule(final String moduleName, final Customizer... customizers) {
+    public AbstractGremlinPlugin(final String moduleName, final Customizer... customizers) {
         this(moduleName, Collections.emptySet(), customizers);
     }
     /**
-     * Creates a base {@link GremlinModule} that will apply to specific {@link GremlinScriptEngine} instances.
+     * Creates a base {@link GremlinPlugin} that will apply to specific {@link GremlinScriptEngine} instances.
      */
-    public AbstractGremlinModule(final String moduleName, final Set<String> appliesTo, final Customizer... customizers) {
+    public AbstractGremlinPlugin(final String moduleName, final Set<String> appliesTo, final Customizer... customizers) {
         this.moduleName = moduleName;
         this.appliesTo = appliesTo;
         this.customizers = customizers;
