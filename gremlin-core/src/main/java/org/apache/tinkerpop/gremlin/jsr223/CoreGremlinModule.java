@@ -37,7 +37,6 @@ public final class CoreGremlinModule implements GremlinModule {
             .addMethodImports(CoreImports.getMethodImports()).create();
 
     private static final Customizer[] customizers = new Customizer[] {gremlinCore};
-    private static final Builder builder = new Builder();
 
     /**
      * @deprecated As of 3.2.4, replaced by {@link #instance()} as this field will later become private.
@@ -59,22 +58,5 @@ public final class CoreGremlinModule implements GremlinModule {
     @Override
     public String getName() {
         return MODULE_NAME;
-    }
-
-    /**
-     * {@link GremlinModule} instances all use a builder pattern for instantiation via configuration. This method is
-     * just provided for consistency with that pattern. When instantiating programmatically, use {@link #instance()}.
-     */
-    public static Builder build() {
-        return builder;
-    }
-
-    public final static class Builder {
-
-        private Builder() {}
-
-        public CoreGremlinModule create() {
-            return instance();
-        }
     }
 }

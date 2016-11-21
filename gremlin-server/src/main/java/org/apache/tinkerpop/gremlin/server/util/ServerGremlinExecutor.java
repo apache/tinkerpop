@@ -138,17 +138,8 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
                 gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
             } else {
-                // make sure that server related classes are available at init - ultimately this is the right way to
-                // do things going forward.
-                // TODO: though this Import is kinda sketchy.
-                if (v.modules.containsKey(ImportGremlinModule.class.getName())) {
-                    final List<String> listToAddImportsTo = (List<String>) v.modules.get(ImportGremlinModule.class.getName()).get("classImports");
-                    listToAddImportsTo.addAll(Arrays.asList(LifeCycleHook.class.getName(), LifeCycleHook.Context.class.getName()));
-                } else {
-                    final Map<String,Object> imports = new HashMap<>();
-                    imports.put("classImports", Arrays.asList(LifeCycleHook.class.getName(), LifeCycleHook.Context.class.getName()));
-                    v.modules.put(ImportGremlinModule.class.getName(), imports);
-                }
+                // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
+                // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
                 gremlinExecutorBuilder.addModules(k, v.modules);
             }
         });

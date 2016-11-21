@@ -435,30 +435,37 @@ public class GremlinExecutor implements AutoCloseable {
             for (Map.Entry<String, Map<String,Object>> moduleConfig : moduleConfigs.entrySet()) {
                 try {
                     final Class<?> clazz = Class.forName(moduleConfig.getKey());
-                    final Method builderMethod = clazz.getMethod("build");
-                    Object moduleBuilder = builderMethod.invoke(null);
 
-                    final Class<?> builderClazz = moduleBuilder.getClass();
-                    final Map<String,Object> customizerConfigs = moduleConfig.getValue();
-                    final Method[] methods = builderClazz.getMethods();
-                    for (Map.Entry<String,Object> customizerConfig : customizerConfigs.entrySet()) {
-                        final Method configMethod = Stream.of(methods).filter(m -> m.getName().equals(customizerConfig.getKey())).findFirst()
-                                .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
-                        if (null == customizerConfig.getValue())
-                            moduleBuilder = configMethod.invoke(moduleBuilder);
-                        else
-                            moduleBuilder = configMethod.invoke(moduleBuilder, customizerConfig.getValue());
-                    }
-
+                    // first try instance() and if that fails try to use build()
                     try {
-                        final Method appliesTo = builderClazz.getMethod("appliesTo");
-                        moduleBuilder = appliesTo.invoke(moduleBuilder, language);
-                    } catch (NoSuchMethodException ignored) {
+                        final Method instanceMethod = clazz.getMethod("instance");
+                        gremlinScriptEngineManager.addModule((GremlinModule) instanceMethod.invoke(null));
+                    } catch (Exception ex) {
+                        final Method builderMethod = clazz.getMethod("build");
+                        Object moduleBuilder = builderMethod.invoke(null);
 
+                        final Class<?> builderClazz = moduleBuilder.getClass();
+                        final Map<String, Object> customizerConfigs = moduleConfig.getValue();
+                        final Method[] methods = builderClazz.getMethods();
+                        for (Map.Entry<String, Object> customizerConfig : customizerConfigs.entrySet()) {
+                            final Method configMethod = Stream.of(methods).filter(m -> m.getName().equals(customizerConfig.getKey())).findFirst()
+                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
+                            if (null == customizerConfig.getValue())
+                                moduleBuilder = configMethod.invoke(moduleBuilder);
+                            else
+                                moduleBuilder = configMethod.invoke(moduleBuilder, customizerConfig.getValue());
+                        }
+
+                        try {
+                            final Method appliesTo = builderClazz.getMethod("appliesTo");
+                            moduleBuilder = appliesTo.invoke(moduleBuilder, language);
+                        } catch (NoSuchMethodException ignored) {
+
+                        }
+
+                        final Method create = builderClazz.getMethod("create");
+                        gremlinScriptEngineManager.addModule((GremlinModule) create.invoke(moduleBuilder));
                     }
-
-                    final Method create = builderClazz.getMethod("create");
-                    gremlinScriptEngineManager.addModule((GremlinModule) create.invoke(moduleBuilder));
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
                 }

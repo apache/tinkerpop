@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,6 +30,15 @@ public abstract class AbstractGremlinModule implements GremlinModule {
     protected final Customizer[] customizers;
     protected final Set<String> appliesTo;
 
+    /**
+     * Creates a base {@link GremlinModule} that will apply to all {@link GremlinScriptEngine} instances.
+     */
+    public AbstractGremlinModule(final String moduleName, final Customizer... customizers) {
+        this(moduleName, Collections.emptySet(), customizers);
+    }
+    /**
+     * Creates a base {@link GremlinModule} that will apply to specific {@link GremlinScriptEngine} instances.
+     */
     public AbstractGremlinModule(final String moduleName, final Set<String> appliesTo, final Customizer... customizers) {
         this.moduleName = moduleName;
         this.appliesTo = appliesTo;
