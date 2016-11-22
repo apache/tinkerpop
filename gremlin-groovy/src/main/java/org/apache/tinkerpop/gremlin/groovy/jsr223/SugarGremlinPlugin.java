@@ -16,38 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
+
+import java.util.Collections;
 
 /**
  * A plugin implementation which allows for the usage of Gremlin Groovy's syntactic sugar.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.SugarGremlinPlugin}.
  */
-@Deprecated
 public class SugarGremlinPlugin extends AbstractGremlinPlugin {
+
+    private static final String NAME = "tinkerpop.sugar";
+
+    public SugarGremlinPlugin() {
+        super(NAME, new DefaultScriptCustomizer(Collections.singletonList(
+                Collections.singletonList(SugarLoader.class.getPackage().getName() + "." + SugarLoader.class.getSimpleName() + ".load()"))));
+    }
 
     @Override
     public String getName() {
         return "tinkerpop.sugar";
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Executes the {@link SugarLoader#load()} method in the {@link PluginAcceptor}.
-     */
-    @Override
-    public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-        try {
-            pluginAcceptor.eval(SugarLoader.class.getPackage().getName() + "." + SugarLoader.class.getSimpleName() + ".load()");
-        } catch (Exception ex) {
-            if (io != null)
-                io.out.println("Error loading the 'tinkerpop.sugar' plugin - " + ex.getMessage());
-            else
-                throw new PluginInitializationException("Error loading the 'tinkerpop.sugar' plugin - " + ex.getMessage(), ex);
-        }
     }
 }

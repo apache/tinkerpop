@@ -16,12 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph;
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,28 +31,25 @@ import java.util.Set;
  * Plugin for the "credentials graph".  This plugin imports the {@link CredentialGraph} to its environment.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphGremlinPlugin}.
  */
-@Deprecated
 public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
 
-    private static final Set<String> IMPORTS = new HashSet<String>() {{
-        add(IMPORT_SPACE + CredentialGraph.class.getName());
-        add(IMPORT_STATIC_SPACE + CredentialGraph.class.getName() + DOT_STAR);
-    }};
+    private static final String NAME = "tinkerpop.credentials";
 
-    @Override
-    public String getName() {
-        return "tinkerpop.credentials";
+    private static final ImportCustomizer imports;
+
+    static {
+        try {
+            imports = DefaultImportCustomizer.build()
+                    .addClassImports(CredentialGraph.class)
+                    .addMethodImports(CredentialGraph.class.getMethod("credentials", Graph.class))
+                    .create();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Adds imports for the {@link CredentialGraph}.
-     */
-    @Override
-    public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-        pluginAcceptor.addImports(IMPORTS);
+    public CredentialGraphGremlinPlugin() {
+        super(NAME, imports);
     }
 }
