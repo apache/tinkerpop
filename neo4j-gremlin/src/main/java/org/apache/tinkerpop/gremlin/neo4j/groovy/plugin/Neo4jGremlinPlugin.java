@@ -30,6 +30,7 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin}.
  */
 public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
 

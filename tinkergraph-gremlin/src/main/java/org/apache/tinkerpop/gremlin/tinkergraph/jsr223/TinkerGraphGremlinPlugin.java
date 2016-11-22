@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.jsr223;
 
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
@@ -41,13 +40,11 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
-import java.util.Optional;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
-    private static final String MODULE_NAME = "tinkerpop.tinkergraph";
+    private static final String NAME = "tinkerpop.tinkergraph";
 
     private static final ImportCustomizer imports = DefaultImportCustomizer.build()
             .addClassImports(TinkerEdge.class,
@@ -70,6 +67,6 @@ public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
                              TinkerWorkerPool.class).create();
 
     public TinkerGraphGremlinPlugin() {
-        super(MODULE_NAME, imports);
+        super(NAME, imports);
     }
 }
