@@ -79,7 +79,7 @@ class PluggedIn {
 
         @Override
         void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-            corePlugin.getCustomizers("gremlin-groovy").each {
+            corePlugin.getCustomizers("gremlin-groovy").get().each {
                 if (it instanceof ImportCustomizer) {
                     def imports = [] as Set
                     it.classImports.each { imports.add("import " + it.canonicalName )}
