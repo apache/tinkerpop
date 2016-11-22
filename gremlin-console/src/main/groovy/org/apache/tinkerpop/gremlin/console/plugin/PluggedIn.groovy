@@ -24,8 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
-import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO

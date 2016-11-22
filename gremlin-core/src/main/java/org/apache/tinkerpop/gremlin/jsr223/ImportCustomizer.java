@@ -18,13 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.util.CoreImports;
-
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -32,82 +26,11 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ImportCustomizer implements Customizer {
+public interface ImportCustomizer extends Customizer {
 
-    /**
-     * @deprecated As of release 3.2.4, not replaced.
-     */
-    @Deprecated
-    public static final ImportCustomizer GREMLIN_CORE = ImportCustomizer.build()
-            .addClassImports(CoreImports.getClassImports())
-            .addEnumImports(CoreImports.getEnumImports())
-            .addMethodImports(CoreImports.getMethodImports()).create();
+    public Set<Class> getClassImports();
 
-    private final Set<Class> classImports;
-    private final Set<Method> methodImports;
-    private final Set<Enum> enumImports;
+    public Set<Method> getMethodImports();
 
-    private ImportCustomizer(final Builder builder) {
-        classImports = builder.classImports;
-        methodImports = builder.methodImports;
-        enumImports = builder.enumImports;
-    }
-
-    public Set<Class> getClassImports() {
-        return Collections.unmodifiableSet(classImports);
-    }
-
-    public Set<Method> getMethodImports() {
-        return Collections.unmodifiableSet(methodImports);
-    }
-
-    public Set<Enum> getEnumImports() {
-        return Collections.unmodifiableSet(enumImports);
-    }
-
-    public static Builder build() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Set<Class> classImports = new HashSet<>();
-        private Set<Method> methodImports = new HashSet<>();
-        private Set<Enum> enumImports = new HashSet<>();
-
-        private Builder() {}
-
-        public Builder addClassImports(final Class... clazz) {
-            classImports.addAll(Arrays.asList(clazz));
-            return this;
-        }
-
-        public Builder addClassImports(final Collection<Class> classes) {
-            classImports.addAll(classes);
-            return this;
-        }
-
-        public Builder addMethodImports(final Method... method) {
-            methodImports.addAll(Arrays.asList(method));
-            return this;
-        }
-
-        public Builder addMethodImports(final Collection<Method> methods) {
-            methodImports.addAll(methods);
-            return this;
-        }
-
-        public Builder addEnumImports(final Enum... e) {
-            enumImports.addAll(Arrays.asList(e));
-            return this;
-        }
-
-        public Builder addEnumImports(final Collection<Enum> enums) {
-            enumImports.addAll(enums);
-            return this;
-        }
-
-        public ImportCustomizer create() {
-            return new ImportCustomizer(this);
-        }
-    }
+    public Set<Enum> getEnumImports();
 }

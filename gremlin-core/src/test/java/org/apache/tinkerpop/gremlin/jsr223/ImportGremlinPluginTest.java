@@ -49,7 +49,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .classImports(Collections.singletonList(Graph.class.getCanonicalName())).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getClassImports(), hasItems(Graph.class));
         assertEquals(1, customizer.getClassImports().size());
@@ -61,7 +61,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(Gremlin.class.getCanonicalName() + "#*")).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getMethodImports(), hasItems(zeroArgs));
 
@@ -75,7 +75,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(toMethodDescriptor(zeroArgs))).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getMethodImports(), hasItems(zeroArgs));
         assertEquals(1, customizer.getMethodImports().size());
@@ -87,7 +87,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(toMethodDescriptor(singleArg))).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getMethodImports(), hasItems(singleArg));
         assertEquals(1, customizer.getMethodImports().size());
@@ -110,7 +110,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .enumImports(Collections.singletonList(T.class.getCanonicalName() + "#*")).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getEnumImports(), hasItems(T.id, T.key, T.label, T.value));
         assertEquals(4, customizer.getEnumImports().size());
@@ -121,7 +121,7 @@ public class ImportGremlinPluginTest {
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .enumImports(Collections.singletonList(T.class.getCanonicalName() + "#" + T.id.name())).create();
 
-        final ImportCustomizer customizer = (ImportCustomizer) module.getCustomizers().get()[0];
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
         assertThat(customizer.getEnumImports(), hasItems(T.id));
     }

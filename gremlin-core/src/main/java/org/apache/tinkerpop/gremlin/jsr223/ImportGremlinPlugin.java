@@ -40,7 +40,7 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.import";
 
     private ImportGremlinPlugin(final Builder builder) {
-        super(MODULE_NAME, builder.appliesTo, ImportCustomizer.build()
+        super(MODULE_NAME, builder.appliesTo, DefaultImportCustomizer.build()
                                                 .addClassImports(builder.classImports)
                                                 .addEnumImports(builder.enumImports)
                                                 .addMethodImports(builder.methodImports).create());

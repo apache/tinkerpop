@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.server.jsr223;
 
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 
 /**
@@ -33,7 +33,7 @@ public final class GremlinServerGremlinPlugin extends AbstractGremlinPlugin {
     private static final GremlinServerGremlinPlugin instance = new GremlinServerGremlinPlugin();
 
     private GremlinServerGremlinPlugin() {
-        super(MODULE_NAME, ImportCustomizer.build().addClassImports(LifeCycleHook.class, LifeCycleHook.Context.class).create());
+        super(MODULE_NAME, DefaultImportCustomizer.build().addClassImports(LifeCycleHook.class, LifeCycleHook.Context.class).create());
     }
 
     public static GremlinServerGremlinPlugin instance() {

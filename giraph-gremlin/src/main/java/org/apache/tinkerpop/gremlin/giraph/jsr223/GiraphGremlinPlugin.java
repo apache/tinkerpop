@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphWorkerContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.MemoryAggregator;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.PassThroughMemory;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -39,7 +39,7 @@ public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     private static final GiraphGremlinPlugin instance = new GiraphGremlinPlugin();
 
     private GiraphGremlinPlugin() {
-        super(MODULE_NAME, ImportCustomizer.build().addClassImports(
+        super(MODULE_NAME, DefaultImportCustomizer.build().addClassImports(
                 EmptyOutEdges.class,
                 GiraphComputation.class,
                 GiraphGraphComputer.class,

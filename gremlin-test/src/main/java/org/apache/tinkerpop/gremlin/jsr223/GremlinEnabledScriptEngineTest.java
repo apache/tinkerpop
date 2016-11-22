@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,7 +67,7 @@ public class GremlinEnabledScriptEngineTest {
 
             @Override
             public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
-                return Optional.of(new Customizer[] {ImportCustomizer.build()
+                return Optional.of(new Customizer[] {DefaultImportCustomizer.build()
                         .addClassImports(java.awt.Color.class)
                         .addClassImports(java.sql.CallableStatement.class)
                         .create() });

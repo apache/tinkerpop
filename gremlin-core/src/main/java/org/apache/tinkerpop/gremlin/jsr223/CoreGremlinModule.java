@@ -33,7 +33,7 @@ public final class CoreGremlinModule implements GremlinModule {
 
     private static final String MODULE_NAME = "tinkerpop.core";
 
-    private static final ImportCustomizer gremlinCore = ImportCustomizer.build()
+    private static final ImportCustomizer gremlinCore = DefaultImportCustomizer.build()
             .addClassImports(CoreImports.getClassImports())
             .addEnumImports(CoreImports.getEnumImports())
             .addMethodImports(CoreImports.getMethodImports()).create();
