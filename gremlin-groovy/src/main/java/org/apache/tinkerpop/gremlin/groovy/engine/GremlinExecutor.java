@@ -447,7 +447,11 @@ public class GremlinExecutor implements AutoCloseable {
                         final Map<String, Object> customizerConfigs = pluginConfig.getValue();
                         final Method[] methods = builderClazz.getMethods();
                         for (Map.Entry<String, Object> customizerConfig : customizerConfigs.entrySet()) {
-                            final Method configMethod = Stream.of(methods).filter(m -> m.getName().equals(customizerConfig.getKey())).findFirst()
+                            final Method configMethod = Stream.of(methods).filter(m -> {
+                                final Class<?> type = customizerConfig.getValue().getClass();
+                                return m.getName().equals(customizerConfig.getKey()) && m.getParameters().length <= 1
+                                        && m.getParameters()[0].getType().isAssignableFrom(type);
+                            }).findFirst()
                                     .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
                             if (null == customizerConfig.getValue())
                                 pluginBuilder = configMethod.invoke(pluginBuilder);

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
@@ -88,6 +89,8 @@ class PluggedIn {
                     pluginAcceptor.addImports(imports)
                 } else if (it instanceof ScriptCustomizer) {
                     it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { pluginAcceptor.eval(it) }
+                } else if (it instanceof BindingsCustomizer) {
+                    it.bindings.entrySet().each { k, v -> pluginAcceptor.addBinding(k,v) }
                 }
             }
         }

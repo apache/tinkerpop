@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.jsr223;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerMapEmitter;
@@ -48,30 +49,27 @@ import java.util.Optional;
 public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.tinkergraph";
 
-    public TinkerGraphGremlinPlugin() {
-        super(MODULE_NAME, DefaultImportCustomizer.build().addClassImports(
-                TinkerEdge.class,
-                TinkerElement.class,
-                TinkerFactory.class,
-                TinkerGraph.class,
-                TinkerGraphVariables.class,
-                TinkerHelper.class,
-                TinkerIoRegistry.class,
-                TinkerIoRegistryV2d0.class,
-                TinkerProperty.class,
-                TinkerVertex.class,
-                TinkerVertexProperty.class,
-                TinkerGraphComputer.class,
-                TinkerGraphComputerView.class,
-                TinkerMapEmitter.class,
-                TinkerMemory.class,
-                TinkerMessenger.class,
-                TinkerReduceEmitter.class,
-                TinkerWorkerPool.class).create());
-    }
+    private static final ImportCustomizer imports = DefaultImportCustomizer.build()
+            .addClassImports(TinkerEdge.class,
+                             TinkerElement.class,
+                             TinkerFactory.class,
+                             TinkerGraph.class,
+                             TinkerGraphVariables.class,
+                             TinkerHelper.class,
+                             TinkerIoRegistry.class,
+                             TinkerIoRegistryV2d0.class,
+                             TinkerProperty.class,
+                             TinkerVertex.class,
+                             TinkerVertexProperty.class,
+                             TinkerGraphComputer.class,
+                             TinkerGraphComputerView.class,
+                             TinkerMapEmitter.class,
+                             TinkerMemory.class,
+                             TinkerMessenger.class,
+                             TinkerReduceEmitter.class,
+                             TinkerWorkerPool.class).create();
 
-    @Override
-    public Optional<Customizer[]> getCustomizers() {
-        return null;
+    public TinkerGraphGremlinPlugin() {
+        super(MODULE_NAME, imports);
     }
 }

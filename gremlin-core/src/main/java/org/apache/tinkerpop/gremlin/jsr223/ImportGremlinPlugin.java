@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -69,6 +70,11 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
             return this;
         }
 
+        public Builder classImports(final Class<?>... classes) {
+            classImports.addAll(Arrays.asList(classes));
+            return this;
+        }
+
         public Builder classImports(final Collection<String> classes) {
             for (String clazz : classes) {
                 try {
@@ -108,6 +114,11 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
             return this;
         }
 
+        public Builder methodImports(final Method... methods) {
+            methodImports.addAll(Arrays.asList(methods));
+            return this;
+        }
+
         public Builder enumImports(final Collection<String> enums) {
             for (String enumItem : enums) {
                 try {
@@ -135,6 +146,11 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
                     throw new IllegalStateException(ex);
                 }
             }
+            return this;
+        }
+
+        public Builder enumImports(final Enum... enums) {
+            enumImports.addAll(Arrays.asList(enums));
             return this;
         }
 
