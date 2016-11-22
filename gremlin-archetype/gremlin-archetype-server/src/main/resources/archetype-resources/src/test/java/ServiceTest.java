@@ -42,7 +42,7 @@ import static org.hamcrest.CoreMatchers.is;
 public class ServiceTest {
     private GremlinServer server;
 
-    private static Service service = Service.getInstance();
+    private static Service service = Service.instance();
 
     @Before
     public void setUp() throws Exception {

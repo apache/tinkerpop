@@ -54,6 +54,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.
 * Deprecated the "performance" tests in `OptIn`.
+* Deprecated `getInstance()` methods in favor of `instance()` for better consistency with the rest of the API.
 * Block calls to "remote" traversal side-effects until the traversal read is complete which signifies an end to iteration.
 * Added `Pick.none` and `Pick.any` to the serializers and importers.
 * Added a class loader to `TraversalStrategies.GlobalCache` which guarantees strategies are registered prior to `GlobalCache.getStrategies()`.

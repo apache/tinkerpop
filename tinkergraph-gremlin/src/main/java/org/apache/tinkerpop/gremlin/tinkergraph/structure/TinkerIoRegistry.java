@@ -78,7 +78,15 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
         register(GraphSONIo.class, null, new TinkerModule());
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #instance()}.
+     */
+    @Deprecated
     public static TinkerIoRegistry getInstance() {
+        return instance();
+    }
+
+    public static TinkerIoRegistry instance() {
         return INSTANCE;
     }
 
