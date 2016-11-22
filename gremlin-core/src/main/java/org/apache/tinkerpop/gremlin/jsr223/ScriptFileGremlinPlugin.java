@@ -31,7 +31,7 @@ public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.script";
 
     public ScriptFileGremlinPlugin(final Builder builder) {
-        super(MODULE_NAME, builder.appliesTo, new ScriptCustomizer(builder.files));
+        super(MODULE_NAME, builder.appliesTo, new DefaultScriptCustomizer(builder.files));
     }
 
     public static Builder build() {

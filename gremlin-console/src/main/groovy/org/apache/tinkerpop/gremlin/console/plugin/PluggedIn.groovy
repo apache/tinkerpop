@@ -24,7 +24,8 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
@@ -33,6 +34,7 @@ import org.codehaus.groovy.tools.shell.IO
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class PluggedIn {
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator")
     private final GremlinPlugin plugin
     private boolean activated = false
 
@@ -77,7 +79,6 @@ class PluggedIn {
 
         @Override
         void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-            // TODO: handle script customizer
             corePlugin.getCustomizers("gremlin-groovy").each {
                 if (it instanceof ImportCustomizer) {
                     def imports = [] as Set
@@ -85,6 +86,8 @@ class PluggedIn {
                     it.methodImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name) }
                     it.enumImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name()) }
                     pluginAcceptor.addImports(imports)
+                } else if (it instanceof ScriptCustomizer) {
+                    it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { pluginAcceptor.eval(it) }
                 }
             }
         }

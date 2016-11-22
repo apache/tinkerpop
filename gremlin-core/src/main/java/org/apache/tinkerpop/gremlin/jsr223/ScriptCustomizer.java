@@ -18,39 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
+ * A {@link Customizer} that executes scripts in a {@link GremlinScriptEngine} instance for purpose of initialization.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ScriptCustomizer implements Customizer {
-
-    private final Collection<List<String>> scripts;
-
-    public ScriptCustomizer(final Set<File> files) {
-        this(files.stream().map(f -> {
-            try {
-                return Files.lines(f.toPath(), StandardCharsets.UTF_8).collect(Collectors.toList());
-            } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
-            }
-        }).collect(Collectors.toList()));
-    }
-
-    public ScriptCustomizer(final Collection<List<String>> scripts) {
-        this.scripts = scripts;
-    }
-
-    public Collection<List<String>> scripts() {
-        return scripts;
-    }
+public interface ScriptCustomizer extends Customizer {
+    /**
+     * Gets a collection of scripts where each is represented as a list of script lines.
+     */
+    public Collection<List<String>> getScripts();
 }
