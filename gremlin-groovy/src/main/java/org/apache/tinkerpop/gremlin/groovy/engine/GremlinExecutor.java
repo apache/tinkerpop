@@ -85,7 +85,7 @@ public class GremlinExecutor implements AutoCloseable {
     private GremlinScriptEngineManager gremlinScriptEngineManager;
 
     private final Map<String, EngineSettings> settings;
-    private final Map<String, Map<String, Map<String,Object>>> modules;
+    private final Map<String, Map<String, Map<String,Object>>> plugins;
     private final long scriptEvaluationTimeout;
     private final Bindings globalBindings;
     private final List<List<String>> use;
@@ -111,7 +111,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.afterFailure = builder.afterFailure;
         this.use = builder.use;
         this.settings = builder.settings;
-        this.modules = builder.modules;
+        this.plugins = builder.plugins;
         this.scriptEvaluationTimeout = builder.scriptEvaluationTimeout;
         this.globalBindings = builder.globalBindings;
         this.enabledPlugins = builder.enabledPlugins;
@@ -426,14 +426,14 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     private void initializeGremlinScriptEngineManager() {
-        this.useGremlinScriptEngineManager = !modules.entrySet().isEmpty();
+        this.useGremlinScriptEngineManager = !plugins.entrySet().isEmpty();
 
-        for (Map.Entry<String, Map<String, Map<String,Object>>> config : modules.entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String,Object>>> config : plugins.entrySet()) {
             final String language = config.getKey();
-            final Map<String, Map<String,Object>> moduleConfigs = config.getValue();
-            for (Map.Entry<String, Map<String,Object>> moduleConfig : moduleConfigs.entrySet()) {
+            final Map<String, Map<String,Object>> pluginConfigs = config.getValue();
+            for (Map.Entry<String, Map<String,Object>> pluginConfig : pluginConfigs.entrySet()) {
                 try {
-                    final Class<?> clazz = Class.forName(moduleConfig.getKey());
+                    final Class<?> clazz = Class.forName(pluginConfig.getKey());
 
                     // first try instance() and if that fails try to use build()
                     try {
@@ -441,29 +441,29 @@ public class GremlinExecutor implements AutoCloseable {
                         gremlinScriptEngineManager.addPlugin((GremlinPlugin) instanceMethod.invoke(null));
                     } catch (Exception ex) {
                         final Method builderMethod = clazz.getMethod("build");
-                        Object moduleBuilder = builderMethod.invoke(null);
+                        Object pluginBuilder = builderMethod.invoke(null);
 
-                        final Class<?> builderClazz = moduleBuilder.getClass();
-                        final Map<String, Object> customizerConfigs = moduleConfig.getValue();
+                        final Class<?> builderClazz = pluginBuilder.getClass();
+                        final Map<String, Object> customizerConfigs = pluginConfig.getValue();
                         final Method[] methods = builderClazz.getMethods();
                         for (Map.Entry<String, Object> customizerConfig : customizerConfigs.entrySet()) {
                             final Method configMethod = Stream.of(methods).filter(m -> m.getName().equals(customizerConfig.getKey())).findFirst()
                                     .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
                             if (null == customizerConfig.getValue())
-                                moduleBuilder = configMethod.invoke(moduleBuilder);
+                                pluginBuilder = configMethod.invoke(pluginBuilder);
                             else
-                                moduleBuilder = configMethod.invoke(moduleBuilder, customizerConfig.getValue());
+                                pluginBuilder = configMethod.invoke(pluginBuilder, customizerConfig.getValue());
                         }
 
                         try {
                             final Method appliesTo = builderClazz.getMethod("appliesTo");
-                            moduleBuilder = appliesTo.invoke(moduleBuilder, language);
+                            pluginBuilder = appliesTo.invoke(pluginBuilder, language);
                         } catch (NoSuchMethodException ignored) {
 
                         }
 
                         final Method create = builderClazz.getMethod("create");
-                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) create.invoke(moduleBuilder));
+                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) create.invoke(pluginBuilder));
                     }
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
@@ -569,7 +569,7 @@ public class GremlinExecutor implements AutoCloseable {
         private long scriptEvaluationTimeout = 8000;
         private Map<String, EngineSettings> settings = new HashMap<>();
 
-        private Map<String, Map<String, Map<String,Object>>> modules = new HashMap<>();
+        private Map<String, Map<String, Map<String,Object>>> plugins = new HashMap<>();
 
         private ExecutorService executorService = null;
         private ScheduledExecutorService scheduledExecutorService = null;
@@ -597,7 +597,7 @@ public class GremlinExecutor implements AutoCloseable {
          * @param scripts       A list of scripts to execute in the engine to initialize it.
          * @param config        Custom configuration map for the ScriptEngine
          *
-         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)}.
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)}.
          */
         @Deprecated
         public Builder addEngineSettings(final String engineName, final List<String> imports,
@@ -618,8 +618,8 @@ public class GremlinExecutor implements AutoCloseable {
          * is the name of a builder method on the {@link GremlinPlugin} and the value is some argument to pass to that
          * method.
          */
-        public Builder addModules(final String engineName, final Map<String, Map<String,Object>> modules) {
-            this.modules.put(engineName, modules);
+        public Builder addPlugins(final String engineName, final Map<String, Map<String,Object>> plugins) {
+            this.plugins.put(engineName, plugins);
             return this;
         }
 
@@ -649,7 +649,7 @@ public class GremlinExecutor implements AutoCloseable {
         /**
          * Replaces any settings provided.
          *
-         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)}.
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)}.
          */
         @Deprecated
         public Builder engineSettings(final Map<String, EngineSettings> settings) {
@@ -721,7 +721,7 @@ public class GremlinExecutor implements AutoCloseable {
         /**
          * Set of the names of plugins that should be enabled for the engine.
          *
-         * @deprecated As of release 3.2.4, replaced by {@link #addModules(String, Map)} though behavior is not quite
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)} though behavior is not quite
          *             the same.
          */
         @Deprecated

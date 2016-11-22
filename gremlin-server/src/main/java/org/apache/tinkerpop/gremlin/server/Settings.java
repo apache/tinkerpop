@@ -260,7 +260,7 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
         scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
-        scriptEngineSettingsDescription.putMapPropertyType("modules", String.class, Object.class);
+        scriptEngineSettingsDescription.putMapPropertyType("plugins", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -343,7 +343,7 @@ public class Settings {
         /**
          * A set of configurations for {@link GremlinPlugin} instances to apply to this {@link GremlinScriptEngine}.
          */
-        public Map<String,Map<String,Object>> modules = new HashMap<>();
+        public Map<String,Map<String,Object>> plugins = new HashMap<>();
     }
 
     /**
