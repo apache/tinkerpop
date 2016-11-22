@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
+package org.apache.tinkerpop.gremlin.hadoop.jsr223;
 
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
@@ -39,9 +39,7 @@ import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopRemoteAcceptor}.
  */
-@Deprecated
 public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     private static final String USE_SUGAR = "useSugar";
@@ -94,7 +92,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) throws RemoteException {
         try {
-            String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
+            String script = getScript(String.join(SPACE, args), this.shell);
             if (this.useSugar)
                 script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
             final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.traversalSource, "gremlin-groovy", script).create(this.hadoopGraph);
@@ -118,5 +116,12 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     @Override
     public void close() throws IOException {
         this.hadoopGraph.close();
+    }
+
+    /**
+     * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
+     */
+    public static String getScript(final String submittedScript, final Groovysh shell) {
+        return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
     }
 }

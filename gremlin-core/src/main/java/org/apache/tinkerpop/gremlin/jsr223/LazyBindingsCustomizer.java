@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.jsr223.console;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
 

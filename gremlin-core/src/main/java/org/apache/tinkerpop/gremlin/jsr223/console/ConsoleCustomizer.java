@@ -20,14 +20,19 @@ package org.apache.tinkerpop.gremlin.jsr223.console;
 
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 
+import java.util.Map;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ConsoleCustomizer extends Customizer {
+    public static final String ENV_CONSOLE_IO = "ConsolePluginAcceptor.io";
+    public static final String ENV_CONSOLE_SHELL = "ConsolePluginAcceptor.shell";
+
     /**
      * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
      * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
      * if it does not intend to take advantage of those commands.
      */
-    public RemoteAcceptor getRemoteAcceptor();
+    public RemoteAcceptor getRemoteAcceptor(final Map<String, Object> environment);
 }

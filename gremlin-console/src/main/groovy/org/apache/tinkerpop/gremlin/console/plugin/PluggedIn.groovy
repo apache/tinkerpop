@@ -90,7 +90,7 @@ class PluggedIn {
                 } else if (it instanceof ScriptCustomizer) {
                     it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { pluginAcceptor.eval(it) }
                 } else if (it instanceof BindingsCustomizer) {
-                    it.bindings.entrySet().each { k, v -> pluginAcceptor.addBinding(k,v) }
+                    it.bindings.entrySet().each { kv -> pluginAcceptor.addBinding(kv.key, kv.value) }
                 }
             }
         }

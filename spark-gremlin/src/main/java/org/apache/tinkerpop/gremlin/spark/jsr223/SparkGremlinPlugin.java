@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.console.LazyBindingsCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.LazyBindingsCustomizer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.CombineIterator;
 import org.apache.tinkerpop.gremlin.spark.process.computer.MapIterator;
 import org.apache.tinkerpop.gremlin.spark.process.computer.MemoryAccumulator;
