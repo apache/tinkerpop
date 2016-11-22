@@ -75,6 +75,17 @@ public class TraversalInterruptionComputerTest extends AbstractGremlinProcessTes
             try {
                 final Traversal traversal = traversalMaker.apply(g).sideEffect(traverser -> {
                     startedIterating.countDown();
+                    try {
+                        // artificially slow down the traversal execution so that
+                        // this test has a chance to interrupt it before it finishes
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        // if the traversal is interrupted while in this
+                        // sleep, reassert the interrupt so that the thread is
+                        // re-marked as interrupted and correctly handled as
+                        // an interrupted traversal
+                        Thread.currentThread().interrupt();
+                    }
                 });
                 traversal.iterate();
             } catch (Exception ex) {
@@ -84,9 +95,9 @@ public class TraversalInterruptionComputerTest extends AbstractGremlinProcessTes
 
         t.start();
 
-        // total time for test should not exceed 5 seconds - this prevents the test from just hanging and allows
+        // total time for test should not exceed 1 second - this prevents the test from just hanging and allows
         // it to finish with failure
-        assertThat(startedIterating.await(5000, TimeUnit.MILLISECONDS), CoreMatchers.is(true));
+        assertThat(startedIterating.await(1000, TimeUnit.MILLISECONDS), CoreMatchers.is(true));
 
         t.interrupt();
         t.join();
