@@ -19,10 +19,7 @@
 package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn;
-import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.junit.Test;
 
 import java.time.DayOfWeek;
@@ -44,7 +41,7 @@ public class GremlinPluginAdapterTest {
                 .classImports(java.awt.Color.class, java.sql.CallableStatement.class)
                 .enumImports(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
                 .methodImports(DayOfWeek.class.getMethod("from", TemporalAccessor.class), DayOfWeek.class.getMethod("values")).create();
-        final PluggedIn.GremlinPluginAdapter adapter = new PluggedIn.GremlinPluginAdapter(plugin);
+        final PluggedIn.GremlinPluginAdapter adapter = new PluggedIn.GremlinPluginAdapter(plugin, null, null);
 
         assertEquals(plugin.getName(), adapter.getName());
 

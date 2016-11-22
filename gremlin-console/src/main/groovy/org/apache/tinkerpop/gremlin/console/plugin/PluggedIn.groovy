@@ -68,9 +68,13 @@ class PluggedIn {
 
     public static class GremlinPluginAdapter implements GremlinPlugin {
         org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin
+        private final Groovysh shell
+        private final IO io
 
-        public GremlinPluginAdapter(final org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin) {
+        public GremlinPluginAdapter(final org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin, final Groovysh shell, final IO io) {
             this.corePlugin = corePlugin
+            this.shell = shell
+            this.io = io
         }
 
         @Override
@@ -103,11 +107,11 @@ class PluggedIn {
         @Override
         Optional<RemoteAcceptor> remoteAcceptor() {
             // find a consoleCustomizer if available
-            if (!corePlugin.getCustomizers("gremlin-groovy").any{ it instanceof ConsoleCustomizer })
-                Optional.empty()
+            if (!corePlugin.getCustomizers("gremlin-groovy").isPresent() || !corePlugin.getCustomizers("gremlin-groovy").get().any{ it instanceof ConsoleCustomizer })
+                return Optional.empty()
 
-            ConsoleCustomizer customizer = (ConsoleCustomizer) corePlugin.getCustomizers("gremlin-groovy").find{ it instanceof ConsoleCustomizer }
-            return Optional.of(new RemoteAcceptorAdapter(customizer.remoteAcceptor))
+            ConsoleCustomizer customizer = (ConsoleCustomizer) corePlugin.getCustomizers("gremlin-groovy").get().find{ it instanceof ConsoleCustomizer }
+            return Optional.of(new RemoteAcceptorAdapter(customizer.getRemoteAcceptor([(ConsoleCustomizer.ENV_CONSOLE_SHELL): shell, (ConsoleCustomizer.ENV_CONSOLE_IO): io])))
         }
     }
 

@@ -131,9 +131,9 @@ class Console {
                 def pluggedIn
 
                 if (Mediator.useV3d3) {
-                    pluggedIn = new PluggedIn(new PluggedIn.GremlinPluginAdapter(plugin), groovy, io, false)
+                    pluggedIn = new PluggedIn(new PluggedIn.GremlinPluginAdapter((org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin) plugin, groovy, io), groovy, io, false)
                 } else {
-                    pluggedIn = new PluggedIn(plugin, groovy, io, false)
+                    pluggedIn = new PluggedIn((GremlinPlugin) plugin, groovy, io, false)
                 }
 
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)

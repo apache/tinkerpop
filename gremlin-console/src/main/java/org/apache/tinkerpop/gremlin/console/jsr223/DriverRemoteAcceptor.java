@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.jsr223;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
@@ -50,9 +50,7 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.DriverRemoteAcceptor}.
  */
-@Deprecated
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     public static final int NO_TIMEOUT = 0;
 
@@ -154,7 +152,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object submit(final List<String> args) throws RemoteException {
-        final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
+        final String line = getScript(String.join(" ", args), this.shell);
 
         try {
             final List<Result> resultSet = send(line);
@@ -229,5 +227,12 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     private String getSessionStringSegment() {
         return session.isPresent() ? String.format("-[%s]", session.get()) : "";
+    }
+
+    /**
+     * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
+     */
+    public static String getScript(final String submittedScript, final Groovysh shell) {
+        return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
     }
 }
