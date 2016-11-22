@@ -124,10 +124,10 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
             try {
                 final Class<?> clazz = Class.forName(className);
                 try {
-                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                    final Method instanceMethod = tryInstanceMethod(clazz);
                     builder.classResolver((Supplier<ClassResolver>) instanceMethod.invoke(null));
                 } catch (Exception methodex) {
-                    // tried getInstance() and that failed so try newInstance() no-arg constructor
+                    // tried instance() and that failed so try newInstance() no-arg constructor
                     builder.classResolver((Supplier<ClassResolver>) clazz.newInstance());
                 }
             } catch (Exception ex) {

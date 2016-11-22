@@ -228,13 +228,13 @@ public final class GryoPool {
                     final String className = c.toString();
                     final Class<?> clazz = Class.forName(className);
                     try {
-                        final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                        final Method instanceMethod = tryInstanceMethod(clazz);
                         if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
                             registries.add((IoRegistry) instanceMethod.invoke(null));
                         else
                             throw new Exception();
                     } catch (Exception methodex) {
-                        // tried getInstance() and that failed so try newInstance() no-arg constructor
+                        // tried instance() and that failed so try newInstance() no-arg constructor
                         registries.add((IoRegistry) clazz.newInstance());
                     }
                 } catch (Exception ex) {
@@ -242,6 +242,25 @@ public final class GryoPool {
                 }
             });
             return registries;
+        }
+
+        private static Method tryInstanceMethod(final Class clazz) {
+            Method instanceMethod;
+            try {
+                instanceMethod = clazz.getDeclaredMethod("instance");
+            } catch (Exception methodex) {
+                instanceMethod = null;
+            }
+
+            if (null == instanceMethod) {
+                try {
+                    instanceMethod = clazz.getDeclaredMethod("getInstance");
+                } catch (Exception methodex) {
+                    instanceMethod = null;
+                }
+            }
+
+            return instanceMethod;
         }
     }
 }

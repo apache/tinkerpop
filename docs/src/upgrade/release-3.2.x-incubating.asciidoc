@@ -106,6 +106,16 @@ following fields were deprecated:
 * `OptIn.SUITE_PROCESS_PERFORMANCE`
 * `OptIn.SUITE_STRUCTURE_PERFORMANCE`
 
+Deprecated getInstance()
+++++++++++++++++++++++++
+
+TinkerPop has generally preferred static `instance()` methods over `getInstance()`, but `getInstance()` was used in
+some cases nonetheless. As of this release, `getInstance()` methods have been deprecated in favor of `instance()`.
+Of specific note, custom `IoRegistry` (as related to IO in general) and `Supplier<ClassResolver>` (as related to
+Gryo serialization in general) now both prefer `instance()` over `getInstance()` given this deprecation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1530[TINKERPOP-1530]
+
 Drivers Providers
 ^^^^^^^^^^^^^^^^^
 
