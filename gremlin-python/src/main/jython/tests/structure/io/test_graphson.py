@@ -27,7 +27,7 @@ from unittest import TestCase
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, VertexProperty, Edge, Property
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
@@ -70,12 +70,56 @@ class TestGraphSONReader(TestCase):
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject(
-            """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
+                """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        assert isinstance(vertex.properties, dict)
+        assert "name" in vertex.properties
+        assert isinstance(vertex.properties["name"], list)
+        assert isinstance(vertex.properties["name"][0], dict)
+        assert vertex.properties["name"][0]["value"] == "marko"
+
+    def test_vertex(self):
+        vertex = self.graphson_reader.readObject(
+                """{"@type": "g:Vertex", "@value": {"properties": {"name": [{"@type": "g:VertexProperty", "@value": {"id": {"@type": "g:Int64", "@value": 0}, "value": "marko", "label": "name"}}], "location": [{"@type": "g:VertexProperty", "@value": {"properties": {"endTime": {"@type": "g:Int32", "@value": 2001}, "startTime": {"@type": "g:Int32", "@value": 1997}}, "id": {"@type": "g:Int64", "@value": 12}, "value": "san diego", "label": "location"}}, {"@type": "g:VertexProperty", "@value": {"properties": {"endTime": {"@type": "g:Int32", "@value": 2004}, "startTime": {"@type": "g:Int32", "@value": 2001}}, "id": {"@type": "g:Int64", "@value": 13}, "value": "santa cruz", "label": "location"}}, {"@type": "g:VertexProperty", "@value": {"properties": {"endTime": {"@type": "g:Int32", "@value": 2005}, "startTime": {"@type": "g:Int32", "@value": 2004}}, "id": {"@type": "g:Int64", "@value": 14}, "value": "brussels", "label": "location"}}, {"@type": "g:VertexProperty", "@value": {"properties": {"startTime": {"@type": "g:Int32", "@value": 2005}}, "id": {"@type": "g:Int64", "@value": 15}, "value": "santa fe", "label": "location"}}]}, "id": {"@type": "g:Int64", "@value": 1}, "label": "person"}}"""
+                )
+        assert isinstance(vertex, Vertex)
+        assert "person" == vertex.label
+        assert 1 == vertex.id
+        assert isinstance(vertex.id, long)
+        assert vertex == Vertex(1)
+        assert isinstance(vertex.properties, dict)
+        assert isinstance(vertex.properties["location"], list)
+        assert 4 == len(vertex.properties["location"])
+        assert isinstance(vertex.properties["location"][0], VertexProperty)
+
+    def test_vertexProperty(self):
+        vp = self.graphson_reader.readObject(
+                """{"@type": "g:VertexProperty", "@value": {"properties": {"endTime": {"@type": "g:Int32", "@value": 2001}, "startTime": {"@type": "g:Int32", "@value": 1997}}, "id": {"@type": "g:Int64", "@value": 12}, "value": "san diego", "label": "location"}}"""
+                )
+        assert isinstance(vp, VertexProperty)
+        assert "location" == vp.key
+        assert "location" == vp.label
+        assert 12 == vp.id
+        assert isinstance(vp.properties, dict)
+        assert "endTime" in vp.properties
+        assert 2001 == vp.properties["endTime"]
+
+    def test_edgeProperties(self):
+        edge = self.graphson_reader.readObject(
+                """{"@type": "g:Edge", "@value": {"properties": {"skill": {"@type": "g:Property", "@value": {"value": {"@type": "g:Int32", "@value": 5}, "key": "skill"}}}, "outV": {"@type": "g:Int64", "@value": 1}, "inVLabel": "software", "inV": {"@type": "g:Int64", "@value": 11}, "outVLabel": "person", "label": "uses", "id": {"@type": "g:Int32", "@value": 16}}}"""
+                )
+        assert isinstance(edge, Edge)
+        assert "uses" == edge.label
+        assert 1 == edge.outV.id
+        assert 11 == edge.inV.id
+        assert isinstance(edge.properties, dict)
+        assert "skill" in edge.properties
+        assert isinstance(edge.properties["skill"], Property)
+        assert 5 == edge.properties["skill"].value
 
     def test_path(self):
         path = self.graphson_reader.readObject(

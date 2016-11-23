@@ -291,7 +291,10 @@ class VertexDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Vertex(reader.toObject(d["id"]), d.get("label", ""))
+        v = Vertex(reader.toObject(d["id"]), d.get("label", ""))
+        if "properties" in d:
+            v.properties = reader.toObject(d["properties"])
+        return v;
 
 
 class EdgeDeserializer(_GraphSONTypeIO):
@@ -299,10 +302,13 @@ class EdgeDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Edge(reader.toObject(d["id"]),
+        e = Edge(reader.toObject(d["id"]),
                     Vertex(reader.toObject(d["outV"]), ""),
                     d.get("label", "vertex"),
                     Vertex(reader.toObject(d["inV"]), ""))
+        if "properties" in d:
+            e.properties = reader.toObject(d["properties"])
+        return e
 
 
 class VertexPropertyDeserializer(_GraphSONTypeIO):
@@ -310,8 +316,11 @@ class VertexPropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return VertexProperty(reader.toObject(d["id"]), d["label"],
+        vp = VertexProperty(reader.toObject(d["id"]), d["label"],
                               reader.toObject(d["value"]))
+        if "properties" in d:
+            vp.properties = reader.toObject(d["properties"])
+        return vp
 
 
 class PropertyDeserializer(_GraphSONTypeIO):
@@ -319,7 +328,10 @@ class PropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Property(d["key"], reader.toObject(d["value"]))
+        p = Property(d["key"], reader.toObject(d["value"]))
+        if "properties" in d:
+            p.properties = reader.toObject(d["properties"])
+        return p
 
 
 class PathDeserializer(_GraphSONTypeIO):
