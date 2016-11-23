@@ -29,14 +29,13 @@ import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy
+import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.IO
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -48,8 +47,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private int port = 8080
     private String workspace = "workspace1"
 
-    private final Groovysh shell
-    private final IO io
+    private final GremlinShellEnvironment shell
 
     private final Random rand = new Random();
     boolean traversalSubmittedForViz = false
@@ -64,9 +62,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     private CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    public GephiRemoteAcceptor(final Groovysh shell, final IO io) {
+    public GephiRemoteAcceptor(final GremlinShellEnvironment shell) {
         this.shell = shell
-        this.io = io
 
         // traversal visualization defaults
         vizStepDelay = 1000;                 // 1 second pause between viz of steps
@@ -129,13 +126,13 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         else if (args[0] == "startSize")
             parseVizStartSize(args[1])
         else if (args[0] == "visualTraversal") {
-            def graphVar = shell.interp.context.getVariable(args[1])
+            def graphVar = shell.getVariable(args[1])
             if (!(graphVar instanceof Graph))
                 throw new RemoteException("Invalid argument to 'visualTraversal' - first parameter must be a Graph instance")
 
             def gVar = args.size() == 3 ? args[2] : "vg"
             def theG = GraphTraversalSource.build().with(new GephiTraversalVisualizationStrategy(this)).create(graphVar)
-            shell.interp.context.setVariable(gVar, theG)
+            shell.setVariable(gVar, theG)
         } else
             throw new RemoteException("Invalid config arguments - check syntax")
 
@@ -151,7 +148,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         final String line = String.join(" ", args)
         if (line.trim() == "clear") {
             clearGraph()
-            io.out.println("Gephi workspace cleared")
+            shell.println("Gephi workspace cleared")
             return
         }
 

@@ -18,16 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223.console;
 
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
-
 /**
+ * Provides an abstraction over a "Gremlin Shell" (i.e. the core of a console), enabling the plugin to not have to
+ * be hardcoded specifically to any particular shell, like the Gremlin Groovy Console, and thus allowing it to
+ * not have to depend on the gremlin-groovy module itself.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface ConsoleCustomizer extends Customizer {
-    /**
-     * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
-     * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
-     * if it does not intend to take advantage of those commands.
-     */
-    public RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment environment);
+public interface GremlinShellEnvironment {
+
+    public <T> T getVariable(final String variableName);
+
+    public <T> void setVariable(final String variableName, final T variableValue);
+
+    public void println(final String line);
+
+    public <T> T execute(final String line);
 }

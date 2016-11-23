@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.hadoop.jsr223;
 
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -30,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
-import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -47,12 +47,12 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     private static final String SPACE = " ";
 
     private HadoopGraph hadoopGraph;
-    private Groovysh shell;
+    private GremlinShellEnvironment shellEnvironment;
     private boolean useSugar = false;
     private TraversalSource traversalSource;
 
-    public HadoopRemoteAcceptor(final Groovysh shell) {
-        this.shell = shell;
+    public HadoopRemoteAcceptor(final GremlinShellEnvironment shellEnvironment) {
+        this.shellEnvironment = shellEnvironment;
     }
 
     @Override
@@ -60,9 +60,9 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
         if (args.size() != 1 && args.size() != 2) {
             throw new IllegalArgumentException("Usage: :remote connect " + HadoopGremlinPlugin.NAME + " <variable name of graph> <optional variable name of traversal source>");
         }
-        this.hadoopGraph = (HadoopGraph) this.shell.getInterp().getContext().getVariable(args.get(0));
+        this.hadoopGraph = this.shellEnvironment.getVariable(args.get(0));
         if (args.size() == 2)
-            this.traversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(1)));
+            this.traversalSource = this.shellEnvironment.getVariable(args.get(1));
         else
             this.traversalSource = this.hadoopGraph.traversal();
         ///
@@ -78,7 +78,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugar = Boolean.valueOf(args.get(i + 1));
             else if (args.get(i).equals(USE_TRAVERSAL_SOURCE)) {
-                this.traversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(i + 1)));
+                this.traversalSource = this.shellEnvironment.getVariable(args.get(i + 1));
             } else
                 throw new IllegalArgumentException("The provided configuration is unknown: " + args.get(i) + ":" + args.get(i + 1));
         }
@@ -92,12 +92,12 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) throws RemoteException {
         try {
-            String script = getScript(String.join(SPACE, args), this.shell);
+            String script = getScript(String.join(SPACE, args), this.shellEnvironment);
             if (this.useSugar)
                 script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
             final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.traversalSource, "gremlin-groovy", script).create(this.hadoopGraph);
             final ComputerResult computerResult = VertexProgramStrategy.getComputer(this.traversalSource.getStrategies()).get().apply(this.hadoopGraph).program(program).submit().get();
-            this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
+            this.shellEnvironment.setVariable(RESULT, computerResult);
             ///
             final Traversal.Admin<ComputerResult, ?> traversal = new DefaultTraversal<>(computerResult.graph());
             traversal.addStep(new ComputerResultStep<>(traversal));
@@ -121,7 +121,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     /**
      * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
      */
-    public static String getScript(final String submittedScript, final Groovysh shell) {
-        return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
+    public static String getScript(final String submittedScript, final GremlinShellEnvironment shell) {
+        return submittedScript.startsWith("@") ? shell.getVariable(submittedScript.substring(1)).toString() : submittedScript;
     }
 }

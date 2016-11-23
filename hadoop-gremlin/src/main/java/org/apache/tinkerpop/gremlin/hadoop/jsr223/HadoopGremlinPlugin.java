@@ -53,14 +53,13 @@ import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.LazyBindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
-import org.codehaus.groovy.tools.shell.Groovysh;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -147,8 +146,8 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     private static class HadoopConsoleCustomizer implements ConsoleCustomizer {
         @Override
-        public RemoteAcceptor getRemoteAcceptor(final Map<String, Object> environment) {
-            return new HadoopRemoteAcceptor((Groovysh) environment.get(ConsoleCustomizer.ENV_CONSOLE_SHELL));
+        public RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment environment) {
+            return new HadoopRemoteAcceptor(environment);
         }
     }
 }

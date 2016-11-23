@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
@@ -111,7 +112,30 @@ class PluggedIn {
                 return Optional.empty()
 
             ConsoleCustomizer customizer = (ConsoleCustomizer) corePlugin.getCustomizers("gremlin-groovy").get().find{ it instanceof ConsoleCustomizer }
-            return Optional.of(new RemoteAcceptorAdapter(customizer.getRemoteAcceptor([(ConsoleCustomizer.ENV_CONSOLE_SHELL): shell, (ConsoleCustomizer.ENV_CONSOLE_IO): io])))
+            return Optional.of(new RemoteAcceptorAdapter(customizer.getRemoteAcceptor(new GroovyGremlinShellEnvironment())))
+        }
+
+        public class GroovyGremlinShellEnvironment implements GremlinShellEnvironment {
+
+            @Override
+            def <T> T getVariable(final String variableName) {
+                return (T) shell.interp.context.getVariable(variableName)
+            }
+
+            @Override
+            def <T> void setVariable(final String variableName, final T variableValue) {
+                shell.interp.context.setVariable(variableName, variableValue)
+            }
+
+            @Override
+            void println(final String line) {
+                io.println(line)
+            }
+
+            @Override
+            def <T> T execute(final String line) {
+                return (T) shell.execute(line)
+            }
         }
     }
 

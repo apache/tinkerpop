@@ -25,10 +25,10 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.codehaus.groovy.tools.shell.Groovysh;
 
 import javax.security.sasl.SaslException;
 import java.io.FileNotFoundException;
@@ -75,10 +75,10 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private static final String TOKEN_SESSION_MANAGED = "session-managed";
     private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS);
 
-    private final Groovysh shell;
+    private final GremlinShellEnvironment shellEnvironment;
 
-    public DriverRemoteAcceptor(final Groovysh shell) {
-        this.shell = shell;
+    public DriverRemoteAcceptor(final GremlinShellEnvironment shellEnvironment) {
+        this.shellEnvironment = shellEnvironment;
     }
 
     @Override
@@ -152,11 +152,11 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object submit(final List<String> args) throws RemoteException {
-        final String line = getScript(String.join(" ", args), this.shell);
+        final String line = getScript(String.join(" ", args), this.shellEnvironment);
 
         try {
             final List<Result> resultSet = send(line);
-            this.shell.getInterp().getContext().setProperty(RESULT, resultSet);
+            this.shellEnvironment.setVariable(RESULT, resultSet);
             return resultSet.stream().map(result -> result.getObject()).iterator();
         } catch (SaslException sasl) {
             throw new RemoteException("Security error - check username/password and related settings", sasl);
@@ -232,7 +232,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     /**
      * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
      */
-    public static String getScript(final String submittedScript, final Groovysh shell) {
-        return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
+    public static String getScript(final String submittedScript, final GremlinShellEnvironment shellEnvironment) {
+        return submittedScript.startsWith("@") ? shellEnvironment.getVariable(submittedScript.substring(1)).toString() : submittedScript;
     }
 }
