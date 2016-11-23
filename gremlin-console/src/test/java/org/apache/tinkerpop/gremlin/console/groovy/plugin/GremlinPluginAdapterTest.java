@@ -18,12 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn;
+import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultBindingsCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.junit.Test;
 
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
+import java.io.File;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,5 +72,59 @@ public class GremlinPluginAdapterTest {
         assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + "." + DayOfWeek.SUNDAY.name()));
         assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + ".from"));
         assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + ".values"));
+    }
+
+    @Test
+    public void shouldAdaptForScriptCustomizer() throws Exception {
+        final File scriptFile1 = TestHelper.generateTempFileFromResource(GremlinPluginAdapterTest.class, "script-customizer-1.groovy", ".groovy");
+        final File scriptFile2 = TestHelper.generateTempFileFromResource(GremlinPluginAdapterTest.class, "script-customizer-2.groovy", ".groovy");
+        final Set<String> files = new HashSet<>();
+        files.add(scriptFile1.getAbsolutePath());
+        files.add(scriptFile2.getAbsolutePath());
+        final ScriptFileGremlinPlugin plugin = ScriptFileGremlinPlugin.build().files(files).create();
+        final PluggedIn.GremlinPluginAdapter adapter = new PluggedIn.GremlinPluginAdapter(plugin, null, null);
+
+        assertEquals(plugin.getName(), adapter.getName());
+
+        final List<String> evals = new ArrayList<>();
+        final SpyPluginAcceptor spy = new SpyPluginAcceptor(evals::add);
+        adapter.pluginTo(spy);
+
+        assertEquals("x = 1 + 1\n" +
+                     "y = 10 * x\n" +
+                     "z = 1 + x + y", evals.get(0));
+        assertEquals("l = g.V(z).out()\n" +
+                     "        .group().by('name')", evals.get(1));
+    }
+
+    @Test
+    public void shouldAdaptForBindingsCustomizer() throws Exception {
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("x", 1);
+        bindings.put("y", "yes");
+        bindings.put("z", true);
+        final BindingsCustomizer bindingsCustomizer = new DefaultBindingsCustomizer(bindings);
+        final GremlinPlugin plugin = new GremlinPlugin() {
+            @Override
+            public String getName() {
+                return "anon-bindings";
+            }
+
+            @Override
+            public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
+                return Optional.of(new Customizer[]{bindingsCustomizer});
+            }
+        };
+        final PluggedIn.GremlinPluginAdapter adapter = new PluggedIn.GremlinPluginAdapter(plugin, null, null);
+
+        assertEquals(plugin.getName(), adapter.getName());
+
+        final SpyPluginAcceptor spy = new SpyPluginAcceptor();
+        adapter.pluginTo(spy);
+
+        final Map<String,Object> bindingsFromSpy = spy.getBindings();
+        assertEquals(1, bindingsFromSpy.get("x"));
+        assertEquals("yes", bindingsFromSpy.get("y"));
+        assertEquals(true, bindingsFromSpy.get("z"));
     }
 }
