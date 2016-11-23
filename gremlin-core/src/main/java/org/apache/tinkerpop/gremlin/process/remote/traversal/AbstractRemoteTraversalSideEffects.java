@@ -106,9 +106,4 @@ public abstract class AbstractRemoteTraversalSideEffects implements RemoteTraver
     public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
-
-    @Override
-    public String toString() {
-        return StringFactory.traversalSideEffectsString(this);
-    }
 }

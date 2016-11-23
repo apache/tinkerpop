@@ -22,10 +22,124 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
-TinkerPop 3.2.3
+TinkerPop 3.2.4
 ---------------
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+If/Then-Semantics with Choose Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Gremlin's `choose()`-step supports if/then/else-semantics. Thus, to effect if/then-semantics, `identity()` was required.
+Thus, the following two traversals below are equivalent with the later being possible in this release.
+
+[source,groovy]
+----
+g.V().choose(hasLabel('person'),out('created'),identity())
+g.V().choose(hasLabel('person'),out('created'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1508[TINKERPOP-1508]
+
+FastNoSuchElementException converted to regular NoSuchElementException
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, a call to `Traversal.next()` that did not have a result would throw a `FastNoSuchElementException`.
+This has been changed to a regular `NoSuchElementException` that includes the stack trace. Code that explicitly catches
+`FastNoSuchElementException` should be converted to check for the more general class of `NoSuchElementException`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+HasContainer AndP Splitting
++++++++++++++++++++++++++++
+
+Previously, `GraphTraversal` made it easy for providers to analyze `P`-predicates in `HasContainers`, but always
+splitting `AndP` predicates into their component parts. This helper behavior is no longer provided because,
+1.) `AndP` can be inserted into a `XXXStep` in other ways, 2.) the providers `XXXStep` should process `AndP`
+regardless of `GraphTraversal` helper, and 3.) the `GraphTraversal` helper did not recursively split.
+A simple way to split `AndP` in any custom `XXXStep` that implements `HasContainerHolder` is to use the following method:
+
+[source,java]
+----
+@Override
+public void addHasContainer(final HasContainer hasContainer) {
+  if (hasContainer.getPredicate() instanceof AndP) {
+    for (final P<?> predicate : ((AndP<?>) hasContainer.getPredicate()).getPredicates()) {
+      this.addHasContainer(new HasContainer(hasContainer.getKey(), predicate));
+    }
+  } else
+    this.hasContainers.add(hasContainer);
+}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1482[TINKERPOP-1482],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1502[TINKERPOP-1502]
+
+
+Duplicate Multi-Properties
+++++++++++++++++++++++++++
+
+Added `supportsDuplicateMultiProperties` to `VertexFeatures` so that graph provider who only support unique values as
+multi-properties have more flexibility in describing their graph capabilities.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-919[TINKERPOP-919]
+
+Deprecated Performance OptIn
+++++++++++++++++++++++++++++
+
+In 3.2.1, all `junit-benchmark` performance tests were deprecated. At that time, the `OptIn` representations of these
+tests should have been deprecated as well, but they were not. That omission has been remedied now. Specifically, the
+following fields were deprecated:
+
+* `OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE`
+* `OptIn.SUITE_PROCESS_PERFORMANCE`
+* `OptIn.SUITE_STRUCTURE_PERFORMANCE`
+
+Deprecated getInstance()
+++++++++++++++++++++++++
+
+TinkerPop has generally preferred static `instance()` methods over `getInstance()`, but `getInstance()` was used in
+some cases nonetheless. As of this release, `getInstance()` methods have been deprecated in favor of `instance()`.
+Of specific note, custom `IoRegistry` (as related to IO in general) and `Supplier<ClassResolver>` (as related to
+Gryo serialization in general) now both prefer `instance()` over `getInstance()` given this deprecation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1530[TINKERPOP-1530]
+
+Drivers Providers
+^^^^^^^^^^^^^^^^^
+
+Force Close
++++++++++++
+
+Closing a session will first attempt a proper close of any open transactions. A problem can occur, however, if there is
+a long run job (e.g. an OLAP-based traversal) executing, as that job will block the calls to close the transactions.
+By exercising the option to a do a "forced close" the session will skip trying to close the transactions and just
+attempt to interrupt the long run job. By not closing transactions, the session leaves it up to the underlying graph
+database to sort out how it will deal with those orphaned transactions. On the positive side though (for those graphs
+which do that well) , long run jobs have the opporunity to be cancelled without waiting for a timeout of the job itself
+which will allow resources to be released earlier.
+
+The "force" argument is passed on the "close" message and is a boolean value. This is an optional argument to "close"
+and defaults to `false`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
+link:http://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+
+TinkerPop 3.2.3
+---------------
+
+*Release Date: October 17, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.3/CHANGELOG.asciidoc#release-3-2-3[changelog] for a complete list of all the modifications that are part of this release.
 
@@ -152,11 +266,109 @@ there is no need to do that manually.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-790[TINKERPOP-790]
 
+IO Reference Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is new reference documentation for the various IO formats. The documentation provides more details and samples
+that should be helpful to users and providers who intend to work directly with the TinkerPop supported serialization
+formats: GraphML, GraphSON and Gryo.
+
+See: link:http://tinkerpop.apache.org/docs/3.2.3/dev/io/[IO Reference Documentation]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
+
+Default LazyBarrierStrategy
++++++++++++++++++++++++++++
+
+`LazyBarrierStrategy` has been included as a default strategy. `LazyBarrierStrategy` walks a traversal and looks for
+"flatMaps" (`out()`, `in()`, `both()`, `values()`, `V()`, etc.) and adds "lazy barriers" to dam up the stream so to
+increase the probability of bulking the traversers. One of the side-effects is that:
+
+[source,java]
+g.V().out().V().has(a)
+
+is compiled to:
+
+[source,java]
+g.V().out().barrier().V().barrier().has(a)
+
+Given that `LazyBarrierStrategy` is an `OptimizationStrategy`, it comes before `ProviderOptimizationStrategies`.
+Thus, if the provider's `XXXGraphStepStrategy` simply walks from the second `V()` looking for `has()`-only, it will not
+be able to pull in the `has()` cause the `barrier()` blocks it. Please see the updates to `TinkerGraphStepStrategy` and
+how it acknowledges `NoOpBarrierSteps` (i.e. `barrier()`) skipping over them and “left”-propagating labels to the
+previous step.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1488[TINKERPOP-1488]
+
+Configurable Strategies
++++++++++++++++++++++++
+
+If the provider has non-configurable `TraversalStrategy` classes, those classes should expose a static `instance()`-method.
+This is typical and thus, backwards compatible. However, if the provider has a `TraversalStrategy` that can be configured
+(e.g. via a `Builder`), then it should expose a static `create(Configuration)`-method, where the keys of the configuration
+are the method names of the `Builder` and the values are the method arguments. For instance, for Gremlin-Python to create
+a `SubgraphStrategy`, it does the following:
+
+[source,python]
+----
+g = Graph().traversal().withRemote(connection).
+        withStrategies(SubgraphStrategy(vertices=__.hasLabel('person'),edges=__.has('weight',gt(0.5))))
+----
+
+The `SubgraphStrategy.create(Configuration)`-method is defined as:
+
+[source,java]
+----
+public static SubgraphStrategy create(final Configuration configuration) {
+    final Builder builder = SubgraphStrategy.build();
+    if (configuration.containsKey(VERTICES))
+        builder.vertices((Traversal) configuration.getProperty(VERTICES));
+    if (configuration.containsKey(EDGES))
+        builder.edges((Traversal) configuration.getProperty(EDGES));
+    if (configuration.containsKey(VERTEX_PROPERTIES))
+        builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
+    return builder.create();
+}
+----
+
+Finally, in order to make serialization possible from JVM-based Gremlin language variants, all strategies have a
+`TraverserStrategy.getConfiguration()` method which returns a `Configuration` that can be used to `create()` the
+`TraversalStrategy`.
+
+The `SubgraphStrategy.getConfiguration()`-method is defined as:
+
+[source,java]
+----
+@Override
+public Configuration getConfiguration() {
+    final Map<String, Object> map = new HashMap<>();
+    map.put(STRATEGY, SubgraphStrategy.class.getCanonicalName());
+    if (null != this.vertexCriterion)
+        map.put(VERTICES, this.vertexCriterion);
+    if (null != this.edgeCriterion)
+            map.put(EDGES, this.edgeCriterion);
+    if (null != this.vertexPropertyCriterion)
+        map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+    return new MapConfiguration(map);
+}
+----
+
+The default implementation of `TraversalStrategy.getConfiguration()` is defined as:
+
+[source,java]
+----
+public default Configuration getConfiguration() {
+    return new BaseConfiguration();
+}
+----
+
+Thus, if the provider does not have any "builder"-based strategies, then no updates to their strategies are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1455[TINKERPOP-1455]
 
 Deprecated elementNotFound
 ++++++++++++++++++++++++++
@@ -171,6 +383,15 @@ uses of these exception builders as they will be removed in the future.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-944[TINKERPOP-944]
 
+Hidden Step Labels for Compilation Only
++++++++++++++++++++++++++++++++++++++++
+
+In order for `SubgraphStrategy` to work, it was necessary to have multi-level children communicate with one another
+via hidden step labels. It was decided that hidden step labels are for compilation purposes only and will be removed
+prior to traversal evaluation. This is a valid decision given that hidden labels for graph system providers are
+not allowed to be used by users. Likewise, hidden labels for steps should not be allowed be used by
+users as well.
+
 PropertyMapStep with Selection Traversal
 ++++++++++++++++++++++++++++++++++++++++
 
@@ -181,6 +402,15 @@ and if so, use that in their introspection for respective strategies. This model
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1456[TINKERPOP-1456],
 link:https://issues.apache.org/jira/browse/TINKERPOP-844[TINKERPOP-844]
 
+ConnectiveP Nesting Inlined
++++++++++++++++++++++++++++
+
+There was a bug in `ConnectiveP` (`AndP`/`OrP`), where `eq(1).and(eq(2).and(eq(3)))` was `AndP(eq(1),AndP(eq(2),eq(3)))`
+instead of unnested/inlined as `AndP(eq(1),eq(2),eq(3))`. Likewise, for `OrP`. If a provider was leveraging `ConnectiveP`
+predicates for their custom steps (e.g. graph- or vertex-centric index lookups), then they should be aware of the inlining
+and can simplify any and/or-tree walking code in their respective `ProviderOptimizationStrategy`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1470[TINKERPOP-1470]
 
 TinkerPop 3.2.2
 ---------------
@@ -253,6 +483,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037],
 link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
 Console Preferences]
+
+REST API Renamed to HTTP API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is only a rename to clarify the design of the API. There is no change to the API itself.
+
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -682,7 +917,7 @@ RemoteGraph
 `RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
 remote execution. It is an interesting alternative to the other methods for connecting to Gremlin Server in that all
 other methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or REST).
+to Gremlin Server (via driver or HTTP).
 
 [source,groovy]
 ----

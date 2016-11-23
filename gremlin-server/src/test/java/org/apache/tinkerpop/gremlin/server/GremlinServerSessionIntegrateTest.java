@@ -26,13 +26,11 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
@@ -50,6 +48,7 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -92,7 +91,11 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
-
+                Logger.getRootLogger().setLevel(Level.INFO);
+                break;
+            case "shouldBlockAdditionalRequestsDuringClose":
+            case "shouldBlockAdditionalRequestsDuringForceClose":
+                clearNeo4j(settings);
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
@@ -101,30 +104,75 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                clearNeo4j(settings);
                 break;
         }
 
         return settings;
     }
 
+    private static void clearNeo4j(Settings settings) {
+        deleteDirectory(new File("/tmp/neo4j"));
+        settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
     @Test
     public void shouldBlockAdditionalRequestsDuringClose() throws Exception {
+        assumeNeo4jIsPresent();
+
         // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
-        final Cluster cluster1 = Cluster.build().create();
+        final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
-        client1.submit("1+1").all().join();
-        final Cluster cluster2 = Cluster.build().create();
+        client1.submit("graph.addVertex()").all().join();
+        final Cluster cluster2 = TestClientFactory.open();
         final Client client2 = cluster2.connect(name.getMethodName());
+        client2.submit("1+1").all().join();
+
+        final ResultSet rs = client1.submit("Thread.sleep(3000);1+1");
+
+        // close while the previous request is still executing
+        client2.close();
+
+        assertEquals(2, rs.all().join().get(0).getInt());
+
+        client1.close();
+
+        cluster1.close();
+        cluster2.close();
+
+        // triggered an error during close and since we didn't force close, the attempt to close the transaction
+        // is made
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Rolling back open transactions on graph before killing session: " + name.getMethodName() + "\n"));
+
+    }
+
+    @Test
+    public void shouldBlockAdditionalRequestsDuringForceClose() throws Exception {
+        assumeNeo4jIsPresent();
+
+        // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
+        // basically, we need one to submit the long run job and one to do the close operation that will cancel the
+        // long run job. it is probably possible to do this with some low-level message manipulation but that's
+        // probably not necessary
+        final Cluster cluster1 = TestClientFactory.open();
+        final Client client1 = cluster1.connect(name.getMethodName());
+        client1.submit("graph.addVertex()").all().join();
+        final Cluster cluster2 = TestClientFactory.open();
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
+                .sessionId(name.getMethodName())
+                .forceClosed(true).create();
+        final Client client2 = cluster2.connect(Client.Settings.build().useSession(sessionSettings).create());
         client2.submit("1+1").all().join();
 
         final ResultSet rs = client1.submit("Thread.sleep(10000);1+1");
 
         client2.close();
+
+        // because the close was forced, the message should appear immediately
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on " + name.getMethodName() + " - close was forced\n"));
 
         try {
             rs.all().join();
@@ -140,12 +188,11 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster2.close();
     }
 
-
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName(), true);
 
         try {
@@ -166,7 +213,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldCloseSessionOnceOnRequest() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -189,7 +236,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             fail("Session should be dead");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ConnectionException.class));
+            assertThat(root, instanceOf(IllegalStateException.class));
         } finally {
             cluster.close();
         }
@@ -200,7 +247,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -229,13 +276,14 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             cluster.close();
         }
 
-        assertEquals(1, recordingAppender.getMessages().stream()
+        // there will be on for the timeout and a second for closing the cluster
+        assertEquals(2, recordingAppender.getMessages().stream()
                 .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
     }
 
     @Test
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
-        final Cluster cluster = Cluster.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
+        final Cluster cluster = TestClientFactory.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
         final Client client = cluster.connect(name.getMethodName());
 
         client.submitAsync("a=100;b=1000;c=10000;null");
@@ -268,7 +316,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
         assumeNeo4jIsPresent();
 
-        try (final SimpleClient client = new WebSocketClient()) {
+        try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
 
             //open a transaction, create a vertex, commit
             final RequestMessage openRequest = RequestMessage.build(Tokens.OPS_EVAL)
@@ -335,7 +383,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
         assumeNeo4jIsPresent();
 
-        try (final SimpleClient client = new WebSocketClient()) {
+        try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
                     .processor("session")
                     .addArg(Tokens.ARGS_SESSION, name.getMethodName())

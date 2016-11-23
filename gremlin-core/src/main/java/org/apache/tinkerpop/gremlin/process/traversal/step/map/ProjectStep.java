@@ -97,6 +97,10 @@ public final class ProjectStep<S, E> extends MapStep<S, Map<String, E>> implemen
         this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
     }
 
+    public List<String> getProjectKeys() {
+        return this.projectKeys;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements();

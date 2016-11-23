@@ -219,27 +219,26 @@ final class ConnectionPool {
     /**
      * Permanently kills the pool.
      */
-    public CompletableFuture<Void> closeAsync() {
+    public synchronized CompletableFuture<Void> closeAsync() {
+        if (closeFuture.get() != null) return closeFuture.get();
+
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
-        CompletableFuture<Void> future = closeFuture.get();
-        if (future != null)
-            return future;
-
         announceAllAvailableConnection();
-        future = CompletableFuture.allOf(killAvailableConnections());
-
-        return closeFuture.compareAndSet(null, future) ? future : closeFuture.get();
+        final CompletableFuture<Void> future = killAvailableConnections();
+        closeFuture.set(future);
+        return future;
     }
 
-    private CompletableFuture[] killAvailableConnections() {
+    private CompletableFuture<Void> killAvailableConnections() {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
         for (Connection connection : connections) {
             final CompletableFuture<Void> future = connection.closeAsync();
-            future.thenRunAsync(open::decrementAndGet, cluster.executor());
+            future.thenRun(open::decrementAndGet);
             futures.add(future);
         }
-        return futures.toArray(new CompletableFuture[futures.size()]);
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
     void replaceConnection(final Connection connection) {

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.algorithm.generator;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -84,6 +85,7 @@ public class CommunityGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldGenerateDifferentGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph graph1 = graphProvider.openTestGraph(configuration);
@@ -113,6 +115,7 @@ public class CommunityGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldGenerateSameGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph graph1 = graphProvider.openTestGraph(configuration);
@@ -194,6 +197,7 @@ public class CommunityGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldProcessVerticesEdges() {
             final Distribution dist = new NormalDistribution(2);
             final CommunityGenerator generator = CommunityGenerator.build(graph)

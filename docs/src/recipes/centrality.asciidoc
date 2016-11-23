@@ -27,7 +27,7 @@ Degree Centrality
 ~~~~~~~~~~~~~~~~~
 
 link:https://en.wikipedia.org/wiki/Centrality#Degree_centrality[Degree centrality] is a measure of the number of
-edges associated to each vertex.
+edges associated to each vertex. The following examples use the modern toy graph:
 
 [gremlin-groovy,modern]
 ----
@@ -67,15 +67,15 @@ image:betweeness-example.png[width=600]
 
 [gremlin-groovy ]
 ----
-a = graph.addVertex('name','a')
-b = graph.addVertex('name','b')
-c = graph.addVertex('name','c')
-d = graph.addVertex('name','d')
-e = graph.addVertex('name','e')
-a.addEdge('next',b)
-b.addEdge('next',c)
-c.addEdge('next',d)
-d.addEdge('next',e)
+g.addV('name','a').as('a').
+  addV('name','b').as('b').
+  addV('name','c').as('c').
+  addV('name','d').as('d').
+  addV('name','e').as('e').
+  addE('next').from('a').to('b').
+  addE('next').from('b').to('c').
+  addE('next').from('c').to('d').
+  addE('next').from('d').to('e').iterate()
 g.withSack(0).V().store("x").repeat(both().simplePath()).emit().path(). <1>
   group().by(project("a","b").by(limit(local, 1)).                      <2>
                               by(tail(local, 1))).
@@ -84,7 +84,7 @@ g.withSack(0).V().store("x").repeat(both().simplePath()).emit().path(). <1>
           select("x").unfold().as("v").                                 <5>
           select("shortestPaths").                                      <6>
             map(unfold().filter(unfold().where(eq("v"))).count()).      <7>
-            sack(sum).sack().as("betweeness").        <8>
+            sack(sum).sack().as("betweeness").                          <8>
           select("v","betweeness")
 ----
 
@@ -110,7 +110,7 @@ Closeness Centrality
 ~~~~~~~~~~~~~~~~~~~~
 
 link:https://en.wikipedia.org/wiki/Centrality[Closeness centrality] is a measure of the distance of one vertex to all
-other reachable vertices in the graph.
+other reachable vertices in the graph. The following examples use the modern toy graph:
 
 [gremlin-groovy,modern]
 ----

@@ -19,8 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -92,6 +96,24 @@ public class BytecodeTest {
 
         assertEquals(1, bytecode1.getBindings().size());
         assertEquals("created", bytecode1.getBindings().get("a"));
+    }
 
+    @Test
+    public void shouldConvertStrategies() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
+        assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
+        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
+                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getBytecode());
+    }
+
+    @Test
+    public void shouldConvertComputer() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
+        assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
+                ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
     }
 }

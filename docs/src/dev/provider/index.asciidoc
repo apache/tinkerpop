@@ -418,19 +418,36 @@ classes being serialized.
 RemoteConnection Implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A `RemoteConnection` is an interface that is important for usage with
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteGraph]. A `RemoteGraph` takes
-a `RemoteConnection` implementation and submits constructed traversals to it for processing through a single method:
+A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[withRemote()] option. A `Traversal`
+that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
+step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
+iterate.
+
+There is one method to implement on `RemoteConnection`:
 
 [source,java]
-public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException;
+public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
 
-TinkerPop provides the `DriverRemoteConnection` as a useful and example implementation. `DriverRemoteConnection`
-serializes the `Traversal` and then submits it for remote processing on Gremlin Server. Gremlin Server rebinds the
-`Traversal` to a configured `Graph` instance and then iterates the results back as it would normally do.
+Note that it returns a `RemoteTraversal`. This interface should also be implemented and in most cases implementers can
+simply extend the `AbstractRemoteTraversal`, which provides default implementations for all the `Traversal` methods
+except for the important one `getSideEffects()`.
+
+[source,java]
+public RemoteTraversalSideEffects getSideEffects();
+
+This method has been overriden from `Traversal` to return `RemoteTraversalSideEffects` and this interface allows a user
+to do a retrieval of any side-effects produced by the `Traversal`. The assumption, of course, is that the
+`RemoteConnection` is communicating with a server that supports side-effect retreival (as Gremlin Server does).
+
+TinkerPop provides the `DriverRemoteConnection` as a useful and
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/remote[example implementation].
+`DriverRemoteConnection` serializes the `Traversal` and then submits it for remote processing on Gremlin Server.
+Gremlin Server rebinds the `Traversal` to a configured `Graph` instance and then iterates the results back as it would
+normally do.
 
 Implementing `RemoteConnection` is not something routinely done for those implementing `gremlin-core`. It is only
-something required if there is a need to exploit `RemoteGraph` in some way. If a graph provider has a "graph server"
+something required if there is a need to exploit `withRemote()` in some way. If a graph provider has a "graph server"
 similar to Gremlin Server that can accept a serialized `Traversal` instance, then that would be one example of a
 reason to implement this interface.
 
@@ -785,6 +802,9 @@ Gremlin Server will send:
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
+NOTE: Please refer to the link:http://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+examples of `RequestMessage` and `ResponseMessage` instances.
+
 OpProcessors Arguments
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -827,6 +847,7 @@ evaluated and is committed when the script completes (or rolled back if an error
 |=========================================================
 |Key |Type |Description
 |sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
+|saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
 '`eval` operation arguments'
@@ -841,7 +862,7 @@ be aliased to different variable names for purposes of the current request.  The
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |=========================================================
 
 Session OpProcessor
@@ -864,7 +885,7 @@ Gremlin Server are deployed, session state is not shared among them.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`eval` !Evaluate a Gremlin script provided as a `String`.
-!`close` !Close the specified session and rollback any open transactions.
+!`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
 '`authentication` operation arguments'
@@ -883,7 +904,7 @@ Gremlin Server are deployed, session state is not shared among them.
 |session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
 |manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
 be aliased to different variable names for purposes of the current request.  The value represents the name the
@@ -897,6 +918,11 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |=========================================================
 |Key |Type |Description
 |session |String | *Required* The session identifier for the session to close.
+|force |Boolean | Determines if the session should be force closed when the client is closed. Force closing will not
+attempt to close open transactions from existing running jobs and leave it to the underlying graph to decided how to
+proceed with those orphaned transactions. Setting this to `true` tends to lead to faster close operation and release
+of resources which can be desirable if Gremlin Server has a long session timeout and a long script evaluation timeout
+as attempts to close long run jobs can occur more rapidly. If not provided, this value is `false`.
 |=========================================================
 
 Traversal OpProcessor

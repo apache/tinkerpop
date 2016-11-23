@@ -154,18 +154,22 @@ final class ResultQueue {
         return this.size() == 0;
     }
 
+    public boolean isComplete() {
+        return readComplete.isDone();
+    }
+
     void drainTo(final Collection<Result> collection) {
         if (error.get() != null) throw new RuntimeException(error.get());
         resultLinkedBlockingQueue.drainTo(collection);
     }
 
     void markComplete() {
-        this.readComplete.complete(null);
-
         // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
         // added to the ResultSet
         if (aggregatedResult != null)
             add(new Result(aggregatedResult));
+
+        this.readComplete.complete(null);
 
         this.drainAllWaiting();
     }

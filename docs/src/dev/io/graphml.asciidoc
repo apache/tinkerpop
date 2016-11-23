@@ -1,0 +1,119 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[graphml]]
+GraphML
+=======
+
+image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
+common XML-based representation of a graph. It uses an edge list format where vertices and their properties are listed
+and edges and their properties are listed by referencing the in and out vertices for each edge. GraphML does support a
+number of features which are not implemented by TinkerPop (e.g. extending GraphML with custom types) and there are
+features of TinkerPop that are not supported by GraphML (e.g. meta-properties), but GraphML does represent the most
+universal way to consume or produce a graph for integration with other systems as GraphML tends to have fairly wide
+support.
+
+In TinkerPop, GraphML is also not extended for purpose of serializing just any type (i.e. serialize just a `Vertex` to
+XML). It is only supported for a `Graph` instance.
+
+The following example is a representation of the Modern toy graph in GraphML:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
+  <key id="labelV" for="node" attr.name="labelV" attr.type="string" />
+  <key id="name" for="node" attr.name="name" attr.type="string" />
+  <key id="lang" for="node" attr.name="lang" attr.type="string" />
+  <key id="age" for="node" attr.name="age" attr.type="int" />
+  <key id="labelE" for="edge" attr.name="labelE" attr.type="string" />
+  <key id="weight" for="edge" attr.name="weight" attr.type="double" />
+  <graph id="G" edgedefault="directed">
+    <node id="1">
+      <data key="labelV">person</data>
+      <data key="name">marko</data>
+      <data key="age">29</data>
+    </node>
+    <node id="2">
+      <data key="labelV">person</data>
+      <data key="name">vadas</data>
+      <data key="age">27</data>
+    </node>
+    <node id="3">
+      <data key="labelV">software</data>
+      <data key="name">lop</data>
+      <data key="lang">java</data>
+    </node>
+    <node id="4">
+      <data key="labelV">person</data>
+      <data key="name">josh</data>
+      <data key="age">32</data>
+    </node>
+    <node id="5">
+      <data key="labelV">software</data>
+      <data key="name">ripple</data>
+      <data key="lang">java</data>
+    </node>
+    <node id="6">
+      <data key="labelV">person</data>
+      <data key="name">peter</data>
+      <data key="age">35</data>
+    </node>
+    <edge id="7" source="1" target="2">
+      <data key="labelE">knows</data>
+      <data key="weight">0.5</data>
+    </edge>
+    <edge id="8" source="1" target="4">
+      <data key="labelE">knows</data>
+      <data key="weight">1.0</data>
+    </edge>
+    <edge id="9" source="1" target="3">
+      <data key="labelE">created</data>
+      <data key="weight">0.4</data>
+    </edge>
+    <edge id="10" source="4" target="5">
+      <data key="labelE">created</data>
+      <data key="weight">1.0</data>
+    </edge>
+    <edge id="11" source="4" target="3">
+      <data key="labelE">created</data>
+      <data key="weight">0.4</data>
+    </edge>
+    <edge id="12" source="6" target="3">
+      <data key="labelE">created</data>
+      <data key="weight">0.2</data>
+    </edge>
+  </graph>
+</graphml>
+----
+
+Consider the following points when reading a GraphML file to TinkerPop that was generated outside of TinkerPop:
+
+* Supports the following values in `attr.type`:
+** `string`
+** `float`
+** `double`
+** `int`
+** `long`
+** `boolean`
+* Does not currently support the `<default>` tag in the schema definitions.
+* The GraphML will be read as a directed graph regardless of the value supplied `edgedefault` setting in the `<graph>`
+tag as that is the nature of the type of graph that TinkerPop supports.
+* The vertex and edge `id` values will always be treated as a `String` if the `Graph` instance consuming the data
+supports user-supplied identifiers (i.e. TinkerGraph).
+* By default the labels for vertex and edges are referred to as "labelV" and "labelE" respectively. It is possible to
+change these defaults on the `Builder` for the `GraphReader`. If no label is supplied, the reader will default to
+"vertex" and "edge" respectively as is the general expectation in TinkerPop when those values are omitted.

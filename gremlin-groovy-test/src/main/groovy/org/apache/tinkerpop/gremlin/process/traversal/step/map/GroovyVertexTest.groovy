@@ -178,5 +178,10 @@ public abstract class GroovyVertexTest {
             g.V(v3Id).drop().iterate();
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id, v4Id, v3Id).name", "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id, "v4Id", v4Id)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').V.hasLabel('software').name")
+        }
     }
 }

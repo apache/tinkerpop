@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.InputStream;
@@ -36,27 +37,37 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteGraphProvider extends AbstractGraphProvider {
+public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCloseable {
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(RemoteGraph.class);
     }};
 
     private static GremlinServer server;
     private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
-    private final Cluster cluster = Cluster.open();
+    private final Cluster cluster = TestClientFactory.open();
     //private final Cluster cluster = Cluster.build().maxContentLength(1024000).serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
-    static {
+    public RemoteGraphProvider() {
         try {
             startServer();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        try {
+            stopServer();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -77,6 +88,8 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
             put(Graph.GRAPH, RemoteGraph.class.getName());
             put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
             put(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g" + serverGraphName);
+            put("clusterConfiguration.port", TestClientFactory.PORT);
+            put("clusterConfiguration.hosts", "localhost");
             put("hidden.for.testing.only", graphGetter);
         }};
     }
@@ -120,11 +133,11 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
 
         server = new GremlinServer(settings);
 
-        server.start().join();
+        server.start().get(100, TimeUnit.SECONDS);
     }
 
     public static void stopServer() throws Exception {
-        server.stop().join();
+        server.stop().get(100, TimeUnit.SECONDS);
         server = null;
     }
 

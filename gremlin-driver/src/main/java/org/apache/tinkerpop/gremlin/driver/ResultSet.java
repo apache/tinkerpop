@@ -81,6 +81,19 @@ public final class ResultSet implements Iterable<Result> {
     }
 
     /**
+     * Returns a future that will complete when all items have been returned from the server.
+     */
+    public CompletableFuture<Void> allItemsAvailableAsync() {
+        final CompletableFuture<Void> allAvailable = new CompletableFuture<>();
+        readCompleted.thenRun(() -> allAvailable.complete(null));
+        readCompleted.exceptionally(t -> {
+            allAvailable.completeExceptionally(t);
+            return null;
+        });
+        return allAvailable;
+    }
+
+    /**
      * Gets the number of items available on the client.
      */
     public int getAvailableItemCount() {

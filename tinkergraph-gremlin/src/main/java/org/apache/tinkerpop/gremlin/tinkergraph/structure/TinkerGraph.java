@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -60,20 +61,18 @@ import java.util.stream.Stream;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
-@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-@Graph.OptIn("org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.TinkerGraphStrategySuite")
 public final class TinkerGraph implements Graph {
 
     static {
-        TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(TinkerGraphStepStrategy.instance()));
+        TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+                TinkerGraphStepStrategy.instance(),
+                TinkerGraphCountStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
@@ -120,7 +119,7 @@ public final class TinkerGraph implements Graph {
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
-    protected AtomicLong currentId = new AtomicLong(-1l);
+    protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
 
@@ -231,7 +230,7 @@ public final class TinkerGraph implements Graph {
 
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
-        return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistry.getInstance())).create();
+        return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistry.instance())).create();
     }
 
     @Override
@@ -243,7 +242,7 @@ public final class TinkerGraph implements Graph {
         this.vertices.clear();
         this.edges.clear();
         this.variables = null;
-        this.currentId.set(-1l);
+        this.currentId.set(-1L);
         this.vertexIndex = null;
         this.edgeIndex = null;
         this.graphComputerView = null;
@@ -336,8 +335,8 @@ public final class TinkerGraph implements Graph {
             // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
             // vertex to be findable in OrientDB
             return clazz.isAssignableFrom(ids[0].getClass()) ?
-               IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
-                : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
+                    IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
+                    : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
         }
         return TinkerHelper.inComputerMode(this) ?
                 (Iterator<T>) (clazz.equals(Vertex.class) ?

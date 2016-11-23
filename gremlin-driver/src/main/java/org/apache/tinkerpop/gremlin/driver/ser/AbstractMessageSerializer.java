@@ -40,7 +40,7 @@ public abstract class AbstractMessageSerializer implements MessageSerializer {
      * Reads a list of fully qualified class names from the value of the {@link #TOKEN_IO_REGISTRIES} configuration
      * key. These classes should equate to {@link IoRegistry} implementations that will be assigned to the
      * {@link org.apache.tinkerpop.gremlin.structure.io.Mapper.Builder}.  The assumption is that the
-     * {@link IoRegistry} either has a static {@code getInstance()} method or has a zero-arg constructor from which
+     * {@link IoRegistry} either has a static {@code instance()} method or has a zero-arg constructor from which
      * it can be instantiated.
      */
     protected void addIoRegistries(final Map<String, Object> config, final Mapper.Builder builder) {
@@ -50,19 +50,39 @@ public abstract class AbstractMessageSerializer implements MessageSerializer {
             try {
                 final Class<?> clazz = Class.forName(className);
                 try {
-                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                    // try instance() first and then instance() which was deprecated in 3.2.4
+                    final Method instanceMethod = tryInstanceMethod(clazz);
                     if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
                         builder.addRegistry((IoRegistry) instanceMethod.invoke(null));
                     else
                         throw new Exception();
                 } catch (Exception methodex) {
-                    // tried getInstance() and that failed so try newInstance() no-arg constructor
+                    // tried instance() and that failed so try newInstance() no-arg constructor
                     builder.addRegistry((IoRegistry) clazz.newInstance());
                 }
             } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }
         });
+    }
+
+    protected Method tryInstanceMethod(final Class clazz) {
+        Method instanceMethod;
+        try {
+            instanceMethod = clazz.getDeclaredMethod("instance");
+        } catch (Exception methodex) {
+            instanceMethod = null;
+        }
+
+        if (null == instanceMethod) {
+            try {
+                instanceMethod = clazz.getDeclaredMethod("getInstance");
+            } catch (Exception methodex) {
+                instanceMethod = null;
+            }
+        }
+
+        return instanceMethod;
     }
 
     /**

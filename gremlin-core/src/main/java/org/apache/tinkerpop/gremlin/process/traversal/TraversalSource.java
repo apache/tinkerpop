@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,10 +31,8 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -101,13 +98,18 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     /**
      * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
      *
-     * @param traversalStrategies a colleciton of traversal strategies to add
+     * @param traversalStrategies a collection of traversal strategies to add
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
         clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
+        for (final TraversalStrategy traversalStrategy : traversalStrategies) {
+            if (traversalStrategy instanceof VertexProgramStrategy) {
+                ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone);
+            }
+        }
         return clone;
     }
 
@@ -139,30 +141,14 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     }
 
     /**
-     * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
+     * Add a {@link Computer} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
      * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @param computer a builder to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Computer computer) {
-        Class<? extends GraphComputer> graphComputerClass;
-        try {
-            graphComputerClass = computer.apply(this.getGraph()).getClass();
-        } catch (final Exception e) {
-            graphComputerClass = computer.getGraphComputerClass();
-        }
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
-        traversalStrategies[0] = new VertexProgramStrategy(computer);
-        for (int i = 0; i < graphComputerStrategies.size(); i++) {
-            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
-        }
-        ///
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, computer);
-        return clone;
+        return this.withStrategies(new VertexProgramStrategy(computer));
     }
 
     /**
@@ -173,17 +159,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
-        traversalStrategies[0] = new VertexProgramStrategy(Computer.compute(graphComputerClass));
-        for (int i = 0; i < graphComputerStrategies.size(); i++) {
-            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
-        }
-        ///
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, graphComputerClass);
-        return clone;
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute(graphComputerClass)));
     }
 
     /**
@@ -193,24 +169,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer() {
-        final Computer computer = Computer.compute();
-        Class<? extends GraphComputer> graphComputerClass;
-        try {
-            graphComputerClass = computer.apply(this.getGraph()).getClass();
-        } catch (final Exception e) {
-            graphComputerClass = computer.getGraphComputerClass();
-        }
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
-        traversalStrategies[0] = new VertexProgramStrategy(computer);
-        for (int i = 0; i < graphComputerStrategies.size(); i++) {
-            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
-        }
-        ///
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer);
-        return clone;
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute()));
     }
 
     /**

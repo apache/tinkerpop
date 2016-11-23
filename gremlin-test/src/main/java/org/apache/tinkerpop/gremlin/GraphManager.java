@@ -72,7 +72,7 @@ public class GraphManager {
      * When {@link #openTestGraph(Configuration)} is called the created object is stored in a list and when tests are
      * complete the {@link #tryClearGraphs()} is called. When this is called, an attempt is made to close all open graphs.
      */
-    public static class ManagedGraphProvider implements GraphProvider {
+    public static class ManagedGraphProvider implements GraphProvider, AutoCloseable {
         private static final Logger logger = LoggerFactory.getLogger(ManagedGraphProvider.class);
         private final GraphProvider innerGraphProvider;
         private final List<Pair<Graph, Configuration>> openGraphs = new ArrayList<>();
@@ -176,6 +176,12 @@ public class GraphManager {
         @Override
         public Optional<TestListener> getTestListener() {
             return innerGraphProvider.getTestListener();
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (innerGraphProvider instanceof AutoCloseable)
+                ((AutoCloseable) innerGraphProvider).close();
         }
     }
 

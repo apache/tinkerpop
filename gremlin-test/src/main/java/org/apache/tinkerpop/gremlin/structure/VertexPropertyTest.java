@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
@@ -288,10 +289,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                     }
                 }
             });
-
-
         }
-
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
@@ -328,6 +326,28 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             assertEquals(1, IteratorUtils.count(newMexico.properties("visible")));
             assertEquals(0, IteratorUtils.count(newMexico.properties(T.key.getAccessor())));
             assertEquals(0, IteratorUtils.count(newMexico.properties(T.value.getAccessor())));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_DUPLICATE_MULTI_PROPERTIES)
+        public void shouldAllowIdenticalValuedMultiProperties() {
+            final Vertex v = graph.addVertex();
+            v.property(VertexProperty.Cardinality.list, "name", "stephen");
+            v.property(VertexProperty.Cardinality.list, "name", "stephen");
+            v.property(VertexProperty.Cardinality.list, "name", "steve");
+            v.property(VertexProperty.Cardinality.list, "name", "stephen");
+            v.property(VertexProperty.Cardinality.list, "color", "red");
+
+            tryCommit(graph, g -> {
+                final Vertex vertex = graph.vertices(v).next();
+                assertEquals(4, IteratorUtils.count(vertex.properties("name")));
+                assertEquals(1, IteratorUtils.count(vertex.properties("color")));
+                assertEquals(5, IteratorUtils.count(vertex.properties()));
+
+                assertThat(IteratorUtils.set(vertex.values("name")), contains("stephen", "steve"));
+            });
         }
     }
 

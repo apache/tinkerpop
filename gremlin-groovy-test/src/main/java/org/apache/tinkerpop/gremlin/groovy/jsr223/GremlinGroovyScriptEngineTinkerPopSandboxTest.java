@@ -61,38 +61,4 @@ public class GremlinGroovyScriptEngineTinkerPopSandboxTest extends AbstractGreml
             assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
         }
     }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldNotEvalColorWhenCallingMethods() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(AllowColorSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertEquals(new java.awt.Color(255,255,255), engine.eval("new java.awt.Color(255,255,255)"));
-        }
-
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            engine.eval("new java.awt.Color(255,255,255).getRed()");
-            fail("Type checking should have forced an error as 'getRed()' is not authorized - just Color construction");
-        } catch (Exception ex) {
-            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
-            assertThat(ex.getMessage(), containsString("Not authorized to call this method"));
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldNotEvalColorWhenCallingProperties() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(AllowColorSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertEquals(new java.awt.Color(255,255,255), engine.eval("new java.awt.Color(255,255,255)"));
-        }
-
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            engine.eval("new java.awt.Color(255,255,255).red");
-            fail("Type checking should have forced an error as 'red' is not authorized - just Color construction");
-        } catch (Exception ex) {
-            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
-            assertThat(ex.getMessage(), containsString("Not authorized to call this method"));
-        }
-    }
 }

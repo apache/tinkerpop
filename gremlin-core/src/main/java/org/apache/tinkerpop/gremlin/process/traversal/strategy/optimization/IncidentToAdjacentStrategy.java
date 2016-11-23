@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -27,9 +28,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
@@ -66,14 +69,22 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
     private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, TreeStep.class, LambdaHolder.class));
+    private static final String MARKER = Graph.Hidden.hide("gremlin.incidentToAdjacent");
 
     private IncidentToAdjacentStrategy() {
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, TraversalHelper.getRootTraversal(traversal)))
+        // using a hidden label marker to denote whether the traversal should not be processed by this strategy
+        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), traversal);
+        if (traversal.getStartStep().getLabels().contains(MARKER)) {
+            traversal.getStartStep().removeLabel(MARKER);
             return;
+        }
+        ////////////////////////////////////////////////////////////////////////////
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
         for (final Step curr : traversal.getSteps()) {

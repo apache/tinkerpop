@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.div;
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.div;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

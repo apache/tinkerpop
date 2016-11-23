@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -58,7 +59,8 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             SackStrategy.class,
             SideEffectStrategy.class,
             SubgraphStrategy.class,
-            RemoteStrategy.class));
+            RemoteStrategy.class,
+            VertexProgramStrategy.class));
 
     public TranslationStrategy(final TraversalSource traversalSource, final Translator translator) {
         this.traversalSource = traversalSource;

@@ -37,6 +37,7 @@ import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -84,7 +85,9 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        return (T) new Client.ClusteredClient(this, Client.Settings.build().create());
+        final Client client = new Client.ClusteredClient(this, Client.Settings.build().create());
+        manager.trackClient(client);
+        return (T) client;
     }
 
     /**
@@ -132,8 +135,10 @@ public final class Cluster {
      * Creates a new {@link Client} based on the settings provided.
      */
     public <T extends Client> T connect(final Client.Settings settings) {
-        return settings.getSession().isPresent() ? (T) new Client.SessionedClient(this, settings) :
-                (T) new Client.ClusteredClient(this, settings);
+        final Client client = settings.getSession().isPresent() ? new Client.SessionedClient(this, settings) :
+                new Client.ClusteredClient(this, settings);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     @Override
@@ -510,7 +515,6 @@ public final class Cluster {
          * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
          */
         public Builder nioPoolSize(final int nioPoolSize) {
-            if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.nioPoolSize = nioPoolSize;
             return this;
         }
@@ -520,7 +524,6 @@ public final class Cluster {
          * by 2
          */
         public Builder workerPoolSize(final int workerPoolSize) {
-            if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
             return this;
         }
@@ -871,7 +874,11 @@ public final class Cluster {
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
+        private final List<WeakReference<Client>> openedClients = new ArrayList<>();
+
         private Manager(final Builder builder) {
+            validateBuilder(builder);
+
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
@@ -909,6 +916,57 @@ public final class Cluster {
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 
+        private void validateBuilder(final Builder builder) {
+            if (builder.minInProcessPerConnection < 0)
+                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
+
+            if (builder.maxInProcessPerConnection < 1)
+                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
+
+            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
+                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
+
+            if (builder.minSimultaneousUsagePerConnection < 0)
+                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
+
+            if (builder.maxSimultaneousUsagePerConnection < 1)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
+
+            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
+
+            if (builder.minConnectionPoolSize < 0)
+                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
+
+            if (builder.maxConnectionPoolSize < 1)
+                throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
+
+            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
+                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
+
+            if (builder.maxWaitForConnection < 1)
+                throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
+
+            if (builder.maxWaitForSessionClose < 1)
+                throw new IllegalArgumentException("maxWaitForSessionClose must be greater than zero");
+
+            if (builder.maxContentLength < 1)
+                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+
+            if (builder.reconnectInterval < 1)
+                throw new IllegalArgumentException("reconnectInterval must be greater than zero");
+
+            if (builder.resultIterationBatchSize < 1)
+                throw new IllegalArgumentException("resultIterationBatchSize must be greater than zero");
+
+            if (builder.nioPoolSize < 1)
+                throw new IllegalArgumentException("nioPoolSize must be greater than zero");
+
+            if (builder.workerPoolSize < 1)
+                throw new IllegalArgumentException("workerPoolSize must be greater than zero");
+
+        }
+
         synchronized void init() {
             if (initialized)
                 return;
@@ -920,6 +978,10 @@ public final class Cluster {
                 if (host != null)
                     host.makeAvailable();
             });
+        }
+
+        void trackClient(final Client client) {
+            openedClients.add(new WeakReference<>(client));
         }
 
         public Host add(final InetSocketAddress address) {
@@ -936,6 +998,13 @@ public final class Cluster {
             // this method is exposed publicly in both blocking and non-blocking forms.
             if (closeFuture.get() != null)
                 return closeFuture.get();
+
+            for (WeakReference<Client> openedClient : openedClients) {
+                final Client client = openedClient.get();
+                if (client != null && !client.isClosing()) {
+                    client.close();
+                }
+            }
 
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
             closeFuture.set(closeIt);

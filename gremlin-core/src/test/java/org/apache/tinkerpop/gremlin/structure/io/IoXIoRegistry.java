@@ -51,7 +51,7 @@ public class IoXIoRegistry {
             register(GryoIo.class, IoX.class, null);
         }
 
-        public static InstanceBased getInstance() {
+        public static InstanceBased instance() {
             return INSTANCE;
         }
     }

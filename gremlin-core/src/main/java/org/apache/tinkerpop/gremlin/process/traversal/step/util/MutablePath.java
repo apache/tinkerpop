@@ -65,6 +65,15 @@ public class MutablePath implements Path, Serializable {
         return clone;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return this.objects.isEmpty();
+    }
+
+    @Override
+    public <A> A head() {
+        return (A) this.objects.get(this.objects.size() - 1);
+    }
 
     @Override
     public int size() {
@@ -80,7 +89,7 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public Path extend(final Set<String> labels) {
-        if (!labels.isEmpty())
+        if (!labels.isEmpty() && !this.labels.get(this.labels.size() - 1).containsAll(labels))
             this.labels.get(this.labels.size() - 1).addAll(labels);
         return this;
     }
@@ -104,7 +113,9 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public <A> A get(final Pop pop, final String label) {
-        if (Pop.all == pop) {
+        if (Pop.mixed == pop) {
+            return this.get(label);
+        } else if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -133,7 +144,11 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public boolean hasLabel(final String label) {
-        return this.labels.stream().filter(l -> l.contains(label)).findAny().isPresent();
+        for (final Set<String> set : this.labels) {
+            if (set.contains(label))
+                return true;
+        }
+        return false;
     }
 
     @Override

@@ -113,17 +113,12 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     private final void handleStart(final Traverser.Admin<S> start) {
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
         final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
-        if (null != branch) {
-            branch.forEach(traversal -> {
-                traversal.addStart(start.split());
-            });
-        }
+        if (null != branch)
+            branch.forEach(traversal -> traversal.addStart(start.split()));
         if (choice != Pick.any) {
             final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
             if (null != anyBranch)
-                anyBranch.forEach(traversal -> {
-                    traversal.addStart(start.split());
-                });
+                anyBranch.forEach(traversal -> traversal.addStart(start.split()));
         }
     }
 

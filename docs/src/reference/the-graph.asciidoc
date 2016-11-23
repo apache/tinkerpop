@@ -187,7 +187,7 @@ modify the graph as required and call `graph.tx().commit()` to apply changes or 
 When the next read or write action occurs against the graph, a new transaction will be started within that current
 thread of execution.
 
-When using transactions in this fashion, especially in web application (e.g. REST server), it is important to ensure
+When using transactions in this fashion, especially in web application (e.g. HTTP server), it is important to ensure
 that transactions do not leak from one request to the next.  In other words, unless a client is somehow bound via
 session to process every request on the same server thread, every request must be committed or rolled back at the end
 of the request.  By ensuring that the request encapsulates a transaction, it ensures that a future request processed
@@ -813,7 +813,7 @@ final Graph graph = TinkerFactory.createModern();
 graph.io(IoCore.gryo()).writeGraph("tinkerpop-modern.kryo");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io(IoCore.gryo()).readGraph("tinkerpop-modern.kryo")'
+newGraph.io(IoCore.gryo()).readGraph("tinkerpop-modern.kryo");
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:

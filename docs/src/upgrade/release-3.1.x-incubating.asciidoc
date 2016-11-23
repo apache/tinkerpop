@@ -22,10 +22,52 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *A 187 On The Undercover Gremlinz*
 
-TinkerPop 3.1.5
+TinkerPop 3.1.6
 ---------------
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#release-3-1-6[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+Session Close Confirmation
+++++++++++++++++++++++++++
+
+When a session is closed, it now returns a confirmation in the form of a single `NO CONTENT` message. When the message
+arrives, it means that the server has already destroyed the session. Prior to this change, the request was somewhat
+one-way, in that the client could send the request and the server would silently honor it. The confirmation makes it
+a bit easier to ensure from the client perspective that the close did what it was supposed to do, allowing the client
+to proceed only when the server was fully complete with its work.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1544[TINKERPOP-1544]
+
+
+TinkerPop 3.1.5
+---------------
+
+*Release Date: October 17, 2016*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.5/CHANGELOG.asciidoc#tinkerpop-315-release-date-october-17-2016[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Java Driver and close()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+There were a few problems noted around the `close()` of `Cluster` and `Client` instances, including issues that
+presented as system hangs. These issues have been resolved, however, it is worth noting that an unchecked exception
+that was thrown under a certain situation has changed as part of the bug fixes. When submitting an in-session request
+on a `Client` that was closed (or closing) an `IllegalStateException` is thrown. This replaces older functionality
+that threw a `ConnectionException` and relied logic far deeper in the driver to produce that error and had the
+potential to open additional resources despite the intention of the user to "close".
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1467[TINKERPOP-1467]
 
 TinkerPop 3.1.4
 ---------------

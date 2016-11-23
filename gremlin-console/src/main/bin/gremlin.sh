@@ -22,8 +22,19 @@
 set -e
 set -u
 
-DIR="$( cd -P "$( dirname "$0" )" && pwd )"
-SYSTEM_EXT_DIR="${DIR}/../ext"
+cd $(dirname $0)
+DIR=`pwd`
+
+SCRIPT_NAME=`basename $0`
+while [ -h "${SCRIPT_NAME}" ]; do
+  SOURCE="$(readlink "${SCRIPT_NAME}")"
+  DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+  cd ${DIR}
+done
+
+cd ..
+SYSTEM_EXT_DIR="`pwd`/ext"
+
 JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
 if [ ! -z "${JAVA_OPTIONS}" ]; then
@@ -36,20 +47,11 @@ fi
 
 case `uname` in
   CYGWIN*)
-    CP="`dirname $0`"/../conf
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
+    CP="${CP:-}";$( echo lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP="`dirname $0`"/../conf
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
+    CP="${CP:-}":$( echo lib/*.jar . | sed 's/ /:/g')
 esac
-
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
 
 CP=$CP:$( find -L "${SYSTEM_EXT_DIR}" "${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" -mindepth 1 -maxdepth 1 -type d | \
           sort -u | sed 's/$/\/plugin\/*/' | tr '\n' ':' )

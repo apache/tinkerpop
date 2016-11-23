@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -43,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -50,11 +52,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,21 +70,20 @@ public final class TraversalHelper {
 
     public static boolean isLocalProperties(final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
-            if (step instanceof RepeatStep &&
-                    ((RepeatStep<?>) step).getGlobalChildren().stream()
-                            .flatMap(t -> t.getSteps().stream())
-                            .filter(s -> s instanceof VertexStep)
-                            .findAny()
-                            .isPresent())  // TODO: is this sufficient?
-                return false;
-            else if (step instanceof VertexStep) {
+            if (step instanceof RepeatStep) {
+                for (final Traversal.Admin<?, ?> global : ((RepeatStep<?>) step).getGlobalChildren()) {
+                    if (TraversalHelper.hasStepOfAssignableClass(VertexStep.class, global))
+                        return false;
+                }
+            } else if (step instanceof VertexStep) {
                 return false;
             } else if (step instanceof EdgeVertexStep) {
                 return false;
             } else if (step instanceof TraversalParent) {
-                if (((TraversalParent) step).getLocalChildren().stream()
-                        .filter(t -> !isLocalProperties(t.asAdmin()))
-                        .findAny().isPresent()) return false;
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    if (!TraversalHelper.isLocalProperties(local))
+                        return false;
+                }
             }
         }
         return true;
@@ -105,28 +107,31 @@ public final class TraversalHelper {
             } else if (step instanceof EdgeVertexStep) {
                 state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
-                if (((HasContainerHolder) step).getHasContainers().stream()
-                        .filter(c -> !c.getKey().equals(T.id.getAccessor()))
-                        .findAny().isPresent()) return 'x';
+                for (final HasContainer hasContainer : ((HasContainerHolder) step).getHasContainers()) {
+                    if (!hasContainer.getKey().equals(T.id.getAccessor()))
+                        return 'x';
+                }
             } else if (step instanceof TraversalParent) {
                 final char currState = state;
-                Set<Character> states = ((TraversalParent) step).getLocalChildren().stream()
-                        .map(t -> isLocalStarGraph(t.asAdmin(), currState))
-                        .collect(Collectors.toSet());
-                if (states.contains('x'))
-                    return 'x';
-                else if (!(step instanceof ByModulating)) {
+                Set<Character> states = new HashSet<>();
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    final char s = isLocalStarGraph(local, currState);
+                    if ('x' == s) return 'x';
+                    states.add(s);
+                }
+                if (!(step instanceof ByModulating)) {
                     if (states.contains('u'))
                         state = 'u';
                     else if (states.contains('e'))
                         state = 'e';
                 }
-                states = ((TraversalParent) step).getGlobalChildren().stream()
-                        .map(t -> isLocalStarGraph(t.asAdmin(), currState))
-                        .collect(Collectors.toSet());
-                if (states.contains('x'))
-                    return 'x';
-                else if (states.contains('u'))
+                states.clear();
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getGlobalChildren()) {
+                    final char s = isLocalStarGraph(local, currState);
+                    if ('x' == s) return 'x';
+                    states.add(s);
+                }
+                if (states.contains('u'))
                     state = 'u';
                 else if (states.contains('e'))
                     state = 'e';
@@ -222,17 +227,21 @@ public final class TraversalHelper {
     }
 
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
-        List<S> steps = new ArrayList<>();
-        for (Step step : traversal.getSteps()) {
-            if (step.getClass().equals(stepClass)) {
+        final List<S> steps = new ArrayList<>();
+        for (final Step step : traversal.getSteps()) {
+            if (step.getClass().equals(stepClass))
                 steps.add((S) step);
-            }
         }
         return steps;
     }
 
     public static <S> List<S> getStepsOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
-        return (List) traversal.getSteps().stream().filter(step -> stepClass.isAssignableFrom(step.getClass())).collect(Collectors.toList());
+        final List<S> steps = new ArrayList<>();
+        for (final Step step : traversal.getSteps()) {
+            if (stepClass.isAssignableFrom(step.getClass()))
+                steps.add((S) step);
+        }
+        return steps;
     }
 
     public static <S> Optional<S> getLastStepOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
@@ -241,7 +250,11 @@ public final class TraversalHelper {
     }
 
     public static <S> Optional<S> getFirstStepOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
-        return (Optional<S>) traversal.getSteps().stream().filter(step -> stepClass.isAssignableFrom(step.getClass())).findFirst();
+        for (final Step step : traversal.getSteps()) {
+            if (stepClass.isAssignableFrom(step.getClass()))
+                return Optional.of((S) step);
+        }
+        return Optional.empty();
     }
 
     public static <S> List<S> getStepsOfAssignableClassRecursively(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
@@ -424,6 +437,36 @@ public final class TraversalHelper {
         return false;
     }
 
+    public static boolean anyStepRecursively(final Predicate<Step> predicate, final TraversalParent step) {
+        for (final Traversal.Admin<?, ?> localChild : step.getLocalChildren()) {
+            if (anyStepRecursively(predicate, localChild)) return true;
+        }
+        for (final Traversal.Admin<?, ?> globalChild : step.getGlobalChildren()) {
+            if (anyStepRecursively(predicate, globalChild)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
+     *
+     * @param consumer  the function to apply to the each traversal in the tree
+     * @param traversal the root traversal to start application
+     */
+    public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
+        consumer.accept(traversal);
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    applyTraversalRecursively(consumer, local);
+                }
+                for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                    applyTraversalRecursively(consumer, global);
+                }
+            }
+        }
+    }
+
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
         if (collection instanceof BulkSet) {
             ((BulkSet<S>) collection).add(s, bulk);
@@ -436,6 +479,10 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * @deprecated Since 3.2.3. Only used by {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0}.
+     */
+    @Deprecated
     public static <S> void addToCollectionUnrollIterator(final Collection<S> collection, final S s, final long bulk) {
         if (s instanceof Iterator) {
             ((Iterator<S>) s).forEachRemaining(r -> addToCollection(collection, r, bulk));
@@ -510,8 +557,12 @@ public final class TraversalHelper {
         for (final Step<?, ?> step : traversal.getSteps()) {
             labels.addAll(step.getLabels());
             if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getLocalChildren().forEach(child -> getLabels(labels, child));
-                ((TraversalParent) step).getGlobalChildren().forEach(child -> getLabels(labels, child));
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    TraversalHelper.getLabels(labels, local);
+                }
+                for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                    TraversalHelper.getLabels(labels, global);
+                }
             }
         }
         return labels;
@@ -536,9 +587,14 @@ public final class TraversalHelper {
             if (((MatchStep.MatchStartStep) startStep).getSelectKey().isPresent())
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep) {
-            ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
-        } else if (startStep instanceof ConnectiveStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
-            ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
+            for (final Traversal.Admin<?, ?> global : ((MatchStep<?, ?>) startStep).getGlobalChildren()) {
+                TraversalHelper.getVariableLocations(variables, global);
+            }
+        } else if (startStep instanceof ConnectiveStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep) {
+            for (final Traversal.Admin<?, ?> local : ((TraversalParent) startStep).getLocalChildren()) {
+                TraversalHelper.getVariableLocations(variables, local);
+            }
+        }
         ///
         final Step<?, ?> endStep = traversal.getEndStep();
         if (endStep instanceof WherePredicateStep) {
@@ -558,7 +614,7 @@ public final class TraversalHelper {
 
     public static boolean onGraphComputer(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.getParent() instanceof EmptyStep)) {
-            if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
+            if (traversal.getParent() instanceof TraversalVertexProgramStep)
                 return true;
             traversal = traversal.getParent().asStep().getTraversal();
         }
@@ -566,16 +622,19 @@ public final class TraversalHelper {
     }
 
     public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
-        while (!traversal.getSteps().isEmpty()) {
+        final int size = traversal.getSteps().size();
+        for (int i = 0; i < size; i++) {
             traversal.removeStep(0);
         }
     }
 
     public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
-        for (final String label : fromStep.getLabels()) {
-            toStep.addLabel(label);
-            if (moveLabels)
-                fromStep.removeLabel(label);
+        if (!fromStep.getLabels().isEmpty()) {
+            for (final String label : moveLabels ? new LinkedHashSet<>(fromStep.getLabels()) : fromStep.getLabels()) {
+                toStep.addLabel(label);
+                if (moveLabels)
+                    fromStep.removeLabel(label);
+            }
         }
     }
 
@@ -613,5 +672,21 @@ public final class TraversalHelper {
             if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
                 break;
         }
+    }
+
+    /**
+     * Used to left-fold a {@link HasContainer} to a {@link HasContainerHolder} if it exists. Else, append a {@link HasStep}.
+     *
+     * @param traversal    the traversal to fold or append.
+     * @param hasContainer the container to add left or append.
+     * @param <T>          the traversal type
+     * @return the has container folded or appended traversal
+     */
+    public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
+        if (traversal.getEndStep() instanceof HasContainerHolder) {
+            ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
+            return traversal;
+        } else
+            return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
     }
 }

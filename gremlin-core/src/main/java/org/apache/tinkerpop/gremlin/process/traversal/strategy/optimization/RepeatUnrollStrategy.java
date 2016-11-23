@@ -35,6 +35,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
     private static final RepeatUnrollStrategy INSTANCE = new RepeatUnrollStrategy();
 
+    protected static final int MAX_BARRIER_SIZE = 2500;
+
     private RepeatUnrollStrategy() {
     }
 
@@ -57,7 +59,7 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                         TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal);
                         insertIndex = insertIndex + repeatLength;
                         if (j != (loops - 1) || !(traversal.getSteps().get(insertIndex).getNextStep() instanceof Barrier)) // only add a final NoOpBarrier is subsequent step is not a barrier
-                            traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, 5000));
+                            traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE));
                     }
                     // label last step if repeat() was labeled
                     if (!repeatStep.getLabels().isEmpty())

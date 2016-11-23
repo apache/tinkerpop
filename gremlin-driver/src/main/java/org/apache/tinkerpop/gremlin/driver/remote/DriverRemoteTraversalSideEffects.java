@@ -25,25 +25,31 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
+ * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
     private final Client client;
-    private Set<String> keys = null;
+    private Set<String> keys = Collections.emptySet();
     private final UUID serverSideEffect;
     private final Host host;
 
     private final Map<String, Object> sideEffects = new HashMap<>();
+
+    private boolean closed = false;
+    private boolean retrievedAllKeys = false;
 
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
         this.client = client;
@@ -53,7 +59,12 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
+        if (!keys().contains(key)) throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
+
         if (!sideEffects.containsKey(key)) {
+
+            if (closed) throw new IllegalStateException("Traversal has been closed - no new side-effects can be retrieved");
+
             // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
             // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
             final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
@@ -62,14 +73,16 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                     .addArg(Tokens.ARGS_HOST, host)
                     .processor("traversal").create();
             try {
-                final Result result = client.submitAsync(msg).get().one();
+                final Result result = client.submitAsync(msg).get().all().get().get(0);
                 sideEffects.put(key, null == result ? null : result.getObject());
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
-                    sideEffects.put(key, null);
-                else
-                    throw new RuntimeException("Could not get keys", root);
+                // we use to try to catch  "no found" situations returned from the server here and then null the
+                // side-effect for the requested key. doesn't seem like there is a need for that now because calls
+                // to get() now initially trigger a call the keys() so you would know all of the keys available on
+                // the server and would validate them up front throwing sideEffectKeyDoesNotExist(key) which thus
+                // produces behavior similar to the non-remote side-effect implementations. if we get an exception
+                // here at this point then we likely have a legit error in communicating to the remote server.
+                throw new RuntimeException("Could not get side-effect for " + serverSideEffect + " with key of " + key, ex);
             }
         }
 
@@ -78,7 +91,9 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     @Override
     public Set<String> keys() {
-        if (null == keys) {
+        if (closed && !retrievedAllKeys) throw new IllegalStateException("Traversal has been closed - side-effect keys cannot be retrieved");
+
+        if (!retrievedAllKeys) {
             // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
             // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
             final RequestMessage msg = RequestMessage.build(Tokens.OPS_KEYS)
@@ -86,13 +101,16 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                     .addArg(Tokens.ARGS_HOST, host)
                     .processor("traversal").create();
             try {
-                keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());
+                if (keys.equals(Collections.emptySet()))
+                    keys = new HashSet<>();
+
+                client.submitAsync(msg).get().all().get().forEach(r -> keys.add(r.getString()));
+
+                // only need to retrieve all keys once
+                retrievedAllKeys = true;
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
-                    keys = Collections.emptySet();
-                else
-                    throw new RuntimeException("Could not get keys", root);
+                throw new RuntimeException("Could not get keys", null == root ? ex : root);
             }
         }
 
@@ -101,8 +119,26 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     @Override
     public void close() throws Exception {
-        // todo: need to add a call to "close" the side effects on the server - probably should ensure request only sends once
+        if (!closed) {
+            final RequestMessage msg = RequestMessage.build(Tokens.OPS_CLOSE)
+                    .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
+                    .addArg(Tokens.ARGS_HOST, host)
+                    .processor("traversal").create();
+            try {
+                client.submitAsync(msg).get();
+                closed = true;
+            } catch (Exception ex) {
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                throw new RuntimeException("Error on closing side effects", null == root ? ex : root);
+            }
+        }
+    }
 
-        // leave the client open as it is owned by the DriverRemoteConnection not the traversal or side-effects
+    @Override
+    public String toString() {
+        // have to override the implementation from TraversalSideEffects because it relies on calls to keys() as
+        // calling that too early can cause unintended failures (i.e. in the debugger, toString() gets called when
+        // introspecting the object from the moment of construction).
+        return "sideEffects[size:" + keys.size() + "]";
     }
 }

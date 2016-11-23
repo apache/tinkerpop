@@ -38,7 +38,7 @@ import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.Credenti
 import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTokens.PROPERTY_USERNAME;
 
 /**
- * Implements basic HTTP authentication for use with the {@link HttpGremlinEndpointHandler} and REST based API calls.
+ * Implements basic HTTP authentication for use with the {@link HttpGremlinEndpointHandler} and HTTP based API calls.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -69,28 +69,26 @@ public class SubgraphStrategyTest {
         @Parameterized.Parameter(value = 1)
         public Traversal optimized;
 
-
-        void applySubgraphStrategyTest(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(SubgraphStrategy.build().
+        @Test
+        public void doTest() {
+            final TraversalStrategies originalStrategies = new DefaultTraversalStrategies();
+            originalStrategies.addStrategies(SubgraphStrategy.build().
                     vertices(__.and(has("name", "marko"), has("age", 29))).
                     edges(hasLabel("knows")).
                     vertexProperties(__.<VertexProperty, Long>values().count().and(is(P.lt(10)), is(0))).create());
-            strategies.addStrategies(InlineFilterStrategy.instance());
-            strategies.addStrategies(StandardVerificationStrategy.instance());
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        @Test
-        public void doTest() {
-            applySubgraphStrategyTest(original);
-            assertEquals(optimized, original);
+            originalStrategies.addStrategies(InlineFilterStrategy.instance());
+            originalStrategies.addStrategies(StandardVerificationStrategy.instance());
+            this.original.asAdmin().setStrategies(originalStrategies);
+            this.original.asAdmin().applyStrategies();
+            final TraversalStrategies optimizedStrategies = new DefaultTraversalStrategies();
+            optimizedStrategies.addStrategies(InlineFilterStrategy.instance());
+            this.optimized.asAdmin().setStrategies(optimizedStrategies);
+            this.optimized.asAdmin().applyStrategies();
+            assertEquals(this.optimized, this.original);
         }
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
-
             return Arrays.asList(new Traversal[][]{
                     {__.outE(), __.outE().hasLabel("knows").and(
                             inV().has("name", "marko").has("age", 29),

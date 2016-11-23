@@ -31,13 +31,12 @@ import java.util.function.Predicate;
  */
 public abstract class ConnectiveP<V> extends P<V> {
 
-    protected List<P<V>> predicates;
+    protected List<P<V>> predicates = new ArrayList<>();
 
     public ConnectiveP(final List<P<V>> predicates) {
         super(null, null);
         if (predicates.size() < 2)
             throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.size());
-        this.predicates = new ArrayList<>(predicates); // to avoid Arrays.asList() and unmodifiable exceptions
     }
 
     @Deprecated

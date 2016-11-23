@@ -440,6 +440,21 @@ uploaded to the server and should preserve the directory structure in git as ref
 Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
 documentation.
 
+[[site]]
+Site
+----
+
+The content for the TinkerPop home page and related pages that make up the web site at link://tinkerpop.apache.org[tinkerpop.apache.org]
+is stored in the git repository under `/docs/site`. In this way, it becomes easier for the community to provide content
+presented there, because the content can be accepted via the standard workflow of a pull request. To generate the site
+for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. PMC members can officially
+publish the site with `bin/publish-home.sh <username>`.
+
+"Publishing" does not publish documentation (e.g. reference docs, javadocs, etc) and only publishes what is generated
+from the content in `/docs/site`. Publishing the site can be performed out of band with the release cycle and is no
+way tied to a version. The `master` branch should always be considered the "current" web site and publishing should
+only happen from that branch.
+
 [[logging]]
 Logging
 -------

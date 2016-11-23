@@ -187,14 +187,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         this((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
     }
 
-    /**
-     * @deprecated As of release 3.0.1, replaced by {@link #GremlinGroovyScriptEngine(CompilerCustomizerProvider...)}
-     */
-    @Deprecated
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
-        this((CompilerCustomizerProvider) importCustomizerProvider);
-    }
-
     public GremlinGroovyScriptEngine(final Customizer... customizers) {
         final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
 
@@ -348,16 +340,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         // existing imports.
         importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
         internalReset();
-    }
-
-    /**
-     * Get the list of loaded plugins.
-     *
-     * @deprecated As of release 3.0.1, replaced by {@link #getPlugins()}
-     */
-    @Deprecated
-    public Set plugins() {
-        return loadedPlugins;
     }
 
     /**

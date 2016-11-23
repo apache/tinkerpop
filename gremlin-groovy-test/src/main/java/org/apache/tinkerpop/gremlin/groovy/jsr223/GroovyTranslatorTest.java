@@ -19,18 +19,27 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -40,6 +49,30 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GroovyTranslatorTest extends AbstractGremlinTest {
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldHandleStrategies() throws Exception {
+        GraphTraversalSource g = graph.traversal();
+        g = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.VERTICES, __.has("name", "marko"));
+        }})));
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+        Traversal.Admin<Vertex, Object> traversal = new GremlinGroovyScriptEngine().eval(g.V().values("name").asAdmin().getBytecode(), bindings);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+        //
+        traversal = new GremlinGroovyScriptEngine().eval(g.withoutStrategies(SubgraphStrategy.class).V().count().asAdmin().getBytecode(), bindings);
+        assertEquals(new Long(6), traversal.next());
+        assertFalse(traversal.hasNext());
+        //
+        traversal = new GremlinGroovyScriptEngine().eval(g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.VERTICES, __.has("name", "marko"));
+        }})), ReadOnlyStrategy.instance()).V().values("name").asAdmin().getBytecode(), bindings);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)

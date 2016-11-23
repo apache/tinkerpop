@@ -25,19 +25,19 @@ image:graph-cycle.png[width=250]
 
 [gremlin-groovy]
 ----
-vA = graph.addVertex(id, 'a')
-vB = graph.addVertex(id, 'b')
-vC = graph.addVertex(id, 'c')
-vD = graph.addVertex(id, 'd')
-vA.addEdge("knows", vB)
-vB.addEdge("knows", vC)
-vC.addEdge("knows", vA)
-vA.addEdge("knows", vD)
-vC.addEdge("knows", vD)
-g.V().as("a").repeat(out().simplePath()).times(2).
-  where(out().as("a")).path()                          <1>
-g.V().as("a").repeat(out().simplePath()).times(2).
-  where(out().as("a")).path().
+g.addV(id,'a').as('a').
+  addV(id,'b').as('b').
+  addV(id,'c').as('c').
+  addV(id,'d').as('d').
+  addE('knows').from('a').to('b').
+  addE('knows').from('b').to('c').
+  addE('knows').from('c').to('a').
+  addE('knows').from('a').to('d').
+  addE('knows').from('c').to('d').iterate()
+g.V().as('a').repeat(out().simplePath()).times(2).
+  where(out().as('a')).path()                          <1>
+g.V().as('a').repeat(out().simplePath()).times(2).
+  where(out().as('a')).path().
   dedup().by(unfold().order().by(id).dedup().fold())   <2>
 ----
 
@@ -55,7 +55,7 @@ arbitrary length over both incoming and outgoing edges in the modern graph?
 
 [gremlin-groovy,modern]
 ----
-g.V().as("a").repeat(both().simplePath()).emit(loops().is(gt(1))).
-  both().where(eq("a")).path().
+g.V().as('a').repeat(both().simplePath()).emit(loops().is(gt(1))).
+  both().where(eq('a')).path().
   dedup().by(unfold().order().by(id).dedup().fold())
 ----

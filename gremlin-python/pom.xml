@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
@@ -313,6 +313,7 @@
                                     <libraries>
                                         <param>aenum==1.4.5</param>
                                         <param>tornado==4.4.1</param>
+                                        <param>six==1.10.0</param>
                                     </libraries>
                                 </configuration>
                             </execution>
@@ -487,17 +488,18 @@ log.info("Starting Gremlin Server instances for native testing of gremlin-python
 def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
 settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settings.port = 45940
 
 def server = new GremlinServer(settings)
 server.start().join()
 
 project.setContextValue("gremlin.py.server", server)
-log.info("Gremlin Server with no authentication started on port 8182")
+log.info("Gremlin Server with no authentication started on port 45940")
 
 def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
 settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
-settingsSecure.port = 8183
+settingsSecure.port = 45941
 settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
 settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties"]
 
@@ -505,7 +507,7 @@ def serverSecure = new GremlinServer(settingsSecure)
 serverSecure.start().join()
 
 project.setContextValue("gremlin.py.server.secure", serverSecure)
-log.info("Gremlin Server with authentication started on port 8183")
+log.info("Gremlin Server with authentication started on port 45941")
 ]]>
                                         </script>
                                     </scripts>
@@ -525,10 +527,17 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer
 
 if (${skipTests}) return
 
-log.info("Tests for native gremlin-python complete - shutting down Gremlin Server")
-project.getContextValue("gremlin.py.server").stop().join()
-project.getContextValue("gremlin.py.server.secure").stop().join()
-log.info("Gremlin Server shutdown")
+log.info("Tests for native gremlin-python complete")
+
+def server = project.getContextValue("gremlin.py.server")
+log.info("Shutting down $server")
+server.stop().join()
+
+def serverSecure = project.getContextValue("gremlin.py.server.secure")
+log.info("Shutting down $serverSecure")
+serverSecure.stop().join()
+
+log.info("All Gremlin Server instances are shutdown for gremlin-python")
 ]]>
                                         </script>
                                     </scripts>

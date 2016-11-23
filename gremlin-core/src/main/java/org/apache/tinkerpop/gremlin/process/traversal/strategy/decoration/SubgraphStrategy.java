@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -53,9 +55,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,50 +80,40 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(ConnectiveStrategy.class);
 
-    private final String MARKER = Graph.Hidden.hide(UUID.randomUUID().toString());
+    private final String MARKER = Graph.Hidden.hide("gremlin.subgraphStrategy");
 
     private SubgraphStrategy(final Traversal<Vertex, ?> vertexCriterion, final Traversal<Edge, ?> edgeCriterion, final Traversal<VertexProperty, ?> vertexPropertyCriterion) {
 
-        this.vertexCriterion = null == vertexCriterion ? null : vertexCriterion.asAdmin();
+        this.vertexCriterion = null == vertexCriterion ? null : vertexCriterion.asAdmin().clone();
 
         // if there is no vertex predicate there is no need to test either side of the edge
         if (null == this.vertexCriterion) {
-            this.edgeCriterion = null == edgeCriterion ? null : edgeCriterion.asAdmin();
+            this.edgeCriterion = null == edgeCriterion ? null : edgeCriterion.asAdmin().clone();
         } else {
             final Traversal.Admin<Edge, ?> vertexPredicate;
             vertexPredicate = __.<Edge>and(
-                    __.inV().filter(this.vertexCriterion.clone()),
-                    __.outV().filter(this.vertexCriterion.clone())).asAdmin();
+                    __.inV().filter(this.vertexCriterion),
+                    __.outV().filter(this.vertexCriterion)).asAdmin();
 
             // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
             // edge predicate provided by the user.
             this.edgeCriterion = null == edgeCriterion ?
                     vertexPredicate :
-                    edgeCriterion.asAdmin().addStep(new TraversalFilterStep<>(edgeCriterion.asAdmin(), vertexPredicate));
+                    edgeCriterion.asAdmin().clone().addStep(new TraversalFilterStep<>(edgeCriterion.asAdmin(), vertexPredicate));
         }
 
-        this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin();
+        this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin().clone();
 
         if (null != this.vertexCriterion)
-            this.addLabelMarker(this.vertexCriterion);
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.vertexCriterion);
         if (null != this.edgeCriterion)
-            this.addLabelMarker(this.edgeCriterion);
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.edgeCriterion);
         if (null != this.vertexPropertyCriterion)
-            this.addLabelMarker(this.vertexPropertyCriterion);
-    }
-
-    private final void addLabelMarker(final Traversal.Admin<?, ?> traversal) {
-        traversal.getStartStep().addLabel(MARKER);
-        for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getLocalChildren().forEach(this::addLabelMarker);
-                ((TraversalParent) step).getGlobalChildren().forEach(this::addLabelMarker);
-            }
-        }
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.vertexPropertyCriterion);
     }
 
     private static void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
-                                final Traversal.Admin<? extends Element, ?> criterion) {
+                                       final Traversal.Admin<? extends Element, ?> criterion) {
         for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
             // re-assign the step label to the criterion because the label should apply seamlessly after the filter
             final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
@@ -203,8 +196,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         if (null != this.vertexPropertyCriterion) {
             final OrStep<Object> checkPropertyCriterion = new OrStep(traversal,
                     new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, false)),
-                    new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
-            final Traversal.Admin nonCheckPropertyCriterion = new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone()));
+                    new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion)));
+            final Traversal.Admin nonCheckPropertyCriterion = new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion));
 
             // turn all ElementValueTraversals into filters
             for (final Step<?, ?> step : traversal.getSteps()) {
@@ -274,6 +267,18 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     }
 
     @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        if (null != this.vertexCriterion)
+            map.put(VERTICES, this.vertexCriterion);
+        if (null != this.edgeCriterion)
+            map.put(EDGES, this.edgeCriterion);
+        if (null != this.vertexPropertyCriterion)
+            map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+        return new MapConfiguration(map);
+    }
+
+    @Override
     public Set<Class<? extends DecorationStrategy>> applyPost() {
         return POSTS;
     }
@@ -288,6 +293,21 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public Traversal<VertexProperty, ?> getVertexPropertyCriterion() {
         return this.vertexPropertyCriterion;
+    }
+
+    public static final String VERTICES = "vertices";
+    public static final String EDGES = "edges";
+    public static final String VERTEX_PROPERTIES = "vertexProperties";
+
+    public static SubgraphStrategy create(final Configuration configuration) {
+        final Builder builder = SubgraphStrategy.build();
+        if (configuration.containsKey(VERTICES))
+            builder.vertices((Traversal) configuration.getProperty(VERTICES));
+        if (configuration.containsKey(EDGES))
+            builder.edges((Traversal) configuration.getProperty(EDGES));
+        if (configuration.containsKey(VERTEX_PROPERTIES))
+            builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
+        return builder.create();
     }
 
     public static Builder build() {

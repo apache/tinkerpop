@@ -291,6 +291,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
                     emitSplit.setStepId(repeatStep.getNextStep().getId());
+                    emitSplit.addLabels(repeatStep.labels);
                     return IteratorUtils.of(start, emitSplit);
                 }
                 return IteratorUtils.of(start);

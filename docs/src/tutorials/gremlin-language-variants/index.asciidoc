@@ -519,7 +519,7 @@ for serialization to a `RemoteConnection` such as GremlinServer.
 
 [source,bash]
 ----
-$ bin/gremlin-server.sh -i org.apache.tinkerpop gremlin-python x.y.z
+$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
 $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 [INFO] GremlinServer -
        \,,,/

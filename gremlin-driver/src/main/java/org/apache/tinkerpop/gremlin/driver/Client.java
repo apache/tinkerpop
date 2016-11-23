@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -291,6 +292,8 @@ public abstract class Client {
      * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
      */
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+        if (isClosing()) throw new IllegalStateException("Client has been closed");
+
         if (!initialized)
             init();
 
@@ -314,6 +317,8 @@ public abstract class Client {
                 logger.debug("Submitted {} to - {}", msg, null == connection ? "connection not initialized" : connection.toString());
         }
     }
+
+    public abstract boolean isClosing();
 
     /**
      * Closes the client by making a synchronous call to {@link #closeAsync()}.
@@ -350,9 +355,15 @@ public abstract class Client {
     public final static class ClusteredClient extends Client {
 
         private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
 
         ClusteredClient(final Cluster cluster, final Client.Settings settings) {
             super(cluster, settings);
+        }
+
+        @Override
+        public boolean isClosing() {
+            return closing.get() != null;
         }
 
         /**
@@ -515,10 +526,14 @@ public abstract class Client {
          * Closes all the connection pools on all hosts.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (closing.get() != null)
+                return closing.get();
+
             final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
             hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
-            return CompletableFuture.allOf(poolCloseFutures);
+            closing.set(CompletableFuture.allOf(poolCloseFutures));
+            return closing.get();
         }
     }
 
@@ -615,9 +630,14 @@ public abstract class Client {
          * close on the {@code Client} that created it.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
+        public synchronized CompletableFuture<Void> closeAsync() {
             close.complete(null);
             return close;
+        }
+
+        @Override
+        public boolean isClosing() {
+            return close.isDone();
         }
 
         /**
@@ -649,6 +669,8 @@ public abstract class Client {
         private final boolean manageTransactions;
 
         private ConnectionPool connectionPool;
+
+        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
 
         SessionedClient(final Cluster cluster, final Client.Settings settings) {
             super(cluster, settings);
@@ -693,12 +715,22 @@ public abstract class Client {
             connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
         }
 
+        @Override
+        public boolean isClosing() {
+            return closing.get() != null;
+        }
+
         /**
          * Close the bound {@link ConnectionPool}.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
-            return connectionPool.closeAsync();
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (closing.get() != null)
+                return closing.get();
+
+            final CompletableFuture<Void> connectionPoolClose = connectionPool.closeAsync();
+            closing.set(connectionPoolClose);
+            return connectionPoolClose;
         }
     }
 
@@ -772,10 +804,12 @@ public abstract class Client {
     public static class SessionSettings {
         private final boolean manageTransactions;
         private final String sessionId;
+        private final boolean forceClosed;
 
         private SessionSettings(final Builder builder) {
             manageTransactions = builder.manageTransactions;
             sessionId = builder.sessionId;
+            forceClosed = builder.forceClosed;
         }
 
         /**
@@ -792,6 +826,14 @@ public abstract class Client {
             return sessionId;
         }
 
+        /**
+         * Determines if the session will be force closed. See {@link Builder#forceClosed(boolean)} for more details
+         * on what that means.
+         */
+        public boolean isForceClosed() {
+            return forceClosed;
+        }
+
         public static SessionSettings.Builder build() {
             return new SessionSettings.Builder();
         }
@@ -799,6 +841,7 @@ public abstract class Client {
         public static class Builder {
             private boolean manageTransactions = false;
             private String sessionId = UUID.randomUUID().toString();
+            private boolean forceClosed = false;
 
             private Builder() {}
 
@@ -819,6 +862,19 @@ public abstract class Client {
                 if (null == sessionId || sessionId.isEmpty())
                     throw new IllegalArgumentException("sessionId cannot be null or empty");
                 this.sessionId = sessionId;
+                return this;
+            }
+
+            /**
+             * Determines if the session should be force closed when the client is closed. Force closing will not
+             * attempt to close open transactions from existing running jobs and leave it to the underlying graph to
+             * decided how to proceed with those orphaned transactions. Setting this to {@code true} tends to lead to
+             * faster close operation which can be desirable if Gremlin Server has a long session timeout and a long
+             * script evaluation timeout as attempts to close long run jobs can occur more rapidly. By default, this
+             * value is {@link false}.
+             */
+            public Builder forceClosed(final boolean forced) {
+                this.forceClosed = forced;
                 return this;
             }
 

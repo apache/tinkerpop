@@ -22,19 +22,24 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 import unittest
 from unittest import TestCase
 
+import pytest
+
 from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.traversal import Traverser
+from gremlin_python.process.traversal import TraversalStrategy
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
+from gremlin_python.process.strategies import SubgraphStrategy
 
 
 class TestDriverRemoteConnection(TestCase):
     def test_traversals(self):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-        assert "remoteconnection[ws://localhost:8182/gremlin,g]" == str(connection)
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        assert "remoteconnection[ws://localhost:45940/gremlin,g]" == str(connection)
         g = Graph().traversal().withRemote(connection)
 
         assert long(6) == g.V().count().toList()[0]
@@ -59,9 +64,41 @@ class TestDriverRemoteConnection(TestCase):
         g.V().out().profile().next()
         connection.close()
 
+    def test_strategies(self):
+        statics.load_statics(globals())
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        #
+        g = Graph().traversal().withRemote(connection). \
+            withStrategies(TraversalStrategy("SubgraphStrategy",
+                                             {"vertices": __.hasLabel("person"),
+                                              "edges": __.hasLabel("created")}))
+        assert 4 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert 1 == g.V().label().dedup().count().next()
+        assert "person" == g.V().label().dedup().next()
+        #
+        g = Graph().traversal().withRemote(connection). \
+            withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
+        assert 4 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert 1 == g.V().label().dedup().count().next()
+        assert "person" == g.V().label().dedup().next()
+        #
+        g = g.withoutStrategies(SubgraphStrategy). \
+            withComputer(vertices=__.has("name", "marko"), edges=__.limit(0))
+        assert 1 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert "person" == g.V().label().next()
+        assert "marko" == g.V().name.next()
+        #
+        g = Graph().traversal().withRemote(connection).withComputer()
+        assert 6 == g.V().count().next()
+        assert 6 == g.E().count().next()
+        connection.close()
+
     def test_side_effects(self):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         #
         g = Graph().traversal().withRemote(connection)
         ###
@@ -103,8 +140,8 @@ class TestDriverRemoteConnection(TestCase):
         assert "ripple" in n.keys()
         assert 3 == n["lop"]
         assert 1 == n["ripple"]
-        #
-        t = g.withSideEffect('m',32).V().map(lambda: "x: x.sideEffects('m')")
+
+        t = g.withSideEffect('m', 32).V().map(lambda: "x: x.sideEffects('m')")
         results = t.toSet()
         assert 1 == len(results)
         assert 32 == list(results)[0]
@@ -117,11 +154,45 @@ class TestDriverRemoteConnection(TestCase):
             pass
         connection.close()
 
+    def test_side_effect_close(self):
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection)
+        t = g.V().aggregate('a').aggregate('b')
+        t.toList()
+
+        # The 'a' key should return some side effects
+        results = t.side_effects.get('a')
+        assert results
+
+        # Close result is None
+        results = t.side_effects.close()
+        assert not results
+
+        # Shouldn't get any new info from server
+        # 'b' isn't in local cache
+        results = t.side_effects.get('b')
+        assert not results
+
+        # But 'a' should still be cached locally
+        results = t.side_effects.get('a')
+        assert results
+
+        # 'a' should have been added to local keys cache, but not 'b'
+        results = t.side_effects.keys()
+        assert len(results) == 1
+        a, = results
+        assert a == 'a'
+
+        # Try to get 'b' directly from server, should throw error
+        with pytest.raises(Exception):
+            t.side_effects.value_lambda('b')
+        connection.close()
+
 
 if __name__ == '__main__':
     test = False
     try:
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         test = True
         connection.close()
     except:

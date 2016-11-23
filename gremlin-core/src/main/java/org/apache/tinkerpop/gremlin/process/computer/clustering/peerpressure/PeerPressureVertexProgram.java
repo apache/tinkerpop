@@ -58,8 +58,6 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     private MessageScope.Local<?> voteScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<?> countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
-    private final Set<MessageScope> VOTE_SCOPE = new HashSet<>(Collections.singletonList(this.voteScope));
-    private final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Collections.singletonList(this.countScope));
 
     public static final String CLUSTER = "gremlin.peerPressureVertexProgram.cluster";
     private static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
@@ -120,6 +118,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public Set<MessageScope> getMessageScopes(final Memory memory) {
+        final Set<MessageScope> VOTE_SCOPE = new HashSet<>(Collections.singletonList(this.voteScope));
+        final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Collections.singletonList(this.countScope));
         return this.distributeVote && memory.isInitialIteration() ? COUNT_SCOPE : VOTE_SCOPE;
     }
 

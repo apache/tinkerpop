@@ -37,6 +37,51 @@ with Apache TinkerPop. For information on how to build a Gremlin language varian
 please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
 tutorial.
 
+[[gremlin-java]]
+Gremlin-Java
+------------
+
+image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the Java8
+language and can be used by any Java8 compliant virtual machine. Gremlin-Java is considered the canonical, reference
+implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
+
+The Lambda Solution
+~~~~~~~~~~~~~~~~~~~
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most language do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
+
+[source,java]
+g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
+g.V().out("knows").sideEffect(System.out::println) <2>
+g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <3>
+
+<1> A Java8 function is used to map a `Traverser<S>` to an object `E`.
+<2> Gremlin steps that take consumer arguments can be passed Java8 method references.
+<3> Gremlin-Java may sometimes require explicit lambda typing when types can not be automatically inferred.
+
+When sending traversals over the wire via a `RemoteConnection`, the static methods of `Lambda` should be used
+and should denote a particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted
+into a lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
+
+[source,java]
+g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
+g.V().out("knows").sideEffect(Lambda.consumer("println it"))
+g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
+
+[[gremlin-groovy]]
+Gremlin-Groovy
+--------------
+
+image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
+link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
+Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
+<<gremlin-console,Gremlin Console>>.
+
+WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
+statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
+`g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
+
 [[gremlin-python]]
 Gremlin-Python
 --------------
@@ -62,6 +107,7 @@ Gremlin-Python users will typically make use of the following classes.
 >>> from gremlin_python import statics
 >>> from gremlin_python.structure.graph import Graph
 >>> from gremlin_python.process.graph_traversal import __
+>>> from gremlin_python.process.strategies import *
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
 In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
@@ -79,7 +125,7 @@ IMPORTANT: Gremlin-Python is compatible with GraphSON 2.0 only, so this serializ
 
 [source,bash]
 ----
-$ bin/gremlin-server.sh -i org.apache.tinkerpop gremlin-python x.y.z
+$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
 $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 [INFO] GremlinServer -
        \,,,/
@@ -115,7 +161,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 
 ----
 
-NOTE: The command to use `-i` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
+NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
 path. Future starts of Gremlin Server will not require that command.
 
 Within the CPython console, an empty `Graph` is created and a traversal source is spawned with `RemoteStrategy`.
@@ -224,6 +270,30 @@ in statically typed languages where bindings need to have the same typing as the
 it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.of()` simply returns a 2-tuple of `(str,object)`
 (see <<connecting-via-remotegraph,`Bindings`>>).
 
+Traversal Strategies
+~~~~~~~~~~~~~~~~~~~~
+
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
+`TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+
+[gremlin-python,modern]
+----
+g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+g = g.withoutStrategies(SubgraphStrategy)
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+g = g.withComputer(workers=2,vertices=has('name','marko'))
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+----
+
+NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on
+Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
+the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
+re-construction machine-side.
+
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~
 
@@ -255,3 +325,38 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
+Custom Serialization
+~~~~~~~~~~~~~~~~~~~~
+
+Gremlin-Python provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
+(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add
+new types by creating serializers and deserializers in Python and registering them with the `RemoteConnection`.
+
+[source,python]
+----
+class MyType(object):
+  GRAPHSON_PREFIX = "providerx"
+  GRAPHSON_BASE_TYPE = "MyType"
+  GRAPHSON_TYPE = GraphSONUtil.formatType(GRAPHSON_PREFIX, GRAPHSON_BASE_TYPE)
+
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+  @classmethod
+  def objectify(cls, value, reader):
+    return cls(value['x'], value['y'])
+
+  @classmethod
+  def dictify(cls, value, writer):
+    return GraphSONUtil.typedValue(cls.GRAPHSON_BASE_TYPE,
+                                  {'x': value.x, 'y': value.y},
+                                  cls.GRAPHSON_PREFIX)
+
+graphson_reader = GraphSONReader({MyType.GRAPHSON_TYPE: MyType})
+graphson_writer = GraphSONWriter({MyType: MyType})
+
+connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
+                                     graphson_reader=graphson_reader,
+                                     graphson_writer=graphson_writer)
+----

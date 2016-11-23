@@ -59,7 +59,8 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             this.writer.writeObject(outputStream, BytecodeHelper.filterInstructions(bytecode,
-                    instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)));
+                    instruction -> !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                            instruction.getArguments()[0].toString().contains("TranslationStrategy"))));
             // System.out.println(new String(outputStream.toByteArray()));
             return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         } catch (final Exception e) {

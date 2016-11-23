@@ -96,9 +96,9 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-        logger.warn("Exception caught during WebSocket processing - closing connection", cause);
         if (!handshakeFuture.isDone()) handshakeFuture.setFailure(cause);
-        ctx.close();
+
+        // let the GremlinResponseHandler take care of exception logging, channel closing, and cleanup
         ctx.fireExceptionCaught(cause);
     }
 }

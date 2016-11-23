@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-test</artifactId>
     <name>Apache TinkerPop :: Gremlin Test</name>
@@ -30,16 +30,6 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.carrotsearch</groupId>
-            <artifactId>junit-benchmarks</artifactId>
-            <version>0.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.3.171</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -90,4 +80,32 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
+
+    <!-- for whatever reason, jacoco doesn't like running the TraversalInterruptionTest - ignore for now -->
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                            </argLine>
+                            <excludes>
+                                <exclude>TraversalInterruptionTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

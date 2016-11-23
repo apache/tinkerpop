@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -31,12 +32,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inli
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -66,8 +67,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldFilterVertexCriterion() throws Exception {
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -154,7 +154,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         );
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final GraphTraversalSource sg = g.withStrategies(strategy);
 
         // all vertices are here
         assertEquals(6, g.V().count().next().longValue());
@@ -261,8 +261,8 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
                 has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).vertexCriterion(vertexCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edges(edgeCriterion).vertices(vertexCriterion).create();
+        final GraphTraversalSource sg = g.withStrategies(strategy);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -337,8 +337,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         // this will exclude "peter"
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("ripple", "josh", "marko"));
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
 
         assertEquals(9, g.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
         assertEquals(2, sg.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
@@ -352,8 +351,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldGetExcludedVertex() throws Exception {
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
 
         sg.V(convertToVertexId("marko")).next();
     }
@@ -367,8 +365,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
                 has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
-        final GraphTraversalSource sg = create(strategy);
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().edges(edgeCriterion).create());
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }
@@ -376,48 +373,50 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void shouldFilterVertexProperties() throws Exception {
-        GraphTraversalSource sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
+        GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.VERTEX_PROPERTIES, __.has("startTime", P.gt(2005)));
+        }})));
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
         if (sg.getStrategies().getStrategy(InlineFilterStrategy.class).isPresent())
             assertFalse(TraversalHelper.hasStepOfAssignableClassRecursively(TraversalFilterStep.class, sg.V().properties("location").value().iterate().asAdmin()));
         // check to make sure edge properties are not analyzed
-        sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").properties("location").as("b").select("a").outE().properties().select("b").value().dedup());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").values("location").as("b").select("a").outE().properties().select("b").dedup());
         if (sg.getStrategies().getStrategy(InlineFilterStrategy.class).isPresent())
             assertFalse(TraversalHelper.hasStepOfAssignableClassRecursively(TraversalFilterStep.class, sg.V().as("a").values("location").as("b").select("a").outE().properties().select("b").dedup().iterate().asAdmin()));
         //
-        sg = create(SubgraphStrategy.build().vertices(has("name", P.neq("stephen"))).vertexProperties(has("startTime", P.gt(2005))).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertices(has("name", P.neq("stephen"))).vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
         //
-        sg = create(SubgraphStrategy.build().vertices(has("name", P.not(P.within("stephen", "daniel")))).vertexProperties(has("startTime", P.gt(2005))).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertices(has("name", P.not(P.within("stephen", "daniel")))).vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().properties("location").value());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().values("location"));
         //
-        sg = create(SubgraphStrategy.build().vertices(has("name", P.eq("matthias"))).vertexProperties(has("startTime", P.gte(2014))).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertices(has("name", P.eq("matthias"))).vertexProperties(has("startTime", P.gte(2014))).create());
         checkResults(makeMapList(1, "seattle", 1L), sg.V().groupCount().by("location"));
         //
-        sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
         checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
         //
-        sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
+        sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.VERTICES, __.has("location"));
+            put(SubgraphStrategy.VERTEX_PROPERTIES, __.hasNot("endTime"));
+        }})));
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().valueMap("location").select(Column.values).unfold().unfold());
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().propertyMap("location").select(Column.values).unfold().unfold().value());
         //
-        sg = create(SubgraphStrategy.build().edges(__.<Edge>hasLabel("uses").has("skill", 5)).create());
+        sg = g.withStrategies(SubgraphStrategy.build().edges(__.<Edge>hasLabel("uses").has("skill", 5)).create());
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().valueMap().select(Column.values).unfold());
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().propertyMap().select(Column.values).unfold().value());
         //
-        sg = create(SubgraphStrategy.build().vertexProperties(__.hasNot("skill")).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertexProperties(__.hasNot("skill")).create());
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().outE("uses").values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().properties("skill").as("b").identity().select("b").by(__.value()));
     }
 
 
-    private GraphTraversalSource create(final SubgraphStrategy strategy) {
-        return graphProvider.traversal(graph, strategy);
-    }
 }

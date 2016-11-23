@@ -35,6 +35,8 @@ These providers include:
 * Graph Language Provider
 * Graph Plugin Provider
 
+include::release-3.3.x.asciidoc[]
+
 include::release-3.2.x-incubating.asciidoc[]
 
 include::release-3.1.x-incubating.asciidoc[]

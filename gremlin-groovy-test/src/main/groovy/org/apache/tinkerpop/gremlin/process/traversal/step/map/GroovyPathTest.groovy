@@ -54,5 +54,10 @@ public abstract class GroovyPathTest {
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path")
         }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).outE('created').inV.inE.outV.path()", "v1Id", v1Id)
+        }
     }
 }

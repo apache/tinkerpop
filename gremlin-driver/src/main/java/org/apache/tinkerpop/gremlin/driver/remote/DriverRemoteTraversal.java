@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -37,7 +39,10 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver.
+ * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver. This {@link Traversal} implementation is
+ * typically iterated from with {@link RemoteStep} where it the {@link #nextTraverser()} method is called. While
+ * this class provides implementations for both {@link #next()} and {@link #hasNext()} that unroll "bulked" results,
+ * those methods are not called directly from with TinkerPop remoting.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -46,7 +51,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
     private final Iterator<Traverser.Admin<E>> traversers;
     private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
     private final RemoteTraversalSideEffects sideEffects;
-    private final Client client;
+    private final ResultSet rs;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
@@ -60,15 +65,29 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
             this.traversers = new TraverserIterator<>(rs.iterator());
         }
 
-        this.client = client;
+        this.rs = rs;
         this.sideEffects = new DriverRemoteTraversalSideEffects(
                 client,
                 rs.getOriginalRequestMessage().getRequestId(),
                 rs.getHost());
     }
 
+    /**
+     * Gets a side-effect from the server. Do not call this method prior to completing the iteration of the
+     * {@link DriverRemoteTraversal} that spawned this as the side-effect will not be ready. If this method is called
+     * prior to iteration being complete, then it will block until the traversal notifies it of completion. Generally
+     * speaking, the common user would not get side-effects this way - they would use a call to {@code cap()}.
+     */
     @Override
     public RemoteTraversalSideEffects getSideEffects() {
+        // wait for the read to complete (i.e. iteration on the server) before allowing the caller to get the
+        // side-effect. calling prior to this will result in the side-effect not being found. of course, the
+        // bad part here is that the method blocks indefinitely waiting for the result, but it prevents the
+        // test failure problems that happen on slower systems. in practice, it's unlikely that a user would
+        // try to get a side-effect prior to iteration, but since the API allows it, this at least prevents
+        // the error.
+        rs.allItemsAvailableAsync().join();
+
         return this.sideEffects;
     }
 
@@ -93,6 +112,8 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
     @Override
     public Traverser.Admin<E> nextTraverser() {
+        // the lastTraverser is initialized as "empty" at start of iteration so the initial pass through will
+        // call next() to begin the iteration
         if (0L == this.lastTraverser.bulk())
             return this.traversers.next();
         else {

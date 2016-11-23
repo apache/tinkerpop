@@ -48,7 +48,6 @@ public class BulkDumperVertexProgramTest extends AbstractGremlinProcessTest {
                 assertEquals(1, IteratorUtils.count(v.values("age", "lang")));
                 final String name = v.value("name");
                 if (name.equals("marko")) {
-                    assertEquals(1, v.id());
                     assertEquals("person", v.label());
                     assertEquals(Integer.valueOf(29), v.value("age"));
                     assertEquals(3, IteratorUtils.count(v.edges(Direction.OUT)));
@@ -56,21 +55,18 @@ public class BulkDumperVertexProgramTest extends AbstractGremlinProcessTest {
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.OUT, "created")));
                     assertEquals(0, IteratorUtils.count(v.edges(Direction.IN)));
                 } else if (name.equals("vadas")) {
-                    assertEquals(2, v.id());
                     assertEquals("person", v.label());
                     assertEquals(Integer.valueOf(27), v.value("age"));
                     assertEquals(0, IteratorUtils.count(v.edges(Direction.OUT)));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN)));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN, "knows")));
                 } else if (name.equals("lop")) {
-                    assertEquals(3, v.id());
                     assertEquals("software", v.label());
                     assertEquals("java", v.value("lang"));
                     assertEquals(0, IteratorUtils.count(v.edges(Direction.OUT)));
                     assertEquals(3, IteratorUtils.count(v.edges(Direction.IN)));
                     assertEquals(3, IteratorUtils.count(v.edges(Direction.IN, "created")));
                 } else if (name.equals("josh")) {
-                    assertEquals(4, v.id());
                     assertEquals("person", v.label());
                     assertEquals(Integer.valueOf(32), v.value("age"));
                     assertEquals(2, IteratorUtils.count(v.edges(Direction.OUT)));
@@ -78,14 +74,12 @@ public class BulkDumperVertexProgramTest extends AbstractGremlinProcessTest {
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN)));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN, "knows")));
                 } else if (name.equals("ripple")) {
-                    assertEquals(5, v.id());
                     assertEquals("software", v.label());
                     assertEquals("java", v.value("lang"));
                     assertEquals(0, IteratorUtils.count(v.edges(Direction.OUT)));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN)));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.IN, "created")));
                 } else if (name.equals("peter")) {
-                    assertEquals(6, v.id());
                     assertEquals("person", v.label());
                     assertEquals(Integer.valueOf(35), v.value("age"));
                     assertEquals(1, IteratorUtils.count(v.edges(Direction.OUT)));

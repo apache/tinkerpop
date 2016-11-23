@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorOverGraphTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFileSandboxTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineOverGraphTest;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineSandboxCustomTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineSandboxedStandardTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTinkerPopSandboxTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest;
@@ -57,7 +56,6 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
             CredentialGraphTest.class,
             GremlinGroovyScriptEngineOverGraphTest.class,
-            GremlinGroovyScriptEngineSandboxCustomTest.class,
             GremlinGroovyScriptEngineSandboxedStandardTest.class,
             GremlinGroovyScriptEngineTinkerPopSandboxTest.class,
             GremlinGroovyScriptEngineFileSandboxTest.class,

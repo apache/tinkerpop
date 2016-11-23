@@ -19,6 +19,7 @@ under the License.
 import sys
 from .traversal import Traversal
 from .traversal import TraversalStrategies
+from .strategies import VertexProgramStrategy
 from .traversal import Bytecode
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
@@ -36,10 +37,6 @@ class GraphTraversalSource(object):
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
-    return source
-  def withComputer(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
-    source.bytecode.add_source("withComputer", *args)
     return source
   def withPath(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
@@ -67,6 +64,8 @@ class GraphTraversalSource(object):
     return source
   def withBindings(self, bindings):
     return self
+  def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
+    return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("E", *args)
@@ -333,6 +332,9 @@ class GraphTraversal(Traversal):
     return self
   def select(self, *args):
     self.bytecode.add_step("select", *args)
+    return self
+  def selectV3d2(self, *args):
+    self.bytecode.add_step("selectV3d2", *args)
     return self
   def sideEffect(self, *args):
     self.bytecode.add_step("sideEffect", *args)
@@ -613,6 +615,9 @@ class __(object):
   @staticmethod
   def select(*args):
     return GraphTraversal(None, None, Bytecode()).select(*args)
+  @staticmethod
+  def selectV3d2(*args):
+    return GraphTraversal(None, None, Bytecode()).selectV3d2(*args)
   @staticmethod
   def sideEffect(*args):
     return GraphTraversal(None, None, Bytecode()).sideEffect(*args)
@@ -1034,6 +1039,11 @@ def select(*args):
       return __.select(*args)
 
 statics.add_static('select', select)
+
+def selectV3d2(*args):
+      return __.selectV3d2(*args)
+
+statics.add_static('selectV3d2', selectV3d2)
 
 def sideEffect(*args):
       return __.sideEffect(*args)

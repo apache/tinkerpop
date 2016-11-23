@@ -65,14 +65,6 @@ class Console {
     private final Groovysh groovy
     private final boolean interactive
 
-    /**
-     * @deprecated As of release 3.2.1.
-     */
-    @Deprecated
-    public Console(final String initScriptFile) {
-        this(new IO(System.in, System.out, System.err), initScriptFile.size() != null ? [initScriptFile]: null, true)
-    }
-
     public Console(final IO io, final List<String> scriptAndArgs, final boolean interactive) {
         this.io = io
         this.interactive = interactive
@@ -172,10 +164,7 @@ class Console {
             int lineNo = groovy.buffers.current().size() 
             if (lineNo > 0 ) {
                 String lineStr = lineNo.toString() + ">"
-                int pad = Preferences.inputPrompt.length() - lineStr.length() + 2
-                if (pad < 0) {
-                    pad = 0
-                }
+                int pad = Preferences.inputPrompt.length()
                 return Colorizer.render(Preferences.inputPromptColor, lineStr.toString().padLeft(pad, '.') + ' ')
             } else {
                 return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ')
@@ -400,8 +389,6 @@ class Console {
         // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
         // feature can be removed. ultimately this should be removed when a breaking change can go in
         IO io = new IO(System.in, System.out, System.err)
-        if (args.length == 1 && !args[0].startsWith("-"))
-            new Console(io, [args[0]], true)
 
         final CliBuilder cli = new CliBuilder(usage: 'gremlin.sh [options] [...]', formatter: new HelpFormatter(), stopAtNonOption: false)
 

@@ -19,15 +19,20 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * When a {@link TraversalSource} is manipulated and then a {@link Traversal} is spawned and mutated, a language
@@ -43,6 +48,8 @@ import java.util.Map;
  */
 public final class Bytecode implements Cloneable, Serializable {
 
+    private static final Object[] EMPTY_ARRAY = new Object[]{};
+
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
     private transient Bindings bindings = null;
@@ -57,6 +64,14 @@ public final class Bytecode implements Cloneable, Serializable {
         if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
             this.bindings = (Bindings) arguments[0];
             this.bindings.clear();
+        } else if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
+            final Class<TraversalStrategy>[] classes = new Class[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
+                        ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
+                        (Class) arguments[i];
+            }
+            this.sourceInstructions.add(new Instruction(sourceName, classes));
         } else {
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
             if (null != this.bindings) this.bindings.clear();
@@ -110,21 +125,32 @@ public final class Bytecode implements Cloneable, Serializable {
     public Map<String, Object> getBindings() {
         final Map<String, Object> bindingsMap = new HashMap<>();
         for (final Instruction instruction : this.sourceInstructions) {
-            addInstructionBindings(bindingsMap, instruction);
+            for (final Object argument : instruction.getArguments()) {
+                addArgumentBinding(bindingsMap, argument);
+            }
         }
         for (final Instruction instruction : this.stepInstructions) {
-            addInstructionBindings(bindingsMap, instruction);
+            for (final Object argument : instruction.getArguments()) {
+                addArgumentBinding(bindingsMap, argument);
+            }
         }
         return bindingsMap;
     }
 
-    private static final void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
-        for (final Object argument : instruction.getArguments()) {
-            if (argument instanceof Binding)
-                bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
-            else if (argument instanceof Bytecode)
-                bindingsMap.putAll(((Bytecode) argument).getBindings());
-        }
+    private static final void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
+        if (argument instanceof Binding)
+            bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
+        else if (argument instanceof Map) {
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
+                addArgumentBinding(bindingsMap, entry.getKey());
+                addArgumentBinding(bindingsMap, entry.getValue());
+            }
+        } else if (argument instanceof Collection) {
+            for (final Object item : (Collection) argument) {
+                addArgumentBinding(bindingsMap, item);
+            }
+        } else if (argument instanceof Bytecode)
+            bindingsMap.putAll(((Bytecode) argument).getBindings());
     }
 
     @Override
@@ -233,29 +259,47 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private final Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
-            return new Object[]{};
+            return EMPTY_ARRAY;
         final List<Object> flatArguments = new ArrayList<>();
         for (final Object object : arguments) {
             if (object instanceof Object[]) {
                 for (final Object nestObject : (Object[]) object) {
-                    flatArguments.add(convertArgument(nestObject));
+                    flatArguments.add(convertArgument(nestObject, true));
                 }
             } else
-                flatArguments.add(convertArgument(object));
+                flatArguments.add(convertArgument(object, true));
         }
         return flatArguments.toArray();
     }
 
-    private final Object convertArgument(final Object argument) {
-        if (argument instanceof Traversal)
-            return ((Traversal) argument).asAdmin().getBytecode();
-
-        if (null != this.bindings) {
+    private final Object convertArgument(final Object argument, final boolean searchBindings) {
+        if (searchBindings && null != this.bindings) {
             final String variable = this.bindings.getBoundVariable(argument);
             if (null != variable)
-                return new Binding<>(variable, argument);
+                return new Binding<>(variable, convertArgument(argument, false));
         }
-
-        return argument;
+        //
+        if (argument instanceof Traversal)
+            return ((Traversal) argument).asAdmin().getBytecode();
+        else if (argument instanceof Map) {
+            final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
+                map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));
+            }
+            return map;
+        } else if (argument instanceof List) {
+            final List<Object> list = new ArrayList<>(((List) argument).size());
+            for (final Object item : (List) argument) {
+                list.add(convertArgument(item, true));
+            }
+            return list;
+        } else if (argument instanceof Set) {
+            final Set<Object> set = new LinkedHashSet<>(((Set) argument).size());
+            for (final Object item : (Set) argument) {
+                set.add(convertArgument(item, true));
+            }
+            return set;
+        } else
+            return argument;
     }
 }

@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -122,10 +123,21 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
+    public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
+        return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
+        return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
+    }
+
+    @Override
     public GraphTraversalSource withBindings(final Bindings bindings) {
         return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
     }
-
+    
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);
@@ -139,17 +151,6 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public GraphTraversalSource withComputer() {
         return (GraphTraversalSource) TraversalSource.super.withComputer();
-    }
-
-    @Override
-    public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
-        return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "varargs"})
-    public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
-        return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
     }
 
     @Override

@@ -24,9 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
@@ -203,17 +203,17 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             final TraversalStrategies graphStrategies = new DefaultTraversalStrategies();
             graphStrategies.addStrategies(
                     ConnectiveStrategy.instance(),
+                    InlineFilterStrategy.instance(),
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
-                    InlineFilterStrategy.instance(),
                     FilterRankingStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
                     PathRetractionStrategy.instance(),
+                    LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance());
-
             GRAPH_CACHE.put(Graph.class, graphStrategies);
             GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
 
@@ -225,7 +225,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     OrderLimitStrategy.instance(),
                     PathProcessorStrategy.instance(),
                     ComputerVerificationStrategy.instance());
-
             GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
         }
 
@@ -239,6 +238,16 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
+            try {
+                // be sure to load the class so that its static{} traversal strategy registration component is loaded.
+                // this is more important for GraphComputer classes as they are typically not instantiated prior to strategy usage like Graph classes.
+                final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
+                        graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
+                        graphOrGraphComputerClass.getCanonicalName();
+                Class.forName(graphComputerClassName);
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
             if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
                 final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
                 return null == traversalStrategies ? GRAPH_CACHE.get(Graph.class) : traversalStrategies;

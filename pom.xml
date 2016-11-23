@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.2.3-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -113,7 +113,6 @@ limitations under the License.
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
-        <module>gremlin-benchmark</module>
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
@@ -126,6 +125,7 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
+        <module>gremlin-tools</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
@@ -139,7 +139,6 @@ limitations under the License.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
-        <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.21</slf4j.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -284,6 +283,7 @@ limitations under the License.
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
+                        <exclude>**/*.graffle</exclude>
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
@@ -293,6 +293,10 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
+                        <exclude>docs/site/home/css/**</exclude>
+                        <exclude>docs/site/home/js/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -311,6 +315,14 @@ limitations under the License.
                         </exclusions>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -337,12 +349,10 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
-                            -Dis.testing=true
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
-                            <exclude>**/*PerformanceTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -362,29 +372,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                                     -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>performance-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>**/*PerformanceTest.java</include>
-                                </includes>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}
-                                </argLine>
-                                <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                             </configuration>
                         </execution>
                         <execution>
@@ -396,18 +386,6 @@ limitations under the License.
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <summaryFiles>
                                     <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                                </summaryFiles>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>verify-performance-test</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                            <configuration>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <summaryFiles>
-                                    <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                                 </summaryFiles>
                             </configuration>
                         </execution>
@@ -458,51 +436,6 @@ limitations under the License.
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc-plugin.version}</version>
-                <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>non-aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>javadoc</report>
-                        </reports>
-                    </reportSet>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <dependencyManagement>
         <dependencies>
@@ -662,6 +595,11 @@ limitations under the License.
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.4.201502262128</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -840,6 +778,31 @@ limitations under the License.
                                     <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <outputDirectory>${htmlsingle.output.dir}/dev/developer</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>3</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>io-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/io</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/io</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
@@ -1161,7 +1124,6 @@ limitations under the License.
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
-                                <exclude>**/*PerformanceTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -1198,6 +1160,97 @@ limitations under the License.
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>surefireArgLine</propertyName>
+                                    <excludes>
+                                        <exclude>Lib/*.class</exclude>
+                                        <exclude>Lib/aenum/**</exclude>
+                                        <exclude>Lib/backports/**</exclude>
+                                        <exclude>Lib/certifi/**</exclude>
+                                        <exclude>Lib/setuptools/**</exclude>
+                                        <exclude>Lib/setuptools.command/**</exclude>
+                                        <exclude>Lib/tornado/**</exclude>
+                                        <exclude>Lib/tornado.platform/**</exclude>
+                                        <exclude>Lib/tornado.test/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>prepare-it-agent</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco-it.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>failsafeArgLine</propertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <id>aggregate-surefire-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>install</phase>
+                                <configuration>
+                                    <aggregate>true</aggregate>
+                                    <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
         </profile>
 
     </profiles>

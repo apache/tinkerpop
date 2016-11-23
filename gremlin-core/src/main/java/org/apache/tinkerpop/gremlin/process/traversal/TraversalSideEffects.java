@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalSideEffects extends Cloneable, Serializable {
+public interface TraversalSideEffects extends Cloneable, Serializable, AutoCloseable {
 
     /**
      * Return true if the key is a registered side-effect.
@@ -81,6 +81,13 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      * @return the keys of the sideEffect
      */
     public Set<String> keys();
+
+    /**
+     * Invalidate the side effect cache for traversal.
+     */
+    public default void close() throws Exception {
+        // do nothing
+    }
 
     /**
      * Determines if there are any side-effects to be retrieved.

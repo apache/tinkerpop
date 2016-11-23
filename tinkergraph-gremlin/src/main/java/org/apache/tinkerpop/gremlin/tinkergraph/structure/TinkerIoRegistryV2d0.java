@@ -74,7 +74,15 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
         register(GraphSONIo.class, null, new TinkerModuleV2d0());
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #instance()}.
+     */
+    @Deprecated
     public static TinkerIoRegistryV2d0 getInstance() {
+        return INSTANCE;
+    }
+
+    public static TinkerIoRegistryV2d0 instance() {
         return INSTANCE;
     }
 
@@ -130,7 +138,7 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public String getTypeNamespace() {
-            return "gremlin";
+            return "tinker";
         }
     }
 

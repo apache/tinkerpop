@@ -41,7 +41,8 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public B_LP_O_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
         this.path = ImmutablePath.make();
-        if (!step.getLabels().isEmpty()) this.path = this.path.extend(t, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) this.path = this.path.extend(t, labels);
     }
 
     /////////////////
@@ -66,7 +67,8 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         final B_LP_O_S_SE_SL_Traverser<R> clone = (B_LP_O_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.path = clone.path.clone();
-        if (!step.getLabels().isEmpty()) clone.path = clone.path.extend(r, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) clone.path = clone.path.extend(r, labels);
         return clone;
     }
 
@@ -80,7 +82,7 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public void addLabels(final Set<String> labels) {
         if (!labels.isEmpty())
-            this.path = this.path.size() == 0 || !this.path.get(this.path.size() - 1).equals(this.t) ?
+            this.path = this.path.isEmpty() || !this.t.equals(this.path.head()) ?
                     this.path.extend(this.t, labels) :
                     this.path.extend(labels);
     }
@@ -89,9 +91,9 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public void keepLabels(final Set<String> labels) {
         final Set<String> retractLabels = new HashSet<>();
         for (final Set<String> stepLabels : this.path.labels()) {
-            for (final String l : stepLabels) {
-                if (!labels.contains(l))
-                    retractLabels.add(l);
+            for (final String label : stepLabels) {
+                if (!labels.contains(label))
+                    retractLabels.add(label);
             }
         }
         this.path = this.path.retract(retractLabels);

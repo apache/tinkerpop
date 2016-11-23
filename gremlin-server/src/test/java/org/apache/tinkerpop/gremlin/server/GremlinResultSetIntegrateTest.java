@@ -83,25 +83,13 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);
-        cluster = Cluster.build().serializer(serializer).create();
+        cluster = TestClientFactory.build().serializer(serializer).create();
         client = cluster.connect();
     }
 
     @After
     public void afterTest() {
         cluster.close();
-    }
-
-    @Test
-    public void shouldHandleVertexResultFromTraversal() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("g");
-        final ResultSet resultSet = aliased.submit(g.V().both().both());
-        final List<Result> results = resultSet.all().get();
-
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
-        assertEquals(30, results.size());
     }
 
     @Test
@@ -153,7 +141,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexResultWithLiteSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRYO_LITE_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_LITE_V1D0).create();
         final Client clientLite = cluster.connect();
         final ResultSet results = clientLite.submit("g.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
