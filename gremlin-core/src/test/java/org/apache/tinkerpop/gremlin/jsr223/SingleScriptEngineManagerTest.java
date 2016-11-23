@@ -18,22 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import javax.script.Bindings;
-import java.util.function.Supplier;
+import org.junit.Test;
+
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class LazyBindingsCustomizer implements BindingsCustomizer {
+public class SingleScriptEngineManagerTest {
+    private static final GremlinScriptEngineManager mgr = SingleGremlinScriptEngineManager.instance();
 
-    private final Supplier<Bindings> bindingsSupplier;
-
-    public LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier) {
-        this.bindingsSupplier = bindingsSupplier;
+    @Test
+    public void shouldGetSameInstance() {
+        assertSame(mgr, SingleGremlinScriptEngineManager.instance());
+        assertSame(mgr, SingleGremlinScriptEngineManager.instance());
+        assertSame(mgr, SingleGremlinScriptEngineManager.instance());
+        assertSame(mgr, SingleGremlinScriptEngineManager.instance());
+        assertSame(mgr, SingleGremlinScriptEngineManager.instance());
+        assertSame(mgr, SingleGremlinScriptEngineManager.getInstance());
     }
 
-    @Override
-    public Bindings getBindings() {
-        return bindingsSupplier.get();
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotGetGremlinScriptEngineAsItIsNotRegistered() {
+        mgr.getEngineByName("gremlin-groovy");
     }
 }

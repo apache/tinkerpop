@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.util.CoreImports;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;

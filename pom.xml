@@ -285,9 +285,10 @@ limitations under the License.
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
                         <exclude>**/goal.txt</exclude>
-                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/jsr223/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/ext/**</exclude>
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
