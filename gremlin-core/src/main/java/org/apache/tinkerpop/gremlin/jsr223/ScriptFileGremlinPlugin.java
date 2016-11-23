@@ -25,13 +25,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Loads scripts from one or more files into the {@link GremlinScriptEngine} at startup. This {@link GremlinPlugin} is
+ * not enabled for the {@code ServiceLoader}. It is designed to be instantiated manually.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
-    private static final String MODULE_NAME = "tinkerpop.script";
+    private static final String NAME = "tinkerpop.script";
 
-    public ScriptFileGremlinPlugin(final Builder builder) {
-        super(MODULE_NAME, builder.appliesTo, new DefaultScriptCustomizer(builder.files));
+    private ScriptFileGremlinPlugin(final Builder builder) {
+        super(NAME, builder.appliesTo, new DefaultScriptCustomizer(builder.files));
     }
 
     public static Builder build() {
@@ -47,10 +50,11 @@ public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
 
         /**
          * The name of the {@link GremlinScriptEngine} that this module will apply to. Setting no values here will
-         * make the module available to all the engines.
+         * make the module available to all the engines. Typically, this value should be set as a script's syntax will
+         * be bound to the {@link GremlinScriptEngine} language.
          */
-        public Builder appliesTo(final Collection<String> scriptEngineName) {
-            this.appliesTo.addAll(scriptEngineName);
+        public Builder appliesTo(final Collection<String> scriptEngineNames) {
+            this.appliesTo.addAll(scriptEngineNames);
             return this;
         }
 

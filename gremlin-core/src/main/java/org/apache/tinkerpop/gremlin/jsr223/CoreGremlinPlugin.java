@@ -23,13 +23,14 @@ import org.apache.tinkerpop.gremlin.util.CoreImports;
 import java.util.Optional;
 
 /**
- * This module is required for a {@code ScriptEngine} to be Gremlin-enabled.
+ * This module is required for a {@code ScriptEngine} to be Gremlin-enabled. This {@link GremlinPlugin} is not enabled
+ * for the {@code ServiceLoader}. It is designed to be instantiated manually.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class CoreGremlinPlugin implements GremlinPlugin {
 
-    private static final String MODULE_NAME = "tinkerpop.core";
+    private static final String NAME = "tinkerpop.core";
 
     private static final ImportCustomizer gremlinCore = DefaultImportCustomizer.build()
             .addClassImports(CoreImports.getClassImports())
@@ -57,6 +58,6 @@ public final class CoreGremlinPlugin implements GremlinPlugin {
 
     @Override
     public String getName() {
-        return MODULE_NAME;
+        return NAME;
     }
 }

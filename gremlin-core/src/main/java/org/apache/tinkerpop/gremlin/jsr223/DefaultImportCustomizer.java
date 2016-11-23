@@ -33,14 +33,6 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DefaultImportCustomizer implements ImportCustomizer {
-    /**
-     * @deprecated As of release 3.2.4, not replaced.
-     */
-    @Deprecated
-    public static final ImportCustomizer GREMLIN_CORE = DefaultImportCustomizer.build()
-            .addClassImports(CoreImports.getClassImports())
-            .addEnumImports(CoreImports.getEnumImports())
-            .addMethodImports(CoreImports.getMethodImports()).create();
 
     private final Set<Class> classImports;
     private final Set<Method> methodImports;

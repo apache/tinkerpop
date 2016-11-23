@@ -33,15 +33,16 @@ import java.util.stream.Stream;
 /**
  * A module that allows custom class, static method and enum imports (i.e. those that are statically defined by a
  * module within itself). A user might utilize this class to supply their own imports. This module is not specific
- * to any {@link GremlinScriptEngine} - the imports are supplied to all engines.
+ * to any {@link GremlinScriptEngine} - the imports are supplied to all engines. This {@link GremlinPlugin} is not
+ * enabled for the {@code ServiceLoader}. It is designed to be instantiated manually.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
-    private static final String MODULE_NAME = "tinkerpop.import";
+    private static final String NAME = "tinkerpop.import";
 
     private ImportGremlinPlugin(final Builder builder) {
-        super(MODULE_NAME, builder.appliesTo, DefaultImportCustomizer.build()
+        super(NAME, builder.appliesTo, DefaultImportCustomizer.build()
                                                 .addClassImports(builder.classImports)
                                                 .addEnumImports(builder.enumImports)
                                                 .addMethodImports(builder.methodImports).create());

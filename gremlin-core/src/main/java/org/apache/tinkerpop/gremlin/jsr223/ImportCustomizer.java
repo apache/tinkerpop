@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.util.CoreImports;
+
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -27,6 +29,14 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ImportCustomizer extends Customizer {
+    /**
+     * @deprecated As of release 3.2.4, not replaced.
+     */
+    @Deprecated
+    public static final ImportCustomizer GREMLIN_CORE = DefaultImportCustomizer.build()
+            .addClassImports(CoreImports.getClassImports())
+            .addEnumImports(CoreImports.getEnumImports())
+            .addMethodImports(CoreImports.getMethodImports()).create();
 
     public Set<Class> getClassImports();
 
