@@ -2355,12 +2355,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final Map<String, Object> idsByName = new HashMap<>();
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<String,Object> map) ->
-                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id.getAccessor())));
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
+                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
 
         try {
             g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
+                    .valueMap("name", "coworkers").forEachRemaining((Map<Object, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final Map<Object, Long> coworkers = (Map<Object, Long>) ((List) map.get("coworkers")).get(0);
@@ -2389,12 +2389,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").
                 useTraverserRequirements(false).create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<String,Object> map) ->
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
                 idsByName.put((String) ((List) map.get("name")).get(0), map.get(id.getAccessor())));
 
         try {
             g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
+                    .valueMap("name", "coworkers").forEachRemaining((Map<Object, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final Map coworkers = (Map) ((List) map.get("coworkers")).get(0);

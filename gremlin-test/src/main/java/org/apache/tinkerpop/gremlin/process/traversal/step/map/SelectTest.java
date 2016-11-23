@@ -783,13 +783,13 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
-            final GraphTraversal<Vertex, Map<String, Object>> root = g.V().valueMap();
+            final GraphTraversal<Vertex, Map<Object, Object>> root = g.V().valueMap();
             return null == pop ? root.select("a") : root.select(pop, "a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
-            final GraphTraversal<Vertex, Map<String, Object>> root = g.V().valueMap();
+            final GraphTraversal<Vertex, Map<Object, Object>> root = g.V().valueMap();
             return null == pop ? root.select("a", "b") : root.select(pop, "a", "b");
         }
 

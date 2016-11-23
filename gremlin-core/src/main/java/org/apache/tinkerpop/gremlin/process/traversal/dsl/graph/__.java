@@ -255,14 +255,14 @@ public class __ {
     /**
      * @see GraphTraversal#valueMap(String...)
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> valueMap(final String... propertyKeys) {
+    public static <A, B> GraphTraversal<A, Map<Object, B>> valueMap(final String... propertyKeys) {
         return __.<A>start().valueMap(propertyKeys);
     }
 
     /**
      * @see GraphTraversal#valueMap(boolean, String...)
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+    public static <A, B> GraphTraversal<A, Map<Object, B>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return __.<A>start().valueMap(includeTokens, propertyKeys);
     }
 

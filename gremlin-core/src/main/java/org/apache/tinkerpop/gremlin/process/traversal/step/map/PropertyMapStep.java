@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> implements TraversalParent {
+public class PropertyMapStep<K,E> extends MapStep<Element, Map<K, E>> implements TraversalParent {
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
@@ -59,8 +59,8 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
     }
 
     @Override
-    protected Map<String, E> map(final Traverser.Admin<Element> traverser) {
-        final Map<String, Object> map = new HashMap<>();
+    protected Map<K, E> map(final Traverser.Admin<Element> traverser) {
+        final Map<Object, Object> map = new HashMap<>();
         final Element element = traverser.get();
         final boolean isVertex = traverser.get() instanceof Vertex;
         final Iterator<? extends Property> properties = null == this.propertyTraversal ?
@@ -81,12 +81,12 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
         if (this.returnType == PropertyType.VALUE && this.includeTokens) {
         	// add tokens, as string keys
             if (element instanceof VertexProperty) {
-                map.put(T.id.getAccessor(), element.id());
-                map.put(T.key.getAccessor(), ((VertexProperty<?>) element).key());
-                map.put(T.value.getAccessor(), ((VertexProperty<?>) element).value());
+                map.put(T.id, element.id());
+                map.put(T.key, ((VertexProperty<?>) element).key());
+                map.put(T.value, ((VertexProperty<?>) element).value());
             } else {
-                map.put(T.id.getAccessor(), element.id());
-                map.put(T.label.getAccessor(), element.label());
+                map.put(T.id, element.id());
+                map.put(T.label, element.label());
             }
         }
         return (Map) map;
@@ -120,8 +120,8 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
     }
 
     @Override
-    public PropertyMapStep<E> clone() {
-        final PropertyMapStep<E> clone = (PropertyMapStep<E>) super.clone();
+    public PropertyMapStep<K,E> clone() {
+        final PropertyMapStep<K,E> clone = (PropertyMapStep<K,E>) super.clone();
         if (null != this.propertyTraversal)
             clone.propertyTraversal = this.propertyTraversal.clone();
         return clone;
