@@ -21,20 +21,22 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,6 +54,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX();
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path();
+
+    public abstract Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -133,6 +137,26 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertEquals(3, path.labels().get(0).size());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outEXcreatedX_inV_inE_outV_path() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_outEXcreatedX_inV_inE_outV_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final List<Path> paths = traversal.toList();
+        assertEquals(3, paths.size());
+        for (final Path path : paths) {
+            assertEquals(5, path.size());
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).id());
+            assertEquals(convertToEdgeId("marko", "created", "lop"), ((Edge) path.get(1)).id());
+            assertEquals(convertToVertexId("lop"), ((Vertex) path.get(2)).id());
+            assertEquals("created", ((Edge) path.get(3)).label());
+            assertTrue(convertToVertexId("josh").equals(((Vertex) path.get(4)).id()) ||
+                    convertToVertexId("peter").equals(((Vertex) path.get(4)).id()) ||
+                    convertToVertexId("marko").equals(((Vertex) path.get(4)).id()));
+        }
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends PathTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
@@ -157,6 +181,11 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
             return g.V().as("a").has("name", "marko").as("b").has("age", 29).as("c").path();
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id) {
+            return g.V(v1Id).outE("created").inV().inE().outV().path();
         }
     }
 }
