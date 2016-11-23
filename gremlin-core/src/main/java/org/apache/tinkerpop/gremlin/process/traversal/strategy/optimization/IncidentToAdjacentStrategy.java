@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -76,7 +77,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // using a hidden label marker to denote whether the traversal should not be processed by this strategy
-        if (traversal.getParent() instanceof EmptyStep && TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
+        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
             TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), traversal);
         if (traversal.getStartStep().getLabels().contains(MARKER)) {
             traversal.getStartStep().removeLabel(MARKER);
