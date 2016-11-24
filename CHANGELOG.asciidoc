@@ -30,11 +30,11 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `Vertex`, `Edge`, `VertexProperty`, and `Property` serializers to Gremlin-Python and exposed tests that use graph object arguments.
 * `Bytecode.getSourceInstructions()` and `Bytecode.getStepInstructions()` now returns `List<Instruction>` instead of `Iterable<Instruction>`.
 * Added various `TraversalStrategy` registrations with `GryoMapper`.
-* Fixed a naming mistake in Gremlin-Python: `IdentityRemoveStrategy` is now called `IdentityRemovalStrategy`. (*breaking*)
+* Fixed a naming mistake in Gremlin-Python: `IdentityRemoveStrategy` is now called `IdentityRemovalStrategy`.
 * Added `TranslationStrategy` test infrastructure that verifies `Bytecode` generated from a translation is equal to the original `Bytecode`.
 * Moved `NumberHelper` into the `org.apache.tinkerpop.gremlin.util` package.
 * Added `Pop.mixed` instead of using `null` to represent such semantics.
-* `select()`-step now defaults to using `Pop.last` instead of `Pop.mixed`. (*breaking*)
+* `select()`-step now defaults to using `Pop.last` instead of `Pop.mixed`.
 * Removed previously deprecated `Console` constructor that took a `String` as an argument from `gremlin-console`.
 * Removed previously deprecated `ConcurrentBindings` from `gremlin-groovy`.
 * Removed previously deprecated `ScriptExecutor` from `gremlin-groovy`.
@@ -42,7 +42,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `GremlinGroovyScriptEngine` constructor that took `ImportCustomizerProvider` as an argument from `gremlin-groovy`.
 * Removed previously deprecated `GremlinGroovyScriptEngine#plugins()` from `gremlin-groovy`.
 * Added `OptionalStep` for use with `optional()` to better handle issues associated with branch side-effects.
-* `UnfoldStep` now supports unfolding of arrays. (*breaking*)
+* `UnfoldStep` now supports unfolding of arrays.
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.

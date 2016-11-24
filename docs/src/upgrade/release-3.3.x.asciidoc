@@ -32,6 +32,17 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+GraphTraversal Has-Methods Re-Organized
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`GraphTraversal.hasXXX()`, where `XXX` is `Id`, `Label`, `Key`, `Value`, was faulty in that they relied on calling an
+intermediate method for flattening `Object[]` arguments and thus, yielding a non 1-to-1 correspondence between `GraphTraversal`
+and `Bytecode`. This has been remedied. Most users will not notice this change. Perhaps only some users that may use
+Java reflection over `GraphTraversal` might have a simple problem.
+
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1520[TINKERPOP-1520]
+
 SelectStep Defaults to Pop.last
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -47,16 +58,17 @@ Assuming that `x` is not a `Pop` argument:
 
 If an explicit `Pop` argument is provided, then no changes are required.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1541[TINKERPOP-1541]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1541[TINKERPOP-1541]
 
 OptionalStep and Side-Effects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `optional()`-step was previously implemented using `ChooseStep`. However, if the optional branch contained side-effects,
-then unexpected behaviors can emerge. Thus, a potential backwards compatibility issue arises is side-effects were being
+then unexpected behaviors can emerge. Thus, a potential backwards compatibility issue arises if side-effects were being
 used in `optional()`. However, the behavior would be unpredictable so this backwards incompatibility is desirable.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
+
 Gremlin Console Script Execution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
