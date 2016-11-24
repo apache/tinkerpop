@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,13 +40,14 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphTraversalTest {
+    private static final Logger logger = LoggerFactory.getLogger(GraphTraversalTest.class);
 
     private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "option", "iterate", "to", "from", "profile", "pageRank", "peerPressure", "program"));
     private static Set<String> NO_ANONYMOUS = new HashSet<>(Arrays.asList("start", "__"));
     private static Set<String> IGNORES_BYTECODE = new HashSet<>(Arrays.asList("asAdmin", "iterate", "mapValues", "mapKeys"));
 
     @Test
-    public void anonymousGraphTraversalShouldHaveMethodsOfGraphTraversal() {
+    public void shouldHaveMethodsOfGraphTraversalOnAnonymousGraphTraversal() {
         for (Method methodA : GraphTraversal.class.getMethods()) {
             if (Traversal.class.isAssignableFrom(methodA.getReturnType()) && !NO_GRAPH.contains(methodA.getName())) {
                 boolean found = false;
@@ -63,7 +66,7 @@ public class GraphTraversalTest {
     }
 
     @Test
-    public void graphTraversalShouldHaveMethodsOfAnonymousGraphTraversal() {
+    public void shouldHaveMethodsOfAnonymousGraphTraversalOnGraphTraversal() {
         for (Method methodA : __.class.getMethods()) {
             if (Traversal.class.isAssignableFrom(methodA.getReturnType()) && !NO_ANONYMOUS.contains(methodA.getName())) {
                 boolean found = false;
@@ -82,8 +85,11 @@ public class GraphTraversalTest {
     }
 
     @Test
-    public void graphTraversalMethodsShouldGenerateCorrespondingBytecode() throws Exception {
-        final Random random = new Random();
+    public void shouldGenerateCorrespondingBytecodeFromGraphTraversalMethods() throws Exception {
+        final long seed = System.currentTimeMillis();
+        final Random random = new Random(seed);
+        logger.info("***RANDOM*** GraphTraversalTest.shouldGenerateCorrespondingBytecodeFromGraphTraversalMethods - seed is {}", seed);
+
         for (Method stepMethod : GraphTraversal.class.getMethods()) {
             if (Traversal.class.isAssignableFrom(stepMethod.getReturnType()) && !IGNORES_BYTECODE.contains(stepMethod.getName())) {
                 final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>();
