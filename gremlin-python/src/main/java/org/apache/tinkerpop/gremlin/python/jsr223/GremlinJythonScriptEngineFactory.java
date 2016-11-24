@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
@@ -100,6 +101,8 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
 
     @Override
     public GremlinScriptEngine getScriptEngine() {
-        return new GremlinJythonScriptEngine();
+        final List<Customizer> customizers =  manager.getCustomizers(GREMLIN_JYTHON);
+        return (customizers.isEmpty()) ? new GremlinJythonScriptEngine() :
+                new GremlinJythonScriptEngine(customizers.toArray(new Customizer[customizers.size()]));
     }
 }
