@@ -47,8 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class JavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
-    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
-
     private final S traversalSource;
     private final Class anonymousTraversal;
     private static final Map<Class<?>, Map<String, List<Method>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
@@ -73,10 +71,6 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-            if (IS_TESTING &&
-                    instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
-                continue;
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
         boolean spawned = false;

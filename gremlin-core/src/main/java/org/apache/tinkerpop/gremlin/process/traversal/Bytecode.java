@@ -94,7 +94,7 @@ public final class Bytecode implements Cloneable, Serializable {
      *
      * @return an iterable of instructions
      */
-    public Iterable<Instruction> getSourceInstructions() {
+    public List<Instruction> getSourceInstructions() {
         return this.sourceInstructions;
     }
 
@@ -103,7 +103,7 @@ public final class Bytecode implements Cloneable, Serializable {
      *
      * @return an iterable of instructions
      */
-    public Iterable<Instruction> getStepInstructions() {
+    public List<Instruction> getStepInstructions() {
         return this.stepInstructions;
     }
 

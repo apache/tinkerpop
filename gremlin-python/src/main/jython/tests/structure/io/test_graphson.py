@@ -27,7 +27,7 @@ from unittest import TestCase
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
@@ -69,13 +69,54 @@ class TestGraphSONReader(TestCase):
         assert 31.2 == x
 
     def test_graph(self):
-        vertex = self.graphson_reader.readObject(
-            """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
+        vertex = self.graphson_reader.readObject("""
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        ##
+        vertex = self.graphson_reader.readObject("""
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Float","@value":45.23}}}""")
+        assert isinstance(vertex, Vertex)
+        assert 45.23 == vertex.id
+        assert isinstance(vertex.id, FloatType)
+        assert "vertex" == vertex.label
+        assert vertex == Vertex(45.23)
+        ##
+        vertex_property = self.graphson_reader.readObject("""
+        {"@type":"g:VertexProperty", "@value":{"id":"anId","label":"aKey","value":true,"vertex":{"@type":"g:Int32","@value":9}}}""")
+        assert isinstance(vertex_property, VertexProperty)
+        assert "anId" == vertex_property.id
+        assert "aKey" == vertex_property.label
+        assert vertex_property.value
+        assert vertex_property.vertex == Vertex(9)
+        ##
+        vertex_property = self.graphson_reader.readObject("""
+        {"@type":"g:VertexProperty", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"name","value":"marko"}}""")
+        assert isinstance(vertex_property, VertexProperty)
+        assert 1 == vertex_property.id
+        assert "name" == vertex_property.label
+        assert "marko" == vertex_property.value
+        assert vertex_property.vertex is None
+        ##
+        edge = self.graphson_reader.readObject("""
+        {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab","properties":{"aKey":"aValue","bKey":true}}}""")
+        # print edge
+        assert isinstance(edge, Edge)
+        assert 17 == edge.id
+        assert "knows" == edge.label
+        assert edge.inV == Vertex("x", "xLabel")
+        assert edge.outV == Vertex("y", "vertex")
+        ##
+        property = self.graphson_reader.readObject("""
+        {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17},"element":{"@type":"g:Edge","@value":{"id":{"@type":"g:Int64","@value":122},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}}}""")
+        # print property
+        assert isinstance(property, Property)
+        assert "aKey" == property.key
+        assert 17 == property.value
+        assert Edge(122, Vertex("x"), "knows", Vertex("y")) == property.element
 
     def test_path(self):
         path = self.graphson_reader.readObject(
@@ -125,13 +166,12 @@ class TestGraphSONReader(TestCase):
 
 
 class TestGraphSONWriter(TestCase):
-
     graphson_writer = GraphSONWriter()
 
     def test_number_output(self):
-        assert {"@type":"g:Int64","@value":2} == json.loads(self.graphson_writer.writeObject(long(2)))
-        assert {"@type":"g:Int32","@value":1} == json.loads(self.graphson_writer.writeObject(1))
-        assert {"@type":"g:Double","@value":3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
+        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_numbers(self):
@@ -146,13 +186,37 @@ class TestGraphSONWriter(TestCase):
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(self.graphson_writer.writeObject(SubgraphStrategy))
+        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
+            self.graphson_writer.writeObject(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
             "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
             self.graphson_writer.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
-    def test_custom_mapping(self):
+    def test_graph(self):
+        assert {"@type": "g:Vertex",
+                "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(
+            self.graphson_writer.writeObject(Vertex(12l, "person")))
+        assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
+                                              "outV": {"@type": "g:Int32", "@value": 0},
+                                              "outVLabel": "person",
+                                              "label": "knows",
+                                              "inV": {"@type": "g:Int32", "@value": 1},
+                                              "inVLabel": "dog"}} == json.loads(
+            self.graphson_writer.writeObject(Edge(7, Vertex(0, "person"), "knows", Vertex(1, "dog"))))
+        assert {"@type": "g:VertexProperty", "@value": {"id": "blah", "label": "keyA", "value": True,
+                                                        "vertex": "stephen"}} == json.loads(
+            self.graphson_writer.writeObject(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
 
+        assert {"@type": "g:Property",
+                "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
+                                                                        "@value": {
+                                                                            "vertex": "vertexId",
+                                                                            "id": "anId",
+                                                                            "label": "aKey"}}}} == json.loads(
+            self.graphson_writer.writeObject(
+                Property("name", "marko", VertexProperty("anId", "aKey", 21345, Vertex("vertexId")))))
+
+    def test_custom_mapping(self):
         # extended mapping
         class X(object):
             pass

@@ -34,6 +34,10 @@ class GraphTraversalSource(object):
     self.bytecode = bytecode
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
+  def withBindings(self, *args):
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source.bytecode.add_source("withBindings", *args)
+    return source
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
@@ -62,8 +66,6 @@ class GraphTraversalSource(object):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
-  def withBindings(self, bindings):
-    return self
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
     return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):
@@ -89,11 +91,16 @@ class GraphTraversal(Traversal):
     Traversal.__init__(self, graph, traversal_strategies, bytecode)
   def __getitem__(self, index):
     if isinstance(index, int):
-        return self.range(long(index), long(index + 1))
+        return self.range(long(index),long(index)+1)
     elif isinstance(index, slice):
-        return self.range(long(0) if index.start is None else long(index.start), long(sys.maxsize) if index.stop is None else long(index.stop))
+        low = long(0) if index.start is None else long(index.start)
+        high = long(sys.maxsize) if index.stop is None else long(index.stop)
+        if low == long(0):
+          return self.limit(high)
+        else:
+          return self.range(low,high)
     else:
-        raise TypeError("Index must be int or slice")
+        raise TypeError("Index must be an int or slice")
   def __getattr__(self, key):
     return self.values(key)
   def V(self, *args):

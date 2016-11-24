@@ -31,7 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -46,8 +48,6 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GroovyTranslator implements Translator.ScriptTranslator {
-
-    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private final String traversalSource;
 
@@ -87,10 +87,6 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
-            if (IS_TESTING &&
-                    instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
-                continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
             else {
@@ -156,9 +152,19 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "TraversalOptionParent.Pick." + object.toString();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
-        else if (object instanceof Element)
-            return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Lambda) {
+        else if (object instanceof Element) {
+            final String id = convertToString(((Element) object).id());
+            String temp = this.traversalSource.equals("__") ? "g" : this.traversalSource;
+            if (object instanceof Vertex)
+                temp = temp + ".V(" + id + ").next()";
+            else if (object instanceof Edge)
+                temp = temp + ".E(" + id + ").next()";
+            else {
+                final VertexProperty vertexProperty = (VertexProperty) object;
+                temp = temp + ".V(" + convertToString(vertexProperty.element().id()) + ").properties(" + convertToString(vertexProperty.key()) + ").hasId(" + id + ").next()";
+            }
+            return temp;
+        } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof TraversalStrategyProxy) {

@@ -21,11 +21,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -46,8 +47,9 @@ public class TinkerGraphGryoTranslatorProvider extends TinkerGraphProvider {
             //
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
-            TraversalInterruptionComputerTest.class.getCanonicalName(),
-            CoreTraversalTest.class.getCanonicalName()));
+            EventStrategyProcessTest.class.getCanonicalName(),
+            ElementIdStrategyProcessTest.class.getCanonicalName(),
+            TraversalInterruptionComputerTest.class.getCanonicalName()));
 
 
     @Override

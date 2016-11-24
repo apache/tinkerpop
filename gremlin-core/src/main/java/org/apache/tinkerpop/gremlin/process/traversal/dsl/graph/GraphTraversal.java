@@ -159,6 +159,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static javafx.scene.input.KeyCode.M;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -1454,7 +1456,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /////////////////// VERTEX PROGRAM STEPS ////////////////
 
     public default GraphTraversal<S, E> pageRank() {
-        return this.pageRank(0.85d);
+        this.asAdmin().getBytecode().addStep(Symbols.pageRank);
+        return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), 0.85d));
     }
 
     public default GraphTraversal<S, E> pageRank(final double alpha) {
@@ -1485,7 +1488,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> barrier() {
-        return this.barrier(Integer.MAX_VALUE);
+        this.asAdmin().getBytecode().addStep(Symbols.barrier);
+        return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), Integer.MAX_VALUE));
     }
 
     public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
@@ -1583,7 +1587,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
-        return this.option(TraversalOptionParent.Pick.any, traversalOption.asAdmin());
+        ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(TraversalOptionParent.Pick.any, traversalOption.asAdmin());
+        return this;
     }
 
     ////

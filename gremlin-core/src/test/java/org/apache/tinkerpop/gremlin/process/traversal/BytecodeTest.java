@@ -102,7 +102,7 @@ public class BytecodeTest {
     public void shouldConvertStrategies() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
         Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
-        assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
         bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
         assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
                 ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getBytecode());
@@ -112,7 +112,7 @@ public class BytecodeTest {
     public void shouldConvertComputer() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
         Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
-        assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
         assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
                 ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
     }

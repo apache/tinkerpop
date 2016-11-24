@@ -49,16 +49,10 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
             //
-            "g_VX1X_out_injectXv2X_name",
-            "g_VXlistXv1_v2_v3XX_name",
-            "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
-            "g_VXv1X_hasXage_gt_30X",
-            //
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
-            CoreTraversalTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
 

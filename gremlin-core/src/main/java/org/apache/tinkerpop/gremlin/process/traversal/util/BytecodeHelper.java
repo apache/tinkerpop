@@ -20,10 +20,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,5 +64,36 @@ public final class BytecodeHelper {
             }
         }
         return Optional.empty();
+    }
+
+    public static void removeBindings(final Bytecode bytecode) {
+        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+            final Object[] arguments = instruction.getArguments();
+            for (int i = 0; i < arguments.length; i++) {
+                if (arguments[i] instanceof Bytecode.Binding)
+                    arguments[i] = ((Bytecode.Binding) arguments[i]).value();
+                else if (arguments[i] instanceof Bytecode)
+                    removeBindings((Bytecode) arguments[i]);
+            }
+        }
+    }
+
+    public static void detachElements(final Bytecode bytecode) {
+        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+            final Object[] arguments = instruction.getArguments();
+            for (int i = 0; i < arguments.length; i++) {
+                if (arguments[i] instanceof Bytecode)
+                    detachElements((Bytecode) arguments[i]);
+                else if(arguments[i] instanceof List) {
+                    final List<Object> list = new ArrayList<>();
+                    for(final Object object : (List)arguments[i]) {
+                        list.add( DetachedFactory.detach(object, false));
+                    }
+                    arguments[i] = list;
+                }
+                else
+                    arguments[i] = DetachedFactory.detach(arguments[i], false);
+            }
+        }
     }
 }
