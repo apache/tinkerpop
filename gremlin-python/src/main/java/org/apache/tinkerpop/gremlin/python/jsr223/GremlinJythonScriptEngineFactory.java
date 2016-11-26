@@ -29,7 +29,9 @@ import org.python.jsr223.PyScriptEngineFactory;
 import javax.script.ScriptEngine;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -101,7 +103,9 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
 
     @Override
     public GremlinScriptEngine getScriptEngine() {
-        final List<Customizer> customizers =  manager.getCustomizers(GREMLIN_JYTHON);
+        final Set<Customizer> customizers = new HashSet<>(manager.getCustomizers(GREMLIN_JYTHON));
+        customizers.addAll(manager.getCustomizers(GREMLIN_PYTHON));
+
         return (customizers.isEmpty()) ? new GremlinJythonScriptEngine() :
                 new GremlinJythonScriptEngine(customizers.toArray(new Customizer[customizers.size()]));
     }

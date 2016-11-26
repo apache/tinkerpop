@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,5 +79,15 @@ public class GremlinEnabledScriptEngineTest {
         for (Class clazz : classesToCheck) {
             assertEquals(clazz, scriptEngine.eval(clazz.getSimpleName()));
         }
+    }
+
+    @Test
+    public void shouldReturnOneCustomizers() {
+        // just returns the core plugin as the other assigned plugin doesn't match the tested engine
+        final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
+        mgr.addPlugin(ImportGremlinPlugin.build()
+                .classImports(java.awt.Color.class)
+                .appliesTo(Collections.singletonList("fake-script-engine")).create());
+        assertEquals(1, mgr.getCustomizers(ENGINE_TO_TEST).size());
     }
 }
