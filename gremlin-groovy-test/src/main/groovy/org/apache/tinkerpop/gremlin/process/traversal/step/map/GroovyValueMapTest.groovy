@@ -29,17 +29,17 @@ public abstract class GroovyValueMapTest {
 
     public static class Traversals extends ValueMapTest {
         @Override
-        public Traversal<Vertex, Map<Object, List>> get_g_V_valueMap() {
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap");
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List>> get_g_V_valueMapXname_ageX() {
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap('name', 'age')")
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
+        public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out('created').valueMap", "v1Id", v1Id)
         }
         

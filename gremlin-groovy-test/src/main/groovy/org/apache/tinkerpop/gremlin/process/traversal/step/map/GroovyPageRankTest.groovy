@@ -36,7 +36,7 @@ public abstract class GroovyPageRankTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.by(outE('knows')).by('friendRank').valueMap('name','friendRank')")
         }
 
@@ -51,7 +51,7 @@ public abstract class GroovyPageRankTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').pageRank.by('pageRank').order.by('pageRank').valueMap('name', 'pageRank')")
         }
 
@@ -61,7 +61,7 @@ public abstract class GroovyPageRankTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('software').has('name', 'ripple').pageRank(1.0).by(inE('created')).times(1).by('priors').in('created').union(identity(),both()).valueMap('name', 'priors')")
         }
 
@@ -71,7 +71,7 @@ public abstract class GroovyPageRankTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').pageRank().by(bothE()).by('projectRank').times(0).valueMap('name','projectRank')")
         }
     }

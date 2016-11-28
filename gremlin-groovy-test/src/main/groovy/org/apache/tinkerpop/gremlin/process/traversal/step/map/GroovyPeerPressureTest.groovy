@@ -41,7 +41,7 @@ public abstract class GroovyPeerPressureTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('name', 'ripple').in('created').peerPressure.by(outE()).by('cluster').repeat(union(identity(), both())).times(2).dedup.valueMap('name', 'cluster')")
         }
     }

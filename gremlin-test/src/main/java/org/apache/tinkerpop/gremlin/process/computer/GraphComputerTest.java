@@ -2360,7 +2360,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         try {
             g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<Object, Object> map) -> {
+                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final Map<Object, Long> coworkers = (Map<Object, Long>) ((List) map.get("coworkers")).get(0);
@@ -2394,7 +2394,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         try {
             g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<Object, Object> map) -> {
+                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final Map coworkers = (Map) ((List) map.get("coworkers")).get(0);

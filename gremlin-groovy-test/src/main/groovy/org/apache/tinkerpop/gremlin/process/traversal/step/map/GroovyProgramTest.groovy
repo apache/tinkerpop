@@ -36,7 +36,7 @@ public abstract class GroovyProgramTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').program(PageRankVertexProgram.build().property('rank').create(graph)).order.by('rank',incr).valueMap('name','rank')");
         }
 
