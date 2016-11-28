@@ -46,7 +46,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed `tryRandomCommit()` from `AbstractGremlinTest`.
 * Changed `gremlin-benchmark` system property for the report location to `benchmarkReportDir` for consistency.
 * Added SysV and systemd init scripts.
-* `valueMap` now returns a `Map<Object,E>` since keys could be `V.id` or `V.label`.
+* `valueMap` now returns a `Map<Object,E>` since keys could be `T.id` or `T.label`.
 
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------

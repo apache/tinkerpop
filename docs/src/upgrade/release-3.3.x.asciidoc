@@ -76,7 +76,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283]
 ValueMap
 ^^^^^^^^
 
-`valueMap` now returns a `Map<Object,E>` to account for the presence of `V.id` or `V.label` if you pass `true` to it.
+`valueMap` now returns a `Map<Object,E>` to account for the presence of `T.id` or `T.label` if you pass `true` to it.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1483]
 
