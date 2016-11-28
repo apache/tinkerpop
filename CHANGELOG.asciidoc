@@ -62,6 +62,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in Gremlin-Java GraphSON deserialization around `P.within()` and `P.without()`.
 * Converted Spark process suite tests to "integration" tests.
 * Fixed a bug in `InlineFilterStrategy` having to do with folding `HasContainers` into `VertexStep`.
 * Deprecated `HasContainer.makeHasContainers()` which was used to dissect `AndP` and shouldn't be used at the TinkerPop-level.

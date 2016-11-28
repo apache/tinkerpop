@@ -60,6 +60,11 @@ class TestDriverRemoteConnection(TestCase):
         assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
+        #
+        results = g.withSideEffect('a',['josh','peter']).V(1).out('created').in_('created').values('name').where(within('a')).toList()
+        assert 2 == len(results)
+        assert 'josh' in results
+        assert 'peter' in results
         # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
         connection.close()
