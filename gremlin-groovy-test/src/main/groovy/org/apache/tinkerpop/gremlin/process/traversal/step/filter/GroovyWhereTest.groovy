@@ -60,6 +60,12 @@ public abstract class GroovyWhereTest {
         /// where(global)
 
         @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(
+                final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', ['josh','peter']).V(v1Id).out('created').in('created').name.where(within('a'))", "v1Id", v1Id)
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(
                 final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').out('created').in('created').as('b').where('a', neq('b')).name", "v1Id", v1Id)
