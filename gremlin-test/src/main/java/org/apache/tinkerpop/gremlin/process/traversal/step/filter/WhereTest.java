@@ -75,6 +75,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     /// where(global)
 
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(final Object v1Id);
+
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(final Object v1Id);
@@ -215,6 +217,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     }
 
     /// where(global)
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(convertToVertexId(graph, "marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh", "peter"), traversal);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -427,6 +437,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         /// where(global)
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(final Object v1Id) {
+            return g.withSideEffect("a", Arrays.asList("josh", "peter")).V(v1Id).out("created").in("created").<String>values("name").where(P.within("a"));
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id) {
