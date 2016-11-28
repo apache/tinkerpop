@@ -82,12 +82,11 @@ public class GremlinEnabledScriptEngineTest {
     }
 
     @Test
-    public void shouldReturnOneCustomizers() {
-        // just returns the core plugin as the other assigned plugin doesn't match the tested engine
+    public void shouldReturnNoCustomizers() {
         final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
         mgr.addPlugin(ImportGremlinPlugin.build()
                 .classImports(java.awt.Color.class)
                 .appliesTo(Collections.singletonList("fake-script-engine")).create());
-        assertEquals(1, mgr.getCustomizers(ENGINE_TO_TEST).size());
+        assertEquals(0, mgr.getCustomizers(ENGINE_TO_TEST).size());
     }
 }

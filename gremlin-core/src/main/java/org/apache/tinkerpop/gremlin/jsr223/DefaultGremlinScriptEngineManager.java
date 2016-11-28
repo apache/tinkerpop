@@ -404,9 +404,6 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     private void initEngines(final ClassLoader loader) {
-        // always need this module for a scriptengine to be "Gremlin-enabled"
-        plugins.add(CoreGremlinPlugin.instance());
-
         Iterator<GremlinScriptEngineFactory> itty;
         try {
             final ServiceLoader<GremlinScriptEngineFactory> sl = AccessController.doPrivileged(

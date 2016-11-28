@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
@@ -27,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.CoreImports;
 import org.python.jsr223.PyScriptEngine;
 import org.python.jsr223.PyScriptEngineFactory;
@@ -37,12 +37,10 @@ import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.io.Reader;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -82,7 +80,10 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
     public GremlinJythonScriptEngine(final Customizer... customizers) {
         this.pyScriptEngine = (PyScriptEngine) new PyScriptEngineFactory().getScriptEngine();
-        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+        final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
+
+        // always need this plugin for a scriptengine to be "Gremlin-enabled"
+        CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
 
         final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
                 .filter(p -> p instanceof ImportCustomizer)

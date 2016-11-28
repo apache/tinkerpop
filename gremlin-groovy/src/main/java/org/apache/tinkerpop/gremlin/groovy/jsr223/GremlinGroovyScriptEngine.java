@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
+import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
@@ -184,7 +185,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
      */
     public GremlinGroovyScriptEngine() {
-        this((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
+        this(new Customizer[0]);
     }
 
     /**
@@ -196,7 +197,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     public GremlinGroovyScriptEngine(final Customizer... customizers) {
-        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+        final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
+
+        // always need this plugin for a scriptengine to be "Gremlin-enabled"
+        CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
 
         GremlinLoader.load();
 

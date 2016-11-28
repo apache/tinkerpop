@@ -24,7 +24,8 @@ import java.util.Optional;
 
 /**
  * This module is required for a {@code ScriptEngine} to be Gremlin-enabled. This {@link GremlinPlugin} is not enabled
- * for the {@code ServiceLoader}. It is designed to be instantiated manually.
+ * for the {@code ServiceLoader}. It is designed to be instantiated manually and compliant {@link GremlinScriptEngine}
+ * instances will automatically install it by default when created.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
