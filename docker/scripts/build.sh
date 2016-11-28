@@ -57,10 +57,14 @@ TINKERPOP_BUILD_OPTIONS=""
 [ -z "${BUILD_JAVA_DOCS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -Dmaven.javadoc.skip=true"
 
 # If the tmpfs (in-memory filesystem exists, use it)
-if [ -d "/usr/src/tinkermem" ]; then
-  echo Copying source to in-memory tmpfs
-  rsync -a . /usr/src/tinkermem
-  cd /usr/src/tinkermem
+TINKERMEM_PATH=$(cd .. ; echo `pwd`/tinkermem)
+if [ -d "${TINKERMEM_PATH}" ]; then
+  echo "Moving source to in-memory tmpfs"
+  rsync --remove-source-files -a . ${TINKERMEM_PATH}
+  cd ..
+  rm -rf ${OLDPWD}
+  ln -s ${TINKERMEM_PATH} ${OLDPWD}
+  cd ${TINKERMEM_PATH}
 fi
 
 touch gremlin-python/.glv

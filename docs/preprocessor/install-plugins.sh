@@ -59,7 +59,11 @@ echo "System.exit(0)" >> ${INSTALL_FILE}
 echo -ne " * tinkerpop-sugar ... "
 
 pushd ${CONSOLE_HOME} > /dev/null
-bin/gremlin.sh ${INSTALL_FILE} > /dev/null
+
+mkdir -p ~/.java/.userPrefs
+chmod 700 ~/.java/.userPrefs
+
+bin/gremlin.sh -e ${INSTALL_FILE} > /dev/null
 
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
   popd > /dev/null
