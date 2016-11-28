@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.kerby.kerberos.kerb.server.LoginTestBase;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.junit.After;
 import org.junit.Before;
@@ -27,11 +29,8 @@ import org.junit.Test;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.util.*;
 
 import org.junit.rules.TestName;
@@ -48,9 +47,11 @@ import static org.junit.Assert.fail;
 
 /**
  * @author Marc de Lignie
+ *
+ * Todo: change back to integrate test later on
  */
-public class AuthKrb5IntegrateTest extends LoginTestBase {
-    private static final Logger logger = LoggerFactory.getLogger(AuthKrb5IntegrateTest.class);
+public class AuthKrb5Test extends LoginTestBase {
+    private static final Logger logger = LoggerFactory.getLogger(AuthKrb5Test.class);
     private GremlinServerAuthKrb5Integrate server;
     private String serverHostname = null;
     private static final String TESTCONSOLE = "GremlinConsole";
@@ -78,7 +79,7 @@ public class AuthKrb5IntegrateTest extends LoginTestBase {
             logger.debug("Hostname: " + settings.host);
             final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
             authSettings.className = Krb5Authenticator.class.getName();
-            final Map<String,Object> authConfig = new HashMap<>();
+            final Map authConfig = new HashMap<String,Object>();
             final String buildDir = System.getProperty("build.dir");
             authConfig.put("keytab", serviceKeytabFile.getAbsolutePath());
             authConfig.put("principal", getServerPrincipal());
@@ -109,7 +110,6 @@ public class AuthKrb5IntegrateTest extends LoginTestBase {
         Subject gremlinConsole = loginClientUsingTicketCache();
         logger.debug("Done creating keytab and ticketcache");
 
-        // ToDo: how to set java.security.auth.login.config when using gremlin-console with krb5LoginModule
         final String buildDir = System.getProperty("build.dir");
         System.setProperty("java.security.auth.login.config", buildDir +
             "/test-classes/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf");
@@ -126,7 +126,7 @@ public class AuthKrb5IntegrateTest extends LoginTestBase {
     }
 
     @Test
-    public void testRemoteLogin() throws Exception {
+    public void shouldAuthenticate() throws Exception {
         File f = new File(".");
         logger.debug("Working dir: " + f.getCanonicalPath());
         // ToDo: try TestClientFactory
@@ -141,6 +141,28 @@ public class AuthKrb5IntegrateTest extends LoginTestBase {
             cluster.close();
         }
     }
+
+
+    @Test
+    public void shouldAuthenticateWithSerializeResultToString() throws Exception {
+//        File f = new File(".");
+//        logger.debug("Working dir: " + f.getCanonicalPath());
+//        MessageSerializer serializer = new GryoMessageSerializerV1d0();
+//        Map config = new HashMap<String, Object>();
+//        config.put("serializeResultToString", true);
+//        serializer.configure(config, null);
+//        final Cluster cluster = Cluster.build().jaasEntry(TESTCONSOLE)
+//                .protocol("test-service").addContactPoint(serverHostname).port(45940).enableSsl(false).serializer(serializer).create();
+//        final Client client = cluster.connect();
+//        try {
+//            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+//            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+//            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+//        } finally {
+//            cluster.close();
+//        }
+    }
+
     // ToDo: test client login fails as wanted without a valid ticket
     // ToDo: test with System.setProperty("javax.security.sasl.qop", "auth-conf");
 }
