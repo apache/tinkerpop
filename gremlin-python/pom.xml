@@ -75,7 +75,6 @@
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
-        <revapi.skip>true</revapi.skip>
     </properties>
     <build>
         <directory>${basedir}/target</directory>

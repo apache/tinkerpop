@@ -159,6 +159,9 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
+
+        <!-- By default API checks are not run. Modules can opt in by setting this property to false in their poms. -->
+        <revapi.skip>true</revapi.skip>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -326,6 +329,20 @@ limitations under the License.
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Needed to figure out the version components when reading revapi API check config below -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.revapi</groupId>
                 <artifactId>revapi-maven-plugin</artifactId>
@@ -338,21 +355,11 @@ limitations under the License.
                     </dependency>
                 </dependencies>
                 <configuration>
-
+                    <skip>${revapi.skip}</skip>
+                    <failSeverity>potentiallyBreaking</failSeverity>
                     <analysisConfiguration><![CDATA[
                     {
                       "revapi": {
-                        "java": {
-                          "filter": {
-                            //gremlin-shaded includes a lot of stuff from 3rd party libraries that break their API between
-                            //versions. Let's just not consider them part of Tinkerpop API. -->
-                            "packages": {
-                              "regex": true,
-                              "exclude": ["org\\.apache\\.tinkerpop\\.shaded(\\..+)?"],
-                              "include": ["org\\.apache\\.tinkerpop(\\..+)?"]
-                            }
-                          }
-                        },
                         "semver": {
                           "ignore": {
                             "enabled": true,
@@ -367,6 +374,18 @@ limitations under the License.
                       }
                     }
                     ]]></analysisConfiguration>
+                    <analysisConfigurationFiles>
+                        <configurationFile>
+                            <path>${project.basedir}/api-changes.json</path>
+                            <roots>
+                                <root>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</root>
+                            </roots>
+                        </configurationFile>
+                        <configurationFile>
+                            <path>${project.basedir}/api-contents.json</path>
+                        </configurationFile> 
+                    </analysisConfigurationFiles>
+                    <failOnMissingConfigurationFiles>false</failOnMissingConfigurationFiles>
                 </configuration>
                 <executions>
                     <execution>
