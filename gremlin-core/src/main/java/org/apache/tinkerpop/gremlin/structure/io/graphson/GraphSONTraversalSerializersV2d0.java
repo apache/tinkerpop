@@ -312,8 +312,13 @@ final class GraphSONTraversalSerializersV2d0 {
                             return P.without((Collection) value);
                         else
                             return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
-                    } else
-                        return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+                    } else {
+                        try {
+                            return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+                        } catch (final NoSuchMethodException e) {
+                            return (P) P.class.getMethod(predicate, Object[].class).invoke(null, (Object) new Object[]{value});
+                        }
+                    }
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
