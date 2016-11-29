@@ -78,7 +78,7 @@ public class GremlinPluginAdapterTest {
     public void shouldAdaptForScriptCustomizer() throws Exception {
         final File scriptFile1 = TestHelper.generateTempFileFromResource(GremlinPluginAdapterTest.class, "script-customizer-1.groovy", ".groovy");
         final File scriptFile2 = TestHelper.generateTempFileFromResource(GremlinPluginAdapterTest.class, "script-customizer-2.groovy", ".groovy");
-        final Set<String> files = new HashSet<>();
+        final List<String> files = new ArrayList<>();
         files.add(scriptFile1.getAbsolutePath());
         files.add(scriptFile2.getAbsolutePath());
         final ScriptFileGremlinPlugin plugin = ScriptFileGremlinPlugin.build().files(files).create();
