@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,7 +46,7 @@ public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
     public static final class Builder {
 
         private final Set<String> appliesTo = new HashSet<>();
-        private Set<File> files = new HashSet<>();
+        private List<File> files = new ArrayList<>();
 
         private Builder() {}
 

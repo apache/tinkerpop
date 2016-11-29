@@ -23,10 +23,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -39,7 +38,7 @@ public class DefaultScriptCustomizerTest {
     public void shouldOpenViaPropertiesFileConfig() throws IOException {
         final File scriptFile1 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
         final File scriptFile2 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
-        final Set<File> files = new HashSet<>();
+        final List<File> files = new ArrayList<>();
         files.add(scriptFile1);
         files.add(scriptFile2);
         final ScriptCustomizer scripts = new DefaultScriptCustomizer(files);

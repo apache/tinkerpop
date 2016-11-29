@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +36,7 @@ public class DefaultScriptCustomizer implements ScriptCustomizer {
 
     private final Collection<List<String>> scripts;
 
-    public DefaultScriptCustomizer(final Set<File> files) {
+    public DefaultScriptCustomizer(final List<File> files) {
         this(files.stream().map(f -> {
             try {
                 return Files.lines(f.toPath(), StandardCharsets.UTF_8).collect(Collectors.toList());
