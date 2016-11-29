@@ -16,15 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.util;
 
 /**
  * A software artifact identified by its maven coordinates.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.util.Artifact}
  */
-@Deprecated
 public class Artifact {
     private final String group;
     private final String artifact;

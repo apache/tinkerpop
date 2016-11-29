@@ -20,11 +20,14 @@ package org.apache.tinkerpop.gremlin.groovy.util
 
 import groovy.grape.Grape
 import org.apache.commons.lang3.SystemUtils
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.nio.file.*
+import java.nio.file.DirectoryStream
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 
@@ -118,9 +121,9 @@ class DependencyGrabber {
                     .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
                     .each(copyTo(targetPluginPath))
             getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
-                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-                .each(copyTo(targetPluginPath))
+                    .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                    .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                    .each(copyTo(targetPluginPath))
 
             // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
             dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
@@ -162,7 +165,7 @@ class DependencyGrabber {
      * Windows places a starting forward slash in the URI that needs to be stripped off or else the
      * {@code FileSystem} won't properly resolve it.
      */
-    private static Closure convertUriToPath(final FileSystem fs) {
+    private static Closure convertUriToPath(def fs) {
         return { URI uri ->
             def p = SystemUtils.IS_OS_WINDOWS ? uri.path.substring(1) : uri.path
             return fs.getPath(p)
