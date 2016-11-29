@@ -48,6 +48,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.
 * Bumped to support Spark 2.0.0.
 * Added `UnshadedKryoShimService` as the new default serializer model for `SparkGraphComputer`.
+* `GryoRegistrator` is more efficient than the previous `GryoSerializer` model in `SparkGraphComputer`.
+* Added support for `IoRegistry` custom serialization in Spark/Giraph and provided a general `hadoop-gremlin` test suite.
 * Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API.
 * Moved `gremlin-benchmark` under `gremlin-tools` module.
 * Added `gremlin-tools` and its submodule `gremlin-coverage`.
@@ -169,9 +171,6 @@ This release also includes changes from <<release-3-1-5, 3.1.5>>.
 * Produced better errors in `readGraph` of `GryoReader` and `GraphSONReader` if a `Vertex` cannot be found in the cache on edge loading.
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
-=======
-* Bumped to support Spark 2.0.0.
->>>>>>> had to go back down to Hadoop 2.7.2 because Hadoop 2.7.3 changed a method signature that GiraphJob calls and thus, Giraph fails. Dar. Cleaned up pom.xmls a bit and updated CHANGELOG. This branch is ready to be tested on the Blade cluster against the Friendster dataset.
 * Added missing `InetAddress` to GraphSON extension module.
 * Added new recipe for "Pagination".
 * Added new recipe for "Recommendation".
