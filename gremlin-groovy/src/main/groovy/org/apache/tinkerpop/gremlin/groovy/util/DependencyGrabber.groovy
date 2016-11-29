@@ -50,6 +50,13 @@ class DependencyGrabber {
         this.extensionDirectory = extensionDirectory
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #deleteDependenciesFromPath(Artifact)}
+     */
+    def String deleteDependenciesFromPath(final org.apache.tinkerpop.gremlin.groovy.plugin.Artifact artifact) {
+        deleteDependenciesFromPath(new Artifact(artifact.group, artifact.artifact, artifact.version))
+    }
+
     def String deleteDependenciesFromPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
@@ -61,6 +68,13 @@ class DependencyGrabber {
             f.deleteDir()
             return "Uninstalled ${dep.module}"
         }
+    }
+
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #copyDependenciesToPath(Artifact)}
+     */
+    def String copyDependenciesToPath(final org.apache.tinkerpop.gremlin.groovy.plugin.Artifact artifact) {
+        copyDependenciesToPath(new Artifact(artifact.group, artifact.artifact, artifact.version))
     }
 
     def Set<String> copyDependenciesToPath(final Artifact artifact) {

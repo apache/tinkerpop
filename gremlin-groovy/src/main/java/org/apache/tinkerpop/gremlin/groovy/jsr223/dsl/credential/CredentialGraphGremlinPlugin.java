@@ -16,16 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.jsr223;
+package org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential;
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Plugin for the "credentials graph".  This plugin imports the {@link CredentialGraph} to its environment.

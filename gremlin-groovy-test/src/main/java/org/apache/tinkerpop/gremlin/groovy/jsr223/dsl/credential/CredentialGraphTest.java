@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
+package org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
-import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph.credentials;
+import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraph.credentials;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
