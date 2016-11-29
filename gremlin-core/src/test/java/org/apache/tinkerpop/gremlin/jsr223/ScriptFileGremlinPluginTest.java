@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ScriptFileGremlinPluginTest {
     public void shouldOpenViaPropertiesFileConfig() throws IOException {
         final File scriptFile1 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
         final File scriptFile2 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
-        final Set<String> files = new HashSet<>();
+        final List<String> files = new ArrayList<>();
         files.add(scriptFile1.getAbsolutePath());
         files.add(scriptFile2.getAbsolutePath());
         final GremlinPlugin plugin = ScriptFileGremlinPlugin.build().files(files).create();

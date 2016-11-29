@@ -60,7 +60,7 @@ public final class ScriptFileGremlinPlugin extends AbstractGremlinPlugin {
             return this;
         }
 
-        public Builder files(final Set<String> files) {
+        public Builder files(final List<String> files) {
             for (String f : files) {
                 final File file = new File(f);
                 if (!file.exists()) throw new IllegalArgumentException(new FileNotFoundException(f));
