@@ -152,7 +152,7 @@ public final class GryoSerializer extends Serializer implements Serializable {
             }
         }
 
-        public static SparkIoRegistry getInstance() {
+        public static SparkIoRegistry instance() {
             return INSTANCE;
         }
     }

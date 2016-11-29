@@ -47,18 +47,22 @@ public final class IoRegistryHelper {
             else if (object instanceof String || object instanceof Class) {
                 try {
                     final Class<?> clazz = object instanceof String ? Class.forName((String) object) : (Class) object;
+                    Method instanceMethod = null;
                     try {
-                        final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
-                        if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
-                            registries.add((IoRegistry) instanceMethod.invoke(null));
-                        else
-                            throw new Exception();
-                    } catch (final Exception methodex) {
-                        // tried getInstance() and that failed so try newInstance() no-arg constructor
-                        registries.add((IoRegistry) clazz.newInstance());
+                        instanceMethod = clazz.getDeclaredMethod("instance"); // try for getInstance() ??
+                    } catch (final NoSuchMethodException e) {
+                        try {
+                            instanceMethod = clazz.getDeclaredMethod("getInstance"); // try for getInstance() ??
+                        } catch (final NoSuchMethodException e2) {
+                            // no instance() or getInstance() methods
+                        }
                     }
-                } catch (final Exception ex) {
-                    throw new IllegalStateException(ex.getMessage(), ex);
+                    if (null != instanceMethod && IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
+                        registries.add((IoRegistry) instanceMethod.invoke(null));
+                    else
+                        registries.add((IoRegistry) clazz.newInstance()); // no instance() or getInstance() methods, try instantiate class
+                } catch (final Exception e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             } else {
                 throw new IllegalArgumentException("The provided registry object can not be resolved to an instance: " + object);

@@ -69,6 +69,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -77,8 +78,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLo
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -96,15 +96,9 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     private boolean workersSet = false;
     private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SparkGraphComputer.class.getSimpleName() + "-boss").build();
 
-    private static final Set<String> KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES;
-
-    static
-    {
-        Set<String> s = new HashSet<>();
-        s.add(KryoShimServiceLoader.KRYO_SHIM_SERVICE);
-        s.add(IoRegistry.IO_REGISTRY);
-        KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES = Collections.unmodifiableSet(s);
-    }
+    private static final Set<String> KEYS_PASSED_IN_JVM_SYSTEM_PROPERTIES = new HashSet<>(Arrays.asList(
+            KryoShimServiceLoader.KRYO_SHIM_SERVICE,
+            IoRegistry.IO_REGISTRY));
 
     /**
      * An {@code ExecutorService} that schedules up background work. Since a {@link GraphComputer} is only used once
@@ -178,8 +172,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             //////////////////////////////////////////////////
             // apache and hadoop configurations that are used throughout the graph computer computation
             final org.apache.commons.configuration.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
-            // TODO !! if (!graphComputerConfiguration.containsKey(Constants.SPARK_SERIALIZER))
-            //    graphComputerConfiguration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
+            if (!graphComputerConfiguration.containsKey(Constants.SPARK_SERIALIZER)) {
+                graphComputerConfiguration.setProperty(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
+                if (!graphComputerConfiguration.containsKey(Constants.SPARK_KRYO_REGISTRATOR))
+                    graphComputerConfiguration.setProperty(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
+            }
             graphComputerConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
             final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(graphComputerConfiguration);
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);

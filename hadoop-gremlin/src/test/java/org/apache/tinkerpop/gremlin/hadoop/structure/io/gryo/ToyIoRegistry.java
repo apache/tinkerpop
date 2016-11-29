@@ -64,7 +64,7 @@ public final class ToyIoRegistry extends AbstractIoRegistry {
         }
     }
 
-    public static ToyIoRegistry getInstance() {
+    public static ToyIoRegistry instance() {
         return INSTANCE;
     }
 }
