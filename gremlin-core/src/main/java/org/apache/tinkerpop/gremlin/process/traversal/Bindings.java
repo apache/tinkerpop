@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,23 +42,26 @@ import java.util.Map;
  */
 public final class Bindings {
 
-    private final Map<Object, String> map = new HashMap<>();
+    private static final ThreadLocal<Map<Object, String>> MAP = new ThreadLocal<>();
 
     public <V> V of(final String variable, final V value) {
-        this.map.put(value, variable);
+        if (null == MAP.get())
+            MAP.set(new HashMap<>());
+        MAP.get().put(value, variable);
         return value;
     }
 
     protected <V> String getBoundVariable(final V value) {
-        return this.map.get(value);
+        return null == MAP.get() ? null : MAP.get().get(value);
     }
 
     protected void clear() {
-        this.map.clear();
+        if (null != MAP.get())
+            MAP.get().clear();
     }
 
     @Override
     public String toString() {
-        return this.map.toString();
+        return null == MAP.get() ? Collections.emptyMap().toString() : MAP.get().toString();
     }
 }

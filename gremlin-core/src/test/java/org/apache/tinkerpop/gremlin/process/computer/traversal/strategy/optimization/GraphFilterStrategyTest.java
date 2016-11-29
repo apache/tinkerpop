@@ -61,7 +61,7 @@ public class GraphFilterStrategyTest {
                 {__.out("created"), __.outE("created")},
                 {__.in("created", "knows"), __.inE("created", "knows")},
                 {__.V().both("created"), __.bothE("created")},
-                {__.V().out("created").repeat(__.both("knows").until(__.inE("bought", "likes"))).outE("likes"), __.union(__.outE("created"), __.bothE("bought", "knows", "likes"))},
+                {__.V().out("created").repeat(__.both("knows")).until(__.inE("bought", "likes")).outE("likes"), __.union(__.outE("created"), __.bothE("bought", "knows", "likes"))},
                 {__.union(__.inE("created"), __.bothE()), null},
                 {__.union(__.inE("created"), __.outE("created")), __.bothE("created")},
                 {__.union(__.inE("knows"), __.outE("created")), __.union(__.outE("created"), __.bothE("knows"))},
