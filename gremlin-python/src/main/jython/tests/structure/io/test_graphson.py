@@ -111,7 +111,7 @@ class TestGraphSONReader(TestCase):
         assert edge.outV == Vertex("y", "vertex")
         ##
         property = self.graphson_reader.readObject("""
-        {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17},"element":{"@type":"g:Edge","@value":{"id":{"@type":"g:Int64","@value":122},"label":"knows","inV":"x","outV":"y","inVLabel":"xLab"}}}}""")
+        {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17},"edge":{"id":{"@type":"g:Int64","@value":122},"label":"knows","inV":"x","outV":"y"}}}""")
         # print property
         assert isinstance(property, Property)
         assert "aKey" == property.key
@@ -208,11 +208,11 @@ class TestGraphSONWriter(TestCase):
             self.graphson_writer.writeObject(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
 
         assert {"@type": "g:Property",
-                "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
-                                                                        "@value": {
-                                                                            "vertex": "vertexId",
-                                                                            "id": "anId",
-                                                                            "label": "aKey"}}}} == json.loads(
+                "@value": {"key": "name", "value": "marko", "vertexProperty": {
+                    "vertex": "vertexId",
+                    "id": "anId",
+                    "label": "aKey",
+                    "value": {"@type": "g:Int32", "@value": 21345}}}} == json.loads(
             self.graphson_writer.writeObject(
                 Property("name", "marko", VertexProperty("anId", "aKey", 21345, Vertex("vertexId")))))
 

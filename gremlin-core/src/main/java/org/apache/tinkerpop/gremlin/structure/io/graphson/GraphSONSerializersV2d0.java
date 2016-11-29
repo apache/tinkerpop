@@ -100,22 +100,34 @@ class GraphSONSerializersV2d0 {
         }
 
         private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator) throws IOException {
-            if (vertex.keys().size() == 0)
+            if (vertex.keys().isEmpty())
                 return;
             jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
             jsonGenerator.writeStartObject();
 
             final List<String> keys = normalize ?
                     IteratorUtils.list(vertex.keys().iterator(), Comparator.naturalOrder()) : new ArrayList<>(vertex.keys());
-            for (String key : keys) {
+            for (final String key : keys) {
                 final Iterator<VertexProperty<Object>> vertexProperties = normalize ?
                         IteratorUtils.list(vertex.properties(key), Comparators.PROPERTY_COMPARATOR).iterator() : vertex.properties(key);
                 if (vertexProperties.hasNext()) {
                     jsonGenerator.writeFieldName(key);
-
                     jsonGenerator.writeStartArray();
                     while (vertexProperties.hasNext()) {
-                        jsonGenerator.writeObject(vertexProperties.next());
+                        final VertexProperty<?> vertexProperty = vertexProperties.next();
+                        jsonGenerator.writeStartObject();
+                        jsonGenerator.writeObjectField(GraphSONTokens.ID, vertexProperty.id());
+                        jsonGenerator.writeObjectField(GraphSONTokens.VALUE, vertexProperty.value());
+                        if (!vertexProperty.keys().isEmpty()) {
+                            jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+                            final Iterator<Property<?>> properties = (Iterator) vertexProperty.properties();
+                            while (properties.hasNext()) {
+                                final Property<?> property = properties.next();
+                                jsonGenerator.writeObjectField(property.key(), property.value());
+                            }
+                            jsonGenerator.writeEndObject();
+                        }
+                        jsonGenerator.writeEndObject();
                     }
                     jsonGenerator.writeEndArray();
                 }
@@ -156,7 +168,6 @@ class GraphSONSerializersV2d0 {
                     IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
             if (edgeProperties.hasNext()) {
                 jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
-
                 jsonGenerator.writeStartObject();
                 while (edgeProperties.hasNext()) {
                     final Property<?> property = edgeProperties.next();
@@ -181,24 +192,19 @@ class GraphSONSerializersV2d0 {
             jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.value());
             if (property.element() instanceof VertexProperty) {
                 VertexProperty vertexProperty = (VertexProperty) property.element();
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.ELEMENT);
-                jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "g:VertexProperty");
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.VALUEPROP);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.VERTEX_PROPERTY);
                 jsonGenerator.writeObjectField(GraphSONTokens.ID, vertexProperty.id());
                 jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertexProperty.label());
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, vertexProperty.value());
                 jsonGenerator.writeObjectField(GraphSONTokens.VERTEX, vertexProperty.element().id());
-                jsonGenerator.writeEndObject();
                 jsonGenerator.writeEndObject();
             } else if (property.element() instanceof Edge) {
                 Edge edge = (Edge) property.element();
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.ELEMENT);
-                jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "g:Edge");
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.VALUEPROP);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.EDGE);
                 jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
                 jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.label());
-                jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.outVertex().id());
                 jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.inVertex().id());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.outVertex().id());
                 jsonGenerator.writeEndObject();
             }
             jsonGenerator.writeEndObject();
@@ -485,9 +491,16 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Property createObject(final Map<String, Object> propData) {
-            final Object element = propData.get(GraphSONTokens.ELEMENT);
-            return element instanceof Element ? // graphson-non-embedded is treated differently, but since this is a hard coded embedding...
-                    new DetachedProperty<>((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE), (Element) element) :
+            Element element = null;
+            if (propData.containsKey(GraphSONTokens.VERTEX_PROPERTY)) {
+                final Map<String, Object> elementData = (Map<String, Object>) propData.get(GraphSONTokens.VERTEX_PROPERTY);
+                element = new VertexPropertyJacksonDeserializer().createObject(elementData);
+            } else if (propData.containsKey(GraphSONTokens.EDGE)) {
+                final Map<String, Object> elementData = (Map<String, Object>) propData.get(GraphSONTokens.EDGE);
+                element = new EdgeJacksonDeserializer().createObject(elementData);
+            }
+            return null != element ? // graphson-non-embedded is treated differently, but since this is a hard coded embedding...
+                    new DetachedProperty<>((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE), element) :
                     new DetachedProperty<>((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
         }
     }
@@ -504,7 +517,8 @@ class GraphSONSerializersV2d0 {
                     new DetachedVertexProperty<>(
                             propData.get(GraphSONTokens.ID),
                             (String) propData.get(GraphSONTokens.LABEL),
-                            propData.get(GraphSONTokens.VALUE), (Map<String, Object>) propData.get(GraphSONTokens.PROPERTIES),
+                            propData.get(GraphSONTokens.VALUE),
+                            (Map<String, Object>) propData.get(GraphSONTokens.PROPERTIES),
                             new DetachedVertex(propData.get(GraphSONTokens.VERTEX), Vertex.DEFAULT_LABEL, null)) :
                     new DetachedVertexProperty<>(
                             propData.get(GraphSONTokens.ID),
