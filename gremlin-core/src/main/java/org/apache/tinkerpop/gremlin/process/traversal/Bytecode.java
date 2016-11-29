@@ -117,9 +117,9 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     /**
-     * Get all the BINDINGS (in a nested, recurssive manner) from all the arguments of all the instructions of this bytecode.
+     * Get all the bindings (in a nested, recursive manner) from all the arguments of all the instructions of this bytecode.
      *
-     * @return a map of string variable and object value BINDINGS
+     * @return a map of string variable and object value bindings
      */
     public Map<String, Object> getBindings() {
         final Map<String, Object> bindingsMap = new HashMap<>();
