@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;

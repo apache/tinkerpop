@@ -70,7 +70,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -233,16 +232,31 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
             importCustomizerProvider = new EmptyImportCustomizerProvider(imports, staticImports);
         }
 
-        interpreterModeEnabled = false;
+        // this is a bit temporary - until CompilerCustomizerProvider is gone
+        final List<CompilerCustomizerProvider> customizerProviderCustomizer = listOfCustomizers.stream()
+                .filter(p -> p instanceof CustomizerProviderCustomizer)
+                .map(p -> ((CustomizerProviderCustomizer) p).getCustomizerProvider())
+                .collect(Collectors.toList());
 
-        customizerProviders = Collections.emptyList();
+        // determine if interpreter mode should be enabled
+        interpreterModeEnabled = customizerProviderCustomizer.stream()
+                .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
+
+        // remove used providers as the rest will be applied directly
+        customizerProviders = customizerProviderCustomizer.stream()
+                .filter(p -> p != null &&
+                        !((p instanceof ImportCustomizerProvider)))
+                .collect(Collectors.toList());
 
         createClassLoader();
     }
 
     /**
      * Creates a new instance with the specified {@link CompilerCustomizerProvider} objects.
+     *
+     * @deprecated As of release 3.2.4, replaced by {@link #GremlinGroovyScriptEngine(Customizer...)}.
      */
+    @Deprecated
     public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
         final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
 

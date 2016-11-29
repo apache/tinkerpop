@@ -35,7 +35,7 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineCompileStaticTest {
     @Test
-    public void shouldCompileStatic() throws Exception {
+    public void shouldCompileStaticDeprecated() throws Exception {
         // with no type checking this should pass
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine()) {
             assertEquals(255, scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()"));
@@ -53,7 +53,25 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
     }
 
     @Test
-    public void shouldCompileStaticWithExtension() throws Exception {
+    public void shouldCompileStatic() throws Exception {
+        // with no type checking this should pass
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine()) {
+            assertEquals(255, scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()"));
+        }
+
+        final CompileStaticCustomizerProvider provider = new CompileStaticCustomizerProvider();
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(provider))) {
+            scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            final Throwable root = ExceptionUtils.getRootCause(se);
+            assertEquals(MultipleCompilationErrorsException.class, root.getClass());
+            assertThat(se.getMessage(), containsString("[Static type checking] - Cannot find matching method java.lang.Object#getRed(). Please check if the declared type is right and if the method exists."));
+        }
+    }
+
+    @Test
+    public void shouldCompileStaticWithExtensionDeprecated() throws Exception {
         // with no type checking extension this should pass
         final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerNoExtension)) {
@@ -72,7 +90,26 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
     }
 
     @Test
-    public void shouldCompileStaticWithMultipleExtension() throws Exception {
+    public void shouldCompileStaticWithExtension() throws Exception {
+        // with no type checking extension this should pass
+        final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(providerNoExtension))) {
+            assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
+        }
+
+        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+                PrecompiledExtensions.PreventColorUsageExtension.class.getName());
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(providerWithExtension))) {
+            scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
+        }
+    }
+
+    @Test
+    public void shouldCompileStaticWithMultipleExtensionDeprecated() throws Exception {
         // with no type checking extension this should pass
         final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerNoExtension)) {
@@ -84,6 +121,35 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
                 PrecompiledExtensions.PreventColorUsageExtension.class.getName() +
                         "," + PrecompiledExtensions.PreventCountDownLatchUsageExtension.class.getName());
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
+        }
+
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            scriptEngine.eval("def c = new java.util.concurrent.CountDownLatch(1); c.count");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
+        }
+    }
+
+    @Test
+    public void shouldCompileStaticWithMultipleExtension() throws Exception {
+        // with no type checking extension this should pass
+        final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(providerNoExtension))) {
+            assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
+            assertEquals(1l, scriptEngine.eval("def c = new java.util.concurrent.CountDownLatch(1); c.count"));
+        }
+
+        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+                PrecompiledExtensions.PreventColorUsageExtension.class.getName() +
+                        "," + PrecompiledExtensions.PreventCountDownLatchUsageExtension.class.getName());
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(providerWithExtension))) {
             scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
             fail("Should have failed type checking");
         } catch (ScriptException se) {

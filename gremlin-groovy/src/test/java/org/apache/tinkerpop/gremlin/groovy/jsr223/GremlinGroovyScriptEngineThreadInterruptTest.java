@@ -33,8 +33,29 @@ import static org.junit.Assert.assertTrue;
  */
 public class GremlinGroovyScriptEngineThreadInterruptTest {
     @Test
-    public void shouldInterruptWhile() throws Exception {
+    public void shouldInterruptWhileDeprecated() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptCustomizerProvider());
+        final AtomicBoolean asserted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            } catch (ScriptException se) {
+                asserted.set(se.getCause().getCause() instanceof InterruptedException);
+            }
+        });
+
+        t.start();
+        Thread.sleep(100);
+        t.interrupt();
+        while(t.isAlive()) {}
+
+        assertTrue(asserted.get());
+    }
+
+    @Test
+    public void shouldInterruptWhile() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(new ThreadInterruptCustomizerProvider()));
         final AtomicBoolean asserted = new AtomicBoolean(false);
 
         final Thread t = new Thread(() -> {

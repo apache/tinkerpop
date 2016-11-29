@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
 
 import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * A plugin implementation which allows for the usage of Gremlin Groovy's syntactic sugar.
@@ -34,12 +35,7 @@ public class SugarGremlinPlugin extends AbstractGremlinPlugin {
     private static final String NAME = "tinkerpop.sugar";
 
     public SugarGremlinPlugin() {
-        super(NAME, new DefaultScriptCustomizer(Collections.singletonList(
+        super(NAME, new HashSet<>(Collections.singletonList("gremlin-groovy")), new DefaultScriptCustomizer(Collections.singletonList(
                 Collections.singletonList(SugarLoader.class.getPackage().getName() + "." + SugarLoader.class.getSimpleName() + ".load()"))));
-    }
-
-    @Override
-    public String getName() {
-        return "tinkerpop.sugar";
     }
 }

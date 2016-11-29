@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import groovy.transform.TimedInterrupt;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.ast.tools.GeneralUtils;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;

@@ -36,7 +36,7 @@ import static org.junit.Assert.fail;
 public class GremlinGroovyScriptEngineTimedInterruptTest {
 
     @Test
-    public void shouldTimeoutScriptOnTimedWhile() throws Exception {
+    public void shouldTimeoutScriptOnTimedWhileDeprecated() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
                 new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
         try {
@@ -48,7 +48,20 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
     }
 
     @Test
-    public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
+    public void shouldTimeoutScriptOnTimedWhile() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CustomizerProviderCustomizer(new TimedInterruptCustomizerProvider(1000)),
+                new CustomizerProviderCustomizer(new DefaultImportCustomizerProvider()));
+        try {
+            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            fail("This should have timed out");
+        } catch (ScriptException se) {
+            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+        }
+    }
+
+    @Test
+    public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeoutDeprecated() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
                 new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
         Thread.sleep(2000);
@@ -62,8 +75,25 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
         assertEquals(2, engine.eval("1+1"));
     }
 
+
     @Test
-    public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
+    public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CustomizerProviderCustomizer(new TimedInterruptCustomizerProvider(1000)),
+                new CustomizerProviderCustomizer(new DefaultImportCustomizerProvider()));
+        Thread.sleep(2000);
+        try {
+            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            fail("This should have timed out");
+        } catch (ScriptException se) {
+            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+        }
+
+        assertEquals(2, engine.eval("1+1"));
+    }
+
+    @Test
+    public void shouldContinueToEvalScriptsEvenWithTimedInterruptDeprecated() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
                 new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
 
@@ -84,10 +114,43 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
     }
 
     @Test
-    public void shouldNotTimeoutStandaloneFunction() throws Exception {
+    public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CustomizerProviderCustomizer(new TimedInterruptCustomizerProvider(1000)),
+                new CustomizerProviderCustomizer(new DefaultImportCustomizerProvider()));
+
+        for (int ix = 0; ix < 5; ix++) {
+            try {
+                // this script takes 1000 ms longer than the interruptionTimeout
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 2000) {}");
+                fail("This should have timed out");
+            } catch (ScriptException se) {
+                assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+            }
+
+            // this script takes 500 ms less than the interruptionTimeout
+            assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 500) {};'test'"));
+        }
+
+        assertEquals(2, engine.eval("1+1"));
+    }
+
+    @Test
+    public void shouldNotTimeoutStandaloneFunctionDeprecated() throws Exception {
         // use a super fast timeout which should not prevent the call of a cached function
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
                 new TimedInterruptCustomizerProvider(1), new DefaultImportCustomizerProvider());
+        engine.eval("def addItUp(x,y) { x + y }");
+
+        assertEquals(3, engine.eval("addItUp(1,2)"));
+    }
+
+    @Test
+    public void shouldNotTimeoutStandaloneFunction() throws Exception {
+        // use a super fast timeout which should not prevent the call of a cached function
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CustomizerProviderCustomizer(new TimedInterruptCustomizerProvider(1)),
+                new CustomizerProviderCustomizer(new DefaultImportCustomizerProvider()));
         engine.eval("def addItUp(x,y) { x + y }");
 
         assertEquals(3, engine.eval("addItUp(1,2)"));
