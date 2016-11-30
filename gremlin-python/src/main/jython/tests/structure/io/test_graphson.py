@@ -243,6 +243,16 @@ class TestGraphSONWriter(TestCase):
         serdes.dictify.assert_called_once_with(value, writer)
         assert d is serdes.dictify()
 
+    def test_write_long(self):
+
+        mapping = self.graphson_writer.toDict(1)
+        assert mapping['@type'] == 'g:Int32'
+        assert mapping['@value'] == 1
+
+        mapping = self.graphson_writer.toDict(long(1))
+        assert mapping['@type'] == 'g:Int64'
+        assert mapping['@value'] == 1
+
 
 if __name__ == '__main__':
     unittest.main()
