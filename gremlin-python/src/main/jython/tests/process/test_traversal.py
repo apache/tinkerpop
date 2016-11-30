@@ -24,6 +24,8 @@ from unittest import TestCase
 
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import Binding
+from gremlin_python.process.graph_traversal import __
 
 
 class TestTraversal(TestCase):
@@ -52,6 +54,17 @@ class TestTraversal(TestCase):
         assert 1 == len(bytecode.step_instructions[0])
         assert 1 == len(bytecode.step_instructions[1])
         assert 2 == len(bytecode.step_instructions[2])
+        ##
+        bytecode = g.V(('a',[1,2,3])).out(('b','created')).where(__.in_(('c','created'),('d','knows')).count().is_(('e',P.gt(2)))).bytecode
+        assert 5 == len(bytecode.bindings.keys())
+        assert [1,2,3] == bytecode.bindings['a']
+        assert 'created' == bytecode.bindings['b']
+        assert 'created' == bytecode.bindings['c']
+        assert 'knows' == bytecode.bindings['d']
+        assert P.gt(2) == bytecode.bindings['e']
+        assert Binding('b','created') == bytecode.step_instructions[1][1]
+        assert 'binding[b=created]' == str(bytecode.step_instructions[1][1])
+        assert isinstance(hash(bytecode.step_instructions[1][1]),int)
 
     def test_P(self):
         # verify that the order of operations is respected

@@ -82,8 +82,8 @@ public class BytecodeTest {
 
     @Test
     public void shouldIncludeBindingsInEquality() {
-        final Bindings b = new Bindings();
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withBindings(b);
+        final Bindings b = Bindings.instance();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
 
         final Bytecode bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getBytecode();
         final Bytecode bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getBytecode();
@@ -103,8 +103,8 @@ public class BytecodeTest {
 
     @Test
     public void shouldIncludeBindingsInNestedTraversals() {
-        final Bindings b = new Bindings();
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withBindings(b);
+        final Bindings b = Bindings.instance();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
         final Bytecode bytecode = g.V().in(b.of("a","created")).where(__.out(b.of("b","knows")).has("age",b.of("c",P.gt(32))).map(__.values(b.of("d","name")))).asAdmin().getBytecode();
         assertEquals(4, bytecode.getBindings().size());
         assertEquals("created", bytecode.getBindings().get("a"));

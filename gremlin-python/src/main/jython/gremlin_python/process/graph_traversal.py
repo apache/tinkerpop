@@ -62,8 +62,6 @@ class GraphTraversalSource(object):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
-  def withBindings(self, bindings):
-    return self
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
     return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):

@@ -52,7 +52,6 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
-    private final transient Bindings bindings = new Bindings();
 
     /**
      * Add a {@link TraversalSource} instruction to the bytecode.
@@ -69,10 +68,9 @@ public final class Bytecode implements Cloneable, Serializable {
                         (Class) arguments[i];
             }
             this.sourceInstructions.add(new Instruction(sourceName, classes));
-        } else if (!sourceName.equals(TraversalSource.Symbols.withBindings)) {
+        } else
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
-        }
-        this.bindings.clear();
+        Bindings.clear();
     }
 
     /**
@@ -83,7 +81,7 @@ public final class Bytecode implements Cloneable, Serializable {
      */
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
-        this.bindings.clear();
+        Bindings.clear();
     }
 
     /**
@@ -271,7 +269,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private final Object convertArgument(final Object argument, final boolean searchBindings) {
         if (searchBindings) {
-            final String variable = this.bindings.getBoundVariable(argument);
+            final String variable = Bindings.getBoundVariable(argument);
             if (null != variable)
                 return new Binding<>(variable, convertArgument(argument, false));
         }
