@@ -2346,6 +2346,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     ///////////////////////////////////
 
+    
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSucceedWithProperTraverserRequirements() throws Exception {
@@ -2354,7 +2355,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final Map<String, Object> idsByName = new HashMap<>();
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map map) ->
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
                 idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
 
         try {
@@ -2388,8 +2389,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").
                 useTraverserRequirements(false).create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map map) ->
-                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
+                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id.getAccessor())));
 
         try {
             g.V().as("a").out("created").in("created").program(vp).dedup()

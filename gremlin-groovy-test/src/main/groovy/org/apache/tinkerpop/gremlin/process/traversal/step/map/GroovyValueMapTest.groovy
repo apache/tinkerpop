@@ -42,5 +42,10 @@ public abstract class GroovyValueMapTest {
         public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out('created').valueMap", "v1Id", v1Id)
         }
+        
+        @Override
+        public Traversal<Vertex, Map<Object, Object>> get_g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX() {
+        	new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('person').filter(__.outE('created')).valueMap(true)")
+        }
     }
 }
