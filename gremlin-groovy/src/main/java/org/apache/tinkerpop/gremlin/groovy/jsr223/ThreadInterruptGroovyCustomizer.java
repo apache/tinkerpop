@@ -18,23 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import groovy.transform.ThreadInterrupt;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
+import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 /**
- * An adapter that allows existing {@link CompilerCustomizerProvider} instances to behave as a {#link Customizer}.
+ * Injects checks for thread interruption into scripts.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class CustomizerProviderCustomizer implements Customizer {
-
-    private final CompilerCustomizerProvider customizerProvider;
-
-    CustomizerProviderCustomizer(final CompilerCustomizerProvider customizerProvider) {
-        this.customizerProvider = customizerProvider;
-    }
-
-    CompilerCustomizerProvider getCustomizerProvider() {
-        return customizerProvider;
+class ThreadInterruptGroovyCustomizer implements GroovyCustomizer {
+    @Override
+    public CompilationCustomizer create() {
+        return new ASTTransformationCustomizer(ThreadInterrupt.class);
     }
 }

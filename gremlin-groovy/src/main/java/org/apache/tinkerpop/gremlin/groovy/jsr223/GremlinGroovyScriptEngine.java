@@ -70,6 +70,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -177,6 +178,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private ImportCustomizerProvider importCustomizerProvider;
     private final List<CompilerCustomizerProvider> customizerProviders;
 
+    private final ImportGroovyCustomizer importGroovyCustomizer;
+    private final List<GroovyCustomizer> groovyCustomizers;
+
     private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
 
@@ -207,46 +211,21 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 .filter(p -> p instanceof ImportCustomizer)
                 .map(p -> (ImportCustomizer) p)
                 .collect(Collectors.toList());
-        if (importCustomizers.isEmpty()) {
-            importCustomizerProvider = NoImportCustomizerProvider.INSTANCE;
-        } else {
-            final Set<String> imports = new HashSet<>();
-            final Set<String> staticImports = new HashSet<>();
-            importCustomizers.forEach(ic -> {
-                ic.getClassImports().forEach(c -> {
-                    final String importStatement = c.getName();
-                    imports.add(importStatement);
-                });
+        final ImportCustomizer[] importCustomizerArray = new ImportCustomizer[importCustomizers.size()];
+        importGroovyCustomizer = new ImportGroovyCustomizer(importCustomizers.toArray(importCustomizerArray));
 
-                ic.getEnumImports().forEach(e -> {
-                    final String importStatement = e.getDeclaringClass().getCanonicalName() + ".*";
-                    staticImports.add(importStatement);
-                });
-
-                ic.getMethodImports().forEach(m -> {
-                    final String importStatement = m.getDeclaringClass().getCanonicalName() + ".*";
-                    staticImports.add(importStatement);
-                });
-            });
-
-            importCustomizerProvider = new EmptyImportCustomizerProvider(imports, staticImports);
-        }
-
-        // this is a bit temporary - until CompilerCustomizerProvider is gone
-        final List<CompilerCustomizerProvider> customizerProviderCustomizer = listOfCustomizers.stream()
-                .filter(p -> p instanceof CustomizerProviderCustomizer)
-                .map(p -> ((CustomizerProviderCustomizer) p).getCustomizerProvider())
+        groovyCustomizers = listOfCustomizers.stream()
+                .filter(p -> p instanceof GroovyCustomizer)
+                .map(p -> ((GroovyCustomizer) p))
                 .collect(Collectors.toList());
 
         // determine if interpreter mode should be enabled
-        interpreterModeEnabled = customizerProviderCustomizer.stream()
-                .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
+        interpreterModeEnabled = groovyCustomizers.stream()
+                .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
 
-        // remove used providers as the rest will be applied directly
-        customizerProviders = customizerProviderCustomizer.stream()
-                .filter(p -> p != null &&
-                        !((p instanceof ImportCustomizerProvider)))
-                .collect(Collectors.toList());
+        // not using the old provider model so set that to empty list so that when createClassLoader is called
+        // it knows to use groovyCustomizers instead
+        customizerProviders = Collections.emptyList();
 
         createClassLoader();
     }
@@ -273,9 +252,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
-                .filter(p -> p != null &&
-                        !((p instanceof ImportCustomizerProvider)))
+                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider))
                 .collect(Collectors.toList());
+
+        // groovy customizers are not used here - set to empty list so that the customizerProviders get used
+        // in createClassLoader
+        groovyCustomizers = Collections.emptyList();
+        importGroovyCustomizer = null;
 
         createClassLoader();
     }
@@ -350,7 +333,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      */
     @Override
     public synchronized void addImports(final Set<String> importStatements) {
-        final Set<String> staticImports = new HashSet<>();
+        // can't use this feature because imports can't come in as String for the revised model
+        if (null == importCustomizerProvider)
+            throw new IllegalStateException("Imports cannot be added to a GremlinGroovyScriptEngine that uses Customizer instances");
+
+            final Set<String> staticImports = new HashSet<>();
         final Set<String> imports = new HashSet<>();
 
         importStatements.forEach(s -> {
@@ -362,9 +349,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 imports.add(s.substring(6).trim());
         });
 
-        // use the EmptyImportCustomizer because it doesn't come with static initializers containing
-        // existing imports.
         importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
+
         internalReset();
     }
 
@@ -697,17 +683,32 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     private synchronized void createClassLoader() {
-        final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        conf.addCompilationCustomizers(this.importCustomizerProvider.create());
+        // check for customizerProviders temporarily until this deprecated stuff is gone
+        if (groovyCustomizers.isEmpty() && null == importGroovyCustomizer) {
+            final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
+            conf.addCompilationCustomizers(this.importCustomizerProvider.create());
 
-        // ConfigurationCustomizerProvider is treated separately
-        customizerProviders.stream().filter(cp -> !(cp instanceof ConfigurationCustomizerProvider))
-                .forEach(p -> conf.addCompilationCustomizers(p.create()));
+            // ConfigurationCustomizerProvider is treated separately
+            customizerProviders.stream().filter(cp -> !(cp instanceof ConfigurationCustomizerProvider))
+                    .forEach(p -> conf.addCompilationCustomizers(p.create()));
 
-        customizerProviders.stream().filter(cp -> cp instanceof ConfigurationCustomizerProvider).findFirst()
-                .ifPresent(cp -> ((ConfigurationCustomizerProvider) cp).applyCustomization(conf));
+            customizerProviders.stream().filter(cp -> cp instanceof ConfigurationCustomizerProvider).findFirst()
+                    .ifPresent(cp -> ((ConfigurationCustomizerProvider) cp).applyCustomization(conf));
 
-        this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
+            this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
+        } else {
+            final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
+            conf.addCompilationCustomizers(this.importGroovyCustomizer.create());
+
+            // ConfigurationCustomizerProvider is treated separately
+            groovyCustomizers.stream().filter(cp -> !(cp instanceof ConfigurationGroovyCustomizer))
+                    .forEach(p -> conf.addCompilationCustomizers(p.create()));
+
+            groovyCustomizers.stream().filter(cp -> cp instanceof ConfigurationGroovyCustomizer).findFirst()
+                    .ifPresent(cp -> ((ConfigurationGroovyCustomizer) cp).applyCustomization(conf));
+
+            this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
+        }
     }
 
     private void use(final Artifact artifact) {

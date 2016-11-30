@@ -16,23 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import java.util.concurrent.TimeoutException;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 /**
- * An exception thrown from the {@link TimedInterruptCustomizerProvider} when the timeout is exceeded. This exception
- * allows differentiation from other "timeout exceptions" that might occur.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException}.
  */
-@Deprecated
-public class TimedInterruptTimeoutException extends TimeoutException {
-    public TimedInterruptTimeoutException() {
-    }
+public interface GroovyCustomizer extends Customizer {
 
-    public TimedInterruptTimeoutException(final String message) {
-        super(message);
-    }
+    /**
+     * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
+     */
+    public CompilationCustomizer create();
 }

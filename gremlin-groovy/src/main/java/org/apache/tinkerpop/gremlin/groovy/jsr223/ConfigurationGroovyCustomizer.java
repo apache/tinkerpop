@@ -16,10 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
@@ -31,21 +29,19 @@ import java.util.Map;
 
 /**
  * Allows configurations to be directly supplied to a groovy {@code CompilerConfiguration} when a
- * {@link org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine} is initialized, providing fine-grained
+ * {@link GremlinGroovyScriptEngine} is initialized, providing fine-grained
  * control over its internals.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, not replaced by a public class.
  */
-@Deprecated
-public class ConfigurationCustomizerProvider implements CompilerCustomizerProvider {
+class ConfigurationGroovyCustomizer implements GroovyCustomizer {
 
     private final Map<String,Object> properties;
 
     /**
      * Creates a new instance using configuration values specified
      */
-    public ConfigurationCustomizerProvider(final Object... keyValues) {
+    ConfigurationGroovyCustomizer(final Object... keyValues) {
         if (null == keyValues || keyValues.length == 0)
             throw new IllegalArgumentException("ConfigurationCustomizerProvider must have key/values specified");
 
@@ -58,7 +54,7 @@ public class ConfigurationCustomizerProvider implements CompilerCustomizerProvid
     /**
      * Creates a new instance using configuration values specified
      */
-    public ConfigurationCustomizerProvider(final Map<String,Object> keyValues) {
+    ConfigurationGroovyCustomizer(final Map<String,Object> keyValues) {
         properties = keyValues;
     }
 

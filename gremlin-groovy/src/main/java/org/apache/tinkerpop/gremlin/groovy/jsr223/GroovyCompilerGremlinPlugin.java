@@ -18,12 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TypeCheckedCustomizerProvider;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
@@ -106,21 +100,21 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
             final List<Customizer> list = new ArrayList<>();
 
             if (interpreterMode)
-                list.add(new CustomizerProviderCustomizer(new InterpreterModeCustomizerProvider()));
+                list.add(new InterpreterModeGroovyCustomizer());
 
             if (!keyValues.isEmpty())
-                list.add(new CustomizerProviderCustomizer(new ConfigurationCustomizerProvider(keyValues)));
+                list.add(new ConfigurationGroovyCustomizer(keyValues));
 
             if (threadInterrupt)
-                list.add(new CustomizerProviderCustomizer(new ThreadInterruptCustomizerProvider()));
+                list.add(new ThreadInterruptGroovyCustomizer());
 
             if (timeInMillis > 0)
-                list.add(new CustomizerProviderCustomizer(new TimedInterruptCustomizerProvider(timeInMillis)));
+                list.add(new TimedInterruptGroovyCustomizer(timeInMillis));
 
             if (compilation == Compilation.COMPILE_STATIC)
-                list.add(new CustomizerProviderCustomizer(new CompileStaticCustomizerProvider(extensions)));
+                list.add(new CompileStaticGroovyCustomizer(extensions));
             else if (compilation == Compilation.TYPE_CHECKED)
-                list.add(new CustomizerProviderCustomizer(new TypeCheckedCustomizerProvider(extensions)));
+                list.add(new TypeCheckedGroovyCustomizer(extensions));
             else if (compilation != Compilation.NONE)
                 throw new IllegalStateException("Use of unknown compilation type: " + compilation);
 

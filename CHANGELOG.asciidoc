@@ -46,6 +46,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a `NoSuchElementException` bug with `GroupXXXStep` where if the reduced `TraverserSet` is empty, don't add the key/value.
 * Fixed a `NullPointerException` bug with profiling `GroupSideEffectStep` in OLTP.
 * Improved ability to release resources in `GraphProvider` instances in the test suite.
+* Factored `GremlinPlugin` functionality out of gremlin-groovy and into gremlin-core - related classes were deprecated.
 * Added a `force` option for killing sessions without waiting for transaction close or timeout of a currently running job or multiple jobs.
 * Deprecated `Session.kill()` and `Session.manualKill()`.
 * Added `choose(predicate,traversal)` and `choose(traversal,traversal)` to effect if/then-semantics (no else). Equivalent to `choose(x,y,identity())`.

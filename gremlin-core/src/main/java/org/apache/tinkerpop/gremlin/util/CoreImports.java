@@ -83,12 +83,15 @@ import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -187,11 +190,11 @@ public final class CoreImports {
         // METHODS //
         /////////////
 
-        Stream.of(IoCore.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).forEach(METHOD_IMPORTS::add);
-        Stream.of(P.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).forEach(METHOD_IMPORTS::add);
-        Stream.of(__.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
-        Stream.of(Computer.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).forEach(METHOD_IMPORTS::add);
-        Stream.of(TimeUtil.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(IoCore.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(P.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);
 
         ///////////
         // ENUMS //
@@ -207,7 +210,6 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, Scope.values());
         Collections.addAll(ENUM_IMPORTS, T.values());
         Collections.addAll(ENUM_IMPORTS, TraversalOptionParent.Pick.values());
-
     }
 
     private CoreImports() {
@@ -224,5 +226,25 @@ public final class CoreImports {
 
     public static Set<Enum> getEnumImports() {
         return Collections.unmodifiableSet(ENUM_IMPORTS);
+    }
+
+    /**
+     * Filters to unique method names on each class.
+     */
+    private static Stream<Method> uniqueMethods(final Class<?> clazz) {
+        final Set<String> unique = new HashSet<>();
+        return Stream.of(clazz.getMethods())
+                .filter(m -> Modifier.isStatic(m.getModifiers()))
+                .map(m -> Pair.with(generateMethodDescriptor(m), m))
+                .filter(p -> {
+                    final boolean exists = unique.contains(p.getValue0());
+                    if (!exists) unique.add(p.getValue0());
+                    return !exists;
+                })
+                .map(Pair::getValue1);
+    }
+
+    private static String generateMethodDescriptor(final Method m) {
+        return m.getDeclaringClass().getCanonicalName() + "." + m.getName();
     }
 }

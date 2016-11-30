@@ -16,11 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.transform.TimedInterrupt;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.ast.tools.GeneralUtils;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
@@ -34,23 +32,21 @@ import java.util.concurrent.TimeUnit;
  * specified time.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, not replaced by a public class.
  */
-@Deprecated
-public class TimedInterruptCustomizerProvider implements CompilerCustomizerProvider {
-    public static final long DEFAULT_INTERRUPTION_TIMEOUT = 60000;
+class TimedInterruptGroovyCustomizer implements GroovyCustomizer {
+    private static final long DEFAULT_INTERRUPTION_TIMEOUT = 60000;
 
     private final long interruptionTimeout;
 
-    public TimedInterruptCustomizerProvider() {
+    TimedInterruptGroovyCustomizer() {
         this(DEFAULT_INTERRUPTION_TIMEOUT);
     }
 
-    public TimedInterruptCustomizerProvider(final Long interruptionTimeout) {
+    TimedInterruptGroovyCustomizer(final Long interruptionTimeout) {
         this.interruptionTimeout = interruptionTimeout;
     }
 
-    public TimedInterruptCustomizerProvider(final Integer interruptionTimeout) {
+    TimedInterruptGroovyCustomizer(final Integer interruptionTimeout) {
         this.interruptionTimeout = interruptionTimeout.longValue();
     }
 

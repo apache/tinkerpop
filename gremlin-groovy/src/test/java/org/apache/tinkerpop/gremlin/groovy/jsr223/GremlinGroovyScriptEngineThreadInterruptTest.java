@@ -55,7 +55,7 @@ public class GremlinGroovyScriptEngineThreadInterruptTest {
 
     @Test
     public void shouldInterruptWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(new ThreadInterruptCustomizerProvider()));
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptGroovyCustomizer());
         final AtomicBoolean asserted = new AtomicBoolean(false);
 
         final Thread t = new Thread(() -> {

@@ -16,25 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.InterpreterMode;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 /**
  * Places the {@code ScriptEngine} in "interpreter mode" where local variables of a script are treated as global
- * bindings. This implementation is technically not a true {@link CompilerCustomizerProvider} instance as the
+ * bindings. This implementation is technically not a true {@link GroovyCustomizer} instance as the
  * "interpreter mode" feature does not require a {@code CompilerCustomizer}. This class merely acts as a flag that
- * tells the {@link org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine} to turn this feature on.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, not replaced by a public class.
+ * tells the {@link GremlinGroovyScriptEngine} to turn this feature on.
  */
-@Deprecated
-public class InterpreterModeCustomizerProvider implements CompilerCustomizerProvider {
+class InterpreterModeGroovyCustomizer implements GroovyCustomizer {
     @Override
     public CompilationCustomizer create() {
         return new ASTTransformationCustomizer(InterpreterMode.class);

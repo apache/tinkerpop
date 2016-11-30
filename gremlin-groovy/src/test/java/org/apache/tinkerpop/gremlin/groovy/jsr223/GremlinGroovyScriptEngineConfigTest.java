@@ -41,9 +41,8 @@ public class GremlinGroovyScriptEngineConfigTest {
 
     @Test
     public void shouldAddBaseScriptClass() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(
-                new ConfigurationCustomizerProvider("ScriptBaseClass", BaseScriptForTesting.class.getName())),
-                new CustomizerProviderCustomizer(new DefaultImportCustomizerProvider()));
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new ConfigurationGroovyCustomizer("ScriptBaseClass", BaseScriptForTesting.class.getName()));
 
         assertEquals("hello, stephen", engine.eval("hello('stephen')"));
     }

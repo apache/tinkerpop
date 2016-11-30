@@ -122,7 +122,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(new InterpreterModeCustomizerProvider()));
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
         engine.eval("def addItUp = { x, y -> x + y }");
         assertEquals(3, engine.eval("int xxx = 1 + 2"));
         assertEquals(4, engine.eval("yyy = xxx + 1"));
@@ -168,7 +168,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldPromoteDefinedVarsInInterpreterModeWithBindings() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new CustomizerProviderCustomizer(new InterpreterModeCustomizerProvider()));
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
         final Bindings b = new SimpleBindings();
         b.put("x", 2);
         engine.eval("def addItUp = { x, y -> x + y }", b);
@@ -354,7 +354,7 @@ public class GremlinGroovyScriptEngineTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Color> color = new AtomicReference<>(Color.RED);
 
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
 
         try {
             scriptEngine.eval("Color.BLACK");

@@ -16,7 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
+
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 
 import java.util.concurrent.TimeoutException;
 
@@ -25,9 +27,7 @@ import java.util.concurrent.TimeoutException;
  * allows differentiation from other "timeout exceptions" that might occur.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException}.
  */
-@Deprecated
 public class TimedInterruptTimeoutException extends TimeoutException {
     public TimedInterruptTimeoutException() {
     }
