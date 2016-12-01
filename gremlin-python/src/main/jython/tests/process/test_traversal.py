@@ -73,6 +73,19 @@ class TestTraversal(TestCase):
         assert "and(or(lt(b),gt(c)),or(neq(d),gte(e)))" == str(
             P.lt("b").or_(P.gt("c")).and_(P.neq("d").or_(P.gte("e"))))
 
+    def test_anonymous_traversal(self):
+        bytecode = __.__(1).bytecode
+        assert 0 == len(bytecode.bindings.keys())
+        assert 0 == len(bytecode.source_instructions)
+        assert 1 == len(bytecode.step_instructions)
+        assert "inject" == bytecode.step_instructions[0][0]
+        assert 1 == bytecode.step_instructions[0][1]
+        ##
+        bytecode = __.start().bytecode
+        assert 0 == len(bytecode.bindings.keys())
+        assert 0 == len(bytecode.source_instructions)
+        assert 0 == len(bytecode.step_instructions)
+
 
 if __name__ == '__main__':
     unittest.main()

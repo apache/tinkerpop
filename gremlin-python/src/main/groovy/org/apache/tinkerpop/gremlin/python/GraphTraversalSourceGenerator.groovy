@@ -155,7 +155,15 @@ under the License.
 ////////////////////////
 // AnonymousTraversal //
 ////////////////////////
-        pythonClass.append("class __(object):\n");
+        pythonClass.append(
+                """class __(object):
+  @staticmethod
+  def start():
+    return GraphTraversal(None, None, Bytecode())
+  @staticmethod
+  def __(*args):
+    return __.inject(*args)
+""")
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
@@ -175,7 +183,7 @@ under the License.
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
-                findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                findAll { !it.name.equals("__") }.
                 collect { SymbolHelper.toPython(it.name) }.
                 unique().
                 sort { a, b -> a <=> b }.
