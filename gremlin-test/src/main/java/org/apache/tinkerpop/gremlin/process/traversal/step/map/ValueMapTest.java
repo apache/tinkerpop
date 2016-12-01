@@ -133,17 +133,16 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     /**
      * TINKERPOP-1483
-     * 
      */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX() {
-    	Traversal<Vertex,Map<Object,Object>> gt=get_g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX();
-    	int cnt=0;
+    	final Traversal<Vertex,Map<Object,Object>> gt=get_g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX();
+    	int cnt = 0;
     	while(gt.hasNext()){
-    		Map<Object,Object> m=gt.next();
-    		assertTrue(m.size()>0);
-    		for (Object o:m.keySet()){
+    		final Map<Object,Object> m = gt.next();
+    		assertTrue(m.size() > 0);
+    		for (Object o : m.keySet()){
     			assertNotNull(m.get(o));
     		}
     		assertTrue(m.containsKey(id));
@@ -152,7 +151,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     		cnt++;
     	}
     	// check we had results
-    	assertTrue(cnt>0);
+    	assertTrue(cnt > 0);
     }
     
     public static class Traversals extends ValueMapTest {
