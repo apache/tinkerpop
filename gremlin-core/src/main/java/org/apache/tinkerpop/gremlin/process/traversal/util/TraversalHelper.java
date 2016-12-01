@@ -480,7 +480,7 @@ public final class TraversalHelper {
     }
 
     /**
-     * @deprecated Since 3.2.3. Only used by {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0}.
+     * @deprecated As of release 3.2.3, not replaced - only used by {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0}.
      */
     @Deprecated
     public static <S> void addToCollectionUnrollIterator(final Collection<S> collection, final S s, final long bulk) {

@@ -240,7 +240,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
      *
      * @param key      the key to register the supplier with
      * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
-     * @deprecated Since 3.2.0 -- use {@link TraversalSideEffects#register(String, Supplier, BinaryOperator)}.
+     * @deprecated As of release 3.2.0, replaced by {@link TraversalSideEffects#register(String, Supplier, BinaryOperator)}.
      */
     @Deprecated
     public void registerSupplier(final String key, final Supplier supplier);
@@ -251,7 +251,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
      *
      * @param key      the key of the supplier to register
      * @param supplier the supplier to register if the key has not already been registered
-     * @deprecated Since 3.2.0 -- use {@link TraversalSideEffects#registerIfAbsent(String, Supplier, BinaryOperator)}.
+     * @deprecated As of release 3.2.0, replaced by {@link TraversalSideEffects#registerIfAbsent(String, Supplier, BinaryOperator)}.
      */
     @Deprecated
     public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
@@ -265,7 +265,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
      * @param key the key associated with the supplier
      * @param <V> The object type of the supplier
      * @return A non-empty optional if the supplier exists
-     * @deprecated Since 3.2.0 -- use {@link TraversalSideEffects#getSupplier(String)}.
+     * @deprecated As of release 3.2.0, replaced by {@link TraversalSideEffects#getSupplier(String)}.
      */
     @Deprecated
     public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key);
@@ -281,7 +281,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
      * @param orCreate if the object doesn't exist as an object or suppliable object, then generate it with the specified supplier
      * @param <V>      the return type of the object
      * @return the object that is either retrieved, generated, or supplier via orCreate
-     * @deprecated Since 3.2.0 -- use {@link TraversalSideEffects#register(String, Supplier, BinaryOperator)} to register side-effects.
+     * @deprecated As of release 3.2.0, replaced by {@link TraversalSideEffects#register(String, Supplier, BinaryOperator)} to register side-effects.
      */
     @Deprecated
     public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {

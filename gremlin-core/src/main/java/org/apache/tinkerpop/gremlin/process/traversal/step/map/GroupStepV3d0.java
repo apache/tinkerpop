@@ -43,7 +43,7 @@ import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated Since 3.1.0 -- use {@link GroupStep}
+ * @deprecated As of release 3.1.0, replaced by {@link GroupStep}.
  */
 public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements TraversalParent, ByModulating {
 

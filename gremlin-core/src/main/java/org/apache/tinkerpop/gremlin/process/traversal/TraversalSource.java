@@ -134,7 +134,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      *
      * @param bindings the bindings instance to use
      * @return a new traversal source with set bindings
-     * @deprecated Since 3.2.4, simply use {@link Bindings} without reference to a {@link TraversalSource}.
+     * @deprecated As of release 3.2.4, replaced by use of {@link Bindings} without reference to a {@link TraversalSource}.
      */
     @Deprecated
     public default TraversalSource withBindings(final Bindings bindings) {

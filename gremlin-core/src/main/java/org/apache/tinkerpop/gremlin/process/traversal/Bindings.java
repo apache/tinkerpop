@@ -45,7 +45,7 @@ public final class Bindings {
     private static final ThreadLocal<Map<Object, String>> MAP = new ThreadLocal<>();
 
     /**
-     * @deprecated Since 3.2.4. Instead, use {@link Bindings#instance()}.
+     * @deprecated As of release 3.2.4, replaced by {@link Bindings#instance()}.
      */
     @Deprecated
     public Bindings() {
