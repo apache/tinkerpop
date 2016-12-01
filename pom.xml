@@ -994,7 +994,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-benchmark/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>
