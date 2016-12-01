@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptEngineCache;
 import org.python.jsr223.PyScriptEngine;
 
 import javax.script.ScriptException;

@@ -16,10 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util;
-
-import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
-import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -33,9 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.ScriptEngineCache}.
  */
-@Deprecated
 public final class ScriptEngineCache {
 
     private ScriptEngineCache() {}
