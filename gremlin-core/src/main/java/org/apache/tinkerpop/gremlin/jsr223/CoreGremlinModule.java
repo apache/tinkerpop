@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.util.CoreImports;
-
 import java.util.Optional;
 
 /**
