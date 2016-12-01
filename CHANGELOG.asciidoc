@@ -27,6 +27,8 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug around long serialization in Gremlin-Python when using Python3.
+* Deprecated `TraversalSource.withBindings()` as it is no longer needed in Gremlin-Java and never was needed for other variants.
+* Fixed a bug in Gremlin-Java `Bytecode` where anonymous traversals were not aware of parent bindings.
 * Fixed a bug in Gremlin-Java GraphSON deserialization around `P.within()` and `P.without()`.
 * Converted Spark process suite tests to "integration" tests.
 * Fixed a bug in `InlineFilterStrategy` having to do with folding `HasContainers` into `VertexStep`.
