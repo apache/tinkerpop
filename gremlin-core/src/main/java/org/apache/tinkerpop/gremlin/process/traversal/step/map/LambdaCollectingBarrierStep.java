@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
 
     /**
-     * @deprecated Since 3.2.0 -- use {@link NoOpBarrierStep}.
+     * @deprecated As of release 3.2.0, replaced by use of {@link NoOpBarrierStep}.
      */
     @Deprecated
     public enum Consumers implements Consumer<TraverserSet<Object>> {

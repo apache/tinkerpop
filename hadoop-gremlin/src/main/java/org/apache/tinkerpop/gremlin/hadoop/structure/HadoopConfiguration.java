@@ -117,7 +117,7 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
     }
 
     /**
-     * @deprecated Since 3.2.0, please use {@link HadoopConfiguration#getGraphReader()}.
+     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphReader()}.
      */
     @Deprecated
     public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
@@ -129,7 +129,7 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
     }
 
     /**
-     * @deprecated Since 3.2.0, please use {@link HadoopConfiguration#getGraphWriter()}.
+     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphWriter()}.
      */
     @Deprecated
     public Class<OutputFormat<NullWritable, VertexWritable>> getGraphOutputFormat() {

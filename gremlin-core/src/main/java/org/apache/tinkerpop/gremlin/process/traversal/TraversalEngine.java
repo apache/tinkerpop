@@ -33,7 +33,7 @@ import java.util.Optional;
  * Every {@link TraversalSource} should be provided a {@link TraversalEngine.Builder} so it can construct an engine for each spawned {@link Traversal}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated Since 3.2.0. Please use `Computer`.
+ * @deprecated As of release 3.2.0, replaced by {@code Computer}.
  */
 @Deprecated
 public interface TraversalEngine extends Serializable {
