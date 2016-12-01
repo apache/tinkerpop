@@ -384,7 +384,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         return (Traversal.Admin) this.eval(GroovyTranslator.of(traversalSource).translate(bytecode), bindings);
     }
 
+    /**
+     * @deprecated As of release 3.2.4, not replaced as this class will not implement {@code AutoCloseable} in the
+     * future.
+     */
     @Override
+    @Deprecated
     public void close() throws Exception {
     }
 
