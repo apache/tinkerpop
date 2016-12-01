@@ -939,13 +939,13 @@ times and sizing) can be done in the Gremlin Server configuration file as descri
 Finally, Gremlin `Bytecode` supports the encoding of bindings which allow GremlinServer to cache traversals that will
 be reused over and over again save that some parameterization may change. Thus, instead of translating, compiling, and
 then executing each submitted bytecode, it is possible to simply execute. To express bindings in Gremlin-Java and
-Gremlin-Groovy, use the `withBindings()` traversal source method.
+Gremlin-Groovy, use `Bindings`.
 
 [gremlin-groovy]
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
-b = new Bindings()
-g = EmptyGraph.instance().traversal().withBindings(b).withRemote(DriverRemoteConnection.using(cluster, "g"))
+b = Bindings.instance()
+g = EmptyGraph.instance().traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V(b.of('id',1)).out('created').values('name')
 g.V(b.of('id',4)).out('created').values('name')
 g.V(b.of('id',4)).out('created').values('name').getBytecode()

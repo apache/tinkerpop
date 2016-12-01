@@ -265,11 +265,6 @@ g.V(('id',1)).out('created').name.toList()
 g.V(('id',4)).out('created').name.toList()
 ----
 
-NOTE: The Gremlin `withBindings()` traversal source step is not needed. Typically `withBindings()` is only required
-in statically typed languages where bindings need to have the same typing as the `Traversal` API. However, if desired,
-it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.of()` simply returns a 2-tuple of `(str,object)`
-(see <<connecting-via-remotegraph,`Bindings`>>).
-
 Traversal Strategies
 ~~~~~~~~~~~~~~~~~~~~
 
