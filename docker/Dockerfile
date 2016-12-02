@@ -24,7 +24,10 @@ RUN apt-get update \
     && echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections \
     && add-apt-repository -y ppa:webupd8team/java \
     && apt-get update \
-    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server \
+    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server subversion \
+    && apt-get install -y python python-dev python-pip build-essential \
+    && pip install virtualenv virtualenvwrapper \
+    && pip install --upgrade pip \
     && rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
 
 RUN sed -i 's@PermitRootLogin without-password@PermitRootLogin yes@' /etc/ssh/sshd_config
