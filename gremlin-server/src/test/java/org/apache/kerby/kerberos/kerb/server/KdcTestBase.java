@@ -40,7 +40,7 @@ public abstract class KdcTestBase {
     private static final Logger logger = LoggerFactory.getLogger(KdcTestBase.class);
 
     private static File testDir;
-    private static String hostname;
+    protected static String hostname;
     private static final String clientPassword = "123456";
     private static final String clientPrincipalName = "drankye";
     private static final String clientPrincipal = clientPrincipalName + "@" + TestKdcServer.KDC_REALM;
@@ -51,9 +51,10 @@ public abstract class KdcTestBase {
 
     KdcTestBase() {
         // Hostname setting must be consistent with the way gremlin-console sets gremlin-server's hostname
-        // and derives gremlin-server's principal name
+        // and derives gremlin-server's principal name. Also, the hostname needs to be lowercase for use
+        // in principal names.
         try {
-            hostname = Inet4Address.getLocalHost().getCanonicalHostName();
+            hostname = Inet4Address.getLocalHost().getCanonicalHostName().toLowerCase();
             serverPrincipal = serverPrincipalName + "/" + hostname + "@" + TestKdcServer.KDC_REALM;
         } catch (UnknownHostException e) {
             logger.error("Hostname not found");

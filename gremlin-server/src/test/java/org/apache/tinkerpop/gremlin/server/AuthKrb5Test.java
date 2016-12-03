@@ -53,7 +53,6 @@ import static org.junit.Assert.fail;
 public class AuthKrb5Test extends LoginTestBase {
     private static final Logger logger = LoggerFactory.getLogger(AuthKrb5Test.class);
     private GremlinServerAuthKrb5Integrate server;
-    private String serverHostname = null;
     private static final String TESTCONSOLE = "GremlinConsole";
 
     @Rule
@@ -70,12 +69,7 @@ public class AuthKrb5Test extends LoginTestBase {
         @Override
         public Settings overrideSettings(final Settings settings) {
             logger.debug("Testname: " + nameOfTest);
-            try {              // See hostname setting in KdcTestBase
-                serverHostname = Inet4Address.getLocalHost().getCanonicalHostName();
-                settings.host = serverHostname;
-            } catch(Exception e) {
-                logger.error("Hostname not found");
-            }
+            settings.host = hostname;
             logger.debug("Hostname: " + settings.host);
             final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
             authSettings.className = Krb5Authenticator.class.getName();
@@ -129,9 +123,8 @@ public class AuthKrb5Test extends LoginTestBase {
     public void shouldAuthenticate() throws Exception {
         File f = new File(".");
         logger.debug("Working dir: " + f.getCanonicalPath());
-        // ToDo: try TestClientFactory
-        final Cluster cluster = Cluster.build().jaasEntry(TESTCONSOLE)
-            .protocol("test-service").addContactPoint(serverHostname).port(45940).enableSsl(false).create();
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+            .protocol("test-service").addContactPoint(hostname).enableSsl(false).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
