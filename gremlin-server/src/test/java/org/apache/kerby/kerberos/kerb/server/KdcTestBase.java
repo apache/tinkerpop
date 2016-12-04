@@ -70,7 +70,6 @@ public abstract class KdcTestBase {
         File targetdir = new File(basedir, "target");
         testDir = new File(targetdir, "tmp");
         testDir.mkdirs();
-        System.out.println("Testdir: " + basedir);
     }
 
     @AfterClass
