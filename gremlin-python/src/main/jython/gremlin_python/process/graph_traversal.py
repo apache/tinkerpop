@@ -404,11 +404,14 @@ class GraphTraversal(Traversal):
 
 class __(object):
   @staticmethod
-  def V(*args):
-    return GraphTraversal(None, None, Bytecode()).V(*args)
+  def start():
+    return GraphTraversal(None, None, Bytecode())
   @staticmethod
   def __(*args):
-    return GraphTraversal(None, None, Bytecode()).__(*args)
+    return __.inject(*args)
+  @staticmethod
+  def V(*args):
+    return GraphTraversal(None, None, Bytecode()).V(*args)
   @staticmethod
   def addE(*args):
     return GraphTraversal(None, None, Bytecode()).addE(*args)
@@ -631,9 +634,6 @@ class __(object):
   @staticmethod
   def simplePath(*args):
     return GraphTraversal(None, None, Bytecode()).simplePath(*args)
-  @staticmethod
-  def start(*args):
-    return GraphTraversal(None, None, Bytecode()).start(*args)
   @staticmethod
   def store(*args):
     return GraphTraversal(None, None, Bytecode()).store(*args)
@@ -1061,11 +1061,6 @@ def simplePath(*args):
       return __.simplePath(*args)
 
 statics.add_static('simplePath', simplePath)
-
-def start(*args):
-      return __.start(*args)
-
-statics.add_static('start', start)
 
 def store(*args):
       return __.store(*args)
