@@ -24,6 +24,8 @@ from unittest import TestCase
 
 import pytest
 
+from tornado import ioloop, gen
+
 from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -192,6 +194,63 @@ class TestDriverRemoteConnection(TestCase):
         with pytest.raises(Exception):
             t.side_effects.value_lambda('b')
         connection.close()
+
+    def test_promise(self):
+        loop = ioloop.IOLoop.current()
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection)
+
+        @gen.coroutine
+        def go():
+            future_traversal = g.V().promise(lambda x: x.toList())
+            assert not future_traversal.done()
+            resp = yield future_traversal
+            assert future_traversal.done()
+            assert len(resp) == 6
+            count = yield g.V().count().promise(lambda x: x.next())
+            assert count == 6
+
+        loop.run_sync(go)
+
+    def test_promise_side_effects(self):
+        loop = ioloop.IOLoop.current()
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection)
+
+        # Side effects are problematic in coroutines.
+        # Because they are designed to be synchronous (calling `run_sync`)
+        # they result in an error if called from a coroutine because
+        # the event loop is already running
+        @gen.coroutine
+        def go():
+            traversal = yield g.V().aggregate('a').promise()
+            # Trying to get side effect keys throws error - BAD
+            with pytest.raises(RuntimeError):
+                keys = traversal.side_effects.keys()
+                # IOLoop is now hosed.
+
+        loop.run_sync(go)
+
+        # Get a new IOLoop - this should happen for each test case.
+        connection.close()
+        ioloop.IOLoop.clear_instance()
+        loop.close()
+        loop = ioloop.IOLoop()
+        loop.make_current()
+
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection)
+
+        # If we return the traversal though, we can use side effects per usual.
+        @gen.coroutine
+        def go():
+            traversal = yield g.V().aggregate('a').promise()
+            raise gen.Return(traversal)  # Weird legacy Python compatible idiom
+
+        # See, normal side effects.
+        traversal = loop.run_sync(go)
+        a, = traversal.side_effects.keys()
+        assert  a == 'a'
 
 
 if __name__ == '__main__':

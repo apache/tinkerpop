@@ -17,9 +17,11 @@ specific language governing permissions and limitations
 under the License.
 """
 import base64
+import functools
 import json
 import uuid
 from tornado import gen
+from tornado import concurrent
 from tornado import ioloop
 from tornado import websocket
 
@@ -51,10 +53,15 @@ class DriverRemoteConnection(RemoteConnection):
         '''
         request_id = str(uuid.uuid4())
         traversers = self._loop.run_sync(lambda: self.submit_traversal_bytecode(request_id, bytecode))
-        side_effect_keys = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_keys(request_id))
-        side_effect_value = lambda key: self._loop.run_sync(lambda: self.submit_sideEffect_value(request_id, key))
-        side_effect_close = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_close(request_id))
-        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(side_effect_keys, side_effect_value, side_effect_close))
+        keys, value, close = self._get_side_effect_lambdas(request_id)
+        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(keys, value, close))
+
+    def submit_async(self, bytecode):
+        request_id = str(uuid.uuid4())
+        future_traversers = self.submit_traversal_bytecode(request_id, bytecode)
+        keys, value, close = self._get_side_effect_lambdas(request_id)
+        side_effects = RemoteTraversalSideEffects(keys, value, close)
+        return RemoteTraversal(future_traversers, side_effects)
 
     @gen.coroutine
     def submit_traversal_bytecode(self, request_id, bytecode):
@@ -134,6 +141,12 @@ class DriverRemoteConnection(RemoteConnection):
         }
         result = yield self._execute_message(message)
         raise gen.Return(result)
+
+    def _get_side_effect_lambdas(self, request_id):
+        side_effect_keys = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_keys(request_id))
+        side_effect_value = lambda key: self._loop.run_sync(lambda: self.submit_sideEffect_value(request_id, key))
+        side_effect_close = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_close(request_id))
+        return side_effect_keys, side_effect_value, side_effect_close
 
     @gen.coroutine
     def _execute_message(self, send_message):

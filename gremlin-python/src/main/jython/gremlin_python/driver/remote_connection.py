@@ -95,3 +95,10 @@ class RemoteStrategy(TraversalStrategy):
             remote_traversal = self.remote_connection.submit(traversal.bytecode)
             traversal.side_effects = remote_traversal.side_effects
             traversal.traversers = remote_traversal.traversers
+
+    def apply_async(self, traversal):
+        if traversal.traversers is None:
+            remote_traversal = self.remote_connection.submit_async(
+                traversal.bytecode)
+            traversal.side_effects = remote_traversal.side_effects
+            traversal.traversers = remote_traversal.traversers
