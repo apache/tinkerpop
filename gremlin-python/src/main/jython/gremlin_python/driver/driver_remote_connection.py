@@ -54,13 +54,13 @@ class DriverRemoteConnection(RemoteConnection):
         request_id = str(uuid.uuid4())
         traversers = self._loop.run_sync(lambda: self.submit_traversal_bytecode(request_id, bytecode))
         keys, value, close = self._get_side_effect_lambdas(request_id)
-        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(keys, value, close))
+        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(keys, value, close, self._loop))
 
     def submit_async(self, bytecode):
         request_id = str(uuid.uuid4())
         future_traversers = self.submit_traversal_bytecode(request_id, bytecode)
         keys, value, close = self._get_side_effect_lambdas(request_id)
-        side_effects = RemoteTraversalSideEffects(keys, value, close)
+        side_effects = RemoteTraversalSideEffects(keys, value, close, self._loop)
         return RemoteTraversal(future_traversers, side_effects)
 
     @gen.coroutine

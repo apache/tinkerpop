@@ -57,20 +57,27 @@ class RemoteTraversal(Traversal):
 
 
 class RemoteTraversalSideEffects(TraversalSideEffects):
-    def __init__(self, keys_lambda, value_lambda, close_lambda):
+    def __init__(self, keys_lambda, value_lambda, close_lambda, loop):
         self._keys_lambda = keys_lambda
         self._value_lambda = value_lambda
         self._close_lambda = close_lambda
+        self._loop = loop
         self._keys = set()
         self._side_effects = {}
         self._closed = False
 
     def keys(self):
+        if self._loop._running:
+            raise RuntimeError("Cannot call side effect methods"
+                               "while event loop is running")
         if not self._closed:
             self._keys = self._keys_lambda()
         return self._keys
 
     def get(self, key):
+        if self._loop._running:
+            raise RuntimeError("Cannot call side effect methods"
+                               "while event loop is running")
         if not self._side_effects.get(key):
             if not self._closed:
                 results = self._value_lambda(key)
@@ -81,6 +88,9 @@ class RemoteTraversalSideEffects(TraversalSideEffects):
         return self._side_effects[key]
 
     def close(self):
+        if self._loop._running:
+            raise RuntimeError("Cannot call side effect methods"
+                               "while event loop is running")
         results = self._close_lambda()
         self._closed = True
         return results

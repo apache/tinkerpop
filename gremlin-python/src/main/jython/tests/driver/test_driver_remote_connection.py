@@ -211,6 +211,7 @@ class TestDriverRemoteConnection(TestCase):
             assert count == 6
 
         loop.run_sync(go)
+        connection.close()
 
     def test_promise_side_effects(self):
         loop = ioloop.IOLoop.current()
@@ -224,22 +225,17 @@ class TestDriverRemoteConnection(TestCase):
         @gen.coroutine
         def go():
             traversal = yield g.V().aggregate('a').promise()
-            # Trying to get side effect keys throws error - BAD
+            # Calling synchronous side effect methods from coroutine raises.
             with pytest.raises(RuntimeError):
                 keys = traversal.side_effects.keys()
-                # IOLoop is now hosed.
+
+            with pytest.raises(RuntimeError):
+                keys = traversal.side_effects.get('a')
+
+            with pytest.raises(RuntimeError):
+                keys = traversal.side_effects.close()
 
         loop.run_sync(go)
-
-        # Get a new IOLoop - this should happen for each test case.
-        connection.close()
-        ioloop.IOLoop.clear_instance()
-        loop.close()
-        loop = ioloop.IOLoop()
-        loop.make_current()
-
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        g = Graph().traversal().withRemote(connection)
 
         # If we return the traversal though, we can use side effects per usual.
         @gen.coroutine
@@ -251,6 +247,12 @@ class TestDriverRemoteConnection(TestCase):
         traversal = loop.run_sync(go)
         a, = traversal.side_effects.keys()
         assert  a == 'a'
+        results = traversal.side_effects.get('a')
+        assert results
+        results = traversal.side_effects.close()
+        assert not results
+
+        connection.close()
 
 
 if __name__ == '__main__':
