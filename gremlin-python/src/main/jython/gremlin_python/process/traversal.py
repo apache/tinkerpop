@@ -406,3 +406,4 @@ class Binding(object):
         return hash(self.key) + hash(self.value)
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
+
