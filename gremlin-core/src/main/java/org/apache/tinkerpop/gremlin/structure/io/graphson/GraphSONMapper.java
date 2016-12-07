@@ -181,7 +181,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean normalize = false;
         private boolean embedTypes = false;
         private List<IoRegistry> registries = new ArrayList<>();
-        private GraphSONVersion version = GraphSONVersion.V1_0;
+        private GraphSONVersion version = GraphSONVersion.V2_0;
         // GraphSON 2.0 should have types activated by default, otherwise use there's no point in using it instead of 1.0.
         private TypeInfo typeInfo = TypeInfo.PARTIAL_TYPES;
 
@@ -198,7 +198,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V1_0}.
+         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V2_0}.
          */
         public Builder version(final GraphSONVersion version) {
             this.version = version;

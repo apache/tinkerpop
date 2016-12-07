@@ -39,8 +39,10 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -355,7 +357,7 @@ public class IoTest {
         @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
         public void shouldWriteNormalizedGraphSON() throws Exception {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                final GraphSONMapper mapper = graph.io(graphson).mapper().normalize(true).create();
+                final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V1_0).normalize(true).create();
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
@@ -369,14 +371,15 @@ public class IoTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadWriteModernWrappedInJsonObject() throws Exception {
+            final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V1_0).create();
             try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                final GraphWriter writer = graph.io(graphson()).writer().wrapAdjacencyList(true).create();
+                final GraphWriter writer = graph.io(graphson()).writer().wrapAdjacencyList(true).mapper(mapper).create();
                 writer.writeGraph(os, graph);
 
                 final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
                 graphProvider.clear(configuration);
                 final Graph g1 = graphProvider.openTestGraph(configuration);
-                final GraphReader reader = graph.io(graphson()).reader().unwrapAdjacencyList(true).create();
+                final GraphReader reader = graph.io(graphson()).reader().mapper(mapper).unwrapAdjacencyList(true).create();
                 try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                     reader.readGraph(bais, g1);
                 }
@@ -402,7 +405,7 @@ public class IoTest {
             final SimpleModule module = new SimpleModule();
             module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
             final GraphWriter writer = graph.io(graphson).writer().mapper(
-                    graph.io(graphson).mapper().addCustomModule(module).embedTypes(true).create()).create();
+                    graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).embedTypes(true).create()).create();
 
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 writer.writeGraph(baos, graph);
@@ -421,7 +424,7 @@ public class IoTest {
 
                 try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                     final GraphReader reader = graph.io(graphson).reader()
-                            .mapper(graph.io(graphson).mapper().embedTypes(true).addCustomModule(module).create()).create();
+                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V1_0).embedTypes(true).addCustomModule(module).create()).create();
                     reader.readGraph(is, g2);
                 }
 
@@ -437,6 +440,35 @@ public class IoTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReadWriteSelfLoopingEdges() throws Exception {
+            final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V1_0).create();
+            final Graph source = graph;
+            final Vertex v1 = source.addVertex();
+            final Vertex v2 = source.addVertex();
+            v1.addEdge("CONTROL", v2);
+            v1.addEdge("SELFLOOP", v1);
+
+            final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
+            final Graph target = graphProvider.openTestGraph(targetConf);
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                source.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, source);
+                try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                    target.io(IoCore.graphson()).reader().mapper(mapper).create().readGraph(is, target);
+                }
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+
+            assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
+            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+        }
+    }
+
+    public static final class GraphSONLegacyTest extends AbstractGremlinTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
@@ -450,12 +482,109 @@ public class IoTest {
             // the id is lossy in migration because TP2 treated ID as String
             assertClassicGraph(graph, false, true);
         }
+    }
+
+    public static final class GraphSONV2D0Test extends AbstractGremlinTest {
+        private Io.Builder<GraphSONIo> graphson;
+
+        @Before
+        public void setupBeforeEachTest() {
+            graphson = graphson();
+        }
+
+        /**
+         * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+         */
+        @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+        @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+        public void shouldWriteNormalizedGraphSON() throws Exception {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).normalize(true).create();
+                final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
+                w.writeGraph(bos, graph);
+
+                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized-v2d0.json"));
+                assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReadWriteModernWrappedInJsonObject() throws Exception {
+            final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V2_0).create();
+            try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                final GraphWriter writer = graph.io(graphson()).writer().wrapAdjacencyList(true).mapper(mapper).create();
+                writer.writeGraph(os, graph);
+
+                final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
+                graphProvider.clear(configuration);
+                final Graph g1 = graphProvider.openTestGraph(configuration);
+                final GraphReader reader = graph.io(graphson()).reader().mapper(mapper).unwrapAdjacencyList(true).create();
+                try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                    reader.readGraph(bais, g1);
+                }
+
+                // modern uses double natively so always assert as such
+                IoTest.assertModernGraph(g1, true, true);
+
+                graphProvider.clear(g1, configuration);
+            }
+        }
+
+        /**
+         * This is just a serialization check for JSON.
+         */
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
+        public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
+            final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
+            graph.addVertex(T.id, new CustomId("vertex", id));
+
+            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModule();
+            final GraphWriter writer = graph.io(graphson).writer().mapper(
+                    graph.io(graphson).mapper().version(GraphSONVersion.V2_0).addCustomModule(module).create()).create();
+
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                writer.writeGraph(baos, graph);
+
+                // reusing the same config used for creation of "g".
+                final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
+                graphProvider.clear(configuration);
+                final Graph g2 = graphProvider.openTestGraph(configuration);
+
+                try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
+                    final GraphReader reader = graph.io(graphson).reader()
+                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V2_0).addCustomModule(module).create()).create();
+                    reader.readGraph(is, g2);
+                }
+
+                final Vertex v2 = g2.vertices().next();
+                final CustomId customId = (CustomId) v2.id();
+                assertEquals(id, customId.getElementId());
+                assertEquals("vertex", customId.getCluster());
+
+                // need to manually close the "g2" instance
+                graphProvider.clear(g2, configuration);
+            }
+        }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadWriteSelfLoopingEdges() throws Exception {
+            final GraphSONMapper mapper = graph.io(graphson).mapper().version(GraphSONVersion.V2_0).create();
             final Graph source = graph;
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
@@ -465,9 +594,9 @@ public class IoTest {
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
             final Graph target = graphProvider.openTestGraph(targetConf);
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                source.io(IoCore.graphson()).writer().create().writeGraph(os, source);
+                source.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, source);
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
-                    target.io(IoCore.graphson()).reader().create().readGraph(is, target);
+                    target.io(IoCore.graphson()).reader().mapper(mapper).create().readGraph(is, target);
                 }
             } catch (IOException ioe) {
                 throw new RuntimeException(ioe);

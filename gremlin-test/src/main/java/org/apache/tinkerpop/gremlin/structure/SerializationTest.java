@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -45,10 +47,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import static org.hamcrest.CoreMatchers.instanceOf;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 /**
@@ -245,7 +249,7 @@ public class SerializationTest {
             assertEquals("The objects differ", after, before);
         }
     }
-    
+
     public static class GraphSONTest extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };
@@ -253,7 +257,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertex() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Vertex v = graph.vertices(convertToVertexId("marko")).next();
             final String json = mapper.writeValueAsString(v);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
@@ -272,7 +276,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeEdge() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
             final String json = mapper.writeValueAsString(e);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
@@ -286,7 +290,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeProperty() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
             final String json = mapper.writeValueAsString(p);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
@@ -298,7 +302,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexProperty() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final VertexProperty vp = graph.vertices(convertToVertexId("marko")).next().property("name");
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
@@ -311,7 +315,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldSerializeVertexPropertyWithProperties() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final VertexProperty vp = IteratorUtils.filter(graph.vertices(convertToVertexId("marko")).next().properties("location"), p -> p.value().equals("brussels")).next();
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
@@ -326,7 +330,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePath() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
                     .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
             final String json = mapper.writeValueAsString(p);
@@ -354,8 +358,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeTraversalMetrics() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
-            final TraversalMetrics tm = (TraversalMetrics) g.V().both().profile().next();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
+            final TraversalMetrics tm = g.V().both().profile().next();
             final String json = mapper.writeValueAsString(tm);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
@@ -375,7 +379,7 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeTree() throws Exception {
-            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Tree t = g.V(convertToVertexId("marko")).out().properties("name").tree().next();
             final String json = mapper.writeValueAsString(t);
             
@@ -416,6 +420,211 @@ public class SerializationTest {
             assertTrue(branch2.containsKey(GraphSONTokens.KEY));
             assertTrue(branch2.containsKey(GraphSONTokens.VALUE));
             
+            final Map.Entry entry = branch2.get(GraphSONTokens.VALUE).entrySet().iterator().next();
+            final HashMap<String, HashMap<String, Object>> branch2Prop = (HashMap<String, HashMap<String, Object>>) entry.getValue();
+            assertTrue(branch2Prop.get(GraphSONTokens.KEY).containsKey(GraphSONTokens.ID));
+            assertTrue(branch2Prop.get(GraphSONTokens.KEY).containsKey(GraphSONTokens.VALUE));
+            assertTrue(branch2Prop.get(GraphSONTokens.KEY).containsKey(GraphSONTokens.LABEL));
+            assertEquals("name", branch2Prop.get(GraphSONTokens.KEY).get(GraphSONTokens.LABEL));
+            assertEquals("vadas", branch2Prop.get(GraphSONTokens.KEY).get(GraphSONTokens.VALUE));
+            assertEquals(entry.getKey().toString(), branch2Prop.get(GraphSONTokens.KEY).get(GraphSONTokens.ID).toString());
+        }
+    }
+
+    public static class GraphSONV2d0Test extends AbstractGremlinTest {
+        private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
+        };
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertex() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final Vertex v = graph.vertices(convertToVertexId("marko")).next();
+            final String json = mapper.writeValueAsString(v);
+            final Vertex detached = mapper.readValue(json, Vertex.class);
+
+            assertNotNull(detached);
+            assertEquals(v.label(), detached.label());
+            assertEquals(v.id(), detached.id());
+            assertEquals(v.value("name").toString(), detached.value("name"));
+            assertEquals((Integer) v.value("age"), detached.value("age"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeEdge() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
+            final String json = mapper.writeValueAsString(e);
+            final Edge detached = mapper.readValue(json, Edge.class);
+
+            assertNotNull(detached);
+            assertEquals(e.label(), detached.label());
+            assertEquals(e.id(), detached.id());
+            assertEquals((Double) e.value("weight"), detached.value("weight"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeProperty() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
+            final String json = mapper.writeValueAsString(p);
+            final Property detached = mapper.readValue(json, Property.class);
+
+            assertNotNull(detached);
+            assertEquals(p.key(), detached.key());
+            assertEquals(p.value(), detached.value());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertexProperty() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final VertexProperty vp = graph.vertices(convertToVertexId("marko")).next().property("name");
+            final String json = mapper.writeValueAsString(vp);
+            final VertexProperty detached = mapper.readValue(json, VertexProperty.class);
+
+            assertNotNull(detached);
+            assertEquals(vp.label(), detached.label());
+            assertEquals(vp.id(), detached.id());
+            assertEquals(vp.value(), detached.value());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldSerializeVertexPropertyWithProperties() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final VertexProperty vp = IteratorUtils.filter(graph.vertices(convertToVertexId("marko")).next().properties("location"), p -> p.value().equals("brussels")).next();
+            final String json = mapper.writeValueAsString(vp);
+            final VertexProperty<?> detached = mapper.readValue(json, VertexProperty.class);
+
+            assertNotNull(detached);
+            assertEquals(vp.label(), detached.label());
+            assertEquals(vp.id(), detached.id());
+            assertEquals(vp.value(), detached.value());
+            assertEquals(vp.values("startTime").next(), detached.values("startTime").next());
+            assertEquals(((Property) vp.properties("startTime").next()).key(), ((Property) detached.properties("startTime").next()).key());
+            assertEquals(vp.values("endTime").next(), detached.values("endTime").next());
+            assertEquals(((Property) vp.properties("endTime").next()).key(), ((Property) detached.properties("endTime").next()).key());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializePath() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
+                    .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
+            final String json = mapper.writeValueAsString(p);
+            final Path detached = mapper.readValue(json, Path.class);
+
+            assertNotNull(detached);
+            assertEquals(p.labels().size(), detached.labels().size());
+            assertEquals(p.labels().get(0).size(), detached.labels().get(0).size());
+            assertEquals(p.labels().get(1).size(), detached.labels().get(1).size());
+            assertEquals(p.labels().get(2).size(), detached.labels().get(2).size());
+            assertTrue(p.labels().stream().flatMap(Collection::stream).allMatch(detached::hasLabel));
+
+            final Vertex vOut = p.get("a");
+            final Vertex detachedVOut = detached.get("a");
+            assertEquals(vOut.label(), detachedVOut.label());
+            assertEquals(vOut.id(), detachedVOut.id());
+
+            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
+            // this is a SimpleTraverser so no properties are present in detachment
+            //assertFalse(detachedVOut.properties().hasNext());
+
+            final Edge e = p.get("b");
+            final Edge detachedE = detached.get("b");
+            assertEquals(e.label(), detachedE.label());
+            assertEquals(e.id(), detachedE.id());
+
+            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
+            // this is a SimpleTraverser so no properties are present in detachment
+            //assertFalse(detachedE.properties().hasNext());
+
+            final Vertex vIn = p.get("c");
+            final Vertex detachedVIn = detached.get("c");
+            assertEquals(vIn.label(), detachedVIn.label());
+            assertEquals(vIn.id(), detachedVIn.id());
+
+            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
+            // this is a SimpleTraverser so no properties are present in detachment
+            //assertFalse(detachedVIn.properties().hasNext());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTraversalMetrics() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final TraversalMetrics before = g.V().both().profile().next();
+            final String json = mapper.writeValueAsString(before);
+            final TraversalMetrics after = mapper.readValue(json, TraversalMetrics.class);
+
+            assertNotNull(after);
+            assertEquals(before.getMetrics().size(), after.getMetrics().size());
+            assertEquals(before.getDuration(TimeUnit.MILLISECONDS), after.getDuration(TimeUnit.MILLISECONDS));
+            assertEquals(before.getMetrics().size(), after.getMetrics().size());
+
+            before.getMetrics().forEach(b -> {
+                final Optional<? extends Metrics> mFromA = after.getMetrics().stream().filter(a -> b.getId().equals(a.getId())).findFirst();
+                if (mFromA.isPresent()) {
+                    final Metrics m = mFromA.get();
+                    assertEquals(b.getAnnotations(), m.getAnnotations());
+                    assertEquals(b.getCounts(), m.getCounts());
+                    assertEquals(b.getName(), m.getName());
+                    assertEquals(b.getDuration(TimeUnit.MILLISECONDS), m.getDuration(TimeUnit.MILLISECONDS));
+                } else {
+                    fail("Metrics were not present after deserialization");
+                }
+            });
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        @org.junit.Ignore("TINKERPOP-1509")
+        public void shouldSerializeTree() throws Exception {
+            final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().version(GraphSONVersion.V2_0).create().createMapper();
+            final Tree t = g.V(convertToVertexId("marko")).out().properties("name").tree().next();
+            final String json = mapper.writeValueAsString(t);
+
+            final HashMap<String, Object> m = (HashMap<String, Object>) mapper.readValue(json, mapTypeReference);
+
+            // Check Structure
+            assertEquals(1, m.size());
+            assertTrue(m.containsKey(convertToVertexId("marko").toString()));
+
+            // Check Structure n+1
+            final HashMap<String, Object> branch = (HashMap<String, Object>) m.get(convertToVertexId("marko").toString());
+            assertEquals(2, branch.size());
+            assertTrue(branch.containsKey(GraphSONTokens.KEY));
+            assertTrue(branch.containsKey(GraphSONTokens.VALUE));
+
+            //Check n+1 key (traversed element)
+            final HashMap<String, Object> branchKey = (HashMap<String, Object>) branch.get(GraphSONTokens.KEY);
+            assertTrue(branchKey.containsKey(GraphSONTokens.ID));
+            assertTrue(branchKey.containsKey(GraphSONTokens.LABEL));
+            assertTrue(branchKey.containsKey(GraphSONTokens.TYPE));
+            assertTrue(branchKey.containsKey(GraphSONTokens.PROPERTIES));
+            assertEquals(convertToVertexId("marko").toString(), branchKey.get(GraphSONTokens.ID).toString());
+            assertEquals("person", branchKey.get(GraphSONTokens.LABEL));
+            assertEquals("vertex", branchKey.get(GraphSONTokens.TYPE));
+            final HashMap<String, List<HashMap<String, Object>>> branchKeyProps = (HashMap<String, List<HashMap<String, Object>>>) branchKey.get(GraphSONTokens.PROPERTIES);
+            assertEquals("marko", branchKeyProps.get("name").get(0).get("value"));
+            assertEquals(29, branchKeyProps.get("age").get(0).get("value"));
+
+            //Check n+1 value (traversed element)
+            final HashMap<String, Object> branchValue = (HashMap<String, Object>) branch.get(GraphSONTokens.VALUE);
+            assertEquals(3, branchValue.size());
+            assertTrue(branchValue.containsKey(convertToVertexId("vadas").toString()));
+            assertTrue(branchValue.containsKey(convertToVertexId("lop").toString()));
+            assertTrue(branchValue.containsKey(convertToVertexId("josh").toString()));
+
+            // Check that vp[] functioned properly
+            final HashMap<String, HashMap<String, Object>> branch2 = (HashMap<String, HashMap<String, Object>>) branchValue.get(convertToVertexId("vadas").toString());
+            assertTrue(branch2.containsKey(GraphSONTokens.KEY));
+            assertTrue(branch2.containsKey(GraphSONTokens.VALUE));
+
             final Map.Entry entry = branch2.get(GraphSONTokens.VALUE).entrySet().iterator().next();
             final HashMap<String, HashMap<String, Object>> branch2Prop = (HashMap<String, HashMap<String, Object>>) entry.getValue();
             assertTrue(branch2Prop.get(GraphSONTokens.KEY).containsKey(GraphSONTokens.ID));
