@@ -45,6 +45,9 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoRecordWriter;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptRecordReader;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptRecordWriter;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
@@ -108,6 +111,9 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
                             GryoRecordReader.class,
                             GryoRecordWriter.class,
                             ScriptInputFormat.class,
+                            ScriptOutputFormat.class,
+                            ScriptRecordReader.class,
+                            ScriptRecordWriter.class,
                             MapReduceGraphComputer.class).create();
 
             bindings = new LazyBindingsCustomizer(() -> {
