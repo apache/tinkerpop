@@ -110,7 +110,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }};
     }
 
-    private static Cache<UUID, TraversalSideEffects> cache = null;
+    protected static Cache<UUID, TraversalSideEffects> cache = null;
 
     public TraversalOpProcessor() {
         super(false);
