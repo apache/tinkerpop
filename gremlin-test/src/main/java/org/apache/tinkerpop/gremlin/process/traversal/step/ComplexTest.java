@@ -39,7 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
@@ -185,7 +185,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummary() {
             return g.V().hasLabel("person").filter(outE("created")).aggregate("p").as("p1").values("name").as("p1n")
                     .select("p").unfold().where(neq("p1")).as("p2").values("name").as("p2n").select("p2")
-                    .out("created").choose(in("created").where(eq("p1")), values("name"), constant(emptySet()))
+                    .out("created").choose(in("created").where(eq("p1")), values("name"), constant(emptyList()))
                     .<String, Map<String, Map<String, Object>>>group().by(select("p1n")).
                             by(group().by(select("p2n")).
                                     by(unfold().fold().project("numCoCreated", "coCreated").by(count(local)).by()));
