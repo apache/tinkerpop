@@ -1,9 +1,9 @@
 import sys
-from queue import Queue
 from threading import Thread
 
 import pytest
 
+from six.moves import queue
 from tornado import ioloop
 
 from gremlin_python.driver.driver_remote_connection import (
@@ -13,7 +13,7 @@ from gremlin_python.structure.graph import Graph
 
 skip = False
 try:
-    connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
     connection.close()
 except:
     skip = True
@@ -23,7 +23,7 @@ except:
 class TestDriverRemoteConnectionThreaded:
 
     def test_threaded_client(self):
-        q = Queue()
+        q = queue.Queue()
         # Here if we give each thread its own loop there is no problem.
         loop1 = ioloop.IOLoop()
         loop2 = ioloop.IOLoop()
@@ -38,7 +38,7 @@ class TestDriverRemoteConnectionThreaded:
         child2.join()
 
     def test_threaded_client_error(self):
-        q = Queue()
+        q = queue.Queue()
         # This scenario fails because both threads try to access the main
         # thread event loop - bad - each thread needs its own loop.
         # This is what happens when you can't manually set the loop.
@@ -59,7 +59,7 @@ class TestDriverRemoteConnectionThreaded:
     def _executor(self, q, loop):
         try:
             connection = DriverRemoteConnection(
-                'ws://localhost:8182/gremlin', 'g', loop=loop)
+                'ws://localhost:45940/gremlin', 'g', loop=loop)
             g = Graph().traversal().withRemote(connection)
             assert len(g.V().toList()) == 6
         except:
