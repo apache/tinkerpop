@@ -90,6 +90,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `choose(predicate,traversal)` and `choose(traversal,traversal)` to effect if/then-semantics (no else). Equivalent to `choose(x,y,identity())`.
 * Removed `ImmutablePath.TailPath` as it is no longer required with new recursion model.
 * Removed call stack recursion in `ImmutablePath`.
+* Gremlin-Python serializes `Bytecode` as an object (instead of a JSON string) when submit over the `RemoteConnection`.
 * Fixed the handling of the `DriverRemoteConnection` pass-through configurations to the driver.
 * `IncidentToAdjacentStrategy` now uses a hidden label marker model to avoid repeated recursion for invalidating steps.
 * `PathProcessorStrategy` can inline certain `where(traversal)`-steps in order to increase the likelihood of star-local children.
