@@ -66,7 +66,7 @@ class DriverRemoteConnection(RemoteConnection):
             "op": "bytecode",
             "processor": "traversal",
             "args": {
-                "gremlin": self._graphson_writer.writeObject(bytecode),
+                "gremlin": self._graphson_writer.toDict(bytecode),
                 "aliases": {"g": self.traversal_source}
             }
         }
