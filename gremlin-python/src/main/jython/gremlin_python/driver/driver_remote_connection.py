@@ -39,7 +39,9 @@ class DriverRemoteConnection(RemoteConnection):
         self._url = url
         self._username = username
         self._password = password
-        if loop is None: self._loop = ioloop.IOLoop.current()
+        if loop is None:
+            loop = ioloop.IOLoop.current()
+        self._loop = loop
         self._websocket = self._loop.run_sync(lambda: websocket.websocket_connect(self.url))
         self._graphson_reader = graphson_reader or GraphSONReader()
         self._graphson_writer = graphson_writer or GraphSONWriter()
