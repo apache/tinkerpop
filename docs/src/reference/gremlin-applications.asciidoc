@@ -1138,29 +1138,50 @@ The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,Re
 |cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
 |=========================================================
 
-Security and Execution
-^^^^^^^^^^^^^^^^^^^^^^
+Security
+^^^^^^^^
 
 image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
-security of the graphs that it exposes.  It has built in SSL support and a pluggable authentication framework using
+security of the graphs that it exposes.  In particular it supports SSL for transport layer security, protective measures against
+malicious script execution, and authentication.  SSL options are described in the configuration settings table in the
+<<connecting-via-java, "Connecting via Java">> section. Script execution options are covered
+<<script-execution, "at the end of this section">>. This section starts with authentication.
+
+
+Gremlin Server supports a pluggable authentication framework using
 link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and
-Security Layer).  SSL options are described in the configuration settings table above, so this section will focus on
-authentication.
+Security Layer). Depending on the client used to connect to Gremlin Server, different authentication
+mechanisms are accessible, see the table below.
+
+[width="70%",cols="3,5,3",options="header"]
+|=========================================================
+|Client |Authentication mechanism |Availability
+|HTTP |BASIC |3.0.0-incubating
+1.3+v|Gremlin-Java/
+Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
+|Pluggable SASL |3.0.0-incubating
+|GSSAPI SASL (Kerberos) |3.3.0
+|Gremlin-Python |PLAIN SASL |3.2.2
+|Gremlin-Javascript |PLAIN SASL |3.3.0
+|=========================================================
 
 By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable
 authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin
-Server comes packaged with an implementation called `SimpleAuthenticator`.  The `SimpleAuthenticator` implements the
-`PLAIN` SASL mechanism (i.e. plain text) to authenticate a request.  It validates username/password pairs against a
-graph database, which must be provided to it as part of the configuration.
+Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP BASIC or
+PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
+
+Plain text authentication
++++++++++++++++++++++++++
+
+The `SimpleAuthenticator` implements the "PLAIN" SASL mechanism (i.e. plain text) to authenticate a request.  It also
+supports handling basic authentication requests from http clients. It validates
+username/password pairs against a graph database, which must be provided to it as part of the configuration.
 
 [source,yaml]
 authentication: {
   className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
   config: {
     credentialsDb: conf/tinkergraph-credentials.properties}}
-
-Quick Start
-+++++++++++
 
 A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
 "sample" credential graph that is packaged with the server.
@@ -1259,9 +1280,51 @@ credentials.removeUser("daniel")
 credentials.countUsers()
 ----
 
+[[krb5authenticator]]
+Kerberos Authentication
++++++++++++++++++++++++
+
+The `Krb5Authenticator` implements the "GSSAPI" SASL mechanism (i.e. Kerberos) to authenticate a request from a Gremlin
+client.  It can be applied in an existing Kerberos environment and validates whether a
+link:https://http://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
+offered].
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
+  config: {
+    principal: gremlinserver/hostname.your.org@YOUR.REALM,
+    keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
+
+Krb5Authenticator needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
+location and service name, e.g. gremlinserver, are free to be chosen, but Gremlin clients have to specify this service name
+as the `protocol`. For Gremlin-Console the `protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder
+has a `protocol()` method.
+
+In addition to the `protocol`, the Gremlin client needs to specify a `jaasEntry`, an entry in the
+link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. Gremlin-Console
+comes with a sample gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
+
+[source, jaas]
+GremlinConsole {
+  com.sun.security.auth.module.Krb5LoginModule required
+  doNotPrompt=true
+  useTicketCache=true;
+};
+
+This configuration tells Gremlin-Console to pass authentication requests from gremlin-server to the Krb5LoginModule, which is
+part of the java standard library.  The Krb5LoginModule does not prompt the user for a username and password but uses the ticket cache that
+is normally refreshed when a user logs in to a host within the Kerberos realm.
+
+Finally, the Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
+Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property:
+
+[source, bash]
+export JAVA_OPTIONS="$JAVA_OPTIONS -Djava.security.auth.login.config=conf/gremlin-jaas.conf"
+
 [[script-execution]]
-Script Execution
-++++++++++++++++
+Protecting Script Execution
++++++++++++++++++++++++++++
 
 It is important to remember that Gremlin Server exposes a `ScriptEngine` instance that allows for remote execution
 of arbitrary code on the server.  Obviously, this situation can represent a security risk or, more minimally, provide
