@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.kerby.kerberos.kerb.server.LoginTestBase;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.ietf.jgss.GSSException;
 import org.junit.After;
@@ -33,20 +34,16 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 
 import java.io.File;
-import java.net.Inet4Address;
 import java.util.*;
 
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 
 
 /**
@@ -55,7 +52,11 @@ import static org.junit.Assert.fail;
  * Todo: change back to integrate test later on
  */
 public class AuthKrb5Test extends LoginTestBase {
-    private static final Logger logger = LoggerFactory.getLogger(AuthKrb5Test.class);
+    // Cannot use mere slf4j because need to check log output
+    // Messier alternative would be to catch the console output:
+    //    http://stackoverflow.com/questions/8708342/redirect-console-output-to-string-in-java
+    private final Logger rootLogger = Logger.getRootLogger();
+    private final Logger logger = Logger.getLogger(AuthKrb5Test.class);
     private GremlinServerAuthKrb5Integrate server;
     private static final String TESTCONSOLE = "GremlinConsole";
     private static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
@@ -69,9 +70,8 @@ public class AuthKrb5Test extends LoginTestBase {
         final File keytabFile;
 
         GremlinServerAuthKrb5Integrate(String principal, File keytabFile) {
-
             this.principal = principal;
-            this.keytabFile =keytabFile;
+            this.keytabFile = keytabFile;
         }
 
         @Override
@@ -104,6 +104,7 @@ public class AuthKrb5Test extends LoginTestBase {
     @Before
     @Override
     public void setUp() throws Exception {
+        logger.info("Starting " + name.getMethodName());
         super.setUp();
         loginServiceUsingKeytab();
         loginClientUsingTicketCache();
@@ -200,38 +201,77 @@ public class AuthKrb5Test extends LoginTestBase {
         }
     }
 
-//    @Test
-//    public void shouldFailWithoutServerPrincipal() throws Exception {
-//        String protocol = "no-service";
-//        server = new GremlinServerAuthKrb5Integrate(protocol, serviceKeytabFile);
-//        server.setUp();
-//        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-//                .protocol(protocol).addContactPoint(hostname).create();
-//        final Client client = cluster.connect();
-//        try {
-//            client.submit("1+1").all().get();
-//            fail("This should not succeed as the client config does not contain a JaasEntry");
-//        } catch(Exception ex) {
-//            final Throwable root = ExceptionUtils.getRootCause(ex);
-//            assertEquals(GSSException.class, root.getClass());
-//        } finally {
-//            cluster.close();
-//            server.tearDown();
-//        }
-//    }
+    @Test
+    public void shouldFailWithNonexistentServerPrincipal() throws Exception {
+        final TestAppender appender = new TestAppender();
+        rootLogger.addAppender(appender);
+        server = new GremlinServerAuthKrb5Integrate("no-service", serviceKeytabFile);
+        server.setUp();
+        server.tearDown();
 
-//    @Test
-//    public void shouldFailWithoutServerKeytab() throws Exception {
-//        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
-//        server.setUp();
-//    }
+        final List<LoggingEvent> log = appender.getLog();
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == Level.WARN &&
+                item.getMessage() == "Failed to login to kdc"));
+    }
 
+    class TestAppender extends AppenderSkeleton {
+        private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();
+
+        @Override
+        public boolean requiresLayout() {
+            return false;
+        }
+
+        protected void append(final LoggingEvent loggingEvent) {
+            log.add(loggingEvent);
+        }
+
+        @Override
+        public void close() {
+        }
+
+        public List<LoggingEvent> getLog() {
+            return new ArrayList<LoggingEvent>(log);
+        }
+    }
+
+    @Test
+    public void shouldFailWithEmptyServerKeytab() throws Exception {
+        final TestAppender appender = new TestAppender();
+        rootLogger.addAppender(appender);
+        final File keytabFile = new File(".", "no-file");
+        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), keytabFile);
+        server.setUp();
+        server.tearDown();
+
+        final List<LoggingEvent> log = appender.getLog();
+        for (LoggingEvent event: log) {
+            System.out.println("Log: " + event.getLevel() + " " + event.getMessage());
+        }
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == Level.WARN &&
+                item.getMessage() == "Failed to login to kdc"));
+    }
+
+    @Test
+    public void shouldFailWithWrongServerKeytab() throws Exception {
+        final TestAppender appender = new TestAppender();
+        rootLogger.addAppender(appender);
+        final String principal = "no-principal/somehost@TEST.COM";
+        getKdcServer().createPrincipal(principal);
+        server = new GremlinServerAuthKrb5Integrate(principal, serviceKeytabFile);
+        server.setUp();
+        server.tearDown();
+    }
+
+//    ToDo: Unclear how to test this
 //    @Test
 //    public void shouldFailWithAuthIdUnequalAuthzId() throws Exception {
 //        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
 //        server.setUp();
 //    }
 
+
+//    ToDo: make this into a test for gremlin-driver
 //    @Test
 //    public void shouldAuthenticateWithSerializeResultToString() throws Exception {
 //        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);

@@ -66,7 +66,7 @@ public class Krb5Authenticator implements Authenticator {
                 Krb5Authenticator.class.getName()));
         }
         try {
-            File keytabFile = new File((String) config.get(KEYTAB_KEY));
+            final File keytabFile = new File((String) config.get(KEYTAB_KEY));
             principalName = (String) config.get(PRINCIPAL_KEY);
             subject = JaasKrbUtil.loginUsingKeytab(principalName, keytabFile);
         } catch (Exception e) {
@@ -113,13 +113,13 @@ public class Krb5Authenticator implements Authenticator {
      *   http://www.roguelynn.com/words/explain-like-im-5-kerberos/
      */
     private class Krb5SaslAuthenticator implements Authenticator.SaslNegotiator, CallbackHandler {
-        private String mechanism = "GSSAPI";
-        private String gremlinQOP = "auth";
+        private static final String mechanism = "GSSAPI";
+        private static final String gremlinQOP = "auth";
         private SaslServer saslServer;
 
         Krb5SaslAuthenticator() {
             try {
-                Map props = new HashMap<String, Object>();
+                final Map props = new HashMap<String, Object>();
                 // Set secure values for relevant sasl properties regarding GSSAPI, see:
                 //   https://docs.oracle.com/javase/8/docs/technotes/guides/security/sasl/sasl-refguide.html#SERVER
                 // Rely on GSSAPI defaults for Sasl.MAX_BUFFER and "javax.security.sasl.sendmaxbuffer"
@@ -127,16 +127,16 @@ public class Krb5Authenticator implements Authenticator {
 //                props.put(Sasl.POLICY_NOANONYMOUS, System.getProperty(Sasl.POLICY_NOANONYMOUS, "true"));
 //                props.put(Sasl.POLICY_NOACTIVE, System.getProperty(Sasl.POLICY_NOACTIVE, "true"));
 //                props.put(Sasl.POLICY_NOPLAINTEXT, System.getProperty(Sasl.POLICY_NOPLAINTEXT, "true"));
-                String[] principalParts = principalName.split("/|@");
+                final String[] principalParts = principalName.split("/|@");
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
             } catch(Exception e) {
                 logger.error("Creating sasl server failed: ", e);
             }
             logger.debug("SaslServer created with: " + saslServer.getMechanismName());
-            // ToDo: check other Sasl.QoP values on a system with cyrus sasl
-            if (System.getProperty(Sasl.QOP) != gremlinQOP)
-                logger.warn("Gremlin server with libgsasl does not support Sasl.QOP security layer features, use SSL");
+            // ToDo: investigate use of Sasl.QoP values, also on a system with cyrus sasl
+            // if (!System.getProperty(Sasl.QOP).equals(gremlinQOP))
+            //    logger.warn("Gremlin server with libgsasl does not support Sasl.QOP security layer features, use SSL");
         }
 
         /*
@@ -175,7 +175,7 @@ public class Krb5Authenticator implements Authenticator {
         @Override
         public byte[] evaluateResponse(final byte[] clientResponse) throws AuthenticationException {
             logger.debug("evaluateResponse() length: " + clientResponse.length);
-            byte[] response = null;
+            byte[] response;
             try {
                 response = saslServer.evaluateResponse(clientResponse);
             } catch (Exception e) {
