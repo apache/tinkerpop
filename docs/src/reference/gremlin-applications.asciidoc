@@ -1428,12 +1428,18 @@ link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customiz
 Serialization
 ^^^^^^^^^^^^^
 
-Gremlin Server can accept requests and return results using different serialization formats.  The format of the
-serialization is configured by the `serializers` setting described in the table above.  Note that some serializers
-have additional configuration options as defined by the `serializers[X].config` setting.  The `config` setting is a
-`Map` where the keys and values get passed to the serializer at its initialization.  The available and/or expected
-keys are dependent on the serializer being used.  Gremlin Server comes packaged with two different serializers:
-GraphSON and Gryo.
+Gremlin Server can accept requests and return results using different serialization formats.  Serializers implement the
+`MessageSerializer` interface. In doing so, they express the list of mime types they expect to support. When
+configuring multiple serializers it is possible for two or more serializers to support the same mime type. Such a
+situation may be common with a generic mime type such as `application/json`. Serializers are added in the order that
+they are encountered in the configuration file and the first one added for a specific mime type will not be overridden
+by other serializers that also support it.
+
+The format of the serialization is configured by the `serializers` setting described in the table above.  Note that
+some serializers have additional configuration options as defined by the `serializers[X].config` setting.  The
+`config` setting is a `Map` where the keys and values get passed to the serializer at its initialization.  The
+available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with two
+different serializers: GraphSON and Gryo.
 
 GraphSON
 ++++++++
