@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens}.
  */
+@Deprecated
 public final class CredentialGraphTokens {
     public static final String PROPERTY_USERNAME = "username";
     public static final String PROPERTY_PASSWORD = "password";

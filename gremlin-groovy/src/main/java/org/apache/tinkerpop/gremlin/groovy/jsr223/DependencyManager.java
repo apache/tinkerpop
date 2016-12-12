@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,9 @@ import java.util.Set;
  * so this interface makes that possible to expose.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced - no longer needed under the new {@link GremlinScriptEngine} model.
  */
+@Deprecated
 public interface DependencyManager {
     /**
      * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.  Those ScriptEngines

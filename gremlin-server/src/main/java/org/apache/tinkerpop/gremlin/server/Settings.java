@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.handler.ssl.SslContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
@@ -258,6 +260,7 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
         scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
+        scriptEngineSettingsDescription.putMapPropertyType("plugins", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -336,6 +339,11 @@ public class Settings {
          * {@code ScriptEngine} implementation being used.
          */
         public Map<String, Object> config = null;
+
+        /**
+         * A set of configurations for {@link GremlinPlugin} instances to apply to this {@link GremlinScriptEngine}.
+         */
+        public Map<String,Map<String,Object>> plugins = new HashMap<>();
     }
 
     /**

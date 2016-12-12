@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import groovy.transform.CompileStatic;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
@@ -33,7 +34,9 @@ import java.util.stream.Stream;
  * Injects the {@code CompileStatic} transformer to enable type validation on script execution.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced by a public class.
  */
+@Deprecated
 public class CompileStaticCustomizerProvider implements CompilerCustomizerProvider {
 
     private final String extensions;

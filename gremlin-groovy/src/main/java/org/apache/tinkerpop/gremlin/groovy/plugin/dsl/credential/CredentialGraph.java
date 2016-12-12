@@ -32,7 +32,9 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
  * {@link Graph} is transactional, new transactions will be started for each method call.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraph}.
  */
+@Deprecated
 public class CredentialGraph {
 
     private final int BCRYPT_ROUNDS = 4;

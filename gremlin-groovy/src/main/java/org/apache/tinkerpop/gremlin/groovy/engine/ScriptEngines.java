@@ -64,7 +64,9 @@ import java.util.stream.Stream;
  * Holds a batch of the configured {@code ScriptEngine} objects for the server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not directly replaced - see {@link GremlinScriptEngineManager}.
  */
+@Deprecated
 public class ScriptEngines implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
 

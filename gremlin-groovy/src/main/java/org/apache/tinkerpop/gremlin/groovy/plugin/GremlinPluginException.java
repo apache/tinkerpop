@@ -22,7 +22,9 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
  * Base exception for {@link GremlinPlugin}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 public abstract class GremlinPluginException extends Exception {
     public GremlinPluginException() {
     }

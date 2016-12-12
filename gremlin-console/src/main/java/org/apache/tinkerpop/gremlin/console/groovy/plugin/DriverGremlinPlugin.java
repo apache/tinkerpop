@@ -35,7 +35,9 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.DriverGremlinPlugin}.
  */
+@Deprecated
 public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{

@@ -23,7 +23,9 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
  * {@code ScriptEngine}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 public class PluginInitializationException extends GremlinPluginException {
     public PluginInitializationException(final String message) {
         super(message);

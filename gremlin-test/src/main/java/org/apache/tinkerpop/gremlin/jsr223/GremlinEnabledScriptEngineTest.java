@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGINE_TO_TEST;
 import static org.junit.Assert.assertEquals;
@@ -47,11 +49,44 @@ public class GremlinEnabledScriptEngineTest {
 
     @Test
     public void shouldHaveCoreImportsInPlace() throws Exception {
-        // TODO: delete this test - other tests will give us confidence on such things as we get further along
         final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
         final List<Class> classesToCheck = Arrays.asList(Vertex.class, Edge.class, Graph.class, VertexProperty.class);
         for (Class clazz : classesToCheck) {
             assertEquals(clazz, scriptEngine.eval(clazz.getSimpleName()));
         }
+    }
+
+    @Test
+    public void shouldSupportDeprecatedGremlinModules() throws Exception {
+        final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
+        mgr.addModule(new GremlinModule() {
+            @Override
+            public String getName() {
+                return "test.junk";
+            }
+
+            @Override
+            public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
+                return Optional.of(new Customizer[] {DefaultImportCustomizer.build()
+                        .addClassImports(java.awt.Color.class)
+                        .addClassImports(java.sql.CallableStatement.class)
+                        .create() });
+            }
+        });
+
+        final GremlinScriptEngine scriptEngine = mgr.getEngineByName(ENGINE_TO_TEST);
+        final List<Class> classesToCheck = Arrays.asList(java.awt.Color.class, java.sql.CallableStatement.class);
+        for (Class clazz : classesToCheck) {
+            assertEquals(clazz, scriptEngine.eval(clazz.getSimpleName()));
+        }
+    }
+
+    @Test
+    public void shouldReturnNoCustomizers() {
+        final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
+        mgr.addPlugin(ImportGremlinPlugin.build()
+                .classImports(java.awt.Color.class)
+                .appliesTo(Collections.singletonList("fake-script-engine")).create());
+        assertEquals(0, mgr.getCustomizers(ENGINE_TO_TEST).size());
     }
 }

@@ -34,7 +34,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin}.
  */
+@Deprecated
 public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
 
     protected static String NAME = "tinkerpop.spark";

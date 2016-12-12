@@ -32,7 +32,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.giraph.jsr223.GiraphGremlinPlugin}.
  */
+@Deprecated
 public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     protected static String NAME = "tinkerpop.giraph";

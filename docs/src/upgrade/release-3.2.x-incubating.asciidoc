@@ -55,6 +55,56 @@ This has been changed to a regular `NoSuchElementException` that includes the st
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
 
+ScriptEngine support in gremlin-core
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`ScriptEngine` and `GremlinPlugin` infrastructure has been moved from gremlin-groovy to gremlin-core to allow for
+better re-use across different Gremlin Language Variants. At this point, this change is non-breaking as it was
+implemented through deprecation.
+
+The basic concept of a `ScriptEngine` has been replaced by the notion of a `GremlinScriptEngine` (i.e. a
+"ScriptEngine" that is specifically tuned for executing Gremlin-related scripts). "ScriptEngine" infrastructure has
+been developed to help support this new interface, specifically `GremlinScriptEngineFactory` and
+`GremlinScriptEngineManager`. Prefer use of this infrastructure when instantiating a `GremlinScriptEngine` rather
+than trying to instantiate directly.
+
+For example, rather than instantiate a `GremlinGroovyScriptEngine` with the constructor:
+
+[source,java]
+----
+GremlinScriptEngine engine = new GremlinGroovyScriptEngine();
+----
+
+prefer to instantiate it as follows:
+
+[source,java]
+----
+GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
+GremlinScriptEngine engine = manager.getEngineByName("gremlin-groovy");
+----
+
+Related to the addition of `GremlinScriptEngine`, `org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` in
+gremlin-groovy has been deprecated and then replaced by `org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin`. The new
+version of `GremlinPlugin` is similar but does carry some new methods to implement that involves the new `Customizer`
+interface. The `Customizer` interface is the way in which `GremlinScriptEngine` instance can be configured with
+imports, initialization scripts, compiler options, etc.
+
+Note that a `GremlinPlugin` can be applied to a `GremlinScriptEngine` by adding it to the `GremlinScriptEngineManager`
+that creates it.
+
+[source,java]
+----
+GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
+manager.addPlugin(ImportGremlinPlugin.build().classImports(java.awt.Color.class).create());
+GremlinScriptEngine engine = manager.getEngineByName("gremlin-groovy");
+----
+
+All of this new infrastructure is currently optional on the 3.2.x line of code. More detailed documentation will for
+these changes will be supplied as part of 3.3.0 when these features become mandatory and the deprecated code is
+removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1562[TINKERPOP-1562]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

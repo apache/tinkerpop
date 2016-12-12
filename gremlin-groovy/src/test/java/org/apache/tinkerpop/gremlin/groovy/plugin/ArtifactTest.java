@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.plugin;
 
-
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-
 
 /**
  * @author Nghia Tran (https://github.com/n-tran)

@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 /**
- * The {@code Customizer} provides a general way to provide configurations to a {@link GremlinScriptEngine}.
+ * The {@code Customizer} provides a general way to provide configurations to a {@link GremlinScriptEngine}. This is an
+ * "internal" interface that acts as a marker and should not be implemented directly. Those wishing to write a
+ * {@code Customizer} should use one of its sub-interfaces, like {@link ImportCustomizer}
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

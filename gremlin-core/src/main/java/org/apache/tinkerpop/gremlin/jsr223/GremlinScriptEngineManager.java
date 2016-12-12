@@ -119,8 +119,16 @@ public interface GremlinScriptEngineManager {
 
     /**
      * Add {@link GremlinModule} instances to customize newly created {@link GremlinScriptEngine} instances.
+     *
+     * @deprecated As of release 3.2.4, replaced by {@link #addPlugin(GremlinPlugin)}.
      */
+    @Deprecated
     public void addModule(final GremlinModule module);
+
+    /**
+     * Add {@link GremlinPlugin} instances to customize newly created {@link GremlinScriptEngine} instances.
+     */
+    public void addPlugin(final GremlinPlugin plugin);
 
     /**
      * Registers a {@link GremlinScriptEngineFactory} to handle a language name.  Overrides any such association found

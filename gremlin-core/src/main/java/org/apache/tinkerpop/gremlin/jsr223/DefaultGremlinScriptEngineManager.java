@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.util.CoreImports;
-
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import java.security.AccessController;
@@ -95,6 +93,14 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
      * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
      * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
      */
+    private List<GremlinPlugin> plugins = new ArrayList<>();
+
+    /**
+     * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
+     * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
+     *
+     * @deprecated As of release 3.2.4, replaced by {@link #plugins}.
+     */
     private List<GremlinModule> modules = new ArrayList<>();
 
     /**
@@ -118,16 +124,35 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
     @Override
     public List<Customizer> getCustomizers(final String scriptEngineName) {
-        return modules.stream().flatMap(module -> {
-            final Optional<Customizer[]> moduleCustomizers = module.getCustomizers(scriptEngineName);
-            return Stream.of(moduleCustomizers.orElse(new Customizer[0]));
+        final List<Customizer> pluginCustomizers = plugins.stream().flatMap(plugin -> {
+            final Optional<Customizer[]> customizers = plugin.getCustomizers(scriptEngineName);
+            return Stream.of(customizers.orElse(new Customizer[0]));
         }).collect(Collectors.toList());
+
+        // modules are deprecated in favor of GremlinPlugin - this line will eventually be removed
+        pluginCustomizers.addAll(modules.stream().flatMap(plugin -> {
+            final Optional<Customizer[]> customizers = plugin.getCustomizers(scriptEngineName);
+            return Stream.of(customizers.orElse(new Customizer[0]));
+        }).collect(Collectors.toList()));
+
+
+        return pluginCustomizers;
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #addPlugin(GremlinPlugin)}.
+     */
     @Override
+    @Deprecated
     public void addModule(final GremlinModule module) {
         // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
         if (module != null) modules.add(module);
+    }
+
+    @Override
+    public void addPlugin(final GremlinPlugin plugin) {
+        // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
+        if (plugin != null) plugins.add(plugin);
     }
 
     /**
@@ -377,9 +402,6 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     private void initEngines(final ClassLoader loader) {
-        // always need this module for a scriptengine to be "Gremlin-enabled"
-        modules.add(CoreGremlinModule.INSTANCE);
-
         Iterator<GremlinScriptEngineFactory> itty;
         try {
             final ServiceLoader<GremlinScriptEngineFactory> sl = AccessController.doPrivileged(
