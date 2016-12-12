@@ -26,7 +26,7 @@ import org.codehaus.groovy.tools.shell.IO
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ConsolePluginAcceptor implements PluginAcceptor {
+class ConsolePluginAcceptor implements PluginAcceptor, org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor {
 
     public static final String ENVIRONMENT_NAME = "console";
     public static final String ENVIRONMENT_SHELL = "ConsolePluginAcceptor.shell"

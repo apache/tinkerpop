@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SingleGremlinScriptEngineManager {
+public final class SingleGremlinScriptEngineManager {
     private static final GremlinScriptEngineManager cached = new CachedGremlinScriptEngineManager();
 
     private SingleGremlinScriptEngineManager() {}

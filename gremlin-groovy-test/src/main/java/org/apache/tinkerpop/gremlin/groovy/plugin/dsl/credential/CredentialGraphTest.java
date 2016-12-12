@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
-import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph.*;
+import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph.credentials;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;

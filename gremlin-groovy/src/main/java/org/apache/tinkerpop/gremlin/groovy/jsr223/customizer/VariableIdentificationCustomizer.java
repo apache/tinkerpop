@@ -35,7 +35,9 @@ import java.util.TreeSet;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 public class VariableIdentificationCustomizer extends CompilationCustomizer {
 
     private static final ThreadLocal<Set<String>> variables = new ThreadLocal<Set<String>>()  {

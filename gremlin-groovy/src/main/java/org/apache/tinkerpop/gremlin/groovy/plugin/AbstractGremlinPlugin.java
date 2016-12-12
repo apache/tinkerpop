@@ -30,7 +30,9 @@ import java.util.Map;
  * shell and io objects.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin}.
  */
+@Deprecated
 public abstract class AbstractGremlinPlugin implements GremlinPlugin {
     public static final String ENV_CONSOLE_IO = "ConsolePluginAcceptor.io";
     public static final String ENV_CONSOLE_SHELL = "ConsolePluginAcceptor.shell";

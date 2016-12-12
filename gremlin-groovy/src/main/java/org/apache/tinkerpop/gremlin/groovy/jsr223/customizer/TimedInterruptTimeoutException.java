@@ -23,7 +23,11 @@ import java.util.concurrent.TimeoutException;
 /**
  * An exception thrown from the {@link TimedInterruptCustomizerProvider} when the timeout is exceeded. This exception
  * allows differentiation from other "timeout exceptions" that might occur.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException}.
  */
+@Deprecated
 public class TimedInterruptTimeoutException extends TimeoutException {
     public TimedInterruptTimeoutException() {
     }

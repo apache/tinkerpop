@@ -43,7 +43,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin}.
  */
+@Deprecated
 public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     protected static String NAME = "tinkerpop.hadoop";

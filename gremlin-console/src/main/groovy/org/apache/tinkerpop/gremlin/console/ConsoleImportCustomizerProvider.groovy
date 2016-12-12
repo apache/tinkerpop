@@ -23,7 +23,9 @@ import groovy.sql.Sql
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 class ConsoleImportCustomizerProvider extends AbstractImportCustomizerProvider {
     public ConsoleImportCustomizerProvider() {
         // useful groovy bits that are good for the Console

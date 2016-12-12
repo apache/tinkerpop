@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.InterpreterMode;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
@@ -28,7 +29,11 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
  * bindings. This implementation is technically not a true {@link CompilerCustomizerProvider} instance as the
  * "interpreter mode" feature does not require a {@code CompilerCustomizer}. This class merely acts as a flag that
  * tells the {@link org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine} to turn this feature on.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced by a public class.
  */
+@Deprecated
 public class InterpreterModeCustomizerProvider implements CompilerCustomizerProvider {
     @Override
     public CompilationCustomizer create() {

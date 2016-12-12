@@ -30,9 +30,10 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin}.
  */
+@Deprecated
 public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
-
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);

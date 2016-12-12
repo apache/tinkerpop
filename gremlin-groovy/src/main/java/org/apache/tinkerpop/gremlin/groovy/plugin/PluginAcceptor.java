@@ -31,7 +31,9 @@ import java.util.Set;
  * and provides the abstractions required for a plugin to work regardless of the environmental implementations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor}.
  */
+@Deprecated
 public interface PluginAcceptor {
     /**
      * If the {@code PluginAcceptor} implements the {@link DependencyManager} interface it will try to import the

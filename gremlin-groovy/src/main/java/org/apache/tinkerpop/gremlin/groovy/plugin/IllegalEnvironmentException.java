@@ -23,7 +23,9 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
  * the needs of the {@link GremlinPlugin}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 public class IllegalEnvironmentException extends GremlinPluginException {
     public IllegalEnvironmentException(final GremlinPlugin plugin, final String... expectedKeys) {
         super(String.format("The %s plugin may not be compatible with this environment - requires the follow ScriptEngine environment keys [%s]", plugin.getName(), String.join(",", expectedKeys)));

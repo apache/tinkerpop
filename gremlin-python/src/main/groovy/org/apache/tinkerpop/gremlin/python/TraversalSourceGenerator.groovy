@@ -19,9 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.python
 
+import org.apache.tinkerpop.gremlin.jsr223.CoreImports
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.python.jsr223.SymbolHelper
-import org.apache.tinkerpop.gremlin.util.CoreImports
 
 import java.lang.reflect.Modifier
 

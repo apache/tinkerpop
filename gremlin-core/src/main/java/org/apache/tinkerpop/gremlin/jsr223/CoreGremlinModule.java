@@ -24,22 +24,39 @@ import java.util.Optional;
  * This module is required for a {@code ScriptEngine} to be Gremlin-enabled.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link CoreGremlinPlugin}.
  */
-public class CoreGremlinModule implements GremlinModule {
+@Deprecated
+public final class CoreGremlinModule implements GremlinModule {
 
-    private static final Optional<Customizer[]> CUSTOMIZERS = Optional.of(new Customizer[] { ImportCustomizer.GREMLIN_CORE });
+    private static final String MODULE_NAME = "tinkerpop.core";
 
+    private static final ImportCustomizer gremlinCore = DefaultImportCustomizer.build()
+            .addClassImports(CoreImports.getClassImports())
+            .addEnumImports(CoreImports.getEnumImports())
+            .addMethodImports(CoreImports.getMethodImports()).create();
+
+    private static final Customizer[] customizers = new Customizer[] {gremlinCore};
+
+    /**
+     * @deprecated As of 3.2.4, replaced by {@link #instance()} as this field will later become private.
+     */
+    @Deprecated
     public static final CoreGremlinModule INSTANCE = new CoreGremlinModule();
 
     private CoreGremlinModule() {}
 
+    public static CoreGremlinModule instance() {
+        return INSTANCE;
+    }
+
     @Override
     public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
-        return CUSTOMIZERS;
+        return Optional.of(customizers);
     }
 
     @Override
     public String getName() {
-        return "tinkerpop.core";
+        return MODULE_NAME;
     }
 }

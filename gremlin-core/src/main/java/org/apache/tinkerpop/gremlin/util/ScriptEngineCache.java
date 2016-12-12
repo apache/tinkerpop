@@ -28,12 +28,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A cache of standard {@code ScriptEngine} instances, instantiated by the standard {@code ScriptEngineManager}.
- * These instances are not "Gremlin-enabled". See {@link SingleGremlinScriptEngineManager} for the analogous class
+ * These instances are NOT "Gremlin-enabled". See {@link SingleGremlinScriptEngineManager} for the analogous class
  * that loads {@link GremlinScriptEngine} instances.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.ScriptEngineCache}.
  */
+@Deprecated
 public final class ScriptEngineCache {
 
     private ScriptEngineCache() {}
