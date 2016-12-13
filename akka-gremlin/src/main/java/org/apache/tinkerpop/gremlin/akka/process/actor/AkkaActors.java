@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.akka.process.actor;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueFactory;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
@@ -28,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,7 +44,10 @@ public final class AkkaActors<R> implements Actors<R> {
 
     public AkkaActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
         this.actorProgram = actorProgram;
-        this.system = ActorSystem.create("traversal-" + actorProgram.hashCode());
+        final Config config = ConfigFactory.defaultApplication().
+                withValue("message-priorities",
+                        ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
+        this.system = ActorSystem.create("traversal-" + actorProgram.hashCode(), config);
         this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString());
     }
 

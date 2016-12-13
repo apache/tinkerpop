@@ -26,13 +26,15 @@ import akka.dispatch.MailboxType;
 import akka.dispatch.MessageQueue;
 import akka.dispatch.ProducesMessageQueue;
 import com.typesafe.config.Config;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalWorkerProgram;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import scala.Option;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -40,78 +42,77 @@ import java.util.Queue;
  */
 public final class TraverserMailbox implements MailboxType, ProducesMessageQueue<TraverserMailbox.TraverserMessageQueue> {
 
+    private final List<Class> messagePriorities = new ArrayList<>();
+
+
     public static class TraverserMessageQueue implements MessageQueue, TraverserSetSemantics {
-        private final Queue<Envelope> otherMessages = new LinkedList<>();
-        private final TraverserSet<?> traverserMessages = new TraverserSet<>();
-        private Envelope haltMessage = null;
-        private Envelope terminateToken = null;
-        private final ActorRef owner;
+        private final List<Queue> messages;
+        private final Map<Class, Queue> priorities;
         private final Object MUTEX = new Object();
 
-        public TraverserMessageQueue(final ActorRef owner) {
-            this.owner = owner;
+        public TraverserMessageQueue(final List<Class> messagePriorities) {
+            this.messages = new ArrayList<>(messagePriorities.size());
+            this.priorities = new HashMap<>(messagePriorities.size());
+            for (final Class clazz : messagePriorities) {
+                final Queue queue;
+                if (Traverser.class.isAssignableFrom(clazz))
+                    queue = new TraverserSet<>();
+                else
+                    queue = new LinkedList<>();
+                this.messages.add(queue);
+                this.priorities.put(clazz, queue);
+            }
         }
 
         public void enqueue(final ActorRef receiver, final Envelope handle) {
             synchronized (MUTEX) {
-                if (handle.message() instanceof Traverser.Admin)
-                    this.traverserMessages.offer((Traverser.Admin) handle.message());
-                else if (handle.message() instanceof VoteToHaltMessage) {
-                    assert null == this.haltMessage;
-                    this.haltMessage = handle;
-                } else if (handle.message() instanceof TraversalWorkerProgram.Terminate) {
-                    assert null == this.terminateToken;
-                    this.terminateToken = handle;
-                } else
-                    this.otherMessages.offer(handle);
+                final Queue queue = this.priorities.get(Traverser.class.isAssignableFrom(handle.message().getClass()) ? Traverser.class : handle.message().getClass());
+                if (null == queue)
+                    throw new IllegalArgumentException("The provided message type is not registered: " + handle.message().getClass());
+                else
+                    queue.offer(handle.message() instanceof Traverser ? handle.message() : handle);
             }
         }
 
         public Envelope dequeue() {
             synchronized (MUTEX) {
-                if (!this.otherMessages.isEmpty())
-                    return this.otherMessages.poll();
-                if (!this.traverserMessages.isEmpty())
-                    return new Envelope(this.traverserMessages.poll(), this.owner);
-                else if (null != this.terminateToken) {
-                    final Envelope temp = this.terminateToken;
-                    this.terminateToken = null;
-                    return temp;
-                } else {
-                    final Envelope temp = this.haltMessage;
-                    this.haltMessage = null;
-                    return temp;
+                for (final Queue queue : this.messages) {
+                    if (!queue.isEmpty()) {
+                        final Object m = queue.poll();
+                        return m instanceof Traverser ? new Envelope(m, ActorRef.noSender()) : (Envelope) m;
+                    }
                 }
+                return null;
             }
         }
 
         public int numberOfMessages() {
             synchronized (MUTEX) {
-                return this.otherMessages.size() + this.traverserMessages.size() + (null == this.haltMessage ? 0 : 1) + (null == this.terminateToken ? 0 : 1);
+                int counter = 0;
+                for (final Queue queue : this.messages) {
+                    counter = counter + queue.size();
+                }
+                return counter;
             }
         }
 
         public boolean hasMessages() {
             synchronized (MUTEX) {
-                return !this.otherMessages.isEmpty() || !this.traverserMessages.isEmpty() || null != this.haltMessage || this.terminateToken != null;
+                for (final Queue queue : this.messages) {
+                    if (!queue.isEmpty())
+                        return true;
+                }
+                return false;
             }
         }
 
         public void cleanUp(final ActorRef owner, final MessageQueue deadLetters) {
             synchronized (MUTEX) {
-                for (final Envelope handle : this.otherMessages) {
-                    deadLetters.enqueue(owner, handle);
-                }
-                for (final Traverser.Admin<?> traverser : this.traverserMessages) {
-                    deadLetters.enqueue(owner, new Envelope(traverser, this.owner));
-                }
-                if (null != this.haltMessage) {
-                    deadLetters.enqueue(owner, this.haltMessage);
-                    this.haltMessage = null;
-                }
-                if (null != this.terminateToken) {
-                    deadLetters.enqueue(owner, this.terminateToken);
-                    this.terminateToken = null;
+                for (final Queue queue : this.messages) {
+                    while (!queue.isEmpty()) {
+                        final Object m = queue.poll();
+                        deadLetters.enqueue(owner, m instanceof Traverser ? new Envelope(m, ActorRef.noSender()) : (Envelope) m);
+                    }
                 }
             }
         }
@@ -119,12 +120,19 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
 
     // This constructor signature must exist, it will be called by Akka
     public TraverserMailbox(final ActorSystem.Settings settings, final Config config) {
-        // put your initialization code here
+        try {
+            final String[] messages = ((String) settings.config().getAnyRef("message-priorities")).replace("[", "").replace("]", "").split(",");
+            for (final String clazz : messages) {
+                this.messagePriorities.add(Class.forName(clazz.trim()));
+            }
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     // The create method is called to create the MessageQueue
     public MessageQueue create(final Option<ActorRef> owner, final Option<ActorSystem> system) {
-        return new TraverserMessageQueue(owner.isEmpty() ? ActorRef.noSender() : owner.get());
+        return new TraverserMessageQueue(this.messagePriorities);
     }
 
     public static interface TraverserSetSemantics {

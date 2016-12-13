@@ -53,7 +53,7 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
         for (final Partition partition : partitioner.getPartitions()) {
             this.workers.add(new Address.Worker("../worker-" + partition.hashCode()));
         }
-        ActorProgram.Worker workerProgram = program.createWorkerProgram(this);
+        final ActorProgram.Worker workerProgram = program.createWorkerProgram(this);
         receive(ReceiveBuilder.matchAny(workerProgram::execute).build());
         workerProgram.setup();
     }

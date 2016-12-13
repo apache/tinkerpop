@@ -32,6 +32,8 @@ public interface Actor {
 
     public <M> void send(final Address toActor, final M message);
 
+
+
     public interface Master extends Actor {
 
         public List<Address.Worker> workers();
@@ -39,6 +41,7 @@ public interface Actor {
         public Address.Master address();
 
         public void close();
+
 
     }
 
@@ -51,6 +54,7 @@ public interface Actor {
         public List<Address.Worker> workers();
 
         public Partition partition();
+
     }
 
 

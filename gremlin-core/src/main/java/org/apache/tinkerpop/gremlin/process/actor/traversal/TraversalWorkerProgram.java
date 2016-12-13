@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierAddMe
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -49,12 +50,8 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
+final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
 
-    // terminate token is passed around worker ring to gather termination consensus (dual-ring termination algorithm)
-    public enum Terminate {
-        MAYBE, YES, NO
-    }
 
     private final Actor.Worker self;
     private final TraversalMatrix<?, ?> matrix;
@@ -186,5 +183,4 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         else
             this.self.send(this.self.address(), traverser);
     }
-
 }

@@ -17,40 +17,12 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.actor;
-
-import java.util.List;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.message;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ActorProgram<M> {
+public enum Terminate {
 
-    public Worker createWorkerProgram(final Actor.Worker worker);
-
-    public Master createMasterProgram(final Actor.Master master);
-
-    public List<Class> getMessagePriorities();
-
-    public M getResult();
-
-
-    public static interface Worker<M> {
-        public void setup();
-
-        public void execute(final M message);
-
-        public void terminate();
-
-    }
-
-    public static interface Master<M> {
-        public void setup();
-
-        public void execute(final M message);
-
-        public void terminate();
-
-    }
-
+    MAYBE, YES, NO
 }

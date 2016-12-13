@@ -39,13 +39,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
+final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
 
     private final Actor.Master master;
     private final Traversal.Admin<?, ?> traversal;
@@ -144,6 +146,4 @@ public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
         else
             this.master.send(this.master.address(), traverser);
     }
-
-
 }

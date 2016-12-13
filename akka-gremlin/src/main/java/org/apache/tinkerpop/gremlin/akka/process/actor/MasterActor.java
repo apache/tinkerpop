@@ -81,4 +81,5 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     public void close() {
         context().system().terminate();
     }
+
 }
