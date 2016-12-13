@@ -204,6 +204,26 @@ public class AuthKrb5Test extends AuthKrb5TestBase {
         server.tearDown();
     }
 
+    @Test
+    public void shouldAuthenticateWithQop() throws Exception {
+        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
+        server.setUp();
+        final String oldQop = System.getProperty("javax.security.sasl.qop", "");
+        System.setProperty("javax.security.sasl.qop", "auth-conf");
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(getServerPrincipalName()).addContactPoint(getHostname()).create();
+        final Client client = cluster.connect();
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+            server.tearDown();
+            System.setProperty("javax.security.sasl.qop", oldQop);
+        }
+    }
+
 //    ToDo: Unclear how to test this
 //    @Test
 //    public void shouldFailWithAuthIdUnequalAuthzId() throws Exception {
@@ -234,6 +254,4 @@ public class AuthKrb5Test extends AuthKrb5TestBase {
 //            cluster.close();
 //        }
 //    }
-
-    // ToDo: test with System.setProperty("javax.security.sasl.qop", "auth-conf");
 }

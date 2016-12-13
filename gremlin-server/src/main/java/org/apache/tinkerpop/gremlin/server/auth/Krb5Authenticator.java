@@ -113,20 +113,20 @@ public class Krb5Authenticator implements Authenticator {
      *   http://www.roguelynn.com/words/explain-like-im-5-kerberos/
      */
     private class Krb5SaslAuthenticator implements Authenticator.SaslNegotiator, CallbackHandler {
-        private static final String mechanism = "GSSAPI";
-        private static final String gremlinQOP = "auth";
+        private final String mechanism = "GSSAPI";
         private SaslServer saslServer;
 
         Krb5SaslAuthenticator() {
             try {
-                final Map props = new HashMap<String, Object>();
-                // Set secure values for relevant sasl properties regarding GSSAPI, see:
+                // For sasl properties regarding GSSAPI, see:
                 //   https://docs.oracle.com/javase/8/docs/technotes/guides/security/sasl/sasl-refguide.html#SERVER
                 // Rely on GSSAPI defaults for Sasl.MAX_BUFFER and "javax.security.sasl.sendmaxbuffer"
-                // ToDo: check impact of policies on a system with cyrus sasl
-//                props.put(Sasl.POLICY_NOANONYMOUS, System.getProperty(Sasl.POLICY_NOANONYMOUS, "true"));
-//                props.put(Sasl.POLICY_NOACTIVE, System.getProperty(Sasl.POLICY_NOACTIVE, "true"));
-//                props.put(Sasl.POLICY_NOPLAINTEXT, System.getProperty(Sasl.POLICY_NOPLAINTEXT, "true"));
+                // Sasl policy properties are not relevant here, because the sasl mechanisme is not negotiated
+                // Kerberos implementations do not handle Sasl.QOP values reliably; rather use SSL for enhanced privacy,
+                // see https://issues.apache.org/jira/browse/HIVE-8377
+                final Map props = new HashMap<String, Object>();
+                if (!System.getProperty(Sasl.QOP, "").equals(""))
+                    logger.warn("Gremlin server uses default Sasl.QOP values, use SSL for enhanced privacy");
                 final String[] principalParts = principalName.split("/|@");
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
@@ -134,9 +134,6 @@ public class Krb5Authenticator implements Authenticator {
                 logger.error("Creating sasl server failed: ", e);
             }
             logger.debug("SaslServer created with: " + saslServer.getMechanismName());
-            // ToDo: investigate use of Sasl.QoP values, also on a system with cyrus sasl
-            // if (!System.getProperty(Sasl.QOP).equals(gremlinQOP))
-            //    logger.warn("Gremlin server with libgsasl does not support Sasl.QOP security layer features, use SSL");
         }
 
         /*
