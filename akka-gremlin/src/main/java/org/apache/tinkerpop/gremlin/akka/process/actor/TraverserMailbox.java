@@ -44,7 +44,6 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
 
     private final List<Class> messagePriorities = new ArrayList<>();
 
-
     public static class TraverserMessageQueue implements MessageQueue, TraverserSetSemantics {
         private final List<Queue> messages;
         private final Map<Class, Queue> priorities;
@@ -66,7 +65,7 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
 
         public void enqueue(final ActorRef receiver, final Envelope handle) {
             synchronized (MUTEX) {
-                final Queue queue = this.priorities.get(Traverser.class.isAssignableFrom(handle.message().getClass()) ? Traverser.class : handle.message().getClass());
+                final Queue queue = this.priorities.get(handle.message() instanceof Traverser ? Traverser.class : handle.message().getClass());
                 if (null == queue)
                     throw new IllegalArgumentException("The provided message type is not registered: " + handle.message().getClass());
                 else

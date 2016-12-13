@@ -104,7 +104,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
                 this.sendTraverser(step.next());
             }
             // internal vote to have in mailbox as final message to process
-            assert null == this.terminate;
+            // TODO: assert null == this.terminate;
             if (this.isLeader) {
                 this.terminate = Terminate.MAYBE;
                 this.self.send(this.self.address(), VoteToHaltMessage.instance());
