@@ -21,8 +21,9 @@ package org.apache.tinkerpop.gremlin.akka.process.actor;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.Actors;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
@@ -34,12 +35,19 @@ import java.util.concurrent.Future;
  */
 public final class AkkaActors<S, E> implements Actors<S, E> {
 
-    public final ActorSystem system;
-    private TraverserSet<E> results = new TraverserSet<>();
+    private final ActorProgram actorProgram;
+    private final ActorSystem system;
+    private final Address.Master master;
 
-    public AkkaActors(final Traversal.Admin<S, E> traversal, final Partitioner partitioner) {
-        this.system = ActorSystem.create("traversal-" + traversal.hashCode());
-        this.system.actorOf(Props.create(MasterTraversalActor.class, traversal.clone(), partitioner, this.results), "master");
+    public AkkaActors(final ActorProgram actorProgram, final Partitioner partitioner) {
+        this.actorProgram = actorProgram;
+        this.system = ActorSystem.create("traversal-" + actorProgram.hashCode());
+        this.master = new Address.Master(this.system.actorOf(Props.create(MasterTraversalActor.class, this.actorProgram, partitioner), "master").path().toString());
+    }
+
+    @Override
+    public Address.Master master() {
+        return this.master;
     }
 
     @Override
@@ -48,7 +56,7 @@ public final class AkkaActors<S, E> implements Actors<S, E> {
             while (!this.system.isTerminated()) {
 
             }
-            return this.results;
+            return (TraverserSet) this.actorProgram.getResult();
         });
     }
 }

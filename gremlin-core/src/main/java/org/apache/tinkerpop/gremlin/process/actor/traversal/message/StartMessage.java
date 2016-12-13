@@ -17,26 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor.message;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.message;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectSetMessage {
+public final class StartMessage {
 
-    private final String key;
-    private final Object value;
+    private static final StartMessage INSTANCE = new StartMessage();
 
-    public SideEffectSetMessage(final String key, final Object value) {
-        this.key = key;
-        this.value = value;
+    private StartMessage() {
     }
 
-    public String getKey() {
-        return this.key;
-    }
-
-    public Object getValue() {
-        return this.value;
+    public static StartMessage instance() {
+        return INSTANCE;
     }
 }

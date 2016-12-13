@@ -42,7 +42,7 @@ public class AkkaPlayTest {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
         GraphTraversalSource g = graph.traversal().withStrategies(new ActorStrategy(AkkaActors.class, new HashPartitioner(graph.partitioner(), 3)));
-        System.out.println(g.V(1, 2).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()).toList());
+        System.out.println(g.V().values("name").toList());
         //3, 1.9, 1
         /*for (int i = 0; i < 10000; i++) {
             final Graph graph = TinkerGraph.open();

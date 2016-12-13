@@ -17,10 +17,10 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor;
+package org.apache.tinkerpop.gremlin.process.actor.traversal;
 
-import akka.actor.ActorContext;
-import org.apache.tinkerpop.gremlin.akka.process.actor.message.SideEffectAddMessage;
+import org.apache.tinkerpop.gremlin.process.actor.Actor;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 
 import java.util.Optional;
@@ -35,16 +35,16 @@ import java.util.function.UnaryOperator;
 public final class WorkerTraversalSideEffects implements TraversalSideEffects {
 
     private TraversalSideEffects sideEffects;
-    private ActorContext context;
+    private Actor.Worker worker;
 
 
     private WorkerTraversalSideEffects() {
         // for serialization
     }
 
-    public WorkerTraversalSideEffects(final TraversalSideEffects sideEffects, final ActorContext context) {
+    public WorkerTraversalSideEffects(final TraversalSideEffects sideEffects, final Actor.Worker worker) {
         this.sideEffects = sideEffects;
-        this.context = context;
+        this.worker = worker;
     }
 
     public TraversalSideEffects getSideEffects() {
@@ -73,7 +73,7 @@ public final class WorkerTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public void add(final String key, final Object value) {
-        this.context.parent().tell(new SideEffectAddMessage(key, value), this.context.self());
+        this.worker.send(this.worker.master(), new SideEffectAddMessage(key, value));
     }
 
     @Override

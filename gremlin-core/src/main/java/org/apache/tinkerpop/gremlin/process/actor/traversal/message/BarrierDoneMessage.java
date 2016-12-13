@@ -17,19 +17,25 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.actor;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.message;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface WorkerActor extends Actor {
+public final class BarrierDoneMessage {
 
-    public void processStart();
+    private final String stepId;
 
-    public void processBarrierDone(final Barrier barrier);
+    public BarrierDoneMessage(final Barrier barrier) {
+        this.stepId = ((Step) barrier).getId();
 
-    public void processSideEffectSet(final String key, final Object value);
+    }
 
+    public String getStepId() {
+        return this.stepId;
+    }
 }
+

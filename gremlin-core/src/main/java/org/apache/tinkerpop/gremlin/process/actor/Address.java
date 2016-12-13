@@ -17,20 +17,46 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor.message;
+package org.apache.tinkerpop.gremlin.process.actor;
+
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VoteToHaltMessage {
+public abstract class Address implements Serializable {
 
-    private static final VoteToHaltMessage INSTANCE = new VoteToHaltMessage();
+    private final String location;
 
-    private VoteToHaltMessage() {
+    public Address(final String location) {
+        this.location = location;
     }
 
-    public static VoteToHaltMessage instance() {
-        return INSTANCE;
+    public String location() {
+        return this.location;
+    }
+
+    public boolean equals(final Object other) {
+        return other instanceof Address && ((Address) other).location.equals(this.location);
+    }
+
+    public int hashCode() {
+        return this.location.hashCode();
+    }
+
+    public static class Master extends Address {
+
+        public Master(final String location) {
+            super(location);
+        }
+
+    }
+
+    public static class Worker extends Address {
+
+        public Worker(final String location) {
+            super(location);
+        }
+
     }
 }
-

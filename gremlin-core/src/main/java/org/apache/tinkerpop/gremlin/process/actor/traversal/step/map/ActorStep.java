@@ -23,7 +23,9 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal.step.map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
+import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -68,7 +70,7 @@ public final class ActorStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final Actors<S, E> actors = this.actorsClass.getConstructor(Traversal.Admin.class, Partitioner.class).newInstance(this.partitionTraversal, this.partitioner);
+                final Actors<S, E> actors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).newInstance(new TraversalActorProgram(this.partitionTraversal, partitioner), this.partitioner);
                 actors.submit().get().forEach(this.starts::add);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);

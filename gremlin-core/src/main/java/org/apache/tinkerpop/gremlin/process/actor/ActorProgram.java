@@ -19,17 +19,32 @@
 
 package org.apache.tinkerpop.gremlin.process.actor;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MasterActor extends Actor {
+public interface ActorProgram<M> {
 
-    public <V> void processBarrierAdd(final Barrier barrier, final V barrierAddition);
+    public Worker createWorkerProgram(final Actor.Worker worker);
 
-    public <V> void processSideEffectAdd(final String key, final V value);
+    public Master createMasterProgram(final Actor.Master master);
 
-    public void processVoteToHalt();
+    public M getResult();
+
+    public static interface Worker<M> {
+        public void setup();
+
+        public void execute(final M message);
+
+        public void terminate();
+
+    }
+
+    public static interface Master<M> {
+        public void setup();
+
+        public void execute(final M message);
+
+        public void terminate();
+    }
 
 }

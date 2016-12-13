@@ -19,13 +19,39 @@
 
 package org.apache.tinkerpop.gremlin.process.actor;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.structure.Partition;
+
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Actor {
 
-    public <S> void processTraverser(final Traverser.Admin<S> traverser);
+    public Address address();
+
+    public <M> void send(final Address toActor, final M message);
+
+    public interface Master extends Actor {
+
+        public List<Address.Worker> workers();
+
+        public Address.Master address();
+
+        public void close();
+
+    }
+
+    public interface Worker extends Actor {
+
+        public Address.Worker address();
+
+        public Address.Master master();
+
+        public List<Address.Worker> workers();
+
+        public Partition partition();
+    }
+
 
 }

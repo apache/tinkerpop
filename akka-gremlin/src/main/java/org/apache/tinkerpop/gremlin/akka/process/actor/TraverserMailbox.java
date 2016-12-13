@@ -26,7 +26,8 @@ import akka.dispatch.MailboxType;
 import akka.dispatch.MessageQueue;
 import akka.dispatch.ProducesMessageQueue;
 import com.typesafe.config.Config;
-import org.apache.tinkerpop.gremlin.akka.process.actor.message.VoteToHaltMessage;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalWorkerProgram;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import scala.Option;
@@ -58,7 +59,7 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
                 else if (handle.message() instanceof VoteToHaltMessage) {
                     assert null == this.haltMessage;
                     this.haltMessage = handle;
-                } else if (handle.message() instanceof WorkerTraversalActor.Terminate) {
+                } else if (handle.message() instanceof TraversalWorkerProgram.Terminate) {
                     assert null == this.terminateToken;
                     this.terminateToken = handle;
                 } else

@@ -17,25 +17,26 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor.message;
-
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.message;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BarrierDoneMessage {
+public final class SideEffectSetMessage {
 
-    private final String stepId;
+    private final String key;
+    private final Object value;
 
-    public BarrierDoneMessage(final Barrier barrier) {
-        this.stepId = ((Step) barrier).getId();
-
+    public SideEffectSetMessage(final String key, final Object value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public String getStepId() {
-        return this.stepId;
+    public String getKey() {
+        return this.key;
+    }
+
+    public Object getValue() {
+        return this.value;
     }
 }
-

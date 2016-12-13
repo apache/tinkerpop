@@ -28,5 +28,7 @@ import java.util.concurrent.Future;
  */
 public interface Actors<S, E> {
 
+    public Address.Master master();
+
     public Future<TraverserSet<E>> submit();
 }
