@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
+import org.apache.tinkerpop.gremlin.structure.util.partitioner.GlobalPartitioner;
 import org.javatuples.Pair;
 
 import java.lang.annotation.ElementType;
@@ -331,9 +332,18 @@ public interface Graph extends AutoCloseable, Host {
      * Whatever configuration was passed to {@link GraphFactory#open(org.apache.commons.configuration.Configuration)}
      * is what should be returned by this method.
      *
-     * @return the configuration used during graph construction.
+     * @return the configuration used during graph construction
      */
     public Configuration configuration();
+
+    /**
+     * Get the {@link Partitioner} describing how the graph's elements are partitioned across a cluster.
+     *
+     * @return the partitioner of the graph
+     */
+    public default Partitioner partitioner() {
+        return new GlobalPartitioner(this);
+    }
 
     /**
      * Graph variables are a set of key/value pairs associated with the graph. The keys are String and the values

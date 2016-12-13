@@ -126,6 +126,7 @@ limitations under the License.
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
+        <module>akka-gremlin</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
@@ -299,6 +300,7 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>**/resources/application.conf</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
