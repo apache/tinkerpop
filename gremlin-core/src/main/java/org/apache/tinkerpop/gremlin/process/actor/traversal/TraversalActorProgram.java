@@ -33,24 +33,24 @@ import org.apache.tinkerpop.gremlin.structure.Partitioner;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalActorProgram<M> implements ActorProgram<M> {
+public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet<R>> {
 
-    private final Traversal.Admin<?, ?> traversal;
+    private final Traversal.Admin<?, R> traversal;
     private final Partitioner partitioner;
-    public TraverserSet<?> result = new TraverserSet<>();
+    public TraverserSet<R> result = new TraverserSet<>();
 
-    public TraversalActorProgram(final Traversal.Admin<?, ?> traversal, final Partitioner partitioner) {
+    public TraversalActorProgram(final Traversal.Admin<?, R> traversal, final Partitioner partitioner) {
         this.partitioner = partitioner;
         final TraversalStrategies strategies = traversal.getStrategies().clone();
         strategies.removeStrategies(ComputerVerificationStrategy.class, StandardVerificationStrategy.class);
         strategies.addStrategies(ActorVerificationStrategy.instance());
         traversal.setStrategies(strategies);
         traversal.applyStrategies();
-        this.traversal = ((TraversalVertexProgramStep) traversal.getStartStep()).computerTraversal.get();
+        this.traversal = (Traversal.Admin) ((TraversalVertexProgramStep) traversal.getStartStep()).computerTraversal.get();
     }
 
     @Override
-    public Worker<M> createWorkerProgram(final Actor.Worker worker) {
+    public Worker createWorkerProgram(final Actor.Worker worker) {
         return new TraversalWorkerProgram<>(worker, this.traversal.clone(), this.partitioner);
     }
 
@@ -60,7 +60,7 @@ public final class TraversalActorProgram<M> implements ActorProgram<M> {
     }
 
     @Override
-    public M getResult() {
-        return (M) this.result;
+    public TraverserSet<R> getResult() {
+        return this.result;
     }
 }

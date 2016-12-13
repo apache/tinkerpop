@@ -19,16 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.process.actor;
 
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-
 import java.util.concurrent.Future;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Actors<S, E> {
+public interface Actors<R> {
 
     public Address.Master master();
 
-    public Future<TraverserSet<E>> submit();
+    public Future<R> submit();
 }

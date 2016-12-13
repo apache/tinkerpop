@@ -38,19 +38,19 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MasterTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, Actor.Master {
+public final class MasterActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, Actor.Master {
 
     private final Address.Master master;
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
-    public MasterTraversalActor(final ActorProgram program, final Partitioner partitioner) {
+    public MasterActor(final ActorProgram program, final Partitioner partitioner) {
         this.master = new Address.Master(self().path().toString());
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
             this.workers.add(new Address.Worker("worker-" + partition.hashCode()));
-            context().actorOf(Props.create(WorkerTraversalActor.class, program, partitioner, partition), "worker-" + partition.hashCode());
+            context().actorOf(Props.create(WorkerActor.class, program, partitioner, partition), "worker-" + partition.hashCode());
         }
         final ActorProgram.Master masterProgram = program.createMasterProgram(this);
         receive(ReceiveBuilder.matchAny(masterProgram::execute).build());

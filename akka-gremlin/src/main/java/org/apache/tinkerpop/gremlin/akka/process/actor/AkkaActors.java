@@ -24,7 +24,6 @@ import akka.actor.Props;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 import java.util.concurrent.CompletableFuture;
@@ -33,16 +32,16 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaActors<S, E> implements Actors<S, E> {
+public final class AkkaActors<R> implements Actors<R> {
 
-    private final ActorProgram actorProgram;
+    private final ActorProgram<R> actorProgram;
     private final ActorSystem system;
     private final Address.Master master;
 
-    public AkkaActors(final ActorProgram actorProgram, final Partitioner partitioner) {
+    public AkkaActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
         this.actorProgram = actorProgram;
         this.system = ActorSystem.create("traversal-" + actorProgram.hashCode());
-        this.master = new Address.Master(this.system.actorOf(Props.create(MasterTraversalActor.class, this.actorProgram, partitioner), "master").path().toString());
+        this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString());
     }
 
     @Override
@@ -51,12 +50,12 @@ public final class AkkaActors<S, E> implements Actors<S, E> {
     }
 
     @Override
-    public Future<TraverserSet<E>> submit() {
+    public Future<R> submit() {
         return CompletableFuture.supplyAsync(() -> {
             while (!this.system.isTerminated()) {
 
             }
-            return (TraverserSet) this.actorProgram.getResult();
+            return this.actorProgram.getResult();
         });
     }
 }

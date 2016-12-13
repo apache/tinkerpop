@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -70,7 +71,7 @@ public final class ActorStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final Actors<S, E> actors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).newInstance(new TraversalActorProgram(this.partitionTraversal, partitioner), this.partitioner);
+                final Actors<TraverserSet<E>> actors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).newInstance(new TraversalActorProgram<E>(this.partitionTraversal, partitioner), this.partitioner);
                 actors.submit().get().forEach(this.starts::add);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);

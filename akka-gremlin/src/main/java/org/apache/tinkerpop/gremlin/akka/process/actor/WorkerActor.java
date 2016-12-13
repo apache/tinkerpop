@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WorkerTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, Actor.Worker {
+public final class WorkerActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, Actor.Worker {
 
     private final Partition localPartition;
     private final Address.Worker self;
@@ -45,9 +45,9 @@ public final class WorkerTraversalActor extends AbstractActor implements Require
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
-    public WorkerTraversalActor(final ActorProgram program, final Partitioner partitioner, final Partition localPartition) {
+    public WorkerActor(final ActorProgram program, final Partitioner partitioner, final Partition localPartition) {
         this.localPartition = localPartition;
-        this.self = new Address.Worker(self().path().toString());
+        this.self = new Address.Worker("../worker-" + localPartition.hashCode());
         this.master = new Address.Master(context().parent().path().toString());
         this.workers = new ArrayList<>();
         for (final Partition partition : partitioner.getPartitions()) {

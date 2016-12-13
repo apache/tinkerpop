@@ -36,15 +36,22 @@ public abstract class Address implements Serializable {
         return this.location;
     }
 
+    @Override
     public boolean equals(final Object other) {
         return other instanceof Address && ((Address) other).location.equals(this.location);
     }
 
+    @Override
     public int hashCode() {
         return this.location.hashCode();
     }
 
-    public static class Master extends Address {
+    @Override
+    public String toString() {
+        return this.location();
+    }
+
+    public static final class Master extends Address {
 
         public Master(final String location) {
             super(location);
@@ -52,7 +59,7 @@ public abstract class Address implements Serializable {
 
     }
 
-    public static class Worker extends Address {
+    public static final class Worker extends Address {
 
         public Worker(final String location) {
             super(location);

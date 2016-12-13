@@ -61,8 +61,7 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
     private final Partition localPartition;
     private final Partitioner partitioner;
     //
-    private final Map<String, Address.Worker> workers = new HashMap<>();
-    private final String neighborWorker;
+    private Address.Worker neighborWorker;
     private boolean isLeader;
     private Terminate terminate = null;
     private boolean voteToHalt = false;
@@ -70,10 +69,10 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
 
     public TraversalWorkerProgram(final Actor.Worker self, final Traversal.Admin<?, ?> traversal, final Partitioner partitioner) {
         this.self = self;
-        System.out.println("worker[created]: " + this.self.address().location());
+        // System.out.println("worker[created]: " + this.self.address().location());
         // set up partition and traversal information
-        this.localPartition = self.partition();
         this.partitioner = partitioner;
+        this.localPartition = self.partition();
         final WorkerTraversalSideEffects sideEffects = new WorkerTraversalSideEffects(traversal.getSideEffects(), this.self);
         TraversalHelper.applyTraversalRecursively(t -> t.setSideEffects(sideEffects), traversal);
         this.matrix = new TraversalMatrix<>(traversal);
@@ -88,19 +87,14 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
                 ((GraphStep<Edge, Edge>) traversal.getStartStep()).setIteratorSupplier(
                         () -> IteratorUtils.filter(this.localPartition.edges(graphStep.getIds()), this.localPartition::contains));
         }
-        // create termination ring topology
-        final int i = this.partitioner.getPartitions().indexOf(this.localPartition);
-        this.neighborWorker = "../worker-" + this.partitioner.getPartitions().get(i == this.partitioner.getPartitions().size() - 1 ? 0 : i + 1).hashCode();
-        this.isLeader = i == 0;
-        for (final Address.Worker worker : self.workers()) {
-            //if (!worker.equals(this.self.address()))
-            this.workers.put(worker.location(), worker);
-        }
     }
 
     @Override
     public void setup() {
-
+        // create termination ring topology
+        final int i = this.self.workers().indexOf(this.self.address());
+        this.neighborWorker = this.self.workers().get(i == this.self.workers().size() - 1 ? 0 : i + 1);
+        this.isLeader = i == 0;
     }
 
     @Override
@@ -113,7 +107,7 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
                 this.sendTraverser(step.next());
             }
             // internal vote to have in mailbox as final message to process
-            // assert null == this.terminate;
+            assert null == this.terminate;
             if (this.isLeader) {
                 this.terminate = Terminate.MAYBE;
                 this.self.send(this.self.address(), VoteToHaltMessage.instance());
@@ -125,7 +119,7 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         } else if (message instanceof SideEffectSetMessage) {
             this.matrix.getTraversal().getSideEffects().set(((SideEffectSetMessage) message).getKey(), ((SideEffectSetMessage) message).getValue());
         } else if (message instanceof Terminate) {
-            // assert this.isLeader || this.terminate != Terminate.MAYBE;
+            assert this.isLeader || this.terminate != Terminate.MAYBE;
             this.terminate = (Terminate) message;
             this.self.send(this.self.address(), VoteToHaltMessage.instance());
         } else if (message instanceof VoteToHaltMessage) {
@@ -145,9 +139,9 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
                     if (this.voteToHalt && Terminate.YES == this.terminate)
                         this.self.send(this.self.master(), VoteToHaltMessage.instance());
                     else
-                        this.self.send(this.workers.get(this.neighborWorker), Terminate.YES);
+                        this.self.send(this.neighborWorker, Terminate.YES);
                 } else
-                    this.self.send(this.workers.get(this.neighborWorker), this.voteToHalt ? this.terminate : Terminate.NO);
+                    this.self.send(this.neighborWorker, this.voteToHalt ? this.terminate : Terminate.NO);
                 this.terminate = null;
                 this.voteToHalt = true;
             }
@@ -169,7 +163,7 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
     //////////////
 
     private void processTraverser(final Traverser.Admin traverser) {
-        // assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
+        assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
         final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
         if (step instanceof Bypassing) ((Bypassing) step).setBypass(true);
         GraphComputing.atMaster(step, false);
@@ -188,7 +182,7 @@ public class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
         else if (traverser.get() instanceof Element && !this.localPartition.contains((Element) traverser.get()))
-            this.self.send(this.workers.get("../worker-" + this.partitioner.getPartition((Element) traverser.get()).hashCode()), traverser);
+            this.self.send(this.self.workers().get(this.partitioner.getPartitions().indexOf(this.partitioner.getPartition((Element) traverser.get()))), traverser);
         else
             this.self.send(this.self.address(), traverser);
     }

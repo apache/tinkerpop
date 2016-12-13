@@ -48,32 +48,27 @@ import java.util.Map;
 public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
 
     private final Actor.Master master;
-    private final Map<String, Address.Worker> workers = new HashMap<>();
     private final Traversal.Admin<?, ?> traversal;
     private final TraversalMatrix<?, ?> matrix;
     private final Partitioner partitioner;
     private Map<String, Barrier> barriers = new HashMap<>();
     private final TraverserSet<?> results;
-    private final String leaderWorker;
+    private Address.Worker leaderWorker;
 
     public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal, final Partitioner partitioner, final TraverserSet<?> results) {
         this.traversal = traversal;
-        System.out.println("master[created]: " + master.address().location());
-        System.out.println(this.traversal);
+        //System.out.println("master[created]: " + master.address().location());
+        //System.out.println(this.traversal);
         this.matrix = new TraversalMatrix<>(this.traversal);
         this.partitioner = partitioner;
         this.results = results;
         this.master = master;
-        this.leaderWorker = "worker-" + this.partitioner.getPartitions().get(0).hashCode();
     }
 
     @Override
     public void setup() {
-        for (final Address.Worker worker : master.workers()) {
-            this.workers.put(worker.location(), worker);
-        }
+        this.leaderWorker = this.master.workers().get(0);
         this.broadcast(StartMessage.instance());
-
     }
 
     @Override
@@ -105,7 +100,7 @@ public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                     }
                 }
                 this.barriers.clear();
-                this.master.send(this.workers.get(this.leaderWorker), StartMessage.instance());
+                this.master.send(this.leaderWorker, StartMessage.instance());
             } else {
                 while (this.traversal.hasNext()) {
                     this.results.add((Traverser.Admin) this.traversal.nextTraverser());
@@ -123,7 +118,7 @@ public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
     }
 
     private void broadcast(final Object message) {
-        for (final Address.Worker worker : this.workers.values()) {
+        for (final Address.Worker worker : this.master.workers()) {
             this.master.send(worker, message);
         }
     }
@@ -145,7 +140,7 @@ public class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
         if (traverser.isHalted())
             this.results.add(traverser);
         else if (traverser.get() instanceof Element)
-            this.master.send(this.workers.get("worker-" + this.partitioner.getPartition((Element) traverser.get()).hashCode()), traverser);
+            this.master.send(this.master.workers().get(this.partitioner.getPartitions().indexOf(this.partitioner.getPartition((Element) traverser.get()))), traverser);
         else
             this.master.send(this.master.address(), traverser);
     }
