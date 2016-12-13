@@ -25,11 +25,9 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
@@ -39,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ActorStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+public final class ActorProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
 
@@ -49,7 +47,7 @@ public final class ActorStrategy extends AbstractTraversalStrategy<TraversalStra
     private final Partitioner partitioner;
     private final Class<? extends Actors> actors;
 
-    public ActorStrategy(final Class<? extends Actors> actors, final Partitioner partitioner) {
+    public ActorProgramStrategy(final Class<? extends Actors> actors, final Partitioner partitioner) {
         this.actors = actors;
         this.partitioner = partitioner;
     }
@@ -57,8 +55,6 @@ public final class ActorStrategy extends AbstractTraversalStrategy<TraversalStra
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         ReadOnlyStrategy.instance().apply(traversal);
-        if (!TraversalHelper.getStepsOfAssignableClass(InjectStep.class, traversal).isEmpty())
-            throw new VerificationException("Inject traversal currently not supported", traversal);
 
         if (!(traversal.getParent() instanceof EmptyStep))
             return;

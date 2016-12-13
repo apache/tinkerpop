@@ -20,17 +20,13 @@
 package org.apache.tinkerpop.gremlin.akka.process;
 
 import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaActors;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
-
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,7 +37,7 @@ public class AkkaPlayTest {
     public void testPlay1() throws Exception {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withStrategies(new ActorStrategy(AkkaActors.class, new HashPartitioner(graph.partitioner(), 3)));
+        GraphTraversalSource g = graph.traversal().withStrategies(new ActorProgramStrategy(AkkaActors.class, new HashPartitioner(graph.partitioner(), 3)));
         System.out.println(g.V().values("name").toList());
         //3, 1.9, 1
         /*for (int i = 0; i < 10000; i++) {

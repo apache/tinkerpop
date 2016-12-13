@@ -23,9 +23,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,8 +45,10 @@ public final class ActorVerificationStrategy extends AbstractTraversalStrategy<T
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.onGraphComputer(traversal))
-            return;
+        if (!TraversalHelper.getStepsOfAssignableClass(InjectStep.class, traversal).isEmpty())
+            throw new VerificationException("Inject traversal currently not supported", traversal);
+
+
         final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
             // only global children are graph computing

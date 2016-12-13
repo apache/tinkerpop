@@ -26,7 +26,7 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorStrategy;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -54,10 +54,6 @@ public final class ActorStep<S, E> extends AbstractStep<E, E> {
         super(traversal);
         this.actorsClass = actorsClass;
         this.partitionTraversal = (Traversal.Admin) traversal.clone();
-        final TraversalStrategies strategies = this.partitionTraversal.getStrategies().clone();
-        strategies.removeStrategies(ActorStrategy.class);
-        strategies.addStrategies(VertexProgramStrategy.instance());
-        this.partitionTraversal.setStrategies(strategies);
         this.partitioner = partitioner;
     }
 

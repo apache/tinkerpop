@@ -28,12 +28,15 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSe
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.verification.ActorVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -63,8 +66,8 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
     public TraversalActorProgram(final Traversal.Admin<?, R> traversal, final Partitioner partitioner) {
         this.partitioner = partitioner;
         final TraversalStrategies strategies = traversal.getStrategies().clone();
-        strategies.removeStrategies(ComputerVerificationStrategy.class, StandardVerificationStrategy.class);
-        strategies.addStrategies(ActorVerificationStrategy.instance());
+        strategies.addStrategies(ActorVerificationStrategy.instance(), VertexProgramStrategy.instance(), ReadOnlyStrategy.instance());
+        strategies.removeStrategies(ActorProgramStrategy.class, ComputerVerificationStrategy.class, StandardVerificationStrategy.class);
         traversal.setStrategies(strategies);
         traversal.applyStrategies();
         this.traversal = (Traversal.Admin) ((TraversalVertexProgramStep) traversal.getStartStep()).computerTraversal.get();
