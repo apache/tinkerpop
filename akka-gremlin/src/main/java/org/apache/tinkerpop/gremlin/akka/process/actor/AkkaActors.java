@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.akka.process.actor;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -31,7 +32,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaActors<S, E> {
+public final class AkkaActors<S, E> implements Actors<S, E> {
 
     public final ActorSystem system;
     private TraverserSet<E> results = new TraverserSet<>();
@@ -41,7 +42,8 @@ public final class AkkaActors<S, E> {
         this.system.actorOf(Props.create(MasterTraversalActor.class, traversal.clone(), partitioner, this.results), "master");
     }
 
-    public Future<TraverserSet<E>> getResults() {
+    @Override
+    public Future<TraverserSet<E>> submit() {
         return CompletableFuture.supplyAsync(() -> {
             while (!this.system.isTerminated()) {
 

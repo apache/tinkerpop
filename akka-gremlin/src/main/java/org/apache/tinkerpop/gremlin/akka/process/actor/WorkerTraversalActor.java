@@ -26,9 +26,10 @@ import akka.dispatch.RequiresMessageQueue;
 import akka.japi.pf.ReceiveBuilder;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.BarrierDoneMessage;
-import org.apache.tinkerpop.gremlin.akka.process.actor.message.SideEffectAddMessage;
+import org.apache.tinkerpop.gremlin.akka.process.actor.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.StartMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.VoteToHaltMessage;
+import org.apache.tinkerpop.gremlin.process.actor.WorkerActor;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -51,7 +52,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WorkerTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics> {
+public final class WorkerTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, WorkerActor {
 
     // terminate token is passed around worker ring to gather termination consensus (dual-ring termination algorithm)
     public enum Terminate {
@@ -94,35 +95,14 @@ public final class WorkerTraversalActor extends AbstractActor implements Require
         this.isLeader = i == 0;
 
         receive(ReceiveBuilder.
-                match(StartMessage.class, start -> {
-                    // initial message from master that says: "start processing"
-                    final GraphStep step = (GraphStep) this.matrix.getTraversal().getStartStep();
-                    while (step.hasNext()) {
-                        this.sendTraverser(step.next());
-                    }
-                    // internal vote to have in mailbox as final message to process
-                    assert null == this.terminate;
-                    if (this.isLeader) {
-                        this.terminate = Terminate.MAYBE;
-                        self().tell(VoteToHaltMessage.instance(), self());
-                    }
-                }).
-                match(Traverser.Admin.class, traverser -> {
-                    this.processTraverser(traverser);
-                }).
-                match(SideEffectAddMessage.class, sideEffect -> {
-                    this.matrix.getTraversal().getSideEffects().set(sideEffect.getSideEffectKey(), sideEffect.getSideEffectValue());
-                }).
+                match(StartMessage.class, start -> this.processStart()).
+                match(Traverser.Admin.class, this::processTraverser).
+                match(SideEffectSetMessage.class, sideEffect -> this.processSideEffectSet(sideEffect.getKey(), sideEffect.getValue())).
+                match(BarrierDoneMessage.class, barrierDone -> this.processBarrierDone(this.matrix.getStepById(barrierDone.getStepId()))).
                 match(Terminate.class, terminate -> {
                     assert this.isLeader || this.terminate != Terminate.MAYBE;
                     this.terminate = terminate;
                     self().tell(VoteToHaltMessage.instance(), self());
-                }).
-                match(BarrierDoneMessage.class, barrierDone -> {
-                    final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(barrierDone.getStepId());
-                    while (step.hasNext()) {
-                        sendTraverser(step.next());
-                    }
                 }).
                 match(VoteToHaltMessage.class, haltSync -> {
                     // if there is a barrier and thus, halting at barrier, then process barrier
@@ -151,7 +131,23 @@ public final class WorkerTraversalActor extends AbstractActor implements Require
         );
     }
 
-    private void processTraverser(final Traverser.Admin traverser) {
+    @Override
+    public void processStart() {
+        // initial message from master that says: "start processing"
+        final GraphStep step = (GraphStep) this.matrix.getTraversal().getStartStep();
+        while (step.hasNext()) {
+            this.sendTraverser(step.next());
+        }
+        // internal vote to have in mailbox as final message to process
+        assert null == this.terminate;
+        if (this.isLeader) {
+            this.terminate = Terminate.MAYBE;
+            self().tell(VoteToHaltMessage.instance(), self());
+        }
+    }
+
+    @Override
+    public void processTraverser(final Traverser.Admin traverser) {
         assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
         final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
         if (step instanceof Bypassing) ((Bypassing) step).setBypass(true);
@@ -165,6 +161,21 @@ public final class WorkerTraversalActor extends AbstractActor implements Require
             }
         }
     }
+
+    @Override
+    public void processBarrierDone(final Barrier barrier) {
+        final Step<?, ?> step = (Step) barrier;
+        while (step.hasNext()) {
+            sendTraverser(step.next());
+        }
+    }
+
+    @Override
+    public void processSideEffectSet(final String key, final Object value) {
+        this.matrix.getTraversal().getSideEffects().set(key, value);
+    }
+
+    //////////////////////
 
     private void sendTraverser(final Traverser.Admin traverser) {
         this.voteToHalt = false;

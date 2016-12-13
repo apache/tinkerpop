@@ -28,9 +28,11 @@ import akka.japi.pf.ReceiveBuilder;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.SideEffectAddMessage;
+import org.apache.tinkerpop.gremlin.akka.process.actor.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.StartMessage;
 import org.apache.tinkerpop.gremlin.akka.process.actor.message.VoteToHaltMessage;
-import org.apache.tinkerpop.gremlin.akka.process.traversal.strategy.verification.ActorVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.verification.ActorVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.actor.MasterActor;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -54,7 +56,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MasterTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics> {
+public final class MasterTraversalActor extends AbstractActor implements RequiresMessageQueue<TraverserMailbox.TraverserSetSemantics>, MasterActor {
 
     private final Traversal.Admin<?, ?> traversal;
     private final TraversalMatrix<?, ?> matrix;
@@ -81,47 +83,11 @@ public final class MasterTraversalActor extends AbstractActor implements Require
         this.leaderWorker = "worker-" + this.partitioner.getPartitions().get(0).hashCode();
 
         receive(ReceiveBuilder.
-                match(Traverser.Admin.class, traverser -> {
-                    this.processTraverser(traverser);
-                }).
-                match(BarrierAddMessage.class, barrierMerge -> {
-                    // get the barrier updates from the workers to synchronize against the master barrier
-                    final Barrier barrier = (Barrier) this.matrix.getStepById(barrierMerge.getStepId());
-                    final Step<?, ?> step = (Step) barrier;
-                    GraphComputing.atMaster(step, true);
-                    barrier.addBarrier(barrierMerge.getBarrier());
-                    this.barriers.put(step.getId(), barrier);
-                }).
-                match(SideEffectAddMessage.class, sideEffect -> {
-                    // get the side-effect updates from the workers to generate the master side-effects
-                    this.traversal.getSideEffects().add(sideEffect.getSideEffectKey(), sideEffect.getSideEffectValue());
-                }).
-                match(VoteToHaltMessage.class, voteToHalt -> {
-                    assert !sender().equals(self());
-                    if (!this.barriers.isEmpty()) {
-                        for (final Barrier barrier : this.barriers.values()) {
-                            final Step<?, ?> step = (Step) barrier;
-                            if (!(barrier instanceof LocalBarrier)) {
-                                while (step.hasNext()) {
-                                    this.sendTraverser(step.next());
-                                }
-                            } else {
-                                this.traversal.getSideEffects().forEach((k, v) -> {
-                                    this.broadcast(new SideEffectAddMessage(k, v));
-                                });
-                                this.broadcast(new BarrierDoneMessage(barrier));
-                                barrier.done();
-                            }
-                        }
-                        this.barriers.clear();
-                        worker(this.leaderWorker).tell(StartMessage.instance(), self());
-                    } else {
-                        while (this.traversal.hasNext()) {
-                            this.results.add((Traverser.Admin) this.traversal.nextTraverser());
-                        }
-                        context().system().terminate();
-                    }
-                }).build());
+                match(Traverser.Admin.class, this::processTraverser).
+                match(BarrierAddMessage.class, barrierMerge -> this.processBarrierAdd((Barrier) this.matrix.getStepById(barrierMerge.getStepId()), barrierMerge.getBarrier())).
+                match(SideEffectAddMessage.class, sideEffect -> this.processSideEffectAdd(((SideEffectAddMessage) sideEffect).getKey(), ((SideEffectAddMessage) sideEffect).getValue())).
+                match(VoteToHaltMessage.class, voteToHalt -> this.processVoteToHalt()).
+                build());
     }
 
     private void initializeWorkers() {
@@ -137,13 +103,49 @@ public final class MasterTraversalActor extends AbstractActor implements Require
         this.workers.clear();
     }
 
-    private void broadcast(final Object message) {
-        for (final Partition partition : this.partitioner.getPartitions()) {
-            worker("worker-" + partition.hashCode()).tell(message, self());
+    @Override
+    public void processBarrierAdd(final Barrier barrier, final Object barrierAddition) {
+        final Step<?, ?> step = (Step) barrier;
+        GraphComputing.atMaster(step, true);
+        barrier.addBarrier(barrierAddition);
+        this.barriers.put(step.getId(), barrier);
+    }
+
+    @Override
+    public void processSideEffectAdd(final String key, final Object value) {
+        this.traversal.getSideEffects().add(key, value);
+    }
+
+    @Override
+    public void processVoteToHalt() {
+        assert !sender().equals(self());
+        if (!this.barriers.isEmpty()) {
+            for (final Barrier barrier : this.barriers.values()) {
+                final Step<?, ?> step = (Step) barrier;
+                if (!(barrier instanceof LocalBarrier)) {
+                    while (step.hasNext()) {
+                        this.sendTraverser(step.next());
+                    }
+                } else {
+                    this.traversal.getSideEffects().forEach((k, v) -> {
+                        this.broadcast(new SideEffectSetMessage(k, v));
+                    });
+                    this.broadcast(new BarrierDoneMessage(barrier));
+                    barrier.done();
+                }
+            }
+            this.barriers.clear();
+            worker(this.leaderWorker).tell(StartMessage.instance(), self());
+        } else {
+            while (this.traversal.hasNext()) {
+                this.results.add((Traverser.Admin) this.traversal.nextTraverser());
+            }
+            context().system().terminate();
         }
     }
 
-    private void processTraverser(final Traverser.Admin traverser) {
+    @Override
+    public void processTraverser(final Traverser.Admin traverser) {
         if (traverser.isHalted() || traverser.get() instanceof Element) {
             this.sendTraverser(traverser);
         } else {
@@ -153,6 +155,14 @@ public final class MasterTraversalActor extends AbstractActor implements Require
             while (step.hasNext()) {
                 this.processTraverser(step.next());
             }
+        }
+    }
+
+    ////////////////
+
+    private void broadcast(final Object message) {
+        for (final Partition partition : this.partitioner.getPartitions()) {
+            worker("worker-" + partition.hashCode()).tell(message, self());
         }
     }
 

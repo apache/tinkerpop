@@ -17,27 +17,15 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor.message;
+package org.apache.tinkerpop.gremlin.process.actor;
+
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectAddMessage {
+public interface Actor {
 
-    private final String key;
-    private final Object value;
+    public <S> void processTraverser(final Traverser.Admin<S> traverser);
 
-    public SideEffectAddMessage(final String key, final Object value) {
-        this.value = value;
-        this.key = key;
-    }
-
-    public String getKey() {
-        return this.key;
-    }
-
-    public Object getValue() {
-        return this.value;
-    }
 }
-

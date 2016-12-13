@@ -17,27 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actor.message;
+package org.apache.tinkerpop.gremlin.process.actor;
+
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectAddMessage {
+public interface MasterActor extends Actor {
 
-    private final String key;
-    private final Object value;
+    public <V> void processBarrierAdd(final Barrier barrier, final V barrierAddition);
 
-    public SideEffectAddMessage(final String key, final Object value) {
-        this.value = value;
-        this.key = key;
-    }
+    public <V> void processSideEffectAdd(final String key, final V value);
 
-    public String getKey() {
-        return this.key;
-    }
+    public void processVoteToHalt();
 
-    public Object getValue() {
-        return this.value;
-    }
 }
-

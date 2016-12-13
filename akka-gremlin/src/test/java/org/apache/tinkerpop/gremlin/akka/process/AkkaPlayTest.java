@@ -19,7 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.akka.process;
 
-import org.apache.tinkerpop.gremlin.akka.process.traversal.strategy.decoration.ActorStrategy;
+import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaActors;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -40,7 +41,7 @@ public class AkkaPlayTest {
     public void testPlay1() throws Exception {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withStrategies(new ActorStrategy(new HashPartitioner(graph.partitioner(), 3)));
+        GraphTraversalSource g = graph.traversal().withStrategies(new ActorStrategy(AkkaActors.class, new HashPartitioner(graph.partitioner(), 3)));
         System.out.println(g.V(1, 2).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()).toList());
         //3, 1.9, 1
         /*for (int i = 0; i < 10000; i++) {

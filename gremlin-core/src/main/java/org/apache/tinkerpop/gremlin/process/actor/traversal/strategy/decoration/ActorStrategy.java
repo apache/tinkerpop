@@ -17,9 +17,10 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.traversal.strategy.decoration;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.akka.process.traversal.step.map.ActorStep;
+import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.step.map.ActorStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -46,8 +47,10 @@ public final class ActorStrategy extends AbstractTraversalStrategy<TraversalStra
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
 
     private final Partitioner partitioner;
+    private final Class<? extends Actors> actors;
 
-    public ActorStrategy(final Partitioner partitioner) {
+    public ActorStrategy(final Class<? extends Actors> actors, final Partitioner partitioner) {
+        this.actors = actors;
         this.partitioner = partitioner;
     }
 
@@ -60,7 +63,7 @@ public final class ActorStrategy extends AbstractTraversalStrategy<TraversalStra
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        final ActorStep<?, ?> actorStep = new ActorStep<>(traversal, this.partitioner);
+        final ActorStep<?, ?> actorStep = new ActorStep<>(traversal, this.actors, this.partitioner);
         TraversalHelper.removeAllSteps(traversal);
         traversal.addStep(actorStep);
 

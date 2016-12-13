@@ -17,14 +17,14 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.actor.traversal.step.map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaActors;
-import org.apache.tinkerpop.gremlin.akka.process.traversal.strategy.decoration.ActorStrategy;
+import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -40,12 +40,16 @@ import java.util.NoSuchElementException;
  */
 public final class ActorStep<S, E> extends AbstractStep<E, E> {
 
-    public final Traversal.Admin<S, E> partitionTraversal;
+    private final Class<? extends Actors> actorsClass;
+    private final Traversal.Admin<S, E> partitionTraversal;
     private final Partitioner partitioner;
+
     private boolean first = true;
 
-    public ActorStep(final Traversal.Admin<?, ?> traversal, final Partitioner partitioner) {
+
+    public ActorStep(final Traversal.Admin<?, ?> traversal, final Class<? extends Actors> actorsClass, final Partitioner partitioner) {
         super(traversal);
+        this.actorsClass = actorsClass;
         this.partitionTraversal = (Traversal.Admin) traversal.clone();
         final TraversalStrategies strategies = this.partitionTraversal.getStrategies().clone();
         strategies.removeStrategies(ActorStrategy.class);
@@ -63,9 +67,9 @@ public final class ActorStep<S, E> extends AbstractStep<E, E> {
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (this.first) {
             this.first = false;
-            final AkkaActors<S, E> actors = new AkkaActors<>(this.partitionTraversal, this.partitioner);
             try {
-                actors.getResults().get().forEach(this.starts::add);
+                final Actors<S, E> actors = this.actorsClass.getConstructor(Traversal.Admin.class, Partitioner.class).newInstance(this.partitionTraversal, this.partitioner);
+                actors.submit().get().forEach(this.starts::add);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

@@ -22,14 +22,14 @@ package org.apache.tinkerpop.gremlin.akka.process.actor.message;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectAddMessage {
+public final class SideEffectSetMessage {
 
     private final String key;
     private final Object value;
 
-    public SideEffectAddMessage(final String key, final Object value) {
-        this.value = value;
+    public SideEffectSetMessage(final String key, final Object value) {
         this.key = key;
+        this.value = value;
     }
 
     public String getKey() {
@@ -40,4 +40,3 @@ public final class SideEffectAddMessage {
         return this.value;
     }
 }
-
