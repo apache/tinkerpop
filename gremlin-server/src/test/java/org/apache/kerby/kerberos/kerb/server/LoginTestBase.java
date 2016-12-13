@@ -33,6 +33,13 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+/*
+ * Except for this comment, this file is a literal copy from:
+ *     https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/
+ *         kerby-kerb/kerb-kdc-test/src/test/java/org/apache/kerby/kerberos/kerb/server/LoginTestBase.java
+ *
+ * See also: gremlin-server/src/main/static/NOTICE
+ */
 public class LoginTestBase extends KdcTestBase {
 
     protected File ticketCacheFile;
@@ -75,8 +82,8 @@ public class LoginTestBase extends KdcTestBase {
     @After
     @Override
     public void tearDown() throws Exception {
-//        ticketCacheFile.delete();        easier for debugging
-//        serviceKeytabFile.delete();      easier for debugging
+        ticketCacheFile.delete();
+        serviceKeytabFile.delete();
 
         super.tearDown();
     }

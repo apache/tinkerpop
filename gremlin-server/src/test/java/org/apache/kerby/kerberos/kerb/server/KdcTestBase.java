@@ -27,39 +27,33 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
+/*
+ * This file is based on:
+ *     https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/
+ *         kerby-kerb/kerb-kdc-test/src/test/java/org/apache/kerby/kerberos/kerb/server/KdcTestBase.java
+ * but with the following changes:
+ *   - added this comment
+ *   - made allowUdp() return false because of issues with UDP in the RC2 release, see directory-kerby on JIRA
+ *
+ * See also: gremlin-server/src/main/static/NOTICE
+ */
 public abstract class KdcTestBase {
-    private static final Logger logger = LoggerFactory.getLogger(KdcTestBase.class);
-
     private static File testDir;
-    protected static String hostname;
-    private static final String clientPassword = "123456";
-    private static final String clientPrincipalName = "drankye";
-    private static final String clientPrincipal = clientPrincipalName + "@" + TestKdcServer.KDC_REALM;
-    private static final String serverPrincipalName = "test-service";
-    private static String serverPrincipal = null;
+
+    private final String clientPassword = "123456";
+    private final String hostname = "localhost";
+    private final String clientPrincipalName = "drankye";
+    private final String clientPrincipal =
+            clientPrincipalName + "@" + TestKdcServer.KDC_REALM;
+    private final String serverPrincipalName = "test-service";
+    private final String serverPrincipal =
+            serverPrincipalName + "/" + hostname + "@" + TestKdcServer.KDC_REALM;
 
     private SimpleKdcServer kdcServer;
-
-    KdcTestBase() {
-        // Hostname setting must be consistent with the way gremlin-console sets gremlin-server's hostname
-        // and derives gremlin-server's principal name. Also, the hostname needs to be lowercase for use
-        // in principal names.
-        try {
-            hostname = Inet4Address.getLocalHost().getCanonicalHostName().toLowerCase();
-            serverPrincipal = serverPrincipalName + "/" + hostname + "@" + TestKdcServer.KDC_REALM;
-        } catch (UnknownHostException e) {
-            logger.error("Hostname not found");
-        }
-    }
 
     @BeforeClass
     public static void createTestDir() throws IOException {
@@ -121,7 +115,9 @@ public abstract class KdcTestBase {
         return hostname;
     }
 
-    protected boolean allowUdp() { return false; } //}true;}
+    protected boolean allowUdp() {
+        return false;
+    }   // originally: true
 
     protected boolean allowTcp() {
         return true;

@@ -25,6 +25,13 @@ import org.apache.kerby.kerberos.kerb.client.KrbConfig;
 import org.apache.kerby.kerberos.kerb.client.KrbConfigKey;
 import org.apache.kerby.util.NetworkUtil;
 
+/*
+ * Except for this comment, this file is a literal copy from:
+ *     https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/
+ *         kerby-kerb/kerb-kdc-test/src/test/java/org/apache/kerby/kerberos/kerb/server/TestKdcServer.java
+ *
+ * See also: gremlin-server/src/main/static/NOTICE
+ */
 public class TestKdcServer extends SimpleKdcServer {
     public static final String KDC_REALM = "TEST.COM";
     public static final String HOSTNAME = "localhost";

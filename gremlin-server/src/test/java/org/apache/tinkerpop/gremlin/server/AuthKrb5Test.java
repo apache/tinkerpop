@@ -19,12 +19,12 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.kerby.kerberos.kerb.server.LoginTestBase;
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
-import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.ietf.jgss.GSSException;
 import org.junit.After;
 import org.junit.Before;
@@ -35,14 +35,12 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 
 import java.io.File;
 import java.util.*;
-
-import org.junit.rules.TestName;
-
 import javax.security.auth.login.LoginException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Test;
 
 
 
@@ -51,72 +49,14 @@ import static org.junit.Assert.fail;
  *
  * Todo: change back to integrate test later on
  */
-public class AuthKrb5Test extends LoginTestBase {
+public class AuthKrb5Test extends AuthKrb5TestBase {
     // Cannot use mere slf4j because need to check log output
-    // Messier alternative would be to catch the console output:
-    //    http://stackoverflow.com/questions/8708342/redirect-console-output-to-string-in-java
     private final Logger rootLogger = Logger.getRootLogger();
     private final Logger logger = Logger.getLogger(AuthKrb5Test.class);
+
     private GremlinServerAuthKrb5Integrate server;
     private static final String TESTCONSOLE = "GremlinConsole";
     private static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
-
-    @Rule
-    public TestName name = new TestName();
-
-    private class GremlinServerAuthKrb5Integrate extends AbstractGremlinServerIntegrationTest {
-
-        final String principal;
-        final File keytabFile;
-
-        GremlinServerAuthKrb5Integrate(String principal, File keytabFile) {
-            this.principal = principal;
-            this.keytabFile = keytabFile;
-        }
-
-        @Override
-        public Settings overrideSettings(final Settings settings) {
-            settings.host = hostname;
-            logger.debug("Hostname: " + settings.host);
-            final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
-            authSettings.className = Krb5Authenticator.class.getName();
-            final Map authConfig = new HashMap<String,Object>();
-            authConfig.put("keytab", keytabFile.getAbsolutePath());
-            authConfig.put("principal", principal);
-            authSettings.config = authConfig;
-            settings.authentication = authSettings;
-            final Settings.SslSettings sslConfig = new Settings.SslSettings();
-            sslConfig.enabled = false;
-            settings.ssl = sslConfig;
-
-//            switch (nameOfTest) {
-//                case "shouldAuthenticateOverSslWithKerberosTicket":
-//                case "shouldFailIfSslEnabledOnServerButNotClient":
-//                    final Settings.SslSettings sslConfig = new Settings.SslSettings();
-//                    sslConfig.enabled = true;
-//                    settings.ssl = sslConfig;
-//                    break;
-//            }
-            return settings;
-        }
-    }
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        logger.info("Starting " + name.getMethodName());
-        super.setUp();
-        loginServiceUsingKeytab();
-        loginClientUsingTicketCache();
-        final String buildDir = System.getProperty("build.dir");
-        System.setProperty("java.security.auth.login.config", buildDir +
-            "/test-classes/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
 
     /**
      * Defaults from TestClientFactory:
@@ -152,7 +92,7 @@ public class AuthKrb5Test extends LoginTestBase {
         server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
         server.setUp();
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-            .protocol(getServerPrincipalName()).addContactPoint(hostname).create();
+            .protocol(getServerPrincipalName()).addContactPoint(getHostname()).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -168,7 +108,8 @@ public class AuthKrb5Test extends LoginTestBase {
     public void shouldFailWithoutClientJaasEntry() throws Exception {
         server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
         server.setUp();
-        final Cluster cluster = TestClientFactory.build().protocol(getServerPrincipalName()).addContactPoint(hostname).create();
+        final Cluster cluster = TestClientFactory.build().protocol(getServerPrincipalName())
+                .addContactPoint(getHostname()).create();
         final Client client = cluster.connect();
         try {
             client.submit("1+1").all().get();
@@ -187,7 +128,7 @@ public class AuthKrb5Test extends LoginTestBase {
         server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
         server.setUp();
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE_NOT_LOGGED_IN)
-                .protocol(getServerPrincipalName()).addContactPoint(hostname).create();
+                .protocol(getServerPrincipalName()).addContactPoint(getHostname()).create();
         final Client client = cluster.connect();
         try {
             client.submit("1+1").all().get();
