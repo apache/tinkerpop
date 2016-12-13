@@ -50,8 +50,8 @@ import java.util.List;
 public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet<R>> {
 
     private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
-            StartMessage.class,
             Traverser.class,
+            StartMessage.class,
             SideEffectAddMessage.class,
             BarrierAddMessage.class,
             SideEffectSetMessage.class,

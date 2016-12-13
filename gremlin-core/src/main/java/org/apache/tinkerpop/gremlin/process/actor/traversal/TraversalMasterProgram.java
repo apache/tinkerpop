@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierDoneM
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -71,6 +72,7 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
     public void setup() {
         this.leaderWorker = this.master.workers().get(0);
         this.broadcast(StartMessage.instance());
+        this.master.send(this.leaderWorker, Terminate.MAYBE);
     }
 
     @Override
@@ -103,6 +105,7 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                 }
                 this.barriers.clear();
                 this.master.send(this.leaderWorker, StartMessage.instance());
+                this.master.send(this.leaderWorker, Terminate.MAYBE);
             } else {
                 while (this.traversal.hasNext()) {
                     this.results.add((Traverser.Admin) this.traversal.nextTraverser());

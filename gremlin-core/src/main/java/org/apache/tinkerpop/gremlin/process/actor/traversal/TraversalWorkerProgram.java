@@ -103,16 +103,8 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
             while (step.hasNext()) {
                 this.sendTraverser(step.next());
             }
-            // internal vote to have in mailbox as final message to process
-            // TODO: assert null == this.terminate;
-            if (this.isLeader) {
-                this.terminate = Terminate.MAYBE;
-                this.self.send(this.self.address(), VoteToHaltMessage.instance());
-            }
         } else if (message instanceof Traverser.Admin) {
-            final Traverser.Admin<?> traverser = (Traverser.Admin) message;
-            this.processTraverser(traverser);
-
+            this.processTraverser((Traverser.Admin) message);
         } else if (message instanceof SideEffectSetMessage) {
             this.matrix.getTraversal().getSideEffects().set(((SideEffectSetMessage) message).getKey(), ((SideEffectSetMessage) message).getValue());
         } else if (message instanceof Terminate) {
