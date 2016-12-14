@@ -19,12 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.process.Processor;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,7 +34,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Computer implements Function<Graph, GraphComputer>, Serializable, Cloneable {
+public final class Computer implements Processor.Description<GraphComputer>, Function<Graph, GraphComputer> {
 
     private Class<? extends GraphComputer> graphComputerClass = GraphComputer.class;
     private Map<String, Object> configuration = new HashMap<>();
@@ -50,10 +52,20 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
 
     }
 
+    public static Computer of() {
+        return new Computer(GraphComputer.class);
+    }
+
+    public static Computer of(final Class<? extends GraphComputer> graphComputerClass) {
+        return new Computer(graphComputerClass);
+    }
+
+    @Deprecated
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
 
+    @Deprecated
     public static Computer compute(final Class<? extends GraphComputer> graphComputerClass) {
         return new Computer(graphComputerClass);
     }
@@ -143,6 +155,13 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage());
         }
+    }
+
+    @Override
+    public void addTraversalStrategies(final TraversalSource traversalSource) {
+        final VertexProgramStrategy vertexProgramStrategy = new VertexProgramStrategy(this);
+        traversalSource.getStrategies().addStrategies(vertexProgramStrategy);
+        vertexProgramStrategy.addGraphComputerStrategies(traversalSource);
     }
 
     /////////////////

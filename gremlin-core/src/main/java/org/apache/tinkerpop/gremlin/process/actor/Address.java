@@ -20,49 +20,56 @@
 package org.apache.tinkerpop.gremlin.process.actor;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class Address implements Serializable {
 
-    private final String location;
+    private final String id;
+    private final InetAddress location;
 
-    public Address(final String location) {
+    public Address(final String id, final InetAddress location) {
+        this.id = id;
         this.location = location;
     }
 
-    public String location() {
+    public InetAddress getLocation() {
         return this.location;
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof Address && ((Address) other).location.equals(this.location);
+        return other instanceof Address && ((Address) other).id.equals(this.id);
     }
 
     @Override
     public int hashCode() {
-        return this.location.hashCode();
+        return this.id.hashCode();
     }
 
     @Override
     public String toString() {
-        return this.location();
+        return this.id;
     }
 
     public static final class Master extends Address {
 
-        public Master(final String location) {
-            super(location);
+        public Master(final String id, final InetAddress location) {
+            super(id, location);
         }
 
     }
 
     public static final class Worker extends Address {
 
-        public Worker(final String location) {
-            super(location);
+        public Worker(final String id, final InetAddress location) {
+            super(id, location);
         }
 
     }

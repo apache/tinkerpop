@@ -45,13 +45,13 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
-    public WorkerActor(final ActorProgram program, final Partitioner partitioner, final Partition localPartition) {
+    public WorkerActor(final ActorProgram program, final Address.Master master, final Partition localPartition, final Partitioner partitioner) {
         this.localPartition = localPartition;
-        this.self = new Address.Worker("../worker-" + localPartition.hashCode());
-        this.master = new Address.Master(context().parent().path().toString());
+        this.self = new Address.Worker(this.createWorkerAddress(localPartition), localPartition.location());
+        this.master = master;
         this.workers = new ArrayList<>();
         for (final Partition partition : partitioner.getPartitions()) {
-            this.workers.add(new Address.Worker("../worker-" + partition.hashCode()));
+            this.workers.add(new Address.Worker(this.createWorkerAddress(partition), partition.location()));
         }
         final ActorProgram.Worker workerProgram = program.createWorkerProgram(this);
         receive(ReceiveBuilder.matchAny(workerProgram::execute).build());
@@ -62,7 +62,7 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     public <M> void send(final Address toActor, final M message) {
         ActorSelection actor = this.actors.get(toActor);
         if (null == actor) {
-            actor = context().actorSelection(toActor.location());
+            actor = context().actorSelection(toActor.getId());
             this.actors.put(toActor, actor);
         }
         actor.tell(message, self());
@@ -86,6 +86,10 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     @Override
     public Address.Master master() {
         return this.master;
+    }
+
+    private String createWorkerAddress(final Partition partition) {
+        return "../worker-" + partition.guid();
     }
 }
 

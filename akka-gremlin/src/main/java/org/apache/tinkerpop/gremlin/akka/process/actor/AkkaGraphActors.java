@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -49,7 +51,11 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
                 withValue("message-priorities",
                         ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
         this.system = ActorSystem.create("traversal-" + actorProgram.hashCode(), config);
-        this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString());
+        try {
+            this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString(), InetAddress.getLocalHost());
+        } catch (final UnknownHostException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

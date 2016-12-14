@@ -23,14 +23,11 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
@@ -62,6 +59,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AkkaActorsProvider extends AbstractGraphProvider {
+
+    private static final Random RANDOM = new Random();
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name",
@@ -147,7 +146,9 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new ActorProgramStrategy(AkkaGraphActors.class, new HashPartitioner(graph.partitioner(), new Random().nextInt(10) + 1)));
+            return RANDOM.nextBoolean() ?
+                    g.withProcessor(Actors.of(AkkaGraphActors.class).partitioner(new HashPartitioner(graph.partitioner(), new Random().nextInt(15) + 1))) :
+                    g.withProcessor(Actors.of(AkkaGraphActors.class));
         }
     }
 }

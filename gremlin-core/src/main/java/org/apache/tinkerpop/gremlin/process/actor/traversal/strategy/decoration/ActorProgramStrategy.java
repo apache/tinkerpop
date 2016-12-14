@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.actor.Actors;
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.step.map.TraversalActorProgramStep;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collections;
 import java.util.Set;
@@ -39,15 +41,18 @@ import java.util.Set;
 public final class ActorProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
-
     private static final Set<Class<? extends DecorationStrategy>> PRIORS = Collections.singleton(RemoteStrategy.class);
 
     private final Partitioner partitioner;
     private final Class<? extends GraphActors> actors;
 
-    public ActorProgramStrategy(final Class<? extends GraphActors> actors, final Partitioner partitioner) {
+    private ActorProgramStrategy(final Class<? extends GraphActors> actors, final Partitioner partitioner) {
         this.actors = actors;
         this.partitioner = partitioner;
+    }
+
+    public ActorProgramStrategy(final Actors actors) {
+        this(actors.getGraphActorsClass(), actors.getPartitioner());
     }
 
     @Override
@@ -57,7 +62,10 @@ public final class ActorProgramStrategy extends AbstractTraversalStrategy<Traver
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        final TraversalActorProgramStep<?, ?> actorStep = new TraversalActorProgramStep<>(traversal, this.actors, this.partitioner);
+        final TraversalActorProgramStep<?, ?> actorStep = new TraversalActorProgramStep<>(traversal, this.actors,
+                null == this.partitioner ?
+                        traversal.getGraph().orElse(EmptyGraph.instance()).partitioner() :
+                        this.partitioner);
         TraversalHelper.removeAllSteps(traversal);
         traversal.addStep(actorStep);
 

@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -58,6 +57,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
     private final TraversalMatrix<?, ?> matrix;
     private final Partition localPartition;
     private final Partitioner partitioner;
+    private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     //
     private Address.Worker neighborWorker;
     private boolean isLeader;
@@ -67,7 +67,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
 
     public TraversalWorkerProgram(final Actor.Worker self, final Traversal.Admin<?, ?> traversal, final Partitioner partitioner) {
         this.self = self;
-        // System.out.println("worker[created]: " + this.self.address().location());
+        // System.out.println("worker[created]: " + this.self.address().getId());
         // set up partition and traversal information
         this.partitioner = partitioner;
         this.localPartition = self.partition();
@@ -96,6 +96,9 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         final int i = this.self.workers().indexOf(this.self.address());
         this.neighborWorker = this.self.workers().get(i == this.self.workers().size() - 1 ? 0 : i + 1);
         this.isLeader = i == 0;
+        for (int j = 0; j < this.partitioner.getPartitions().size(); j++) {
+            this.partitionToWorkerMap.put(this.partitioner.getPartitions().get(j), this.self.workers().get(j));
+        }
     }
 
     @Override
@@ -152,7 +155,6 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
     private void processTraverser(final Traverser.Admin traverser) {
         assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
         final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
-        if (step instanceof Bypassing) ((Bypassing) step).setBypass(true);
         step.addStart(traverser);
         if (step instanceof Barrier) {
             this.barriers.put(step.getId(), (Barrier) step);
@@ -168,7 +170,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
         else if (traverser.get() instanceof Element && !this.localPartition.contains((Element) traverser.get()))
-            this.self.send(this.self.workers().get(this.partitioner.getPartitions().indexOf(this.partitioner.getPartition((Element) traverser.get()))), traverser);
+            this.self.send(this.partitionToWorkerMap.get(this.partitioner.getPartition((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
     }

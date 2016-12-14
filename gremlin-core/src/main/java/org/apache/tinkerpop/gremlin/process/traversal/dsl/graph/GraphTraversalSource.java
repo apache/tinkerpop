@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.Processor;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -130,6 +131,11 @@ public class GraphTraversalSource implements TraversalSource {
     @SuppressWarnings({"unchecked"})
     public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
+    }
+
+    @Override
+    public GraphTraversalSource withProcessor(final Processor.Description processor) {
+        return (GraphTraversalSource) TraversalSource.super.withProcessor(processor);
     }
 
     @Override

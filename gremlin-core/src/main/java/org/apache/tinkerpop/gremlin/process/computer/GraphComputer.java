@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.process.Processor;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,7 +33,7 @@ import java.util.concurrent.Future;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface GraphComputer {
+public interface GraphComputer extends Processor {
 
     public enum ResultGraph {
         /**

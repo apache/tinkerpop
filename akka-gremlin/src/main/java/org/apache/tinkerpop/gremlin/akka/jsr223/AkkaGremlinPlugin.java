@@ -17,18 +17,34 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.actor;
+package org.apache.tinkerpop.gremlin.akka.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.Processor;
-
-import java.util.concurrent.Future;
+import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaGraphActors;
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphActors<R> extends Processor {
+public final class AkkaGremlinPlugin extends AbstractGremlinPlugin {
 
-    public Address.Master master();
+    protected static String NAME = "tinkerpop.akka";
 
-    public Future<R> submit();
+    private static final AkkaGremlinPlugin INSTANCE = new AkkaGremlinPlugin();
+
+    private static final ImportCustomizer imports = DefaultImportCustomizer.build().addClassImports(AkkaGraphActors.class).create();
+
+    public AkkaGremlinPlugin() {
+        super(NAME, imports);
+    }
+
+    @Override
+    public boolean requireRestart() {
+        return true;
+    }
+
+    public static AkkaGremlinPlugin instance() {
+        return INSTANCE;
+    }
 }

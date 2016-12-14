@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,12 +47,17 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
     public MasterActor(final ActorProgram program, final Partitioner partitioner) {
-        this.master = new Address.Master(self().path().toString());
+        try {
+            this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
+        } catch (final UnknownHostException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
-            this.workers.add(new Address.Worker("worker-" + partition.hashCode()));
-            context().actorOf(Props.create(WorkerActor.class, program, partitioner, partition), "worker-" + partition.hashCode());
+            final String workerPathString = "worker-" + partition.guid();
+            this.workers.add(new Address.Worker(workerPathString, partition.location()));
+            context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner), workerPathString);
         }
         final ActorProgram.Master masterProgram = program.createMasterProgram(this);
         receive(ReceiveBuilder.matchAny(masterProgram::execute).build());
@@ -61,7 +68,7 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     public <M> void send(final Address toActor, final M message) {
         ActorSelection actor = this.actors.get(toActor);
         if (null == actor) {
-            actor = context().actorSelection(toActor.location());
+            actor = context().actorSelection(toActor.getId());
             this.actors.put(toActor, actor);
         }
         actor.tell(message, self());

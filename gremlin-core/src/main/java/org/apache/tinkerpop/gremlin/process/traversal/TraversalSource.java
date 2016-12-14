@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.tinkerpop.gremlin.process.Processor;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
@@ -92,6 +93,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         public static final String withComputer = "withComputer";
         public static final String withSideEffect = "withSideEffect";
         public static final String withRemote = "withRemote";
+        public static final String withProcessor = "withProcessor";
     }
 
     /////////////////////////////
@@ -108,7 +110,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         for (final TraversalStrategy traversalStrategy : traversalStrategies) {
             if (traversalStrategy instanceof VertexProgramStrategy) {
-                ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone);
+                ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone); // TODO: this is not generalized
             }
         }
         return clone;
@@ -125,6 +127,19 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         final TraversalSource clone = this.clone();
         clone.getStrategies().removeStrategies(traversalStrategyClasses);
         clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
+        return clone;
+    }
+
+    /**
+     * Define the type of {@link Processor} that will evaluate all subsequent {@link Traversal}s spawned from this source.
+     *
+     * @param processor the description of the processor to use
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withProcessor(final Processor.Description processor) {
+        final TraversalSource clone = this.clone();
+        processor.addTraversalStrategies(clone);
+        clone.getBytecode().addSource(Symbols.withProcessor, processor);
         return clone;
     }
 
@@ -160,7 +175,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withStrategies(new VertexProgramStrategy(Computer.compute(graphComputerClass)));
+        return this.withStrategies(new VertexProgramStrategy(Computer.of(graphComputerClass)));
     }
 
     /**
@@ -170,7 +185,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer() {
-        return this.withStrategies(new VertexProgramStrategy(Computer.compute()));
+        return this.withStrategies(new VertexProgramStrategy(Computer.of()));
     }
 
     /**

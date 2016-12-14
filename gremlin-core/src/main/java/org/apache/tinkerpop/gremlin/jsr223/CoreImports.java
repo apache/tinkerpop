@@ -72,6 +72,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -83,6 +85,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.javatuples.Pair;
@@ -116,6 +119,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Transaction.class);
         CLASS_IMPORTS.add(Vertex.class);
         CLASS_IMPORTS.add(VertexProperty.class);
+        CLASS_IMPORTS.add(Partitioner.class);
+        CLASS_IMPORTS.add(Partition.class);
         // tokens
         CLASS_IMPORTS.add(SackFunctions.class);
         CLASS_IMPORTS.add(SackFunctions.Barrier.class);
@@ -185,6 +190,7 @@ public final class CoreImports {
         // utils
         CLASS_IMPORTS.add(Gremlin.class);
         CLASS_IMPORTS.add(TimeUtil.class);
+        CLASS_IMPORTS.add(HashPartitioner.class);
 
         /////////////
         // METHODS //

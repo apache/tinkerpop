@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTrav
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 import java.util.HashMap;
@@ -62,11 +63,12 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
     private final TraverserSet<?> results;
     private Address.Worker leaderWorker;
     private int orderCounter = -1;
+    private final Map<Partition,Address.Worker> partitionToWorkerMap = new HashMap<>();
 
     public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal, final Partitioner partitioner, final TraverserSet<?> results) {
         this.traversal = traversal;
-        //System.out.println("master[created]: " + master.address().location());
-        //System.out.println(this.traversal);
+        // System.out.println("master[created]: " + master.address().getId());
+        // System.out.println(this.traversal);
         this.matrix = new TraversalMatrix<>(this.traversal);
         this.partitioner = partitioner;
         this.results = results;
@@ -78,6 +80,9 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
     @Override
     public void setup() {
         this.leaderWorker = this.master.workers().get(0);
+        for(int i=0; i<this.partitioner.getPartitions().size(); i++) {
+            this.partitionToWorkerMap.put(this.partitioner.getPartitions().get(i),this.master.workers().get(i));
+        }
         this.broadcast(StartMessage.instance());
         this.master.send(this.leaderWorker, Terminate.MAYBE);
     }
@@ -162,7 +167,7 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
         if (traverser.isHalted())
             this.results.add(traverser);
         else if (traverser.get() instanceof Element)
-            this.master.send(this.master.workers().get(this.partitioner.getPartitions().indexOf(this.partitioner.getPartition((Element) traverser.get()))), traverser);
+            this.master.send(this.partitionToWorkerMap.get(this.partitioner.getPartition((Element) traverser.get())), traverser);
         else
             this.master.send(this.master.address(), traverser);
     }
