@@ -1,4 +1,3 @@
-package org.apache.tinkerpop.gremlin.structure.io.graphson._3_2_3
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 
 new File("dev-docs/").mkdirs()
-new File("test-case-data/io/").mkdirs()
+new File("test-case-data/io/graphson").mkdirs()
 
 graph = TinkerFactory.createTheCrew()
 g = graph.traversal()
@@ -113,17 +112,17 @@ writeSupportedV1Objects = { writer, mapper ->
     writer.write("Time\n")
     writer.write("~~~~\n\n")
     writer.write(toJsonV1d0NoTypes(Duration.ofDays(5), "Duration", mapper, "The following example is a `Duration` of five days."))
-    writer.write(toJsonV1d0NoTypes(Instant.now(), "Instant", mapper))
+    writer.write(toJsonV1d0NoTypes(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", mapper))
     writer.write(toJsonV1d0NoTypes(LocalDate.of(2016, 1, 1), "LocalDate", mapper))
     writer.write(toJsonV1d0NoTypes(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", mapper))
     writer.write(toJsonV1d0NoTypes(LocalTime.of(12, 30, 45), "LocalTime", mapper))
     writer.write(toJsonV1d0NoTypes(MonthDay.of(1, 1), "MonthDay", mapper))
-    writer.write(toJsonV1d0NoTypes(OffsetDateTime.now(), "OffsetDateTime", mapper))
-    writer.write(toJsonV1d0NoTypes(OffsetTime.now(), "OffsetTime", mapper))
+    writer.write(toJsonV1d0NoTypes(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", mapper))
+    writer.write(toJsonV1d0NoTypes(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", mapper))
     writer.write(toJsonV1d0NoTypes(Period.of(1, 6, 15), "Period", mapper, "The following example is a `Period` of one year, six months and fifteen days."))
     writer.write(toJsonV1d0NoTypes(Year.of(2016), "Year", mapper, "The following example is of the `Year` \"2016\"."))
     writer.write(toJsonV1d0NoTypes(YearMonth.of(2016, 6), "YearMonth", mapper, "The following example is a `YearMonth` of \"June 2016\""))
-    writer.write(toJsonV1d0NoTypes(ZonedDateTime.now(), "ZonedDateTime", mapper))
+    writer.write(toJsonV1d0NoTypes(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", mapper))
     writer.write(toJsonV1d0NoTypes(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper, "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds."))
 }
 
@@ -148,12 +147,12 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     writer.write("Core\n")
     writer.write("~~~~\n\n")
     writer.write(toJsonFunction(File, "Class", mapper))
-    writer.write(toJsonFunction(new Date(), "Date", mapper))
+    writer.write(toJsonFunction(new Date(1481750076295L), "Date", mapper))
     writer.write(toJsonFunction(100.00d, "Double", mapper))
     writer.write(toJsonFunction(100.00f, "Float", mapper))
     writer.write(toJsonFunction(100, "Integer", mapper))
     writer.write(toJsonFunction(100L, "Long", mapper))
-    writer.write(toJsonFunction(new java.sql.Timestamp(System.currentTimeMillis()), "Timestamp", mapper))
+    writer.write(toJsonFunction(new java.sql.Timestamp(1481750076295L), "Timestamp", mapper))
     writer.write(toJsonFunction(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID", mapper))
 
     writer.write("\n")
@@ -173,7 +172,7 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     writer.write("~~~~~~~~~~~~~\n\n")
     writer.write(toJsonFunction(SackFunctions.Barrier.normSack, "Barrier", mapper))
     writer.write(toJsonFunction(new Bytecode.Binding("x", 1), "Binding", mapper, "A \"Binding\" refers to a `Bytecode.Binding`."))
-    writer.write(toJsonFunction(g.V().hasLabel('person').out().in().tree(), "Bytecode", mapper, "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language."))
+    writer.write(toJsonFunction(g.V().hasLabel('person').out().in().tree().asAdmin().getBytecode(), "Bytecode", mapper, "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language."))
     writer.write(toJsonFunction(VertexProperty.Cardinality.list, "Cardinality", mapper))
     writer.write(toJsonFunction(Column.keys, "Column", mapper))
     writer.write(toJsonFunction(Direction.OUT, "Direction", mapper))
@@ -248,22 +247,22 @@ mapper = GraphSONMapper.build().
     writer.write(toJsonFunction(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", mapper))
     writer.write(toJsonFunction(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger", mapper))
     writer.write(toJsonFunction(new Byte("1"), "Byte", mapper))
-    writer.write(toJsonFunction(java.nio.ByteBuffer.wrap([1,2,3,4,5] as byte[]), "ByteBuffer", mapper))
+    writer.write(toJsonFunction(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", mapper))
     writer.write(toJsonFunction("x".charAt(0), "Char", mapper))
     writer.write(toJsonFunction(Duration.ofDays(5), "Duration", mapper,"The following example is a `Duration` of five days."))
     writer.write(toJsonFunction(java.net.InetAddress.getByName("localhost"), "InetAddress", mapper))
-    writer.write(toJsonFunction(Instant.now(), "Instant", mapper))
+    writer.write(toJsonFunction(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", mapper))
     writer.write(toJsonFunction(LocalDate.of(2016, 1, 1), "LocalDate", mapper))
     writer.write(toJsonFunction(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", mapper))
     writer.write(toJsonFunction(LocalTime.of(12, 30, 45), "LocalTime", mapper))
     writer.write(toJsonFunction(MonthDay.of(1, 1), "MonthDay", mapper))
-    writer.write(toJsonFunction(OffsetDateTime.now(), "OffsetDateTime", mapper))
-    writer.write(toJsonFunction(OffsetTime.now(), "OffsetTime", mapper))
+    writer.write(toJsonFunction(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", mapper))
+    writer.write(toJsonFunction(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", mapper))
     writer.write(toJsonFunction(Period.of(1, 6, 15), "Period", mapper, "The following example is a `Period` of one year, six months and fifteen days."))
     writer.write(toJsonFunction(new Short("100"), "Short", mapper))
     writer.write(toJsonFunction(Year.of(2016), "Year", mapper, "The following example is of the `Year` \"2016\"."))
     writer.write(toJsonFunction(YearMonth.of(2016, 6), "YearMonth", mapper, "The following example is a `YearMonth` of \"June 2016\""))
-    writer.write(toJsonFunction(ZonedDateTime.now(), "ZonedDateTime", mapper))
+    writer.write(toJsonFunction(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", mapper))
     writer.write(toJsonFunction(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper, "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds."))
 }
 

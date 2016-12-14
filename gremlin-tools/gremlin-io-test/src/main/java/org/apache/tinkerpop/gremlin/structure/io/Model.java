@@ -57,6 +57,7 @@ import java.time.OffsetTime;
 import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -74,6 +75,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Defines the supported types for IO and the versions (and configurations) to which they apply and are tested.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Model {
@@ -105,14 +108,15 @@ public class Model {
     private Model() {
         final Graph graph = TinkerFactory.createTheCrew();
         final GraphTraversalSource g = graph.traversal();
-                
+
+        // IMPORTANT - the "title" or name of the Entry needs to be unique
         addCoreEntry(File.class, "Class", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
-        addCoreEntry(new Date(), "Date");
-        addCoreEntry(100.00d, "Double");
+        addCoreEntry(new Date(1481750076295L), "Date");
+        addCoreEntry(100.00d, "Double", GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0);
         addCoreEntry(100.00f, "Float");
-        addCoreEntry(100, "Integer");
+        addCoreEntry(100, "Integer", GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0);
         addCoreEntry(100L, "Long");
-        addCoreEntry(new java.sql.Timestamp(System.currentTimeMillis()), "Timestamp", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         addGraphStructureEntry(graph.edges().next(), "Edge");
@@ -124,13 +128,13 @@ public class Model {
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
 
-        addEntry("Process", SackFunctions.Barrier.normSack, "Barrier", "", GRYO_ONLY);
+        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", GRYO_ONLY);
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
-        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
+        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality");
-        addGraphProcessEntry(Column.keys, "Column");
+        addGraphProcessEntry(Column.keys, "Column", "", GRYO_ONLY);
         addGraphProcessEntry(Direction.OUT, "Direction");
-        addGraphProcessEntry(Operator.sum, "Operator");
+        addGraphProcessEntry(Operator.sum, "Operator", "", GRYO_ONLY);
         addGraphProcessEntry(Order.incr, "Order");
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick");
         addGraphProcessEntry(Pop.all, "Pop");
@@ -203,18 +207,18 @@ public class Model {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-        addExtendedEntry(Instant.now(), "Instant");
+        addExtendedEntry(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant");
         addExtendedEntry(LocalDate.of(2016, 1, 1), "LocalDate");
         addExtendedEntry(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime");
         addExtendedEntry(LocalTime.of(12, 30, 45), "LocalTime");
         addExtendedEntry(MonthDay.of(1, 1), "MonthDay");
-        addExtendedEntry(OffsetDateTime.now(), "OffsetDateTime");
-        addExtendedEntry(OffsetTime.now(), "OffsetTime");
+        addExtendedEntry(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime");
+        addExtendedEntry(OffsetTime.parse("10:15:30+01:00"), "OffsetTime");
         addExtendedEntry(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.");
         addExtendedEntry(new Short("100"), "Short", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".");
         addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"");
-        addExtendedEntry(ZonedDateTime.now(), "ZonedDateTime");
+        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime");
         addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.");
     }
     
@@ -260,6 +264,10 @@ public class Model {
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description) {
         addEntry("Graph Process", obj, title, description);
+    }
+
+    private void addGraphProcessEntry(final Object obj, final String title, final String description, final List<Compatibility> compatibleWith) {
+        addEntry("Graph Process", obj, title, description, compatibleWith);
     }
 
     private void addRequestMessageEntry(final Object obj, final String title, final String description) {
@@ -348,13 +356,13 @@ public class Model {
     public static class Entry {
 
         private final String title;
-        private final Object obj;
+        private final Object object;
         private final String description;
         private final List<Compatibility> compatibleWith;
         
-        public Entry(final String title, final Object obj, final String description, final List<Compatibility> compatibleWith) {
+        public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith) {
             this.title = title;
-            this.obj = obj;
+            this.object = object;
             this.description = description;
             this.compatibleWith = compatibleWith;
         }
@@ -367,8 +375,8 @@ public class Model {
             return title.replace(" ", "").toLowerCase();
         }
 
-        public Object getObject() {
-            return obj;
+        public <T> T getObject() {
+            return (T) object;
         }
 
         public String getDescription() {

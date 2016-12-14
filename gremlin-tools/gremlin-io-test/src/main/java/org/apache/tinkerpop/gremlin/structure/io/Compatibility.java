@@ -25,4 +25,8 @@ import java.io.IOException;
  */
 public interface Compatibility {
     public byte[] readFromResource(final String resource) throws IOException;
+
+    public default Class resolve(final Class clazz) {
+        return clazz;
+    }
 }

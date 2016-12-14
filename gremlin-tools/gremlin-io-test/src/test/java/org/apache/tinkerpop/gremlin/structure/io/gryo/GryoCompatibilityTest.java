@@ -19,8 +19,12 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;

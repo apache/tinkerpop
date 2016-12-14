@@ -1,4 +1,3 @@
-package org.apache.tinkerpop.gremlin.structure.io.gryo._3_2_3
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -52,12 +51,12 @@ toGryoV1d0 = { o, type, mapper, comment = "" ->
 
 writeSupportedObjects = { mapper, toGryoFunction ->
     //toGryoFunction(File, "Class", mapper)
-    toGryoFunction(new Date(), "Date", mapper)
+    toGryoFunction(new Date(1481750076295L), "Date", mapper)
     toGryoFunction(100.00d, "Double", mapper)
     toGryoFunction(100.00f, "Float", mapper)
     toGryoFunction(100, "Integer", mapper)
     toGryoFunction(100L, "Long", mapper)
-    //toGryoFunction(new java.sql.Timestamp(System.currentTimeMillis()), "Timestamp", mapper)
+    //toGryoFunction(new java.sql.Timestamp(1481750076295L), "Timestamp", mapper)
     toGryoFunction(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID", mapper)
 
     toGryoFunction(graph.edges().next(), "Edge", mapper)
@@ -71,7 +70,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
 
     toGryoFunction(SackFunctions.Barrier.normSack, "Barrier", mapper)
     toGryoFunction(new Bytecode.Binding("x", 1), "Binding", mapper)
-    toGryoFunction(g.V().hasLabel('person').out().in().tree().getBytecode(), "Bytecode", mapper)
+    toGryoFunction(g.V().hasLabel('person').out().in().tree().asAdmin().getBytecode(), "Bytecode", mapper)
     toGryoFunction(VertexProperty.Cardinality.list, "Cardinality", mapper)
     toGryoFunction(Column.keys, "Column", mapper)
     toGryoFunction(Direction.OUT, "Direction", mapper)
@@ -134,18 +133,18 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     toGryoFunction("x".charAt(0), "Char", mapper)
     toGryoFunction(Duration.ofDays(5), "Duration", mapper)
     //toGryoFunction(java.net.InetAddress.getByName("localhost"), "InetAddress", mapper)
-    toGryoFunction(Instant.now(), "Instant", mapper)
+    toGryoFunction(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", mapper)
     toGryoFunction(LocalDate.of(2016, 1, 1), "LocalDate", mapper)
     toGryoFunction(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", mapper)
     toGryoFunction(LocalTime.of(12, 30, 45), "LocalTime", mapper)
     toGryoFunction(MonthDay.of(1, 1), "MonthDay", mapper)
-    toGryoFunction(OffsetDateTime.now(), "OffsetDateTime", mapper)
-    toGryoFunction(OffsetTime.now(), "OffsetTime", mapper)
+    toGryoFunction(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", mapper)
+    toGryoFunction(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", mapper)
     toGryoFunction(Period.of(1, 6, 15), "Period", mapper)
     toGryoFunction(new Short("100"), "Short", mapper)
     toGryoFunction(Year.of(2016), "Year", mapper)
     toGryoFunction(YearMonth.of(2016, 6), "YearMonth", mapper)
-    toGryoFunction(ZonedDateTime.now(), "ZonedDateTime", mapper)
+    toGryoFunction(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", mapper)
     toGryoFunction(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper)
 }
 

@@ -19,7 +19,13 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +49,22 @@ public enum GryoCompatibility implements Compatibility {
         this.configuration = configuration;
     }
 
+    @Override
     public byte[] readFromResource(final String resource) throws IOException {
         final String testResource = "_" + tinkerpopVersion.replace(".", "_") + SEP + resource + "-" + configuration + ".kryo";
         return IOUtils.toByteArray(getClass().getResourceAsStream(testResource));
+    }
+
+    @Override
+    public Class resolve(final Class clazz) {
+        if (clazz.equals(Edge.class))
+            return DetachedEdge.class;
+        else if (clazz.equals(Vertex.class))
+            return DetachedVertex.class;
+        else if (clazz.equals(Metrics.class))
+            return MutableMetrics.class;
+        else
+            return clazz;
     }
 
     @Override
