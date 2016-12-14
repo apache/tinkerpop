@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -35,6 +36,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -137,6 +140,18 @@ public final class StringFactory {
 
     public static String graphComputerString(final GraphComputer graphComputer) {
         return graphComputer.getClass().getSimpleName().toLowerCase();
+    }
+
+    public static String graphActorsString(final GraphActors graphActors) {
+        return graphActors.getClass().getSimpleName().toLowerCase();
+    }
+
+    public static String partitionerString(final Partitioner partitioner) {
+        return "partitioner" + L_BRACKET + partitioner.getClass().getSimpleName().toLowerCase() + COLON + partitioner.getPartitions().size() + R_BRACKET;
+    }
+
+    public static String partitionString(final Partition partition) {
+        return "partition" + L_BRACKET + partition.location().getHostAddress() + COLON + partition.guid() + R_BRACKET;
     }
 
     public static String traversalSourceString(final TraversalSource traversalSource) {

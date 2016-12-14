@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
@@ -106,9 +107,10 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                                     new OrderedTraverser<>(step.next(), this.orderCounter++));
                         }
                     } else {
-                        this.traversal.getSideEffects().forEach((k, v) -> {
-                            this.broadcast(new SideEffectSetMessage(k, v));
-                        });
+                        if (step instanceof SideEffectCapable) {
+                            final String key = ((SideEffectCapable) step).getSideEffectKey();
+                            this.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
+                        }
                         this.broadcast(new BarrierDoneMessage(barrier));
                         barrier.done();
                     }

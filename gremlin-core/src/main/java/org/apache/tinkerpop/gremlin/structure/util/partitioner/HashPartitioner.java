@@ -24,12 +24,14 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.net.URI;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,6 +46,11 @@ public final class HashPartitioner implements Partitioner {
                 this.partitions.add(new HashPartition(partition, i, splits));
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.partitionerString(this);
     }
 
     @Override
@@ -65,6 +72,7 @@ public final class HashPartitioner implements Partitioner {
         private final Partition basePartition;
         private final int totalSplits;
         private final int splitId;
+        private final UUID guid = UUID.randomUUID();
 
         private HashPartition(final Partition basePartition, final int splitId, final int totalSplits) {
             this.basePartition = basePartition;
@@ -88,7 +96,27 @@ public final class HashPartitioner implements Partitioner {
         }
 
         @Override
-        public URI location() {
+        public String toString() {
+            return StringFactory.partitionString(this);
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return other instanceof Partition && ((Partition) other).guid().equals(this.guid);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.guid.hashCode() + this.location().hashCode();
+        }
+
+        @Override
+        public UUID guid() {
+            return this.guid;
+        }
+
+        @Override
+        public InetAddress location() {
             return this.basePartition.location();
         }
     }

@@ -25,11 +25,14 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.net.URI;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,12 +55,24 @@ public final class GlobalPartitioner implements Partitioner {
         return this.partition;
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.partitionerString(this);
+    }
+
     private class GlobalPartition implements Partition {
 
         private final Graph graph;
+        private final UUID guid = UUID.randomUUID();
+        private final InetAddress location;
 
         private GlobalPartition(final Graph graph) {
             this.graph = graph;
+            try {
+                this.location = InetAddress.getLocalHost();
+            } catch (final UnknownHostException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
 
         @Override
@@ -76,8 +91,28 @@ public final class GlobalPartitioner implements Partitioner {
         }
 
         @Override
-        public URI location() {
-            return URI.create("localhost");
+        public String toString() {
+            return StringFactory.partitionString(this);
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return other instanceof Partition && ((Partition) other).guid().equals(this.guid);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.guid.hashCode() + this.location.hashCode();
+        }
+
+        @Override
+        public UUID guid() {
+            return this.guid;
+        }
+
+        @Override
+        public InetAddress location() {
+            return this.location;
         }
     }
 }

@@ -19,8 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.UUID;
 
 /**
  * A {@code Partition} represents a physical or logical split of the underlying {@link Graph} structure.
@@ -59,11 +61,18 @@ public interface Partition {
     public Iterator<Edge> edges(final Object... ids);
 
     /**
-     * Get the {@link URI} location of the partition.
+     * Get the {@link UUID} of the partition.
      *
-     * @return the location of the partition
+     * @return the unique id of the partition
      */
-    public URI location();
+    public UUID guid();
+
+    /**
+     * Get the {@link InetAddress} of the locations physical location.
+     *
+     * @return the physical location of the partition.
+     */
+    public InetAddress location();
 
     public static interface PhysicalPartition extends Partition {
     }

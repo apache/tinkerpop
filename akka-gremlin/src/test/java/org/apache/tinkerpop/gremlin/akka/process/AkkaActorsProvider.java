@@ -68,7 +68,6 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             "g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path",
             "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack",
             "g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX",
-            "g_V_both_both_dedup_byXoutE_countX_name",
             GraphTest.Traversals.class.getCanonicalName(),
             GroupTest.Traversals.class.getCanonicalName(),
             ComplexTest.Traversals.class.getCanonicalName(),

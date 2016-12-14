@@ -25,9 +25,10 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -49,6 +50,11 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
                         ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
         this.system = ActorSystem.create("traversal-" + actorProgram.hashCode(), config);
         this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString());
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.graphActorsString(this);
     }
 
     @Override
