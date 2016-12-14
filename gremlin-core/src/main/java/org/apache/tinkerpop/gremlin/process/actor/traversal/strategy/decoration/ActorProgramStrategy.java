@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration
 
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.step.map.TraversalActorProgramStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -42,7 +41,6 @@ public final class ActorProgramStrategy extends AbstractTraversalStrategy<Traver
 
 
     private static final Set<Class<? extends DecorationStrategy>> PRIORS = Collections.singleton(RemoteStrategy.class);
-    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
 
     private final Partitioner partitioner;
     private final Class<? extends GraphActors> actors;
@@ -67,11 +65,6 @@ public final class ActorProgramStrategy extends AbstractTraversalStrategy<Traver
         assert traversal.getStartStep().equals(actorStep);
         assert traversal.getSteps().size() == 1;
         assert traversal.getEndStep() == actorStep;
-    }
-
-    @Override
-    public Set<Class<? extends DecorationStrategy>> applyPost() {
-        return POSTS;
     }
 
     @Override

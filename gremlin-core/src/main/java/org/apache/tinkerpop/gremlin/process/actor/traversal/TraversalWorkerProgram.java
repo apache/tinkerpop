@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierDoneM
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -107,12 +106,14 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
             this.processTraverser((Traverser.Admin) message);
         } else if (message instanceof SideEffectSetMessage) {
             this.matrix.getTraversal().getSideEffects().set(((SideEffectSetMessage) message).getKey(), ((SideEffectSetMessage) message).getValue());
+        } else if (message instanceof BarrierDoneMessage) {
+            final Step<?, ?> step = (Step) this.matrix.getStepById(((BarrierDoneMessage) message).getStepId());
+            while (step.hasNext()) {
+                sendTraverser(step.next());
+            }
         } else if (message instanceof Terminate) {
-            assert this.isLeader || this.terminate != Terminate.MAYBE;
+            assert null == this.terminate;
             this.terminate = (Terminate) message;
-            this.self.send(this.self.address(), VoteToHaltMessage.instance());
-        } else if (message instanceof VoteToHaltMessage) {
-            // if there is a barrier and thus, halting at barrier, then process barrier
             if (!this.barriers.isEmpty()) {
                 for (final Barrier barrier : this.barriers.values()) {
                     while (barrier.hasNextBarrier()) {
@@ -120,25 +121,17 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
                     }
                 }
                 this.barriers.clear();
-                this.voteToHalt = false;
             }
             // use termination token to determine termination condition
-            if (null != this.terminate) {
-                if (this.isLeader) {
-                    if (this.voteToHalt && Terminate.YES == this.terminate)
-                        this.self.send(this.self.master(), VoteToHaltMessage.instance());
-                    else
-                        this.self.send(this.neighborWorker, Terminate.YES);
-                } else
-                    this.self.send(this.neighborWorker, this.voteToHalt ? this.terminate : Terminate.NO);
-                this.terminate = null;
-                this.voteToHalt = true;
-            }
-        } else if (message instanceof BarrierDoneMessage) {
-            final Step<?, ?> step = (Step) this.matrix.getStepById(((BarrierDoneMessage) message).getStepId());
-            while (step.hasNext()) {
-                sendTraverser(step.next());
-            }
+            if (this.isLeader) {
+                if (this.voteToHalt && Terminate.YES == this.terminate)
+                    this.self.send(this.self.master(), Terminate.YES);
+                else
+                    this.self.send(this.neighborWorker, Terminate.YES);
+            } else
+                this.self.send(this.neighborWorker, this.voteToHalt ? this.terminate : Terminate.NO);
+            this.terminate = null;
+            this.voteToHalt = true;
         } else {
             throw new IllegalArgumentException("The following message is unknown: " + message);
         }

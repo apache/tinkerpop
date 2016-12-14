@@ -54,11 +54,6 @@ public final class ActorVerificationStrategy extends AbstractTraversalStrategy<T
             // only global children are graph computing
             if (globalChild && step instanceof GraphComputing)
                 ((GraphComputing) step).onGraphComputer();
-
-            for (String label : step.getLabels()) {
-                if (Graph.Hidden.isHidden(label))
-                    step.removeLabel(label);
-            }
         }
     }
 

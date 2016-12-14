@@ -153,7 +153,7 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new ActorProgramStrategy(AkkaGraphActors.class, new HashPartitioner(graph.partitioner(), 3)));
+            return g.withStrategies(new ActorProgramStrategy(AkkaGraphActors.class, new HashPartitioner(graph.partitioner(), new Random().nextInt(10) + 1)));
         }
     }
 }

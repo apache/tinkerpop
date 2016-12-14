@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAd
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.verification.ActorVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -59,8 +58,7 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
             BarrierAddMessage.class,
             SideEffectSetMessage.class,
             BarrierDoneMessage.class,
-            Terminate.class,
-            VoteToHaltMessage.class);
+            Terminate.class);
 
     private final Traversal.Admin<?, R> traversal;
     private final Partitioner partitioner;

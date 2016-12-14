@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAd
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -40,9 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -87,7 +84,8 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
             this.barriers.put(step.getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
             this.traversal.getSideEffects().add(((SideEffectAddMessage) message).getKey(), ((SideEffectAddMessage) message).getValue());
-        } else if (message instanceof VoteToHaltMessage) {
+        } else if (message instanceof Terminate) {
+            assert Terminate.YES == message;
             if (!this.barriers.isEmpty()) {
                 for (final Barrier barrier : this.barriers.values()) {
                     final Step<?, ?> step = (Step) barrier;
@@ -104,7 +102,6 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                     }
                 }
                 this.barriers.clear();
-                this.master.send(this.leaderWorker, StartMessage.instance());
                 this.master.send(this.leaderWorker, Terminate.MAYBE);
             } else {
                 while (this.traversal.hasNext()) {
