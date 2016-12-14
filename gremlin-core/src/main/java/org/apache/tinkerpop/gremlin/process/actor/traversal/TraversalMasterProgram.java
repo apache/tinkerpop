@@ -34,6 +34,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -47,6 +52,7 @@ import java.util.Map;
  */
 final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
 
+
     private final Actor.Master master;
     private final Traversal.Admin<?, ?> traversal;
     private final TraversalMatrix<?, ?> matrix;
@@ -54,6 +60,7 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
     private Map<String, Barrier> barriers = new HashMap<>();
     private final TraverserSet<?> results;
     private Address.Worker leaderWorker;
+    private int orderCounter = -1;
 
     public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal, final Partitioner partitioner, final TraverserSet<?> results) {
         this.traversal = traversal;
@@ -90,8 +97,12 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                 for (final Barrier barrier : this.barriers.values()) {
                     final Step<?, ?> step = (Step) barrier;
                     if (!(barrier instanceof LocalBarrier)) {
+                        this.orderBarrier(step);
+                        if (step instanceof OrderGlobalStep) this.orderCounter = 0;
                         while (step.hasNext()) {
-                            this.sendTraverser(step.next());
+                            this.sendTraverser(-1 == this.orderCounter ?
+                                    step.next() :
+                                    new OrderedTraverser<>(step.next(), this.orderCounter++));
                         }
                     } else {
                         this.traversal.getSideEffects().forEach((k, v) -> {
@@ -107,6 +118,9 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
                 while (this.traversal.hasNext()) {
                     this.results.add((Traverser.Admin) this.traversal.nextTraverser());
                 }
+                if (this.orderCounter != -1)
+                    this.results.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
+
                 this.master.close();
             }
         } else {
@@ -132,8 +146,12 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
             final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
             GraphComputing.atMaster(step, true);
             step.addStart(traverser);
-            while (step.hasNext()) {
-                this.processTraverser(step.next());
+            if (step instanceof Barrier) {
+                this.barriers.put(step.getId(), (Barrier) step);
+            } else {
+                while (step.hasNext()) {
+                    this.processTraverser(step.next());
+                }
             }
         }
     }
@@ -145,5 +163,14 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
             this.master.send(this.master.workers().get(this.partitioner.getPartitions().indexOf(this.partitioner.getPartition((Element) traverser.get()))), traverser);
         else
             this.master.send(this.master.address(), traverser);
+    }
+
+    private void orderBarrier(final Step step) {
+        if (this.orderCounter != -1 && step instanceof Barrier && (step instanceof RangeGlobalStep || step instanceof TailGlobalStep)) {
+            final Barrier barrier = (Barrier) step;
+            final TraverserSet<?> rangingBarrier = (TraverserSet<?>) barrier.nextBarrier();
+            rangingBarrier.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
+            barrier.addBarrier(rangingBarrier);
+        }
     }
 }

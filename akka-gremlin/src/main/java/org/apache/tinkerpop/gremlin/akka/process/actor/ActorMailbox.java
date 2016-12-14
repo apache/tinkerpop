@@ -31,10 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import scala.Option;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -45,31 +43,34 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
     private final List<Class> messagePriorities = new ArrayList<>();
 
     public static class ActorMessageQueue implements MessageQueue, ActorSemantics {
+        private final List<Class> messagePriorities;
         private final List<Queue> messages;
-        private final Map<Class, Queue> priorities;
         private final Object MUTEX = new Object();
 
         public ActorMessageQueue(final List<Class> messagePriorities) {
-            this.messages = new ArrayList<>(messagePriorities.size());
-            this.priorities = new HashMap<>(messagePriorities.size());
-            for (final Class clazz : messagePriorities) {
+            this.messagePriorities = messagePriorities;
+            this.messages = new ArrayList<>(this.messagePriorities.size());
+            for (final Class clazz : this.messagePriorities) {
                 final Queue queue;
                 if (Traverser.class.isAssignableFrom(clazz))
                     queue = new TraverserSet<>();
                 else
                     queue = new LinkedList<>();
                 this.messages.add(queue);
-                this.priorities.put(clazz, queue);
             }
         }
 
         public void enqueue(final ActorRef receiver, final Envelope handle) {
             synchronized (MUTEX) {
-                final Queue queue = this.priorities.get(handle.message() instanceof Traverser ? Traverser.class : handle.message().getClass());
-                if (null == queue)
-                    throw new IllegalArgumentException("The provided message type is not registered: " + handle.message().getClass());
-                else
-                    queue.offer(handle.message() instanceof Traverser ? handle.message() : handle);
+                final Object message = handle.message();
+                for (int i = 0; i < this.messagePriorities.size(); i++) {
+                    final Class clazz = this.messagePriorities.get(i);
+                    if (clazz.isInstance(message)) {
+                        this.messages.get(i).offer(message instanceof Traverser ? message : handle);
+                        return;
+                    }
+                }
+                throw new IllegalArgumentException("The provided message type is not registered: " + handle.message().getClass());
             }
         }
 

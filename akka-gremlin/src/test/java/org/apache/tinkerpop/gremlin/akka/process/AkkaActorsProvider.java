@@ -63,20 +63,15 @@ import java.util.Set;
  */
 public class AkkaActorsProvider extends AbstractGraphProvider {
 
-    protected static final boolean IMPORT_STATICS = new Random().nextBoolean();
-
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name",
             "g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path",
-            "g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
             "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack",
             "g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX",
+            "g_V_both_both_dedup_byXoutE_countX_name",
             GraphTest.Traversals.class.getCanonicalName(),
-            DedupTest.Traversals.class.getCanonicalName(),
-            OrderTest.Traversals.class.getCanonicalName(),
             GroupTest.Traversals.class.getCanonicalName(),
             ComplexTest.Traversals.class.getCanonicalName(),
-            TailTest.Traversals.class.getCanonicalName(),
             SubgraphTest.Traversals.class.getCanonicalName(),
             SideEffectTest.Traversals.class.getCanonicalName(),
             SubgraphStrategyProcessTest.class.getCanonicalName(),
