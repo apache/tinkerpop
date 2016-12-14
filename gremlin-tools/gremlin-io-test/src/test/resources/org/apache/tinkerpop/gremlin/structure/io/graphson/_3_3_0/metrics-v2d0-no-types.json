@@ -1,0 +1,24 @@
+{
+  "dur" : 0.254441,
+  "counts" : {
+    "traverserCount" : 4,
+    "elementCount" : 4
+  },
+  "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+  "annotations" : {
+    "percentDur" : 20.94054304958422
+  },
+  "id" : "7.0.0()",
+  "metrics" : [ {
+    "dur" : 0.336431,
+    "counts" : {
+      "traverserCount" : 13,
+      "elementCount" : 13
+    },
+    "name" : "VertexStep(OUT,vertex)",
+    "annotations" : {
+      "percentDur" : 27.688335758445646
+    },
+    "id" : "2.0.0()"
+  } ]
+}

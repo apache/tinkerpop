@@ -1,0 +1,712 @@
+{
+  "@type" : "g:Tree",
+  "@value" : [ {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 0
+              },
+              "value" : "marko",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "name"
+            }
+          } ],
+          "location" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 6
+              },
+              "value" : "san diego",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1997
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 7
+              },
+              "value" : "santa cruz",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 8
+              },
+              "value" : "brussels",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 9
+              },
+              "value" : "santa fe",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
+              }
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 10
+            },
+            "label" : "software",
+            "properties" : {
+              "name" : [ {
+                "@type" : "g:VertexProperty",
+                "@value" : {
+                  "id" : {
+                    "@type" : "g:Int64",
+                    "@value" : 4
+                  },
+                  "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
+                  "label" : "name"
+                }
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ {
+            "key" : {
+              "@type" : "g:Vertex",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int32",
+                  "@value" : 11
+                },
+                "label" : "software",
+                "properties" : {
+                  "name" : [ {
+                    "@type" : "g:VertexProperty",
+                    "@value" : {
+                      "id" : {
+                        "@type" : "g:Int64",
+                        "@value" : 5
+                      },
+                      "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
+                      "label" : "name"
+                    }
+                  } ]
+                }
+              }
+            },
+            "value" : {
+              "@type" : "g:Tree",
+              "@value" : [ ]
+            }
+          } ]
+        }
+      } ]
+    }
+  }, {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 1
+              },
+              "value" : "stephen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
+              "label" : "name"
+            }
+          } ],
+          "location" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 10
+              },
+              "value" : "centreville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1990
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 11
+              },
+              "value" : "dulles",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 12
+              },
+              "value" : "purcellville",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 7
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
+              }
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 10
+            },
+            "label" : "software",
+            "properties" : {
+              "name" : [ {
+                "@type" : "g:VertexProperty",
+                "@value" : {
+                  "id" : {
+                    "@type" : "g:Int64",
+                    "@value" : 4
+                  },
+                  "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
+                  "label" : "name"
+                }
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ {
+            "key" : {
+              "@type" : "g:Vertex",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int32",
+                  "@value" : 11
+                },
+                "label" : "software",
+                "properties" : {
+                  "name" : [ {
+                    "@type" : "g:VertexProperty",
+                    "@value" : {
+                      "id" : {
+                        "@type" : "g:Int64",
+                        "@value" : 5
+                      },
+                      "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
+                      "label" : "name"
+                    }
+                  } ]
+                }
+              }
+            },
+            "value" : {
+              "@type" : "g:Tree",
+              "@value" : [ ]
+            }
+          } ]
+        }
+      } ]
+    }
+  }, {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 8
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 2
+              },
+              "value" : "matthias",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
+              "label" : "name"
+            }
+          } ],
+          "location" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 13
+              },
+              "value" : "bremen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 14
+              },
+              "value" : "baltimore",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 15
+              },
+              "value" : "oakland",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 16
+              },
+              "value" : "seattle",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 8
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
+              }
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 10
+            },
+            "label" : "software",
+            "properties" : {
+              "name" : [ {
+                "@type" : "g:VertexProperty",
+                "@value" : {
+                  "id" : {
+                    "@type" : "g:Int64",
+                    "@value" : 4
+                  },
+                  "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
+                  "label" : "name"
+                }
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ {
+            "key" : {
+              "@type" : "g:Vertex",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int32",
+                  "@value" : 11
+                },
+                "label" : "software",
+                "properties" : {
+                  "name" : [ {
+                    "@type" : "g:VertexProperty",
+                    "@value" : {
+                      "id" : {
+                        "@type" : "g:Int64",
+                        "@value" : 5
+                      },
+                      "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
+                      "label" : "name"
+                    }
+                  } ]
+                }
+              }
+            },
+            "value" : {
+              "@type" : "g:Tree",
+              "@value" : [ ]
+            }
+          } ]
+        }
+      } ]
+    }
+  }, {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 9
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 3
+              },
+              "value" : "daniel",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
+              "label" : "name"
+            }
+          } ],
+          "location" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 17
+              },
+              "value" : "spremberg",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1982
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 18
+              },
+              "value" : "kaiserslautern",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
+              }
+            }
+          }, {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 19
+              },
+              "value" : "aachen",
+              "vertex" : {
+                "@type" : "g:Int32",
+                "@value" : 9
+              },
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
+              }
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 10
+            },
+            "label" : "software",
+            "properties" : {
+              "name" : [ {
+                "@type" : "g:VertexProperty",
+                "@value" : {
+                  "id" : {
+                    "@type" : "g:Int64",
+                    "@value" : 4
+                  },
+                  "value" : "gremlin",
+                  "vertex" : {
+                    "@type" : "g:Int32",
+                    "@value" : 10
+                  },
+                  "label" : "name"
+                }
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ {
+            "key" : {
+              "@type" : "g:Vertex",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int32",
+                  "@value" : 11
+                },
+                "label" : "software",
+                "properties" : {
+                  "name" : [ {
+                    "@type" : "g:VertexProperty",
+                    "@value" : {
+                      "id" : {
+                        "@type" : "g:Int64",
+                        "@value" : 5
+                      },
+                      "value" : "tinkergraph",
+                      "vertex" : {
+                        "@type" : "g:Int32",
+                        "@value" : 11
+                      },
+                      "label" : "name"
+                    }
+                  } ]
+                }
+              }
+            },
+            "value" : {
+              "@type" : "g:Tree",
+              "@value" : [ ]
+            }
+          } ]
+        }
+      } ]
+    }
+  } ]
+}

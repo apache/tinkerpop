@@ -1,0 +1,21 @@
+{
+  "requestId" : {
+    "@type" : "g:UUID",
+    "@value" : "fe49a49e-7552-4c5f-ae33-5f4783926919"
+  },
+  "op" : "eval",
+  "processor" : "",
+  "args" : {
+    "gremlin" : "social.V(x)",
+    "language" : "gremlin-groovy",
+    "aliases" : {
+      "g" : "social"
+    },
+    "bindings" : {
+      "x" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}

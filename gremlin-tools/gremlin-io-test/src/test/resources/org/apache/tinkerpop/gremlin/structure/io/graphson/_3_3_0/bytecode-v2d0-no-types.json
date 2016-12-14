@@ -1,0 +1,3 @@
+{
+  "step" : [ [ "V" ], [ "hasLabel", "person" ], [ "out" ], [ "in" ], [ "tree" ] ]
+}

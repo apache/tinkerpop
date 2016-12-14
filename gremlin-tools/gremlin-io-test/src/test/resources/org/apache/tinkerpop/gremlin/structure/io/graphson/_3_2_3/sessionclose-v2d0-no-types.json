@@ -1,0 +1,8 @@
+{
+  "requestId" : "cca7f0f0-0c51-4e9d-90d8-2ef1b7b1c6ca",
+  "op" : "close",
+  "processor" : "session",
+  "args" : {
+    "session" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+  }
+}

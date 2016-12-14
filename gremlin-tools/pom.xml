@@ -15,6 +15,7 @@
     <modules>
         <module>gremlin-benchmark</module>
         <module>gremlin-coverage</module>
+        <module>gremlin-io-test</module>
     </modules>
 
     <build>

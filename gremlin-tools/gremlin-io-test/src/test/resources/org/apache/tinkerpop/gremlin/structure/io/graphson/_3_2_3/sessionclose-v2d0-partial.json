@@ -1,0 +1,14 @@
+{
+  "requestId" : {
+    "@type" : "g:UUID",
+    "@value" : "4a422689-0f01-457f-8963-b6f07aefb106"
+  },
+  "op" : "close",
+  "processor" : "session",
+  "args" : {
+    "session" : {
+      "@type" : "g:UUID",
+      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+    }
+  }
+}

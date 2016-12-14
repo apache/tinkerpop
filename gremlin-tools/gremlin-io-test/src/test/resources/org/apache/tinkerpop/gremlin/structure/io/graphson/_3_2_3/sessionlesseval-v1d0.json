@@ -1,0 +1,15 @@
+{
+  "requestId" : "3f905713-9534-43ff-b6e8-2e2aa4f82451",
+  "op" : "eval",
+  "processor" : "",
+  "args" : {
+    "gremlin" : "social.V(x)",
+    "language" : "gremlin-groovy",
+    "aliases" : {
+      "g" : "social"
+    },
+    "bindings" : {
+      "x" : 1
+    }
+  }
+}
