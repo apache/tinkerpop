@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,11 +33,11 @@ import java.util.function.Supplier;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<DefaultTraversalMetrics, DefaultTraversalMetrics>, GraphComputing {
+public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<DefaultTraversalMetrics, DefaultTraversalMetrics>, GraphComputing, Pushing {
     public static final String DEFAULT_METRICS_KEY = Graph.Hidden.hide("metrics");
 
     private String sideEffectKey;
-    private boolean onGraphComputer = false;
+    private boolean pushBased = false;
 
     public ProfileSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -60,7 +61,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
             start = super.next();
             return start;
         } finally {
-            if (!this.onGraphComputer && start == null) {
+            if (!this.pushBased && start == null) {
                 ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
             }
         }
@@ -69,7 +70,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
     @Override
     public boolean hasNext() {
         boolean start = super.hasNext();
-        if (!this.onGraphComputer && !start) {
+        if (!this.pushBased && !start) {
             ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
         }
         return start;
@@ -77,13 +78,18 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
 
     @Override
     public DefaultTraversalMetrics generateFinalResult(final DefaultTraversalMetrics tm) {
-        if (this.onGraphComputer)
+        if (this.pushBased)
             tm.setMetrics(this.getTraversal(), true);
         return tm;
     }
 
     @Override
     public void onGraphComputer() {
-        onGraphComputer = true;
+        this.setPushBased(true);
+    }
+
+    @Override
+    public void setPushBased(boolean pushBased) {
+        this.pushBased = pushBased;
     }
 }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
@@ -30,7 +31,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing {
+public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing, Pushing {
 
     private Iterator<Traverser.Admin<E>> previousIterator = EmptyIterator.instance();
 
@@ -49,7 +50,12 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     @Override
     public void onGraphComputer() {
-        this.traverserStepIdAndLabelsSetByChild = true;
+        this.setPushBased(true);
+    }
+
+    @Override
+    public void setPushBased(final boolean pushBased) {
+        this.traverserStepIdAndLabelsSetByChild = pushBased;
     }
 
     @Override
@@ -63,9 +69,10 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     protected abstract Iterator<Traverser.Admin<E>> computerAlgorithm() throws NoSuchElementException;
 
+
     //////
 
-    public static class EndStep<S> extends AbstractStep<S, S> implements GraphComputing {
+    public static class EndStep<S> extends AbstractStep<S, S> implements GraphComputing, Pushing {
 
         public EndStep(final Traversal.Admin traversal) {
             super(traversal);
@@ -88,7 +95,12 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
         @Override
         public void onGraphComputer() {
-            this.traverserStepIdAndLabelsSetByChild = true;
+            this.setPushBased(true);
+        }
+
+        @Override
+        public void setPushBased(final boolean pushBased) {
+            this.traverserStepIdAndLabelsSetByChild = pushBased;
         }
     }
 

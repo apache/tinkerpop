@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 
 /**
@@ -40,7 +42,13 @@ public class AkkaPlayTest {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
         GraphTraversalSource g = graph.traversal().withStrategies(new ActorProgramStrategy(AkkaGraphActors.class, new HashPartitioner(graph.partitioner(), 3)));
-        System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
+        // System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
+
+        for (int i = 0; i < 10000; i++) {
+            if(12l != g.V().union(out(), in()).values("name").count().next())
+                System.out.println(i);
+        }
+
         //3, 1.9, 1
         /*for (int i = 0; i < 10000; i++) {
             final Graph graph = TinkerGraph.open();

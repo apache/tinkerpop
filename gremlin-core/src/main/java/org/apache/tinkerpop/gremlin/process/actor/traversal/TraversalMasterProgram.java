@@ -32,11 +32,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -70,6 +70,8 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
         this.partitioner = partitioner;
         this.results = results;
         this.master = master;
+        Distributing.configure(this.traversal, true, true);
+        Pushing.configure(this.traversal, true, false);
     }
 
     @Override
@@ -86,7 +88,6 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
         } else if (message instanceof BarrierAddMessage) {
             final Barrier barrier = (Barrier) this.matrix.getStepById(((BarrierAddMessage) message).getStepId());
             final Step<?, ?> step = (Step) barrier;
-            GraphComputing.atMaster(step, true);
             barrier.addBarrier(((BarrierAddMessage) message).getBarrier());
             this.barriers.put(step.getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
@@ -144,7 +145,6 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
             this.sendTraverser(traverser);
         } else {
             final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
-            GraphComputing.atMaster(step, true);
             step.addStart(traverser);
             if (step instanceof Barrier) {
                 this.barriers.put(step.getId(), (Barrier) step);

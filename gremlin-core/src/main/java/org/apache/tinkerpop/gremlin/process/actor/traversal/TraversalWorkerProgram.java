@@ -32,7 +32,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -72,6 +74,9 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         final WorkerTraversalSideEffects sideEffects = new WorkerTraversalSideEffects(traversal.getSideEffects(), this.self);
         TraversalHelper.applyTraversalRecursively(t -> t.setSideEffects(sideEffects), traversal);
         this.matrix = new TraversalMatrix<>(traversal);
+        Distributing.configure(traversal, false, true);
+        Pushing.configure(traversal, true, false);
+        //////
         final GraphStep graphStep = (GraphStep) traversal.getStartStep();
         if (0 == graphStep.getIds().length)
             ((GraphStep) traversal.getStartStep()).setIteratorSupplier(graphStep.returnsVertex() ? this.localPartition::vertices : this.localPartition::edges);
@@ -148,7 +153,6 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
         final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
         if (step instanceof Bypassing) ((Bypassing) step).setBypass(true);
-        GraphComputing.atMaster(step, false);
         step.addStart(traverser);
         if (step instanceof Barrier) {
             this.barriers.put(step.getId(), (Barrier) step);

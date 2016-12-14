@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -39,12 +40,12 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Barrier<TraverserSet<S>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Distributing, Barrier<TraverserSet<S>> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
     private long tailBulk = 0L;
-    private boolean bypass = false;
+    private boolean atWorker = false;
 
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);
@@ -52,13 +53,14 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         this.tail = new ArrayDeque<>((int) limit);
     }
 
+    @Override
     public void setBypass(final boolean bypass) {
-        this.bypass = bypass;
+        this.setAtMaster(!bypass);
     }
 
     @Override
     public Traverser.Admin<S> processNextStart() {
-        if (this.bypass) {
+        if (this.atWorker) {
             // If we are bypassing this step, let everything through.
             return this.starts.next();
         } else {
@@ -159,5 +161,10 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });
+    }
+
+    @Override
+    public void setAtMaster(final boolean atMaster) {
+        this.atWorker = !atMaster;
     }
 }

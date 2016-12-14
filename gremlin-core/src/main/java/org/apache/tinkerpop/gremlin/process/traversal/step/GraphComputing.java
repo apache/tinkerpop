@@ -27,12 +27,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
  * This method is only called for global children steps of a {@link TraversalParent}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.0, replaced by {@link Pushing} and {@link Distributing}
  */
+@Deprecated
 public interface GraphComputing {
 
     /**
      * The step will be executing on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
      */
+    @Deprecated
     public void onGraphComputer();
 
     /**
@@ -41,10 +44,12 @@ public interface GraphComputing {
      *
      * @param atMaster whether the step is currently executing at master
      */
+    @Deprecated
     public default void atMaster(boolean atMaster) {
 
     }
 
+    @Deprecated
     public static void atMaster(final Step<?, ?> step, boolean atMaster) {
         if (step instanceof GraphComputing)
             ((GraphComputing) step).atMaster(atMaster);

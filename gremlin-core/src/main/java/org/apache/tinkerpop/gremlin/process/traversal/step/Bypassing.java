@@ -23,8 +23,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
  * This is useful in for steps that need to dynamically change their behavior on {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.0, replaced by {@link Distributing}
  */
+@Deprecated
 public interface Bypassing {
 
+    @Deprecated
     public void setBypass(final boolean bypass);
 }

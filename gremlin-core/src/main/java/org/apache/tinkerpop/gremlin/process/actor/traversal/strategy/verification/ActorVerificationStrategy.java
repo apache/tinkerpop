@@ -47,14 +47,6 @@ public final class ActorVerificationStrategy extends AbstractTraversalStrategy<T
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.getStepsOfAssignableClass(InjectStep.class, traversal).isEmpty())
             throw new VerificationException("Inject traversal currently not supported", traversal);
-
-
-        final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
-        for (final Step<?, ?> step : traversal.getSteps()) {
-            // only global children are graph computing
-            if (globalChild && step instanceof GraphComputing)
-                ((GraphComputing) step).onGraphComputer();
-        }
     }
 
     public static ActorVerificationStrategy instance() {

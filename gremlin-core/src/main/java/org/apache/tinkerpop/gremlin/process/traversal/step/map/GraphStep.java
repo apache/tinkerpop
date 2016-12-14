@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -48,7 +49,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, Pushing, AutoCloseable {
 
     protected final Class<E> returnClass;
     protected Object[] ids;
@@ -110,12 +111,6 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     public void clearIds() {
         this.ids = new Object[0];
-    }
-
-    @Override
-    public void onGraphComputer() {
-        this.iteratorSupplier = Collections::emptyIterator;
-        convertElementsToIds();
     }
 
     public void convertElementsToIds() {
@@ -188,5 +183,18 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.setPushBased(true);
+    }
+
+    @Override
+    public void setPushBased(final boolean pushBased) {
+        if (pushBased) {
+            this.iteratorSupplier = Collections::emptyIterator;
+            convertElementsToIds();
+        }
     }
 }
