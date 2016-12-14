@@ -30,17 +30,20 @@ import org.apache.tinkerpop.gremlin.process.actor.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.VoteToHaltMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.verification.ActorVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,8 +53,8 @@ import java.util.List;
 public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet<R>> {
 
     private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
-            Traverser.class,
             StartMessage.class,
+            Traverser.class,
             SideEffectAddMessage.class,
             BarrierAddMessage.class,
             SideEffectSetMessage.class,
@@ -65,12 +68,23 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
 
     public TraversalActorProgram(final Traversal.Admin<?, R> traversal, final Partitioner partitioner) {
         this.partitioner = partitioner;
-        final TraversalStrategies strategies = traversal.getStrategies().clone();
-        strategies.addStrategies(ActorVerificationStrategy.instance(), VertexProgramStrategy.instance(), ReadOnlyStrategy.instance());
-        strategies.removeStrategies(ActorProgramStrategy.class, ComputerVerificationStrategy.class, StandardVerificationStrategy.class);
-        traversal.setStrategies(strategies);
-        traversal.applyStrategies();
-        this.traversal = (Traversal.Admin) ((TraversalVertexProgramStep) traversal.getStartStep()).computerTraversal.get();
+        this.traversal = traversal;
+        final TraversalStrategies strategies = this.traversal.getStrategies().clone();
+        strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
+        // TODO: make TinkerGraph/etc. strategies smart about actors
+        new ArrayList<>(strategies.toList()).stream().
+                filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).
+                map(TraversalStrategy::getClass).
+                forEach(strategies::removeStrategies);
+        strategies.removeStrategies(
+                ActorProgramStrategy.class,
+                LazyBarrierStrategy.class,
+                RepeatUnrollStrategy.class,
+                MatchPredicateStrategy.class,
+                InlineFilterStrategy.class,
+                PathRetractionStrategy.class);
+        this.traversal.setStrategies(strategies);
+        this.traversal.applyStrategies();
     }
 
     @Override

@@ -25,7 +25,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
@@ -36,13 +36,13 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaActors<R> implements Actors<R> {
+public final class AkkaGraphActors<R> implements GraphActors<R> {
 
     private final ActorProgram<R> actorProgram;
     private final ActorSystem system;
     private final Address.Master master;
 
-    public AkkaActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
+    public AkkaGraphActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
         this.actorProgram = actorProgram;
         final Config config = ConfigFactory.defaultApplication().
                 withValue("message-priorities",

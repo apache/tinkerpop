@@ -40,16 +40,16 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserMailbox implements MailboxType, ProducesMessageQueue<TraverserMailbox.TraverserMessageQueue> {
+public final class ActorMailbox implements MailboxType, ProducesMessageQueue<ActorMailbox.ActorMessageQueue> {
 
     private final List<Class> messagePriorities = new ArrayList<>();
 
-    public static class TraverserMessageQueue implements MessageQueue, TraverserSetSemantics {
+    public static class ActorMessageQueue implements MessageQueue, ActorSemantics {
         private final List<Queue> messages;
         private final Map<Class, Queue> priorities;
         private final Object MUTEX = new Object();
 
-        public TraverserMessageQueue(final List<Class> messagePriorities) {
+        public ActorMessageQueue(final List<Class> messagePriorities) {
             this.messages = new ArrayList<>(messagePriorities.size());
             this.priorities = new HashMap<>(messagePriorities.size());
             for (final Class clazz : messagePriorities) {
@@ -118,7 +118,7 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
     }
 
     // This constructor signature must exist, it will be called by Akka
-    public TraverserMailbox(final ActorSystem.Settings settings, final Config config) {
+    public ActorMailbox(final ActorSystem.Settings settings, final Config config) {
         try {
             final String[] messages = ((String) settings.config().getAnyRef("message-priorities")).replace("[", "").replace("]", "").split(",");
             for (final String clazz : messages) {
@@ -131,10 +131,10 @@ public final class TraverserMailbox implements MailboxType, ProducesMessageQueue
 
     // The create method is called to create the MessageQueue
     public MessageQueue create(final Option<ActorRef> owner, final Option<ActorSystem> system) {
-        return new TraverserMessageQueue(this.messagePriorities);
+        return new ActorMessageQueue(this.messagePriorities);
     }
 
-    public static interface TraverserSetSemantics {
+    public static interface ActorSemantics {
 
     }
 }

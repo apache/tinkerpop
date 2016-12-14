@@ -24,7 +24,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Actors<R> {
+public interface GraphActors<R> {
 
     public Address.Master master();
 

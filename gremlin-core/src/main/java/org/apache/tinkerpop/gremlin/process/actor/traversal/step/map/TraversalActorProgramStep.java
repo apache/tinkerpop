@@ -24,14 +24,12 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal.step.map;
  */
 
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -41,25 +39,26 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ActorStep<S, E> extends AbstractStep<E, E> {
+public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
 
-    private final Class<? extends Actors> actorsClass;
-    private final Traversal.Admin<S, E> partitionTraversal;
+    private final Class<? extends GraphActors> actorsClass;
+    private final Traversal.Admin<S, E> actorsTraversal;
     private final Partitioner partitioner;
 
     private boolean first = true;
 
 
-    public ActorStep(final Traversal.Admin<?, ?> traversal, final Class<? extends Actors> actorsClass, final Partitioner partitioner) {
+    public TraversalActorProgramStep(final Traversal.Admin<?, ?> traversal, final Class<? extends GraphActors> actorsClass, final Partitioner partitioner) {
         super(traversal);
         this.actorsClass = actorsClass;
-        this.partitionTraversal = (Traversal.Admin) traversal.clone();
+        this.actorsTraversal = (Traversal.Admin) traversal.clone();
+        this.actorsTraversal.setParent(EmptyStep.instance());
         this.partitioner = partitioner;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.partitionTraversal);
+        return StringFactory.stepString(this, this.actorsTraversal);
     }
 
     @Override
@@ -67,8 +66,9 @@ public final class ActorStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final Actors<TraverserSet<E>> actors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).newInstance(new TraversalActorProgram<E>(this.partitionTraversal, partitioner), this.partitioner);
-                actors.submit().get().forEach(this.starts::add);
+                final GraphActors<TraverserSet<E>> graphActors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).
+                        newInstance(new TraversalActorProgram<E>(this.actorsTraversal, this.partitioner), this.partitioner);
+                graphActors.submit().get().forEach(this.starts::add);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
