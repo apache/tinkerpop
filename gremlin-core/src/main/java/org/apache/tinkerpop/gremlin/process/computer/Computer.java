@@ -169,19 +169,7 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
 
     @Override
     public TraversalSource addTraversalStrategies(final TraversalSource traversalSource) {
-        Class<? extends GraphComputer> graphComputerClass;
-        if (this.getGraphComputerClass().equals(GraphComputer.class)) {
-            try {
-                graphComputerClass = this.apply(traversalSource.getGraph()).getClass();
-            } catch (final Exception e) {
-                graphComputerClass = GraphComputer.class;
-            }
-        } else
-            graphComputerClass = this.getGraphComputerClass();
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
-        traversalSource.getStrategies().addStrategies(new VertexProgramStrategy(this));
-        return traversalSource;
+        return traversalSource.withStrategies(new VertexProgramStrategy(this));
     }
 
     /////////////////

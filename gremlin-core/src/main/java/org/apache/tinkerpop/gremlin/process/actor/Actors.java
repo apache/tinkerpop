@@ -75,8 +75,6 @@ public final class Actors implements Processor.Description<GraphActors> {
 
     @Override
     public TraversalSource addTraversalStrategies(final TraversalSource traversalSource) {
-        final ActorProgramStrategy actorProgramStrategy = new ActorProgramStrategy(this);
-        traversalSource.getStrategies().addStrategies(actorProgramStrategy);
-        return traversalSource;
+        return traversalSource.withStrategies(new ActorProgramStrategy(this));
     }
 }

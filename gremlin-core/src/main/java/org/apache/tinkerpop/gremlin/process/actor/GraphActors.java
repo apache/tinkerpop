@@ -32,9 +32,28 @@ import java.util.concurrent.Future;
  */
 public interface GraphActors<R> extends Processor {
 
+    /**
+     * Provide the {@link ActorProgram} that the GraphActors will execute.
+     *
+     * @param program the program to execute
+     * @return the updated GraphActors with newly defined program
+     */
     public GraphActors<R> program(final ActorProgram<R> program);
 
+    /**
+     * Provide the {@link Partitioner} that the GraphActors will execute over.
+     * Typically, there will be a single {@link org.apache.tinkerpop.gremlin.process.actor.Actor.Worker}
+     * for each {@link org.apache.tinkerpop.gremlin.structure.Partition} in the partitioner.
+     *
+     * @param partitioner the partitioner defining the data partitions
+     * @return the updated GraphActors with newly defined partitioner
+     */
     public GraphActors<R> partitioner(final Partitioner partitioner);
 
+    /**
+     * Submit the {@link ActorProgram} for execution by the {@link GraphActors}.
+     *
+     * @return a {@link Future} denoting a reference to the asynchronous computation's result
+     */
     public Future<R> submit();
 }
