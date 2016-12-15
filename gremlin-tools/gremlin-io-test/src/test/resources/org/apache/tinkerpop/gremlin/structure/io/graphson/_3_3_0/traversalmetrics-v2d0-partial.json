@@ -3,14 +3,14 @@
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 0.599635
+      "@value" : 0.004
     },
     "metrics" : [ {
       "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.095118
+          "@value" : 100.0
         },
         "counts" : {
           "traverserCount" : {
@@ -26,7 +26,7 @@
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 15.862649778615324
+            "@value" : 25.0
           }
         },
         "id" : "7.0.0()"
@@ -36,7 +36,7 @@
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.168285
+          "@value" : 100.0
         },
         "counts" : {
           "traverserCount" : {
@@ -52,7 +52,7 @@
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 28.064572615007464
+            "@value" : 25.0
           }
         },
         "id" : "2.0.0()"
@@ -62,7 +62,7 @@
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.142567
+          "@value" : 100.0
         },
         "counts" : {
           "traverserCount" : {
@@ -78,7 +78,7 @@
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 23.77563017502314
+            "@value" : 25.0
           }
         },
         "id" : "3.0.0()"
@@ -88,7 +88,7 @@
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.193665
+          "@value" : 100.0
         },
         "counts" : {
           "traverserCount" : {
@@ -104,7 +104,7 @@
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 32.29714743135408
+            "@value" : 25.0
           }
         },
         "id" : "4.0.0()"

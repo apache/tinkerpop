@@ -3,7 +3,7 @@
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 0.173382
+      "@value" : 100.0
     },
     "counts" : {
       "traverserCount" : {
@@ -19,7 +19,7 @@
     "annotations" : {
       "percentDur" : {
         "@type" : "g:Double",
-        "@value" : 17.538702446366866
+        "@value" : 25.0
       }
     },
     "id" : "7.0.0()",
@@ -28,26 +28,26 @@
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.259902
+          "@value" : 100.0
         },
         "counts" : {
           "traverserCount" : {
             "@type" : "g:Int64",
-            "@value" : 13
+            "@value" : 7
           },
           "elementCount" : {
             "@type" : "g:Int64",
-            "@value" : 13
+            "@value" : 7
           }
         },
         "name" : "VertexStep(OUT,vertex)",
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 26.29075592169684
+            "@value" : 25.0
           }
         },
-        "id" : "2.0.0()"
+        "id" : "3.0.0()"
       }
     } ]
   }

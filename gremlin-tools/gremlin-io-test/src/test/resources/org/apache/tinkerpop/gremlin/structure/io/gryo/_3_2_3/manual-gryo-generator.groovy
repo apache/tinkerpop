@@ -17,6 +17,10 @@
  * under the License.
  */
 
+
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics
 import org.apache.tinkerpop.shaded.kryo.io.Output
 
 import java.time.*
@@ -31,11 +35,47 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 
+import java.util.concurrent.TimeUnit
+
 new File("dev-docs/").mkdirs()
 new File("test-case-data/io/gryo").mkdirs()
 
 graph = TinkerFactory.createTheCrew()
 g = graph.traversal()
+
+createStaticTraversalMetrics = {
+    // based on g.V().hasLabel("person").out().out().tree().profile().next()
+    def traversalMutableMetrics = new ArrayList<>()
+    def m7 = new MutableMetrics("7.0.0()", "TinkerGraphStep(vertex,[~label.eq(person)])")
+    m7.setDuration(100, TimeUnit.MILLISECONDS)
+    m7.setCount("traverserCount", 4)
+    m7.setCount("elementCount", 4)
+    m7.setAnnotation("percentDur", 25.0d)
+    traversalMutableMetrics.add(m7)
+
+    def m2 = new MutableMetrics("2.0.0()", "VertexStep(OUT,vertex)")
+    m2.setDuration(100, TimeUnit.MILLISECONDS)
+    m2.setCount("traverserCount", 13)
+    m2.setCount("elementCount", 13)
+    m2.setAnnotation("percentDur", 25.0d)
+    traversalMutableMetrics.add(m2)
+
+    def m3 = new MutableMetrics("3.0.0()", "VertexStep(OUT,vertex)")
+    m3.setDuration(100, TimeUnit.MILLISECONDS)
+    m3.setCount("traverserCount", 7)
+    m3.setCount("elementCount", 7)
+    m3.setAnnotation("percentDur", 25.0d)
+    traversalMutableMetrics.add(m3)
+
+    def m4 = new MutableMetrics("4.0.0()", "TreeStep")
+    m4.setDuration(100, TimeUnit.MILLISECONDS)
+    m4.setCount("traverserCount", 1)
+    m4.setCount("elementCount", 1)
+    m4.setAnnotation("percentDur", 25.0d)
+    traversalMutableMetrics.add(m4)
+
+    return new DefaultTraversalMetrics(4000, traversalMutableMetrics)
+}
 
 toGryo = { o, type, mapper, suffix = "" ->
     def fileToWriteTo = new File("test-case-data/io/gryo/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
@@ -78,16 +118,16 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     toGryoFunction(Order.incr, "Order", mapper)
     toGryoFunction(Pop.all, "Pop", mapper)
     toGryoFunction(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", mapper)
-    tm = g.V().hasLabel('person').out().out().tree().profile().next()
-    metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0))
-    metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)))
+    def tm = createStaticTraversalMetrics()
+    def metrics = new MutableMetrics(tm.getMetrics("7.0.0()"))
+    metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")))
     toGryoFunction(metrics, "Metrics", mapper)
     toGryoFunction(P.gt(0), "P", mapper)
     toGryoFunction(P.gt(0).and(P.lt(10)), "P and", mapper)
     toGryoFunction(P.gt(0).or(P.within(-1, -10, -100)), "P or", mapper)
     toGryoFunction(Scope.local, "Scope", mapper)
     toGryoFunction(T.label, "T", mapper)
-    toGryoFunction(g.V().hasLabel('person').out().out().tree().profile().next(), "TraversalMetrics", mapper)
+    toGryoFunction(createStaticTraversalMetrics(), "TraversalMetrics", mapper)
     toGryoFunction(g.V().hasLabel('person').nextTraverser(), "Traverser", mapper)
 
     /* not directly supported yet - there is a custom serializer in the way

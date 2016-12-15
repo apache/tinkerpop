@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -71,6 +72,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -139,16 +141,16 @@ public class Model {
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick");
         addGraphProcessEntry(Pop.all, "Pop");
         addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda");
-        final TraversalMetrics tm = g.V().hasLabel("person").out().out().tree().profile().next();
-        final MutableMetrics metrics = new MutableMetrics(tm.getMetrics(0));
-        metrics.addNested(new MutableMetrics(tm.getMetrics(1)));
+        final TraversalMetrics tm = createStaticTraversalMetrics();
+        final MutableMetrics metrics = new MutableMetrics(tm.getMetrics("7.0.0()"));
+        metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
         addGraphProcessEntry(metrics, "Metrics");
         addGraphProcessEntry(P.gt(0), "P");
         addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GRAPHSON_ONLY);
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GRAPHSON_ONLY);
         addGraphProcessEntry(Scope.local, "Scope");
         addGraphProcessEntry(T.label, "T", "", GRYO_ONLY);
-        addGraphProcessEntry(g.V().hasLabel("person").out().out().tree().profile().next(), "TraversalMetrics");
+        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser");
 
         final Map<String,Object> requestBindings = new HashMap<String,Object>(){{
@@ -221,7 +223,41 @@ public class Model {
         addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime");
         addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.");
     }
-    
+
+    private static DefaultTraversalMetrics createStaticTraversalMetrics() {
+        // based on g.V().hasLabel("person").out().out().tree().profile().next()
+        final List<MutableMetrics> traversalMutableMetrics = new ArrayList<>();
+        final MutableMetrics m7 = new MutableMetrics("7.0.0()", "TinkerGraphStep(vertex,[~label.eq(person)])");
+        m7.setDuration(100, TimeUnit.MILLISECONDS);
+        m7.setCount("traverserCount", 4);
+        m7.setCount("elementCount", 4);
+        m7.setAnnotation("percentDur", 25.0d);
+        traversalMutableMetrics.add(m7);
+
+        final MutableMetrics m2 = new MutableMetrics("2.0.0()", "VertexStep(OUT,vertex)");
+        m2.setDuration(100, TimeUnit.MILLISECONDS);
+        m2.setCount("traverserCount", 13);
+        m2.setCount("elementCount", 13);
+        m2.setAnnotation("percentDur", 25.0d);
+        traversalMutableMetrics.add(m2);
+
+        final MutableMetrics m3 = new MutableMetrics("3.0.0()", "VertexStep(OUT,vertex)");
+        m3.setDuration(100, TimeUnit.MILLISECONDS);
+        m3.setCount("traverserCount", 7);
+        m3.setCount("elementCount", 7);
+        m3.setAnnotation("percentDur", 25.0d);
+        traversalMutableMetrics.add(m3);
+
+        final MutableMetrics m4 = new MutableMetrics("4.0.0()", "TreeStep");
+        m4.setDuration(100, TimeUnit.MILLISECONDS);
+        m4.setCount("traverserCount", 1);
+        m4.setCount("elementCount", 1);
+        m4.setAnnotation("percentDur", 25.0d);
+        traversalMutableMetrics.add(m4);
+
+        return new DefaultTraversalMetrics(4000, traversalMutableMetrics);
+    }
+
     public static Model instance() {
         return model;
     }
@@ -327,28 +363,25 @@ public class Model {
         headers.add("resource");
         headers.addAll(compatibilities.stream().map(c -> {
             if (c instanceof GryoCompatibility)
-                return ((GryoCompatibility) c).name();
+                return "gryo-" + ((GryoCompatibility) c).name();
             else if (c instanceof GraphSONCompatibility)
-                return ((GraphSONCompatibility) c).name();
+                return "graphson-" + ((GraphSONCompatibility) c).name();
             else
                 throw new IllegalStateException("No support for the provided Compatibility type");
         }).collect(Collectors.toList()));
 
         try (final PrintWriter writer = new PrintWriter(f)) {
-            writer.println(String.join("\t", headers));
+            writer.println(String.join(",", headers));
 
             final List<Entry> sorted = new ArrayList<>(entries());
             Collections.sort(sorted, (o1, o2) -> o1.getResourceName().compareTo(o2.getResourceName()));
 
             sorted.forEach(e -> {
                 writer.write(e.getResourceName());
-                writer.write("\t");
-                compatibilities.forEach(c -> {
-                    writer.print(e.isCompatibleWith(c));
-                    writer.print("\t");
-                });
-
-                writer.println();
+                writer.write(",");
+                final List<String> compatibleList = new ArrayList<>();
+                compatibilities.forEach(c -> compatibleList.add(Boolean.toString(e.isCompatibleWith(c))));
+                writer.println(String.join(",", compatibleList));
             });
         }
     }

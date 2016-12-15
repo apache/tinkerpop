@@ -54,7 +54,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
     }
 
-    public void addNested(MutableMetrics metrics) {
+    public void addNested(final MutableMetrics metrics) {
         this.nested.put(metrics.getId(), metrics);
     }
 
