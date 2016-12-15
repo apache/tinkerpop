@@ -39,6 +39,7 @@ import java.util.Map;
  */
 public final class WorkerActor extends AbstractActor implements RequiresMessageQueue<ActorMailbox.ActorSemantics>, Actor.Worker {
 
+    private final ActorProgram.Worker workerProgram;
     private final Partition localPartition;
     private final Address.Worker self;
     private final Address.Master master;
@@ -53,9 +54,18 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
         for (final Partition partition : partitioner.getPartitions()) {
             this.workers.add(new Address.Worker(this.createWorkerAddress(partition), partition.location()));
         }
-        final ActorProgram.Worker workerProgram = program.createWorkerProgram(this);
-        receive(ReceiveBuilder.matchAny(workerProgram::execute).build());
-        workerProgram.setup();
+        this.workerProgram = program.createWorkerProgram(this);
+        receive(ReceiveBuilder.matchAny(this.workerProgram::execute).build());
+    }
+
+    @Override
+    public void preStart() {
+        this.workerProgram.setup();
+    }
+
+    @Override
+    public void postStop() {
+        this.workerProgram.terminate();
     }
 
     @Override

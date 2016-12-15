@@ -42,6 +42,7 @@ import java.util.Map;
  */
 public final class MasterActor extends AbstractActor implements RequiresMessageQueue<ActorMailbox.ActorSemantics>, Actor.Master {
 
+    private final ActorProgram.Master masterProgram;
     private final Address.Master master;
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
@@ -59,9 +60,18 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
             this.workers.add(new Address.Worker(workerPathString, partition.location()));
             context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner), workerPathString);
         }
-        final ActorProgram.Master masterProgram = program.createMasterProgram(this);
-        receive(ReceiveBuilder.matchAny(masterProgram::execute).build());
-        masterProgram.setup();
+        this.masterProgram = program.createMasterProgram(this);
+        receive(ReceiveBuilder.matchAny(this.masterProgram::execute).build());
+    }
+
+    @Override
+    public void preStart() {
+        this.masterProgram.setup();
+    }
+
+    @Override
+    public void postStop() {
+        this.masterProgram.terminate();
     }
 
     @Override

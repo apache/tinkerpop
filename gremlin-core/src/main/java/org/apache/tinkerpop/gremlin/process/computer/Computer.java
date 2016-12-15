@@ -23,11 +23,14 @@ import org.apache.tinkerpop.gremlin.process.Processor;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -60,11 +63,18 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
         return new Computer(graphComputerClass);
     }
 
+
+    /**
+     * @deprecated As of release 3.3.0, replaced by using {@link Computer#of()}.
+     */
     @Deprecated
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
 
+    /**
+     * @deprecated As of release 3.3.0, replaced by using {@link Computer#of(Class)}.
+     */
     @Deprecated
     public static Computer compute(final Class<? extends GraphComputer> graphComputerClass) {
         return new Computer(graphComputerClass);
@@ -159,9 +169,18 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
 
     @Override
     public void addTraversalStrategies(final TraversalSource traversalSource) {
-        final VertexProgramStrategy vertexProgramStrategy = new VertexProgramStrategy(this);
-        traversalSource.getStrategies().addStrategies(vertexProgramStrategy);
-        vertexProgramStrategy.addGraphComputerStrategies(traversalSource);
+        Class<? extends GraphComputer> graphComputerClass;
+        if (this.getGraphComputerClass().equals(GraphComputer.class)) {
+            try {
+                graphComputerClass = this.apply(traversalSource.getGraph()).getClass();
+            } catch (final Exception e) {
+                graphComputerClass = GraphComputer.class;
+            }
+        } else
+            graphComputerClass = this.getGraphComputerClass();
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
+        traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
+        traversalSource.getStrategies().addStrategies(new VertexProgramStrategy(this));
     }
 
     /////////////////

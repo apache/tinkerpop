@@ -19,10 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.actor.traversal.step.map;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
-
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.TraversalActorProgram;
@@ -44,9 +40,7 @@ public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
     private final Class<? extends GraphActors> actorsClass;
     private final Traversal.Admin<S, E> actorsTraversal;
     private final Partitioner partitioner;
-
     private boolean first = true;
-
 
     public TraversalActorProgramStep(final Traversal.Admin<?, ?> traversal, final Class<? extends GraphActors> actorsClass, final Partitioner partitioner) {
         super(traversal);

@@ -52,10 +52,8 @@ import java.util.Map;
  */
 final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
 
-
     private final Actor.Worker self;
     private final TraversalMatrix<?, ?> matrix;
-    private final Partition localPartition;
     private final Partitioner partitioner;
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     //
@@ -70,7 +68,6 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         // System.out.println("worker[created]: " + this.self.address().getId());
         // set up partition and traversal information
         this.partitioner = partitioner;
-        this.localPartition = self.partition();
         final WorkerTraversalSideEffects sideEffects = new WorkerTraversalSideEffects(traversal.getSideEffects(), this.self);
         TraversalHelper.applyTraversalRecursively(t -> t.setSideEffects(sideEffects), traversal);
         this.matrix = new TraversalMatrix<>(traversal);
@@ -79,14 +76,14 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         //////
         final GraphStep graphStep = (GraphStep) traversal.getStartStep();
         if (0 == graphStep.getIds().length)
-            ((GraphStep) traversal.getStartStep()).setIteratorSupplier(graphStep.returnsVertex() ? this.localPartition::vertices : this.localPartition::edges);
+            ((GraphStep) traversal.getStartStep()).setIteratorSupplier(graphStep.returnsVertex() ? this.self.partition()::vertices : this.self.partition()::edges);
         else {
             if (graphStep.returnsVertex())
                 ((GraphStep<Vertex, Vertex>) traversal.getStartStep()).setIteratorSupplier(
-                        () -> IteratorUtils.filter(this.localPartition.vertices(graphStep.getIds()), this.localPartition::contains));
+                        () -> IteratorUtils.filter(self.partition().vertices(graphStep.getIds()), this.self.partition()::contains));
             else
                 ((GraphStep<Edge, Edge>) traversal.getStartStep()).setIteratorSupplier(
-                        () -> IteratorUtils.filter(this.localPartition.edges(graphStep.getIds()), this.localPartition::contains));
+                        () -> IteratorUtils.filter(self.partition().edges(graphStep.getIds()), this.self.partition()::contains));
         }
     }
 
@@ -153,7 +150,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
     //////////////
 
     private void processTraverser(final Traverser.Admin traverser) {
-        assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.localPartition.contains((Element) traverser.get());
+        assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.self.partition().contains((Element) traverser.get());
         final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
         step.addStart(traverser);
         if (step instanceof Barrier) {
@@ -169,7 +166,7 @@ final class TraversalWorkerProgram<M> implements ActorProgram.Worker<M> {
         this.voteToHalt = false;
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
-        else if (traverser.get() instanceof Element && !this.localPartition.contains((Element) traverser.get()))
+        else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
             this.self.send(this.partitionToWorkerMap.get(this.partitioner.getPartition((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
