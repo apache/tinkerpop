@@ -25,8 +25,10 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
+import org.apache.tinkerpop.gremlin.process.actor.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -41,18 +43,17 @@ import java.util.stream.Collectors;
  */
 public final class AkkaGraphActors<R> implements GraphActors<R> {
 
-    private final ActorProgram<R> actorProgram;
     private final ActorSystem system;
     private final Address.Master master;
+    private final ActorsResult<R> result = new DefaultActorsResult<>();
 
     public AkkaGraphActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
-        this.actorProgram = actorProgram;
         final Config config = ConfigFactory.defaultApplication().
                 withValue("message-priorities",
-                        ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
+                        ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().get().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
         this.system = ActorSystem.create("traversal-" + actorProgram.hashCode(), config);
         try {
-            this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner), "master").path().toString(), InetAddress.getLocalHost());
+            this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
         } catch (final UnknownHostException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -74,7 +75,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
             while (!this.system.isTerminated()) {
 
             }
-            return this.actorProgram.getResult();
+            return this.result.getResult();
         });
     }
 }

@@ -17,45 +17,26 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.actor;
+package org.apache.tinkerpop.gremlin.process.actor.util;
 
-import org.apache.tinkerpop.gremlin.structure.Partition;
-
-import java.util.List;
+import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Actor {
+public final class DefaultActorsResult<R> implements ActorsResult<R> {
 
-    public Address address();
+    private R result;
 
-    public <M> void send(final Address toActor, final M message);
-
-
-    public interface Master extends Actor {
-
-        public List<Address.Worker> workers();
-
-        public Address.Master address();
-
-        public void close();
-
-        public <R> ActorsResult<R> result();
+    public DefaultActorsResult() {
 
     }
 
-    public interface Worker extends Actor {
-
-        public Address.Worker address();
-
-        public Address.Master master();
-
-        public List<Address.Worker> workers();
-
-        public Partition partition();
-
+    public R getResult() {
+        return this.result;
     }
 
-
+    public void setResult(final R result) {
+        this.result = result;
+    }
 }

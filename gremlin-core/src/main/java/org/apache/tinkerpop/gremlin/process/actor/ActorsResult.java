@@ -19,43 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.process.actor;
 
-import org.apache.tinkerpop.gremlin.structure.Partition;
-
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Actor {
+public interface ActorsResult<R> {
 
-    public Address address();
+    public R getResult();
 
-    public <M> void send(final Address toActor, final M message);
-
-
-    public interface Master extends Actor {
-
-        public List<Address.Worker> workers();
-
-        public Address.Master address();
-
-        public void close();
-
-        public <R> ActorsResult<R> result();
-
-    }
-
-    public interface Worker extends Actor {
-
-        public Address.Worker address();
-
-        public Address.Master master();
-
-        public List<Address.Worker> workers();
-
-        public Partition partition();
-
-    }
-
-
+    public void setResult(final R result);
 }

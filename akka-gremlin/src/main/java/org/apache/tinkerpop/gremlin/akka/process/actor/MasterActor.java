@@ -26,6 +26,7 @@ import akka.dispatch.RequiresMessageQueue;
 import akka.japi.pf.ReceiveBuilder;
 import org.apache.tinkerpop.gremlin.process.actor.Actor;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -46,8 +47,10 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     private final Address.Master master;
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
+    private final ActorsResult<?> result;
 
-    public MasterActor(final ActorProgram program, final Partitioner partitioner) {
+    public MasterActor(final ActorProgram program, final Partitioner partitioner, final ActorsResult<?> result) {
+        this.result = result;
         try {
             this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
         } catch (final UnknownHostException e) {
@@ -97,6 +100,12 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     @Override
     public void close() {
         context().system().terminate();
+
+    }
+
+    @Override
+    public <R> ActorsResult<R> result() {
+        return (ActorsResult<R>) this.result;
     }
 
 }

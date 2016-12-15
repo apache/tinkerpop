@@ -138,7 +138,7 @@ final class TraversalMasterProgram<M> implements ActorProgram.Master<M> {
 
     @Override
     public void terminate() {
-
+        this.master.result().setResult(this.results);
     }
 
     private void broadcast(final Object message) {

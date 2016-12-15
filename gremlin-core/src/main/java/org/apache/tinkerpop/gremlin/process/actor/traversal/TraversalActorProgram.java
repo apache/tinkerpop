@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal;
 
 import org.apache.tinkerpop.gremlin.process.actor.Actor;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAddMessage;
@@ -45,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,7 +62,7 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
             BarrierDoneMessage.class,
             Terminate.class);
 
-    private final Traversal.Admin<?, R> traversal;
+    private Traversal.Admin<?, R> traversal;
     private final Partitioner partitioner;
     public TraverserSet<R> result = new TraverserSet<>();
 
@@ -96,13 +98,18 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
     }
 
     @Override
-    public List<Class> getMessagePriorities() {
-        return MESSAGE_PRIORITIES;
+    public Optional<List<Class>> getMessagePriorities() {
+        return Optional.of(MESSAGE_PRIORITIES);
     }
 
-
     @Override
-    public TraverserSet<R> getResult() {
-        return this.result;
+    public ActorProgram<TraverserSet<R>> clone() {
+        try {
+            final TraversalActorProgram<R> clone = (TraversalActorProgram<R>) super.clone();
+            clone.traversal = this.traversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }
