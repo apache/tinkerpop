@@ -147,7 +147,7 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
         else {
             final GraphTraversalSource g = graph.traversal();
             return RANDOM.nextBoolean() ?
-                    g.withProcessor(Actors.of(AkkaGraphActors.class).partitioner(new HashPartitioner(graph.partitioner(), new Random().nextInt(15) + 1))) :
+                    g.withProcessor(Actors.of(AkkaGraphActors.class).workers(new Random().nextInt(15) + 1)) :
                     g.withProcessor(Actors.of(AkkaGraphActors.class));
         }
     }

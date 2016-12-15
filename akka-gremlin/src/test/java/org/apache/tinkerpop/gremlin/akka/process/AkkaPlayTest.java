@@ -42,7 +42,7 @@ public class AkkaPlayTest {
     public void testPlay1() throws Exception {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withProcessor(Actors.of(AkkaGraphActors.class).partitioner(new HashPartitioner(graph.partitioner(), 3)));
+        GraphTraversalSource g = graph.traversal().withProcessor(Actors.of(AkkaGraphActors.class).workers(3));
         // System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
         for (int i = 0; i < 1000; i++) {

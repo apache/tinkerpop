@@ -55,7 +55,7 @@ import java.util.Set;
  */
 public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private static final VertexProgramStrategy INSTANCE = new VertexProgramStrategy(Computer.compute());
+    private static final VertexProgramStrategy INSTANCE = new VertexProgramStrategy(Computer.of());
 
     private final Computer computer;
 

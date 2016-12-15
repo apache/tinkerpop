@@ -46,7 +46,7 @@ public interface Processor {
          *
          * @param traversalSource the traversal source to add processor-specific strategies to
          */
-        public void addTraversalStrategies(final TraversalSource traversalSource);
+        public TraversalSource addTraversalStrategies(final TraversalSource traversalSource);
     }
 
 }

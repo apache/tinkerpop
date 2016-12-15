@@ -22,15 +22,14 @@ package org.apache.tinkerpop.gremlin.process.actor;
 import org.apache.tinkerpop.gremlin.process.Processor;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class Actors implements Processor.Description<GraphActors> {
 
-    private final Class<? extends GraphActors> graphActorsClass;
-    private Partitioner partitioner = null;
+    private Class<? extends GraphActors> graphActorsClass;
+    private int workers = 1;
 
     private Actors(final Class<? extends GraphActors> graphActorsClass) {
         this.graphActorsClass = graphActorsClass;
@@ -40,9 +39,15 @@ public final class Actors implements Processor.Description<GraphActors> {
         return new Actors(graphActorsClass);
     }
 
-    public Actors partitioner(final Partitioner partitioner) {
+    public Actors graphActors(final Class<? extends GraphActors> graphActorsClass) {
         final Actors clone = this.clone();
-        clone.partitioner = partitioner;
+        clone.graphActorsClass = graphActorsClass;
+        return clone;
+    }
+
+    public Actors workers(final int workers) {
+        final Actors clone = this.clone();
+        clone.workers = workers;
         return clone;
     }
 
@@ -50,8 +55,8 @@ public final class Actors implements Processor.Description<GraphActors> {
         return this.graphActorsClass;
     }
 
-    public Partitioner getPartitioner() {
-        return this.partitioner;
+    public int getWorkers() {
+        return this.workers;
     }
 
 
@@ -69,8 +74,9 @@ public final class Actors implements Processor.Description<GraphActors> {
     }
 
     @Override
-    public void addTraversalStrategies(final TraversalSource traversalSource) {
+    public TraversalSource addTraversalStrategies(final TraversalSource traversalSource) {
         final ActorProgramStrategy actorProgramStrategy = new ActorProgramStrategy(this);
         traversalSource.getStrategies().addStrategies(actorProgramStrategy);
+        return traversalSource;
     }
 }

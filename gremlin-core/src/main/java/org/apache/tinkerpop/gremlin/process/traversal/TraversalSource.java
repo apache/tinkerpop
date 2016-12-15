@@ -137,10 +137,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withProcessor(final Processor.Description processor) {
-        final TraversalSource clone = this.clone();
-        processor.addTraversalStrategies(clone);
-        clone.getBytecode().addSource(Symbols.withProcessor, processor);
-        return clone;
+        return processor.addTraversalStrategies(this.clone());
     }
 
     /**

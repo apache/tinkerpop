@@ -168,7 +168,7 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
     }
 
     @Override
-    public void addTraversalStrategies(final TraversalSource traversalSource) {
+    public TraversalSource addTraversalStrategies(final TraversalSource traversalSource) {
         Class<? extends GraphComputer> graphComputerClass;
         if (this.getGraphComputerClass().equals(GraphComputer.class)) {
             try {
@@ -181,6 +181,7 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
         final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
         traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
         traversalSource.getStrategies().addStrategies(new VertexProgramStrategy(this));
+        return traversalSource;
     }
 
     /////////////////

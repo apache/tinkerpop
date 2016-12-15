@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
         final Config config = ConfigFactory.defaultApplication().
                 withValue("message-priorities",
                         ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().get().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
-        this.system = ActorSystem.create("traversal-" + actorProgram.hashCode(), config);
+        this.system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
         try {
             this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
         } catch (final UnknownHostException e) {

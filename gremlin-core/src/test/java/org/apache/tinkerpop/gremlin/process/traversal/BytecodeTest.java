@@ -112,16 +112,16 @@ public class BytecodeTest {
         assertEquals(P.gt(32), bytecode.getBindings().get("c"));
         assertEquals("name", bytecode.getBindings().get("d"));
         //
-        Bytecode.Binding binding = (Bytecode.Binding)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(1).getArguments()[0];
+        Bytecode.Binding binding = (Bytecode.Binding)(bytecode.getStepInstructions()).get(1).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) (((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
         assertEquals("b", binding.variable());
         assertEquals("knows", binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
+        binding = (Bytecode.Binding) (((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
         assertEquals("c", binding.variable());
         assertEquals(P.gt(32), binding.value());
-        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) (((Bytecode)(((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
         assertEquals("d", binding.variable());
         assertEquals("name", binding.value());
     }
