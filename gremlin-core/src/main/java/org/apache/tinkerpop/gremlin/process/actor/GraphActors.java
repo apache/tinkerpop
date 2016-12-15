@@ -20,18 +20,21 @@
 package org.apache.tinkerpop.gremlin.process.actor;
 
 import org.apache.tinkerpop.gremlin.process.Processor;
+import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 import java.util.concurrent.Future;
 
 /**
  * GraphActors is a message-passing based graph {@link Processor} that is:
- * asynchronous, distributed, partition-bound, and traverser-centric.
+ * asynchronous, distributed, and partition centric.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphActors<R> extends Processor {
 
-    public Address.Master master();
+    public GraphActors<R> program(final ActorProgram<R> program);
+
+    public GraphActors<R> partitioner(final Partitioner partitioner);
 
     public Future<R> submit();
 }

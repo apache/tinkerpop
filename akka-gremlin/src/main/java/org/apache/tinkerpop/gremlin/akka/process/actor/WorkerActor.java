@@ -41,6 +41,7 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
 
     private final ActorProgram.Worker workerProgram;
     private final Partition localPartition;
+    private final Partitioner partitioner;
     private final Address.Worker self;
     private final Address.Master master;
     private final List<Address.Worker> workers;
@@ -48,6 +49,7 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
 
     public WorkerActor(final ActorProgram program, final Address.Master master, final Partition localPartition, final Partitioner partitioner) {
         this.localPartition = localPartition;
+        this.partitioner = partitioner;
         this.self = new Address.Worker(this.createWorkerAddress(localPartition), localPartition.location());
         this.master = master;
         this.workers = new ArrayList<>();
@@ -86,6 +88,11 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     @Override
     public Partition partition() {
         return this.localPartition;
+    }
+
+    @Override
+    public Partitioner partitioner() {
+        return this.partitioner;
     }
 
     @Override

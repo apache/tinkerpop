@@ -48,8 +48,10 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
     private final ActorsResult<?> result;
+    private final Partitioner partitioner;
 
     public MasterActor(final ActorProgram program, final Partitioner partitioner, final ActorsResult<?> result) {
+        this.partitioner = partitioner;
         this.result = result;
         try {
             this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
@@ -90,6 +92,11 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     @Override
     public List<Address.Worker> workers() {
         return this.workers;
+    }
+
+    @Override
+    public Partitioner partitioner() {
+        return this.partitioner;
     }
 
     @Override

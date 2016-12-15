@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.actor.traversal;
 
 import org.apache.tinkerpop.gremlin.process.actor.Actor;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
-import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actor.traversal.message.SideEffectAddMessage;
@@ -41,7 +40,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.structure.Partitioner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,11 +61,9 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
             Terminate.class);
 
     private Traversal.Admin<?, R> traversal;
-    private final Partitioner partitioner;
     public TraverserSet<R> result = new TraverserSet<>();
 
-    public TraversalActorProgram(final Traversal.Admin<?, R> traversal, final Partitioner partitioner) {
-        this.partitioner = partitioner;
+    public TraversalActorProgram(final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
         final TraversalStrategies strategies = this.traversal.getStrategies().clone();
         strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
@@ -89,12 +85,12 @@ public final class TraversalActorProgram<R> implements ActorProgram<TraverserSet
 
     @Override
     public Worker createWorkerProgram(final Actor.Worker worker) {
-        return new TraversalWorkerProgram<>(worker, this.traversal.clone(), this.partitioner);
+        return new TraversalWorkerProgram<>(worker, this.traversal.clone());
     }
 
     @Override
     public Master createMasterProgram(final Actor.Master master) {
-        return new TraversalMasterProgram<>(master, this.traversal.clone(), this.partitioner, this.result);
+        return new TraversalMasterProgram<>(master, this.traversal.clone(), this.result);
     }
 
     @Override

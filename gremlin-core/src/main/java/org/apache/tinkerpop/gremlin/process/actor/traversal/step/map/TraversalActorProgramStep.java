@@ -60,9 +60,9 @@ public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final GraphActors<TraverserSet<E>> graphActors = this.actorsClass.getConstructor(ActorProgram.class, Partitioner.class).
-                        newInstance(new TraversalActorProgram<E>(this.actorsTraversal, this.partitioner), this.partitioner);
-                graphActors.submit().get().forEach(this.starts::add);
+                final GraphActors<TraverserSet<E>> graphActors = this.actorsClass.newInstance();
+                final ActorProgram<TraverserSet<E>> actorProgram = new TraversalActorProgram<>(this.actorsTraversal);
+                graphActors.partitioner(this.partitioner).program(actorProgram).submit().get().forEach(this.starts::add);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

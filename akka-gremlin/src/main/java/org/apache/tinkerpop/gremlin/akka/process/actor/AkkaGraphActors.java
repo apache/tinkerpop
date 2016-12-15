@@ -44,20 +44,12 @@ import java.util.stream.Collectors;
  */
 public final class AkkaGraphActors<R> implements GraphActors<R> {
 
-    private final ActorSystem system;
-    private final Address.Master master;
-    private final ActorsResult<R> result = new DefaultActorsResult<>();
+    private ActorProgram<R> actorProgram;
+    private Partitioner partitioner;
+    private boolean executed = false;
 
-    public AkkaGraphActors(final ActorProgram<R> actorProgram, final Partitioner partitioner) {
-        final Config config = ConfigFactory.defaultApplication().
-                withValue("message-priorities",
-                        ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().get().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
-        this.system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
-        try {
-            this.master = new Address.Master(this.system.actorOf(Props.create(MasterActor.class, actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
-        } catch (final UnknownHostException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+    public AkkaGraphActors() {
+
     }
 
     @Override
@@ -66,17 +58,39 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     }
 
     @Override
-    public Address.Master master() {
-        return this.master;
+    public GraphActors<R> program(final ActorProgram<R> actorProgram) {
+        this.actorProgram = actorProgram;
+        return this;
+    }
+
+    @Override
+    public GraphActors<R> partitioner(final Partitioner partitioner) {
+        this.partitioner = partitioner;
+        return this;
     }
 
     @Override
     public Future<R> submit() {
+        if (this.executed)
+            throw new IllegalStateException("Can not execute twice");
+        this.executed = true;
+        final ActorSystem system;
+        final ActorsResult<R> result = new DefaultActorsResult<>();
+
+        final Config config = ConfigFactory.defaultApplication().
+                withValue("message-priorities",
+                        ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().get().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
+        system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
+        try {
+            new Address.Master(system.actorOf(Props.create(MasterActor.class, actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
+        } catch (final UnknownHostException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
         return CompletableFuture.supplyAsync(() -> {
-            while (!this.system.isTerminated()) {
+            while (!system.isTerminated()) {
 
             }
-            return this.result.getResult();
+            return result.getResult();
         });
     }
 }
