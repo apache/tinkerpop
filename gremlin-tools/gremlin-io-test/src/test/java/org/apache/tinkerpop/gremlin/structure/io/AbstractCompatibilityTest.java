@@ -18,7 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
+import java.util.Iterator;
+import java.util.List;
+
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -36,5 +46,54 @@ public abstract class AbstractCompatibilityTest {
 
     protected <T> T findModelEntryObject(final String resourceName) {
         return model.find(resourceName).orElseThrow(() -> new IllegalStateException("Could not find requested model entry")).getObject();
+    }
+
+    protected void assertVertex(final Vertex expected, final Vertex actual) {
+        assertEquals(expected.id(), actual.id());
+        assertEquals(expected.label(), actual.label());
+        assertEquals(IteratorUtils.count(expected.properties()), IteratorUtils.count(actual.properties()));
+        for (String k : expected.keys()) {
+            final Iterator<VertexProperty<Object>> expectedVps = expected.properties(k);
+            final List<VertexProperty<Object>> actualVps = IteratorUtils.list(actual.properties(k));
+            while (expectedVps.hasNext()) {
+                final VertexProperty expectedVp = expectedVps.next();
+                final VertexProperty<Object> found = actualVps.stream()
+                        .filter(vp -> vp.id().equals(expectedVp.id()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Could not find VertexProperty for " + expectedVp.id()));
+                assertVertexProperty(expectedVp, found);
+            }
+        }
+    }
+
+    protected void assertEdge(final Edge expected, final Edge actual) {
+        assertEquals(expected.id(), actual.id());
+        assertEquals(expected.label(), actual.label());
+        assertEquals(IteratorUtils.count(expected.properties()), IteratorUtils.count(actual.properties()));
+        assertEquals(expected.inVertex().id(), actual.inVertex().id());
+        assertEquals(expected.outVertex().id(), actual.outVertex().id());
+        assertEquals(expected.inVertex().label(), actual.inVertex().label());
+        assertEquals(expected.outVertex().label(), actual.outVertex().label());
+        final Iterator<Property<Object>> itty = expected.properties();
+        while(itty.hasNext()) {
+            final Property p = itty.next();
+            assertProperty(p, actual.property(p.key()));
+        }
+    }
+
+    protected void assertVertexProperty(final VertexProperty expected, final VertexProperty actual) {
+        assertEquals(expected.id(), actual.id());
+        assertEquals(expected.label(), actual.label());
+        assertEquals(IteratorUtils.count(expected.properties()), IteratorUtils.count(actual.properties()));
+        final Iterator<Property> itty = expected.properties();
+        while(itty.hasNext()) {
+            final Property p = itty.next();
+            assertProperty(p, actual.property(p.key()));
+        }
+    }
+
+    protected void assertProperty(final Property expected, final Property actual) {
+        assertEquals(expected.key(), actual.key());
+        assertEquals(expected.value(), actual.value());
     }
 }

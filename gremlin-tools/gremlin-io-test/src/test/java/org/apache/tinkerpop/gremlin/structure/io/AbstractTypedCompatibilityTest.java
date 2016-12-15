@@ -339,22 +339,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
-        assertEquals(resource.id(), recycled.id());
-        assertEquals(resource.label(), recycled.label());
-        assertEquals(resource.inVertex().id(), recycled.inVertex().id());
-        assertEquals(resource.outVertex().id(), recycled.outVertex().id());
-        assertEquals(resource.inVertex().label(), recycled.inVertex().label());
-        assertEquals(resource.outVertex().label(), recycled.outVertex().label());
-        assertEquals(IteratorUtils.count(resource.properties()), IteratorUtils.count(recycled.properties()));
-        assertEquals((int) resource.value("since"), (int) recycled.value("since"));
-        assertEquals(resource.id(), fromStatic.id());
-        assertEquals(resource.label(), fromStatic.label());
-        assertEquals(resource.inVertex().id(), fromStatic.inVertex().id());
-        assertEquals(resource.outVertex().id(), fromStatic.outVertex().id());
-        assertEquals(resource.inVertex().label(), fromStatic.inVertex().label());
-        assertEquals(resource.outVertex().label(), fromStatic.outVertex().label());
-        assertEquals(IteratorUtils.count(resource.properties()), IteratorUtils.count(fromStatic.properties()));
-        assertEquals((int) resource.value("since"), (int) fromStatic.value("since"));
+        assertEdge(resource, fromStatic);
+        assertEdge(resource, recycled);
     }
 
     @Test
@@ -653,10 +639,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final Property fromStatic = read(getCompatibility().readFromResource(resourceName), Property.class);
         final Property recycled = (Property) read(write(fromStatic, Property.class), getCompatibility().resolve(Property.class));
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.key(), recycled.key());
-        assertEquals(resource.value(), recycled.value());
-        assertEquals(resource.key(), fromStatic.key());
-        assertEquals(resource.value(), fromStatic.value());
+        assertProperty(resource, fromStatic);
+        assertProperty(resource, recycled);
     }
 
     @Test
@@ -889,7 +873,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final TraversalMetrics recycled = (TraversalMetrics) read(write(fromStatic, TraversalMetrics.class), getCompatibility().resolve(TraversalMetrics.class));
         assertNotSame(fromStatic, recycled);
 
-        // need to assert against each other since the model version can change between test runs as it is dyncamically
+        // need to assert against each other since the model version can change between test runs as it is dynamically
         // generated
         assertEquals(recycled.getDuration(TimeUnit.MILLISECONDS), fromStatic.getDuration(TimeUnit.MILLISECONDS));
         final Collection<? extends Metrics> resourceMetrics = resource.getMetrics();
@@ -956,9 +940,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
-        assertEquals(resource.id(), recycled.id());
-        assertEquals(resource.label(), recycled.label());
-        // todo: more asserts
+        assertVertex(resource, fromStatic);
+        assertVertex(resource, recycled);
     }
 
     @Test
@@ -973,9 +956,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
-        assertEquals(resource.id(), recycled.id());
-        assertEquals(resource.label(), recycled.label());
-        // todo: more asserts
+        assertVertexProperty(resource, recycled);
+        assertVertexProperty(resource, fromStatic);
     }
 
     @Test
