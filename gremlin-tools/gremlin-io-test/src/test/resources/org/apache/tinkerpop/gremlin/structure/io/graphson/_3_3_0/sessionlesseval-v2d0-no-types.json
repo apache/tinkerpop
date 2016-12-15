@@ -3,11 +3,8 @@
   "op" : "eval",
   "processor" : "",
   "args" : {
-    "gremlin" : "social.V(x)",
+    "gremlin" : "g.V(x)",
     "language" : "gremlin-groovy",
-    "aliases" : {
-      "g" : "social"
-    },
     "bindings" : {
       "x" : 1
     }

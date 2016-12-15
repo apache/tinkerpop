@@ -122,9 +122,9 @@ public class Model {
         addGraphStructureEntry(graph.edges().next(), "Edge");
         addGraphStructureEntry(g.V().out().out().path().next(), "Path");
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
-        addGraphStructureEntry(StarGraph.of(graph.vertices().next()), "StarGraph");
-        addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
-        addGraphStructureEntry(g.V().out().out().tree().next(), "Tree");
+        addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", GRYO_ONLY);
+        addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.", Collections.emptyList());
+        addEntry("Graph Structure", g.V().out().out().tree().next(), "Tree", "", GRYO_ONLY);
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
 
@@ -135,7 +135,7 @@ public class Model {
         addGraphProcessEntry(Column.keys, "Column", "", GRYO_ONLY);
         addGraphProcessEntry(Direction.OUT, "Direction");
         addGraphProcessEntry(Operator.sum, "Operator", "", GRYO_ONLY);
-        addGraphProcessEntry(Order.incr, "Order");
+        addGraphProcessEntry(Order.incr, "Order", "", GRYO_ONLY);
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick");
         addGraphProcessEntry(Pop.all, "Pop");
         addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda");
@@ -144,10 +144,10 @@ public class Model {
         metrics.addNested(new MutableMetrics(tm.getMetrics(1)));
         addGraphProcessEntry(metrics, "Metrics");
         addGraphProcessEntry(P.gt(0), "P");
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and");
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or");
+        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GRAPHSON_ONLY);
+        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GRAPHSON_ONLY);
         addGraphProcessEntry(Scope.local, "Scope");
-        addGraphProcessEntry(T.label, "T");
+        addGraphProcessEntry(T.label, "T", "", GRYO_ONLY);
         addGraphProcessEntry(g.V().hasLabel("person").out().out().tree().profile().next(), "TraversalMetrics");
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser");
 
@@ -170,7 +170,7 @@ public class Model {
         requestMessage = RequestMessage.build("eval").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
-        addRequestMessageEntry(requestMessage, "Session Eval", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+        addRequestMessageEntry(requestMessage, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
         requestMessage = RequestMessage.build("close").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
@@ -182,15 +182,15 @@ public class Model {
         requestMessage = RequestMessage.build("eval").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
-        addRequestMessageEntry(requestMessage, "Sessionless Eval", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+        addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
         ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create();
-        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).");
+        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).", ALL.toArray(new Compatibility[ALL.size()]));
         responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                 result(Collections.singletonList(graph.vertices().next())).create();
-        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
+        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.", ALL.toArray(new Compatibility[ALL.size()]));
         
         addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));

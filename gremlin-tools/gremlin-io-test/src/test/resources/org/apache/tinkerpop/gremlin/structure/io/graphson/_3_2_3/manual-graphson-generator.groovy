@@ -83,7 +83,7 @@ writeSupportedV1Objects = { writer, mapper ->
     msg = RequestMessage.build("eval").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-    writer.write(toJsonV1d0NoTypes(msg, "Session Eval", mapper, "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+    writer.write(toJsonV1d0NoTypes(msg, "Session Eval Aliased", mapper, "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
     msg = RequestMessage.build("close").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
@@ -95,7 +95,7 @@ writeSupportedV1Objects = { writer, mapper ->
     msg = RequestMessage.build("eval").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
-    writer.write(toJsonV1d0NoTypes(msg, "Sessionless Eval", mapper, "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+    writer.write(toJsonV1d0NoTypes(msg, "Sessionless Eval Aliased", mapper, "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
 
     writer.write("\n")
     writer.write("ResponseMessage\n")
@@ -207,7 +207,7 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     msg = RequestMessage.build("eval").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-    writer.write(toJsonFunction(msg, "Session Eval", mapper, "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+    writer.write(toJsonFunction(msg, "Session Eval Aliased", mapper, "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
     msg = RequestMessage.build("close").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
@@ -219,7 +219,7 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     msg = RequestMessage.build("eval").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
-    writer.write(toJsonFunction(msg, "Sessionless Eval", mapper, "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+    writer.write(toJsonFunction(msg, "Sessionless Eval Aliased", mapper, "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
 
     writer.write("\n")
     writer.write("ResponseMessage\n")

@@ -3,7 +3,7 @@
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 0.194633
+      "@value" : 0.206618
     },
     "counts" : {
       "traverserCount" : {
@@ -19,7 +19,7 @@
     "annotations" : {
       "percentDur" : {
         "@type" : "g:Double",
-        "@value" : 18.700308704545826
+        "@value" : 18.82133676326716
       }
     },
     "id" : "7.0.0()",
@@ -28,7 +28,7 @@
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.277476
+          "@value" : 0.274299
         },
         "counts" : {
           "traverserCount" : {
@@ -44,7 +44,7 @@
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 26.659851402909876
+            "@value" : 24.9865638658172
           }
         },
         "id" : "2.0.0()"

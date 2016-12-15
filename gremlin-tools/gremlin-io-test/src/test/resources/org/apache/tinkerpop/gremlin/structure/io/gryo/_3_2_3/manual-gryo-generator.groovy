@@ -103,7 +103,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     msg = RequestMessage.build("eval").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-    toGryoFunction(msg, "Session Eval", mapper)
+    toGryoFunction(msg, "Session Eval Aliased", mapper)
     msg = RequestMessage.build("close").processor("session").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
@@ -115,7 +115,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     msg = RequestMessage.build("eval").
             overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
             add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
-    toGryoFunction(msg, "Sessionless Eval", mapper)
+    toGryoFunction(msg, "Sessionless Eval Aliased", mapper)
 
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()

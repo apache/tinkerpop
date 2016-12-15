@@ -19,13 +19,23 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,8 +71,18 @@ public enum GryoCompatibility implements Compatibility {
             return DetachedEdge.class;
         else if (clazz.equals(Vertex.class))
             return DetachedVertex.class;
+        else if (clazz.equals(Property.class))
+            return DetachedProperty.class;
+        else if (clazz.equals(VertexProperty.class))
+            return DetachedVertexProperty.class;
+        else if (clazz.equals(Path.class))
+            return DetachedPath.class;
+        else if (clazz.equals(TraversalMetrics.class))
+            return DefaultTraversalMetrics.class;
         else if (clazz.equals(Metrics.class))
             return MutableMetrics.class;
+        else if (clazz.equals(Traverser.class))
+            return B_O_Traverser.class;
         else
             return clazz;
     }
