@@ -60,25 +60,6 @@ class TestDriverRemoteConnectionThreaded:
         child.join()
         child2.join()
 
-    def test_threaded_client_error(self):
-        q = queue.Queue()
-        # This scenario fails because both threads try to access the main
-        # thread event loop - bad - each thread needs its own loop.
-        # This is what happens when you can't manually set the loop.
-        child = Thread(target=self._executor, args=(q, None))
-        child2 = Thread(target=self._executor, args=(q, None))
-        child.start()
-        child2.start()
-        with pytest.raises(RuntimeError):
-            try:
-                for x in range(2):
-                    exc = q.get()
-                    if issubclass(exc, Exception):
-                        raise exc()
-            finally:
-                child.join()
-                child2.join()
-
     def _executor(self, q, loop):
         try:
             connection = DriverRemoteConnection(
