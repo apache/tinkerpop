@@ -26,11 +26,13 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.util.DefaultActorsResult;
+import org.apache.tinkerpop.gremlin.process.actor.util.GraphActorsHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -55,9 +57,10 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     private boolean executed = false;
 
     private AkkaGraphActors(final Configuration configuration) {
-        this.configuration = configuration;
+        this.configuration = new BaseConfiguration();
+        ConfigurationUtils.copy(configuration, this.configuration);
         this.configuration.setProperty(GRAPH_ACTORS, AkkaGraphActors.class.getCanonicalName());
-        this.workers = this.configuration.getInt(GRAPH_ACTORS_WORKERS, 1);
+        GraphActorsHelper.configure(this, this.configuration);
     }
 
     @Override
@@ -75,6 +78,12 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     public GraphActors<R> workers(final int workers) {
         this.workers = workers;
         this.configuration.setProperty(GRAPH_ACTORS_WORKERS, workers);
+        return this;
+    }
+
+    @Override
+    public GraphActors<R> configure(final String key, final Object value) {
+        this.configuration.addProperty(key, value);
         return this;
     }
 

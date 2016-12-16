@@ -39,4 +39,15 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
         final GraphActors actors = graphProvider.getGraphActors(graph);
         assertEquals(StringFactory.graphActorsString(actors), actors.toString());
     }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldHaveProperWorkerCounte() {
+        final GraphActors actors = graphProvider.getGraphActors(graph);
+        for (int i = 1; i < 10; i++) {
+            assertEquals(6L, g.withProcessor(actors.workers(i)).V().count().next().longValue());
+            assertEquals(i, actors.configuration().getProperty(GraphActors.GRAPH_ACTORS_WORKERS));
+
+        }
+    }
 }

@@ -56,6 +56,8 @@ public interface GraphActors<R> extends Processor {
      */
     public GraphActors<R> workers(final int workers);
 
+    public GraphActors<R> configure(final String key, final Object value);
+
     /**
      * Submit the {@link ActorProgram} for execution by the {@link GraphActors}.
      *

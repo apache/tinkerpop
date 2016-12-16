@@ -95,9 +95,10 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     private TinkerGraphComputer(final Configuration configuration) {
         this.graph = null;
-        this.configuration = configuration;
+        this.configuration = new BaseConfiguration();
+        ConfigurationUtils.copy(configuration,this.configuration);
         this.configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
-        GraphComputerHelper.configure(this, ConfigurationUtils.cloneConfiguration(configuration));
+        GraphComputerHelper.configure(this, configuration);
     }
 
     public static TinkerGraphComputer open(final Configuration configuration) {
