@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -72,7 +73,7 @@ public final class GraphComputerHelper {
     }
 
     public static GraphComputer configure(GraphComputer computer, final Configuration configuration) {
-        final Iterator<String> keys = configuration.getKeys();
+        final Iterator<String> keys = IteratorUtils.asList(configuration.getKeys()).iterator();
         while (keys.hasNext()) {
             final String key = keys.next();
             if (key.equals(GraphComputer.WORKERS))

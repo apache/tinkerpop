@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -76,6 +77,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
         this.logger = LoggerFactory.getLogger(this.getClass());
+        //GraphComputerHelper.configure(this, this.hadoopGraph.configuration());
     }
 
     @Override

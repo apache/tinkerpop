@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -111,6 +112,11 @@ public class GraphManager {
         @Override
         public GraphComputer getGraphComputer(final Graph graph) {
             return innerGraphProvider.getGraphComputer(graph);
+        }
+
+        @Override
+        public GraphActors getGraphActors(final Graph graph) {
+            return innerGraphProvider.getGraphActors(graph);
         }
 
         @Override

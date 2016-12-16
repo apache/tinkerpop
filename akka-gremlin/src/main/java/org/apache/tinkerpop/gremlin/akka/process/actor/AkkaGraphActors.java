@@ -57,6 +57,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     private AkkaGraphActors(final Configuration configuration) {
         this.configuration = configuration;
         this.configuration.setProperty(GRAPH_ACTORS, AkkaGraphActors.class.getCanonicalName());
+        this.workers = this.configuration.getInt(GRAPH_ACTORS_WORKERS, 1);
     }
 
     @Override

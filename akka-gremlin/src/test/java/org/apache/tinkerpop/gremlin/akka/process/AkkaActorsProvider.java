@@ -150,4 +150,9 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
                     g.withProcessor(GraphActors.open(AkkaGraphActors.class));
         }
     }
+
+    @Override
+    public GraphActors getGraphActors(final Graph graph) {
+        return AkkaGraphActors.open().workers(new Random().nextInt(15) + 1);
+    }
 }

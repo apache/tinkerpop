@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -113,6 +114,10 @@ public interface GraphProvider {
      */
     public default GraphComputer getGraphComputer(final Graph graph) {
         return graph.compute();
+    }
+
+    public default GraphActors getGraphActors(final Graph graph) {
+        throw new UnsupportedOperationException("This is currently unsupported by this graph provider: GraphProvider.getGraphActors()");
     }
 
     /**

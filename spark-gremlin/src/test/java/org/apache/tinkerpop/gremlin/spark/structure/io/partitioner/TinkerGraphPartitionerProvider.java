@@ -28,11 +28,21 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.partitioner.PartitionerInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgramTest;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -55,9 +65,17 @@ import java.util.Set;
 public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
+            TraversalInterruptionComputerTest.class.getCanonicalName(),
+            PageRankTest.Traversals.class.getCanonicalName(),
+            ProgramTest.Traversals.class.getCanonicalName(),
+            PeerPressureTest.Traversals.class.getCanonicalName(),
+            BulkLoaderVertexProgramTest.class.getCanonicalName(),
+            PageRankVertexProgramTest.class.getCanonicalName(),
+            ReadOnlyStrategyProcessTest.class.getCanonicalName(),
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
             "shouldSucceedWithProperTraverserRequirements",
+            "shouldStartAndEndWorkersForVertexProgramAndMapReduce",
             "shouldFailWithImproperTraverserRequirements"));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
@@ -92,11 +110,13 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
             put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
-            put(GraphComputer.GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
+            if (!skipTest)
+                put(GraphComputer.GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
             put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
             // System.out.println(AbstractGremlinTest.class.getResource(loadGraphWith.location()).toString().replace("file:",""));
-            put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, AbstractGremlinTest.class.getResource(loadGraphWith.location()).toString().replace("file:", ""));
+            if (null != loadGraphWith)
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, AbstractGremlinTest.class.getResource(loadGraphWith.location()).toString().replace("file:", ""));
         }};
 
 
@@ -108,7 +128,9 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        //if (graph != null)
+        if (null != graph)
+            ((TinkerGraph) graph).clear();
+        // if (graph != null)
         //    graph.close();
     }
 
@@ -141,15 +163,17 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        if ((Boolean) graph.configuration().getProperty("skipTest"))
-            return graph.traversal().withComputer();
-        else {
-            return graph.traversal().withProcessor(SparkGraphComputer.open(graph.configuration()));
-        }
+        if (graph.configuration().getBoolean("skipTest", false))
+            return graph.traversal().withStrategies(ReadOnlyStrategy.instance()).withComputer();
+        else
+            return graph.traversal().withStrategies(ReadOnlyStrategy.instance()).withProcessor(SparkGraphComputer.open(graph.configuration()));
     }
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
-        return SparkGraphComputer.open(graph.configuration());
+        if (graph.configuration().getBoolean("skipTest", false))
+            return new TinkerGraphComputer((TinkerGraph) graph);
+        else
+            return SparkGraphComputer.open(graph.configuration());
     }
 }

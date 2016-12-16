@@ -77,7 +77,7 @@ public final class HashPartitioner implements Partitioner {
             this.basePartition = basePartition;
             this.totalSplits = totalSplits;
             this.splitId = splitId;
-            this.id = this.basePartition.id() + "#" + splitId;
+            this.id = this.basePartition.id() + "-split-" + splitId;
         }
 
         @Override

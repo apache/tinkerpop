@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.akka.process;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessActorsSuite;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
@@ -27,7 +28,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
+@RunWith(ProcessActorsSuite.class)
 @GraphProviderClass(provider = AkkaActorsProvider.class, graph = TinkerGraph.class)
-public class AkkaActorsProcessStandardTest {
+public class AkkaActorsProcessActorsTest {
 }

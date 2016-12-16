@@ -67,7 +67,7 @@ public final class GlobalPartitioner implements Partitioner {
 
         private GlobalPartition(final Graph graph) {
             this.graph = graph;
-            this.id = this.graph.toString();
+            this.id = "global-" + graph.getClass().getSimpleName().toLowerCase();
             try {
                 this.location = InetAddress.getLocalHost();
             } catch (final UnknownHostException e) {
