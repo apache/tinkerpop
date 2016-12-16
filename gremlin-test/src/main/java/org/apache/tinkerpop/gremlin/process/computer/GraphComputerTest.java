@@ -203,6 +203,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Configuration configuration() {
+            final BaseConfiguration configuration = new BaseConfiguration();
+            configuration.setProperty(GRAPH_COMPUTER, BadGraphComputer.class.getCanonicalName());
+            return configuration;
+        }
+
+        @Override
         public Future<ComputerResult> submit() {
             return null;
         }
@@ -2346,7 +2353,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     ///////////////////////////////////
 
-    
+
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSucceedWithProperTraverserRequirements() throws Exception {
@@ -2355,7 +2362,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final Map<String, Object> idsByName = new HashMap<>();
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object, Object> map) ->
                 idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
 
         try {
@@ -2389,7 +2396,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").
                 useTraverserRequirements(false).create();
 
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object,Object> map) ->
+        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map<Object, Object> map) ->
                 idsByName.put((String) ((List) map.get("name")).get(0), map.get(id.getAccessor())));
 
         try {

@@ -20,11 +20,10 @@
 package org.apache.tinkerpop.gremlin.akka.process;
 
 import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
-import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,7 +41,7 @@ public class AkkaPlayTest {
     public void testPlay1() throws Exception {
         final Graph graph = TinkerGraph.open();
         graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withProcessor(Actors.of(AkkaGraphActors.class).workers(3));
+        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(3));
         // System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
         for (int i = 0; i < 1000; i++) {

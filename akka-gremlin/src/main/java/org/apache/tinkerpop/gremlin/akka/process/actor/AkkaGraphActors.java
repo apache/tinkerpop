@@ -24,16 +24,21 @@ import akka.actor.Props;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.actor.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actor.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actor.Address;
 import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actor.util.DefaultActorsResult;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -45,11 +50,13 @@ import java.util.stream.Collectors;
 public final class AkkaGraphActors<R> implements GraphActors<R> {
 
     private ActorProgram<R> actorProgram;
-    private Partitioner partitioner;
+    private int workers = 1;
+    private Configuration configuration;
     private boolean executed = false;
 
-    public AkkaGraphActors() {
-
+    private AkkaGraphActors(final Configuration configuration) {
+        this.configuration = configuration;
+        this.configuration.setProperty(GRAPH_ACTORS, AkkaGraphActors.class.getCanonicalName());
     }
 
     @Override
@@ -64,25 +71,28 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     }
 
     @Override
-    public GraphActors<R> partitioner(final Partitioner partitioner) {
-        this.partitioner = partitioner;
+    public GraphActors<R> workers(final int workers) {
+        this.workers = workers;
+        this.configuration.setProperty(GRAPH_ACTORS_WORKERS, workers);
         return this;
     }
 
     @Override
-    public Future<R> submit() {
+    public Future<R> submit(final Graph graph) {
         if (this.executed)
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
-        final ActorSystem system;
+        final Config config = ConfigFactory.defaultApplication().withValue("message-priorities",
+                ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().
+                        orElse(Collections.singletonList(Object.class)).
+                        stream().
+                        map(Class::getCanonicalName).
+                        collect(Collectors.toList()).toString()));
+        final ActorSystem system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
         final ActorsResult<R> result = new DefaultActorsResult<>();
-
-        final Config config = ConfigFactory.defaultApplication().
-                withValue("message-priorities",
-                        ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().get().stream().map(Class::getCanonicalName).collect(Collectors.toList()).toString()));
-        system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
+        final Partitioner partitioner = this.workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), this.workers);
         try {
-            new Address.Master(system.actorOf(Props.create(MasterActor.class, actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
+            new Address.Master(system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
         } catch (final UnknownHostException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -92,6 +102,19 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
             }
             return result.getResult();
         });
+    }
+
+    @Override
+    public Configuration configuration() {
+        return this.configuration;
+    }
+
+    public static AkkaGraphActors open(final Configuration configuration) {
+        return new AkkaGraphActors(configuration);
+    }
+
+    public static AkkaGraphActors open() {
+        return new AkkaGraphActors(new BaseConfiguration());
     }
 }
 

@@ -32,6 +32,6 @@ public class TinkerGraphGroovyTranslatorComputerProvider extends TinkerGraphGroo
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        return super.traversal(graph).withComputer();
+        return super.traversal(graph).withProcessor(TinkerGraphComputer.open());
     }
 }

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -41,13 +40,22 @@ public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        return RANDOM.nextBoolean() ?
-                graph.traversal().withStrategies(VertexProgramStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
-                    put(VertexProgramStrategy.WORKERS, RANDOM.nextInt(Runtime.getRuntime().availableProcessors()) + 1);
-                    put(VertexProgramStrategy.GRAPH_COMPUTER, RANDOM.nextBoolean() ?
-                            GraphComputer.class.getCanonicalName() :
-                            TinkerGraphComputer.class.getCanonicalName());
-                }}))) :
-                graph.traversal(GraphTraversalSource.computer());
+        final int pick = RANDOM.nextInt(4);
+        if (pick == 0) {
+            return graph.traversal().withStrategies(VertexProgramStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+                put(GraphComputer.WORKERS, RANDOM.nextInt(Runtime.getRuntime().availableProcessors()) + 1);
+                put(GraphComputer.GRAPH_COMPUTER, RANDOM.nextBoolean() ?
+                        GraphComputer.class.getCanonicalName() :
+                        TinkerGraphComputer.class.getCanonicalName());
+            }})));
+        } else if (pick == 1) {
+            return graph.traversal(GraphTraversalSource.computer());
+        } else if (pick == 2) {
+            return graph.traversal().withProcessor(TinkerGraphComputer.open().workers(RANDOM.nextInt(Runtime.getRuntime().availableProcessors()) + 1));
+        } else if (pick == 3) {
+            return graph.traversal().withProcessor(TinkerGraphComputer.open());
+        } else {
+            throw new IllegalStateException("The random pick generator is bad: " + pick);
+        }
     }
 }

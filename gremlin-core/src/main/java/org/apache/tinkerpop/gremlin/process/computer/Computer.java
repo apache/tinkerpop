@@ -19,25 +19,31 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.tinkerpop.gremlin.process.Processor;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.EDGES;
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.GRAPH_COMPUTER;
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.PERSIST;
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.RESULT;
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.VERTICES;
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.WORKERS;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.0, replaced by use of {@link GraphComputer#open(Configuration)}.
  */
-public final class Computer implements Processor.Description<GraphComputer>, Function<Graph, GraphComputer> {
+@Deprecated
+public final class Computer implements Function<Graph, GraphComputer>, Serializable, Cloneable {
 
     private Class<? extends GraphComputer> graphComputerClass = GraphComputer.class;
     private Map<String, Object> configuration = new HashMap<>();
@@ -47,35 +53,18 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
     private Traversal<Vertex, Vertex> vertices = null;
     private Traversal<Vertex, Edge> edges = null;
 
-    private Computer(final Class<? extends GraphComputer> graphComputerClass) {
-        this.graphComputerClass = graphComputerClass;
-    }
-
     private Computer() {
 
     }
 
-    public static Computer of() {
-        return new Computer(GraphComputer.class);
+    private Computer(final Class<? extends GraphComputer> graphComputerClass) {
+        this.graphComputerClass = graphComputerClass;
     }
 
-    public static Computer of(final Class<? extends GraphComputer> graphComputerClass) {
-        return new Computer(graphComputerClass);
-    }
-
-
-    /**
-     * @deprecated As of release 3.3.0, replaced by using {@link Computer#of()}.
-     */
-    @Deprecated
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
 
-    /**
-     * @deprecated As of release 3.3.0, replaced by using {@link Computer#of(Class)}.
-     */
-    @Deprecated
     public static Computer compute(final Class<? extends GraphComputer> graphComputerClass) {
         return new Computer(graphComputerClass);
     }
@@ -143,7 +132,7 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
         if (null != this.vertices)
             computer = computer.vertices(this.vertices);
         if (null != this.edges)
-            computer.edges(this.edges);
+            computer = computer.edges(this.edges);
         return computer;
     }
 
@@ -167,9 +156,21 @@ public final class Computer implements Processor.Description<GraphComputer>, Fun
         }
     }
 
-    @Override
-    public TraversalSource addTraversalStrategies(final TraversalSource traversalSource) {
-        return traversalSource.withStrategies(new VertexProgramStrategy(this));
+    public Configuration configuration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(GRAPH_COMPUTER, this.graphComputerClass.getCanonicalName());
+        if (-1 != this.workers)
+            map.put(WORKERS, this.workers);
+        if (null != this.persist)
+            map.put(PERSIST, this.persist.name());
+        if (null != this.resultGraph)
+            map.put(RESULT, this.resultGraph.name());
+        if (null != this.vertices)
+            map.put(VERTICES, this.vertices);
+        if (null != this.edges)
+            map.put(EDGES, this.edges);
+        map.putAll(this.getConfiguration());
+        return new MapConfiguration(map);
     }
 
     /////////////////

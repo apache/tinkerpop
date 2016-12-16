@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.ProcessorTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -109,8 +111,17 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         clone.getStrategies().addStrategies(traversalStrategies);
         clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         for (final TraversalStrategy traversalStrategy : traversalStrategies) {
-            if (traversalStrategy instanceof VertexProgramStrategy) {
-                ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone); // TODO: this is not generalized
+            if (traversalStrategy instanceof ProcessorTraversalStrategy) {
+                List<TraversalStrategy<?>> processorStrategies;
+                try {
+                    final Class<? extends Processor> processorClass = ((ProcessorTraversalStrategy<?>) traversalStrategy).getProcessor().getClass();
+                    processorStrategies = TraversalStrategies.GlobalCache.getStrategies(processorClass).toList();
+                } catch (final Exception e) {
+                    // this is an issue due to the historic Computer way in which VertexProgramStrategies were created
+                    // when (deprecated) Computer goes away, this try/catch block can be removed
+                    processorStrategies = TraversalStrategies.GlobalCache.getStrategies(((VertexProgramStrategy) traversalStrategy).getGraphComputerClassHistoric(clone.getGraph())).toList();
+                }
+                clone.getStrategies().addStrategies(processorStrategies.toArray(new TraversalStrategy[processorStrategies.size()]));
             }
         }
         return clone;
@@ -131,13 +142,13 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     }
 
     /**
-     * Define the type of {@link Processor} that will evaluate all subsequent {@link Traversal}s spawned from this source.
+     * Provide the {@link Processor} that will be used to evaluate all subsequent {@link Traversal}s spawned from this source.
      *
      * @param processor the description of the processor to use
      * @return a new traversal source with updated strategies
      */
-    public default TraversalSource withProcessor(final Processor.Description processor) {
-        return processor.addTraversalStrategies(this.clone());
+    public default TraversalSource withProcessor(final Processor processor) {
+        return this.withStrategies((TraversalStrategy) processor.getProcessorTraversalStrategy());
     }
 
     /**
@@ -159,7 +170,9 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      *
      * @param computer a builder to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
+     * @deprecated As of release 3.3.0, replaced by {@link TraversalSource#withProcessor(Processor)}.
      */
+    @Deprecated
     public default TraversalSource withComputer(final Computer computer) {
         return this.withStrategies(new VertexProgramStrategy(computer));
     }
@@ -170,9 +183,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      *
      * @param graphComputerClass the graph computer class
      * @return a new traversal source with updated strategies
+     * @deprecated As of release 3.3.0, replaced by {@link TraversalSource#withProcessor(Processor)}.
      */
+    @Deprecated
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withStrategies(new VertexProgramStrategy(Computer.of(graphComputerClass)));
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute(graphComputerClass)));
     }
 
     /**
@@ -180,9 +195,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @return a new traversal source with updated strategies
+     * @deprecated As of release 3.3.0, replaced by {@link TraversalSource#withProcessor(Processor)}.
      */
+    @Deprecated
     public default TraversalSource withComputer() {
-        return this.withStrategies(new VertexProgramStrategy(Computer.of()));
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute()));
     }
 
     /**

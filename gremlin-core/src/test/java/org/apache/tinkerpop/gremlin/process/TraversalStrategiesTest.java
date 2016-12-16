@@ -166,6 +166,11 @@ public class TraversalStrategiesTest {
         }
 
         @Override
+        public Configuration configuration() {
+            return new BaseConfiguration();
+        }
+
+        @Override
         public Future<ComputerResult> submit() {
             return new CompletableFuture<>();
         }

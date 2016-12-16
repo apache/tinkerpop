@@ -74,17 +74,17 @@ class VertexProgramStrategy(TraversalStrategy):
                  configuration=None):
         TraversalStrategy.__init__(self)
         if graph_computer is not None:
-            self.configuration["graphComputer"] = graph_computer
+            self.configuration["gremlin.graphComputer"] = graph_computer
         if workers is not None:
-            self.configuration["workers"] = workers
+            self.configuration["gremlin.graphComputer.workers"] = workers
         if persist is not None:
-            self.configuration["persist"] = persist
+            self.configuration["gremlin.graphComputer.persist"] = persist
         if result is not None:
-            self.configuration["result"] = result
+            self.configuration["gremlin.graphComputer.result"] = result
         if vertices is not None:
-            self.configuration["vertices"] = vertices
+            self.configuration["gremlin.graphComputer.vertices"] = vertices
         if edges is not None:
-            self.configuration["edges"] = edges
+            self.configuration["gremlin.graphComputer.edges"] = edges
         if configuration is not None:
             self.configuration.update(configuration)
 

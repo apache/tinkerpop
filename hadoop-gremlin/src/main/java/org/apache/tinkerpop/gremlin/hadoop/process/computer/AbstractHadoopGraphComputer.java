@@ -27,6 +27,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
@@ -47,6 +49,7 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,7 +62,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
             Pattern.compile(File.pathSeparator.equals(":") ? "([^:]|://)+" : ("[^" + File.pathSeparator + "]"));
 
     protected final Logger logger;
-    protected final HadoopGraph hadoopGraph;
+    protected HadoopGraph hadoopGraph;
     protected boolean executed = false;
     protected final Set<MapReduce> mapReducers = new HashSet<>();
     protected VertexProgram<Object> vertexProgram;
@@ -115,6 +118,12 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     public GraphComputer workers(final int workers) {
         this.workers = workers;
         return this;
+    }
+
+    @Override
+    public Future<ComputerResult> submit(final Graph graph) {
+        this.hadoopGraph = (HadoopGraph) graph;
+        return this.submit();
     }
 
     @Override

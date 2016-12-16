@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
@@ -29,9 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -105,23 +104,23 @@ public class BytecodeTest {
     public void shouldIncludeBindingsInNestedTraversals() {
         final Bindings b = Bindings.instance();
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Bytecode bytecode = g.V().in(b.of("a","created")).where(__.out(b.of("b","knows")).has("age",b.of("c",P.gt(32))).map(__.values(b.of("d","name")))).asAdmin().getBytecode();
+        final Bytecode bytecode = g.V().in(b.of("a", "created")).where(__.out(b.of("b", "knows")).has("age", b.of("c", P.gt(32))).map(__.values(b.of("d", "name")))).asAdmin().getBytecode();
         assertEquals(4, bytecode.getBindings().size());
         assertEquals("created", bytecode.getBindings().get("a"));
         assertEquals("knows", bytecode.getBindings().get("b"));
         assertEquals(P.gt(32), bytecode.getBindings().get("c"));
         assertEquals("name", bytecode.getBindings().get("d"));
         //
-        Bytecode.Binding binding = (Bytecode.Binding)(bytecode.getStepInstructions()).get(1).getArguments()[0];
+        Bytecode.Binding binding = (Bytecode.Binding) (bytecode.getStepInstructions()).get(1).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
-        binding = (Bytecode.Binding) (((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) (((Bytecode) (bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
         assertEquals("b", binding.variable());
         assertEquals("knows", binding.value());
-        binding = (Bytecode.Binding) (((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
+        binding = (Bytecode.Binding) (((Bytecode) (bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
         assertEquals("c", binding.variable());
         assertEquals(P.gt(32), binding.value());
-        binding = (Bytecode.Binding) (((Bytecode)(((Bytecode)(bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        binding = (Bytecode.Binding) (((Bytecode) (((Bytecode) (bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
         assertEquals("d", binding.variable());
         assertEquals("name", binding.value());
     }
@@ -141,7 +140,7 @@ public class BytecodeTest {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
         Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
         assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
-        assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
-                ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
+        assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(GraphComputer.WORKERS),
+                ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(GraphComputer.WORKERS));
     }
 }

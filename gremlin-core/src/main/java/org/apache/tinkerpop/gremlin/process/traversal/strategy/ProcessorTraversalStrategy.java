@@ -17,26 +17,28 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.ProcessorTraversalStrategy;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.Processor;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 
-import java.util.concurrent.Future;
+import java.util.Optional;
 
 /**
- * This is a marker interface that denotes that the respective implementation is able to evaluate/execute/process a
- * {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal}.
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Processor {
+public interface ProcessorTraversalStrategy<P extends Processor> {
 
-    public Configuration configuration();
+    public P getProcessor();
 
-    public ProcessorTraversalStrategy<? extends Processor> getProcessorTraversalStrategy();
+    public static <P extends Processor> Optional<P> getProcessor(final TraversalStrategies strategies) {
+        for (final TraversalStrategy strategy : strategies.toList()) {
+            if (strategy instanceof ProcessorTraversalStrategy)
+                return Optional.of(((ProcessorTraversalStrategy<P>) strategy).getProcessor());
+        }
+        return Optional.empty();
+    }
 
-    public Future submit(final Graph graph);
 
 }

@@ -19,8 +19,13 @@
 
 package org.apache.tinkerpop.gremlin.process.actor;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Processor;
-import org.apache.tinkerpop.gremlin.structure.Partitioner;
+import org.apache.tinkerpop.gremlin.process.actor.traversal.strategy.decoration.ActorProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.ProcessorTraversalStrategy;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.concurrent.Future;
 
@@ -32,6 +37,9 @@ import java.util.concurrent.Future;
  */
 public interface GraphActors<R> extends Processor {
 
+    public static final String GRAPH_ACTORS = "gremlin.graphActors";
+    public static final String GRAPH_ACTORS_WORKERS = "gremlin.graphActors.workers";
+
     /**
      * Provide the {@link ActorProgram} that the GraphActors will execute.
      *
@@ -41,19 +49,40 @@ public interface GraphActors<R> extends Processor {
     public GraphActors<R> program(final ActorProgram<R> program);
 
     /**
-     * Provide the {@link Partitioner} that the GraphActors will execute over.
-     * Typically, there will be a single {@link org.apache.tinkerpop.gremlin.process.actor.Actor.Worker}
-     * for each {@link org.apache.tinkerpop.gremlin.structure.Partition} in the partitioner.
+     * Specify the number of workers per {@link Graph} {@link org.apache.tinkerpop.gremlin.structure.Partition}.
      *
-     * @param partitioner the partitioner defining the data partitions
-     * @return the updated GraphActors with newly defined partitioner
+     * @param workers the number of workers per partition
+     * @return the updated GraphActors with newly defined workers
      */
-    public GraphActors<R> partitioner(final Partitioner partitioner);
+    public GraphActors<R> workers(final int workers);
 
     /**
      * Submit the {@link ActorProgram} for execution by the {@link GraphActors}.
      *
      * @return a {@link Future} denoting a reference to the asynchronous computation's result
      */
-    public Future<R> submit();
+    public Future<R> submit(final Graph graph);
+
+    /**
+     * Returns an {@link ActorProgramStrategy} which enables a {@link Traversal} to execute on {@link GraphActors}.
+     *
+     * @return a traversal strategy capable of executing traversals on a GraphActors
+     */
+    public default ProcessorTraversalStrategy<GraphActors> getProcessorTraversalStrategy() {
+        return new ActorProgramStrategy(this);
+    }
+
+    public static <A extends GraphActors> A open(final Configuration configuration) {
+        try {
+            return (A) Class.forName(configuration.getString(GRAPH_ACTORS)).getMethod("open", Configuration.class).invoke(null, configuration);
+        } catch (final Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
+    public static <A extends GraphActors> A open(final Class<A> graphActorsClass) {
+        final BaseConfiguration configuration = new BaseConfiguration();
+        configuration.setProperty(GRAPH_ACTORS, graphActorsClass.getCanonicalName());
+        return GraphActors.open(configuration);
+    }
 }

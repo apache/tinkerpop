@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -74,6 +77,8 @@ public final class TinkerGraphComputer implements GraphComputer {
     private int workers = Runtime.getRuntime().availableProcessors();
     private final GraphFilter graphFilter = new GraphFilter();
 
+    private final Configuration configuration;
+
     private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(TinkerGraphComputer.class.getSimpleName() + "-boss").build();
 
     /**
@@ -84,23 +89,45 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
+        this.configuration = new BaseConfiguration();
+        this.configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
+    }
+
+    private TinkerGraphComputer(final Configuration configuration) {
+        this.graph = null;
+        this.configuration = configuration;
+        this.configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
+    }
+
+    public static TinkerGraphComputer open(final Configuration configuration) {
+        return new TinkerGraphComputer(ConfigurationUtils.cloneConfiguration(configuration));
+    }
+
+    public static TinkerGraphComputer open() {
+        final BaseConfiguration configuration = new BaseConfiguration();
+        configuration.setDelimiterParsingDisabled(true);
+        configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
+        return new TinkerGraphComputer(configuration);
     }
 
     @Override
     public GraphComputer result(final ResultGraph resultGraph) {
         this.resultGraph = resultGraph;
+        this.configuration.setProperty(RESULT, resultGraph.name());
         return this;
     }
 
     @Override
     public GraphComputer persist(final Persist persist) {
         this.persist = persist;
+        this.configuration.setProperty(PERSIST, persist.name());
         return this;
     }
 
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
+        this.vertexProgram.storeState(this.configuration);
         return this;
     }
 
@@ -113,19 +140,27 @@ public final class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer workers(final int workers) {
         this.workers = workers;
+        this.configuration.setProperty(WORKERS, workers);
         return this;
     }
 
     @Override
     public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
         this.graphFilter.setVertexFilter(vertexFilter);
+        this.configuration.setProperty(VERTICES, vertexFilter);
         return this;
     }
 
     @Override
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
         this.graphFilter.setEdgeFilter(edgeFilter);
+        this.configuration.setProperty(EDGES, edgeFilter);
         return this;
+    }
+
+    @Override
+    public Configuration configuration() {
+        return this.configuration;
     }
 
     @Override

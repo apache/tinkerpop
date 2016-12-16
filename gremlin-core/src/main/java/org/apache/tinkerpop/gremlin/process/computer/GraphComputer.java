@@ -18,9 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Processor;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.ProcessorTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.concurrent.Future;
@@ -34,6 +38,13 @@ import java.util.concurrent.Future;
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface GraphComputer extends Processor {
+
+    public static final String GRAPH_COMPUTER = "gremlin.graphComputer";
+    public static final String WORKERS = "gremlin.graphComputer.workers";
+    public static final String PERSIST = "gremlin.graphComputer.persist";
+    public static final String RESULT = "gremlin.graphComputer.result";
+    public static final String VERTICES = "gremlin.graphComputer.vertices";
+    public static final String EDGES = "gremlin.graphComputer.edges";
 
     public enum ResultGraph {
         /**
@@ -147,11 +158,49 @@ public interface GraphComputer extends Processor {
     }
 
     /**
+     * Get the configuration associated with the {@link GraphComputer}
+     *
+     * @return the GraphComputer's configuration
+     */
+    public Configuration configuration();
+
+    /**
+     * Returns a {@link VertexProgramStrategy} which enables a {@link Traversal} to execute on {@link GraphComputer}.
+     *
+     * @return a traversal strategy capable of executing traversals on a GraphComputer
+     */
+    public default ProcessorTraversalStrategy<GraphComputer> getProcessorTraversalStrategy() {
+        return new VertexProgramStrategy(this);
+    }
+
+    public static <A extends GraphComputer> A open(final Configuration configuration) {
+        try {
+            return (A) Class.forName(configuration.getString(GRAPH_COMPUTER)).getMethod("open", Configuration.class).invoke(null, configuration);
+        } catch (final Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
      *
-     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
+     * @return a {@link Future} denoting a reference to the computational result
+     * @deprecated As of release 3.3.0, replaced by use of {@link GraphComputer#submit(Graph)}.
      */
+    @Deprecated
     public Future<ComputerResult> submit();
+
+    /**
+     * Submit the configured {@link GraphComputer} to the provided {@link Graph}.
+     * That is, execute the {@link VertexProgram} over the {@link Graph}.
+     *
+     * @param graph the graph to execute the vertex program over
+     * @return a {@link Future} denoting a reference to the computational result
+     */
+    @Override
+    public default Future<ComputerResult> submit(final Graph graph) {
+        return this.submit();
+    }
 
     public default Features features() {
         return new Features() {

@@ -134,7 +134,7 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
-    public GraphTraversalSource withProcessor(final Processor.Description processor) {
+    public GraphTraversalSource withProcessor(final Processor processor) {
         return (GraphTraversalSource) TraversalSource.super.withProcessor(processor);
     }
 

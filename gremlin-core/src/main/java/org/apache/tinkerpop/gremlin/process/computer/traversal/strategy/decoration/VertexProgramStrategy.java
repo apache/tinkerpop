@@ -19,7 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -30,41 +32,50 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.ProcessorTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+
+import static org.apache.tinkerpop.gremlin.process.computer.GraphComputer.GRAPH_COMPUTER;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy, ProcessorTraversalStrategy<GraphComputer> {
 
-    private static final VertexProgramStrategy INSTANCE = new VertexProgramStrategy(Computer.of());
+    private static final VertexProgramStrategy INSTANCE = new VertexProgramStrategy(Computer.compute());
 
-    private final Computer computer;
+    private final Map<String, Object> graphComputerConfiguration;
 
     private VertexProgramStrategy() {
-        this(null);
+        this(new BaseConfiguration());
+    }
+
+    private VertexProgramStrategy(final Configuration configuration) {
+        this.graphComputerConfiguration = new HashMap<>((Map) ConfigurationConverter.getMap(configuration));
+        if (!this.graphComputerConfiguration.containsKey(GRAPH_COMPUTER))
+            this.graphComputerConfiguration.put(GRAPH_COMPUTER, GraphComputer.class.getCanonicalName());
     }
 
     public VertexProgramStrategy(final Computer computer) {
-        this.computer = computer;
+        this(computer.configuration());
+    }
+
+    public VertexProgramStrategy(final GraphComputer graphComputer) {
+        this(graphComputer.configuration());
     }
 
     @Override
@@ -133,7 +144,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             traversal.addStep(new ComputerResultStep<>(traversal));
         }
         // all vertex computing steps needs the graph computer function
-        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setComputer(this.computer));
+        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setComputer(this.createComputer()));
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {
@@ -156,23 +167,29 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         return EmptyStep.instance();
     }
 
-    public static Optional<Computer> getComputer(final TraversalStrategies strategies) {
-        final Optional<TraversalStrategy<?>> optional = strategies.toList().stream().filter(strategy -> strategy instanceof VertexProgramStrategy).findAny();
-        return optional.isPresent() ? Optional.of(((VertexProgramStrategy) optional.get()).computer) : Optional.empty();
-    }
-
-    public void addGraphComputerStrategies(final TraversalSource traversalSource) {
-        Class<? extends GraphComputer> graphComputerClass;
-        if (this.computer.getGraphComputerClass().equals(GraphComputer.class)) {
-            try {
-                graphComputerClass = this.computer.apply(traversalSource.getGraph()).getClass();
-            } catch (final Exception e) {
-                graphComputerClass = GraphComputer.class;
+    private final Computer createComputer() {
+        try {
+            Computer computer = Computer.compute();
+            for (final String key : this.graphComputerConfiguration.keySet()) {
+                if (key.equals(GRAPH_COMPUTER))
+                    computer = computer.graphComputer((Class) Class.forName((String) this.graphComputerConfiguration.get(key)));
+                else if (key.equals(GraphComputer.WORKERS))
+                    computer = computer.workers((int) this.graphComputerConfiguration.get(key));
+                else if (key.equals(GraphComputer.PERSIST))
+                    computer = computer.persist(GraphComputer.Persist.valueOf((String) this.graphComputerConfiguration.get(key)));
+                else if (key.equals(GraphComputer.RESULT))
+                    computer = computer.result(GraphComputer.ResultGraph.valueOf((String) this.graphComputerConfiguration.get(key)));
+                else if (key.equals(GraphComputer.VERTICES))
+                    computer = computer.vertices((Traversal) this.graphComputerConfiguration.get(key));
+                else if (key.equals(GraphComputer.EDGES))
+                    computer = computer.edges((Traversal) this.graphComputerConfiguration.get(key));
+                else
+                    computer = computer.configure(key, this.graphComputerConfiguration.get(key));
             }
-        } else
-            graphComputerClass = this.computer.getGraphComputerClass();
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
+            return computer;
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     public static VertexProgramStrategy instance() {
@@ -181,60 +198,40 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
     ////////////////////////////////////////////////////////////
 
-    public static final String GRAPH_COMPUTER = "graphComputer";
-    public static final String WORKERS = "workers";
-    public static final String PERSIST = "persist";
-    public static final String RESULT = "result";
-    public static final String VERTICES = "vertices";
-    public static final String EDGES = "edges";
+
+    public static VertexProgramStrategy create(final Configuration configuration) {
+        return new VertexProgramStrategy(configuration);
+    }
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(GRAPH_COMPUTER, this.computer.getGraphComputerClass().getCanonicalName());
-        if (-1 != this.computer.getWorkers())
-            map.put(WORKERS, this.computer.getWorkers());
-        if (null != this.computer.getPersist())
-            map.put(PERSIST, this.computer.getPersist().name());
-        if (null != this.computer.getResultGraph())
-            map.put(RESULT, this.computer.getResultGraph().name());
-        if (null != this.computer.getVertices())
-            map.put(VERTICES, this.computer.getVertices());
-        if (null != this.computer.getEdges())
-            map.put(EDGES, this.computer.getEdges());
-        map.putAll(this.computer.getConfiguration());
-        return new MapConfiguration(map);
+        return new MapConfiguration(this.graphComputerConfiguration);
     }
 
-    public static VertexProgramStrategy create(final Configuration configuration) {
-        try {
-            final VertexProgramStrategy.Builder builder = VertexProgramStrategy.build();
-            for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
-                if (key.equals(GRAPH_COMPUTER))
-                    builder.graphComputer((Class) Class.forName(configuration.getString(key)));
-                else if (key.equals(WORKERS))
-                    builder.workers(configuration.getInt(key));
-                else if (key.equals(PERSIST))
-                    builder.persist(GraphComputer.Persist.valueOf(configuration.getString(key)));
-                else if (key.equals(RESULT))
-                    builder.result(GraphComputer.ResultGraph.valueOf(configuration.getString(key)));
-                else if (key.equals(VERTICES))
-                    builder.vertices((Traversal) configuration.getProperty(key));
-                else if (key.equals(EDGES))
-                    builder.edges((Traversal) configuration.getProperty(key));
-                else
-                    builder.configure(key, configuration.getProperty(key));
-            }
-            return builder.create();
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-    }
-
+    @Deprecated
     public static Builder build() {
         return new Builder();
     }
 
+    @Override
+    public GraphComputer getProcessor() {
+        if (GraphComputer.class.getCanonicalName().equals(this.graphComputerConfiguration.get(GRAPH_COMPUTER)))
+            throw new IllegalStateException("This is an artifact of using the older Computer builder model.");
+        return GraphComputer.open(new MapConfiguration(this.graphComputerConfiguration));
+    }
+
+    @Deprecated
+    public Class<? extends GraphComputer> getGraphComputerClassHistoric(final Graph graph) {
+        try {
+            final GraphComputer graphComputer = graph.compute();
+            this.graphComputerConfiguration.put(GRAPH_COMPUTER, graphComputer.getClass().getCanonicalName());
+            return graphComputer.getClass();
+        } catch (final Exception e) {
+            return GraphComputer.class;
+        }
+    }
+
+    @Deprecated
     public final static class Builder {
 
         private Computer computer = Computer.compute();

@@ -23,7 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.akka.process.actor.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.process.actor.Actors;
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -147,8 +146,8 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
         else {
             final GraphTraversalSource g = graph.traversal();
             return RANDOM.nextBoolean() ?
-                    g.withProcessor(Actors.of(AkkaGraphActors.class).workers(new Random().nextInt(15) + 1)) :
-                    g.withProcessor(Actors.of(AkkaGraphActors.class));
+                    g.withProcessor(AkkaGraphActors.open().workers(new Random().nextInt(15) + 1)) :
+                    g.withProcessor(GraphActors.open(AkkaGraphActors.class));
         }
     }
 }

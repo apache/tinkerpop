@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
@@ -197,7 +198,8 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     public static final class GlobalCache {
 
         private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
-        private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();
+        private static final Map<Class<? extends GraphComputer>, TraversalStrategies> COMPUTER_CACHE = new HashMap<>();
+        private static final Map<Class<? extends GraphActors>, TraversalStrategies> ACTORS_CACHE = new HashMap<>();
 
         static {
             final TraversalStrategies graphStrategies = new DefaultTraversalStrategies();
@@ -225,37 +227,47 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     OrderLimitStrategy.instance(),
                     PathProcessorStrategy.instance(),
                     ComputerVerificationStrategy.instance());
-            GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
+            COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
+
+            /////////////////////
+
+            final TraversalStrategies graphActorsStrategies = new DefaultTraversalStrategies();
+            ACTORS_CACHE.put(GraphActors.class, graphActorsStrategies);
         }
 
-        public static void registerStrategies(final Class graphOrGraphComputerClass, final TraversalStrategies traversalStrategies) {
-            if (Graph.class.isAssignableFrom(graphOrGraphComputerClass))
-                GRAPH_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
-            else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass))
-                GRAPH_COMPUTER_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
+        public static void registerStrategies(final Class graphOrProcessorClass, final TraversalStrategies traversalStrategies) {
+            if (Graph.class.isAssignableFrom(graphOrProcessorClass))
+                GRAPH_CACHE.put(graphOrProcessorClass, traversalStrategies);
+            else if (GraphComputer.class.isAssignableFrom(graphOrProcessorClass))
+                COMPUTER_CACHE.put(graphOrProcessorClass, traversalStrategies);
+            else if (GraphActors.class.isAssignableFrom(graphOrProcessorClass))
+                ACTORS_CACHE.put(graphOrProcessorClass, traversalStrategies);
             else
-                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
+                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph, GraphComputer, and GraphActors strategy caching: " + graphOrProcessorClass.getCanonicalName());
         }
 
-        public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
+        public static TraversalStrategies getStrategies(final Class graphOrProcessorClass) {
             try {
                 // be sure to load the class so that its static{} traversal strategy registration component is loaded.
                 // this is more important for GraphComputer classes as they are typically not instantiated prior to strategy usage like Graph classes.
-                final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
-                        graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
-                        graphOrGraphComputerClass.getCanonicalName();
+                final String graphComputerClassName = null != graphOrProcessorClass.getDeclaringClass() ?
+                        graphOrProcessorClass.getCanonicalName().replace("." + graphOrProcessorClass.getSimpleName(), "$" + graphOrProcessorClass.getSimpleName()) :
+                        graphOrProcessorClass.getCanonicalName();
                 Class.forName(graphComputerClassName);
             } catch (final ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
-                final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
+            if (Graph.class.isAssignableFrom(graphOrProcessorClass)) {
+                final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrProcessorClass);
                 return null == traversalStrategies ? GRAPH_CACHE.get(Graph.class) : traversalStrategies;
-            } else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass)) {
-                final TraversalStrategies traversalStrategies = GRAPH_COMPUTER_CACHE.get(graphOrGraphComputerClass);
-                return null == traversalStrategies ? GRAPH_COMPUTER_CACHE.get(GraphComputer.class) : traversalStrategies;
+            } else if (GraphComputer.class.isAssignableFrom(graphOrProcessorClass)) {
+                final TraversalStrategies traversalStrategies = COMPUTER_CACHE.get(graphOrProcessorClass);
+                return null == traversalStrategies ? COMPUTER_CACHE.get(GraphComputer.class) : traversalStrategies;
+            } else if (GraphActors.class.isAssignableFrom(graphOrProcessorClass)) {
+                final TraversalStrategies traversalStrategies = ACTORS_CACHE.get(graphOrProcessorClass);
+                return null == traversalStrategies ? ACTORS_CACHE.get(GraphActors.class) : traversalStrategies;
             } else {
-                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
+                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph, GraphComputer, and GraphActors strategy caching: " + graphOrProcessorClass.getCanonicalName());
             }
         }
     }
