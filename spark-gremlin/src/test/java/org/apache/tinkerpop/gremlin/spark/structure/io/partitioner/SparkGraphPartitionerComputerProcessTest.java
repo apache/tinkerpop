@@ -17,25 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.spark.structure.io.partitioner;
 
-import java.util.List;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Partitioner {
-
-    public List<Partition> getPartitions();
-
-    public Partition getPartition(final Element element);
-
-    public default Partition getPartition(final String id) {
-        for(final Partition partition : this.getPartitions()) {
-            if(partition.id().equals(id))
-                return partition;
-        }
-        throw new IllegalArgumentException("The provided partition does not exist in the partitioner");
-    }
-
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = TinkerGraphPartitionerProvider.class, graph = TinkerGraph.class)
+public class SparkGraphPartitionerComputerProcessTest {
 }

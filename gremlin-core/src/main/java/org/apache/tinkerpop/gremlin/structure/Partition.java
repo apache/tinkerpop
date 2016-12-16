@@ -65,7 +65,7 @@ public interface Partition {
      *
      * @return the unique id of the partition
      */
-    public UUID guid();
+    public String id();
 
     /**
      * Get the {@link InetAddress} of the locations physical location.

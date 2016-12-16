@@ -69,7 +69,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     private Persist persist = null;
 
     private VertexProgram<?> vertexProgram;
-    private final TinkerGraph graph;
+    private TinkerGraph graph;
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
@@ -97,6 +97,7 @@ public final class TinkerGraphComputer implements GraphComputer {
         this.graph = null;
         this.configuration = configuration;
         this.configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
+        GraphComputerHelper.configure(this, ConfigurationUtils.cloneConfiguration(configuration));
     }
 
     public static TinkerGraphComputer open(final Configuration configuration) {
@@ -104,10 +105,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     }
 
     public static TinkerGraphComputer open() {
-        final BaseConfiguration configuration = new BaseConfiguration();
-        configuration.setDelimiterParsingDisabled(true);
-        configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
-        return new TinkerGraphComputer(configuration);
+        return new TinkerGraphComputer(new BaseConfiguration());
     }
 
     @Override
@@ -161,6 +159,12 @@ public final class TinkerGraphComputer implements GraphComputer {
     @Override
     public Configuration configuration() {
         return this.configuration;
+    }
+
+    @Override
+    public Future<ComputerResult> submit(final Graph graph) {
+        this.graph = (TinkerGraph) graph;
+        return this.submit();
     }
 
     @Override

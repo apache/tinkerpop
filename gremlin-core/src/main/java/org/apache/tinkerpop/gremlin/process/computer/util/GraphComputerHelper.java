@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -66,6 +69,26 @@ public final class GraphComputerHelper {
 
     public static GraphComputer.Persist getPersistState(final Optional<VertexProgram> vertexProgram, final Optional<GraphComputer.Persist> persist) {
         return persist.isPresent() ? persist.get() : vertexProgram.isPresent() ? vertexProgram.get().getPreferredPersist() : GraphComputer.Persist.NOTHING;
+    }
+
+    public static GraphComputer configure(GraphComputer computer, final Configuration configuration) {
+        final Iterator<String> keys = configuration.getKeys();
+        while (keys.hasNext()) {
+            final String key = keys.next();
+            if (key.equals(GraphComputer.WORKERS))
+                computer = computer.workers(configuration.getInt(GraphComputer.WORKERS));
+            else if (key.equals(GraphComputer.RESULT))
+                computer = computer.result(GraphComputer.ResultGraph.valueOf(configuration.getString(GraphComputer.RESULT)));
+            else if (key.equals(GraphComputer.PERSIST))
+                computer = computer.persist(GraphComputer.Persist.valueOf(configuration.getString(GraphComputer.PERSIST)));
+            else if (key.equals(GraphComputer.VERTICES))
+                computer = computer.vertices((Traversal.Admin) configuration.getProperty(GraphComputer.VERTICES));
+            else if (key.equals(GraphComputer.EDGES))
+                computer = computer.edges((Traversal.Admin) configuration.getProperty(GraphComputer.EDGES));
+            else if (!key.equals(GraphComputer.GRAPH_COMPUTER))
+                computer = computer.configure(key, configuration.getProperty(key));
+        }
+        return computer;
     }
 
     public static boolean areEqual(final MapReduce a, final Object b) {

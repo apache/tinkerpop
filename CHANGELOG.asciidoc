@@ -37,7 +37,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `ProcessTraversalStrategy` which is used to get cached strategies associated with a `Processor`.
 * Deprecated `Computer` in favor of `GraphComputer.open()`.
 * Deprecated `Graph.compute()` and `GraphComputer.submit()` in favor of `GraphComputer.submit(Graph)`.
->>>>>>> So much. withProcessor(Processor). No more Compute. Process.submit(Graph) as we are now staging it so that every Processor (GraphComputer/GraphAgents) can work over any Graph. This will all be via Partitioner. withComputer() deprecated. Lots of cool stuff with Process strategies -- ProcessorTraveralStrategy like VertexProgramStratgegy and ActorProgramStrategy work directly with TraversalStrategies.GlobalCache. So much other stuf... I forget. Check the CHANGELOG. This was a massive undertaking but, thank god, its all backwards compatible (though with deprecation).
+* Added `PartitionerInputFormat` which allows `SparkGraphComputer` and `GiraphGraphComputer` to pull data from any `Graph` implementation.
+* Added `PartitionerInputRDD` which allows `SparkGraphComputer` to pull data from any `Graph` implementation.
 * Updated Docker build scripts to include Python dependencies (NOTE: users should remove any previously generated TinkerPop Docker images).
 * Added "attachment requisite" `VertexProperty.element()` and `Property.element()` data in GraphSON serialization.
 * Added `Vertex`, `Edge`, `VertexProperty`, and `Property` serializers to Gremlin-Python and exposed tests that use graph object arguments.

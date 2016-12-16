@@ -106,7 +106,7 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     }
 
     private String createWorkerAddress(final Partition partition) {
-        return "../worker-" + partition.guid();
+        return "../worker-" + partition.id();
     }
 }
 

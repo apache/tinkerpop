@@ -150,7 +150,7 @@ public final class StringFactory {
     }
 
     public static String partitionString(final Partition partition) {
-        return "partition" + L_BRACKET + partition.location().getHostAddress() + COLON + partition.guid() + R_BRACKET;
+        return "partition" + L_BRACKET + partition.location().getHostAddress() + COLON + partition.id() + R_BRACKET;
     }
 
     public static String traversalSourceString(final TraversalSource traversalSource) {

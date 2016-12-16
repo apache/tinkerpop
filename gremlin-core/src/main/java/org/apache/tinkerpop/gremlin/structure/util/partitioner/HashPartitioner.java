@@ -31,7 +31,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -72,12 +71,13 @@ public final class HashPartitioner implements Partitioner {
         private final Partition basePartition;
         private final int totalSplits;
         private final int splitId;
-        private final UUID guid = UUID.randomUUID();
+        private final String id;
 
         private HashPartition(final Partition basePartition, final int splitId, final int totalSplits) {
             this.basePartition = basePartition;
             this.totalSplits = totalSplits;
             this.splitId = splitId;
+            this.id = this.basePartition.id() + "#" + splitId;
         }
 
         @Override
@@ -102,17 +102,17 @@ public final class HashPartitioner implements Partitioner {
 
         @Override
         public boolean equals(final Object other) {
-            return other instanceof Partition && ((Partition) other).guid().equals(this.guid);
+            return other instanceof Partition && ((Partition) other).id().equals(this.id);
         }
 
         @Override
         public int hashCode() {
-            return this.guid.hashCode() + this.location().hashCode();
+            return this.id.hashCode() + this.location().hashCode();
         }
 
         @Override
-        public UUID guid() {
-            return this.guid;
+        public String id() {
+            return this.id;
         }
 
         @Override

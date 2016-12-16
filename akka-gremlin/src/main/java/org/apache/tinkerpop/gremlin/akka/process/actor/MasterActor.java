@@ -61,7 +61,7 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
-            final String workerPathString = "worker-" + partition.guid();
+            final String workerPathString = "worker-" + partition.id();
             this.workers.add(new Address.Worker(workerPathString, partition.location()));
             context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner), workerPathString);
         }

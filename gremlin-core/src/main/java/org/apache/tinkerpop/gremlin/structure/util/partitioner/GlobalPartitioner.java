@@ -32,7 +32,6 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,11 +62,12 @@ public final class GlobalPartitioner implements Partitioner {
     private class GlobalPartition implements Partition {
 
         private final Graph graph;
-        private final UUID guid = UUID.randomUUID();
+        private final String id;
         private final InetAddress location;
 
         private GlobalPartition(final Graph graph) {
             this.graph = graph;
+            this.id = this.graph.toString();
             try {
                 this.location = InetAddress.getLocalHost();
             } catch (final UnknownHostException e) {
@@ -97,17 +97,17 @@ public final class GlobalPartitioner implements Partitioner {
 
         @Override
         public boolean equals(final Object other) {
-            return other instanceof Partition && ((Partition) other).guid().equals(this.guid);
+            return other instanceof Partition && ((Partition) other).id().equals(this.id);
         }
 
         @Override
         public int hashCode() {
-            return this.guid.hashCode() + this.location.hashCode();
+            return this.id.hashCode() + this.location.hashCode();
         }
 
         @Override
-        public UUID guid() {
-            return this.guid;
+        public String id() {
+            return this.id;
         }
 
         @Override
