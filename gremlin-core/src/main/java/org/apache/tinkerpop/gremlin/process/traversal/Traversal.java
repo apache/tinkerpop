@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
@@ -42,7 +44,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -137,6 +141,25 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default Stream<E> toStream() {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+    }
+
+    /**
+     * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
+     * Note that this method can only be used if the {@code Traversal} is constructed using
+     * {@link TraversalSource#withRemote(Configuration)}. Calling this method otherwise will yield an
+     * {@code IllegalStateException}.
+     */
+    public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction) {
+        // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
+        if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+
+        // use the end step so the results are bulked
+        final Step<?, E> endStep = this.asAdmin().getEndStep();
+        if (endStep instanceof RemoteStep) {
+            return ((RemoteStep) endStep).promise().thenApply(traversalFunction);
+        } else {
+            throw new IllegalStateException("Only traversals created using withRemote() can be used in an async way");
+        }
     }
 
     /**

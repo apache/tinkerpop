@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 /**
@@ -163,6 +164,10 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
+     */
+    @Deprecated
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
@@ -178,11 +183,24 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #submitAsync(Bytecode)}.
+     */
+    @Deprecated
     @Override
     public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException {
         try {
             final ResultSet rs = client.submit(bytecode);
             return new DriverRemoteTraversal<>(rs, client, attachElements, conf);
+        } catch (Exception ex) {
+            throw new RemoteConnectionException(ex);
+        }
+    }
+
+    @Override
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
+        try {
+            return client.submitAsync(bytecode).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }

@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
@@ -50,15 +51,26 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     private boolean closed = false;
     private boolean retrievedAllKeys = false;
+    private final CompletableFuture<Void> ready;
 
-    public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
+    public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host,
+                                            final CompletableFuture<Void> ready) {
         this.client = client;
         this.serverSideEffect = serverSideEffect;
         this.host = host;
+        this.ready = ready;
     }
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
+        // wait for the read to complete (i.e. iteration on the server) before allowing the caller to get the
+        // side-effect. calling prior to this will result in the side-effect not being found. of course, the
+        // bad part here is that the method blocks indefinitely waiting for the result, but it prevents the
+        // test failure problems that happen on slower systems. in practice, it's unlikely that a user would
+        // try to get a side-effect prior to iteration, but since the API allows it, this at least prevents
+        // the error.
+        ready.join();
+
         if (!keys().contains(key)) throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
 
         if (!sideEffects.containsKey(key)) {
@@ -91,6 +103,14 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     @Override
     public Set<String> keys() {
+        // wait for the read to complete (i.e. iteration on the server) before allowing the caller to get the
+        // side-effect. calling prior to this will result in the side-effect not being found. of course, the
+        // bad part here is that the method blocks indefinitely waiting for the result, but it prevents the
+        // test failure problems that happen on slower systems. in practice, it's unlikely that a user would
+        // try to get a side-effect prior to iteration, but since the API allows it, this at least prevents
+        // the error.
+        ready.join();
+
         if (closed && !retrievedAllKeys) throw new IllegalStateException("Traversal has been closed - side-effect keys cannot be retrieved");
 
         if (!retrievedAllKeys) {

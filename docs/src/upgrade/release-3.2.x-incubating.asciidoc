@@ -32,6 +32,28 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Traversal Promises
+^^^^^^^^^^^^^^^^^^
+
+The `Traversal` API now has a new `promise()` method. These methods return a promise in the form of a
+`CompleteableFuture`. Usage is as follows:
+
+[source,groovy]
+----
+gremlin> promise = g.V().out().promise{it.next()}
+==>java.util.concurrent.CompletableFuture@4aa3d36[Completed normally]
+gremlin> promise.join()
+==>v[3]
+gremlin> promise.isDone()
+==>true
+gremlin> g.V().out().promise{it.toList()}.thenApply{it.size()}.get()
+==>6
+----
+
+At this time, this method is only used for traversals that are configured using `withRemote()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1490[TINKERPOP-1490]
+
 If/Then-Semantics with Choose Step
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -208,7 +208,7 @@ final class Connection {
                             logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
                         thisConnection.isDead = true;
                         thisConnection.returnToPool();
-                        future.completeExceptionally(f.cause());
+                        cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
@@ -250,8 +250,8 @@ final class Connection {
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        future.complete(new ResultSet(handler, cluster.executor(), readCompleted,
-                                requestMessage, pool.host));
+                        cluster.executor().submit(() -> future.complete(
+                                new ResultSet(handler, cluster.executor(), readCompleted, requestMessage, pool.host)));
                     }
                 });
         channel.writeAndFlush(requestMessage, requestPromise);
