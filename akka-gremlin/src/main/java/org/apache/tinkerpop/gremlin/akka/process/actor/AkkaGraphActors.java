@@ -83,7 +83,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
 
     @Override
     public GraphActors<R> configure(final String key, final Object value) {
-        this.configuration.addProperty(key, value);
+        this.configuration.setProperty(key, value);
         return this;
     }
 
