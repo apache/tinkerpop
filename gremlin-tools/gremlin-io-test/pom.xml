@@ -21,11 +21,11 @@
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- gremlin-test needs to be compile scope as it provides commons-io -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
