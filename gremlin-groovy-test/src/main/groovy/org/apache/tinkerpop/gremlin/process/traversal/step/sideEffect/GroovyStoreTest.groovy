@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -48,6 +49,11 @@ public abstract class GroovyStoreTest {
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a')");
+        }
+
+        @Override
+        public Traversal<Vertex, BulkSet<String>> get_g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX() {
+            new ScriptTraversal(g, "gremlin-groovy", "g.V.order.by(id).store('a').by('name').out.select('a')")
         }
     }
 }

@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.util.SideEffectHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.javatuples.Pair;
 
@@ -48,13 +49,11 @@ import java.util.Set;
  */
 public final class PathRetractionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    public static Integer MAX_BARRIER_SIZE = 2500;
-
-    private static final PathRetractionStrategy INSTANCE = new PathRetractionStrategy(MAX_BARRIER_SIZE);
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PathRetractionStrategy
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
-
+    public static Integer MAX_BARRIER_SIZE = 2500;
+    private static final PathRetractionStrategy INSTANCE = new PathRetractionStrategy(MAX_BARRIER_SIZE);
     private final int standardBarrierSize;
 
     private PathRetractionStrategy(final int standardBarrierSize) {
@@ -69,9 +68,10 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // do not apply this strategy if there are lambdas as you can't introspect to know what path information the lambdas are using
         // do not apply this strategy if a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)
-        if (TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder || step.getRequirements().contains(TraverserRequirement.PATH), TraversalHelper.getRootTraversal(traversal)))
+        if (TraversalHelper.anyStepRecursively(step -> (step instanceof LambdaHolder || step.getRequirements().contains(TraverserRequirement.PATH)), TraversalHelper.getRootTraversal(traversal)))
             return;
 
+        final Set<String> frozenStepIds = SideEffectHelper.determineFrozenStepIds(traversal);
         final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
         final Set<String> foundLabels = new HashSet<>();
         final Set<String> keepLabels = new HashSet<>();
@@ -109,7 +109,8 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                         !(currentStep instanceof MatchStep) &&
                         !(currentStep instanceof Barrier) &&
                         !(currentStep.getNextStep() instanceof Barrier) &&
-                        !(currentStep.getTraversal().getParent() instanceof MatchStep))
+                        !(currentStep.getTraversal().getParent() instanceof MatchStep) &&
+                        !(frozenStepIds.contains(currentStep.getId())))
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, this.standardBarrierSize), currentStep, traversal);
             }
         }
