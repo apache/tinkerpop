@@ -65,7 +65,7 @@ Python Environment
 As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python 2.x] to work with the
 `gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
-and link:https://virtualenv.pypa.io/en/stable/[virtualenv].
+and link:https://virtualenv.pypa.io/en/stable/[virtualenv] (version 15.0.2 - older versions may cause build failures).
 
 Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
 done manually from the command line with:
