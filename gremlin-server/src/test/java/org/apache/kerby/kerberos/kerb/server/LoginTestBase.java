@@ -21,8 +21,6 @@ package org.apache.kerby.kerberos.kerb.server;
 
 import org.apache.kerby.kerberos.kerb.client.JaasKrbUtil;
 import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
-import org.junit.After;
-import org.junit.Before;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -30,11 +28,13 @@ import java.io.File;
 import java.security.Principal;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.After;
+import org.junit.Before;
 
 /*
- * Except for this comment, this file is a literal copy from:
+ * Except for this comment and the removal of the org.assertj.core.api.Assertions.assertThat import statement,
+ * this file is a literal copy from:
  *     https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/
  *         kerby-kerb/kerb-kdc-test/src/test/java/org/apache/kerby/kerberos/kerb/server/LoginTestBase.java
  *
@@ -76,7 +76,7 @@ public class LoginTestBase extends KdcTestBase {
 
     protected void checkSubject(Subject subject) {
         Set<Principal> clientPrincipals = subject.getPrincipals();
-        assertThat(clientPrincipals);
+        assertThat("The subject has minimally one principal", clientPrincipals.size() > 0);
     }
 
     @After
