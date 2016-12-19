@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -63,7 +64,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
             Pattern.compile(File.pathSeparator.equals(":") ? "([^:]|://)+" : ("[^" + File.pathSeparator + "]"));
 
     protected final Logger logger;
-    protected HadoopGraph hadoopGraph;
+    protected HadoopConfiguration configuration;
     protected boolean executed = false;
     protected final Set<MapReduce> mapReducers = new HashSet<>();
     protected VertexProgram<Object> vertexProgram;
@@ -75,32 +76,40 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected GraphFilter graphFilter = new GraphFilter();
 
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
-        this.hadoopGraph = hadoopGraph;
+        this(hadoopGraph.configuration());
+    }
+
+    protected AbstractHadoopGraphComputer(final org.apache.commons.configuration.Configuration configuration) {
+        this.configuration = new HadoopConfiguration(configuration);
         this.logger = LoggerFactory.getLogger(this.getClass());
-        //GraphComputerHelper.configure(this, this.hadoopGraph.configuration());
+        GraphComputerHelper.configure(this, this.configuration);
     }
 
     @Override
     public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
         this.graphFilter.setVertexFilter(vertexFilter);
+        this.configuration.setProperty(VERTICES, vertexFilter);
         return this;
     }
 
     @Override
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
         this.graphFilter.setEdgeFilter(edgeFilter);
+        this.configuration.setProperty(EDGES, edgeFilter);
         return this;
     }
 
     @Override
     public GraphComputer result(final ResultGraph resultGraph) {
         this.resultGraph = resultGraph;
+        this.configuration.setProperty(RESULT, resultGraph.name());
         return this;
     }
 
     @Override
     public GraphComputer persist(final Persist persist) {
         this.persist = persist;
+        this.configuration.setProperty(PERSIST, persist.name());
         return this;
     }
 
@@ -119,13 +128,25 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     @Override
     public GraphComputer workers(final int workers) {
         this.workers = workers;
+        this.configuration.setProperty(WORKERS, workers);
         return this;
     }
 
     @Override
     public Future<ComputerResult> submit(final Graph graph) {
-        this.hadoopGraph = (HadoopGraph) graph;
+        ConfigurationUtils.copy(graph.configuration(), this.configuration);
         return this.submit();
+    }
+
+    @Override
+    public GraphComputer configure(final String key, final Object value) {
+        this.configuration.setProperty(key,value);
+        return this;
+    }
+
+    @Override
+    public org.apache.commons.configuration.Configuration configuration() {
+        return this.configuration;
     }
 
     @Override
@@ -239,8 +260,8 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
         @Override
         public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER)) {
-                final Object writer = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphWriter(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
+            if (configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER)) {
+                final Object writer = ReflectionUtils.newInstance(configuration.getGraphWriter(), ConfUtil.makeHadoopConfiguration(configuration));
                 if (writer instanceof PersistResultGraphAware)
                     return ((PersistResultGraphAware) writer).supportsResultGraphPersistCombination(resultGraph, persist);
                 else {

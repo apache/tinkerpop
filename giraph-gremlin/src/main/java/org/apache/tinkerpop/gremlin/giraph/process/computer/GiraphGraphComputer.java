@@ -85,9 +85,11 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     private Set<String> vertexProgramConfigurationKeys = new HashSet<>();
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
-        super(hadoopGraph);
-        final Configuration configuration = hadoopGraph.configuration();
-        configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
+       this(hadoopGraph.configuration());
+    }
+
+    private GiraphGraphComputer(final Configuration configuration) {
+        super(configuration);
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
         this.giraphConfiguration.setVertexClass(GiraphVertex.class);
         this.giraphConfiguration.setComputationClass(GiraphComputation.class);
@@ -102,28 +104,15 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     }
 
     public static GiraphGraphComputer open(final org.apache.commons.configuration.Configuration configuration) {
-        return HadoopGraph.open(configuration).compute(GiraphGraphComputer.class);
+        return new GiraphGraphComputer(configuration);
     }
 
     @Override
     public Future<ComputerResult> submit(final Graph graph) {
-        this.hadoopGraph = (HadoopGraph)graph;
-        final Configuration configuration = this.hadoopGraph.configuration();
+        final Configuration configuration = graph.configuration();
+        this.configuration.copy(configuration);
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         return this.submit();
-    }
-
-    @Override
-    public GraphComputer workers(final int workers) {
-        this.useWorkerThreadsInConfiguration = false;
-        return super.workers(workers);
-    }
-
-    @Override
-    public GraphComputer configure(final String key, final Object value) {
-        this.giraphConfiguration.set(key, value.toString());
-        this.useWorkerThreadsInConfiguration = this.giraphConfiguration.getInt(GiraphConstants.MAX_WORKERS, -666) != -666 || this.giraphConfiguration.getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), -666) != -666;
-        return this;
     }
 
     @Override
@@ -145,14 +134,12 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "GiraphSubmitter");
     }
 
-    @Override
-    public org.apache.commons.configuration.Configuration configuration() {
-        return ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
-    }
-
     private Future<ComputerResult> submitWithExecutor(final Executor exec) {
         final long startTime = System.currentTimeMillis();
+        this.configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, this.configuration.getProperty(key).toString()));
+        this.useWorkerThreadsInConfiguration = this.giraphConfiguration.getInt(GiraphConstants.MAX_WORKERS, -666) != -666 || this.giraphConfiguration.getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), -666) != -666;
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
+        ConfigurationUtils.copy(this.configuration, apacheConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
                 this.loadJars(giraphConfiguration);
@@ -185,7 +172,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             if (null != this.vertexProgram) {
                 // a way to verify in Giraph whether the traversal will go over the wire or not
                 try {
-                    VertexProgram.createVertexProgram(this.hadoopGraph, ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
+                    VertexProgram.createVertexProgram(HadoopGraph.open(this.configuration), ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
                 } catch (final IllegalStateException e) {
                     if (e.getCause() instanceof NumberFormatException)
                         throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
