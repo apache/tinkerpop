@@ -159,8 +159,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static javafx.scene.input.KeyCode.M;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
