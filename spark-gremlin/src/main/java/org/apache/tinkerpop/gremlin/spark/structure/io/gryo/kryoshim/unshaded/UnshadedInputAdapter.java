@@ -16,35 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * Copyright DataStax, Inc.
- *
- * Please see the included license file for details.
- */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
 import com.esotericsoftware.kryo.io.Input;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 
-public class UnshadedInputAdapter implements InputShim
-{
+public class UnshadedInputAdapter implements InputShim {
 
     private final Input unshadedInput;
 
-    public UnshadedInputAdapter(final Input unshadedInput)
-    {
+    public UnshadedInputAdapter(final Input unshadedInput) {
         this.unshadedInput = unshadedInput;
     }
 
-    Input getUnshadedInput()
-    {
+    Input getUnshadedInput() {
         return unshadedInput;
     }
 
     @Override
-    public byte readByte()
-    {
+    public byte readByte() {
         return unshadedInput.readByte();
     }
 
@@ -54,14 +44,12 @@ public class UnshadedInputAdapter implements InputShim
     }
 
     @Override
-    public String readString()
-    {
+    public String readString() {
         return unshadedInput.readString();
     }
 
     @Override
-    public long readLong()
-    {
+    public long readLong() {
         return unshadedInput.readLong();
     }
 
@@ -71,8 +59,12 @@ public class UnshadedInputAdapter implements InputShim
     }
 
     @Override
-    public double readDouble()
-    {
+    public short readShort() {
+        return unshadedInput.readShort();
+    }
+
+    @Override
+    public double readDouble() {
         return unshadedInput.readDouble();
     }
 }

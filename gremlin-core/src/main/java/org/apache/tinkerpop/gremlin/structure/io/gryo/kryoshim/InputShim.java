@@ -34,5 +34,7 @@ public interface InputShim {
 
     public int readInt();
 
+    public short readShort();
+
     public double readDouble();
 }

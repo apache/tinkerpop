@@ -60,6 +60,11 @@ public class ShadedInputAdapter implements InputShim {
     }
 
     @Override
+    public short readShort() {
+        return shadedInput.readShort();
+    }
+
+    @Override
     public double readDouble() {
         return shadedInput.readDouble();
     }

@@ -36,5 +36,7 @@ public interface OutputShim {
 
     public void writeDouble(final double d);
 
+    public void writeShort(final int s);
+
     public void flush();
 }

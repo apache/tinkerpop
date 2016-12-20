@@ -16,34 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * Copyright DataStax, Inc.
- *
- * Please see the included license file for details.
- */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
 import com.esotericsoftware.kryo.io.Output;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 
-public class UnshadedOutputAdapter implements OutputShim
-{
+public class UnshadedOutputAdapter implements OutputShim {
     private final Output unshadedOutput;
 
-    public UnshadedOutputAdapter(final Output unshadedOutput)
-    {
+    public UnshadedOutputAdapter(final Output unshadedOutput) {
         this.unshadedOutput = unshadedOutput;
     }
 
-    Output getUnshadedOutput()
-    {
+    Output getUnshadedOutput() {
         return unshadedOutput;
     }
 
     @Override
-    public void writeByte(final byte b)
-    {
+    public void writeByte(final byte b) {
         unshadedOutput.writeByte(b);
     }
 
@@ -53,14 +43,17 @@ public class UnshadedOutputAdapter implements OutputShim
     }
 
     @Override
-    public void writeString(final String s)
-    {
+    public void writeShort(int s) {
+        unshadedOutput.writeShort(s);
+    }
+
+    @Override
+    public void writeString(final String s) {
         unshadedOutput.writeString(s);
     }
 
     @Override
-    public void writeLong(final long l)
-    {
+    public void writeLong(final long l) {
         unshadedOutput.writeLong(l);
     }
 
@@ -70,14 +63,12 @@ public class UnshadedOutputAdapter implements OutputShim
     }
 
     @Override
-    public void writeDouble(final double d)
-    {
+    public void writeDouble(final double d) {
         unshadedOutput.writeDouble(d);
     }
 
     @Override
-    public void flush()
-    {
+    public void flush() {
         unshadedOutput.flush();
     }
 }
