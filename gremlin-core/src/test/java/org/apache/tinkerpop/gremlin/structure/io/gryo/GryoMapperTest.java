@@ -40,6 +40,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -336,6 +339,30 @@ public class GryoMapperTest {
     public void shouldHandleBytecode() throws Exception {
         final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
         assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
+    }
+
+    @Test
+    public void shouldHandleClass() throws Exception {
+        final Class clazz = java.io.File.class;
+        assertEquals(clazz, serializeDeserialize(clazz, Class.class));
+    }
+
+    @Test
+    public void shouldHandleTimestamp() throws Exception {
+        final Timestamp ts = new java.sql.Timestamp(1481750076295L);
+        assertEquals(ts, serializeDeserialize(ts, java.sql.Timestamp.class));
+    }
+
+    @Test
+    public void shouldHandleINetAddress() throws Exception {
+        final InetAddress addy = InetAddress.getByName("localhost");
+        assertEquals(addy, serializeDeserialize(addy, InetAddress.class));
+    }
+
+    @Test
+    public void shouldHandleByteBuffer() throws Exception {
+        final ByteBuffer bb = ByteBuffer.wrap("some bytes for you".getBytes());
+        assertEquals(bb, serializeDeserialize(bb, ByteBuffer.class));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

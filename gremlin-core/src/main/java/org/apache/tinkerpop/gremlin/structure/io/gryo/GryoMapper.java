@@ -96,7 +96,9 @@ import org.javatuples.Pair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -274,7 +276,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(BigInteger.class, 34));
             add(GryoTypeReg.of(BigDecimal.class, 35));
             add(GryoTypeReg.of(Calendar.class, 39));
-            add(GryoTypeReg.of(Class.class, 41));
+            add(GryoTypeReg.of(Class.class, 41, new UtilSerializers.ClassSerializer()));
             add(GryoTypeReg.of(Collection.class, 37));
             add(GryoTypeReg.of(Collections.EMPTY_LIST.getClass(), 51));
             add(GryoTypeReg.of(Collections.EMPTY_MAP.getClass(), 52));
@@ -313,6 +315,9 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(VertexTerminator.class, 13));
             add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
             add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121));
+            add(GryoTypeReg.of(java.sql.Timestamp.class, 138));
+            add(GryoTypeReg.of(InetAddress.class, 139, new UtilSerializers.InetAddressSerializer()));
+            add(GryoTypeReg.of(ByteBuffer.class, 140, new UtilSerializers.ByteBufferSerializer()));  // ***LAST ID***
 
             add(GryoTypeReg.of(ReferenceEdge.class, 81));
             add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
@@ -350,7 +355,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(Column.class, 132));
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
-            add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137)); // ***LAST ID***
+            add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
