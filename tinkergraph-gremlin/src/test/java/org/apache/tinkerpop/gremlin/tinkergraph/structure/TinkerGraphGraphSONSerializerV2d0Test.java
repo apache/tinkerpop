@@ -477,6 +477,7 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     }
 
     @Test
+    @org.junit.Ignore("https://issues.apache.org/jira/browse/TINKERPOP-1509")
     public void deserializersTestsTree() {
         final TinkerGraph tg = TinkerFactory.createModern();
 
