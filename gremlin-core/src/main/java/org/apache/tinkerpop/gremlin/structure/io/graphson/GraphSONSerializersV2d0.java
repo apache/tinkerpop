@@ -589,6 +589,30 @@ class GraphSONSerializersV2d0 {
             return t;
         }
     }
+
+    static class IntegerJackonsDeserializer extends StdDeserializer<Integer> {
+
+        protected IntegerJackonsDeserializer() {
+            super(Integer.class);
+        }
+
+        @Override
+        public Integer deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            return jsonParser.getIntValue();
+        }
+    }
+
+    static class DoubleJackonsDeserializer extends StdDeserializer<Double> {
+
+        protected DoubleJackonsDeserializer() {
+            super(Double.class);
+        }
+
+        @Override
+        public Double deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            return jsonParser.getDoubleValue();
+        }
+    }
 }
 
 
