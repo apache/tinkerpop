@@ -84,7 +84,7 @@ final class UtilSerializers {
     public final static class ClassSerializer implements SerializerShim<Class> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Class object) {
-            output.writeString(object.getCanonicalName());
+            output.writeString(object.getName());
         }
 
         @Override
