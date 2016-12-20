@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -129,6 +130,38 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         } catch (Exception ex) {
             validateException(GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers(), ex);
         }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldMaintainConfigurationAndShouldNotAlterGraphConfiguration() throws Exception {
+        final Configuration graphConfiguration = new BaseConfiguration();
+        ConfigurationUtils.copy(graph.configuration(), graphConfiguration);
+        final GraphComputer graphComputer = graphProvider.getGraphComputer(graph);
+        final Configuration graphComputerConfiguration = graphComputer.configuration();
+        final Configuration graphComputerConfigurationClone = new BaseConfiguration();
+        ConfigurationUtils.copy(graphComputerConfiguration, graphComputerConfigurationClone);
+        assertEquals(ConfigurationConverter.getMap(graphComputerConfiguration), ConfigurationConverter.getMap(graphComputerConfigurationClone));
+        // creating a graph computer shouldn't alter the graph configuration
+        assertEquals(ConfigurationConverter.getMap(graphConfiguration), ConfigurationConverter.getMap(graph.configuration()));
+        // creating a graph computer should add the graph computer's class name
+        assertTrue(graphComputerConfiguration.containsKey(GraphComputer.GRAPH_COMPUTER));
+        assertEquals(graphComputer.getClass().getCanonicalName(), graphComputerConfiguration.getString(GraphComputer.GRAPH_COMPUTER));
+        // specifying worker count should alter the graph computer configuration
+        int workers = graphComputerConfiguration.containsKey(GraphComputer.WORKERS) ? graphComputerConfiguration.getInt(GraphComputer.WORKERS) : 1;
+        graphComputer.workers(workers + 1);
+        assertTrue(graphComputerConfiguration.containsKey(GraphComputer.WORKERS));
+        assertEquals(graphComputerConfiguration.getInt(GraphComputer.WORKERS), workers + 1);
+        assertEquals(ConfigurationConverter.getMap(graphComputerConfiguration), ConfigurationConverter.getMap(graphComputer.configuration()));
+        graphComputerConfigurationClone.clear();
+        ConfigurationUtils.copy(graphComputer.configuration(), graphComputerConfigurationClone);
+        assertEquals(ConfigurationConverter.getMap(graphComputerConfiguration), ConfigurationConverter.getMap(graphComputerConfigurationClone));
+        // execute graph computer
+        graphComputer.program(new VertexProgramG()).submit(graph);
+        // executing a graph computer should not alter the graph configuration
+        assertEquals(ConfigurationConverter.getMap(graphConfiguration), ConfigurationConverter.getMap(graph.configuration()));
+        // executing a graph computer should not alter the graph computer configuration
+        // TODO: assertEquals(ConfigurationConverter.getMap(graphComputerConfiguration), ConfigurationConverter.getMap(graphComputerConfigurationClone));
     }
 
 

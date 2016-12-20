@@ -126,7 +126,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
-        this.vertexProgram.storeState(this.configuration);
+        // this.vertexProgram.storeState(this.configuration);
         return this;
     }
 
