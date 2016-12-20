@@ -66,6 +66,8 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Lessened the severity of Gremlin Server logging when it encounters two or more serializers addressing the same mime type.
 * Bumped to Netty 4.0.42.final.
+* Added `ByteBuffer`, `InetAddress`, `Timestamp` to the list of Gryo supported classes.
+* Fixed Gryo serialization of `Class`.
 * Fixed a bug in Gremlin-Python around `__.__()` and `__.start()`.
 * Fixed a bug around long serialization in Gremlin-Python when using Python3.
 * Deprecated `TraversalSource.withBindings()` as it is no longer needed in Gremlin-Java and never was needed for other variants.

@@ -44,6 +44,9 @@ import org.apache.tinkerpop.shaded.kryo.util.IdentityObjectIntMap;
 import org.apache.tinkerpop.shaded.kryo.util.IntMap;
 import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
 
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+
 import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
 
 /**
@@ -108,6 +111,12 @@ public class GryoClassResolver implements ClassResolver {
             type = Path.class;
         else if (Lambda.class.isAssignableFrom(clazz))
             type = Lambda.class;
+        else if (ByteBuffer.class.isAssignableFrom(clazz))
+            type = ByteBuffer.class;
+        else if (Class.class.isAssignableFrom(clazz))
+            type = Class.class;
+        else if (InetAddress.class.isAssignableFrom(clazz))
+            type = InetAddress.class;
         else
             type = clazz;
 

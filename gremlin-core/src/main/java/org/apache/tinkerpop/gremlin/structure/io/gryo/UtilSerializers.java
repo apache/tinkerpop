@@ -29,7 +29,9 @@ import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.javatuples.Pair;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +59,66 @@ final class UtilSerializers {
         @Override
         public <I extends InputShim> List read(final KryoShim<I, ?> kryo, final I input, final Class<List> clazz) {
             return kryo.readObject(input, ArrayList.class);
+        }
+    }
+
+    public final static class ByteBufferSerializer implements SerializerShim<ByteBuffer> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ByteBuffer bb) {
+            final byte[] b = new byte[bb.remaining()];
+            bb.get(b);
+            output.writeInt(b.length);
+            output.writeBytes(b, 0, b.length);
+        }
+
+        @Override
+        public <I extends InputShim> ByteBuffer read(final KryoShim<I, ?> kryo, final I input, final Class<ByteBuffer> clazz) {
+            final int len = input.readInt();
+            final byte[] b = input.readBytes(len);
+            final ByteBuffer bb = ByteBuffer.allocate(len);
+            bb.put(b);
+            return bb;
+        }
+    }
+
+    public final static class ClassSerializer implements SerializerShim<Class> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Class object) {
+            output.writeString(object.getCanonicalName());
+        }
+
+        @Override
+        public <I extends InputShim> Class read(final KryoShim<I, ?> kryo, final I input, final Class<Class> clazz) {
+            final String name = input.readString();
+            try {
+                return Class.forName(name);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public final static class InetAddressSerializer implements SerializerShim<InetAddress> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final InetAddress addy) {
+            final String str = addy.toString().trim();
+            final int slash = str.indexOf('/');
+            if (slash >= 0) {
+                if (slash == 0) {
+                    output.writeString(str.substring(1));
+                } else {
+                    output.writeString(str.substring(0, slash));
+                }
+            }
+        }
+
+        @Override
+        public <I extends InputShim> InetAddress read(final KryoShim<I, ?> kryo, final I input, final Class<InetAddress> clazz) {
+            try {
+                return InetAddress.getByName(input.readString());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
