@@ -16,12 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * Copyright DataStax, Inc.
- * <p>
- * Please see the included license file for details.
- */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;

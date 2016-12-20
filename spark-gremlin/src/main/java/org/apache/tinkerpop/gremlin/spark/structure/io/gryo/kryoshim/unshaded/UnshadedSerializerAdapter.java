@@ -16,12 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * Copyright DataStax, Inc.
- *
- * Please see the included license file for details.
- */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -48,8 +42,7 @@ public class UnshadedSerializerAdapter<T> extends Serializer<T>
     }
 
     @Override
-    public T read(final Kryo kryo, final Input input, final Class<T> aClass)
-    {
+    public T read(final Kryo kryo, final Input input, final Class<T> aClass) {
         UnshadedKryoAdapter shadedKryoAdapter = new UnshadedKryoAdapter(kryo);
         UnshadedInputAdapter shadedInputAdapter = new UnshadedInputAdapter(input);
         return serializer.read(shadedKryoAdapter, shadedInputAdapter, aClass);

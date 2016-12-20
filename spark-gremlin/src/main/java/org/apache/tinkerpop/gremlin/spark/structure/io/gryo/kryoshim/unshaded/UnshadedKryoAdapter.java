@@ -16,59 +16,45 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * Copyright DataStax, Inc.
- *
- * Please see the included license file for details.
- */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
 import com.esotericsoftware.kryo.Kryo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 
-public class UnshadedKryoAdapter implements KryoShim<UnshadedInputAdapter, UnshadedOutputAdapter>
-{
+public class UnshadedKryoAdapter implements KryoShim<UnshadedInputAdapter, UnshadedOutputAdapter> {
     private final Kryo unshadedKryo;
 
-    public UnshadedKryoAdapter(final Kryo unshadedKryo)
-    {
+    public UnshadedKryoAdapter(final Kryo unshadedKryo) {
         this.unshadedKryo = unshadedKryo;
     }
 
     @Override
-    public <T> T readObject(final UnshadedInputAdapter input, final Class<T> type)
-    {
+    public <T> T readObject(final UnshadedInputAdapter input, final Class<T> type) {
         return unshadedKryo.readObject(input.getUnshadedInput(), type);
     }
 
     @Override
-    public Object readClassAndObject(final UnshadedInputAdapter input)
-    {
+    public Object readClassAndObject(final UnshadedInputAdapter input) {
         return unshadedKryo.readClassAndObject(input.getUnshadedInput());
     }
 
     @Override
-    public void writeObject(final UnshadedOutputAdapter output, final Object object)
-    {
+    public void writeObject(final UnshadedOutputAdapter output, final Object object) {
         unshadedKryo.writeObject(output.getUnshadedOutput(), object);
     }
 
     @Override
-    public void writeClassAndObject(final UnshadedOutputAdapter output, final Object object)
-    {
+    public void writeClassAndObject(final UnshadedOutputAdapter output, final Object object) {
         unshadedKryo.writeClassAndObject(output.getUnshadedOutput(), object);
     }
 
     @Override
-    public <T> T readObjectOrNull(final UnshadedInputAdapter input, final Class<T> type)
-    {
+    public <T> T readObjectOrNull(final UnshadedInputAdapter input, final Class<T> type) {
         return unshadedKryo.readObjectOrNull(input.getUnshadedInput(), type);
     }
 
     @Override
-    public void writeObjectOrNull(final UnshadedOutputAdapter output, final Object object, final Class type)
-    {
+    public void writeObjectOrNull(final UnshadedOutputAdapter output, final Object object, final Class type) {
         unshadedKryo.writeObjectOrNull(output.getUnshadedOutput(), object, type);
     }
 }

@@ -30,8 +30,7 @@ public class ShadedOutputAdapter implements OutputShim {
     }
 
     @Override
-    public void writeByte(final byte b)
-    {
+    public void writeByte(final byte b) {
         shadedOutput.writeByte(b);
     }
 
@@ -58,6 +57,11 @@ public class ShadedOutputAdapter implements OutputShim {
     @Override
     public void writeDouble(final double d) {
         shadedOutput.writeDouble(d);
+    }
+
+    @Override
+    public void writeShort(int s) {
+        shadedOutput.writeShort(s);
     }
 
     @Override
