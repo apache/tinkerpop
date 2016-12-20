@@ -286,9 +286,9 @@ public final class GryoMapper implements Mapper<Kryo> {
                 add(GryoTypeReg.of(VertexTerminator.class, 13));
                 add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
                 add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121));
-                add(GryoTypeReg.of(java.sql.Timestamp.class, 138));
-                add(GryoTypeReg.of(InetAddress.class, 139, new UtilSerializers.InetAddressSerializer()));
-                add(GryoTypeReg.of(ByteBuffer.class, 140, new UtilSerializers.ByteBufferSerializer()));  // ***LAST ID***
+                add(GryoTypeReg.of(java.sql.Timestamp.class, 161));
+                add(GryoTypeReg.of(InetAddress.class, 162, new UtilSerializers.InetAddressSerializer()));
+                add(GryoTypeReg.of(ByteBuffer.class, 163, new UtilSerializers.ByteBufferSerializer()));  // ***LAST ID***
 
                 add(GryoTypeReg.of(ReferenceEdge.class, 81));
                 add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
