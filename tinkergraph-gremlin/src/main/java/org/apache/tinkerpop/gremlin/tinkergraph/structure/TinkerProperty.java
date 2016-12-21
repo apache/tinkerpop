@@ -66,7 +66,7 @@ public final class TinkerProperty<V> implements Property<V> {
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual(this, object);
+        return object != null && ElementHelper.areEqual(this, object);
     }
 
     @Override

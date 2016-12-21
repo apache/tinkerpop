@@ -117,12 +117,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         return StringFactory.propertyString(this);
     }
 
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    @Override
-    public boolean equals(final Object object) {
-        return ElementHelper.areEqual(this, object);
-    }
-
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
