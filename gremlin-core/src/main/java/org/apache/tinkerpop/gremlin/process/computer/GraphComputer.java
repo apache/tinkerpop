@@ -275,6 +275,10 @@ public interface GraphComputer extends Processor {
         private Exceptions() {
         }
 
+        public static UnsupportedOperationException graphNotSupported(final Graph graph) {
+            return new UnsupportedOperationException("The provided graph is not supported: " + graph.getClass().getCanonicalName());
+        }
+
         public static UnsupportedOperationException adjacentVertexLabelsCanNotBeRead() {
             return new UnsupportedOperationException("The label of an adjacent vertex can not be read");
         }

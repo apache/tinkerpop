@@ -96,7 +96,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     private TinkerGraphComputer(final Configuration configuration) {
         this.graph = null;
         this.configuration = new BaseConfiguration();
-        ConfigurationUtils.copy(configuration,this.configuration);
+        ConfigurationUtils.copy(configuration, this.configuration);
         this.configuration.setProperty(GRAPH_COMPUTER, TinkerGraphComputer.class.getCanonicalName());
         GraphComputerHelper.configure(this, configuration);
     }
@@ -164,6 +164,8 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public Future<ComputerResult> submit(final Graph graph) {
+        if (!(graph instanceof TinkerGraph))
+            throw GraphComputer.Exceptions.graphNotSupported(graph);
         this.graph = (TinkerGraph) graph;
         return this.submit();
     }

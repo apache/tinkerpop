@@ -131,6 +131,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     @Override
     public GraphComputer configure(final String key, final Object value) {
+        if (key.equals(SparkLauncher.SPARK_MASTER) && value.toString().startsWith("local"))
+            this.workers(Integer.valueOf(value.toString().substring(6).replace("]", "")));
         this.configuration.setProperty(key, value);
         return this;
     }

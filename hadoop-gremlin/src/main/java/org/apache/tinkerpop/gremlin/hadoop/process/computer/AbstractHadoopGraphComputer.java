@@ -80,10 +80,10 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     }
 
     protected AbstractHadoopGraphComputer(final org.apache.commons.configuration.Configuration configuration) {
-        this.configuration = new HadoopConfiguration(configuration);
+        this.configuration = new HadoopConfiguration();
         this.configuration.setProperty(GRAPH_COMPUTER, this.getClass().getCanonicalName());
+        GraphComputerHelper.configure(this, configuration);
         this.logger = LoggerFactory.getLogger(this.getClass());
-        GraphComputerHelper.configure(this, this.configuration);
     }
 
     @Override
@@ -135,7 +135,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
     @Override
     public Future<ComputerResult> submit(final Graph graph) {
-        ConfigurationUtils.copy(graph.configuration(), this.configuration);
+        GraphComputerHelper.configure(this,graph.configuration());
         return this.submit();
     }
 
