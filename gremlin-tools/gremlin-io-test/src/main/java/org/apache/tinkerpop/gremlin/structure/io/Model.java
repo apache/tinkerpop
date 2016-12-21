@@ -114,9 +114,9 @@ public class Model {
         // IMPORTANT - the "title" or name of the Entry needs to be unique
         addCoreEntry(File.class, "Class", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         addCoreEntry(new Date(1481750076295L), "Date");
-        addCoreEntry(100.00d, "Double", GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0);
+        addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float");
-        addCoreEntry(100, "Integer", GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0);
+        addCoreEntry(100, "Integer");
         addCoreEntry(100L, "Long");
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
