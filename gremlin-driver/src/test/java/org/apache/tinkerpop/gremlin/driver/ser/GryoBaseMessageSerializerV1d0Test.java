@@ -434,7 +434,7 @@ public class GryoBaseMessageSerializerV1d0Test {
         }};
         binarySerializerWithSmallBuffer.configure(configWithSmallBuffer, null);
 
-        ByteBuf buf = binarySerializerWithSmallBuffer.serializeResponseAsBinary(response, allocator);
+        final ByteBuf buf = binarySerializerWithSmallBuffer.serializeResponseAsBinary(response, allocator);
         assertTrue(buf.isReadable());
         assertEquals(82, buf.readableBytes());
     }

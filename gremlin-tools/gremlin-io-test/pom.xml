@@ -286,20 +286,14 @@ new File("${project.build.directory}/test-case-data/io/graphson/").listFiles().e
                                     <scripts>
                                         <script>
                                             <![CDATA[
-import org.apache.tinkerpop.shaded.kryo.io.Output
-
 import java.time.*
 import java.nio.file.*
-import org.apache.tinkerpop.gremlin.driver.ser.*
-import org.apache.tinkerpop.gremlin.process.traversal.*
+import org.apache.tinkerpop.shaded.kryo.io.Output
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
-import org.apache.tinkerpop.gremlin.structure.io.graphson.*
-import org.apache.tinkerpop.gremlin.driver.message.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 import org.apache.tinkerpop.gremlin.structure.io.*
+import org.apache.tinkerpop.gremlin.process.traversal.*
 
 new File("${project.build.directory}/dev-docs/").mkdirs()
 new File("${project.build.directory}/test-case-data/io/gryo").mkdirs()
@@ -310,29 +304,51 @@ g = graph.traversal()
 model = Model.instance()
 
 toGryo = { o, type, mapper, suffix = "" ->
-  def fileToWriteTo = new File("${project.build.directory}/test-case-data/io/gryo/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
+  def fileToWriteTo = new File("${project.build.directory}/test-case-data/io/gryo/" + type.title.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
   if (fileToWriteTo.exists()) fileToWriteTo.delete()
-  final Output out = new Output(new FileOutputStream(fileToWriteTo))
-  mapper.writeObject(out, o)
-  out.close()
+  try {
+    final Output out = new Output(new FileOutputStream(fileToWriteTo))
+    mapper.writeObject(out, o)
+    out.close()
+  } catch (Exception ex) {
+    // some v1 gryo is not easily testable (i.e. RequestMessage) because it is has external serializers that
+    // don' get registered with GryoMapper. those cases can be ignored.
+    if (type.isCompatibleWith(GryoCompatibility.V1D0_3_3_0))
+      throw ex
+    else
+      fileToWriteTo.delete()
+  }
 }
 
 toGryoV1d0 = { o, type, mapper ->
   toGryo(o, type, mapper, "v1d0")
 }
 
+toGryoV3d0 = { o, type, mapper ->
+  toGryo(o, type, mapper, "v3d0")
+}
+
 writeSupportedObjects = { mapper, toGryoFunction ->
   model.entries().findAll{it.hasGryoCompatibility()}.each {
-    if (it.getObject() instanceof Traversal)
-      toGryoFunction(it.getObject().bytecode, it.getTitle(), mapper)
-    else
-      toGryoFunction(it.getObject(), it.getTitle(), mapper)
+    toGryoFunction(it.getObject(), it, mapper)
   }
 }
 
-mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV2d0.getInstance()).create().createMapper()
+mapper = GryoMapper.build().
+                    version(GryoVersion.V1_0).
+                    addRegistry(TinkerIoRegistryV2d0.getInstance()).
+                    create().createMapper()
 
+println "1.0*************************"
 writeSupportedObjects(mapper, toGryoV1d0)
+
+println "3.0*************************"
+mapper = GryoMapper.build().
+                    version(GryoVersion.V3_0).
+                    addRegistry(TinkerIoRegistryV2d0.getInstance()).
+                    create().createMapper()
+
+writeSupportedObjects(mapper, toGryoV3d0)
 
 def ver = "_" + "${project.version}".replace(".","_").replace("-SNAPSHOT","")
 def target = "${project.basedir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/gryo/" + ver

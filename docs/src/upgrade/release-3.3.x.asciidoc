@@ -40,8 +40,16 @@ intermediate method for flattening `Object[]` arguments and thus, yielding a non
 and `Bytecode`. This has been remedied. Most users will not notice this change. Perhaps only some users that may use
 Java reflection over `GraphTraversal` might have a simple problem.
 
-
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1520[TINKERPOP-1520]
+
+Changes to IO
+^^^^^^^^^^^^^
+
+*WILL NEED TO WRITE SOMETHING MORE COHESIVE HERE - JUST LISTING STUFF FOR RIGHT NOW*
+
+* Gryo incompatibilities with 3.2.x:
+** `RequestMessage`
+** `ResponseMessage`
 
 SelectStep Defaults to Pop.last
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

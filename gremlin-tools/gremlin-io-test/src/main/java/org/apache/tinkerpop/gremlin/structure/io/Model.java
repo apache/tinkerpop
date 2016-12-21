@@ -153,46 +153,53 @@ public class Model {
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser");
 
-        final Map<String,Object> requestBindings = new HashMap<String,Object>(){{
-            put("x", 1);
-        }};
-        final Map<String,Object> requestAliases = new HashMap<String,Object>(){{
-            put("g", "social");
-        }};
+        final Map<String,Object> requestBindings = new HashMap<>();
+        requestBindings.put("x", 1);
+
+        final Map<String,Object> requestAliases = new HashMap<>();
+        requestAliases.put("g", "social");
+
         RequestMessage requestMessage;
         requestMessage = RequestMessage.build("authentication").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create();
         addRequestMessageEntry(requestMessage, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.",
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         requestMessage = RequestMessage.build("eval").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create() ;
-        addRequestMessageEntry(requestMessage, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.");
+                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
+        addRequestMessageEntry(requestMessage, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         requestMessage = RequestMessage.build("eval").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
-        addRequestMessageEntry(requestMessage, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+        addRequestMessageEntry(requestMessage, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         requestMessage = RequestMessage.build("close").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
-        addRequestMessageEntry(requestMessage, "Session Close", "The following `RequestMessage` is an example of a request to close a session.");
+        addRequestMessageEntry(requestMessage, "Session Close", "The following `RequestMessage` is an example of a request to close a session.",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         requestMessage = RequestMessage.build("eval").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy").create();
-        addRequestMessageEntry(requestMessage, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.");
+        addRequestMessageEntry(requestMessage, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         requestMessage = RequestMessage.build("eval").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
-        addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+        addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
 
         ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create();
-        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).", ALL.toArray(new Compatibility[ALL.size()]));
+        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                 result(Collections.singletonList(graph.vertices().next())).create();
-        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.", ALL.toArray(new Compatibility[ALL.size()]));
+        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.",
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_3_0, GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         
         addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));

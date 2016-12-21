@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -67,13 +66,10 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 
@@ -92,13 +88,10 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final ResponseMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final ResponseMessage fromStatic = read(getCompatibility().readFromResource(resourceName), ResponseMessage.class);
+        final ResponseMessage recycled = read(write(fromStatic, ResponseMessage.class), ResponseMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getStatus().getCode().getValue(), ((Map) recycled.get("status")).get("code"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getStatus().getCode().getValue(), ((Map) fromStatic.get("status")).get("code"));
+        assertResponseMessage(resource, fromStatic, recycled);
     }
 
     @Test
@@ -107,19 +100,14 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) recycled.get("args")).get("saslMechanism"));
-        assertEquals(resource.getArgs().get("sasl"), ((Map) recycled.get("args")).get("sasl"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) fromStatic.get("args")).get("saslMechanism"));
-        assertEquals(resource.getArgs().get("sasl"), ((Map) fromStatic.get("args")).get("sasl"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("saslMechanism"), recycled.getArgs().get("saslMechanism"));
+        assertEquals(resource.getArgs().get("sasl"), recycled.getArgs().get("sasl"));
+        assertEquals(resource.getArgs().get("saslMechanism"), fromStatic.getArgs().get("saslMechanism"));
+        assertEquals(resource.getArgs().get("sasl"), fromStatic.getArgs().get("sasl"));
     }
 
     @Test
@@ -662,17 +650,12 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("session"), ((Map) recycled.get("args")).get("session"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().get("session"), ((Map) fromStatic.get("args")).get("session"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
+        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
     }
 
     @Test
@@ -681,22 +664,18 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("session"), ((Map) recycled.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) recycled.get("args")).get("bindings")).get("x"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getArgs().get("session"), ((Map) fromStatic.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) fromStatic.get("args")).get("bindings")).get("x"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
+        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
+        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
+        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
     }
 
     @Test
@@ -705,24 +684,20 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("session"), ((Map) recycled.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) ((Map) recycled.get("args")).get("aliases")).get("g"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) recycled.get("args")).get("bindings")).get("x"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getArgs().get("session"), ((Map) fromStatic.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) ((Map) fromStatic.get("args")).get("aliases")).get("g"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) fromStatic.get("args")).get("bindings")).get("x"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
+        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) recycled.getArgs().get("aliases")).get("g"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
+        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
+        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) fromStatic.getArgs().get("aliases")).get("g"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
     }
 
     @Test
@@ -731,20 +706,16 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) recycled.get("args")).get("bindings")).get("x"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) fromStatic.get("args")).get("bindings")).get("x"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
+        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
     }
 
     @Test
@@ -753,22 +724,18 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assumeCompatibility(resourceName);
 
         final RequestMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage fromStatic = read(getCompatibility().readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) ((Map) recycled.get("args")).get("aliases")).get("g"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) recycled.get("args")).get("bindings")).get("x"));
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) ((Map) fromStatic.get("args")).get("aliases")).get("g"));
-        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) ((Map) fromStatic.get("args")).get("bindings")).get("x"));
+        assertRequestMessage(resource, fromStatic, recycled);
+        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) recycled.getArgs().get("aliases")).get("g"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
+        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
+        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
+        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) fromStatic.getArgs().get("aliases")).get("g"));
+        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
     }
 
     @Test
@@ -789,17 +756,11 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final String resourceName = "standardresult";
         assumeCompatibility(resourceName);
 
-        // todo: incomplete asserts - none of this is consistent right now
         final ResponseMessage resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final ResponseMessage fromStatic = read(getCompatibility().readFromResource(resourceName), ResponseMessage.class);
+        final ResponseMessage recycled = read(write(fromStatic, HashMap.class), ResponseMessage.class);
         assertNotSame(fromStatic, recycled);
-        final List<DetachedVertex> resourceVertices = (List<DetachedVertex>) resource.getResult().getData();
-        assertEquals(resource.getRequestId(), recycled.get("requestId"));
-        assertEquals(resource.getStatus().getCode().getValue(), ((Map) recycled.get("status")).get("code"));
-        assertEquals(resourceVertices.size(), ((List) ((Map) recycled.get("result"))).size());
-        assertEquals(resource.getRequestId(), fromStatic.get("requestId"));
-        assertEquals(resource.getStatus().getCode().getValue(), ((Map) fromStatic.get("status")).get("code"));
+        assertResponseMessage(resource, fromStatic, recycled);
     }
 
     @Test
@@ -1014,5 +975,35 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
+    }
+
+    private static void assertResponseMessage(final ResponseMessage resource, final ResponseMessage fromStatic,
+                                              final ResponseMessage recycled) {
+        assertEquals(resource.getRequestId(), recycled.getRequestId());
+        assertEquals(resource.getStatus().getCode().getValue(), recycled.getStatus().getCode().getValue());
+        assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
+        assertEquals(resource.getStatus().getAttributes(), recycled.getStatus().getAttributes());
+        assertEquals(resource.getResult().getData(), recycled.getResult().getData());
+        assertEquals(resource.getResult().getMeta(), recycled.getResult().getMeta());
+        assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
+        assertEquals(resource.getRequestId(), fromStatic.getRequestId());
+        assertEquals(resource.getStatus().getCode().getValue(), fromStatic.getStatus().getCode().getValue());
+        assertEquals(resource.getStatus().getMessage(), fromStatic.getStatus().getMessage());
+        assertEquals(resource.getStatus().getAttributes(), fromStatic.getStatus().getAttributes());
+        assertEquals(resource.getResult().getData(), fromStatic.getResult().getData());
+        assertEquals(resource.getResult().getMeta(), fromStatic.getResult().getMeta());
+        assertEquals(resource.getStatus().getMessage(), fromStatic.getStatus().getMessage());
+    }
+
+    private static void assertRequestMessage(final RequestMessage resource, final RequestMessage fromStatic,
+                                             final RequestMessage recycled) {
+        assertEquals(resource.getRequestId(), recycled.getRequestId());
+        assertEquals(resource.getOp(), recycled.getOp());
+        assertEquals(resource.getProcessor(), recycled.getProcessor());
+        assertEquals(resource.getArgs(), recycled.getArgs());
+        assertEquals(resource.getRequestId(), fromStatic.getRequestId());
+        assertEquals(resource.getOp(), fromStatic.getOp());
+        assertEquals(resource.getProcessor(), fromStatic.getProcessor());
+        assertEquals(resource.getArgs(), fromStatic.getArgs());
     }
 }
