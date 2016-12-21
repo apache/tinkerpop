@@ -98,6 +98,7 @@ public class PropertyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
             final Vertex v = graph.addVertex("name", "marko");
             tryCommit(graph);
