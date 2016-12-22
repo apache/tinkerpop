@@ -130,14 +130,14 @@ public class Model {
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
 
-        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", GRYO_ONLY);
+        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
         addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality");
-        addGraphProcessEntry(Column.keys, "Column", "", GRYO_ONLY);
+        addGraphProcessEntry(Column.keys, "Column", "");
         addGraphProcessEntry(Direction.OUT, "Direction");
-        addGraphProcessEntry(Operator.sum, "Operator", "", GRYO_ONLY);
-        addGraphProcessEntry(Order.incr, "Order", "", GRYO_ONLY);
+        addGraphProcessEntry(Operator.sum, "Operator", "");
+        addGraphProcessEntry(Order.incr, "Order", "");
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick");
         addGraphProcessEntry(Pop.all, "Pop");
         addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda");
@@ -149,7 +149,7 @@ public class Model {
         addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GRAPHSON_ONLY);
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GRAPHSON_ONLY);
         addGraphProcessEntry(Scope.local, "Scope");
-        addGraphProcessEntry(T.label, "T", "", GRYO_ONLY);
+        addGraphProcessEntry(T.label, "T", "");
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser");
 
