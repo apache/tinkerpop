@@ -31,6 +31,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Bumped to Netty 4.0.42.final.
 * Added `ByteBuffer`, `InetAddress`, `Timestamp` to the list of Gryo supported classes.
 * Fixed Gryo serialization of `Class`.
+* Fixed GraphSON serialization of enums like `T`, `P`, etc. where values were overriding each other in the GraphSON type registry.
 * Fixed a bug in Gremlin-Python around `__.__()` and `__.start()`.
 * Fixed a bug around long serialization in Gremlin-Python when using Python3.
 * Deprecated `TraversalSource.withBindings()` as it is no longer needed in Gremlin-Java and never was needed for other variants.
