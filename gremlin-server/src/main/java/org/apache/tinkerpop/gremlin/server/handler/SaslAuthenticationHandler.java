@@ -35,6 +35,8 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
@@ -55,11 +57,14 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
     private final Authenticator authenticator;
+    private final Settings.AuthenticationSettings authenticationSettings;
 
-    public SaslAuthenticationHandler(final Authenticator authenticator) {
+    public SaslAuthenticationHandler(final Authenticator authenticator, final Settings.AuthenticationSettings authenticationSettings) {
         this.authenticator = authenticator;
+        this.authenticationSettings = authenticationSettings;
     }
 
     @Override
@@ -93,13 +98,17 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                         ctx.writeAndFlush(error);
                         return;
                     }
-                    
+
                     try {
                         final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
-                            // todo: do something with this user
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();
-
+                            // User name logged with the remote socket address and authenticator classname for audit logging
+                            if (authenticationSettings.enableAuditLog) {
+                                String[] authClassParts = authenticator.getClass().toString().split("[.]");
+                                auditLogger.info("User {} with address {} authenticated by {}", user.getName(),
+                                        ctx.channel().remoteAddress().toString().substring(1), authClassParts[authClassParts.length - 1]);
+                            }
                             // If we have got here we are authenticated so remove the handler and pass
                             // the original message down the pipeline for processing
                             ctx.pipeline().remove(this);

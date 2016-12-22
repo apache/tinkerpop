@@ -24,8 +24,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -43,12 +48,17 @@ import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.Credenti
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthenticationHandler.class);
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private final Authenticator authenticator;
+    private final Settings.AuthenticationSettings authenticationSettings;
 
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
 
-    public HttpBasicAuthenticationHandler(final Authenticator authenticator) {
+    public HttpBasicAuthenticationHandler(final Authenticator authenticator,
+                                          final Settings.AuthenticationSettings authenticationSettings) {
         this.authenticator = authenticator;
+        this.authenticationSettings = authenticationSettings;
     }
 
     @Override
@@ -92,6 +102,13 @@ public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter
             try {
                 authenticator.authenticate(credentials);
                 ctx.fireChannelRead(request);
+
+                // User name logged with the remote socket address and authenticator classname for audit logging
+                if (authenticationSettings.enableAuditLog) {
+                    String[] authClassParts = authenticator.getClass().toString().split("[.]");
+                    auditLogger.info("User {} with address {} authenticated by {}", credentials.get(PROPERTY_USERNAME),
+                            ctx.channel().remoteAddress().toString().substring(1), authClassParts[authClassParts.length - 1]);
+                }
             } catch (AuthenticationException ae) {
                 sendError(ctx, msg);
             }

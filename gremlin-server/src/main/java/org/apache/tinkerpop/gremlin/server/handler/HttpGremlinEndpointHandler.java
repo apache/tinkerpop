@@ -100,6 +100,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 @ChannelHandler.Sharable
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private static final Charset UTF8 = Charset.forName("UTF-8");
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
@@ -188,6 +189,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
                         requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
+                if (settings.authentication.enableAuditLog) {
+                    final String address = ctx.channel().remoteAddress().toString().substring(1);
+                    auditLogger.info("User with address {} requested: {}", address, requestArguments.getValue0());
+                }
                 final ChannelPromise promise = ctx.channel().newPromise();
                 final AtomicReference<Object> resultHolder = new AtomicReference<>();
                 promise.addListener(future -> {
