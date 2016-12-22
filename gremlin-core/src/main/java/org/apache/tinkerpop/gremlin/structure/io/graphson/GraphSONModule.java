@@ -139,16 +139,16 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(OrP.class, "P");
                     put(P.class, "P");
                     Stream.of(
-                            VertexProperty.Cardinality.values(),
-                            Column.values(),
-                            Direction.values(),
-                            Operator.values(),
-                            Order.values(),
-                            Pop.values(),
-                            SackFunctions.Barrier.values(),
-                            TraversalOptionParent.Pick.values(),
-                            Scope.values(),
-                            T.values()).flatMap(Stream::of).forEach(e -> put(e.getClass(), e.getDeclaringClass().getSimpleName()));
+                            VertexProperty.Cardinality.class,
+                            Column.class,
+                            Direction.class,
+                            Operator.class,
+                            Order.class,
+                            Pop.class,
+                            SackFunctions.Barrier.class,
+                            TraversalOptionParent.Pick.class,
+                            Scope.class,
+                            T.class).forEach(e -> put(e, e.getSimpleName()));
                     Arrays.asList(
                             ConnectiveStrategy.class,
                             ElementIdStrategy.class,
