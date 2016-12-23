@@ -146,8 +146,8 @@ public class Model {
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
         addGraphProcessEntry(metrics, "Metrics");
         addGraphProcessEntry(P.gt(0), "P");
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GRAPHSON_ONLY);
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GRAPHSON_ONLY);
+        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
         addGraphProcessEntry(Scope.local, "Scope");
         addGraphProcessEntry(T.label, "T", "");
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
@@ -307,6 +307,10 @@ public class Model {
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description) {
         addEntry("Graph Process", obj, title, description);
+    }
+
+    private void addGraphProcessEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
+        addEntry("Graph Process", obj, title, description, incompatibleWith);
     }
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final List<Compatibility> compatibleWith) {
