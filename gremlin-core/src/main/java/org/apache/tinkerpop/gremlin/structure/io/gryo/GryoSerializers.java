@@ -174,43 +174,16 @@ public final class GryoSerializers {
         }
     }
 
-    public final static class AndPSerializer implements SerializerShim<AndP> {
-
-        @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final AndP p) {
-            final List predicates = new ArrayList(p.getPredicates());
-            kryo.writeObject(output, predicates);
-        }
-
-        @Override
-        public <I extends InputShim> AndP read(final KryoShim<I, ?> kryo, final I input, final Class<AndP> clazz) {
-            final List<P> predicates = kryo.readObject(input, ArrayList.class);
-            return new AndP(predicates);
-        }
-    }
-
-    public final static class OrPSerializer implements SerializerShim<OrP> {
-
-        @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final OrP p) {
-            final List predicates = new ArrayList(p.getPredicates());
-            kryo.writeObject(output, predicates);
-        }
-
-        @Override
-        public <I extends InputShim> OrP read(final KryoShim<I, ?> kryo, final I input, final Class<OrP> clazz) {
-            final List<P> predicates = kryo.readObject(input, ArrayList.class);
-            return new OrP(predicates);
-        }
-    }
-
     public final static class PSerializer implements SerializerShim<P> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final P p) {
-            output.writeString(p.getBiPredicate().toString());
-            if (p.getValue() instanceof Collection) {
+            output.writeString(p instanceof ConnectiveP ?
+                    (p instanceof AndP ? "and" : "or") :
+                    p.getBiPredicate().toString());
+            if (p instanceof ConnectiveP || p.getValue() instanceof Collection) {
                 output.writeByte((byte) 0);
-                final Collection coll = (Collection) p.getValue();
+                final Collection<?> coll = p instanceof ConnectiveP ?
+                        ((ConnectiveP<?>) p).getPredicates() : (Collection) p.getValue();
                 output.writeInt(coll.size());
                 coll.forEach(v -> kryo.writeClassAndObject(output, v));
             } else {
@@ -235,7 +208,9 @@ public final class GryoSerializers {
             }
 
             try {
-                if (value instanceof Collection) {
+                if (predicate.equals("and") || predicate.equals("or"))
+                    return predicate.equals("and") ? new AndP((List<P>) value) : new OrP((List<P>) value);
+                else  if (value instanceof Collection) {
                     if (predicate.equals("between"))
                         return P.between(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("inside"))
