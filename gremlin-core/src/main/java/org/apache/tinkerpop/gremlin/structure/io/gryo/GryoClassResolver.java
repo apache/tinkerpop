@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -117,6 +119,8 @@ public class GryoClassResolver implements ClassResolver {
             type = Class.class;
         else if (InetAddress.class.isAssignableFrom(clazz))
             type = InetAddress.class;
+        else if (ConnectiveP.class.isAssignableFrom(clazz))
+            type = P.class;
         else
             type = clazz;
 

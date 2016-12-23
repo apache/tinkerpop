@@ -275,8 +275,6 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializers.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
             add(GryoTypeReg.of(Scope.class, 128));
-            add(GryoTypeReg.of(AndP.class, 129, new GryoSerializers.AndPSerializer()));
-            add(GryoTypeReg.of(OrP.class, 130, new GryoSerializers.OrPSerializer()));
             add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));
             add(GryoTypeReg.of(Column.class, 132));
             add(GryoTypeReg.of(Pop.class, 133));
