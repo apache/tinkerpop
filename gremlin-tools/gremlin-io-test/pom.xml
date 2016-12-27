@@ -339,10 +339,8 @@ mapper = GryoMapper.build().
                     addRegistry(TinkerIoRegistryV2d0.getInstance()).
                     create().createMapper()
 
-println "1.0*************************"
 writeSupportedObjects(mapper, toGryoV1d0)
 
-println "3.0*************************"
 mapper = GryoMapper.build().
                     version(GryoVersion.V3_0).
                     addRegistry(TinkerIoRegistryV2d0.getInstance()).

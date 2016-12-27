@@ -38,13 +38,17 @@ public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
 
     private static Kryo mapperV1 = GryoMapper.build().
             addRegistry(TinkerIoRegistryV2d0.instance()).create().createMapper();
+    private static Kryo mapperV3 = GryoMapper.build().
+            version(GryoVersion.V3_0).
+            addRegistry(TinkerIoRegistryV2d0.instance()).create().createMapper();
 
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {GryoCompatibility.V1D0_3_2_3, mapperV1 },
                 {GryoCompatibility.V1D0_3_2_4, mapperV1 },
-                {GryoCompatibility.V1D0_3_3_0, mapperV1 }});
+                {GryoCompatibility.V1D0_3_3_0, mapperV1 },
+                {GryoCompatibility.V3D0_3_3_0, mapperV3 }});
     }
 
     @Parameterized.Parameter(value = 0)

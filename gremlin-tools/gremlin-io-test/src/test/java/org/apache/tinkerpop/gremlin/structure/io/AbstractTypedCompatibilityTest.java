@@ -188,11 +188,15 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
 
         final ByteBuffer resource = findModelEntryObject(resourceName);
         final ByteBuffer fromStatic = read(getCompatibility().readFromResource(resourceName), ByteBuffer.class);
-        final ByteBuffer recycled = read(write(fromStatic, ByteBuffer.class), ByteBuffer.class);
+        // have to re-read because once the bytebuffer is flushed to array it will be emptied
+        final ByteBuffer recycled = read(write(read(getCompatibility().readFromResource(resourceName), ByteBuffer.class), ByteBuffer.class), ByteBuffer.class);
         assertNotSame(fromStatic, recycled);
-        assertThat(Arrays.equals(fromStatic.array(), recycled.array()), is(true));
-        assertThat(Arrays.equals(resource.array(), fromStatic.array()), is(true));
-        assertThat(Arrays.equals(resource.array(), recycled.array()), is(true));
+        final byte[] resourceArray = resource.array();
+        final byte[] fromStaticArray = fromStatic.array();
+        final byte[] recycledArray = recycled.array();
+        assertThat(Arrays.equals(fromStaticArray, recycledArray), is(true));
+        assertThat(Arrays.equals(resourceArray, fromStaticArray), is(true));
+        assertThat(Arrays.equals(resourceArray, recycledArray), is(true));
     }
 
     @Test

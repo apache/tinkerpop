@@ -73,6 +73,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -204,9 +205,9 @@ public class Model {
         addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(new Byte("1"), "Byte", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
-        addExtendedEntry(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
-                GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3, GraphSONCompatibility.V2D0_NO_TYPE_3_3_0,
-                GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_3_0);
+        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
+                 GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
+                 GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
         addExtendedEntry("x".charAt(0), "Char", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
         try {
@@ -349,17 +350,29 @@ public class Model {
         addEntry(group, obj, title, description, ALL);
     }
 
-    private void addEntry(final String group, final Object obj, final String title, final String description, final List<Compatibility> compatibleWith) {
-        if (!entries.containsKey(group))
-            entries.put(group, new ArrayList<>());
-
-        entries.get(group).add(new Entry(title, obj, description, compatibleWith));
+    private void addEntry(final String group, final Supplier<?> maker, final String title, final String description, final Compatibility... incompatibleWith) {
+        addEntry(group, null, title, description, Collections.unmodifiableList(ALL.stream()
+                .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
+                .collect(Collectors.toList())), maker);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
         addEntry(group, obj, title, description, Collections.unmodifiableList(ALL.stream()
                 .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())));
+                .collect(Collectors.toList())), null);
+    }
+
+    private void addEntry(final String group, final Object obj, final String title, final String description,
+                            final List<Compatibility> compatibleWith) {
+        addEntry(group, obj, title, description, compatibleWith, null);
+    }
+
+    private void addEntry(final String group, final Object obj, final String title, final String description,
+                          final List<Compatibility> compatibleWith, final Supplier<?> maker) {
+        if (!entries.containsKey(group))
+            entries.put(group, new ArrayList<>());
+
+        entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker));
     }
 
     public void saveAsCsv(final String file) throws Exception {
@@ -403,12 +416,18 @@ public class Model {
         private final Object object;
         private final String description;
         private final List<Compatibility> compatibleWith;
+        private final Supplier<?> maker;
         
         public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith) {
+            this(title, object, description, compatibleWith, null);
+        }
+
+        public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith, final Supplier<?> maker) {
             this.title = title;
             this.object = object;
             this.description = description;
             this.compatibleWith = compatibleWith;
+            this.maker = maker;
         }
 
         public String getTitle() {
@@ -420,7 +439,7 @@ public class Model {
         }
 
         public <T> T getObject() {
-            return (T) object;
+            return (T) ((null == object) ? maker.get() : object);
         }
 
         public String getDescription() {

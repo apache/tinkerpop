@@ -169,7 +169,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     toGryoFunction(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", mapper)
     toGryoFunction(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger", mapper)
     toGryoFunction(new Byte("1"), "Byte", mapper)
-    toGryoFunction(java.nio.ByteBuffer.wrap([1,2,3,4,5] as byte[]), "ByteBuffer", mapper)
+    toGryoFunction(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", mapper)
     toGryoFunction("x".charAt(0), "Char", mapper)
     toGryoFunction(Duration.ofDays(5), "Duration", mapper)
     toGryoFunction(java.net.InetAddress.getByName("localhost"), "InetAddress", mapper)
