@@ -113,13 +113,17 @@ public class Model {
         final GraphTraversalSource g = graph.traversal();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
-        addCoreEntry(File.class, "Class", GryoCompatibility.V1D0_3_2_3);
+        addCoreEntry(File.class, "Class", new HashMap<Compatibility, String>() {{
+            put(GryoCompatibility.V1D0_3_2_3, "Serialization of Class in Gryo 1.0 had a bug that prevented proper operation in versions prior to 3.2.4.");
+        }}, GryoCompatibility.V1D0_3_2_3);
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float");
         addCoreEntry(100, "Integer");
         addCoreEntry(100L, "Long");
-        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", GryoCompatibility.V1D0_3_2_3);
+        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", new HashMap<Compatibility, String>() {{
+            put(GryoCompatibility.V1D0_3_2_3, "Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
+        }}, GryoCompatibility.V1D0_3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         addGraphStructureEntry(graph.edges().next(), "Edge");
@@ -147,8 +151,12 @@ public class Model {
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
         addGraphProcessEntry(metrics, "Metrics");
         addGraphProcessEntry(P.gt(0), "P");
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", new HashMap<Compatibility, String>() {{
+            put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
+        }}, GryoCompatibility.V1D0_3_2_3);
+        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", new HashMap<Compatibility, String>() {{
+            put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
+        }}, GryoCompatibility.V1D0_3_2_3);
         addGraphProcessEntry(Scope.local, "Scope");
         addGraphProcessEntry(T.label, "T", "");
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
@@ -206,12 +214,18 @@ public class Model {
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(new Byte("1"), "Byte", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
-                 GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
-                 GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
+                new HashMap<Compatibility, String>() {{
+                    put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
+                }},
+                GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
+                GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
         addExtendedEntry("x".charAt(0), "Char", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
         try {
-            addExtendedEntry(InetAddress.getByName("localhost"), "InetAddress", "",
+            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
+                    new HashMap<Compatibility, String>() {{
+                        put(GryoCompatibility.V1D0_3_2_3, "InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
+                    }},
                     GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3, GraphSONCompatibility.V2D0_NO_TYPE_3_3_0,
                     GryoCompatibility.V1D0_3_2_3);
         } catch (Exception ex) {
@@ -290,8 +304,12 @@ public class Model {
         addEntry("Core", obj, title, "");
     }
 
-    private void addCoreEntry(final Object obj, final String title,  final Compatibility... incompatibleWith) {
+    private void addCoreEntry(final Object obj, final String title, final Compatibility... incompatibleWith) {
         addEntry("Core", obj, title, "", incompatibleWith);
+    }
+
+    private void addCoreEntry(final Object obj, final String title, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
+        addEntry("Core", obj, title, "", incompatibilityNotes, incompatibleWith);
     }
 
     private void addGraphStructureEntry(final Object obj, final String title) {
@@ -311,7 +329,11 @@ public class Model {
     }
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addEntry("Graph Process", obj, title, description, incompatibleWith);
+        addGraphProcessEntry(obj, title, description, null, incompatibleWith);
+    }
+
+    private void addGraphProcessEntry(final Object obj, final String title, final String description, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
+        addEntry("Graph Process", obj, title, description, incompatibilityNotes, incompatibleWith);
     }
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final List<Compatibility> compatibleWith) {
@@ -353,26 +375,42 @@ public class Model {
     private void addEntry(final String group, final Supplier<?> maker, final String title, final String description, final Compatibility... incompatibleWith) {
         addEntry(group, null, title, description, Collections.unmodifiableList(ALL.stream()
                 .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), maker);
+                .collect(Collectors.toList())), maker, null);
+    }
+
+    private void addEntry(final String group, final Supplier<?> maker, final String title, final String description,
+                          final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
+        addEntry(group, null, title, description, Collections.unmodifiableList(ALL.stream()
+                .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
+                .collect(Collectors.toList())), maker, incompatibilityNotes);
+    }
+
+    private void addEntry(final String group, final Object obj, final String title, final String description,
+                          final Map<Compatibility, String> incompatibilityNotes,
+                          final Compatibility... incompatibleWith) {
+        addEntry(group, obj, title, description, Collections.unmodifiableList(ALL.stream()
+                .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
+                .collect(Collectors.toList())), null, incompatibilityNotes);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
         addEntry(group, obj, title, description, Collections.unmodifiableList(ALL.stream()
                 .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), null);
+                .collect(Collectors.toList())), null, null);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description,
                             final List<Compatibility> compatibleWith) {
-        addEntry(group, obj, title, description, compatibleWith, null);
+        addEntry(group, obj, title, description, compatibleWith, null, null);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description,
-                          final List<Compatibility> compatibleWith, final Supplier<?> maker) {
+                          final List<Compatibility> compatibleWith, final Supplier<?> maker,
+                          final Map<Compatibility, String> incompatibilityNotes) {
         if (!entries.containsKey(group))
             entries.put(group, new ArrayList<>());
 
-        entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker));
+        entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker, incompatibilityNotes));
     }
 
     public void saveAsCsv(final String file) throws Exception {
@@ -417,13 +455,29 @@ public class Model {
         private final String description;
         private final List<Compatibility> compatibleWith;
         private final Supplier<?> maker;
+        private final Map<Compatibility, String> incompatibilityNotes;
 
-        public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith, final Supplier<?> maker) {
+        public Entry(final String title, final Object object, final String description,
+                     final List<Compatibility> compatibleWith, final Supplier<?> maker) {
+            this(title, object, description, compatibleWith, maker, Collections.emptyMap());
+        }
+
+        public Entry(final String title, final Object object, final String description,
+                     final List<Compatibility> compatibleWith, final Supplier<?> maker,
+                     final Map<Compatibility, String> incompatibilityNotes) {
             this.title = title;
             this.object = object;
             this.description = description;
             this.compatibleWith = compatibleWith;
             this.maker = maker;
+            this.incompatibilityNotes = Optional.ofNullable(incompatibilityNotes).orElseGet(Collections::emptyMap);
+
+            if (this.compatibleWith.stream().anyMatch(this.incompatibilityNotes::containsKey))
+                throw new IllegalStateException("The " + title + " entry is marked as 'compatible' but it has incompatibility notes");
+        }
+
+        public Map<Compatibility, String> getIncompatibilityNotes() {
+            return Collections.unmodifiableMap(incompatibilityNotes);
         }
 
         public String getTitle() {
