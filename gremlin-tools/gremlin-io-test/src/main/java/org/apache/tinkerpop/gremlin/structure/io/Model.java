@@ -113,13 +113,13 @@ public class Model {
         final GraphTraversalSource g = graph.traversal();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
-        addCoreEntry(File.class, "Class", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+        addCoreEntry(File.class, "Class", GryoCompatibility.V1D0_3_2_3);
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float");
         addCoreEntry(100, "Integer");
         addCoreEntry(100L, "Long");
-        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", GryoCompatibility.V1D0_3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         addGraphStructureEntry(graph.edges().next(), "Edge");
@@ -213,7 +213,7 @@ public class Model {
         try {
             addExtendedEntry(InetAddress.getByName("localhost"), "InetAddress", "",
                     GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3, GraphSONCompatibility.V2D0_NO_TYPE_3_3_0,
-                    GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_3_0);
+                    GryoCompatibility.V1D0_3_2_3);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -417,10 +417,6 @@ public class Model {
         private final String description;
         private final List<Compatibility> compatibleWith;
         private final Supplier<?> maker;
-        
-        public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith) {
-            this(title, object, description, compatibleWith, null);
-        }
 
         public Entry(final String title, final Object object, final String description, final List<Compatibility> compatibleWith, final Supplier<?> maker) {
             this.title = title;
