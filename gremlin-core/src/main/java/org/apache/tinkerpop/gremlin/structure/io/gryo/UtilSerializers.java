@@ -34,6 +34,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -65,8 +66,9 @@ final class UtilSerializers {
     public final static class ByteBufferSerializer implements SerializerShim<ByteBuffer> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ByteBuffer bb) {
-            final byte[] b = new byte[bb.remaining()];
-            bb.get(b);
+            final byte[] b = bb.array();
+            final int arrayOffset = bb.arrayOffset();
+            Arrays.copyOfRange(b, arrayOffset + bb.position(), arrayOffset + bb.limit());
             output.writeInt(b.length);
             output.writeBytes(b, 0, b.length);
         }
