@@ -63,6 +63,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,6 +71,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 
@@ -187,9 +190,9 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final ByteBuffer fromStatic = read(getCompatibility().readFromResource(resourceName), ByteBuffer.class);
         final ByteBuffer recycled = read(write(fromStatic, ByteBuffer.class), ByteBuffer.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource, fromStatic);
-        assertEquals(resource, recycled);
+        assertThat(Arrays.equals(fromStatic.array(), recycled.array()), is(true));
+        assertThat(Arrays.equals(resource.array(), fromStatic.array()), is(true));
+        assertThat(Arrays.equals(resource.array(), recycled.array()), is(true));
     }
 
     @Test

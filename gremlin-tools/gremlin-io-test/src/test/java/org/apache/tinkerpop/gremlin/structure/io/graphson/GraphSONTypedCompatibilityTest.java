@@ -44,6 +44,7 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {GraphSONCompatibility.V2D0_PARTIAL_3_2_3, mapperV2 },
+                {GraphSONCompatibility.V2D0_PARTIAL_3_2_4, mapperV2 },
                 {GraphSONCompatibility.V2D0_PARTIAL_3_3_0, mapperV2 }});
     }
 
