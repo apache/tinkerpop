@@ -467,10 +467,8 @@ public final class ElementHelper {
      * @return true if equal and false otherwise
      */
     public static boolean areEqual(final Property a, final Object b) {
-        if (null == a)
-            throw Graph.Exceptions.argumentCanNotBeNull("a");
-        if (null == b)
-            throw Graph.Exceptions.argumentCanNotBeNull("b");
+        if (null == b || null == a)
+            return false;
 
         if (a == b)
             return true;
