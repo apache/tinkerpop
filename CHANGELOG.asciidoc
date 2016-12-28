@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Changed behavior of `ElementHelper.areEqual(Property, Property)` to not throw exceptions with `null` arguments.
 * Added `GryoVersion` for future flexibility when introducing a new verison of Gryo and moved serializer registrations to it.
 * Fixed Gryo serialization of `ConnectiveP` instances.
 * Lessened the severity of Gremlin Server logging when it encounters two or more serializers addressing the same mime type.
