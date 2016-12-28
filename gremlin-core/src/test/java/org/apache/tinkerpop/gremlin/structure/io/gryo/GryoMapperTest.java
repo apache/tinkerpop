@@ -57,6 +57,7 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,7 @@ import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -362,7 +364,7 @@ public class GryoMapperTest {
     @Test
     public void shouldHandleByteBuffer() throws Exception {
         final ByteBuffer bb = ByteBuffer.wrap("some bytes for you".getBytes());
-        assertEquals(bb, serializeDeserialize(bb, ByteBuffer.class));
+        assertThat(Arrays.equals(bb.array(), serializeDeserialize(bb, ByteBuffer.class).array()), is(true));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
