@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 import org.junit.Test;
 
@@ -72,5 +73,21 @@ public class CompatibilitiesTest {
                 .after("1.0")
                 .match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0));
+    }
+
+    @Test
+    public void shouldFindGraphSONWithConfigurationPartial() {
+        final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
+                .configuredAs(".*partial.*").match();
+        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_2_3,
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+    }
+
+    @Test
+    public void shouldFindGraphSONAfterVersion3_2_3WithConfigurationPartial() {
+        final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
+                .afterRelease("3.2.4")
+                .configuredAs(".*partial.*").match();
+        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
     }
 }

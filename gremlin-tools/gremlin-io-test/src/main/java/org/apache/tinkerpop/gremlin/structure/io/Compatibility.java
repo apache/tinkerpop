@@ -39,4 +39,6 @@ public interface Compatibility {
      * Gets the version of the IO type (i.e. GraphSON 2.0)
      */
     public String getVersion();
+
+    public String getConfiguration();
 }

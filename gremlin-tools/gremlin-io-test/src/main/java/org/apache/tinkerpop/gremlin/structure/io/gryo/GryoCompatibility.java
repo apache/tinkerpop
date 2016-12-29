@@ -100,6 +100,11 @@ public enum GryoCompatibility implements Compatibility {
     }
 
     @Override
+    public String getConfiguration() {
+        return configuration;
+    }
+
+    @Override
     public String toString() {
         return tinkerpopVersion + "-" + configuration;
     }

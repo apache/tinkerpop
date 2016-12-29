@@ -211,7 +211,7 @@ public class Model {
         addExtendedEntry(new Byte("1"), "Byte", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
         addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
                 new HashMap<Compatibility, String>() {{
-                    put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
+                    put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
                 }},
                 GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
                 GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
@@ -220,10 +220,10 @@ public class Model {
         try {
             addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
                     new HashMap<Compatibility, String>() {{
-                        put(GryoCompatibility.V1D0_3_2_3, "InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
+                        put(GryoCompatibility.V1D0_3_2_3, "InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
                     }},
-                    GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3, GraphSONCompatibility.V2D0_NO_TYPE_3_3_0,
-                    GryoCompatibility.V1D0_3_2_3);
+                    GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
+                    GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -332,7 +332,7 @@ public class Model {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
                 .match();
-        incompatibilityList.addAll(Arrays.asList(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+        incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
         addEntry("RequestMessage", obj, title, description,
@@ -343,7 +343,7 @@ public class Model {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
                 .match();
-        incompatibilityList.addAll(Arrays.asList(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+        incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
         addEntry("ResponseMessage", obj, title, description,

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +49,8 @@ public class Compatibilities {
      * Initialized to 3.0 which is non-existent, but obviously the high-end of whatever would be tested.
      */
     private String ioVersionAfter = "0.0";
+
+    private String configuredAs = ".*";
 
     private Compatibilities(final Class<? extends Enum<? extends Compatibility>> c) {
         this.compatibility = c;
@@ -103,14 +106,22 @@ public class Compatibilities {
         return before(end).after(start);
     }
 
+    public Compatibilities configuredAs(final String regex) {
+        this.configuredAs = regex;
+        return this;
+    }
+
     public List<Compatibility> match() {
         final Compatibility[] enumArray = (Compatibility[]) compatibility.getEnumConstants();
         final List<Compatibility> enums = Arrays.asList(enumArray);
+        final Pattern pattern = Pattern.compile(configuredAs);
+
         return enums.stream()
                 .filter(c -> beforeRelease(c, releaseVersionBefore))
                 .filter(c -> afterRelease(c, releaseVersionAfter))
                 .filter(c -> beforeIo(c, ioVersionBefore))
                 .filter(c -> afterIo(c, ioVersionAfter))
+                .filter(c -> pattern.matcher(c.getConfiguration()).matches())
                 .collect(Collectors.toList());
     }
 
