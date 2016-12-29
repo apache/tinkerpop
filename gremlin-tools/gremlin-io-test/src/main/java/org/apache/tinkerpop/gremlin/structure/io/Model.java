@@ -130,7 +130,11 @@ public class Model {
         addGraphStructureEntry(g.V().out().out().path().next(), "Path");
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", GRYO_ONLY);
-        addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.", Collections.emptyList());
+        addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.",
+                new HashMap<Compatibility, String>() {{
+                    put(GryoCompatibility.V1D0_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
+                    put(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
+                }}, GryoCompatibility.V1D0_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_3);
         addEntry("Graph Structure", g.V().out().out().tree().next(), "Tree", "", GRYO_ONLY);
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
