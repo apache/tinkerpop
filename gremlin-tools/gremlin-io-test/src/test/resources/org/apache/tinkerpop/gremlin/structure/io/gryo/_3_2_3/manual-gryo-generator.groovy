@@ -104,7 +104,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     toGryoFunction(graph.edges().next().properties().next(), "Property", mapper)
     toGryoFunction(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), "StarGraph", mapper)
     toGryoFunction(graph, "TinkerGraph", mapper)
-    toGryoFunction(g.V().out().out().tree().next(), "Tree", mapper)
+    toGryoFunction(g.V(1).out().out().tree().next(), "Tree", mapper)
     toGryoFunction(graph.vertices().next(), "Vertex", mapper)
     toGryoFunction(graph.vertices().next().properties().next(), "VertexProperty", mapper)
 

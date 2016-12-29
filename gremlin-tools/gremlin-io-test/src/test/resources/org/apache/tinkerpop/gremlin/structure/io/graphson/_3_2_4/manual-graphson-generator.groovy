@@ -70,7 +70,7 @@ writeSupportedV1Objects = { writer, mapper ->
     writer.write(toJsonV1d0NoTypes(graph.edges().next().properties().next(), "Property", mapper))
     writer.write(toJsonV1d0NoTypes(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph", mapper))
     writer.write(toJsonV1d0NoTypes(graph, "TinkerGraph", mapper, "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`."))
-    writer.write(toJsonV1d0NoTypes(g.V().out().out().tree().next(), "Tree", mapper))
+    writer.write(toJsonV1d0NoTypes(g.V(1).out().out().tree().next(), "Tree", mapper))
     writer.write(toJsonV1d0NoTypes(graph.vertices().next(), "Vertex", mapper))
     writer.write(toJsonV1d0NoTypes(graph.vertices().next().properties().next(), "VertexProperty", mapper))
 
@@ -203,7 +203,7 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     writer.write(toJsonFunction(graph.edges().next().properties().next(), "Property", mapper))
     writer.write(toJsonFunction(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph", mapper))
     writer.write(toJsonFunction(graph, "TinkerGraph", mapper, "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`."))
-    writer.write(toJsonFunction(g.V().out().out().tree().next(), "Tree", mapper))
+    writer.write(toJsonFunction(g.V(1).out().out().tree().next(), "Tree", mapper))
     writer.write(toJsonFunction(graph.vertices().next(), "Vertex", mapper))
     writer.write(toJsonFunction(graph.vertices().next().properties().next(), "VertexProperty", mapper))
 

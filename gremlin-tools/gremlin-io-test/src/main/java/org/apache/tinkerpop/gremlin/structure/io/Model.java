@@ -135,7 +135,7 @@ public class Model {
                     put(GryoCompatibility.V1D0_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
                     put(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
                 }}, GryoCompatibility.V1D0_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_3);
-        addEntry("Graph Structure", g.V().out().out().tree().next(), "Tree", "", GRYO_ONLY);
+        addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", GRYO_ONLY);
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
 

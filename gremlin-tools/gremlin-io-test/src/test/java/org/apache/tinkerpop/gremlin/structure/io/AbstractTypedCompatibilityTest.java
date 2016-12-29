@@ -873,6 +873,18 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final Tree fromStatic = read(getCompatibility().readFromResource(resourceName), Tree.class);
         final Tree recycled = read(write(fromStatic, Tree.class), Tree.class);
         assertNotSame(fromStatic, recycled);
+        assertEquals(resource.size(), fromStatic.size());
+        assertVertex((Vertex) resource.keySet().iterator().next(), (Vertex) fromStatic.keySet().iterator().next());
+        assertEquals(resource.getLeafObjects().size(), fromStatic.getLeafObjects().size());
+        assertVertex((Vertex) resource.getLeafObjects().get(0), (Vertex) fromStatic.getLeafObjects().get(0));
+        assertEquals(resource.getObjectsAtDepth(1).size(), fromStatic.getObjectsAtDepth(1).size());
+        assertVertex((Vertex) resource.getObjectsAtDepth(1).get(0), (Vertex) fromStatic.getObjectsAtDepth(1).get(0));
+        assertEquals(resource.size(), recycled.size());
+        assertVertex((Vertex) resource.keySet().iterator().next(), (Vertex) recycled.keySet().iterator().next());
+        assertEquals(resource.getLeafObjects().size(), recycled.getLeafObjects().size());
+        assertVertex((Vertex) resource.getLeafObjects().get(0), (Vertex) recycled.getLeafObjects().get(0));
+        assertEquals(resource.getObjectsAtDepth(1).size(), recycled.getObjectsAtDepth(1).size());
+        assertVertex((Vertex) resource.getObjectsAtDepth(1).get(0), (Vertex) recycled.getObjectsAtDepth(1).get(0));
     }
 
     @Test
