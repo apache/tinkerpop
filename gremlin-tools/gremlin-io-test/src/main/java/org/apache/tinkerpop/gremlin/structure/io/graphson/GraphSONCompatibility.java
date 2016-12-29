@@ -50,9 +50,21 @@ public enum GraphSONCompatibility implements Compatibility {
         this.graphSONVersion = graphSONVersion;
     }
 
+
+
     public byte[] readFromResource(final String resource) throws IOException {
         final String testResource = "_" + tinkerpopVersion.replace(".", "_") + SEP + resource + "-" + configuration + ".json";
         return IOUtils.toByteArray(getClass().getResourceAsStream(testResource));
+    }
+
+    @Override
+    public String getReleaseVersion() {
+        return tinkerpopVersion;
+    }
+
+    @Override
+    public String getVersion() {
+        return graphSONVersion;
     }
 
     @Override

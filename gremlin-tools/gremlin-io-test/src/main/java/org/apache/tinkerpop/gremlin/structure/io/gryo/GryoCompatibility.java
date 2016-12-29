@@ -90,6 +90,16 @@ public enum GryoCompatibility implements Compatibility {
     }
 
     @Override
+    public String getReleaseVersion() {
+        return tinkerpopVersion;
+    }
+
+    @Override
+    public String getVersion() {
+        return gryoVersion;
+    }
+
+    @Override
     public String toString() {
         return tinkerpopVersion + "-" + configuration;
     }
