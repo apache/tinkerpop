@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
@@ -105,7 +107,9 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public TinkerGraph read(final Kryo kryo, final Input input, final Class<TinkerGraph> tinkerGraphClass) {
-            final TinkerGraph graph = TinkerGraph.open();
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
+            final TinkerGraph graph = TinkerGraph.open(conf);
             final int len = input.readInt();
             final byte[] bytes = input.readBytes(len);
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
