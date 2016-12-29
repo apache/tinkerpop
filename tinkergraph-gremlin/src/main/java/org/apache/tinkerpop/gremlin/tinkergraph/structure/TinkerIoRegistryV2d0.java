@@ -196,7 +196,9 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public TinkerGraph deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final TinkerGraph graph = TinkerGraph.open();
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
+            final TinkerGraph graph = TinkerGraph.open(conf);
 
             final List<? extends Edge> edges;
             final List<? extends Vertex> vertices;
