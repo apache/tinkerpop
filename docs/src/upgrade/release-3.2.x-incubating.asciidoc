@@ -32,6 +32,20 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+TinkerGraph Deserialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A TinkerGraph deserialized from Gryo or GraphSON is now configured with multi-properties enabled. This change allows
+TinkerGraphs returned from Gremlin Server to properly return multi-properties, which was a problem seen when
+subgraphing a graph that contained properties with a setting other than `Cardinality.single`.
+
+This change could be considered breaking in the odd chance that a TinkerGraph returned from Gremlin Server was later
+mutated, because calls to `property(k,v)` would default to `Cardinality.list` instead of `Cardinality.single`. In the
+event that this is a problem, simple change calls to `property(k,v)` to `property(Cardinality.single,k,v)` and
+explicitly set the `Cardinality`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1587[TINKERPOP-1587]
+
 Traversal Promises
 ^^^^^^^^^^^^^^^^^^
 
