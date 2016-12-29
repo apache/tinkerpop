@@ -775,7 +775,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final String resourceName = "stargraph";
         assumeCompatibility(resourceName);
 
-        // todo: more asserts
         final StarGraph resource = findModelEntryObject(resourceName);
         final StarGraph fromStatic = read(getCompatibility().readFromResource(resourceName), StarGraph.class);
         final StarGraph recycled = read(write(fromStatic, StarGraph.class), StarGraph.class);
@@ -783,12 +782,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic.getStarVertex(), recycled.getStarVertex());
         assertEquals(resource.getStarVertex(), fromStatic.getStarVertex());
         assertEquals(resource.getStarVertex(), recycled.getStarVertex());
-        assertEquals(fromStatic.getStarVertex().label(), recycled.getStarVertex().label());
-        assertEquals(fromStatic.getStarVertex().id(), recycled.getStarVertex().id());
-        assertEquals(IteratorUtils.count(fromStatic.getStarVertex().properties()), IteratorUtils.count(recycled.getStarVertex().properties()));
-        assertEquals(fromStatic.getStarVertex().property("name").value(), recycled.getStarVertex().property("name").value());
-        assertEquals(fromStatic.getStarVertex().property("name").id(), recycled.getStarVertex().property("name").id());
-        assertEquals(IteratorUtils.count(fromStatic.getStarVertex().edges(Direction.BOTH)), IteratorUtils.count(recycled.getStarVertex().edges(Direction.BOTH)));
+        assertVertex(resource.getStarVertex(), fromStatic.getStarVertex());
+        assertVertex(resource.getStarVertex(), recycled.getStarVertex());
     }
 
     @Test
@@ -865,8 +860,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource.bulk(), fromStatic.bulk());
         assertEquals(resource.get(), recycled.get());
         assertEquals(resource.get(), fromStatic.get());
-
-        // todo: more asserts on object itself
+        assertVertex((Vertex) resource.get(), (Vertex) recycled.get());
+        assertVertex((Vertex) resource.get(), (Vertex) fromStatic.get());
     }
 
     @Test
@@ -878,8 +873,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final Tree fromStatic = read(getCompatibility().readFromResource(resourceName), Tree.class);
         final Tree recycled = read(write(fromStatic, Tree.class), Tree.class);
         assertNotSame(fromStatic, recycled);
-
-        // todo: more asserts on objects in three themselves
     }
 
     @Test
