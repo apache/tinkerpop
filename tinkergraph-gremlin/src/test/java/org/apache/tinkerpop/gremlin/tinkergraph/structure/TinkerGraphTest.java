@@ -313,6 +313,19 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldSerializeTinkerGraphWithMultiPropertiesToGryo() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createTheCrew();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
+            final byte[] b = out.toByteArray();
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(b)) {
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertCrewGraph(target, false);
+            }
+        }
+    }
+
+    @Test
     public void shouldSerializeTinkerGraphToGraphSON() throws Exception {
         final TinkerGraph graph = TinkerFactory.createModern();
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -320,6 +333,18 @@ public class TinkerGraphTest {
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
                 final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
                 IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
+
+    @Test
+    public void shouldSerializeTinkerGraphWithMultiPropertiesToGraphSON() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createTheCrew();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.graphson()).writer().create().writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertCrewGraph(target, false);
             }
         }
     }
