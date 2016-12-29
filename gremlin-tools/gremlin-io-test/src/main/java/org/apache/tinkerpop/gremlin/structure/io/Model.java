@@ -332,32 +332,22 @@ public class Model {
         addEntry("Graph Process", obj, title, description);
     }
 
-    private void addGraphProcessEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addGraphProcessEntry(obj, title, description, null, incompatibleWith);
-    }
-
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
         addEntry("Graph Process", obj, title, description, incompatibilityNotes, incompatibleWith);
     }
 
-    private void addGraphProcessEntry(final Object obj, final String title, final String description, final List<Compatibility> compatibleWith) {
-        addEntry("Graph Process", obj, title, description, compatibleWith);
-    }
-
-    private void addRequestMessageEntry(final Object obj, final String title, final String description) {
-        addEntry("RequestMessage", obj, title, description, GRAPHSON_ONLY);
-    }
-
     private void addRequestMessageEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addEntry("RequestMessage", obj, title, description, incompatibleWith);
-    }
-
-    private void addResponseMessageEntry(final Object obj, final String title, final String description) {
-        addEntry("ResponseMessage", obj, title, description, GRAPHSON_ONLY);
+        addEntry("RequestMessage", obj, title, description,
+                createIncompatibilityMap("RequestMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component (MessageSerializer) that doesn't fit the test model.",
+                        GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_3_0),
+                incompatibleWith);
     }
 
     private void addResponseMessageEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addEntry("ResponseMessage", obj, title, description, incompatibleWith);
+        addEntry("ResponseMessage", obj, title, description,
+                createIncompatibilityMap("ResponseMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component (MessageSerializer) that doesn't fit the test model.",
+                        GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_3_0),
+                incompatibleWith);
     }
 
     private void addExtendedEntry(final Object obj, final String title) {
@@ -415,6 +405,12 @@ public class Model {
             entries.put(group, new ArrayList<>());
 
         entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker, incompatibilityNotes));
+    }
+
+    private Map<Compatibility, String> createIncompatibilityMap(final String msg, final Compatibility... incompatibilities) {
+        final Map<Compatibility, String> m = new HashMap<>();
+        Arrays.asList(incompatibilities).forEach(c -> m.put(c, msg));
+        return m;
     }
 
     public void saveAsCsv(final String file) throws Exception {
