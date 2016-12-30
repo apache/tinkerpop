@@ -18,7 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -38,26 +42,81 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
 
     @Test
     public void shouldReadWriteAuthenticationChallenge() throws Exception {
-        assumeCompatibility("authenticationchallenge");
+        final String resourceName = "authenticationchallenge";
+        assumeCompatibility(resourceName);
 
-        final HashMap fromStatic = read(getCompatibility().readFromResource("authenticationchallenge"), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final ResponseMessage resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, ResponseMessage.class), HashMap.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals("41d2e28a-20a4-4ab0-b379-d810dede3786", recycled.get("requestId"));
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+        assertEquals(ResponseStatusCode.AUTHENTICATE.getValue(), ((Map) fromStatic.get("status")).get("code"));
+        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
         assertEquals(ResponseStatusCode.AUTHENTICATE.getValue(), ((Map) recycled.get("status")).get("code"));
     }
 
     @Test
     public void shouldReadWriteAuthenticationResponse() throws Exception {
-        assumeCompatibility("authenticationresponse");
+        final String resourceName = "authenticationresponse";
+        assumeCompatibility(resourceName);
 
-        final HashMap fromStatic = read(getCompatibility().readFromResource("authenticationresponse"), HashMap.class);
-        final HashMap recycled = read(write(fromStatic, HashMap.class), HashMap.class);
+        final RequestMessage resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, RequestMessage.class), HashMap.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals("cb682578-9d92-4499-9ebc-5c6aa73c5397", recycled.get("requestId"));
-        assertEquals("authentication", recycled.get("op"));
-        assertEquals("", recycled.get("processor"));
-        assertEquals("PLAIN", ((Map) recycled.get("args")).get("saslMechanism"));
-        assertEquals("AHN0ZXBocGhlbgBwYXNzd29yZA==", ((Map) recycled.get("args")).get("sasl"));
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+        assertEquals(resource.getOp(), fromStatic.get("op"));
+        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) fromStatic.get("args")).get("saslMechanism"));
+        assertEquals(resource.getArgs().get("sasl"), ((Map) fromStatic.get("args")).get("sasl"));
+        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+        assertEquals(resource.getOp(), recycled.get("op"));
+        assertEquals(resource.getProcessor(), recycled.get("processor"));
+        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) recycled.get("args")).get("saslMechanism"));
+        assertEquals(resource.getArgs().get("sasl"), ((Map) recycled.get("args")).get("sasl"));
+    }
+
+    @Test
+    public void shouldReadWriteEdge() throws Exception {
+        final String resourceName = "edge";
+        assumeCompatibility(resourceName);
+
+        final Edge resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource("edge"), HashMap.class);
+        final HashMap recycled = read(write(resource, Edge.class), HashMap.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(resource.id(), fromStatic.get("id"));
+        assertEquals(resource.label(), fromStatic.get("label"));
+        assertEquals(resource.id(), fromStatic.get("id"));
+        assertEquals(resource.inVertex().label(), fromStatic.get("inVLabel"));
+        assertEquals(resource.outVertex().label(), fromStatic.get("outVLabel"));
+        assertEquals(resource.inVertex().id(), fromStatic.get("inV"));
+        assertEquals(resource.outVertex().id(), fromStatic.get("outV"));
+        assertEquals(resource.id(), recycled.get("id"));
+        assertEquals(resource.label(), recycled.get("label"));
+        assertEquals(resource.id(), recycled.get("id"));
+        assertEquals(resource.inVertex().label(), recycled.get("inVLabel"));
+        assertEquals(resource.outVertex().label(), recycled.get("outVLabel"));
+        assertEquals(resource.inVertex().id(), recycled.get("inV"));
+        assertEquals(resource.outVertex().id(), recycled.get("outV"));
+
+        // deal with incompatibilities
+        if (getCompatibility().getConfiguration().equals("v1d0")) {
+            assertEquals("edge", fromStatic.get("type"));
+            assertEquals(IteratorUtils.count(resource.properties()), ((Map) fromStatic.get("properties")).size());
+            assertEquals(resource.value("since"), ((Map) fromStatic.get("properties")).get("since"));
+            assertEquals("edge", recycled.get("type"));
+            assertEquals(IteratorUtils.count(resource.properties()), ((Map) recycled.get("properties")).size());
+            assertEquals(resource.value("since"), ((Map) recycled.get("properties")).get("since"));
+        } else if (getCompatibility().getConfiguration().contains("no-types")) {
+            assertEquals(IteratorUtils.count(resource.properties()), ((Map) fromStatic.get("properties")).size());
+            assertEquals(resource.keys().iterator().next(), ((Map) ((Map) fromStatic.get("properties")).get("since")).get("key"));
+            assertEquals(resource.value("since"), ((Map) ((Map) fromStatic.get("properties")).get("since")).get("value"));
+            assertEquals(IteratorUtils.count(resource.properties()), ((Map) recycled.get("properties")).size());
+            assertEquals(resource.keys().iterator().next(), ((Map) ((Map) recycled.get("properties")).get("since")).get("key"));
+            assertEquals(resource.value("since"), ((Map) ((Map) recycled.get("properties")).get("since")).get("value"));
+        }
     }
 }

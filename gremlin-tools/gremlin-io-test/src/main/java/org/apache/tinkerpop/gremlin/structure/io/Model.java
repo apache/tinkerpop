@@ -111,7 +111,12 @@ public class Model {
         }}, GryoCompatibility.V1D0_3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
-        addGraphStructureEntry(graph.edges().next(), "Edge");
+        // TODO: remove incompatibilities in Element on GraphSON 2.0
+        // temporary incompatibility in v2 graphson starting at 3.3.0 with Element properties - need to revert some
+        // changes on master (which is what helped start this mess) once this work is merged
+        final Compatibility[] graphsonV2NoType = Compatibilities.with(GraphSONCompatibility.class)
+                .configuredAs(".*no-types").matchToArray();
+        addGraphStructureEntry(graph.edges().next(), "Edge", "", graphsonV2NoType);
         addGraphStructureEntry(g.V().out().out().path().next(), "Path");
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
@@ -297,8 +302,8 @@ public class Model {
         addGraphStructureEntry(obj, title, "");
     }
 
-    private void addGraphStructureEntry(final Object obj, final String title, final String description) {
-        addEntry("Graph Structure", obj, title, description);
+    private void addGraphStructureEntry(final Object obj, final String title, final String description, final Compatibility... incompatibilities) {
+        addEntry("Graph Structure", obj, title, description, incompatibilities);
     }
 
     private void addGraphProcessEntry(final Object obj, final String title) {
