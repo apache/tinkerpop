@@ -118,16 +118,12 @@ public class Model {
                 .configuredAs(".*no-types").matchToArray();
         addGraphStructureEntry(graph.edges().next(), "Edge", "", graphsonV2NoType);
         addGraphStructureEntry(g.V().out().out().path().next(), "Path", "", graphsonV2NoType);
-        addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
+        addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "", graphsonV2NoType);
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
-        addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.",
-                new HashMap<Compatibility, String>() {{
-                    put(GryoCompatibility.V1D0_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
-                    put(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
-                }}, GryoCompatibility.V1D0_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_3);
+        addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
         addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", Compatibilities.GRYO_ONLY.match());
-        addGraphStructureEntry(graph.vertices().next(), "Vertex");
-        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
+        addGraphStructureEntry(graph.vertices().next(), "Vertex", "", graphsonV2NoType);
+        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "", graphsonV2NoType);
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");

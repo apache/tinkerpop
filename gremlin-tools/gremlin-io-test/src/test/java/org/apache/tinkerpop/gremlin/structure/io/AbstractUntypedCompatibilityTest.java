@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -154,5 +156,87 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(((Vertex) resource.objects().get(1)).label(), ((Map) ((List) recycled.get("objects")).get(1)).get("label"));
         assertEquals(((Vertex) resource.objects().get(2)).id(), ((Map) ((List) recycled.get("objects")).get(2)).get("id"));
         assertEquals(((Vertex) resource.objects().get(2)).label(), ((Map) ((List) recycled.get("objects")).get(2)).get("label"));
+    }
+
+    @Test
+    public void shouldReadWriteProperty() throws Exception {
+        final String resourceName = "property";
+        assumeCompatibility(resourceName);
+
+        final Property resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, Path.class), HashMap.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(2, fromStatic.size());
+        assertEquals(resource.key(), fromStatic.get("key"));
+        assertEquals(resource.value(), fromStatic.get("value"));
+        assertEquals(2, recycled.size());
+        assertEquals(resource.key(), recycled.get("key"));
+        assertEquals(resource.value(), recycled.get("value"));
+    }
+
+    @Test
+    public void shouldReadWriteVertex() throws Exception {
+        final String resourceName = "vertex";
+        assumeCompatibility(resourceName);
+
+        final Vertex resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, Edge.class), HashMap.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(resource.id(), fromStatic.get("id"));
+        assertEquals(resource.label(), fromStatic.get("label"));
+        assertEquals(resource.id(), fromStatic.get("id"));
+        assertEquals(resource.id(), recycled.get("id"));
+        assertEquals(resource.label(), recycled.get("label"));
+        assertEquals(resource.id(), recycled.get("id"));
+        assertEquals(IteratorUtils.count(resource.keys()), ((Map) fromStatic.get("properties")).size());
+        assertEquals(resource.value("name"), ((Map) ((List) ((Map) fromStatic.get("properties")).get("name")).get(0)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(0), ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(0)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(1), ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(1)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(2), ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(2)).get("value"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(0)).value("startTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(0)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(0)).value("endTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(0)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(1)).value("startTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(1)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(1)).value("endTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(1)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(2)).value("startTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(2)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(2)).value("endTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(2)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(3)).value("startTime"), ((Map) ((Map) ((List) ((Map) fromStatic.get("properties")).get("location")).get(3)).get("properties")).get("startTime"));
+        assertEquals(IteratorUtils.count(resource.keys()), ((Map) recycled.get("properties")).size());
+        assertEquals(resource.value("name"), ((Map) ((List) ((Map) recycled.get("properties")).get("name")).get(0)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(0), ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(0)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(1), ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(1)).get("value"));
+        assertEquals(IteratorUtils.list(resource.values("location")).get(2), ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(2)).get("value"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(0)).value("startTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(0)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(0)).value("endTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(0)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(1)).value("startTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(1)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(1)).value("endTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(1)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(2)).value("startTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(2)).get("properties")).get("startTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(2)).value("endTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(2)).get("properties")).get("endTime"));
+        assertEquals(((VertexProperty) IteratorUtils.list(resource.properties("location")).get(3)).value("startTime"), ((Map) ((Map) ((List) ((Map) recycled.get("properties")).get("location")).get(3)).get("properties")).get("startTime"));
+
+        // deal with incompatibilities
+        if (getCompatibility().getConfiguration().equals("v1d0")) {
+            assertEquals("vertex", fromStatic.get("type"));
+        }
+    }
+
+    @Test
+    public void shouldReadWriteVertexProperty() throws Exception {
+        final String resourceName = "vertexproperty";
+        assumeCompatibility(resourceName);
+
+        final VertexProperty resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, Edge.class), HashMap.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(3, fromStatic.size());
+        assertEquals(resource.id().toString(), fromStatic.get("id").toString());
+        assertEquals(resource.key(), fromStatic.get("label"));
+        assertEquals(resource.value(), fromStatic.get("value"));
+        assertEquals(3, recycled.size());
+        assertEquals(resource.id().toString(), fromStatic.get("id").toString());
+        assertEquals(resource.key(), recycled.get("label"));
+        assertEquals(resource.value(), recycled.get("value"));
     }
 }
