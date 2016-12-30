@@ -90,4 +90,17 @@ public class CompatibilitiesTest {
                 .configuredAs(".*partial.*").match();
         assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
     }
+
+    @Test
+    public void shouldJoinCompatibilities() {
+        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
+                .afterRelease("3.2.4")
+                .after("1.0")
+                .join(Compatibilities.with(GraphSONCompatibility.class)
+                        .configuredAs(".*partial.*"))
+                .match();
+        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0,
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4,
+                GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+    }
 }

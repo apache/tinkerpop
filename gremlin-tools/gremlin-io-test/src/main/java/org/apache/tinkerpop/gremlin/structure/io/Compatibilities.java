@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,6 +61,8 @@ public class Compatibilities {
     private String ioVersionAfter = "0.0";
 
     private String configuredAs = ".*";
+
+    private List<Compatibilities> compatibilitiesToJoin = Collections.emptyList();
 
     private Compatibilities(final Class<? extends Enum<? extends Compatibility>> c) {
         this.compatibility = c;
@@ -119,18 +123,26 @@ public class Compatibilities {
         return this;
     }
 
+    public Compatibilities join(final Compatibilities... compatibilities) {
+        this.compatibilitiesToJoin = Arrays.asList(compatibilities);
+        return this;
+    }
+
     public List<Compatibility> match() {
         final Compatibility[] enumArray = (Compatibility[]) compatibility.getEnumConstants();
         final List<Compatibility> enums = Arrays.asList(enumArray);
         final Pattern pattern = Pattern.compile(configuredAs);
 
-        return enums.stream()
+        final List<Compatibility> thisMatch = enums.stream()
                 .filter(c -> beforeRelease(c, releaseVersionBefore))
                 .filter(c -> afterRelease(c, releaseVersionAfter))
                 .filter(c -> beforeIo(c, ioVersionBefore))
                 .filter(c -> afterIo(c, ioVersionAfter))
                 .filter(c -> pattern.matcher(c.getConfiguration()).matches())
                 .collect(Collectors.toList());
+        final List<Compatibility> matches = new ArrayList<>(thisMatch);
+        compatibilitiesToJoin.forEach(c -> matches.addAll(c.match()));
+        return matches;
     }
 
     public Compatibility[] matchToArray() {

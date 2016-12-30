@@ -161,13 +161,6 @@ writeSupportedV1Objects = { writer, mapper ->
     model.entries("ResponseMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
     writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
   }
-
-  writer.write("\n")
-  writer.write("Time\n")
-  writer.write("~~~~\n\n")
-  model.entries("RequestMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
-    writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
 }
 
 mapper = GraphSONMapper.build().

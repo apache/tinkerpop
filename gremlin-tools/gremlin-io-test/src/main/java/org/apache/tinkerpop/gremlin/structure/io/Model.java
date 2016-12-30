@@ -201,7 +201,7 @@ public class Model {
                 GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
                 GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
         addExtendedEntry("x".charAt(0), "Char", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
+        addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         try {
             addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
                     new HashMap<Compatibility, String>() {{
@@ -212,19 +212,19 @@ public class Model {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-        addExtendedEntry(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant");
-        addExtendedEntry(LocalDate.of(2016, 1, 1), "LocalDate");
-        addExtendedEntry(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime");
-        addExtendedEntry(LocalTime.of(12, 30, 45), "LocalTime");
-        addExtendedEntry(MonthDay.of(1, 1), "MonthDay");
-        addExtendedEntry(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime");
-        addExtendedEntry(OffsetTime.parse("10:15:30+01:00"), "OffsetTime");
-        addExtendedEntry(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.");
+        addExtendedEntry(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(LocalDate.of(2016, 1, 1), "LocalDate", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(LocalTime.of(12, 30, 45), "LocalTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(MonthDay.of(1, 1), "MonthDay", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(new Short("100"), "Short", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".");
-        addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"");
-        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime");
-        addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.");
+        addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
     }
 
     private static DefaultTraversalMetrics createStaticTraversalMetrics() {

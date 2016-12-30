@@ -113,23 +113,6 @@ writeSupportedV1Objects = { writer, mapper ->
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
             result(Arrays.asList(graph.vertices().next())).create()
     writer.write(toJsonV1d0NoTypes(msg, "Standard Result", mapper, "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
-
-    writer.write("\n")
-    writer.write("Time\n")
-    writer.write("~~~~\n\n")
-    writer.write(toJsonV1d0NoTypes(Duration.ofDays(5), "Duration", mapper, "The following example is a `Duration` of five days."))
-    writer.write(toJsonV1d0NoTypes(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", mapper))
-    writer.write(toJsonV1d0NoTypes(LocalDate.of(2016, 1, 1), "LocalDate", mapper))
-    writer.write(toJsonV1d0NoTypes(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", mapper))
-    writer.write(toJsonV1d0NoTypes(LocalTime.of(12, 30, 45), "LocalTime", mapper))
-    writer.write(toJsonV1d0NoTypes(MonthDay.of(1, 1), "MonthDay", mapper))
-    writer.write(toJsonV1d0NoTypes(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", mapper))
-    writer.write(toJsonV1d0NoTypes(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", mapper))
-    writer.write(toJsonV1d0NoTypes(Period.of(1, 6, 15), "Period", mapper, "The following example is a `Period` of one year, six months and fifteen days."))
-    writer.write(toJsonV1d0NoTypes(Year.of(2016), "Year", mapper, "The following example is of the `Year` \"2016\"."))
-    writer.write(toJsonV1d0NoTypes(YearMonth.of(2016, 6), "YearMonth", mapper, "The following example is a `YearMonth` of \"June 2016\""))
-    writer.write(toJsonV1d0NoTypes(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", mapper))
-    writer.write(toJsonV1d0NoTypes(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper, "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds."))
 }
 
 createStaticTraversalMetrics = {
