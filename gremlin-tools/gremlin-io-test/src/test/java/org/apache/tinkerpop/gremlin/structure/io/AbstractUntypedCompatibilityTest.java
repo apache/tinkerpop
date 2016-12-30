@@ -21,11 +21,14 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -84,7 +87,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assumeCompatibility(resourceName);
 
         final Edge resource = findModelEntryObject(resourceName);
-        final HashMap fromStatic = read(getCompatibility().readFromResource("edge"), HashMap.class);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
         final HashMap recycled = read(write(resource, Edge.class), HashMap.class);
         assertNotSame(fromStatic, recycled);
         assertEquals(resource.id(), fromStatic.get("id"));
@@ -118,5 +121,38 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
             assertEquals(resource.keys().iterator().next(), ((Map) ((Map) recycled.get("properties")).get("since")).get("key"));
             assertEquals(resource.value("since"), ((Map) ((Map) recycled.get("properties")).get("since")).get("value"));
         }
+    }
+
+    @Test
+    public void shouldReadWritePath() throws Exception {
+        final String resourceName = "path";
+        assumeCompatibility(resourceName);
+
+        final Path resource = findModelEntryObject(resourceName);
+        final HashMap fromStatic = read(getCompatibility().readFromResource(resourceName), HashMap.class);
+        final HashMap recycled = read(write(resource, Path.class), HashMap.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(resource.labels().size(), ((List) fromStatic.get("labels")).size());
+        assertEquals(resource.labels().get(0).size(), ((List) ((List) fromStatic.get("labels")).get(0)).size());
+        assertEquals(resource.labels().get(1).size(), ((List) ((List) fromStatic.get("labels")).get(1)).size());
+        assertEquals(resource.labels().get(2).size(), ((List) ((List) fromStatic.get("labels")).get(2)).size());
+        assertEquals(resource.objects().size(), ((List) fromStatic.get("objects")).size());
+        assertEquals(((Vertex) resource.objects().get(0)).id(), ((Map) ((List) fromStatic.get("objects")).get(0)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(0)).label(), ((Map) ((List) fromStatic.get("objects")).get(0)).get("label"));
+        assertEquals(((Vertex) resource.objects().get(1)).id(), ((Map) ((List) fromStatic.get("objects")).get(1)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(1)).label(), ((Map) ((List) fromStatic.get("objects")).get(1)).get("label"));
+        assertEquals(((Vertex) resource.objects().get(2)).id(), ((Map) ((List) fromStatic.get("objects")).get(2)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(2)).label(), ((Map) ((List) fromStatic.get("objects")).get(2)).get("label"));
+        assertEquals(resource.labels().size(), ((List) recycled.get("labels")).size());
+        assertEquals(resource.labels().get(0).size(), ((List) ((List) recycled.get("labels")).get(0)).size());
+        assertEquals(resource.labels().get(1).size(), ((List) ((List) recycled.get("labels")).get(1)).size());
+        assertEquals(resource.labels().get(2).size(), ((List) ((List) recycled.get("labels")).get(2)).size());
+        assertEquals(resource.objects().size(), ((List) recycled.get("objects")).size());
+        assertEquals(((Vertex) resource.objects().get(0)).id(), ((Map) ((List) recycled.get("objects")).get(0)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(0)).label(), ((Map) ((List) recycled.get("objects")).get(0)).get("label"));
+        assertEquals(((Vertex) resource.objects().get(1)).id(), ((Map) ((List) recycled.get("objects")).get(1)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(1)).label(), ((Map) ((List) recycled.get("objects")).get(1)).get("label"));
+        assertEquals(((Vertex) resource.objects().get(2)).id(), ((Map) ((List) recycled.get("objects")).get(2)).get("id"));
+        assertEquals(((Vertex) resource.objects().get(2)).label(), ((Map) ((List) recycled.get("objects")).get(2)).get("label"));
     }
 }

@@ -117,7 +117,7 @@ public class Model {
         final Compatibility[] graphsonV2NoType = Compatibilities.with(GraphSONCompatibility.class)
                 .configuredAs(".*no-types").matchToArray();
         addGraphStructureEntry(graph.edges().next(), "Edge", "", graphsonV2NoType);
-        addGraphStructureEntry(g.V().out().out().path().next(), "Path");
+        addGraphStructureEntry(g.V().out().out().path().next(), "Path", "", graphsonV2NoType);
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
         addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.",
