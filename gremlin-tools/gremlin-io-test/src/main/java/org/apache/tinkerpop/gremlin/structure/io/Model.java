@@ -330,6 +330,12 @@ public class Model {
                 .before("3.0")
                 .match();
         incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
+
+        // TODO: temporary problem? seems to be something breaking in vertex serialization
+        if (title.equals("Standard Result"))
+            incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types").match());
+
+
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
         addEntry("ResponseMessage", obj, title, description,
