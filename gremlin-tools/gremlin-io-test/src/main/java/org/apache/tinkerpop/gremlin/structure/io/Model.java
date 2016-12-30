@@ -89,21 +89,6 @@ public class Model {
         addAll(Arrays.asList(GryoCompatibility.values()));
     }});
 
-    private static final List<Compatibility> GRAPHSON_ONLY = Collections.unmodifiableList(new ArrayList<Compatibility>() {{
-        addAll(Arrays.asList(GraphSONCompatibility.values()));
-    }});
-
-    private static final List<Compatibility> UNTYPED_GRAPHSON_ONLY = Collections.unmodifiableList(new ArrayList<Compatibility>() {{
-        add(GraphSONCompatibility.V1D0_3_2_3);
-        add(GraphSONCompatibility.V1D0_3_3_0);
-        add(GraphSONCompatibility.V2D0_NO_TYPE_3_2_3);
-        add(GraphSONCompatibility.V2D0_NO_TYPE_3_3_0);
-    }});
-
-    private static final List<Compatibility> GRYO_ONLY = Collections.unmodifiableList(new ArrayList<Compatibility>() {{
-        addAll(Arrays.asList(GryoCompatibility.values()));
-    }});
-
     private static final Model model = new Model();
 
     private final Map<String, List<Entry>> entries = new HashMap<>();
@@ -129,13 +114,13 @@ public class Model {
         addGraphStructureEntry(graph.edges().next(), "Edge");
         addGraphStructureEntry(g.V().out().out().path().next(), "Path");
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property");
-        addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", GRYO_ONLY);
+        addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
         addEntry("Graph Structure", graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.",
                 new HashMap<Compatibility, String>() {{
                     put(GryoCompatibility.V1D0_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
                     put(GraphSONCompatibility.V2D0_PARTIAL_3_2_3, "Serialization of TinkerGraph had a bug that prevented proper operation in versions prior to 3.2.4.");
                 }}, GryoCompatibility.V1D0_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_3);
-        addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", GRYO_ONLY);
+        addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph.vertices().next(), "Vertex");
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty");
 
@@ -206,16 +191,16 @@ public class Model {
                 result(Collections.singletonList(graph.vertices().next())).create();
         addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
         
-        addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
-        addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
-        addExtendedEntry(new Byte("1"), "Byte", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
+        addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(new Byte("1"), "Byte", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
                 new HashMap<Compatibility, String>() {{
                     put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
                 }},
                 GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
                 GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
-        addExtendedEntry("x".charAt(0), "Char", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
+        addExtendedEntry("x".charAt(0), "Char", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
         try {
             addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
@@ -235,7 +220,7 @@ public class Model {
         addExtendedEntry(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime");
         addExtendedEntry(OffsetTime.parse("10:15:30+01:00"), "OffsetTime");
         addExtendedEntry(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.");
-        addExtendedEntry(new Short("100"), "Short", "", UNTYPED_GRAPHSON_ONLY.toArray(new Compatibility[UNTYPED_GRAPHSON_ONLY.size()]));
+        addExtendedEntry(new Short("100"), "Short", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".");
         addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"");
         addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime");
