@@ -97,60 +97,64 @@ public class Model {
         final Graph graph = TinkerFactory.createTheCrew();
         final GraphTraversalSource g = graph.traversal();
 
+        final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
+        final Compatibility[] graphsonV2NoType = Compatibilities.with(GraphSONCompatibility.class)
+                .configuredAs(".*no-types").matchToArray();
+
         // IMPORTANT - the "title" or name of the Entry needs to be unique
         addCoreEntry(File.class, "Class", new HashMap<Compatibility, String>() {{
             put(GryoCompatibility.V1D0_3_2_3, "Serialization of Class in Gryo 1.0 had a bug that prevented proper operation in versions prior to 3.2.4.");
-        }}, GryoCompatibility.V1D0_3_2_3);
+        }}, noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
-        addCoreEntry(100.00f, "Float");
+        addCoreEntry(100.00f, "Float", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(100, "Integer");
-        addCoreEntry(100L, "Long");
+        addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", new HashMap<Compatibility, String>() {{
             put(GryoCompatibility.V1D0_3_2_3, "Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
-        }}, GryoCompatibility.V1D0_3_2_3);
+        }}, noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         // TODO: remove incompatibilities in Element on GraphSON 2.0
         // temporary incompatibility in v2 graphson starting at 3.3.0 with Element properties - need to revert some
         // changes on master (which is what helped start this mess) once this work is merged
-        final Compatibility[] graphsonV2NoType = Compatibilities.with(GraphSONCompatibility.class)
-                .configuredAs(".*no-types").matchToArray();
         addGraphStructureEntry(graph.edges().next(), "Edge", "", graphsonV2NoType);
         addGraphStructureEntry(g.V().out().out().path().next(), "Path", "", graphsonV2NoType);
         addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "", graphsonV2NoType);
+        // TODO: missing a stargraph deserializer in graphson v1/v2
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
+        // TODO: tree has bugs for graphson
         addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph.vertices().next(), "Vertex", "", graphsonV2NoType);
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "", graphsonV2NoType);
 
-        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
-        addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
-        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
-        addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality");
-        addGraphProcessEntry(Column.keys, "Column", "");
-        addGraphProcessEntry(Direction.OUT, "Direction");
-        addGraphProcessEntry(Operator.sum, "Operator", "");
-        addGraphProcessEntry(Order.incr, "Order", "");
-        addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick");
-        addGraphProcessEntry(Pop.all, "Pop");
-        addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda");
+        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Column.keys, "Column", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Direction.OUT, "Direction", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Operator.sum, "Operator", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Order.incr, "Order", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Pop.all, "Pop", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         final TraversalMetrics tm = createStaticTraversalMetrics();
         final MutableMetrics metrics = new MutableMetrics(tm.getMetrics("7.0.0()"));
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
-        addGraphProcessEntry(metrics, "Metrics");
-        addGraphProcessEntry(P.gt(0), "P");
+        addGraphProcessEntry(metrics, "Metrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(P.gt(0), "P", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", new HashMap<Compatibility, String>() {{
             put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
-        }}, GryoCompatibility.V1D0_3_2_3);
+        }}, noTypeGraphSONPlusGryo3_2_3);
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", new HashMap<Compatibility, String>() {{
             put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
-        }}, GryoCompatibility.V1D0_3_2_3);
-        addGraphProcessEntry(Scope.local, "Scope");
-        addGraphProcessEntry(T.label, "T", "");
-        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics");
-        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser");
+        }}, noTypeGraphSONPlusGryo3_2_3);
+        addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 
         final Map<String,Object> requestBindings = new HashMap<>();
         requestBindings.put("x", 1);
@@ -198,18 +202,14 @@ public class Model {
         addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
                 new HashMap<Compatibility, String>() {{
                     put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
-                }},
-                GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
-                GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
+                }}, noTypeGraphSONPlusGryo3_2_3);
         addExtendedEntry("x".charAt(0), "Char", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         try {
             addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
                     new HashMap<Compatibility, String>() {{
                         put(GryoCompatibility.V1D0_3_2_3, "InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
-                    }},
-                    GraphSONCompatibility.V1D0_3_2_3, GraphSONCompatibility.V1D0_3_3_0, GraphSONCompatibility.V2D0_NO_TYPE_3_2_3,
-                    GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, GryoCompatibility.V1D0_3_2_3);
+                    }}, noTypeGraphSONPlusGryo3_2_3);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -286,16 +286,12 @@ public class Model {
         addEntry("Core", obj, title, "");
     }
 
-    private void addCoreEntry(final Object obj, final String title, final Compatibility... incompatibleWith) {
-        addEntry("Core", obj, title, "", incompatibleWith);
+    private void addCoreEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
+        addEntry("Core", obj, title, description, null, incompatibleWith);
     }
 
     private void addCoreEntry(final Object obj, final String title, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
         addEntry("Core", obj, title, "", incompatibilityNotes, incompatibleWith);
-    }
-
-    private void addGraphStructureEntry(final Object obj, final String title) {
-        addGraphStructureEntry(obj, title, "");
     }
 
     private void addGraphStructureEntry(final Object obj, final String title, final String description, final Compatibility... incompatibilities) {
@@ -310,6 +306,10 @@ public class Model {
         addEntry("Graph Process", obj, title, description);
     }
 
+    private void addGraphProcessEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
+        addEntry("Graph Process", obj, title, description, null, incompatibleWith);
+    }
+
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
         addEntry("Graph Process", obj, title, description, incompatibilityNotes, incompatibleWith);
     }
@@ -318,7 +318,10 @@ public class Model {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
                 .match();
+
+        // TODO: need to get Request/ResponseMessages to be included - logic is held in GraphSONMessageSerializer
         incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
+
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
         addEntry("RequestMessage", obj, title, description,
@@ -329,12 +332,13 @@ public class Model {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
                 .match();
+
+        // TODO: need to get Request/ResponseMessages to be included - logic is held in GraphSONMessageSerializer
         incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
 
         // TODO: temporary problem? seems to be something breaking in vertex serialization
         if (title.equals("Standard Result"))
             incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types").match());
-
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
