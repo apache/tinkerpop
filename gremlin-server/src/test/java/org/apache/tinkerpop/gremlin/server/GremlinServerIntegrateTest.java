@@ -27,6 +27,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -378,8 +379,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
         // itself up - this is a tricky tests to get passing on all environments so this assumption will deny the
         // test for most cases
-        assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
-                System.getProperty("assertNonDeterministic"), is("true"));
+        TestHelper.assumeNonDeterministic();
 
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();

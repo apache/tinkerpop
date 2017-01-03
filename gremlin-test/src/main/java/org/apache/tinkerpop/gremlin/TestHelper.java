@@ -41,8 +41,10 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Utility methods for test development.
@@ -172,6 +174,20 @@ public final class TestHelper {
         if (cleaned.length() == 0)
             throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
         return cleaned;
+    }
+
+    /**
+     * Used at the start of a test to make it one that should only be executed when the {@code assertNonDeterministic}
+     * system property is set to {@code true}. Tests that call this method are ones that may sometimes fail in certain
+     * environments or behave in other random ways. Usually such tests should be removed or re-worked, but there are
+     * situations where that may not be possible as there is no other good way to test the feature. In these cases, the
+     * tests won't fail a standard build. For this benefit, the downside is that the feature isn't tested as often as
+     * it would otherwise, since the {@code assertNonDeterministic} option is not used often and definitely not in
+     * automated builds like Travis.
+     */
+    public static void assumeNonDeterministic() {
+        assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
+                System.getProperty("assertNonDeterministic"), is("true"));
     }
 
     ///////////////
