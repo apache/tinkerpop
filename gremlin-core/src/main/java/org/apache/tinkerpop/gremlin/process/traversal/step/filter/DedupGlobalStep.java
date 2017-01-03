@@ -58,6 +58,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private final Set<String> dedupLabels;
     private Set<String> keepLabels;
     private boolean executingAtMaster = false;
+    private boolean barrierAdded = false;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -66,7 +67,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (this.onGraphComputer && !this.executingAtMaster) return true;
+        if (this.onGraphComputer && (!this.executingAtMaster || this.barrierAdded)) return true;
         traverser.setBulk(1);
         if (null == this.dedupLabels) {
             return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
@@ -194,6 +195,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public void addBarrier(final Map<Object, Traverser.Admin<S>> barrier) {
+        this.barrierAdded = true;
         IteratorUtils.removeOnNext(barrier.entrySet().iterator()).forEachRemaining(entry -> {
             final Traverser.Admin<S> traverser = entry.getValue();
             traverser.setSideEffects(this.getTraversal().getSideEffects());
