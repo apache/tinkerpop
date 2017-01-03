@@ -102,17 +102,16 @@ public class Model {
                 .configuredAs(".*no-types").matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
-        addCoreEntry(File.class, "Class", new HashMap<Compatibility, String>() {{
-            put(GryoCompatibility.V1D0_3_2_3, "Serialization of Class in Gryo 1.0 had a bug that prevented proper operation in versions prior to 3.2.4.");
-        }}, noTypeGraphSONPlusGryo3_2_3);
+
+        // Serialization of Class in Gryo 1.0 had a bug that prevented proper operation in versions prior to 3.2.4.
+        addCoreEntry(File.class, "Class", "", noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(100, "Integer");
         addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", new HashMap<Compatibility, String>() {{
-            put(GryoCompatibility.V1D0_3_2_3, "Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.");
-        }}, noTypeGraphSONPlusGryo3_2_3);
+        // Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.
+        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
         // TODO: remove incompatibilities in Element on GraphSON 2.0
@@ -145,12 +144,10 @@ public class Model {
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
         addGraphProcessEntry(metrics, "Metrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(P.gt(0), "P", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", new HashMap<Compatibility, String>() {{
-            put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
-        }}, noTypeGraphSONPlusGryo3_2_3);
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", new HashMap<Compatibility, String>() {{
-            put(GryoCompatibility.V1D0_3_2_3, "A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.");
-        }}, noTypeGraphSONPlusGryo3_2_3);
+        // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
+        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", noTypeGraphSONPlusGryo3_2_3);
+        // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
+        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", noTypeGraphSONPlusGryo3_2_3);
         addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
@@ -162,6 +159,8 @@ public class Model {
         final Map<String,Object> requestAliases = new HashMap<>();
         requestAliases.put("g", "social");
 
+        // RequestMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component
+        // (MessageSerializer) that doesn't fit the test model.
         RequestMessage requestMessage;
         requestMessage = RequestMessage.build("authentication").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
@@ -188,6 +187,8 @@ public class Model {
                 add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
         addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
+        // ResponseMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component
+        // (MessageSerializer) that doesn't fit the test model
         ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create();
         addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).");
@@ -199,17 +200,13 @@ public class Model {
         addExtendedEntry(new BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(new Byte("1"), "Byte", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "",
-                new HashMap<Compatibility, String>() {{
-                    put(GryoCompatibility.V1D0_3_2_3, "ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
-                }}, noTypeGraphSONPlusGryo3_2_3);
+        // ByteBuffer was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.
+        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "", noTypeGraphSONPlusGryo3_2_3);
         addExtendedEntry("x".charAt(0), "Char", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         try {
-            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "",
-                    new HashMap<Compatibility, String>() {{
-                        put(GryoCompatibility.V1D0_3_2_3, "InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.");
-                    }}, noTypeGraphSONPlusGryo3_2_3);
+            // InetAddress was added to Gryo 1.0 as of 3.2.4. It was not supported in earlier versions.
+            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "", noTypeGraphSONPlusGryo3_2_3);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -287,11 +284,7 @@ public class Model {
     }
 
     private void addCoreEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addEntry("Core", obj, title, description, null, incompatibleWith);
-    }
-
-    private void addCoreEntry(final Object obj, final String title, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
-        addEntry("Core", obj, title, "", incompatibilityNotes, incompatibleWith);
+        addEntry("Core", obj, title, description, incompatibleWith);
     }
 
     private void addGraphStructureEntry(final Object obj, final String title, final String description, final Compatibility... incompatibilities) {
@@ -307,11 +300,7 @@ public class Model {
     }
 
     private void addGraphProcessEntry(final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
-        addEntry("Graph Process", obj, title, description, null, incompatibleWith);
-    }
-
-    private void addGraphProcessEntry(final Object obj, final String title, final String description, final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
-        addEntry("Graph Process", obj, title, description, incompatibilityNotes, incompatibleWith);
+        addEntry("Graph Process", obj, title, description, incompatibleWith);
     }
 
     private void addRequestMessageEntry(final Object obj, final String title, final String description) {
@@ -324,8 +313,7 @@ public class Model {
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
-        addEntry("RequestMessage", obj, title, description,
-                createIncompatibilityMap("RequestMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component (MessageSerializer) that doesn't fit the test model.",  incompatibilities), incompatibilities);
+        addEntry("RequestMessage", obj, title, description, incompatibilities);
     }
 
     private void addResponseMessageEntry(final Object obj, final String title, final String description) {
@@ -342,8 +330,7 @@ public class Model {
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
-        addEntry("ResponseMessage", obj, title, description,
-                createIncompatibilityMap("ResponseMessage is not testable prior to Gryo 3.0 as serialization was handled by an intermediate component (MessageSerializer) that doesn't fit the test model.", incompatibilities), incompatibilities);
+        addEntry("ResponseMessage", obj, title, description, incompatibilities);
     }
 
     private void addExtendedEntry(final Object obj, final String title) {
@@ -365,42 +352,26 @@ public class Model {
     private void addEntry(final String group, final Supplier<?> maker, final String title, final String description, final Compatibility... incompatibleWith) {
         addEntry(group, null, title, description, Collections.unmodifiableList(ALL.stream()
                 .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), maker, null);
-    }
-
-    private void addEntry(final String group, final Supplier<?> maker, final String title, final String description,
-                          final Map<Compatibility, String> incompatibilityNotes, final Compatibility... incompatibleWith) {
-        addEntry(group, null, title, description, Collections.unmodifiableList(ALL.stream()
-                .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), maker, incompatibilityNotes);
-    }
-
-    private void addEntry(final String group, final Object obj, final String title, final String description,
-                          final Map<Compatibility, String> incompatibilityNotes,
-                          final Compatibility... incompatibleWith) {
-        addEntry(group, obj, title, description, Collections.unmodifiableList(ALL.stream()
-                .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), null, incompatibilityNotes);
+                .collect(Collectors.toList())), maker);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description, final Compatibility... incompatibleWith) {
         addEntry(group, obj, title, description, Collections.unmodifiableList(ALL.stream()
                 .filter(c -> !Arrays.asList(incompatibleWith).contains(c))
-                .collect(Collectors.toList())), null, null);
+                .collect(Collectors.toList())), null);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description,
                             final List<Compatibility> compatibleWith) {
-        addEntry(group, obj, title, description, compatibleWith, null, null);
+        addEntry(group, obj, title, description, compatibleWith, null);
     }
 
     private void addEntry(final String group, final Object obj, final String title, final String description,
-                          final List<Compatibility> compatibleWith, final Supplier<?> maker,
-                          final Map<Compatibility, String> incompatibilityNotes) {
+                          final List<Compatibility> compatibleWith, final Supplier<?> maker) {
         if (!entries.containsKey(group))
             entries.put(group, new ArrayList<>());
 
-        entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker, incompatibilityNotes));
+        entries.get(group).add(new Entry(title, obj, description, compatibleWith, maker));
     }
 
     private Map<Compatibility, String> createIncompatibilityMap(final String msg, final Compatibility... incompatibilities) {
@@ -451,29 +422,14 @@ public class Model {
         private final String description;
         private final List<Compatibility> compatibleWith;
         private final Supplier<?> maker;
-        private final Map<Compatibility, String> incompatibilityNotes;
 
         public Entry(final String title, final Object object, final String description,
                      final List<Compatibility> compatibleWith, final Supplier<?> maker) {
-            this(title, object, description, compatibleWith, maker, Collections.emptyMap());
-        }
-
-        public Entry(final String title, final Object object, final String description,
-                     final List<Compatibility> compatibleWith, final Supplier<?> maker,
-                     final Map<Compatibility, String> incompatibilityNotes) {
             this.title = title;
             this.object = object;
             this.description = description;
             this.compatibleWith = compatibleWith;
             this.maker = maker;
-            this.incompatibilityNotes = Optional.ofNullable(incompatibilityNotes).orElseGet(Collections::emptyMap);
-
-            if (this.compatibleWith.stream().anyMatch(this.incompatibilityNotes::containsKey))
-                throw new IllegalStateException("The " + title + " entry is marked as 'compatible' but it has incompatibility notes");
-        }
-
-        public Map<Compatibility, String> getIncompatibilityNotes() {
-            return Collections.unmodifiableMap(incompatibilityNotes);
         }
 
         public String getTitle() {

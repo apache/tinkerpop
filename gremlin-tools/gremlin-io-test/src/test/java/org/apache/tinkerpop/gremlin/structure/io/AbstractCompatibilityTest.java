@@ -41,8 +41,7 @@ public abstract class AbstractCompatibilityTest {
 
     protected void assumeCompatibility(final String resource) {
         final Model.Entry e = model.find(resource).orElseThrow(() -> new IllegalStateException("Could not find model"));
-        final String msg = e.getIncompatibilityNotes().getOrDefault(getCompatibility(), "no additional notes");
-        assumeThat("Test model is not compatible with IO - " + msg, e.isCompatibleWith(getCompatibility()), is(true));
+        assumeThat("Test model is not compatible with IO - see comments in Model for details", e.isCompatibleWith(getCompatibility()), is(true));
     }
 
     protected <T> T findModelEntryObject(final String resourceName) {
