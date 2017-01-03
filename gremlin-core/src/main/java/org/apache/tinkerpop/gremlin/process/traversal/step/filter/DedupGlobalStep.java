@@ -132,6 +132,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     public void reset() {
         super.reset();
         this.duplicateSet.clear();
+        this.barrierAdded = false;
     }
 
     @Override
