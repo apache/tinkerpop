@@ -57,7 +57,7 @@ public interface KryoShimService {
     /**
      * Serializes an object to an output stream.  This may flush the output stream.
      *
-     * @param o the object to serialize
+     * @param o    the object to serialize
      * @param sink the stream into which the serialized object is written
      */
     public void writeClassAndObject(final Object o, final OutputStream sink);
@@ -85,10 +85,6 @@ public interface KryoShimService {
 
     /**
      * Attempt to incorporate the supplied configuration in future read/write calls.
-     * <p>
-     * This method is a wart that exists essentially just to support the old
-     * {@link HadoopPools#initialize(Configuration)} use-case.
-     * <p>
      * This method is not guaranteed to have any effect on an instance of this interface
      * after {@link #writeClassAndObject(Object, OutputStream)} or {@link #readClassAndObject(InputStream)}
      * has been invoked on that particular instance.
@@ -96,4 +92,10 @@ public interface KryoShimService {
      * @param conf the configuration to apply to this service's internal serializer
      */
     public void applyConfiguration(final Configuration conf);
+
+    /**
+     * Release all resources associated with the shim service.
+     * This is called on a forced reload or when the {@link KryoShimServiceLoader} is closed.
+     */
+    public void close();
 }

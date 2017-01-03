@@ -30,38 +30,32 @@ public class ShadedKryoAdapter implements KryoShim<ShadedInputAdapter, ShadedOut
     }
 
     @Override
-    public <T> T readObject(final ShadedInputAdapter input, final Class<T> type)
-    {
+    public <T> T readObject(final ShadedInputAdapter input, final Class<T> type) {
         return shadedKryo.readObject(input.getShadedInput(), type);
     }
 
     @Override
-    public Object readClassAndObject(final ShadedInputAdapter input)
-    {
+    public Object readClassAndObject(final ShadedInputAdapter input) {
         return shadedKryo.readClassAndObject(input.getShadedInput());
     }
 
     @Override
-    public void writeObject(final ShadedOutputAdapter output, final Object object)
-    {
+    public void writeObject(final ShadedOutputAdapter output, final Object object) {
         shadedKryo.writeObject(output.getShadedOutput(), object);
     }
 
     @Override
-    public void writeClassAndObject(final ShadedOutputAdapter output, final Object object)
-    {
+    public void writeClassAndObject(final ShadedOutputAdapter output, final Object object) {
         shadedKryo.writeClassAndObject(output.getShadedOutput(), object);
     }
 
     @Override
-    public <T> T readObjectOrNull(final ShadedInputAdapter input, final Class<T> type)
-    {
+    public <T> T readObjectOrNull(final ShadedInputAdapter input, final Class<T> type) {
         return shadedKryo.readObjectOrNull(input.getShadedInput(), type);
     }
 
     @Override
-    public void writeObjectOrNull(final ShadedOutputAdapter output, final Object object, final Class type)
-    {
+    public void writeObjectOrNull(final ShadedOutputAdapter output, final Object object, final Class type) {
         shadedKryo.writeObjectOrNull(output.getShadedOutput(), object, type);
     }
 }

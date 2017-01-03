@@ -17,17 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer;
+package org.apache.tinkerpop.gremlin.giraph;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.giraph.structure.io.GiraphIoRegistryCheck;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = SparkHadoopGraphGryoRegistratorProvider.class, graph = HadoopGraph.class)
-public class SparkGryoRegistratorGraphComputerProcessIntegrateTest {
+public final class GiraphGremlinSuite extends AbstractGremlinSuite {
+    public GiraphGremlinSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+        super(klass, builder, new Class<?>[]{GiraphIoRegistryCheck.class}, new Class<?>[]{GiraphIoRegistryCheck.class}, true, TraversalEngine.Type.COMPUTER);
+    }
 }

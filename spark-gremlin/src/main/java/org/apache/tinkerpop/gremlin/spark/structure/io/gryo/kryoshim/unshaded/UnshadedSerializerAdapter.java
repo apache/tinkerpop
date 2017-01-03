@@ -24,10 +24,9 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 
-public class UnshadedSerializerAdapter<T> extends Serializer<T>
-{
+public class UnshadedSerializerAdapter<T> extends Serializer<T> {
 
-    SerializerShim<T> serializer;
+    private final SerializerShim<T> serializer;
 
     public UnshadedSerializerAdapter(final SerializerShim<T> serializer) {
         this.serializer = serializer;
@@ -46,5 +45,9 @@ public class UnshadedSerializerAdapter<T> extends Serializer<T>
         UnshadedKryoAdapter shadedKryoAdapter = new UnshadedKryoAdapter(kryo);
         UnshadedInputAdapter shadedInputAdapter = new UnshadedInputAdapter(input);
         return serializer.read(shadedKryoAdapter, shadedInputAdapter, aClass);
+    }
+
+    public SerializerShim<T> getSerializerShim() {
+        return this.serializer;
     }
 }

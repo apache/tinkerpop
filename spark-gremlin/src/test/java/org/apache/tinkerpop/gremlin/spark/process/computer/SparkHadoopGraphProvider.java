@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
+import org.apache.spark.launcher.SparkLauncher;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
@@ -25,6 +27,8 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPluginCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.ToyIoRegistry;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -38,9 +42,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkIoRegistryCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.io.ToyGraphInputRDD;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 
 import java.util.Map;
 
@@ -50,8 +58,17 @@ import java.util.Map;
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
+    protected static final String PREVIOUS_SPARK_PROVIDER = "previous.spark.provider";
+
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
+        if (this.getClass().equals(SparkHadoopGraphProvider.class) && !SparkHadoopGraphProvider.class.getCanonicalName().equals(System.getProperty(PREVIOUS_SPARK_PROVIDER, null))) {
+            Spark.close();
+            HadoopPools.close();
+            KryoShimServiceLoader.close();
+            System.setProperty(PREVIOUS_SPARK_PROVIDER, SparkHadoopGraphProvider.class.getCanonicalName());
+        }
+
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
 
@@ -78,13 +95,16 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         // sugar plugin causes meta-method issues with a persisted context
         if (test.equals(HadoopGremlinPluginCheck.class)) {
             Spark.close();
+            HadoopPools.close();
+            KryoShimServiceLoader.close();
             SugarTestHelper.clearRegistry(this);
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-        config.put("spark.master", "local[4]");
-        config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
-        config.put("spark.kryo.registrationRequired", true);
+        config.put(SparkLauncher.SPARK_MASTER, "local[4]");
+        config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
+        config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
+        config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
         return config;
     }
 

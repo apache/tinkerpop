@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
@@ -29,47 +28,32 @@ import java.io.OutputStream;
 
 public class HadoopPoolShimService implements KryoShimService {
 
-    public Object readClassAndObject(final InputStream source) {
-
-        Kryo k = null;
-
-        try {
-            k = HadoopPools.getGryoPool().takeKryo();
-
-            return k.readClassAndObject(new Input(source));
-        } finally {
-            if (null != k) {
-                HadoopPools.getGryoPool().offerKryo(k);
-            }
-        }
+    @Override
+    public Object readClassAndObject(final InputStream inputStream) {
+        return HadoopPools.getGryoPool().readWithKryo(kryo -> kryo.readClassAndObject(new Input(inputStream)));
     }
 
-    public void writeClassAndObject(final Object o, final OutputStream sink) {
-
-        Kryo k = null;
-
-        try {
-            k = HadoopPools.getGryoPool().takeKryo();
-
-            final Output output = new Output(sink);
-
-            k.writeClassAndObject(output, o);
-
+    @Override
+    public void writeClassAndObject(final Object object, final OutputStream outputStream) {
+        HadoopPools.getGryoPool().writeWithKryo(kryo -> {
+            final Output output = new Output(outputStream);
+            kryo.writeClassAndObject(output, object);
             output.flush();
-        } finally {
-            if (null != k) {
-                HadoopPools.getGryoPool().offerKryo(k);
-            }
-        }
+        });
+    }
+
+    @Override
+    public void applyConfiguration(final Configuration configuration) {
+        HadoopPools.initialize(configuration);
+    }
+
+    @Override
+    public void close() {
+        HadoopPools.close();
     }
 
     @Override
     public int getPriority() {
         return 0;
-    }
-
-    @Override
-    public void applyConfiguration(final Configuration conf) {
-        HadoopPools.initialize(conf);
     }
 }

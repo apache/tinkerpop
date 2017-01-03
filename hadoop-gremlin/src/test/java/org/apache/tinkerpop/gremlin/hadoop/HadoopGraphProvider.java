@@ -45,8 +45,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader.KRYO_SHIM_SERVICE;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -86,10 +84,10 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             }
 
             final List<String> graphsonResources = Arrays.asList(
-                    "tinkerpop-modern.json",
-                    "grateful-dead.json",
-                    "tinkerpop-classic.json",
-                    "tinkerpop-crew.json");
+                    "tinkerpop-modern-v2d0-typed.json",
+                    "grateful-dead-v2d0-typed.json",
+                    "tinkerpop-classic-v2d0-typed.json",
+                    "tinkerpop-crew-v2d0-typed.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
@@ -111,7 +109,6 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-        System.clearProperty(KRYO_SHIM_SERVICE);
         this.graphSONInput = RANDOM.nextBoolean();
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, HadoopGraph.class.getName());
@@ -139,16 +136,16 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
-        final String type = this.graphSONInput ? "json" : "kryo";
+        final String type = this.graphSONInput ? "-v2d0-typed.json" : ".kryo";
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew" + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

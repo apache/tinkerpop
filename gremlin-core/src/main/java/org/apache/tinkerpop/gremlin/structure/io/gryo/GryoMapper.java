@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
@@ -155,7 +157,8 @@ public final class GryoMapper implements Mapper<Kryo> {
         private boolean referenceTracking = true;
         private Supplier<ClassResolver> classResolver = GryoClassResolver::new;
 
-        private Builder() { }
+        private Builder() {
+        }
 
         /**
          * {@inheritDoc}
@@ -267,6 +270,8 @@ public final class GryoMapper implements Mapper<Kryo> {
                 serializers.forEach(p -> {
                     if (null == p.getValue1())
                         addCustom(p.getValue0());
+                    else if (p.getValue1() instanceof SerializerShim)
+                        addCustom(p.getValue0(), new ShadedSerializerAdapter((SerializerShim) p.getValue1()));
                     else if (p.getValue1() instanceof Serializer)
                         addCustom(p.getValue0(), (Serializer) p.getValue1());
                     else if (p.getValue1() instanceof Function)
@@ -302,6 +307,114 @@ public final class GryoMapper implements Mapper<Kryo> {
                 registrationId = currentSerializationId.getAndIncrement();
             }
             typeRegistrations.add(newRegistrationBuilder.apply(registrationId));
+        }
+    }
+
+    private static class GryoTypeReg<T> implements TypeRegistration<T> {
+
+        private final Class<T> clazz;
+        private final Serializer<T> shadedSerializer;
+        private final SerializerShim<T> serializerShim;
+        private final Function<Kryo, Serializer> functionOfShadedKryo;
+        private final int id;
+
+        private GryoTypeReg(final Class<T> clazz,
+                            final Serializer<T> shadedSerializer,
+                            final SerializerShim<T> serializerShim,
+                            final Function<Kryo, Serializer> functionOfShadedKryo,
+                            final int id) {
+            this.clazz = clazz;
+            this.shadedSerializer = shadedSerializer;
+            this.serializerShim = serializerShim;
+            this.functionOfShadedKryo = functionOfShadedKryo;
+            this.id = id;
+
+            int serializerCount = 0;
+            if (null != this.shadedSerializer)
+                serializerCount++;
+            if (null != this.serializerShim)
+                serializerCount++;
+            if (null != this.functionOfShadedKryo)
+                serializerCount++;
+
+            if (1 < serializerCount) {
+                final String msg = String.format(
+                        "GryoTypeReg accepts at most one kind of serializer, but multiple " +
+                                "serializers were supplied for class %s (id %s).  " +
+                                "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
+                        this.clazz.getCanonicalName(), id,
+                        this.shadedSerializer, this.serializerShim, this.functionOfShadedKryo);
+                throw new IllegalArgumentException(msg);
+            }
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id) {
+            return new GryoTypeReg<>(clazz, null, null, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final Serializer<T> shadedSerializer) {
+            return new GryoTypeReg<>(clazz, shadedSerializer, null, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final SerializerShim<T> serializerShim) {
+            return new GryoTypeReg<>(clazz, null, serializerShim, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class clazz, final int id, final Function<Kryo, Serializer> fct) {
+            return new GryoTypeReg<>(clazz, null, null, fct, id);
+        }
+
+        @Override
+        public Serializer<T> getShadedSerializer() {
+            return shadedSerializer;
+        }
+
+        @Override
+        public SerializerShim<T> getSerializerShim() {
+            return serializerShim;
+        }
+
+        @Override
+        public Function<Kryo, Serializer> getFunctionOfShadedKryo() {
+            return functionOfShadedKryo;
+        }
+
+        @Override
+        public Class<T> getTargetClass() {
+            return clazz;
+        }
+
+        @Override
+        public int getId() {
+            return id;
+        }
+
+        @Override
+        public Kryo registerWith(final Kryo kryo) {
+            if (null != functionOfShadedKryo)
+                kryo.register(clazz, functionOfShadedKryo.apply(kryo), id);
+            else if (null != shadedSerializer)
+                kryo.register(clazz, shadedSerializer, id);
+            else if (null != serializerShim)
+                kryo.register(clazz, new ShadedSerializerAdapter<>(serializerShim), id);
+            else {
+                kryo.register(clazz, kryo.getDefaultSerializer(clazz), id);
+                // Suprisingly, the preceding call is not equivalent to
+                //   kryo.register(clazz, id);
+            }
+
+            return kryo;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("targetClass", clazz)
+                    .append("id", id)
+                    .append("shadedSerializer", shadedSerializer)
+                    .append("serializerShim", serializerShim)
+                    .append("functionOfShadedKryo", functionOfShadedKryo)
+                    .toString();
         }
     }
 }

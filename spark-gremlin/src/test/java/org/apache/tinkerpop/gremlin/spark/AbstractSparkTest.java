@@ -24,11 +24,14 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.launcher.SparkLauncher;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -45,20 +48,22 @@ public abstract class AbstractSparkTest {
     public void setupTest() {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName(this.getClass().getCanonicalName() + "-setupTest");
-        sparkConfiguration.set("spark.master", "local[4]");
+        sparkConfiguration.set(SparkLauncher.SPARK_MASTER, "local[4]");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
         sparkContext.close();
         Spark.create(sparkContext.sc());
         Spark.close();
+        HadoopPools.close();
+        KryoShimServiceLoader.close();
         logger.info("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
     }
 
     protected Configuration getBaseConfiguration() {
         final BaseConfiguration configuration = new BaseConfiguration();
         configuration.setDelimiterParsingDisabled(true);
-        configuration.setProperty("spark.master", "local[4]");
+        configuration.setProperty(SparkLauncher.SPARK_MASTER, "local[4]");
         configuration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
-        configuration.setProperty("spark.kryo.registrationRequired", true);
+        configuration.setProperty(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         return configuration;

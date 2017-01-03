@@ -38,7 +38,6 @@ public final class VertexWritableSerializer implements SerializerShim<VertexWrit
     @Override
     public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexWritable vertexWritable) {
         kryo.writeObject(output, vertexWritable.get().graph());
-        output.flush();
     }
 
     @Override

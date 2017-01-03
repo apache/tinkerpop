@@ -28,16 +28,16 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexTerminator;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
+import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,8 +72,8 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
         final Configuration configuration = context.getConfiguration();
         if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
             this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
-        KryoShimServiceLoader.applyConfiguration(ConfUtil.makeApacheConfiguration(configuration));
-        this.gryoReader = HadoopPools.getGryoPool().takeReader();
+        this.gryoReader = GryoReader.build().mapper(
+                GryoMapper.build().addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
         long start = split.getStart();
         final Path file = split.getPath();
         if (null != new CompressionCodecFactory(configuration).getCodec(file)) {
@@ -166,9 +166,6 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
     @Override
     public synchronized void close() throws IOException {
         this.inputStream.close();
-        if (null != this.gryoReader) {
-            HadoopPools.getGryoPool().offerReader(this.gryoReader);
-            this.gryoReader = null;
-        }
+        this.gryoReader = null;
     }
 }

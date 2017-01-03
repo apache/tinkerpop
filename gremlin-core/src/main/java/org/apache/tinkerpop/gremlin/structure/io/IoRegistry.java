@@ -48,6 +48,9 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface IoRegistry {
+
+    public static final String IO_REGISTRY = "gremlin.io.registry";
+
     /**
      * Find a list of all the serializers registered to an {@link Io} class by the {@link Graph}.
      */

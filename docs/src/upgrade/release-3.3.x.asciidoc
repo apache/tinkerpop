@@ -147,3 +147,25 @@ Gremlin-server.bat
 ^^^^^^^^^^^^^^^^^^
 
 The switch name has changed for installing dependencies. `-i` has been deprecated and replaced by `install`.
+
+SparkGraphComputer GryoRegistrator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Historically, `SparkGraphComputer` has  used `GryoSerializer` to handle the serialization of objects in Spark. The reason
+this exists is because TinkerPop uses a shaded version of Kryo and thus, couldn't use the standard `KryoSerializer`-model
+provided by Spark. However, a "shim model" was created which allows for the shaded and unshaded versions of Kryo to
+interact with one another. To this end, `KryoSerializer` can now be used with a `GryoRegistrator`. The properties file
+for a `SparkGraphComputer` now looks as follows:
+
+```
+spark.serializer=org.apache.spark.serializer.KryoSerializer
+spark.kryo.registrator=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator
+```
+
+If the old `GryoSerializer` model is desired, then the properties file should simply look as before:
+
+```
+spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389

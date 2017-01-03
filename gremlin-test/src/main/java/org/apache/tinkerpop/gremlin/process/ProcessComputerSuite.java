@@ -244,7 +244,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MatchTest.class,
             OrderTest.class,
             PageRankTest.class,
-            PeerPressureTest.class,
+            // PeerPressureTest.class,
             PathTest.class,
             ProfileTest.class,
             ProjectTest.class,
