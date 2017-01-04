@@ -369,6 +369,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             if (!clone.traversal.get().isLocked())
                 clone.traversal.get().applyStrategies();
             clone.traversalMatrix = new TraversalMatrix<>(clone.traversal.get());
+            clone.memoryComputeKeys = new HashSet<>();
+            for (final MemoryComputeKey memoryComputeKey : this.memoryComputeKeys) {
+                clone.memoryComputeKeys.add(memoryComputeKey.clone());
+            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
