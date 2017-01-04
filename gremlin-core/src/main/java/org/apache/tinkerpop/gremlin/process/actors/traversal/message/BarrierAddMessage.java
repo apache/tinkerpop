@@ -17,34 +17,31 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.jsr223;
+package org.apache.tinkerpop.gremlin.process.actors.traversal.message;
 
-import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaGremlinPlugin extends AbstractGremlinPlugin {
+public final class BarrierAddMessage {
 
-    protected static String NAME = "tinkerpop.akka";
+    private final Object barrier;
+    private final String stepId;
 
-    private static final AkkaGremlinPlugin INSTANCE = new AkkaGremlinPlugin();
-
-    private static final ImportCustomizer imports = DefaultImportCustomizer.build().addClassImports(AkkaGraphActors.class).create();
-
-    public AkkaGremlinPlugin() {
-        super(NAME, imports);
+    public BarrierAddMessage(final Barrier barrier) {
+        this.barrier = barrier.nextBarrier();
+        this.stepId = ((Step) barrier).getId();
     }
 
-    @Override
-    public boolean requireRestart() {
-        return true;
+    public Object getBarrier() {
+        return this.barrier;
     }
 
-    public static AkkaGremlinPlugin instance() {
-        return INSTANCE;
+    public String getStepId() {
+        return this.stepId;
     }
+
+
 }

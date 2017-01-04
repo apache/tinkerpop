@@ -17,34 +17,26 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.jsr223;
+package org.apache.tinkerpop.gremlin.process.actors.util;
 
-import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaGremlinPlugin extends AbstractGremlinPlugin {
+public final class DefaultActorsResult<R> implements ActorsResult<R> {
 
-    protected static String NAME = "tinkerpop.akka";
+    private R result;
 
-    private static final AkkaGremlinPlugin INSTANCE = new AkkaGremlinPlugin();
+    public DefaultActorsResult() {
 
-    private static final ImportCustomizer imports = DefaultImportCustomizer.build().addClassImports(AkkaGraphActors.class).create();
-
-    public AkkaGremlinPlugin() {
-        super(NAME, imports);
     }
 
-    @Override
-    public boolean requireRestart() {
-        return true;
+    public R getResult() {
+        return this.result;
     }
 
-    public static AkkaGremlinPlugin instance() {
-        return INSTANCE;
+    public void setResult(final R result) {
+        this.result = result;
     }
 }

@@ -1,0 +1,129 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
+package org.apache.tinkerpop.gremlin.process.actors.traversal;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
+import org.apache.tinkerpop.gremlin.process.actors.Actor;
+import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.decoration.ActorProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.verification.ActorVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public final class TraversalActorProgram<R> implements ActorProgram {
+
+    public static final String TRAVERSAL_ACTOR_PROGRAM_BYTECODE = "gremlin.traversalActorProgram.bytecode";
+
+    private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
+            StartMessage.class,
+            Traverser.class,
+            SideEffectAddMessage.class,
+            BarrierAddMessage.class,
+            SideEffectSetMessage.class,
+            BarrierDoneMessage.class,
+            Terminate.class);
+
+    private Traversal.Admin<?, R> traversal;
+    public TraverserSet<R> result = new TraverserSet<>();
+
+    public TraversalActorProgram(final Traversal.Admin<?, R> traversal) {
+        this.traversal = traversal;
+        final TraversalStrategies strategies = this.traversal.getStrategies().clone();
+        strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
+        // TODO: make TinkerGraph/etc. strategies smart about actors
+        new ArrayList<>(strategies.toList()).stream().
+                filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).
+                map(TraversalStrategy::getClass).
+                forEach(strategies::removeStrategies);
+        strategies.removeStrategies(
+                ActorProgramStrategy.class,
+                LazyBarrierStrategy.class,
+                RepeatUnrollStrategy.class,
+                MatchPredicateStrategy.class,
+                InlineFilterStrategy.class,
+                PathRetractionStrategy.class);
+        this.traversal.setStrategies(strategies);
+        this.traversal.applyStrategies();
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(ACTOR_PROGRAM, TraversalActorProgram.class.getCanonicalName());
+        configuration.setProperty(TRAVERSAL_ACTOR_PROGRAM_BYTECODE, this.traversal.getBytecode());
+    }
+
+    @Override
+    public void loadState(final Graph graph, final Configuration configuration) {
+        final Bytecode bytecode = (Bytecode) configuration.getProperty(TRAVERSAL_ACTOR_PROGRAM_BYTECODE);
+        this.traversal = (Traversal.Admin<?, R>) JavaTranslator.of(graph.traversal()).translate(bytecode);
+    }
+
+    @Override
+    public TraversalActorProgram.Worker createWorkerProgram(final Actor.Worker worker) {
+        return new TraversalWorkerProgram(worker, this.traversal.clone());
+    }
+
+    @Override
+    public TraversalActorProgram.Master createMasterProgram(final Actor.Master master) {
+        return new TraversalMasterProgram(master, this.traversal.clone(), this.result);
+    }
+
+    @Override
+    public Optional<List<Class>> getMessagePriorities() {
+        return Optional.of(MESSAGE_PRIORITIES);
+    }
+
+    @Override
+    public TraversalActorProgram<R> clone() {
+        try {
+            final TraversalActorProgram<R> clone = (TraversalActorProgram<R>) super.clone();
+            clone.traversal = this.traversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+}

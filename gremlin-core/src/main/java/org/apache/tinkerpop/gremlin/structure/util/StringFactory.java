@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.util;
 
 import org.apache.tinkerpop.gremlin.process.Processor;
-import org.apache.tinkerpop.gremlin.process.actor.GraphActors;
+import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;

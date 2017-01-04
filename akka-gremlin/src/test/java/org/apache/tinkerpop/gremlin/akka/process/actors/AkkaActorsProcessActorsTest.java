@@ -17,34 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.jsr223;
+package org.apache.tinkerpop.gremlin.akka.process.actors;
 
-import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessActorsSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaGremlinPlugin extends AbstractGremlinPlugin {
-
-    protected static String NAME = "tinkerpop.akka";
-
-    private static final AkkaGremlinPlugin INSTANCE = new AkkaGremlinPlugin();
-
-    private static final ImportCustomizer imports = DefaultImportCustomizer.build().addClassImports(AkkaGraphActors.class).create();
-
-    public AkkaGremlinPlugin() {
-        super(NAME, imports);
-    }
-
-    @Override
-    public boolean requireRestart() {
-        return true;
-    }
-
-    public static AkkaGremlinPlugin instance() {
-        return INSTANCE;
-    }
+@RunWith(ProcessActorsSuite.class)
+@GraphProviderClass(provider = AkkaActorsProvider.class, graph = TinkerGraph.class)
+public class AkkaActorsProcessActorsTest {
 }

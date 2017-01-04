@@ -17,34 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.jsr223;
-
-import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
-import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+package org.apache.tinkerpop.gremlin.process.actors.traversal.message;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AkkaGremlinPlugin extends AbstractGremlinPlugin {
+public final class StartMessage {
 
-    protected static String NAME = "tinkerpop.akka";
+    private static final StartMessage INSTANCE = new StartMessage();
 
-    private static final AkkaGremlinPlugin INSTANCE = new AkkaGremlinPlugin();
-
-    private static final ImportCustomizer imports = DefaultImportCustomizer.build().addClassImports(AkkaGraphActors.class).create();
-
-    public AkkaGremlinPlugin() {
-        super(NAME, imports);
+    private StartMessage() {
     }
 
-    @Override
-    public boolean requireRestart() {
-        return true;
-    }
-
-    public static AkkaGremlinPlugin instance() {
+    public static StartMessage instance() {
         return INSTANCE;
     }
 }
