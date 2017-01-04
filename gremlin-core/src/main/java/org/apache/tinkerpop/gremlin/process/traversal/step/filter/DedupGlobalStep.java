@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +58,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<String> keepLabels;
     private boolean executingAtMaster = false;
     private boolean barrierAdded = false;
+    private Map<Object, Traverser.Admin<S>> masterBarrier;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -76,6 +76,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
             return this.duplicateSet.add(objects);
         }
+
     }
 
     @Override
@@ -90,6 +91,11 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
+        if (null != this.masterBarrier) {
+            this.starts.add(this.masterBarrier.values().iterator());
+            this.barrierAdded = true;
+        }
+        this.masterBarrier = null;
         return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
@@ -196,12 +202,13 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public void addBarrier(final Map<Object, Traverser.Admin<S>> barrier) {
-        this.barrierAdded = true;
-        IteratorUtils.removeOnNext(barrier.entrySet().iterator()).forEachRemaining(entry -> {
-            final Traverser.Admin<S> traverser = entry.getValue();
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
+        if (null == this.masterBarrier)
+            this.masterBarrier = new HashMap<>(barrier);
+        else {
+            for (Map.Entry<Object, Traverser.Admin<S>> entry : barrier.entrySet()) {
+                this.masterBarrier.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     @Override
