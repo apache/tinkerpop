@@ -147,6 +147,24 @@ Upgrading for Providers
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+CloseableIterator
++++++++++++++++++
+
+Prior to TinkerPop 3.x, Blueprints had the notion of a `CloseableIterable` which exposed a way for Graph Providers
+to offer a way to release resources that might have been opened when returning vertices and edges. That interface was
+never exposed in TinkerPop 3.x, but has now been made available via the new `CloseableIterator`. Providers may choose
+to use this interface or not when returning values from `Graph.vertices()` and `Graph.edges()`.
+
+It will be up to users to know whether or not they need to call `close()`. Of course, users should typically not be
+operating with the Graph Structure API, so it's unlikely that they would be calling these methods directly in the
+first place. It is more likely that users will be calling `Traversal.close()`. This method will essentially iterate
+the steps of the `Traversal` and simply call `close()` on any steps that implement `AutoCloseable`. By default,
+`GraphStep` now implements `AutoCloseable` which most Graph Providers will extend upon (as was done with TinkerGraph's
+`TinkerGraphStep`), so the integration should largely come for free if the provider simply returns a
+`CloseableIterator` from `Graph.vertices()` and `Graph.edges()`.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1589[TINKERPOP-1589]
+
 HasContainer AndP Splitting
 +++++++++++++++++++++++++++
 
