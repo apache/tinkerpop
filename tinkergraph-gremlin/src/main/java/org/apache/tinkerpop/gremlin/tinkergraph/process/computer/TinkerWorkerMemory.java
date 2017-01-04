@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-import org.apache.tinkerpop.gremlin.util.Serializer;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,12 +39,7 @@ public final class TinkerWorkerMemory implements Memory.Admin {
     public TinkerWorkerMemory(final TinkerMemory mainMemory) {
         this.mainMemory = mainMemory;
         for (final MemoryComputeKey key : this.mainMemory.memoryKeys.values()) {
-            try {
-                final MemoryComputeKey clone = Serializer.cloneObject(key);
-                this.reducers.put(clone.getKey(), clone.getReducer());
-            } catch (final IOException | ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            this.reducers.put(key.getKey(), key.clone().getReducer());
         }
     }
 
