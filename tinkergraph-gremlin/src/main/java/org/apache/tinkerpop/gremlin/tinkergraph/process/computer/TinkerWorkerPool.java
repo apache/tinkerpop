@@ -24,10 +24,13 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapReducePool;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 
+import java.util.Queue;
 import java.util.concurrent.CompletionService;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -44,11 +47,15 @@ public final class TinkerWorkerPool implements AutoCloseable {
 
     private VertexProgramPool vertexProgramPool;
     private MapReducePool mapReducePool;
+    private final Queue<TinkerWorkerMemory> workerMemoryPool = new ConcurrentLinkedQueue<>();
 
-    public TinkerWorkerPool(final int numberOfWorkers) {
+    public TinkerWorkerPool(final TinkerMemory memory, final int numberOfWorkers) {
         this.numberOfWorkers = numberOfWorkers;
         this.workerPool = Executors.newFixedThreadPool(numberOfWorkers, THREAD_FACTORY_WORKER);
         this.completionService = new ExecutorCompletionService<>(this.workerPool);
+        for (int i = 0; i < this.numberOfWorkers; i++) {
+            this.workerMemoryPool.add(new TinkerWorkerMemory(memory));
+        }
     }
 
     public void setVertexProgram(final VertexProgram vertexProgram) {
@@ -59,12 +66,14 @@ public final class TinkerWorkerPool implements AutoCloseable {
         this.mapReducePool = new MapReducePool(mapReduce, this.numberOfWorkers);
     }
 
-    public void executeVertexProgram(final Consumer<VertexProgram> worker) throws InterruptedException {
+    public void executeVertexProgram(final BiConsumer<VertexProgram, TinkerWorkerMemory> worker) throws InterruptedException {
         for (int i = 0; i < this.numberOfWorkers; i++) {
             this.completionService.submit(() -> {
                 final VertexProgram vp = this.vertexProgramPool.take();
-                worker.accept(vp);
+                final TinkerWorkerMemory workerMemory = this.workerMemoryPool.poll();
+                worker.accept(vp, workerMemory);
                 this.vertexProgramPool.offer(vp);
+                this.workerMemoryPool.offer(workerMemory);
                 return null;
             });
         }

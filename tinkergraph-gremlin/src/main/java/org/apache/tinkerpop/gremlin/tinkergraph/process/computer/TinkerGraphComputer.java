@@ -157,7 +157,7 @@ public final class TinkerGraphComputer implements GraphComputer {
         return computerService.submit(() -> {
             final long time = System.currentTimeMillis();
             final TinkerGraphComputerView view;
-            final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers);
+            final TinkerWorkerPool workers = new TinkerWorkerPool(this.memory, this.workers);
             try {
                 if (null != this.vertexProgram) {
                     view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
@@ -168,8 +168,7 @@ public final class TinkerGraphComputer implements GraphComputer {
                         this.memory.completeSubRound();
                         workers.setVertexProgram(this.vertexProgram);
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
-                        workers.executeVertexProgram(vertexProgram -> {
-                            final TinkerWorkerMemory workerMemory = new TinkerWorkerMemory(this.memory);
+                        workers.executeVertexProgram((vertexProgram, workerMemory) -> {
                             vertexProgram.workerIterationStart(workerMemory.asImmutable());
                             while (true) {
                                 final Vertex vertex = vertices.next();
@@ -178,8 +177,7 @@ public final class TinkerGraphComputer implements GraphComputer {
                                 vertexProgram.execute(
                                         ComputerGraph.vertexProgram(vertex, vertexProgram),
                                         new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()),
-                                        workerMemory
-                                );
+                                        workerMemory);
                             }
                             vertexProgram.workerIterationEnd(workerMemory.asImmutable());
                             workerMemory.complete();
