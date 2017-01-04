@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed minor bug in `gremlin-driver` where closing a session-based `Client` without initializing it could generate an error.
 * `TinkerGraph` Gryo and GraphSON deserialization is now configured to use multi-properties.
 * Changed behavior of `ElementHelper.areEqual(Property, Property)` to not throw exceptions with `null` arguments.
 * Added `GryoVersion` for future flexibility when introducing a new verison of Gryo and moved serializer registrations to it.

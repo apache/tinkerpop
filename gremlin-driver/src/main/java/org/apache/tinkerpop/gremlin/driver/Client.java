@@ -728,7 +728,10 @@ public abstract class Client {
             if (closing.get() != null)
                 return closing.get();
 
-            final CompletableFuture<Void> connectionPoolClose = connectionPool.closeAsync();
+            // the connection pool may not have been initialized if requests weren't sent across it. in those cases
+            // we just need to return a pre-completed future
+            final CompletableFuture<Void> connectionPoolClose = null == connectionPool ?
+                    CompletableFuture.completedFuture(null) : connectionPool.closeAsync();
             closing.set(connectionPoolClose);
             return connectionPoolClose;
         }
