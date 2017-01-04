@@ -93,7 +93,8 @@ import static org.junit.Assume.assumeNoException;
         "computerRequiresMoreWorkersThanSupported",
         "vertexFilterAccessesIncidentEdges",
         "edgeFilterAccessesAdjacentVertices",
-        "graphFilterNotSupported"
+        "graphFilterNotSupported",
+        "graphNotSupported"
 })
 @ExceptionCoverage(exceptionClass = Memory.Exceptions.class, methods = {
         "memoryKeyCanNotBeEmpty",

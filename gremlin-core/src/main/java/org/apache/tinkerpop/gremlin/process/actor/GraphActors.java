@@ -56,6 +56,14 @@ public interface GraphActors<R> extends Processor {
      */
     public GraphActors<R> workers(final int workers);
 
+    /**
+     * Add an arbitrary configuration to the GraphActors system.
+     * Typically, these configurations are provider-specific and do not generalize across all GraphActor implementations.
+     *
+     * @param key   the key of the configuration
+     * @param value the value of the configuration
+     * @return the updated GraphActors with newly defined configuration
+     */
     public GraphActors<R> configure(final String key, final Object value);
 
     /**

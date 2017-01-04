@@ -64,7 +64,7 @@ public interface ActorProgram<M> extends Cloneable {
      * @param worker the worker actor creating the worker program
      * @return the worker program
      */
-    public Worker createWorkerProgram(final Actor.Worker worker);
+    public ActorProgram.Worker createWorkerProgram(final Actor.Worker worker);
 
     /**
      * Create the {@link org.apache.tinkerpop.gremlin.process.actor.Actor.Master} program.
@@ -73,7 +73,7 @@ public interface ActorProgram<M> extends Cloneable {
      * @param master the master actor creating the master program
      * @return the master program
      */
-    public Master createMasterProgram(final Actor.Master master);
+    public ActorProgram.Master createMasterProgram(final Actor.Master master);
 
     /**
      * Get the ordered list of message classes where order determines the priority
@@ -99,15 +99,40 @@ public interface ActorProgram<M> extends Cloneable {
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public ActorProgram<M> clone();
 
+    /**
+     * The Worker program is executed by a worker process in the {@link GraphActors} system.
+     * There are many workers and a single master.
+     * All workers execute the same program.
+     *
+     * @param <M> The message type accepted by the worker
+     */
     public static interface Worker<M> {
+
+        /**
+         * This method is evaluated when the worker process is spawned.
+         */
         public void setup();
 
+        /**
+         * This method is evaluated when the worker receives a new message.
+         *
+         * @param message the received message
+         */
         public void execute(final M message);
 
+        /**
+         * This method is evaluated when the worker process is destroyed.
+         */
         public void terminate();
 
     }
 
+    /**
+     * The Master program is executed by the master process in the {@link GraphActors} system.
+     * There are many workers and a single master.
+     *
+     * @param <M> The message type accepted by the master
+     */
     public static interface Master<M> {
         public void setup();
 

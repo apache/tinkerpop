@@ -107,7 +107,6 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     @Override
     public void close() {
         context().system().terminate();
-
     }
 
     @Override
