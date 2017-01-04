@@ -99,9 +99,10 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         //System.out.println(message + "::" + this.isLeader);
         if (message instanceof StartMessage) {
             // initial message from master that says: "start processing"
-            final GraphStep step = (GraphStep) this.matrix.getTraversal().getStartStep();
+            final GraphStep<?,?> step = (GraphStep) this.matrix.getTraversal().getStartStep();
             while (step.hasNext()) {
-                this.sendTraverser(step.next());
+                final Traverser.Admin<? extends Element> traverser = step.next();
+                this.self.send(traverser.isHalted() ? this.self.master() : this.self.address(), traverser);
             }
         } else if (message instanceof Traverser.Admin) {
             this.processTraverser((Traverser.Admin) message);
