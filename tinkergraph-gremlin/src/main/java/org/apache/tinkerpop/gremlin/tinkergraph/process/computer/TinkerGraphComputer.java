@@ -169,7 +169,8 @@ public final class TinkerGraphComputer implements GraphComputer {
                         workers.setVertexProgram(this.vertexProgram);
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
                         workers.executeVertexProgram(vertexProgram -> {
-                            vertexProgram.workerIterationStart(this.memory.asImmutable());
+                            final TinkerWorkerMemory workerMemory = new TinkerWorkerMemory(this.memory);
+                            vertexProgram.workerIterationStart(workerMemory.asImmutable());
                             while (true) {
                                 final Vertex vertex = vertices.next();
                                 if (Thread.interrupted()) throw new TraversalInterruptedException();
@@ -177,10 +178,11 @@ public final class TinkerGraphComputer implements GraphComputer {
                                 vertexProgram.execute(
                                         ComputerGraph.vertexProgram(vertex, vertexProgram),
                                         new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()),
-                                        this.memory
+                                        workerMemory
                                 );
                             }
-                            vertexProgram.workerIterationEnd(this.memory.asImmutable());
+                            vertexProgram.workerIterationEnd(workerMemory.asImmutable());
+                            workerMemory.complete();
                         });
                         this.messageBoard.completeIteration();
                         this.memory.completeSubRound();

@@ -131,6 +131,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
         clone.preTraversal = (Traversal.Admin<S, ?>) GroupStep.generatePreTraversal(clone.valueTraversal);
+        clone.setReducingBiOperator(new GroupBiOperator<>(clone.valueTraversal));
         return clone;
     }
 
@@ -171,7 +172,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 this.valueTraversal = null;
                 this.barrierStep = null;
             } else {
-                this.valueTraversal = valueTraversal;
+                this.valueTraversal = valueTraversal.clone();
                 this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
             }
         }
