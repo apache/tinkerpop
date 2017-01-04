@@ -43,8 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -104,11 +102,14 @@ public final class TinkerGraphComputerView {
     }
 
     public List<Property> getProperties(final TinkerVertex vertex) {
-        final Stream<Property> a = TinkerHelper.getProperties(vertex).values().stream().flatMap(list -> list.stream());
-        final Stream<Property> b = this.computeProperties.containsKey(vertex) ?
-                this.computeProperties.get(vertex).values().stream().flatMap(list -> list.stream()) :
-                Stream.empty();
-        return Stream.concat(a, b).collect(Collectors.toList());
+        final List<Property> list = new ArrayList<>();
+        for (final List<VertexProperty> properties : TinkerHelper.getProperties(vertex).values()) {
+            list.addAll(properties);
+        }
+        for (final List<VertexProperty<?>> properties : this.computeProperties.getOrDefault(vertex, Collections.emptyMap()).values()) {
+            list.addAll(properties);
+        }
+        return list;
     }
 
     public void removeProperty(final TinkerVertex vertex, final String key, final VertexProperty property) {
@@ -131,8 +132,9 @@ public final class TinkerGraphComputerView {
         // remove all transient properties from the vertices
         for (final VertexComputeKey computeKey : this.computeKeys.values()) {
             if (computeKey.isTransient()) {
-                final List<VertexProperty<?>> toRemove = this.computeProperties.values().stream().flatMap(map -> map.getOrDefault(computeKey.getKey(), Collections.emptyList()).stream()).collect(Collectors.toList());
-                toRemove.forEach(VertexProperty::remove);
+                for (final Map<String, List<VertexProperty<?>>> properties : this.computeProperties.values()) {
+                    properties.remove(computeKey.getKey());
+                }
             }
         }
     }
@@ -211,22 +213,16 @@ public final class TinkerGraphComputerView {
     }
 
     private void addValue(final Vertex vertex, final String key, final VertexProperty property) {
-        final Map<String, List<VertexProperty<?>>> elementProperties = this.computeProperties.computeIfAbsent(vertex, k -> new ConcurrentHashMap<>());
+        final Map<String, List<VertexProperty<?>>> elementProperties = this.computeProperties.computeIfAbsent(vertex, k -> new HashMap<>());
         elementProperties.compute(key, (k, v) -> {
-            if (null == v) v = Collections.synchronizedList(new ArrayList<>());
+            if (null == v) v = new ArrayList<>();
             v.add(property);
             return v;
         });
     }
 
     private void removeValue(final Vertex vertex, final String key, final VertexProperty property) {
-        this.computeProperties.computeIfPresent(vertex, (k, v) -> {
-            v.computeIfPresent(key, (k1, v1) -> {
-                v1.remove(property);
-                return v1;
-            });
-            return v;
-        });
+        this.computeProperties.<List<Map<String, VertexProperty<?>>>>getOrDefault(vertex, Collections.emptyMap()).get(key).remove(property);
     }
 
     private List<VertexProperty<?>> getValue(final Vertex vertex, final String key) {

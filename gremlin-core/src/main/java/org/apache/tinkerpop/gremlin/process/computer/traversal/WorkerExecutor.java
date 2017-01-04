@@ -59,10 +59,10 @@ final class WorkerExecutor {
                                      final TraversalMatrix<?, ?> traversalMatrix,
                                      final Memory memory,
                                      final boolean returnHaltedTraversers,
+                                     final TraverserSet<Object> haltedTraversers,
                                      final HaltedTraverserStrategy haltedTraverserStrategy) {
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 

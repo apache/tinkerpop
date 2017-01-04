@@ -40,7 +40,7 @@ class TinkerGraphGroovyPlayTest {
         def a = graph.traversal().withComputer(Computer.compute())
         def r = new Random(123)
 
-        (1..1725403).each {
+        (1..1000000).each {
             def vid = ["a", "b", "c", "d"].collectEntries { [it, r.nextInt() % 400000] }
             graph.addVertex(T.id, vid)
         }; []
