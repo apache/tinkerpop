@@ -28,6 +28,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added documentation around "terminal steps" in Gremlin: `hasNext()`, `next()`, `toList()`, etc.
 * Fixed minor bug in `gremlin-driver` where closing a session-based `Client` without initializing it could generate an error.
+* Relieved synchronization pressure in various areas of `TinkerGraphComputer`.
 * Fixed an optimization bug in `DedupGlobalStep` in OLAP where deduping occurred twice.
 * `MemoryComputeKey` now implements `Cloneable` which is useful for `BiOperator` reducers that maintain thread-unsafe state.
 * `TinkerGraphComputer` now supports distributed `Memory` with lock-free partition aggregation.
