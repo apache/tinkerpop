@@ -156,24 +156,21 @@ public final class TinkerGraphComputer implements GraphComputer {
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return computerService.submit(() -> {
             final long time = System.currentTimeMillis();
-            final TinkerGraphComputerView view;
-            final TinkerWorkerPool workers = new TinkerWorkerPool(this.memory, this.workers);
+            final TinkerGraphComputerView view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, null != this.vertexProgram ? this.vertexProgram.getVertexComputeKeys() : Collections.emptySet());
+            final TinkerWorkerPool workers = new TinkerWorkerPool(this.graph, this.memory, this.workers);
             try {
                 if (null != this.vertexProgram) {
-                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     while (true) {
                         if (Thread.interrupted()) throw new TraversalInterruptedException();
                         this.memory.completeSubRound();
                         workers.setVertexProgram(this.vertexProgram);
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
-                        workers.executeVertexProgram((vertexProgram, workerMemory) -> {
+                        workers.executeVertexProgram((vertices, vertexProgram, workerMemory) -> {
                             vertexProgram.workerIterationStart(workerMemory.asImmutable());
-                            while (true) {
+                            while (vertices.hasNext()) {
                                 final Vertex vertex = vertices.next();
                                 if (Thread.interrupted()) throw new TraversalInterruptedException();
-                                if (null == vertex) break;
                                 vertexProgram.execute(
                                         ComputerGraph.vertexProgram(vertex, vertexProgram),
                                         new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()),
@@ -192,9 +189,6 @@ public final class TinkerGraphComputer implements GraphComputer {
                         }
                     }
                     view.complete(); // drop all transient vertex compute keys
-                } else {
-                    // MapReduce only
-                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, Collections.emptySet());
                 }
 
                 // execute mapreduce jobs
