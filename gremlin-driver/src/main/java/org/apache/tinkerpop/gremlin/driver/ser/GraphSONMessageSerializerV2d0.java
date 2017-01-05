@@ -77,16 +77,7 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
     @Override
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
-            final Map<String, Object> responseData = mapper.readValue(msg, mapTypeReference);
-            final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
-            final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
-            return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
-                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
-                    .result(result.get(SerTokens.TOKEN_DATA))
-                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
-                    .create();
+            return mapper.readValue(msg, ResponseMessage.class);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
             throw new SerializationException(ex);
