@@ -58,7 +58,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<String> keepLabels;
     private boolean executingAtMaster = false;
     private boolean barrierAdded = false;
-    private Map<Object, Traverser.Admin<S>> masterBarrier;
+    private Map<Object, Traverser.Admin<S>> barrier;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -91,11 +91,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
-        if (null != this.masterBarrier) {
-            this.starts.add(this.masterBarrier.values().iterator());
+        if (null != this.barrier) {
+            for (final Map.Entry<Object, Traverser.Admin<S>> entry : this.barrier.entrySet()) {
+                if (this.duplicateSet.add(entry.getKey()))
+                    this.starts.add(entry.getValue());
+            }
             this.barrierAdded = true;
+            this.barrier = null;
         }
-        this.masterBarrier = null;
         return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
@@ -139,6 +142,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
         super.reset();
         this.duplicateSet.clear();
         this.barrierAdded = false;
+        this.barrier = null;
     }
 
     @Override
@@ -170,45 +174,48 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public boolean hasNextBarrier() {
-        return this.starts.hasNext();
+        return null != this.barrier || this.starts.hasNext();
     }
 
     @Override
     public Map<Object, Traverser.Admin<S>> nextBarrier() throws NoSuchElementException {
-        final Map<Object, Traverser.Admin<S>> map = new HashMap<>();
-        while (this.starts.hasNext()) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            final Object object;
-            if (null != this.dedupLabels) {
-                object = new ArrayList<>(this.dedupLabels.size());
-                for (final String label : this.dedupLabels) {
-                    ((List) object).add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal));
+        if (null != this.barrier) {
+            final Map<Object, Traverser.Admin<S>> tempBarrier = this.barrier;
+            this.barrier = null;
+            this.barrierAdded = false;
+            return tempBarrier;
+        } else {
+            final Map<Object, Traverser.Admin<S>> map = new HashMap<>();
+            while (this.starts.hasNext()) {
+                final Traverser.Admin<S> traverser = this.starts.next();
+                final Object object;
+                if (null != this.dedupLabels) {
+                    object = new ArrayList<>(this.dedupLabels.size());
+                    for (final String label : this.dedupLabels) {
+                        ((List) object).add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal));
+                    }
+                } else {
+                    object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
                 }
-            } else {
-                object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
+                if (!map.containsKey(object)) {
+                    traverser.setBulk(1L);
+                    traverser.set(DetachedFactory.detach(traverser.get(), true));
+                    map.put(object, traverser);
+                }
             }
-            if (!map.containsKey(object)) {
-                traverser.setBulk(1l);
-                traverser.set(DetachedFactory.detach(traverser.get(), true));
-                map.put(object, traverser);
-            }
+            if (map.isEmpty())
+                throw FastNoSuchElementException.instance();
+            else
+                return map;
         }
-        if (map.isEmpty())
-            throw FastNoSuchElementException.instance();
-        else
-            return map;
-
     }
 
     @Override
     public void addBarrier(final Map<Object, Traverser.Admin<S>> barrier) {
-        if (null == this.masterBarrier)
-            this.masterBarrier = new HashMap<>(barrier);
-        else {
-            for (Map.Entry<Object, Traverser.Admin<S>> entry : barrier.entrySet()) {
-                this.masterBarrier.putIfAbsent(entry.getKey(), entry.getValue());
-            }
-        }
+        if (null == this.barrier)
+            this.barrier = new HashMap<>(barrier);
+        else
+            this.barrier.putAll(barrier);
     }
 
     @Override
