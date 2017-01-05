@@ -141,6 +141,39 @@ g.V().choose(has('name','marko'),
 <2> The same operation, but using the traversal represention of `branch()`.
 <3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
+[[terminal-steps]]
+Terminal Steps
+~~~~~~~~~~~~~~
+
+Typically, when a step is concatenated to a traversal a traversal is returned. In this way, a traversal is built up
+in a link:https://en.wikipedia.org/wiki/Fluent_interface[fluent], link:https://en.wikipedia.org/wiki/Monoid[monadic] fashion.
+However, some steps do not return a traversal, but instead, execute the traversal and return a result. These steps are known
+as terminal steps (*terminal*) and they are explained via the examples below.
+
+[gremlin-groovy,modern]
+----
+g.V().out('created').hasNext() <1>
+g.V().out('created').next() <2>
+g.V().out('created').next(2) <3>
+g.V().out('nothing').tryNext() <4>
+g.V().out('created').toList() <5>
+g.V().out('created').toSet() <6>
+g.V().out('created').toBulkSet() <7>
+results = ['blah',3]
+g.V().out('created').fill(results) <8>
+----
+
+<1> `hasNext()` determines whether there are available results.
+<2> `next()` will return the next result.
+<3> `next(n)` will return the next `n` results in a list.
+<4> `tryNext()` will return an `Optional` and thus, is a composite of `hasNext()`/`next()`.
+<5> `toList()` will return all results in a list.
+<6> `toSet()` will return all results in a set (thus, duplicates removed).
+<7> `toBulkSet()` will return all results in a weighted set (thus, duplicates preserved via weighting).
+<8> `fill(collection)` will put all results in the provided collection and return the collection when complete.
+
+Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
+
 [[addedge-step]]
 AddEdge Step
 ~~~~~~~~~~~~
@@ -607,7 +640,7 @@ g.V()
 Explain Step
 ~~~~~~~~~~~~
 
-The `explain()`-step (*sideEffect*) will return a `TraversalExplanation`. A traversal explanation details how the
+The `explain()`-step (*terminal*) will return a `TraversalExplanation`. A traversal explanation details how the
 traversal (prior to `explain()`) will be compiled given the registered <<traversalstrategy,traversal strategies>>.
 A `TraversalExplanation` has a `toString()` representation with 3-columns. The first column is the
 traversal strategy being applied. The second column is the traversal strategy category: [D]ecoration, [O]ptimization,
