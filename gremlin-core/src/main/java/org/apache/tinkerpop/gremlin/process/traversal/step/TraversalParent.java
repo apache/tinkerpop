@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalParent {
+public interface TraversalParent extends AutoCloseable {
 
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();
@@ -80,5 +80,16 @@ public interface TraversalParent {
         childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
         childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
         return (Traversal.Admin<S, E>) childTraversal;
+    }
+
+    @Override
+    default void close() throws Exception {
+        for(final Traversal.Admin<?,?> traversal : this.getLocalChildren()) {
+            traversal.close();
+        }
+
+        for(final Traversal.Admin<?,?> traversal: this.getGlobalChildren()) {
+            traversal.close();
+        }
     }
 }

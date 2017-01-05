@@ -259,8 +259,9 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     @Override
     public default void close() throws Exception {
-        for (AutoCloseable closeableStep : TraversalHelper.getStepsOfAssignableClassRecursively(AutoCloseable.class, asAdmin())) {
-            closeableStep.close();
+        for(final Step<?,?> step : this.asAdmin().getSteps()) {
+            if(step instanceof AutoCloseable)
+                ((AutoCloseable) step).close();
         }
     }
 
