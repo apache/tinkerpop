@@ -24,6 +24,8 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -346,6 +348,20 @@ public class GremlinExecutor implements AutoCloseable {
         executorService.execute(evalFuture);
 
         return evaluationFuture;
+    }
+
+    /**
+     * Evaluates bytecode with bindings for a specific language into a {@link Traversal}.
+     */
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings boundVars, final String language) throws ScriptException {
+        final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
+
+        final Bindings bindings = new SimpleBindings();
+        bindings.putAll(globalBindings);
+        bindings.putAll(boundVars);
+
+        return useGremlinScriptEngineManager ?
+                gremlinScriptEngineManager.getEngineByName(lang).eval(bytecode, bindings) : scriptEngines.eval(bytecode, bindings, lang);
     }
 
     /**

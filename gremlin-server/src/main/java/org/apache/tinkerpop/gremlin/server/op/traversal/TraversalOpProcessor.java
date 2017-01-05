@@ -235,9 +235,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
-        final Optional<Map<String, String>> aliases = validatedAliases(message);
-
-        return aliases.get();
+        return validatedAliases(message).get();
     }
 
     private static Optional<Map<String, String>> validatedAliases(final RequestMessage message) throws OpProcessorException {
@@ -328,7 +326,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }
     }
 
-    private void iterateBytecodeTraversal(final Context context) throws OpProcessorException, Exception {
+    private void iterateBytecodeTraversal(final Context context) throws Exception {
         final RequestMessage msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
@@ -351,10 +349,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             if (!lambdaLanguage.isPresent())
                 traversal = JavaTranslator.of(g).translate(bytecode);
             else {
-                final ScriptEngines engines = context.getGremlinExecutor().getScriptEngines();
                 final SimpleBindings b = new SimpleBindings();
                 b.put(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS, g);
-                traversal = engines.eval(bytecode, b, lambdaLanguage.get());
+                traversal = context.getGremlinExecutor().eval(bytecode, b, lambdaLanguage.get());
             }
         } catch (Exception ex) {
             logger.error("Could not deserialize the Traversal instance", context);
