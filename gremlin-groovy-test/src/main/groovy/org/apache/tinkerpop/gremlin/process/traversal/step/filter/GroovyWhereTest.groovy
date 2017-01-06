@@ -60,6 +60,12 @@ public abstract class GroovyWhereTest {
         /// where(global)
 
         @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(
+                final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', ['josh','peter']).V(v1Id).out('created').in('created').name.where(within('a'))", "v1Id", v1Id)
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(
                 final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').out('created').in('created').as('b').where('a', neq('b')).name", "v1Id", v1Id)
@@ -150,6 +156,11 @@ public abstract class GroovyWhereTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').outE('created').as('b').inV().as('c').in('created').as('d').where('a', lt('b').or(gt('c')).and(neq('d'))).by('age').by('weight').by(__.in('created').values('age').min()).select('a', 'c', 'd').by('name')")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').out.has('age').where(gt('a')).by('age').name", "v1Id", v1Id)
         }
 
     }

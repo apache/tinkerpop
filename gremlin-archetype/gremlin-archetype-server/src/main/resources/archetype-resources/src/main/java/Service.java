@@ -32,7 +32,7 @@ public class Service implements AutoCloseable {
     /**
      * There typically needs to be only one Cluster instance in an application.
      */
-    private final Cluster cluster = Cluster.open();
+    private final Cluster cluster = Cluster.build().port(45940).create();
 
     /**
      * Use the Cluster instance to construct different Client instances (e.g. one for sessionless communication
@@ -49,7 +49,7 @@ public class Service implements AutoCloseable {
 
     private Service() {}
 
-    public static Service getInstance() {
+    public static Service instance() {
         return INSTANCE;
     }
 

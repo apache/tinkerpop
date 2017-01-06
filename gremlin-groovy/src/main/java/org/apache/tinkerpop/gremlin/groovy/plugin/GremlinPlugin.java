@@ -28,6 +28,7 @@ import java.util.Optional;
  * of this interface to install.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As for 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin}
  */
 public interface GremlinPlugin {
     public static final String ENVIRONMENT = "GremlinPlugin.env";

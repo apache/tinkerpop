@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
  * A plugin implementation which allows for the usage of Gremlin Groovy's syntactic sugar.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.SugarGremlinPlugin}.
  */
+@Deprecated
 public class SugarGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override

@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
+
 import java.util.Optional;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link GremlinPlugin}.
  */
+@Deprecated
 public interface GremlinModule {
     /**
      * The name of the module.  This name should be unique (use a namespaced approach) as naming clashes will
@@ -58,4 +62,13 @@ public interface GremlinModule {
      * @param scriptEngineName The name of the {@code ScriptEngine} or null to get all the available {@code Customizers}
      */
     public Optional<Customizer[]> getCustomizers(final String scriptEngineName);
+
+    /**
+     * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
+     * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
+     * if it does not intend to take advantage of those commands.
+     */
+    public default Optional<RemoteAcceptor> remoteAcceptor() {
+        return Optional.empty();
+    }
 }

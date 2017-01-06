@@ -40,6 +40,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -54,6 +57,7 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +65,7 @@ import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -174,8 +179,8 @@ public class GryoMapperTest {
     @Test
     public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
         final GryoMapper mapper = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -197,12 +202,12 @@ public class GryoMapperTest {
     @Test
     public void shouldExpectReadFailureAsIoRegistryOrderIsNotRespected() throws Exception {
         final GryoMapper mapperWrite = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
 
         final GryoMapper mapperRead = GryoMapper.build()
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoYIoRegistry.InstanceBased.instance())
+                .addRegistry(IoXIoRegistry.InstanceBased.instance()).create();
 
         final Kryo kryoWriter = mapperWrite.createMapper();
         final Kryo kryoReader = mapperRead.createMapper();
@@ -336,6 +341,30 @@ public class GryoMapperTest {
     public void shouldHandleBytecode() throws Exception {
         final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
         assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
+    }
+
+    @Test
+    public void shouldHandleClass() throws Exception {
+        final Class clazz = java.io.File.class;
+        assertEquals(clazz, serializeDeserialize(clazz, Class.class));
+    }
+
+    @Test
+    public void shouldHandleTimestamp() throws Exception {
+        final Timestamp ts = new java.sql.Timestamp(1481750076295L);
+        assertEquals(ts, serializeDeserialize(ts, java.sql.Timestamp.class));
+    }
+
+    @Test
+    public void shouldHandleINetAddress() throws Exception {
+        final InetAddress addy = InetAddress.getByName("localhost");
+        assertEquals(addy, serializeDeserialize(addy, InetAddress.class));
+    }
+
+    @Test
+    public void shouldHandleByteBuffer() throws Exception {
+        final ByteBuffer bb = ByteBuffer.wrap("some bytes for you".getBytes());
+        assertThat(Arrays.equals(bb.array(), serializeDeserialize(bb, ByteBuffer.class).array()), is(true));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

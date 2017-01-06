@@ -84,6 +84,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
             // static fields only
         }
 
+        @Deprecated
         public static final String withBindings = "withBindings";
         public static final String withSack = "withSack";
         public static final String withStrategies = "withStrategies";
@@ -133,11 +134,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      *
      * @param bindings the bindings instance to use
      * @return a new traversal source with set bindings
+     * @deprecated As of release 3.2.4, replaced by use of {@link Bindings} without reference to a {@link TraversalSource}.
      */
+    @Deprecated
     public default TraversalSource withBindings(final Bindings bindings) {
-        final TraversalSource clone = this.clone();
-        clone.getBytecode().addSource(Symbols.withBindings, bindings);
-        return clone;
+        return this;
     }
 
     /**

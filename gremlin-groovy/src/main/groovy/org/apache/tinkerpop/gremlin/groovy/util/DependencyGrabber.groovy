@@ -20,11 +20,14 @@ package org.apache.tinkerpop.gremlin.groovy.util
 
 import groovy.grape.Grape
 import org.apache.commons.lang3.SystemUtils
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.nio.file.*
+import java.nio.file.DirectoryStream
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 
@@ -47,6 +50,13 @@ class DependencyGrabber {
         this.extensionDirectory = extensionDirectory
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #deleteDependenciesFromPath(Artifact)}
+     */
+    def String deleteDependenciesFromPath(final org.apache.tinkerpop.gremlin.groovy.plugin.Artifact artifact) {
+        deleteDependenciesFromPath(new Artifact(artifact.group, artifact.artifact, artifact.version))
+    }
+
     def String deleteDependenciesFromPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
@@ -58,6 +68,13 @@ class DependencyGrabber {
             f.deleteDir()
             return "Uninstalled ${dep.module}"
         }
+    }
+
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #copyDependenciesToPath(Artifact)}
+     */
+    def String copyDependenciesToPath(final org.apache.tinkerpop.gremlin.groovy.plugin.Artifact artifact) {
+        copyDependenciesToPath(new Artifact(artifact.group, artifact.artifact, artifact.version))
     }
 
     def Set<String> copyDependenciesToPath(final Artifact artifact) {
@@ -118,9 +135,9 @@ class DependencyGrabber {
                     .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
                     .each(copyTo(targetPluginPath))
             getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
-                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-                .each(copyTo(targetPluginPath))
+                    .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                    .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                    .each(copyTo(targetPluginPath))
 
             // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
             dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
@@ -162,7 +179,7 @@ class DependencyGrabber {
      * Windows places a starting forward slash in the URI that needs to be stripped off or else the
      * {@code FileSystem} won't properly resolve it.
      */
-    private static Closure convertUriToPath(final FileSystem fs) {
+    private static Closure convertUriToPath(def fs) {
         return { URI uri ->
             def p = SystemUtils.IS_OS_WINDOWS ? uri.path.substring(1) : uri.path
             return fs.getPath(p)
@@ -173,21 +190,24 @@ class DependencyGrabber {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
             final JarFile jar = new JarFile(pathToInstalled.toFile())
-            final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
-            def additionalDependencies = [] as Set<URI>
-            if (attrLine != null) {
-                def splitLine = attrLine.split(";")
-                splitLine.each {
-                    def artifactBits = it.split(":")
-                    def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
+            try {
+                final Manifest manifest = jar.getManifest()
+                def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
+                def additionalDependencies = [] as Set<URI>
+                if (attrLine != null) {
+                    def splitLine = attrLine.split(";")
+                    splitLine.each {
+                        def artifactBits = it.split(":")
+                        def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
 
-                    final def additionalDep = makeDepsMap(additional)
-                    additionalDependencies.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep))
+                        final def additionalDep = makeDepsMap(additional)
+                        additionalDependencies.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep))
+                    }
                 }
+                return additionalDependencies
+            } finally {
+                jar.close()
             }
-
-            return additionalDependencies
         } catch (Exception ex) {
             throw new RuntimeException(ex)
         }
@@ -196,19 +216,23 @@ class DependencyGrabber {
     private static alterPaths(final String manifestEntry, final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
-            final JarFile jar = new JarFile(pathToInstalled.toFile());
-            final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue(manifestEntry)
-            if (attrLine != null) {
-                def splitLine = attrLine.split(";")
-                splitLine.each {
-                    if (it.endsWith("="))
-                        Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
-                    else {
-                        def kv = it.split("=")
-                        Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+            final JarFile jar = new JarFile(pathToInstalled.toFile())
+            try {
+                final Manifest manifest = jar.getManifest()
+                def attrLine = manifest.mainAttributes.getValue(manifestEntry)
+                if (attrLine != null) {
+                    def splitLine = attrLine.split(";")
+                    splitLine.each {
+                        if (it.endsWith("="))
+                            Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
+                        else {
+                            def kv = it.split("=")
+                            Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                        }
                     }
                 }
+            } finally {
+                jar.close()
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex)

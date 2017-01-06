@@ -92,6 +92,7 @@ public class CachedGremlinScriptEngineManager extends DefaultGremlinScriptEngine
     }
 
     private void registerLookUpInfo(final GremlinScriptEngine engine, final String shortName) {
+        if (null == engine) throw new IllegalArgumentException(String.format("%s is not an available GremlinScriptEngine", shortName));
         cache.putIfAbsent(shortName, engine);
         engine.getFactory().getExtensions().forEach(ext -> extensionToName.putIfAbsent(ext, shortName));
         engine.getFactory().getMimeTypes().forEach(mime -> mimeToName.putIfAbsent(mime, shortName));

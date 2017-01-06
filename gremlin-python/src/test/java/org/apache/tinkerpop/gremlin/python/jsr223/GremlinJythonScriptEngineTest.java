@@ -36,6 +36,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -56,11 +58,11 @@ public class GremlinJythonScriptEngineTest {
     @Test
     public void shouldHaveCoreImports() throws Exception {
         final ScriptEngine engine = new DefaultGremlinScriptEngineManager().getEngineByName("gremlin-jython");
-        assertTrue(engine.eval("Graph") instanceof Class);
-        assertTrue(engine.eval("__") instanceof Class);
-        assertTrue(engine.eval("T") instanceof Class);
-        assertTrue(engine.eval("label") instanceof T);
-        assertTrue(engine.eval("T.label") instanceof T);
+        assertThat(engine.eval("Graph"), instanceOf(Class.class));
+        assertThat(engine.eval("__"), instanceOf(Class.class));
+        assertThat(engine.eval("T"), instanceOf(Class.class));
+        assertThat(engine.eval("label"), instanceOf(T.class));
+        assertThat(engine.eval("T.label"), instanceOf(T.class));
         assertEquals(SackFunctions.Barrier.class, engine.eval("Barrier"));
         assertEquals(SackFunctions.Barrier.normSack, engine.eval("Barrier.normSack"));
         assertEquals(Column.class, engine.eval("Column"));

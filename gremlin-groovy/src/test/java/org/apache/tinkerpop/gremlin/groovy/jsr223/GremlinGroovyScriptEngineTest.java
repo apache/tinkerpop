@@ -99,7 +99,7 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
+    public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindingsDeprecated() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeCustomizerProvider());
         engine.eval("def addItUp = { x, y -> x + y }");
         assertEquals(3, engine.eval("int xxx = 1 + 2"));
@@ -121,8 +121,54 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void shouldPromoteDefinedVarsInInterpreterModeWithBindings() throws Exception {
+    public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
+        engine.eval("def addItUp = { x, y -> x + y }");
+        assertEquals(3, engine.eval("int xxx = 1 + 2"));
+        assertEquals(4, engine.eval("yyy = xxx + 1"));
+        assertEquals(7, engine.eval("def zzz = yyy + xxx"));
+        assertEquals(4, engine.eval("zzz - xxx"));
+        assertEquals("accessible-globally", engine.eval("if (yyy > 0) { def inner = 'should-stay-local'; outer = 'accessible-globally' }\n outer"));
+        assertEquals("accessible-globally", engine.eval("outer"));
+
+        try {
+            engine.eval("inner");
+            fail("Should not have been able to access 'inner'");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingPropertyException.class));
+        }
+
+        assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
+    }
+
+    @Test
+    public void shouldPromoteDefinedVarsInInterpreterModeWithBindingsDeprecated() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeCustomizerProvider());
+        final Bindings b = new SimpleBindings();
+        b.put("x", 2);
+        engine.eval("def addItUp = { x, y -> x + y }", b);
+        assertEquals(3, engine.eval("int xxx = 1 + x", b));
+        assertEquals(4, engine.eval("yyy = xxx + 1", b));
+        assertEquals(7, engine.eval("def zzz = yyy + xxx", b));
+        assertEquals(4, engine.eval("zzz - xxx", b));
+        assertEquals("accessible-globally", engine.eval("if (yyy > 0) { def inner = 'should-stay-local'; outer = 'accessible-globally' }\n outer", b));
+        assertEquals("accessible-globally", engine.eval("outer", b));
+
+        try {
+            engine.eval("inner", b);
+            fail("Should not have been able to access 'inner'");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingPropertyException.class));
+        }
+
+        assertEquals(10, engine.eval("addItUp(zzz,xxx)", b));
+    }
+
+    @Test
+    public void shouldPromoteDefinedVarsInInterpreterModeWithBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
         final Bindings b = new SimpleBindings();
         b.put("x", 2);
         engine.eval("def addItUp = { x, y -> x + y }", b);
@@ -308,7 +354,7 @@ public class GremlinGroovyScriptEngineTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Color> color = new AtomicReference<>(Color.RED);
 
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
 
         try {
             scriptEngine.eval("Color.BLACK");

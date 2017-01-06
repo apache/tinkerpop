@@ -33,9 +33,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 /**
@@ -59,14 +61,15 @@ public class DriverRemoteConnection implements RemoteConnection {
     private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     public DriverRemoteConnection(final Configuration conf) {
-        if (conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
+        final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
+        if (conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && hasClusterConf)
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_DRIVER_CLUSTERFILE));
 
         remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
-            if (!conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && !conf.containsKey("clusterConfiguration"))
+            if (!conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && !hasClusterConf)
                 cluster = Cluster.open();
             else
                 cluster = conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) ?
@@ -161,6 +164,10 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
+     */
+    @Deprecated
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
@@ -176,11 +183,24 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #submitAsync(Bytecode)}.
+     */
+    @Deprecated
     @Override
     public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException {
         try {
             final ResultSet rs = client.submit(bytecode);
             return new DriverRemoteTraversal<>(rs, client, attachElements, conf);
+        } catch (Exception ex) {
+            throw new RemoteConnectionException(ex);
+        }
+    }
+
+    @Override
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
+        try {
+            return client.submitAsync(bytecode).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }

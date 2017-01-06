@@ -16,17 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer;
+package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.junit.runner.RunWith;
+import javax.script.Bindings;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * Default implementation of the {@link BindingsCustomizer}.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = SparkHadoopGraphProvider.class, graph = HadoopGraph.class)
-public class SparkGraphComputerProcessTest {
+public class DefaultBindingsCustomizer implements BindingsCustomizer {
+
+    private final Bindings bindings;
+
+    public DefaultBindingsCustomizer(final Bindings bindings) {
+        this.bindings = bindings;
+    }
+
+    @Override
+    public Bindings getBindings() {
+        return bindings;
+    }
 }

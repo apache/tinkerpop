@@ -29,8 +29,8 @@ import java.util.Map;
  * For instance:
  * <p>
  * <code>
- * b = new Bindings()
- * g = graph.traversal().withBindings(b)
+ * b = Bindings.instance()
+ * g = graph.traversal()
  * g.V().out(b.of("a","knows"))
  * // bindings can be reused over and over
  * g.V().out("knows").in(b.of("a","created"))
@@ -41,23 +41,44 @@ import java.util.Map;
  */
 public final class Bindings {
 
-    private final Map<Object, String> map = new HashMap<>();
+    private static final Bindings INSTANCE = new Bindings();
+    private static final ThreadLocal<Map<Object, String>> MAP = new ThreadLocal<>();
+
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link Bindings#instance()}.
+     */
+    @Deprecated
+    public Bindings() {
+
+    }
 
     public <V> V of(final String variable, final V value) {
-        this.map.put(value, variable);
+        Map<Object, String> map = MAP.get();
+        if (null == map) {
+            map = new HashMap<>();
+            MAP.set(map);
+        }
+        map.put(value, variable);
         return value;
     }
 
-    protected <V> String getBoundVariable(final V value) {
-        return this.map.get(value);
+    protected static <V> String getBoundVariable(final V value) {
+        final Map<Object, String> map = MAP.get();
+        return null == map ? null : map.get(value);
     }
 
-    protected void clear() {
-        this.map.clear();
+    protected static void clear() {
+        final Map<Object, String> map = MAP.get();
+        if (null != map)
+            map.clear();
+    }
+
+    public static Bindings instance() {
+        return INSTANCE;
     }
 
     @Override
     public String toString() {
-        return this.map.toString();
+        return "bindings[" + Thread.currentThread().getName() + "]";
     }
 }

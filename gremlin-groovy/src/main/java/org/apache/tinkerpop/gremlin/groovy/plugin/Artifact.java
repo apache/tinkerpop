@@ -22,7 +22,9 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
  * A software artifact identified by its maven coordinates.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.util.Artifact}
  */
+@Deprecated
 public class Artifact {
     private final String group;
     private final String artifact;

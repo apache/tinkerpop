@@ -40,7 +40,9 @@ import org.codehaus.groovy.tools.shell.IO
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Randall Barnhart (randompi@gmail.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.GephiRemoteAcceptor}
  */
+@Deprecated
 class GephiRemoteAcceptor implements RemoteAcceptor {
 
     private String host = "localhost"

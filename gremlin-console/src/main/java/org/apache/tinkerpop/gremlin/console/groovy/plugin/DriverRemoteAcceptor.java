@@ -50,7 +50,9 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.DriverRemoteAcceptor}.
  */
+@Deprecated
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     public static final int NO_TIMEOUT = 0;
 

@@ -42,7 +42,7 @@ import static org.hamcrest.CoreMatchers.is;
 public class ServiceTest {
     private GremlinServer server;
 
-    private static Service service = Service.getInstance();
+    private static Service service = Service.instance();
 
     @Before
     public void setUp() throws Exception {
@@ -78,7 +78,7 @@ public class ServiceTest {
 
     @Test
     public void shouldCreateGraph() throws Exception {
-        List<String> result = service.findCreatorsOfSoftware("lop");
+        final List<String> result = service.findCreatorsOfSoftware("lop");
         assertThat(result, is(Arrays.asList("marko", "josh", "peter")));
     }
 }

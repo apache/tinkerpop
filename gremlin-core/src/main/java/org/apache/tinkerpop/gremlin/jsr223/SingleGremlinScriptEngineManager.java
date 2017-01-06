@@ -23,12 +23,19 @@ package org.apache.tinkerpop.gremlin.jsr223;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SingleGremlinScriptEngineManager {
+public final class SingleGremlinScriptEngineManager {
     private static final GremlinScriptEngineManager cached = new CachedGremlinScriptEngineManager();
 
     private SingleGremlinScriptEngineManager() {}
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #instance()}.
+     */
     public static GremlinScriptEngineManager getInstance(){
+        return instance();
+    }
+
+    public static GremlinScriptEngineManager instance(){
         return cached;
     }
 

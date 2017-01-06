@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
@@ -29,6 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -79,8 +82,8 @@ public class BytecodeTest {
 
     @Test
     public void shouldIncludeBindingsInEquality() {
-        final Bindings b = new Bindings();
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withBindings(b);
+        final Bindings b = Bindings.instance();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
 
         final Bytecode bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getBytecode();
         final Bytecode bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getBytecode();
@@ -96,6 +99,31 @@ public class BytecodeTest {
 
         assertEquals(1, bytecode1.getBindings().size());
         assertEquals("created", bytecode1.getBindings().get("a"));
+    }
+
+    @Test
+    public void shouldIncludeBindingsInNestedTraversals() {
+        final Bindings b = Bindings.instance();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        final Bytecode bytecode = g.V().in(b.of("a","created")).where(__.out(b.of("b","knows")).has("age",b.of("c",P.gt(32))).map(__.values(b.of("d","name")))).asAdmin().getBytecode();
+        assertEquals(4, bytecode.getBindings().size());
+        assertEquals("created", bytecode.getBindings().get("a"));
+        assertEquals("knows", bytecode.getBindings().get("b"));
+        assertEquals(P.gt(32), bytecode.getBindings().get("c"));
+        assertEquals("name", bytecode.getBindings().get("d"));
+        //
+        Bytecode.Binding binding = (Bytecode.Binding)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(1).getArguments()[0];
+        assertEquals("a", binding.variable());
+        assertEquals("created", binding.value());
+        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        assertEquals("b", binding.variable());
+        assertEquals("knows", binding.value());
+        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(1).getArguments()[1];
+        assertEquals("c", binding.variable());
+        assertEquals(P.gt(32), binding.value());
+        binding = (Bytecode.Binding) ((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)((Bytecode)((List<Bytecode.Instruction>)bytecode.getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(2).getArguments()[0]).getStepInstructions()).get(0).getArguments()[0];
+        assertEquals("d", binding.variable());
+        assertEquals("name", binding.value());
     }
 
     @Test

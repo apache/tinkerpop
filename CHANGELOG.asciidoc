@@ -26,6 +26,28 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added documentation around "terminal steps" in Gremlin: `hasNext()`, `next()`, `toList()`, etc.
+* Fixed minor bug in `gremlin-driver` where closing a session-based `Client` without initializing it could generate an error.
+* `TinkerGraph` Gryo and GraphSON deserialization is now configured to use multi-properties.
+* Changed behavior of `ElementHelper.areEqual(Property, Property)` to not throw exceptions with `null` arguments.
+* Added `GryoVersion` for future flexibility when introducing a new verison of Gryo and moved serializer registrations to it.
+* Fixed Gryo serialization of `ConnectiveP` instances.
+* Lessened the severity of Gremlin Server logging when it encounters two or more serializers addressing the same mime type.
+* Bumped to Netty 4.0.42.final.
+* Added `ByteBuffer`, `InetAddress`, `Timestamp` to the list of Gryo supported classes.
+* Fixed Gryo serialization of `Class`.
+* Fixed GraphSON serialization of enums like `T`, `P`, etc. where values were overriding each other in the GraphSON type registry.
+* Fixed a bug in Gremlin-Python around `__.__()` and `__.start()`.
+* Fixed a bug around long serialization in Gremlin-Python when using Python3.
+* Deprecated `TraversalSource.withBindings()` as it is no longer needed in Gremlin-Java and never was needed for other variants.
+* Fixed a bug in Gremlin-Java `Bytecode` where anonymous traversals were not aware of parent bindings.
+* Fixed a bug in Gremlin-Java GraphSON deserialization around `P.within()` and `P.without()`.
+* Converted Spark process suite tests to "integration" tests.
+* Fixed a bug in `InlineFilterStrategy` having to do with folding `HasContainers` into `VertexStep`.
+* Deprecated `HasContainer.makeHasContainers()` which was used to dissect `AndP` and shouldn't be used at the TinkerPop-level.
+* `GraphTraversal.has()` now will try and fold-left `HasContainer` if end step is a `HasContainerHolder`.
+* Created explicit `P`-predicate methods for `GraphTraversal.hasXXX()`.
+* Fixed a bug in `FilterRankStrategy` around `where().by()` ordering.
 * Added another optimization in `RangeByIsCountStrategy`, that removes `count().is()` altogether if it's not needed.
 * Fixed a OLAP `MatchStep.clone()`-bug that occurs when the `match()` is in a local child.
 * Added another optimization in `RangeByIsCountStrategy`, that removes `count().is()` altogether if it's not needed.
@@ -36,22 +58,29 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a `NoSuchElementException` bug with `GroupXXXStep` where if the reduced `TraverserSet` is empty, don't add the key/value.
 * Fixed a `NullPointerException` bug with profiling `GroupSideEffectStep` in OLTP.
 * Improved ability to release resources in `GraphProvider` instances in the test suite.
+* Factored `GremlinPlugin` functionality out of gremlin-groovy and into gremlin-core - related classes were deprecated.
 * Added a `force` option for killing sessions without waiting for transaction close or timeout of a currently running job or multiple jobs.
 * Deprecated `Session.kill()` and `Session.manualKill()`.
+* Added `Traversal.promise()` method to allow for asynchronous traversal processing on "remote" traversals.
+* Deprecated `RemoteConnection.submit(Bytecode)` in favor of `submitAsync(Bytecode)`.
 * Added `choose(predicate,traversal)` and `choose(traversal,traversal)` to effect if/then-semantics (no else). Equivalent to `choose(x,y,identity())`.
 * Removed `ImmutablePath.TailPath` as it is no longer required with new recursion model.
 * Removed call stack recursion in `ImmutablePath`.
+* Gremlin-Python serializes `Bytecode` as an object (instead of a JSON string) when submit over the `RemoteConnection`.
+* Fixed the handling of the `DriverRemoteConnection` pass-through configurations to the driver.
 * `IncidentToAdjacentStrategy` now uses a hidden label marker model to avoid repeated recursion for invalidating steps.
 * `PathProcessorStrategy` can inline certain `where(traversal)`-steps in order to increase the likelihood of star-local children.
 * `SparkGraphComputer` no longer starts a worker iteration if the worker's partition is empty.
 * Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.
 * Deprecated the "performance" tests in `OptIn`.
+* Deprecated `getInstance()` methods in favor of `instance()` for better consistency with the rest of the API.
 * Block calls to "remote" traversal side-effects until the traversal read is complete which signifies an end to iteration.
 * Added `Pick.none` and `Pick.any` to the serializers and importers.
 * Added a class loader to `TraversalStrategies.GlobalCache` which guarantees strategies are registered prior to `GlobalCache.getStrategies()`.
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 * The root traversal now throws regular `NoSuchElementException` instead of `FastNoSuchElementException`. (*breaking*)
+* Added a short sleep to prevent traversal from finishing before it can be interrupted during `TraversalInterruptionComputerTest`.
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)
@@ -540,9 +569,16 @@ TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Returned a confirmation on session close from Gremlin Server.
+* Use non-default port for running tests on Gremlin Server.
 * Fully shutdown metrics services in Gremlin Server on shutdown.
 * Deprecated `tryRandomCommit()` in `AbstractGremlinTest` - the annotation was never added in 3.1.1, and was only deprecated via javadoc.
 * Minor fixes to various test feature requirements in `gremlin-test`.
+* Allow developers to pass options to `docker run` with TINKERPOP_DOCKER_OPTS environment variable
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-1556 Allow Hadoop to run on IPv6 systems
 
 [[release-3-1-5]]
 TinkerPop 3.1.5 (Release Date: October 17, 2016)

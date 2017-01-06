@@ -289,9 +289,11 @@ limitations under the License.
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
                         <exclude>**/goal.txt</exclude>
-                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/groovy/plugin/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/jsr223/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/ext/**</exclude>
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
@@ -1128,7 +1130,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-benchmark/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>
@@ -1148,11 +1150,20 @@ limitations under the License.
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java
                                     </sourcepath>
                                     <sourceFileIncludes>
+                                        <!-- jsr223 -->
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/jsr223/*.java
+                                        </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/jsr223/console/*.java
+                                        </include>
                                         <!-- structure -->
-                                        <include>org/apache/tinkerpop/gremlin/structure/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/*.java
                                         </include>
                                         <!-- io -->
-                                        <include>org/apache/tinkerpop/gremlin/structure/io/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/io/*.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java
@@ -1173,7 +1184,8 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWriter.java
                                         </include>
                                         <!-- process -->
-                                        <include>org/apache/tinkerpop/gremlin/process/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/*.java
                                         </include>
                                         <!-- computer -->
                                         <include>org/apache/tinkerpop/gremlin/process/computer/*.java
@@ -1188,7 +1200,8 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
                                         </include>
                                         <!-- traversal -->
-                                        <include>org/apache/tinkerpop/gremlin/process/traversal/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/traversal/*.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
@@ -74,7 +76,15 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
         register(GraphSONIo.class, null, new TinkerModuleV2d0());
     }
 
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #instance()}.
+     */
+    @Deprecated
     public static TinkerIoRegistryV2d0 getInstance() {
+        return INSTANCE;
+    }
+
+    public static TinkerIoRegistryV2d0 instance() {
         return INSTANCE;
     }
 
@@ -97,7 +107,9 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public TinkerGraph read(final Kryo kryo, final Input input, final Class<TinkerGraph> tinkerGraphClass) {
-            final TinkerGraph graph = TinkerGraph.open();
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
+            final TinkerGraph graph = TinkerGraph.open(conf);
             final int len = input.readInt();
             final byte[] bytes = input.readBytes(len);
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
@@ -184,7 +196,9 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public TinkerGraph deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final TinkerGraph graph = TinkerGraph.open();
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
+            final TinkerGraph graph = TinkerGraph.open(conf);
 
             final List<? extends Edge> edges;
             final List<? extends Vertex> vertices;

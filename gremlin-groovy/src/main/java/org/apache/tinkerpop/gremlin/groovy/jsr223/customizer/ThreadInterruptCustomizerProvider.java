@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import groovy.transform.ThreadInterrupt;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
@@ -27,7 +28,9 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
  * Injects checks for thread interruption into scripts.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced by a public class.
  */
+@Deprecated
 public class ThreadInterruptCustomizerProvider implements CompilerCustomizerProvider {
     @Override
     public CompilationCustomizer create() {

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DefaultImportCustomizerProviderTest {
+public class DefaultDefaultImportCustomizerProviderTest {
     static {
         SugarLoader.load();
     }

@@ -75,6 +75,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     /// where(global)
 
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(final Object v1Id);
+
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(final Object v1Id);
@@ -118,6 +120,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_whereXa_gtXbX_orXeqXbXXX_byXageX_byXweightX_byXweightX_selectXa_cX_byXnameX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX();
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -213,6 +217,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     }
 
     /// where(global)
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(convertToVertexId(graph, "marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh", "peter"), traversal);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -385,6 +397,15 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
                 "a", "josh", "c", "lop", "d", "peter"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(convertToVertexId(graph, "marko"));
+        printTraversalForm(traversal);
+        assertEquals("josh", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
 
     public static class Traversals extends WhereTest {
 
@@ -416,6 +437,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         /// where(global)
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX(final Object v1Id) {
+            return g.withSideEffect("a", Arrays.asList("josh", "peter")).V(v1Id).out("created").in("created").<String>values("name").where(P.within("a"));
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id) {
@@ -503,6 +529,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX() {
             return g.V().as("a").outE("created").as("b").inV().as("c").in("created").as("d").where("a", lt("b").or(gt("c")).and(neq("d"))).by("age").by("weight").by(in("created").values("age").min()).<String>select("a", "c", "d").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out().has("age").where(gt("a")).by("age").values("name");
         }
     }
 }

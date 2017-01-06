@@ -52,7 +52,9 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
         mockClientForCall(client);
 
         final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
-        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null);
+        final CompletableFuture<Void> ready = new CompletableFuture<>();
+        ready.complete(null);
+        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null, ready);
 
         assertEquals(1, sideEffects.keys().size());
         sideEffects.close();
@@ -73,7 +75,9 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
         mockClientForCall(client);
         mockClientForCall(client);
         final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
-        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null);
+        final CompletableFuture<Void> ready = new CompletableFuture<>();
+        ready.complete(null);
+        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null, ready);
 
         assertNotNull(sideEffects.get("test-0"));
         sideEffects.close();
@@ -93,7 +97,9 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
         mockClientForCall(client);
 
         final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
-        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null);
+        final CompletableFuture<Void> ready = new CompletableFuture<>();
+        ready.complete(null);
+        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null, ready);
 
         sideEffects.close();
         sideEffects.close();

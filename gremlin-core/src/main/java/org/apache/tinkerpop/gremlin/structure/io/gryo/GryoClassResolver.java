@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,6 +45,9 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.util.IdentityObjectIntMap;
 import org.apache.tinkerpop.shaded.kryo.util.IntMap;
 import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
+
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
 
 import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
 
@@ -108,6 +113,14 @@ public class GryoClassResolver implements ClassResolver {
             type = Path.class;
         else if (Lambda.class.isAssignableFrom(clazz))
             type = Lambda.class;
+        else if (ByteBuffer.class.isAssignableFrom(clazz))
+            type = ByteBuffer.class;
+        else if (Class.class.isAssignableFrom(clazz))
+            type = Class.class;
+        else if (InetAddress.class.isAssignableFrom(clazz))
+            type = InetAddress.class;
+        else if (ConnectiveP.class.isAssignableFrom(clazz))
+            type = P.class;
         else
             type = clazz;
 

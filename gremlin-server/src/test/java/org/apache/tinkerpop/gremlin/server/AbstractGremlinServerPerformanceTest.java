@@ -82,7 +82,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
         logger.info("Gremlin Server is started and ready for performance test to execute");
 
         host = System.getProperty("host", "localhost");
-        port = System.getProperty("port", "8182");
+        port = System.getProperty("port", "45940");
     }
 
     @AfterClass

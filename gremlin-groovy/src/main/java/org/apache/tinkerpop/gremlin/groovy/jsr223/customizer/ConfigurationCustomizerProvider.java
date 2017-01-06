@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
@@ -34,7 +35,9 @@ import java.util.Map;
  * control over its internals.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced by a public class.
  */
+@Deprecated
 public class ConfigurationCustomizerProvider implements CompilerCustomizerProvider {
 
     private final Map<String,Object> properties;

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.InputStream;
@@ -49,7 +50,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
 
     private static GremlinServer server;
     private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
-    private final Cluster cluster = Cluster.open();
+    private final Cluster cluster = TestClientFactory.open();
     //private final Cluster cluster = Cluster.build().maxContentLength(1024000).serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
@@ -87,6 +88,8 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
             put(Graph.GRAPH, RemoteGraph.class.getName());
             put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
             put(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g" + serverGraphName);
+            put("clusterConfiguration.port", TestClientFactory.PORT);
+            put("clusterConfiguration.hosts", "localhost");
             put("hidden.for.testing.only", graphGetter);
         }};
     }

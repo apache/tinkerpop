@@ -102,8 +102,6 @@ under the License.
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
-  def withBindings(self, bindings):
-    return self
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
     return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
 """)
@@ -157,10 +155,19 @@ under the License.
 ////////////////////////
 // AnonymousTraversal //
 ////////////////////////
-        pythonClass.append("class __(object):\n");
+        pythonClass.append(
+                """class __(object):
+  @staticmethod
+  def start():
+    return GraphTraversal(None, None, Bytecode())
+  @staticmethod
+  def __(*args):
+    return __.inject(*args)
+""")
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
+                findAll { !it.name.equals("__") && !it.name.equals("start") }.
                 collect { SymbolHelper.toPython(it.name) }.
                 unique().
                 sort { a, b -> a <=> b }.
@@ -176,7 +183,7 @@ under the License.
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
-                findAll { !it.name.equals("__") }.
+                findAll { !it.name.equals("__") && !it.name.equals("start") }.
                 collect { SymbolHelper.toPython(it.name) }.
                 unique().
                 sort { a, b -> a <=> b }.

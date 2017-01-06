@@ -39,7 +39,9 @@ import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopRemoteAcceptor}.
  */
+@Deprecated
 public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     private static final String USE_SUGAR = "useSugar";

@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.console
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 
-import java.util.concurrent.CompletableFuture
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -35,6 +33,8 @@ class Mediator {
     private final Console console
 
     private static String LINE_SEP = System.getProperty("line.separator")
+
+    public static final boolean useV3d3 = System.getProperty("plugins", "v3d2") == "v3d3"
 
     public Mediator(final Console console) {
         this.console = console

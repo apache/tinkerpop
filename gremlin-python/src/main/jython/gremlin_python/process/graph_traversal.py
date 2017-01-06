@@ -62,8 +62,6 @@ class GraphTraversalSource(object):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
-  def withBindings(self, bindings):
-    return self
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
     return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):
@@ -394,11 +392,14 @@ class GraphTraversal(Traversal):
 
 class __(object):
   @staticmethod
-  def V(*args):
-    return GraphTraversal(None, None, Bytecode()).V(*args)
+  def start():
+    return GraphTraversal(None, None, Bytecode())
   @staticmethod
   def __(*args):
-    return GraphTraversal(None, None, Bytecode()).__(*args)
+    return __.inject(*args)
+  @staticmethod
+  def V(*args):
+    return GraphTraversal(None, None, Bytecode()).V(*args)
   @staticmethod
   def addE(*args):
     return GraphTraversal(None, None, Bytecode()).addE(*args)
@@ -618,9 +619,6 @@ class __(object):
   @staticmethod
   def simplePath(*args):
     return GraphTraversal(None, None, Bytecode()).simplePath(*args)
-  @staticmethod
-  def start(*args):
-    return GraphTraversal(None, None, Bytecode()).start(*args)
   @staticmethod
   def store(*args):
     return GraphTraversal(None, None, Bytecode()).store(*args)
@@ -1043,11 +1041,6 @@ def simplePath(*args):
       return __.simplePath(*args)
 
 statics.add_static('simplePath', simplePath)
-
-def start(*args):
-      return __.start(*args)
-
-statics.add_static('start', start)
 
 def store(*args):
       return __.store(*args)

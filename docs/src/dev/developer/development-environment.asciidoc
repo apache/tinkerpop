@@ -65,7 +65,7 @@ Python Environment
 As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python 2.x] to work with the
 `gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
-and link:https://virtualenv.pypa.io/en/stable/[virtualenv].
+and link:https://virtualenv.pypa.io/en/stable/[virtualenv] (version 15.0.2 - older versions may cause build failures).
 
 Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
 done manually from the command line with:
@@ -152,7 +152,7 @@ Docker Integration
 ------------------
 
 TinkerPop provides a shell script, that can start several build tasks within a Docker container. The
-required Docker images will be built automatically if they don't exist yet. Thus the first invokation
+required Docker images will be built automatically if they don't exist yet. Thus the first invocation
 of the Docker script is expected to take some time.
 
 The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
@@ -166,10 +166,26 @@ supported:
 A list of command line options is provided by `docker/build.sh --help`. The container will install,
 configure and start all required dependencies, such as Hadoop.
 
+Options can be passed to Docker by setting the `TINKERPOP_DOCKER_OPTS` environment variable. A speed boost can
+be gained at the expense of memory by using tmpfs and the special directory `/usr/src/tinkermem`.
+
+[source,bash]
+.Build in-memory
+----
+TINKERPOP_DOCKER_OPTS="--tmpfs /usr/src/tinkermem:exec,mode=0755,rw,noatime,size=2000m"
+----
+
+[source,bash]
+.Disable IPv6 for Hadoop
+----
+TINKERPOP_DOCKER_OPTS="--sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1"
+----
+
 If the container is used to generate the user docs, it will start a web server and show the URL that
 is used to host the HTML docs.
 
 After finishing all tasks, the script will immediately destroy the container.
+
 
 IDE Setup with Intellij
 -----------------------

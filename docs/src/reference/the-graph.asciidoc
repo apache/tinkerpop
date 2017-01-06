@@ -813,7 +813,7 @@ final Graph graph = TinkerFactory.createModern();
 graph.io(IoCore.gryo()).writeGraph("tinkerpop-modern.kryo");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io(IoCore.gryo()).readGraph("tinkerpop-modern.kryo")'
+newGraph.io(IoCore.gryo()).readGraph("tinkerpop-modern.kryo");
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:

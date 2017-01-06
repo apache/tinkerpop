@@ -34,6 +34,7 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin}.
  */
 public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
 

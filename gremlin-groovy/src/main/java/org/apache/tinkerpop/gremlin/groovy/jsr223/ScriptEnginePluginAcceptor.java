@@ -34,7 +34,9 @@ import java.util.Set;
  * interact with them on initialization.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced.
  */
+@Deprecated
 public class ScriptEnginePluginAcceptor implements PluginAcceptor {
     private final ScriptEngine scriptEngine;
 

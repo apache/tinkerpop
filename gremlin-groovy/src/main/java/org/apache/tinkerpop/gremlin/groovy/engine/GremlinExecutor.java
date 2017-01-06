@@ -20,8 +20,12 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +37,7 @@ import javax.script.SimpleBindings;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,11 +56,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
@@ -79,7 +84,10 @@ public class GremlinExecutor implements AutoCloseable {
      */
     private ScriptEngines scriptEngines;
 
+    private GremlinScriptEngineManager gremlinScriptEngineManager;
+
     private final Map<String, EngineSettings> settings;
+    private final Map<String, Map<String, Map<String,Object>>> plugins;
     private final long scriptEvaluationTimeout;
     private final Bindings globalBindings;
     private final List<List<String>> use;
@@ -92,6 +100,7 @@ public class GremlinExecutor implements AutoCloseable {
     private final Set<String> enabledPlugins;
     private final boolean suppliedExecutor;
     private final boolean suppliedScheduledExecutor;
+    private boolean useGremlinScriptEngineManager;
 
     private GremlinExecutor(final Builder builder, final boolean suppliedExecutor,
                             final boolean suppliedScheduledExecutor) {
@@ -104,10 +113,22 @@ public class GremlinExecutor implements AutoCloseable {
         this.afterFailure = builder.afterFailure;
         this.use = builder.use;
         this.settings = builder.settings;
+        this.plugins = builder.plugins;
         this.scriptEvaluationTimeout = builder.scriptEvaluationTimeout;
         this.globalBindings = builder.globalBindings;
         this.enabledPlugins = builder.enabledPlugins;
-        this.scriptEngines = createScriptEngines();
+
+        this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
+        initializeGremlinScriptEngineManager();
+
+        // this is temporary so that we can have backward compatibilty to the old plugin system and ScriptEngines
+        // approach to configuring Gremlin Server and GremlinExecutor. This code/check should be removed with the
+        // deprecated code around this is removed.
+        if (!useGremlinScriptEngineManager)
+            this.scriptEngines = createScriptEngines();
+        else
+            this.scriptEngines = null;
+
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
     }
@@ -284,7 +305,9 @@ public class GremlinExecutor implements AutoCloseable {
 
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
-                final Object o = scriptEngines.eval(script, bindings, lang);
+                // do this weirdo check until the now deprecated ScriptEngines is gutted
+                final Object o = useGremlinScriptEngineManager ?
+                        gremlinScriptEngineManager.getEngineByName(lang).eval(script, bindings) : scriptEngines.eval(script, bindings, lang);
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some
@@ -327,8 +350,30 @@ public class GremlinExecutor implements AutoCloseable {
         return evaluationFuture;
     }
 
+    /**
+     * Evaluates bytecode with bindings for a specific language into a {@link Traversal}.
+     */
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings boundVars, final String language) throws ScriptException {
+        final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
+
+        final Bindings bindings = new SimpleBindings();
+        bindings.putAll(globalBindings);
+        bindings.putAll(boundVars);
+
+        return useGremlinScriptEngineManager ?
+                gremlinScriptEngineManager.getEngineByName(lang).eval(bytecode, bindings) : scriptEngines.eval(bytecode, bindings, lang);
+    }
+
+    /**
+     * @deprecated As of release 3.2.4, replaced by {@link #getScriptEngineManager()}.
+     */
+    @Deprecated
     public ScriptEngines getScriptEngines() {
         return this.scriptEngines;
+    }
+
+    public GremlinScriptEngineManager getScriptEngineManager() {
+        return this.gremlinScriptEngineManager;
     }
 
     public ExecutorService getExecutorService() {
@@ -396,10 +441,61 @@ public class GremlinExecutor implements AutoCloseable {
         return future;
     }
 
+    private void initializeGremlinScriptEngineManager() {
+        this.useGremlinScriptEngineManager = !plugins.entrySet().isEmpty();
+
+        for (Map.Entry<String, Map<String, Map<String,Object>>> config : plugins.entrySet()) {
+            final String language = config.getKey();
+            final Map<String, Map<String,Object>> pluginConfigs = config.getValue();
+            for (Map.Entry<String, Map<String,Object>> pluginConfig : pluginConfigs.entrySet()) {
+                try {
+                    final Class<?> clazz = Class.forName(pluginConfig.getKey());
+
+                    // first try instance() and if that fails try to use build()
+                    try {
+                        final Method instanceMethod = clazz.getMethod("instance");
+                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) instanceMethod.invoke(null));
+                    } catch (Exception ex) {
+                        final Method builderMethod = clazz.getMethod("build");
+                        Object pluginBuilder = builderMethod.invoke(null);
+
+                        final Class<?> builderClazz = pluginBuilder.getClass();
+                        final Map<String, Object> customizerConfigs = pluginConfig.getValue();
+                        final Method[] methods = builderClazz.getMethods();
+                        for (Map.Entry<String, Object> customizerConfig : customizerConfigs.entrySet()) {
+                            final Method configMethod = Stream.of(methods).filter(m -> {
+                                final Class<?> type = customizerConfig.getValue().getClass();
+                                return m.getName().equals(customizerConfig.getKey()) && m.getParameters().length <= 1
+                                        && m.getParameters()[0].getType().isAssignableFrom(type);
+                            }).findFirst()
+                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
+                            if (null == customizerConfig.getValue())
+                                pluginBuilder = configMethod.invoke(pluginBuilder);
+                            else
+                                pluginBuilder = configMethod.invoke(pluginBuilder, customizerConfig.getValue());
+                        }
+
+                        try {
+                            final Method appliesTo = builderClazz.getMethod("appliesTo");
+                            pluginBuilder = appliesTo.invoke(pluginBuilder, language);
+                        } catch (NoSuchMethodException ignored) {
+
+                        }
+
+                        final Method create = builderClazz.getMethod("create");
+                        gremlinScriptEngineManager.addPlugin((GremlinPlugin) create.invoke(pluginBuilder));
+                    }
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+    }
+
     private ScriptEngines createScriptEngines() {
         // plugins already on the path - ones static to the classpath
-        final List<GremlinPlugin> globalPlugins = new ArrayList<>();
-        ServiceLoader.load(GremlinPlugin.class).forEach(globalPlugins::add);
+        final List<org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin> globalPlugins = new ArrayList<>();
+        ServiceLoader.load(org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin.class).forEach(globalPlugins::add);
 
         return new ScriptEngines(se -> {
             // this first part initializes the scriptengines Map
@@ -410,7 +506,7 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             // use grabs dependencies and returns plugins to load
-            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
+            final List<org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -480,6 +576,8 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * Create a {@code Builder} and specify the first ScriptEngine to be included.
+     *
+     * @deprecated As of release 3.2.4, replaced by {@link #build()}.
      */
     public static Builder build(final String engineName, final List<String> imports,
                                 final List<String> staticImports, final List<String> scripts,
@@ -490,6 +588,9 @@ public class GremlinExecutor implements AutoCloseable {
     public final static class Builder {
         private long scriptEvaluationTimeout = 8000;
         private Map<String, EngineSettings> settings = new HashMap<>();
+
+        private Map<String, Map<String, Map<String,Object>>> plugins = new HashMap<>();
+
         private ExecutorService executorService = null;
         private ScheduledExecutorService scheduledExecutorService = null;
         private Set<String> enabledPlugins = new HashSet<>();
@@ -515,7 +616,10 @@ public class GremlinExecutor implements AutoCloseable {
          * @param staticImports A list of static imports for the engine.
          * @param scripts       A list of scripts to execute in the engine to initialize it.
          * @param config        Custom configuration map for the ScriptEngine
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)}.
          */
+        @Deprecated
         public Builder addEngineSettings(final String engineName, final List<String> imports,
                                          final List<String> staticImports, final List<String> scripts,
                                          final Map<String, Object> config) {
@@ -525,6 +629,17 @@ public class GremlinExecutor implements AutoCloseable {
             final Map<String, Object> m = null == config ? Collections.emptyMap() : config;
 
             settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
+            return this;
+        }
+
+        /**
+         * Add a configuration for a {@link GremlinPlugin} to the executor. The key is the fully qualified class name
+         * of the {@link GremlinPlugin} instance and the value is a map of configuration values. In that map, the key
+         * is the name of a builder method on the {@link GremlinPlugin} and the value is some argument to pass to that
+         * method.
+         */
+        public Builder addPlugins(final String engineName, final Map<String, Map<String,Object>> plugins) {
+            this.plugins.put(engineName, plugins);
             return this;
         }
 
@@ -553,7 +668,10 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Replaces any settings provided.
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)}.
          */
+        @Deprecated
         public Builder engineSettings(final Map<String, EngineSettings> settings) {
             this.settings = settings;
             return this;
@@ -611,7 +729,10 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * A set of maven coordinates for dependencies to be applied for the script engine instances.
+         *
+         * @deprecated As of release 3.2.4, not replaced.
          */
+        @Deprecated
         public Builder use(final List<List<String>> use) {
             this.use = use;
             return this;
@@ -619,7 +740,11 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Set of the names of plugins that should be enabled for the engine.
+         *
+         * @deprecated As of release 3.2.4, replaced by {@link #addPlugins(String, Map)} though behavior is not quite
+         *             the same.
          */
+        @Deprecated
         public Builder enabledPlugins(final Set<String> enabledPlugins) {
             this.enabledPlugins = enabledPlugins;
             return this;

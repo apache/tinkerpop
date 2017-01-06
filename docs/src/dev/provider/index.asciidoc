@@ -427,7 +427,7 @@ iterate.
 There is one method to implement on `RemoteConnection`:
 
 [source,java]
-public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
+public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
 
 Note that it returns a `RemoteTraversal`. This interface should also be implemented and in most cases implementers can
 simply extend the `AbstractRemoteTraversal`, which provides default implementations for all the `Traversal` methods

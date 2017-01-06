@@ -52,7 +52,6 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
-    private transient Bindings bindings = null;
 
     /**
      * Add a {@link TraversalSource} instruction to the bytecode.
@@ -61,10 +60,7 @@ public final class Bytecode implements Cloneable, Serializable {
      * @param arguments  the traversal source method arguments
      */
     public void addSource(final String sourceName, final Object... arguments) {
-        if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
-            this.bindings = (Bindings) arguments[0];
-            this.bindings.clear();
-        } else if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
+        if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
             final Class<TraversalStrategy>[] classes = new Class[arguments.length];
             for (int i = 0; i < arguments.length; i++) {
                 classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
@@ -72,10 +68,9 @@ public final class Bytecode implements Cloneable, Serializable {
                         (Class) arguments[i];
             }
             this.sourceInstructions.add(new Instruction(sourceName, classes));
-        } else {
+        } else
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
-            if (null != this.bindings) this.bindings.clear();
-        }
+        Bindings.clear();
     }
 
     /**
@@ -86,7 +81,7 @@ public final class Bytecode implements Cloneable, Serializable {
      */
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
-        if (null != this.bindings) this.bindings.clear();
+        Bindings.clear();
     }
 
     /**
@@ -118,7 +113,7 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     /**
-     * Get all the bindings (in a nested, recurssive manner) from all the arguments of all the instructions of this bytecode.
+     * Get all the bindings (in a nested, recursive manner) from all the arguments of all the instructions of this bytecode.
      *
      * @return a map of string variable and object value bindings
      */
@@ -273,8 +268,8 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     private final Object convertArgument(final Object argument, final boolean searchBindings) {
-        if (searchBindings && null != this.bindings) {
-            final String variable = this.bindings.getBoundVariable(argument);
+        if (searchBindings) {
+            final String variable = Bindings.getBoundVariable(argument);
             if (null != variable)
                 return new Binding<>(variable, convertArgument(argument, false));
         }

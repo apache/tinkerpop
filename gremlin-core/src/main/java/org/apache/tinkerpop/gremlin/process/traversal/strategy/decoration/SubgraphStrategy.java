@@ -340,14 +340,14 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
         @Deprecated
         /**
-         * @deprecated Since 3.2.2, use {@code Builder#vertices} instead.
+         * @deprecated As of release 3.2.2, replaced by {@code Builder#vertices}.
          */
         public Builder vertexCriterion(final Traversal<Vertex, ?> predicate) {
             return this.vertices(predicate);
         }
 
         /**
-         * @deprecated Since 3.2.2, use {@code Builder#edges} instead.
+         * @deprecated As of release 3.2.2, replaced by {@code Builder#edges}.
          */
         @Deprecated
         public Builder edgeCriterion(final Traversal<Edge, ?> predicate) {

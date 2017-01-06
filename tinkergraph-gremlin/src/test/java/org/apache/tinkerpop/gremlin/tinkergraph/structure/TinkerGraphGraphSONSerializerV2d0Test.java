@@ -65,14 +65,14 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     private final Mapper defaultMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
             .addCustomModule(GraphSONXModuleV2d0.build().create(false))
-            .addRegistry(TinkerIoRegistryV2d0.getInstance())
+            .addRegistry(TinkerIoRegistryV2d0.instance())
             .create();
 
     private final Mapper noTypesMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
             .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .typeInfo(TypeInfo.NO_TYPES)
-            .addRegistry(TinkerIoRegistryV2d0.getInstance())
+            .addRegistry(TinkerIoRegistryV2d0.instance())
             .create();
 
     /**

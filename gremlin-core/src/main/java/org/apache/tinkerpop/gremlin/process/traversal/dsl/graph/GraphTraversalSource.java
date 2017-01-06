@@ -45,7 +45,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -134,10 +133,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
+    @Deprecated
     public GraphTraversalSource withBindings(final Bindings bindings) {
         return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
     }
-    
+
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);

@@ -21,12 +21,17 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Sends a {@link Traversal} to a {@link RemoteConnection} and iterates back the results.
@@ -38,6 +43,7 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
     private RemoteTraversal<?, E> remoteTraversal;
+    private final AtomicReference<CompletableFuture<Traversal<?, E>>> traversalFuture = new AtomicReference<>(null);
 
     public RemoteStep(final Traversal.Admin traversal, final RemoteConnection remoteConnection) {
         super(traversal);
@@ -51,14 +57,26 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
-        if (null == this.remoteTraversal) {
-            try {
-                this.remoteTraversal = this.remoteConnection.submit(this.traversal.getBytecode());
-                this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
-            } catch (final RemoteConnectionException sce) {
-                throw new IllegalStateException(sce);
-            }
-        }
+        if (null == this.remoteTraversal) promise().join();
         return this.remoteTraversal.nextTraverser();
+    }
+
+    /**
+     * Submits the traversal asynchronously to a "remote" using {@link RemoteConnection#submitAsync(Bytecode)}.
+     */
+    public CompletableFuture<Traversal<?, E>> promise() {
+        try {
+            if (null == traversalFuture.get()) {
+                traversalFuture.set(this.remoteConnection.submitAsync(this.traversal.getBytecode()).<Traversal<?, E>>thenApply(t -> {
+                    this.remoteTraversal = (RemoteTraversal<?, E>) t;
+                    this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
+                    return traversal;
+                }));
+            }
+
+            return traversalFuture.get();
+        } catch (RemoteConnectionException rce) {
+            throw new IllegalStateException(rce);
+        }
     }
 }

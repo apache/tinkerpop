@@ -31,9 +31,18 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinGroovyScriptEngineConfigTest {
     @Test
+    public void shouldAddBaseScriptClassDeprecated() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new ConfigurationCustomizerProvider("ScriptBaseClass", BaseScriptForTesting.class.getName()),
+                new DefaultImportCustomizerProvider());
+
+        assertEquals("hello, stephen", engine.eval("hello('stephen')"));
+    }
+
+    @Test
     public void shouldAddBaseScriptClass() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new ConfigurationCustomizerProvider("ScriptBaseClass", BaseScriptForTesting.class.getName()), new DefaultImportCustomizerProvider());
+                new ConfigurationGroovyCustomizer("ScriptBaseClass", BaseScriptForTesting.class.getName()));
 
         assertEquals("hello, stephen", engine.eval("hello('stephen')"));
     }
