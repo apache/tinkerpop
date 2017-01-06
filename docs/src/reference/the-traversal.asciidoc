@@ -1480,6 +1480,10 @@ g.V().out('created').
     by(__.in('created').count()).
   order().by(select('b'),decr).
   select('a')
+g.V().has('name','marko').
+               project('out','in').
+                 by(outE().count()).
+                 by(inE().count())
 ----
 
 [[program-step]]
