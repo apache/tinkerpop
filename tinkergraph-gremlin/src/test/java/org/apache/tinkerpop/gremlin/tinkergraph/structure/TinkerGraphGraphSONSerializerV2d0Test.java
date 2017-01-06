@@ -490,7 +490,7 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
             writer.writeObject(out, t);
             final String json = out.toString();
 
-            Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
+            final Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
             //Map's equals should check each component of the tree recursively
             //on each it will call "equals()" which for Vertices will compare ids, which
             //is ok. Complete vertex deser is checked elsewhere.

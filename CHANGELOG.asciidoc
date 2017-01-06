@@ -36,6 +36,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Moved `NumberHelper` into the `org.apache.tinkerpop.gremlin.util` package.
 * Added `Pop.mixed` instead of using `null` to represent such semantics.
 * `select()`-step now defaults to using `Pop.last` instead of `Pop.mixed`.
+* Added `gremlin-io-test` module to validate IO formats.
+* `RequestMessage` and `ResponseMessage` are now registered with `GryoMapper` as part of the TinkerPop range of type identifiers.
 * Removed previously deprecated `Console` constructor that took a `String` as an argument from `gremlin-console`.
 * Removed previously deprecated `ConcurrentBindings` from `gremlin-groovy`.
 * Removed previously deprecated `ScriptExecutor` from `gremlin-groovy`.

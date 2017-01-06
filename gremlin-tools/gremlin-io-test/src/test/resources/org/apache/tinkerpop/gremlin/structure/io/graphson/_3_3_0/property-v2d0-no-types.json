@@ -1,0 +1,13 @@
+{
+  "key" : "since",
+  "value" : 2009,
+  "element" : {
+    "@type" : "g:Edge",
+    "@value" : {
+      "id" : 13,
+      "label" : "develops",
+      "outV" : 1,
+      "inV" : 10
+    }
+  }
+}

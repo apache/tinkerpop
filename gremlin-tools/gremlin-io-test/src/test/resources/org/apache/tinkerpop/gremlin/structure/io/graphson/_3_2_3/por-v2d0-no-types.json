@@ -1,0 +1,10 @@
+{
+  "predicate" : "or",
+  "value" : [ {
+    "predicate" : "gt",
+    "value" : 0
+  }, {
+    "predicate" : "within",
+    "value" : [ -1, -10, -100 ]
+  } ]
+}

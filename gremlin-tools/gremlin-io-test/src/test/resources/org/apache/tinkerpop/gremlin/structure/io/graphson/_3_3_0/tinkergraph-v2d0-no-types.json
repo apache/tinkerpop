@@ -1,0 +1,333 @@
+{
+  "vertices" : [ {
+    "id" : 1,
+    "label" : "person",
+    "properties" : {
+      "name" : [ {
+        "id" : 0,
+        "value" : "marko",
+        "vertex" : 1,
+        "label" : "name"
+      } ],
+      "location" : [ {
+        "id" : 6,
+        "value" : "san diego",
+        "vertex" : 1,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 1997,
+          "endTime" : 2001
+        }
+      }, {
+        "id" : 7,
+        "value" : "santa cruz",
+        "vertex" : 1,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2001,
+          "endTime" : 2004
+        }
+      }, {
+        "id" : 8,
+        "value" : "brussels",
+        "vertex" : 1,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2004,
+          "endTime" : 2005
+        }
+      }, {
+        "id" : 9,
+        "value" : "santa fe",
+        "vertex" : 1,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2005
+        }
+      } ]
+    }
+  }, {
+    "id" : 7,
+    "label" : "person",
+    "properties" : {
+      "name" : [ {
+        "id" : 1,
+        "value" : "stephen",
+        "vertex" : 7,
+        "label" : "name"
+      } ],
+      "location" : [ {
+        "id" : 10,
+        "value" : "centreville",
+        "vertex" : 7,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 1990,
+          "endTime" : 2000
+        }
+      }, {
+        "id" : 11,
+        "value" : "dulles",
+        "vertex" : 7,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2000,
+          "endTime" : 2006
+        }
+      }, {
+        "id" : 12,
+        "value" : "purcellville",
+        "vertex" : 7,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2006
+        }
+      } ]
+    }
+  }, {
+    "id" : 8,
+    "label" : "person",
+    "properties" : {
+      "name" : [ {
+        "id" : 2,
+        "value" : "matthias",
+        "vertex" : 8,
+        "label" : "name"
+      } ],
+      "location" : [ {
+        "id" : 13,
+        "value" : "bremen",
+        "vertex" : 8,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2004,
+          "endTime" : 2007
+        }
+      }, {
+        "id" : 14,
+        "value" : "baltimore",
+        "vertex" : 8,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2007,
+          "endTime" : 2011
+        }
+      }, {
+        "id" : 15,
+        "value" : "oakland",
+        "vertex" : 8,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2011,
+          "endTime" : 2014
+        }
+      }, {
+        "id" : 16,
+        "value" : "seattle",
+        "vertex" : 8,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2014
+        }
+      } ]
+    }
+  }, {
+    "id" : 9,
+    "label" : "person",
+    "properties" : {
+      "name" : [ {
+        "id" : 3,
+        "value" : "daniel",
+        "vertex" : 9,
+        "label" : "name"
+      } ],
+      "location" : [ {
+        "id" : 17,
+        "value" : "spremberg",
+        "vertex" : 9,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 1982,
+          "endTime" : 2005
+        }
+      }, {
+        "id" : 18,
+        "value" : "kaiserslautern",
+        "vertex" : 9,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2005,
+          "endTime" : 2009
+        }
+      }, {
+        "id" : 19,
+        "value" : "aachen",
+        "vertex" : 9,
+        "label" : "location",
+        "properties" : {
+          "startTime" : 2009
+        }
+      } ]
+    }
+  }, {
+    "id" : 10,
+    "label" : "software",
+    "properties" : {
+      "name" : [ {
+        "id" : 4,
+        "value" : "gremlin",
+        "vertex" : 10,
+        "label" : "name"
+      } ]
+    }
+  }, {
+    "id" : 11,
+    "label" : "software",
+    "properties" : {
+      "name" : [ {
+        "id" : 5,
+        "value" : "tinkergraph",
+        "vertex" : 11,
+        "label" : "name"
+      } ]
+    }
+  } ],
+  "edges" : [ {
+    "id" : 13,
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 1,
+    "properties" : {
+      "since" : 2009
+    }
+  }, {
+    "id" : 14,
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 1,
+    "properties" : {
+      "since" : 2010
+    }
+  }, {
+    "id" : 15,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 1,
+    "properties" : {
+      "skill" : 4
+    }
+  }, {
+    "id" : 16,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 1,
+    "properties" : {
+      "skill" : 5
+    }
+  }, {
+    "id" : 17,
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 7,
+    "properties" : {
+      "since" : 2010
+    }
+  }, {
+    "id" : 18,
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 7,
+    "properties" : {
+      "since" : 2011
+    }
+  }, {
+    "id" : 19,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 7,
+    "properties" : {
+      "skill" : 5
+    }
+  }, {
+    "id" : 20,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 7,
+    "properties" : {
+      "skill" : 4
+    }
+  }, {
+    "id" : 21,
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 8,
+    "properties" : {
+      "since" : 2012
+    }
+  }, {
+    "id" : 22,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 8,
+    "properties" : {
+      "skill" : 3
+    }
+  }, {
+    "id" : 23,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 8,
+    "properties" : {
+      "skill" : 3
+    }
+  }, {
+    "id" : 24,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 10,
+    "outV" : 9,
+    "properties" : {
+      "skill" : 5
+    }
+  }, {
+    "id" : 25,
+    "label" : "uses",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : 11,
+    "outV" : 9,
+    "properties" : {
+      "skill" : 3
+    }
+  }, {
+    "id" : 26,
+    "label" : "traverses",
+    "inVLabel" : "software",
+    "outVLabel" : "software",
+    "inV" : 11,
+    "outV" : 10
+  } ]
+}
