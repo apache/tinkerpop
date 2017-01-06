@@ -77,7 +77,6 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
             return this.duplicateSet.add(objects);
         }
-
     }
 
     @Override
@@ -128,7 +127,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        integrateChild(this.dedupTraversal);
+        this.integrateChild(this.dedupTraversal);
     }
 
     @Override
