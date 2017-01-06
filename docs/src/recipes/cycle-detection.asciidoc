@@ -59,3 +59,58 @@ g.V().as('a').repeat(both().simplePath()).emit(loops().is(gt(1))).
   both().where(eq('a')).path().
   dedup().by(unfold().order().by(id).dedup().fold())
 ----
+
+An interesting type of cycle is known as the Eulerian circuit which is a path taken in a graph where each edge is
+visited once and the path starts and ends with the same vertex. Consider the following graph, representative of an
+imaginary but geographically similar link:https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg[Königsberg]
+that happens to have an eighth bridge (the diagram depicts edge direction but direction won't be considered in the traversal):
+
+image:eulerian-circuit.png[width=500]
+
+Gremlin can detect if such a cycle exists with:
+
+[gremlin-groovy]
+----
+g.addV().property(id, 'blue').as('b').
+  addV().property(id, 'orange').as('o').
+  addV().property(id, 'red').as('r').
+  addV().property(id, 'green').as('g').
+  addE('bridge').from('g').to('b').
+  addE('bridge').from('g').to('o').
+  addE('bridge').from('g').to('r').
+  addE('bridge').from('g').to('r').
+  addE('bridge').from('o').to('b').
+  addE('bridge').from('o').to('b').
+  addE('bridge').from('o').to('r').
+  addE('bridge').from('o').to('r').iterate()
+g.V().sideEffect(outE("bridge").aggregate("bridges")).barrier().    <1>
+  repeat(bothE().                                                   <2>
+         or(__.not(select('e')),
+            __.not(filter(__.as('x').select(all, 'e').unfold().     <3>
+                   where(eq('x'))))).as('e').
+         otherV()).
+    until(select(all, 'e').count(local).as("c").                    <4>
+          select("bridges").count(local).where(eq("c"))).hasNext()
+----
+
+<1> Gather all the edges in a "bridges" side effect.
+<2> As mentioned earlier with the diagram, directionality is ignored as the traversal uses `bothE` and, later, `otherV`.
+<3> In continually traversing over both incoming and outgoing edges, this path is only worth continuing if the edges
+traversed thus far are only traversed once. That set of edges is maintained in "e".
+<4> The traversal should repeat until the number of edges traversed in "e" is equal to the total number gathered in
+the first step above, which would mean that the complete circuit has been made.
+
+Unlike Königsberg, with just seven bridges, a Eulerian circuit exists in the case with an eighth bridge. The first
+detected circuit can be displayed with:
+
+[gremlin-groovy,existing]
+----
+g.V().sideEffect(outE("bridge").aggregate("bridges")).barrier().
+  repeat(bothE().or(__.not(select('e')),
+                    __.not(filter(__.as('x').select(all, 'e').unfold().
+                           where(eq('x'))))).as('e').otherV()).
+    until(select(all, 'e').count(local).as("c").
+          select("bridges").count(local).where(eq("c"))).limit(1).
+  path().by(id).by(constant(" -> ")).
+  map {String.join("", it.get().objects())}
+----

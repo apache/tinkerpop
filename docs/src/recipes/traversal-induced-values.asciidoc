@@ -65,3 +65,63 @@ g.V().has('name', 'marko').as('marko').
   out('created').property('creator', select('marko').by('name'))
 g.V().has('name', 'marko').out('created').valueMap()
 ----
+
+In a more complex example of how this might work, consider a situation where the goal is to propagate a value stored on
+a particular vertex through one of more additional connected vertices using some value on the connecting edges to
+determine the value to assign. For example, the following graph depicts three "tank" vertices where the edges represent
+the direction a particular "tank" should drain and the "factor" by which it should do it:
+
+image:traversal-induced-values-1.png[width=700]
+
+If the traversal started at tank "a", then the value of "amount" on that tank would be used to calculate what the value
+of tank "b" was by multiplying it by the value of the "factor" property on the edge between vertices "a" and "b". In
+this case the amount of tank "b" would then be 50. Following this pattern, when going from tank "b" to tank "c", the
+value of the "amount" of tank "c" would be 5.
+
+image:traversal-induced-values-2.png[width=700]
+
+Using Gremlin `sack()`, this kind of operation could be specified as a single traversal:
+
+[gremlin-groovy]
+----
+g.addV(label, 'tank', 'name', 'a', 'amount', 100.0).as('a').
+  addV(label, 'tank', 'name', 'b', 'amount', 0.0).as('b').
+  addV(label, 'tank', 'name', 'c', 'amount', 0.0).as('c').
+  addE('drain').property('factor', 0.5).from('a').to('b').
+  addE('drain').property('factor', 0.1).from('b').to('c').iterate()
+a = g.V().has('name','a').next()
+g.withSack(a.value('amount')).
+  V(a).repeat(outE('drain').sack(mult).by('factor').
+              inV().property('amount', sack())).
+       until(__.outE('drain').count().is(0)).iterate()
+g.V().valueMap()
+----
+
+The "sack value" gets initialized to the value of tank "a". The traversal iteratively traverses out on the "drain"
+edges and uses `mult` to multiply the sack value by the value of "factor". The sack value at that point is then
+written to the "amount" of the current vertex.
+
+As shown in the previous example, `sack()` is a useful way to "carry" and manipulate a value that can be later used
+elsewhere in the traversal. Here is another example of its usage where it is utilized to increment all the "age" values
+in the modern toy graph by 10:
+
+[gremlin-groovy,modern]
+----
+g.withSack(0).V().has("age").
+  sack(assign).by("age").sack(sum).by(constant(10)).
+  property("age", sack()).valueMap()
+----
+
+In the above case, the sack is initialized to zero and as each vertex is iterated, the "age" is assigned to the sack
+with `sack(assign).by('age')`. That value in the sack is then incremented by the value `constant(10)` and assigned to
+the "age" property of the same vertex.
+
+This value the sack is incremented by need not be a constant. It could also be derived from the traversal itself.
+Using the same example, the "weight" property on the incident edges will be used as the value to add to the sack:
+
+[gremlin-groovy,modern]
+----
+g.withSack(0).V().has("age").
+  sack(assign).by("age").sack(sum).by(bothE().values("weight").sum()).
+  property("age", sack()).valueMap()
+----
