@@ -337,17 +337,16 @@ limitations under the License.
             <plugin>
                 <groupId>org.revapi</groupId>
                 <artifactId>revapi-maven-plugin</artifactId>
-                <version>0.7.0</version>
+                <version>0.8.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.revapi</groupId>
                         <artifactId>revapi-java</artifactId>
-                        <version>0.11.2</version>  
+                        <version>0.13.0</version>  
                     </dependency> 
                 </dependencies>
                 <configuration>
                     <skip>${revapi.skip}</skip>
-                    <failSeverity>potentiallyBreaking</failSeverity>
                     <analysisConfiguration><![CDATA[
                     {
                       "revapi": {
