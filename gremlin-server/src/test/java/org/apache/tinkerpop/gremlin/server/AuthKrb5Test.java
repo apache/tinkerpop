@@ -77,9 +77,10 @@ public class AuthKrb5Test extends AbstractGremlinServerIntegrationTest {
     }
 
     @After
-    public void teardownForEachTest() {
+    public void teardownForEachTest() throws Exception {
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.removeAppender(recordingAppender);
+        kdcServer.close();
     }
 
     /**

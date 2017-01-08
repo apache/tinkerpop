@@ -138,6 +138,7 @@ public class KdcFixture {
         ticketCacheFile.delete();
         serviceKeytabFile.delete();
         testDir.delete();
+        System.clearProperty("java.security.auth.login.config");
     }
 
     private void deletePrincipals() throws KrbException {
