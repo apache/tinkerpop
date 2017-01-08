@@ -22,6 +22,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.ietf.jgss.GSSException;
@@ -241,26 +243,21 @@ public class AuthKrb5Test extends AbstractGremlinServerIntegrationTest {
 //    }
 
 
-//    ToDo: make this into a test for gremlin-driver
-//    @Test
-//    public void shouldAuthenticateWithSerializeResultToString() throws Exception {
-//        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
-//        server.setUp();
-//        loginServiceUsingKeytab();
-//        loginClientUsingTicketCache();
-//        MessageSerializer serializer = new GryoMessageSerializerV1d0();
-//        Map config = new HashMap<String, Object>();
-//        config.put("serializeResultToString", true);
-//        serializer.configure(config, null);
-//        final Cluster cluster = Cluster.build().jaasEntry(TESTCONSOLE)
-//                .protocol(getServerPrincipalName()).addContactPoint(serverHostname).port(45940).enableSsl(false).serializer(serializer).create();
-//        final Client client = cluster.connect();
-//        try {
-//            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-//            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-//            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-//        } finally {
-//            cluster.close();
-//        }
-//    }
+    @Test
+    public void shouldAuthenticateWithSerializeResultToString() throws Exception {
+        MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        Map config = new HashMap<String, Object>();
+        config.put("serializeResultToString", true);
+        serializer.configure(config, null);
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
+        final Client client = cluster.connect();
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
 }

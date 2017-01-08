@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

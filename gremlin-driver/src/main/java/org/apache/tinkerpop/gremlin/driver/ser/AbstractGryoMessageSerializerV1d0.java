@@ -301,9 +301,12 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
         if (msg.getResult().getData() == null) return "null";
 
         // the IteratorHandler should return a collection so keep it as such
+        // Sasl authentication needs byte[] to pass unchanged
         final Object o = msg.getResult().getData();
         if (o instanceof Collection) {
             return ((Collection) o).stream().map(d -> null == d ? "null" : d.toString()).collect(Collectors.toList());
+        } else if (o instanceof byte[]) {
+            return o;
         } else {
             return o.toString();
         }
