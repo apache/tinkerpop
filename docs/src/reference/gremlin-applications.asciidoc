@@ -690,7 +690,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
 |connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
 |connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
-|connectionPool.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
+|connectionPool.keyPassword |The password of the `keyFile` if it is password-protected |_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
@@ -1035,8 +1035,8 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
-|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
+|ssl.keyPassword |The password of the `keyFile` if it is password-protected |_none_
+|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. (Not supported) |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
