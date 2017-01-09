@@ -34,13 +34,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -58,6 +58,8 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private final Set<String> dedupLabels;
     private Set<String> keepLabels;
     private boolean executingAtMaster = false;
+    private Map<Object, Traverser.Admin<S>> barrier;
+    private Iterator<Map.Entry<Object, Traverser.Admin<S>>> barrierIterator;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -67,7 +69,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.onGraphComputer && !this.executingAtMaster) return true;
-        traverser.setBulk(1);
+        traverser.setBulk(1L);
         if (null == this.dedupLabels) {
             return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
         } else {
@@ -89,6 +91,17 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
+        if (null != this.barrier) {
+            this.barrierIterator = this.barrier.entrySet().iterator();
+            this.barrier = null;
+        }
+        while (this.barrierIterator != null && this.barrierIterator.hasNext()) {
+            if (null == this.barrierIterator)
+                this.barrierIterator = this.barrier.entrySet().iterator();
+            final Map.Entry<Object, Traverser.Admin<S>> entry = this.barrierIterator.next();
+            if (this.duplicateSet.add(entry.getKey()))
+                return PathProcessor.processTraverserPathLabels(entry.getValue(), this.keepLabels);
+        }
         return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
@@ -114,7 +127,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        integrateChild(this.dedupTraversal);
+        this.integrateChild(this.dedupTraversal);
     }
 
     @Override
@@ -131,6 +144,8 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     public void reset() {
         super.reset();
         this.duplicateSet.clear();
+        this.barrier = null;
+        this.barrierIterator = null;
     }
 
     @Override
@@ -162,12 +177,12 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public boolean hasNextBarrier() {
-        return this.starts.hasNext();
+        return null != this.barrier || this.starts.hasNext();
     }
 
     @Override
     public Map<Object, Traverser.Admin<S>> nextBarrier() throws NoSuchElementException {
-        final Map<Object, Traverser.Admin<S>> map = new HashMap<>();
+        final Map<Object, Traverser.Admin<S>> map = null != this.barrier ? this.barrier : new HashMap<>();
         while (this.starts.hasNext()) {
             final Traverser.Admin<S> traverser = this.starts.next();
             final Object object;
@@ -180,25 +195,26 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
                 object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
             }
             if (!map.containsKey(object)) {
-                traverser.setBulk(1l);
-                traverser.set(DetachedFactory.detach(traverser.get(), true));
+                traverser.setBulk(1L);
+                // traverser.detach();
+                traverser.set(DetachedFactory.detach(traverser.get(), true)); // TODO: detect required detachment accordingly
                 map.put(object, traverser);
             }
         }
+        this.barrier = null;
+        this.barrierIterator = null;
         if (map.isEmpty())
             throw FastNoSuchElementException.instance();
         else
             return map;
-
     }
 
     @Override
     public void addBarrier(final Map<Object, Traverser.Admin<S>> barrier) {
-        IteratorUtils.removeOnNext(barrier.entrySet().iterator()).forEachRemaining(entry -> {
-            final Traverser.Admin<S> traverser = entry.getValue();
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
+        if (null == this.barrier)
+            this.barrier = new HashMap<>(barrier);
+        else
+            this.barrier.putAll(barrier);
     }
 
     @Override

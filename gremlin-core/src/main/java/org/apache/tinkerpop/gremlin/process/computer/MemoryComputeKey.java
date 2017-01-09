@@ -22,6 +22,8 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.function.BinaryOperator;
 
 /**
@@ -32,10 +34,10 @@ import java.util.function.BinaryOperator;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MemoryComputeKey<A> implements Serializable {
+public final class MemoryComputeKey<A> implements Serializable, Cloneable {
 
     private final String key;
-    private final BinaryOperator<A> reducer;
+    private BinaryOperator<A> reducer;
     private final boolean isTransient;
     private final boolean isBroadcast;
 
@@ -73,7 +75,25 @@ public final class MemoryComputeKey<A> implements Serializable {
         return object instanceof MemoryComputeKey && ((MemoryComputeKey) object).key.equals(this.key);
     }
 
+    @Override
+    public MemoryComputeKey<A> clone() {
+        try {
+            final MemoryComputeKey<A> clone = (MemoryComputeKey<A>) super.clone();
+            for (final Method method : this.reducer.getClass().getMethods()) {
+                if (method.getName().equals("clone") && 0 == method.getParameterCount()) {
+                    clone.reducer = (BinaryOperator<A>) method.invoke(this.reducer);
+                    break;
+                }
+            }
+            return clone;
+        } catch (final IllegalAccessException | InvocationTargetException | CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
     public static <A> MemoryComputeKey<A> of(final String key, final BinaryOperator<A> reducer, final boolean isBroadcast, final boolean isTransient) {
         return new MemoryComputeKey<>(key, reducer, isBroadcast, isTransient);
     }
+
+
 }

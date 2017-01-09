@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChainedComparator<S, C extends Comparable> implements Comparator<S>, Serializable {
+public final class ChainedComparator<S, C extends Comparable> implements Comparator<S>, Serializable, Cloneable {
 
-    private final List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
+    private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
     private final boolean isShuffle;
     private final boolean traversers;
 
@@ -65,5 +65,19 @@ public final class ChainedComparator<S, C extends Comparable> implements Compara
                 return comparison;
         }
         return 0;
+    }
+
+    @Override
+    public ChainedComparator<S, C> clone() {
+        try {
+            final ChainedComparator<S, C> clone = (ChainedComparator<S, C>) super.clone();
+            clone.comparators = new ArrayList<>();
+            for (final Pair<Traversal.Admin<S, C>, Comparator<C>> comparator : this.comparators) {
+                clone.comparators.add(new Pair<>(comparator.getValue0().clone(), comparator.getValue1()));
+            }
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

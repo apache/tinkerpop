@@ -90,12 +90,16 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return this.emitTraversal;
     }
 
+    public Traversal.Admin<S, S> getRepeatTraversal() {
+        return this.repeatTraversal;
+    }
+
     public List<Traversal.Admin<S, S>> getGlobalChildren() {
         return null == this.repeatTraversal ? Collections.emptyList() : Collections.singletonList(this.repeatTraversal);
     }
 
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        final List<Traversal.Admin<S, ?>> list = new ArrayList<>();
+        final List<Traversal.Admin<S, ?>> list = new ArrayList<>(2);
         if (null != this.untilTraversal)
             list.add(this.untilTraversal);
         if (null != this.emitTraversal)
@@ -121,6 +125,17 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             return StringFactory.stepString(this, untilString(), this.repeatTraversal, emitString());
         else
             return StringFactory.stepString(this, this.repeatTraversal, untilString(), emitString());
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        if (null != this.emitTraversal)
+            this.emitTraversal.reset();
+        if (null != this.untilTraversal)
+            this.untilTraversal.reset();
+        if (null != this.repeatTraversal)
+            this.repeatTraversal.reset();
     }
 
     private final String untilString() {
