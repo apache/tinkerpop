@@ -142,7 +142,7 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(6l, g.V().out().values("name").count());
         test(2l, g.V().out("knows").values("name").count());
         test(3l, g.V().in().has("name", "marko").count());
-        test(6l, g.V().repeat(__.dedup()).times(2).count());
+        test(0l, g.V().repeat(__.dedup()).times(2).count());
         test(6l, g.V().dedup().count());
         test(4l, g.V().hasLabel("person").order().by("age").count());
         test(1l, g.V().count().count());

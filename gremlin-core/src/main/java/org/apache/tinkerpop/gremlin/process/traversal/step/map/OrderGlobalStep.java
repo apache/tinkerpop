@@ -144,7 +144,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     ////////////////
 
-    public static final class OrderBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
+    public static final class OrderBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable, Cloneable {
 
         private ChainedComparator chainedComparator;
         private long limit;
@@ -156,6 +156,17 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         public OrderBiOperator(final ChainedComparator<S, ?> chainedComparator, final long limit) {
             this.chainedComparator = chainedComparator;
             this.limit = limit;
+        }
+
+        @Override
+        public OrderBiOperator<S> clone() {
+            try {
+                final OrderBiOperator<S> clone = (OrderBiOperator<S>) super.clone();
+                clone.chainedComparator = this.chainedComparator.clone();
+                return clone;
+            } catch (final CloneNotSupportedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
 
         @Override

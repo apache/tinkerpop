@@ -95,7 +95,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             final TraverserSet traverserSet = new TraverserSet<>();
             this.preTraversal.reset();
             this.preTraversal.addStart(traverser);
-            while(this.preTraversal.hasNext()) {
+            while (this.preTraversal.hasNext()) {
                 traverserSet.add(this.preTraversal.nextTraverser());
             }
             map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
@@ -131,6 +131,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
         clone.preTraversal = (Traversal.Admin<S, ?>) GroupStep.generatePreTraversal(clone.valueTraversal);
+        clone.setReducingBiOperator(new GroupBiOperator<>(clone.valueTraversal));
         return clone;
     }
 
@@ -157,7 +158,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     ///////////////////////
 
-    public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable, Cloneable {
 
         // size limit before Barrier.processAllStarts() to lazy reduce
         private static final int SIZE_LIMIT = 1000;
@@ -171,13 +172,27 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 this.valueTraversal = null;
                 this.barrierStep = null;
             } else {
-                this.valueTraversal = valueTraversal;
+                this.valueTraversal = valueTraversal.clone();
                 this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
             }
         }
 
         public GroupBiOperator() {
             // no-arg constructor for serialization
+        }
+
+        @Override
+        public GroupBiOperator<K, V> clone() {
+            try {
+                final GroupBiOperator<K, V> clone = (GroupBiOperator<K, V>) super.clone();
+                if (null != this.valueTraversal) {
+                    clone.valueTraversal = this.valueTraversal.clone();
+                    clone.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal).orElse(null);
+                }
+                return clone;
+            } catch (final CloneNotSupportedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
 
         @Override

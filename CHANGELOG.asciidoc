@@ -27,9 +27,14 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug in `LazyBarrierStrategy` where `profile()` was deactivating it accidentally.
+* Fixed a bug in `RepeatUnrollStrategy` where stateful `DedupGlobalStep` was cloned and thus, maintained two deduplication sets.
 * Added documentation around "terminal steps" in Gremlin: `hasNext()`, `next()`, `toList()`, etc.
 * Added `CloseableIterator` to allow `Graph` providers who open expensive resources a way to let users release them.
 * Fixed minor bug in `gremlin-driver` where closing a session-based `Client` without initializing it could generate an error.
+* Relieved synchronization pressure in various areas of `TinkerGraphComputer`.
+* Fixed an optimization bug in OLAP-based `DedupGlobalStep` where deduping occurred twice.
+* `MemoryComputeKey` now implements `Cloneable` which is useful for `BiOperator` reducers that maintain thread-unsafe state.
+* `TinkerGraphComputer` now supports distributed `Memory` with lock-free partition aggregation.
 * `TinkerGraph` Gryo and GraphSON deserialization is now configured to use multi-properties.
 * Changed behavior of `ElementHelper.areEqual(Property, Property)` to not throw exceptions with `null` arguments.
 * Added `GryoVersion` for future flexibility when introducing a new verison of Gryo and moved serializer registrations to it.

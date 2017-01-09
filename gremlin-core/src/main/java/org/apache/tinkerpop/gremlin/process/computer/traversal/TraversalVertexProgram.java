@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.SingleMessenger;
@@ -51,6 +50,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -251,8 +251,14 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 ((Barrier) this.traversalMatrix.getStepById(stepId)).done();
         }
         // define halted traversers
-        final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
-        vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
+        final VertexProperty<TraverserSet<Object>> property = vertex.property(HALTED_TRAVERSERS);
+        final TraverserSet<Object> haltedTraversers;
+        if (property.isPresent()) {
+            haltedTraversers = property.value();
+        } else {
+            haltedTraversers = new TraverserSet<>();
+            vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
+        }
         //////////////////
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> activeTraversers = new TraverserSet<>();
@@ -282,9 +288,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                         activeTraversers.add((Traverser.Admin) traverser);
                 });
             }
-            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || WorkerExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory, this.returnHaltedTraversers, this.haltedTraverserStrategy));
+            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || WorkerExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory, this.returnHaltedTraversers, haltedTraversers, this.haltedTraverserStrategy));
         } else   // ITERATION 1+
-            memory.add(VOTE_TO_HALT, WorkerExecutor.execute(vertex, messenger, this.traversalMatrix, memory, this.returnHaltedTraversers, this.haltedTraverserStrategy));
+            memory.add(VOTE_TO_HALT, WorkerExecutor.execute(vertex, messenger, this.traversalMatrix, memory, this.returnHaltedTraversers, haltedTraversers, this.haltedTraverserStrategy));
         // save space by not having an empty halted traversers property
         if (this.returnHaltedTraversers || haltedTraversers.isEmpty())
             vertex.<TraverserSet>property(HALTED_TRAVERSERS).remove();
@@ -363,6 +369,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             if (!clone.traversal.get().isLocked())
                 clone.traversal.get().applyStrategies();
             clone.traversalMatrix = new TraversalMatrix<>(clone.traversal.get());
+            clone.memoryComputeKeys = new HashSet<>();
+            for (final MemoryComputeKey memoryComputeKey : this.memoryComputeKeys) {
+                clone.memoryComputeKeys.add(memoryComputeKey.clone());
+            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
