@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `LazyBarrierStrategy` where `profile()` was deactivating it accidentally.
 * Added documentation around "terminal steps" in Gremlin: `hasNext()`, `next()`, `toList()`, etc.
 * Added `CloseableIterator` to allow `Graph` providers who open expensive resources a way to let users release them.
 * Fixed minor bug in `gremlin-driver` where closing a session-based `Client` without initializing it could generate an error.
