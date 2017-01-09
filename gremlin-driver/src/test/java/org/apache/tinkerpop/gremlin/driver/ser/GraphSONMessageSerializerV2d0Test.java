@@ -54,6 +54,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -489,6 +490,54 @@ public class GraphSONMessageSerializerV2d0Test {
         } catch (Exception e) {
             fail("should have succeeded serializing the unknown object to a string");
         }
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeResponseAndRequestFromObjectMapper() throws IOException {
+        ObjectMapper om = GraphSONMapper.build().version(GraphSONVersion.V2_0)
+                .addCustomModule(new GraphSONMessageSerializerGremlinV2d0.GremlinServerModule())
+                .create().createMapper();
+
+        final Map<String, Object> requestBindings = new HashMap<>();
+        requestBindings.put("x", 1);
+
+        final Map<String, Object> requestAliases = new HashMap<>();
+        requestAliases.put("g", "social");
+
+        RequestMessage requestMessage = RequestMessage.build("eval").processor("session").
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create();
+
+        String json = om.writeValueAsString(requestMessage);
+        RequestMessage readRequestMessage = om.readValue(json, RequestMessage.class);
+
+        assertEquals(requestMessage.getOp(), readRequestMessage.getOp());
+        assertEquals(requestMessage.getProcessor(), readRequestMessage.getProcessor());
+        assertEquals(requestMessage.getRequestId(), readRequestMessage.getRequestId());
+        assertEquals(requestMessage.getArgs(), readRequestMessage.getArgs());
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeResponseFromObjectMapper() throws IOException {
+        ObjectMapper om = GraphSONMapper.build().version(GraphSONVersion.V2_0)
+                .addCustomModule(new GraphSONMessageSerializerGremlinV2d0.GremlinServerModule())
+                .create().createMapper();
+        Graph graph = TinkerFactory.createModern();
+
+        ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
+                code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
+                result(Collections.singletonList(graph.vertices().next())).create();
+
+        String respJson = om.writeValueAsString(responseMessage);
+        ResponseMessage responseMessageRead = om.readValue(respJson, ResponseMessage.class);
+
+        assertEquals(responseMessage.getRequestId(), responseMessageRead.getRequestId());
+        assertEquals(responseMessage.getResult().getMeta(), responseMessageRead.getResult().getMeta());
+        assertEquals(responseMessage.getResult().getData(), responseMessageRead.getResult().getData());
+        assertEquals(responseMessage.getStatus().getAttributes(), responseMessageRead.getStatus().getAttributes());
+        assertEquals(responseMessage.getStatus().getCode().getValue(), responseMessageRead.getStatus().getCode().getValue());
+        assertEquals(responseMessage.getStatus().getCode().isSuccess(), responseMessageRead.getStatus().getCode().isSuccess());
+        assertEquals(responseMessage.getStatus().getMessage(), responseMessageRead.getStatus().getMessage());
     }
 
     private class FunObject {

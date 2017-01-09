@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
@@ -154,16 +155,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            final Map<String, Object> responseData = mapper.readValue(payload, mapTypeReference);
-            final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
-            final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
-            return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
-                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
-                    .result(result.get(SerTokens.TOKEN_DATA))
-                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
-                    .create();
+            return mapper.readValue(payload, ResponseMessage.class);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
             throw new SerializationException(ex);
@@ -180,8 +172,13 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
     public final static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
+
+            // SERIALIZERS
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
             addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
+
+            //DESERIALIZERS
+            addDeserializer(ResponseMessage.class, new ResponseMessageDeserializer());
         }
     }
 
@@ -249,6 +246,25 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
+        }
+    }
+    
+    public final static class ResponseMessageDeserializer extends AbstractObjectDeserializer<ResponseMessage> {
+        protected ResponseMessageDeserializer() {
+            super(ResponseMessage.class);
+        }
+        
+        @Override
+        public ResponseMessage createObject(Map<String, Object> data) {
+            final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
+            final Map<String, Object> result = (Map<String, Object>) data.get(SerTokens.TOKEN_RESULT);
+            return ResponseMessage.build(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()))
+                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
+                    .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
+                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                    .result(result.get(SerTokens.TOKEN_DATA))
+                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
+                    .create();
         }
     }
 }
