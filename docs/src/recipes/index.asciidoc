@@ -40,6 +40,8 @@ include::between-vertices.asciidoc[]
 
 include::centrality.asciidoc[]
 
+include::connected-components.asciidoc[]
+
 include::cycle-detection.asciidoc[]
 
 include::if-then-based-grouping.asciidoc[]
