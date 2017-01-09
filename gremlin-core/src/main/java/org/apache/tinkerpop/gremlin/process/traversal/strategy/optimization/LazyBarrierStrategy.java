@@ -65,8 +65,8 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal) ||
                 traversal.getTraverserRequirements().contains(TraverserRequirement.PATH) ||
-                (IS_TESTING && (TraversalHelper.hasStepOfAssignableClass(ProfileStep.class, TraversalHelper.getRootTraversal(traversal))) ||
-                        TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal)))) // necessary cause ProfileTest analyzes counts
+                (IS_TESTING && ((TraversalHelper.hasStepOfAssignableClass(ProfileStep.class, TraversalHelper.getRootTraversal(traversal)) ||
+                        TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal)))))) // necessary cause ProfileTest analyzes counts
             return;
 
         boolean foundFlatMap = false;
