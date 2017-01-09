@@ -110,7 +110,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                         !(currentStep instanceof Barrier) &&
                         !(currentStep.getNextStep() instanceof Barrier) &&
                         !(currentStep.getTraversal().getParent() instanceof MatchStep) &&
-                        (currentStep.getNextStep() instanceof EmptyStep && TraversalHelper.isGlobalChild(currentStep.getTraversal())))
+                        (!(currentStep.getNextStep() instanceof EmptyStep) || TraversalHelper.isGlobalChild(currentStep.getTraversal())))
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, this.standardBarrierSize), currentStep, traversal);
             }
         }
