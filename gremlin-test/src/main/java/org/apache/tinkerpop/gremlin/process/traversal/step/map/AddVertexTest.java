@@ -32,11 +32,17 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,6 +67,10 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX();
+
+    public abstract Traversal<Vertex, Map<String, List<String>>> get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX();
+
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name();
 
     // 3.0.0 DEPRECATIONS
     @Deprecated
@@ -275,12 +285,41 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(7, IteratorUtils.count(g.V()));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX() {
+        final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Map<String, List<String>> valueMap = traversal.next();
+            assertEquals(2, valueMap.size());
+            assertEquals(Collections.singletonList("test"), valueMap.get("temp"));
+            assertTrue(valueMap.get("name").equals(Collections.singletonList("ripple")) || valueMap.get("name").equals(Collections.singletonList("lop")));
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name();
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
 
     public static class Traversals extends AddVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
-            return g.V(v1Id).as("a").addV("animal").property("age", __.select("a").by("age")).property("name", "puppy");
+            return g.V(v1Id).as("a").addV("animal").property("age", select("a").by("age")).property("name", "puppy");
         }
 
         @Override
@@ -331,6 +370,16 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
             return g.addV(T.label, "person", "name", "stephen");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<String>>> get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX() {
+            return g.withSideEffect("a", "test").V().hasLabel("software").property("temp", select("a")).valueMap("name", "temp");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name() {
+            return g.withSideEffect("a", "marko").addV().property("name", select("a")).values("name");
         }
     }
 }
