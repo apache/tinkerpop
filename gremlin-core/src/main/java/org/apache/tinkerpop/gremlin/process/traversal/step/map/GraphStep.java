@@ -32,9 +32,12 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,7 +48,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable {
 
     protected final Class<E> returnClass;
     protected Object[] ids;
@@ -151,7 +154,6 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.iterator = EmptyIterator.instance();
     }
 
-
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.returnClass.hashCode();
@@ -159,6 +161,18 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
             result ^= id.hashCode();
         }
         return result;
+    }
+
+    /**
+     * Attemps to close an underlying iterator if it is of type {@link CloseableIterator}. Graph providers may choose
+     * to return this interface containing their vertices and edges if there are expensive resources that might need to
+     * be released at some point.
+     */
+    @Override
+    public void close() throws Exception {
+        if (iterator != null && iterator instanceof CloseableIterator) {
+            ((CloseableIterator) iterator).close();
+        }
     }
 
     /**

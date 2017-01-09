@@ -112,6 +112,39 @@ public class TraversalTest {
         assertThat(t.hasNext(), is(false));
     }
 
+    @Test
+    public void shouldCloseWithoutACloseableStep() throws Exception {
+        final MockTraversal<Integer> t = new MockTraversal<>(1, 2, 3, 4, 5, 6, 7);
+        assertThat(t.hasNext(), is(true));
+        t.close();
+        assertThat(t.isClosed(), is(false));
+    }
+
+    @Test
+    public void shouldCloseWithCloseableStep() throws Exception {
+        final MockTraversal<Integer> t = new MockTraversal<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7).iterator(), true);
+        assertThat(t.hasNext(), is(true));
+        t.close();
+        assertThat(t.isClosed(), is(true));
+    }
+
+    private static class MockCloseStep<E> extends MockStep<E> implements AutoCloseable {
+        private boolean closed = false;
+
+        public MockCloseStep(final Iterator<E> itty) {
+            super(itty);
+        }
+
+        boolean isClosed() {
+            return closed;
+        }
+
+        @Override
+        public void close() throws Exception {
+            closed = true;
+        }
+    }
+
     private static class MockStep<E> implements Step<E,E> {
 
         private final Iterator<E> itty;
@@ -206,7 +239,6 @@ public class TraversalTest {
         }
     }
 
-
     private static class MockTraversal<T> implements Traversal.Admin<T,T> {
 
         private Iterator<T> itty;
@@ -220,13 +252,17 @@ public class TraversalTest {
         }
 
         MockTraversal(final List<T> list) {
-            this(list.iterator());
+            this(list.iterator(), false);
         }
 
-        MockTraversal(final Iterator<T> itty) {
+        MockTraversal(final Iterator<T> itty, final boolean asCloseable) {
             this.itty = itty;
-            mockEndStep = new MockStep<>(itty);
+            mockEndStep = asCloseable ? new MockCloseStep<>(itty) : new MockStep<>(itty);
             steps = Collections.singletonList(mockEndStep);
+        }
+
+        boolean isClosed() {
+            return mockEndStep instanceof MockCloseStep && ((MockCloseStep) mockEndStep).isClosed();
         }
 
         @Override

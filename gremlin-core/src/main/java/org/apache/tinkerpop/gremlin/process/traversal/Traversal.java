@@ -254,9 +254,15 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
     }
 
+    /**
+     * Releases resources opened in any steps that implement {@link AutoCloseable}.
+     */
     @Override
     public default void close() throws Exception {
-        // do nothing by default
+        for(final Step<?,?> step : this.asAdmin().getSteps()) {
+            if(step instanceof AutoCloseable)
+                ((AutoCloseable) step).close();
+        }
     }
 
     /**
