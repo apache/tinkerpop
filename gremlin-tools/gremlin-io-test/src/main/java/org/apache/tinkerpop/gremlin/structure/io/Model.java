@@ -308,7 +308,7 @@ public class Model {
                 .before("3.0")
                 .match();
 
-        // TODO: need to get Request/ResponseMessages to be included - logic is held in GraphSONMessageSerializer
+        // TODO: need to get RequestMessage to be included - logic is held in GraphSONMessageSerializer
         incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
@@ -320,9 +320,6 @@ public class Model {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
                 .match();
-
-        // TODO: need to get Request/ResponseMessages to be included - logic is held in GraphSONMessageSerializer
-        incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
 
         // TODO: temporary problem? seems to be something breaking in vertex serialization
         if (title.equals("Standard Result"))
