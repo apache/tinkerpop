@@ -219,7 +219,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAddStartsProperly() {
-        final Traversal<Object, Vertex> traversal = out().out();
+        final Traversal<Vertex, Vertex> traversal = out().out();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
