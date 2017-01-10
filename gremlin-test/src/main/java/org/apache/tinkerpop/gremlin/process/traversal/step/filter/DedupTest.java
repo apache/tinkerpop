@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,7 +87,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_groupCount_selectXvaluesX_unfold_dedup();
 
-    public abstract Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup();
+    public abstract Traversal<Vertex, Collection<String>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup();
 
     public abstract Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count();
 
@@ -289,17 +290,17 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
-        final Traversal<Vertex, Collection<Vertex>> traversal = get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup();
+        final Traversal<Vertex, Collection<String>> traversal = get_g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup();
         printTraversalForm(traversal);
-        final Collection<Vertex> vertices = traversal.next();
+        final List<String> vertices = new ArrayList<>(traversal.next());
         assertFalse(traversal.hasNext());
         assertEquals(6, vertices.size());
-        assertTrue(vertices.contains(convertToVertex(graph, "marko")));
-        assertTrue(vertices.contains(convertToVertex(graph, "vadas")));
-        assertTrue(vertices.contains(convertToVertex(graph, "josh")));
-        assertTrue(vertices.contains(convertToVertex(graph, "peter")));
-        assertTrue(vertices.contains(convertToVertex(graph, "lop")));
-        assertTrue(vertices.contains(convertToVertex(graph, "ripple")));
+        assertEquals("josh", vertices.get(0));
+        assertEquals("lop", vertices.get(1));
+        assertEquals("marko", vertices.get(2));
+        assertEquals("peter", vertices.get(3));
+        assertEquals("ripple", vertices.get(4));
+        assertEquals("vadas", vertices.get(5));
     }
 
     @Test
@@ -384,8 +385,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
-            return g.V().as("a").repeat(both()).times(3).emit().as("b").group().by(select("a")).by(select("b").dedup().order().by(T.id).fold()).select(values).<Collection<Vertex>>unfold().dedup();
+        public Traversal<Vertex, Collection<String>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup() {
+            return g.V().as("a").repeat(both()).times(3).emit().values("name").as("b").group().by(select("a")).by(select("b").dedup().order().fold()).select(values).<Collection<String>>unfold().dedup();
         }
 
         @Override
