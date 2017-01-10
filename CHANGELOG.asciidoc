@@ -62,6 +62,9 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added SysV and systemd init scripts.
 * `GraphTraversal.valueMap(includeTokens,propertyKeys...)` now returns a `Map<Object,E>` since keys could be `T.id` or `T.label`.
 * Added `skip(long)` and `skip((Scope,long)` which call the `range(low,high)` equivalents with -1 as the high.
+* Added Kerberos authentication to `gremlin-server` for websockets and nio transport.
+* Added audit logging of authenticated users and gremlin queries to `gremlin-server`.
+* Fixed `gremlin-drivers`'s support for string results regarding returned byte arrays from `Sasl` authentication.
 
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------
