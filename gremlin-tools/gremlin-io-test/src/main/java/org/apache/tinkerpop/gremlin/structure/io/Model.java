@@ -308,9 +308,6 @@ public class Model {
                 .before("3.0")
                 .match();
 
-        // TODO: need to get RequestMessage to be included - logic is held in GraphSONMessageSerializer
-        incompatibilityList.addAll(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*partial.*").match());
-
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
         incompatibilityList.toArray(incompatibilities);
         addEntry("RequestMessage", obj, title, description, incompatibilities);
