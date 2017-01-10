@@ -76,6 +76,16 @@ public abstract class GroovyAddVertexTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.addV('animal').property('name', values('name')).property('name', 'an animal').property(values('name'), label())")
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, List<String>>> get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', 'test').V.hasLabel('software').property('temp', select('a')).valueMap('name', 'temp')")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', 'marko').addV().property('name', select('a')).name")
+        }
+
         ///////// DEPRECATED BELOW
 
         @Override
