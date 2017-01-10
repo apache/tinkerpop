@@ -46,6 +46,8 @@ include::cycle-detection.asciidoc[]
 
 include::duplicate-edge.asciidoc[]
 
+include::duplicate-vertex.asciidoc[]
+
 include::if-then-based-grouping.asciidoc[]
 
 include::pagination.asciidoc[]
