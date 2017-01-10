@@ -865,7 +865,6 @@ The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the l
 ----
 g.V().limit(2)
 g.V().range(0, 2)
-g.V().limit(2).toString()
 ----
 
 The `limit()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.
@@ -1924,9 +1923,9 @@ The `skip()`-step is analogous to <<range-step,`range()`-step>> save that the hi
 
 [gremlin-groovy,modern]
 ----
-g.V().skip(2)
-g.V().range(2, -1)
-g.V().skip(2).toString()
+g.V().values('age').order()
+g.V().values('age').order().skip(2)
+g.V().values('age').order().range(2, -1)
 ----
 
 The `skip()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.

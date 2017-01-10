@@ -812,15 +812,15 @@ public class __ {
     /**
      * @see GraphTraversal#skip(long)
      */
-    public static <A> GraphTraversal<A, A> skip(final long n) {
-        return __.<A>start().skip(n);
+    public static <A> GraphTraversal<A, A> skip(final long skip) {
+        return __.<A>start().skip(skip);
     }
 
     /**
      * @see GraphTraversal#skip(Scope, long)
      */
-    public static <A> GraphTraversal<A, A> skip(final Scope scope, final long n) {
-        return __.<A>start().skip(scope, n);
+    public static <A> GraphTraversal<A, A> skip(final Scope scope, final long skip) {
+        return __.<A>start().skip(scope, skip);
     }
 
     /**

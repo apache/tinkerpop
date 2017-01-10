@@ -1135,16 +1135,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new RangeLocalStep<>(this.asAdmin(), 0, limit));
     }
 
-    public default GraphTraversal<S, E> skip(final long n) {
-        this.asAdmin().getBytecode().addStep(Symbols.skip, n);
-        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), n, -1));
+    public default GraphTraversal<S, E> skip(final long skip) {
+        this.asAdmin().getBytecode().addStep(Symbols.skip, skip);
+        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), skip, -1));
     }
 
-    public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long n) {
-        this.asAdmin().getBytecode().addStep(Symbols.skip, scope, n);
+    public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long skip) {
+        this.asAdmin().getBytecode().addStep(Symbols.skip, scope, skip);
         return this.asAdmin().addStep(scope.equals(Scope.global)
-                ? new RangeGlobalStep<>(this.asAdmin(), n, -1)
-                : new RangeLocalStep<>(this.asAdmin(), n, -1));
+                ? new RangeGlobalStep<>(this.asAdmin(), skip, -1)
+                : new RangeLocalStep<>(this.asAdmin(), skip, -1));
     }
 
     public default GraphTraversal<S, E> tail() {
