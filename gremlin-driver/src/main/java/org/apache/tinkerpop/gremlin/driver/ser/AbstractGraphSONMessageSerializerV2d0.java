@@ -176,9 +176,11 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             // SERIALIZERS
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
             addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
+            addSerializer(RequestMessage.class, new RequestMessageSerializer());
 
             //DESERIALIZERS
             addDeserializer(ResponseMessage.class, new ResponseMessageDeserializer());
+            addDeserializer(RequestMessage.class, new RequestMessageDeserializer());
         }
     }
 
@@ -195,6 +197,62 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             jsonGenerator.writeRaw(":");
             jsonGenerator.writeRaw(json.toString());
             jsonGenerator.writeRaw(",");
+        }
+    }
+
+    public final static class RequestMessageSerializer extends StdSerializer<RequestMessage> {
+        public RequestMessageSerializer() {
+            super(RequestMessage.class);
+        }
+
+        @Override
+        public void serialize(final RequestMessage requestMessage, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            ser(requestMessage, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final RequestMessage requestMessage, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final TypeSerializer typeSerializer) throws IOException {
+            ser(requestMessage, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        public void ser(final RequestMessage requestMessage, final JsonGenerator jsonGenerator,
+                        final SerializerProvider serializerProvider,
+                        final TypeSerializer typeSerializer) throws IOException {
+            GraphSONUtil.writeStartObject(requestMessage, jsonGenerator, typeSerializer);
+
+            jsonGenerator.writeStringField(SerTokens.TOKEN_REQUEST, requestMessage.getRequestId().toString());
+            jsonGenerator.writeStringField(SerTokens.TOKEN_OP, requestMessage.getOp());
+            jsonGenerator.writeStringField(SerTokens.TOKEN_PROCESSOR, requestMessage.getProcessor());
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_ARGS, requestMessage.getArgs());
+
+            GraphSONUtil.writeEndObject(requestMessage, jsonGenerator, typeSerializer);
+        }
+    }
+
+    public final static class RequestMessageDeserializer extends AbstractObjectDeserializer<RequestMessage> {
+        protected RequestMessageDeserializer() {
+            super(RequestMessage.class);
+        }
+
+        @Override
+        public RequestMessage createObject(final Map<String, Object> data) {
+            final Map<String, Object> args = (Map<String, Object>) data.get(SerTokens.TOKEN_ARGS);
+            RequestMessage.Builder builder = RequestMessage.build(data.get(SerTokens.TOKEN_OP).toString())
+                    .overrideRequestId(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()));
+
+            if (data.containsKey(SerTokens.TOKEN_PROCESSOR))
+                builder = builder.processor(data.get(SerTokens.TOKEN_PROCESSOR).toString());
+
+            if (args != null) {
+                for (Map.Entry<String, Object> kv : args.entrySet()) {
+                    builder = builder.addArg(kv.getKey(), kv.getValue());
+                }
+            }
+
+            return builder.create();
         }
     }
 
@@ -238,7 +296,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
                 jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
             } else {
                 jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
-                Object result = responseMessage.getResult().getData();
+                final Object result = responseMessage.getResult().getData();
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
             }
 
@@ -255,7 +313,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
         }
         
         @Override
-        public ResponseMessage createObject(Map<String, Object> data) {
+        public ResponseMessage createObject(final Map<String, Object> data) {
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
             final Map<String, Object> result = (Map<String, Object>) data.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()))
