@@ -110,3 +110,18 @@ g.V().as("a").
   filter(select(values).is(gt(1))).
   select(keys)
 ----
+
+[[appendix-e]]
+_In the "crew" graph, find vertices that match on a complete set of multi-properties._
+
+[gremlin-groovy,theCrew]
+----
+places = ["centreville","dulles"];[]  // will not match as "purcellville" is missing
+g.V().not(has("location", without(places))).
+  where(values("location").is(within(places)).count().is(places.size())).
+  valueMap()
+places = ["centreville","dulles","purcellville"];[]
+g.V().not(has("location", without(places))).
+  where(values("location").is(within(places)).count().is(places.size())).
+  valueMap()
+----
