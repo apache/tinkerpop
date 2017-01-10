@@ -172,7 +172,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         @Override
         public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
             setA.addAll(setB);
-            if (Long.MAX_VALUE != this.limit && setA.bulkSize() > this.limit) {
+            if (this.limit != -1 && setA.bulkSize() > this.limit) {
                 if (this.chainedComparator.isShuffle())
                     setA.shuffle();
                 else
