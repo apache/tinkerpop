@@ -44,6 +44,8 @@ include::connected-components.asciidoc[]
 
 include::cycle-detection.asciidoc[]
 
+include::duplicate-edge.asciidoc[]
+
 include::if-then-based-grouping.asciidoc[]
 
 include::pagination.asciidoc[]
@@ -212,4 +214,20 @@ g.V().hasLabel("student").as("s").
     by(select("s").by("name")).
     by(group().by(select("t").by(valueMap("fromTime","toTime"))).
                by(select("c").dedup().values("name").fold())).next()
+----
+
+[[appendix-d]]
+_In the "modern" graph, with a duplicate edge added, find the vertex pairs that have more than one edge between them._
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
+g.V(1).outE("created")
+g.V().as("a").
+  out().as("b").
+  groupCount().
+    by(select("a","b")).
+  unfold().
+  filter(select(values).is(gt(1))).
+  select(keys)
 ----
