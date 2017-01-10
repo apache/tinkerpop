@@ -1135,6 +1135,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new RangeLocalStep<>(this.asAdmin(), 0, limit));
     }
 
+    public default GraphTraversal<S, E> skip(final long n) {
+        this.asAdmin().getBytecode().addStep(Symbols.skip, n);
+        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), n, -1));
+    }
+
+    public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long n) {
+        this.asAdmin().getBytecode().addStep(Symbols.skip, scope, n);
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+                ? new RangeGlobalStep<>(this.asAdmin(), n, -1)
+                : new RangeLocalStep<>(this.asAdmin(), n, -1));
+    }
+
     public default GraphTraversal<S, E> tail() {
         this.asAdmin().getBytecode().addStep(Symbols.tail);
         return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), 1));
@@ -1671,6 +1683,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String not = "not";
         public static final String range = "range";
         public static final String limit = "limit";
+        public static final String skip = "skip";
         public static final String tail = "tail";
         public static final String coin = "coin";
 

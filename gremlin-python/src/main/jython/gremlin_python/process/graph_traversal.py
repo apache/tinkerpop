@@ -349,6 +349,9 @@ class GraphTraversal(Traversal):
   def simplePath(self, *args):
     self.bytecode.add_step("simplePath", *args)
     return self
+  def skip(self, *args):
+    self.bytecode.add_step("skip", *args)
+    return self
   def store(self, *args):
     self.bytecode.add_step("store", *args)
     return self
@@ -634,6 +637,9 @@ class __(object):
   @staticmethod
   def simplePath(*args):
     return GraphTraversal(None, None, Bytecode()).simplePath(*args)
+  @staticmethod
+  def skip(*args):
+    return GraphTraversal(None, None, Bytecode()).skip(*args)
   @staticmethod
   def store(*args):
     return GraphTraversal(None, None, Bytecode()).store(*args)
@@ -1061,6 +1067,11 @@ def simplePath(*args):
       return __.simplePath(*args)
 
 statics.add_static('simplePath', simplePath)
+
+def skip(*args):
+      return __.skip(*args)
+
+statics.add_static('skip', skip)
 
 def store(*args):
       return __.store(*args)

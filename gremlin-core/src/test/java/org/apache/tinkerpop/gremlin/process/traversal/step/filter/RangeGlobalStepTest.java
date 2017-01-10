@@ -34,6 +34,7 @@ public class RangeGlobalStepTest extends StepTest {
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.limit(10L),
+                __.skip(10L),
                 __.range(1L, 10L)
         );
     }

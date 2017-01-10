@@ -58,7 +58,6 @@ public abstract class StepTest {
                 final Step instance2 = instances2.get(j);
                 if (i != j) {
                     assertNotEquals(instance1, instance2);
-                    assertNotEquals(instance1.hashCode(), instance2.hashCode());
                 } else {
                     assertEquals(instance1, instance2);
                     assertEquals(instance1.hashCode(), instance2.hashCode());

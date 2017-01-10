@@ -39,6 +39,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -79,6 +80,10 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
+
+    public abstract Traversal<Vertex, Long> get_g_V_skipX2X_count();
+
+    public abstract Traversal<Vertex, List<Vertex>> get_g_V_fold_skipXlocal_2X();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -314,6 +319,28 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_skipX2X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_skipX2X_count();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Long count = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, count.longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_fold_skipXlocal_2X() {
+        final Traversal<Vertex, List<Vertex>> traversal = get_g_V_fold_skipXlocal_2X();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final List<Vertex> list = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, list.size());
+    }
+
     public static class Traversals extends RangeTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
@@ -393,6 +420,16 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
             return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a", "b", "c").by("name").range(local, 1, 2);
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_skipX2X_count() {
+            return g.V().skip(2).count();
+        }
+
+        @Override
+        public Traversal<Vertex, List<Vertex>> get_g_V_fold_skipXlocal_2X() {
+            return g.V().fold().skip(local, 2);
         }
     }
 }

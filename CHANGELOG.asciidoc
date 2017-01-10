@@ -60,6 +60,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Changed `gremlin-benchmark` system property for the report location to `benchmarkReportDir` for consistency.
 * Added SysV and systemd init scripts.
 * `GraphTraversal.valueMap(includeTokens,propertyKeys...)` now returns a `Map<Object,E>` since keys could be `T.id` or `T.label`.
+* Added `skip(long)` and `skip((Scope,long)` which call the `range(low,high)` equivalents with -1 as the high.
 
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------
