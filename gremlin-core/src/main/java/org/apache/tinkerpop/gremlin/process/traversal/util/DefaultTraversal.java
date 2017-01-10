@@ -234,6 +234,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public DefaultTraversal<S, E> clone() {
         try {
             final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
+            clone.lastTraverser = EmptyTraverser.instance();
             clone.steps = new ArrayList<>();
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
