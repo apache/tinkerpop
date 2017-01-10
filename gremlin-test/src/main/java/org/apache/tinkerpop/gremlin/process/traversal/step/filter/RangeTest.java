@@ -81,7 +81,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageXskipX1X_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X();
 
     public abstract Traversal<Vertex, List<Double>> get_g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X();
 
@@ -321,8 +321,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXpersonX_order_byXageXskipX1X_valuesXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_order_byXageXskipX1X_valuesXnameX();
+    public void g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(Arrays.asList("marko", "josh", "peter"), traversal.toList());
@@ -420,8 +420,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageXskipX1X_valuesXnameX() {
-            return g.V().hasLabel("person").order().by("age").skip(1).values("name");
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X() {
+            return g.V().hasLabel("person").order().by("age").<String>values("name").skip(1);
         }
 
         @Override

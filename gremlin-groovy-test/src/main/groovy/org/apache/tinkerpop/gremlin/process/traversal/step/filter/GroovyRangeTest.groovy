@@ -110,8 +110,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageXskipX1X_valuesXnameX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').order.by('age').skip(1).values('name')")
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').order.by('age').values('name').skip(1)")
         }
 
         @Override
