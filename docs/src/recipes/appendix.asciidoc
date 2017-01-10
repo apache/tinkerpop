@@ -1,0 +1,112 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+Appendix
+========
+
+Many of the recipes are based on questions and answers provided on the gremlin-users mailing list. This section
+contains a number of traversals from the mailing list that do not easily fit any particular pattern (i.e. a recipe),
+but are nonetheless interesting and thus remain good tools for learning Gremlin.
+
+[[appendix-a]]
+_For each person in a "follows" graph, determine the number of followers and list their names._
+
+[gremlin-groovy]
+----
+g.addV('name','marko').as('marko').
+  addV('name','josh').as('josh').
+  addV('name','daniel').as('daniel').
+  addV('name','matthias').as('matthias').
+  addE('follows').from('josh').to('marko').
+  addE('follows').from('matthias').to('josh').
+  addE('follows').from('daniel').to('josh').
+  addE('follows').from('daniel').to('marko').iterate()
+g.V().as('p').
+  map(__.in('follows').values('name').fold()).
+  group().by(select('p').by('name')).
+          by(project('numFollowers','followers').
+               by(count(local)).by()).next()
+----
+
+[[appendix-b]]
+_In the "modern" graph, show each person, the software they worked on and the co-worker count for the software and
+the names of those co-workers._
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").as("p").
+  out("created").as("s").
+  map(__.in("created").
+    where(neq("p")).values("name").fold()).
+  group().by(select("p").by("name")).
+    by(group().by(select("s").by("name")).
+    by(project("numCoworkers","coworkers").
+         by(count(local)).by())).next()
+----
+
+[[appendix-c]]
+_Assuming a graph of students, classes and times, detect students who have a conflicting schedule._
+
+[gremlin-groovy]
+----
+g.addV(label, "student", "name", "Pete").as("s1").
+  addV(label, "student", "name", "Joe").as("s2").
+  addV(label, "class", "name", "Java's GC").as("c1").
+  addV(label, "class", "name", "FP Principles").as("c2").
+  addV(label, "class", "name", "Memory Management in C").as("c3").
+  addV(label, "class", "name", "Memory Management in C++").as("c4").
+  addV(label, "timeslot", "date", "11/25/2016", "fromTime", "10:00", "toTime", "11:00").as("t1").
+  addV(label, "timeslot", "date", "11/25/2016", "fromTime", "11:00", "toTime", "12:00").as("t2").
+  addE("attends").from("s1").to("c1").
+  addE("attends").from("s1").to("c2").
+  addE("attends").from("s1").to("c3").
+  addE("attends").from("s1").to("c4").
+  addE("attends").from("s2").to("c2").
+  addE("attends").from("s2").to("c3").
+  addE("allocated").from("c1").to("t1").
+  addE("allocated").from("c1").to("t2").
+  addE("allocated").from("c2").to("t1").
+  addE("allocated").from("c3").to("t2").
+  addE("allocated").from("c4").to("t2").iterate()
+g.V().hasLabel("student").as("s").
+  out("attends").as("c").
+  out("allocated").as("t").
+  select("s").
+  out("attends").
+  where(neq("c")).
+  out("allocated").
+  where(eq("t")).
+  group().
+    by(select("s").by("name")).
+    by(group().by(select("t").by(valueMap("fromTime","toTime"))).
+               by(select("c").dedup().values("name").fold())).next()
+----
+
+[[appendix-d]]
+_In the "modern" graph, with a duplicate edge added, find the vertex pairs that have more than one edge between them._
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
+g.V(1).outE("created")
+g.V().as("a").
+  out().as("b").
+  groupCount().
+    by(select("a","b")).
+  unfold().
+  filter(select(values).is(gt(1))).
+  select(keys)
+----
