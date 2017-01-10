@@ -137,3 +137,90 @@ g.V().values("age").map(union(identity(), constant(-1)).sum()) // subtract 1
 g.V().values("age").map(union(identity(), identity()).sum()) // multiply by 2 (simple)
 g.V().values("age").map(union(identity(), constant(2)).fold(1, mult)) // multiply by 2 (generally useful for multiplications by n):
 ----
+
+[[appendix-g]]
+_Dropping a vertex, as well as the vertices related to that dropped vertex that are connected by a "knows" edge in the
+"modern" graph_
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').outE()
+g.V().has('name','marko').sideEffect(out('knows').drop()).drop()
+g.V().has('name','marko')
+g.V(2,4,3)
+----
+
+[[appendix-h]]
+_For the specified graph, find all neighbor vertices connected to "A" as filtered by datetime, those neighbor vertices
+that don't have datetime vertices, and those neighbor vertices that have the label "dimon"._
+
+[gremlin-groovy]
+----
+g.addV().property("name", "A").as("a").
+  addV().property("name", "B").as("b").
+  addV().property("name", "C").as("c").
+  addV().property("name", "D").as("d").
+  addV().property("name", "E").as("e").
+  addV("dimon").property("name", "F").as("f").
+  addV().property("name", "G").as("g").property("date", 20160818).
+  addV().property("name", "H").as("h").property("date", 20160817).
+  addE("rel").from("a").to("b").
+  addE("rel").from("a").to("c").
+  addE("rel").from("a").to("d").
+  addE("rel").from("a").to("e").
+  addE("rel").from("c").to("f").
+  addE("occured_at").from("d").to("g").
+  addE("occured_at").from("e").to("h").iterate()
+// D and E have a valid datetime
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", gte(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// only E has a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", lte(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// only D has a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", gt(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// neither D nor E have a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", lt(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+----
+
+[[appendix-i]]
+_Use element labels in a `select`._
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").
+  both().
+  map(group().by(label).by(unfold())).as("b").
+  select("a","b").
+  map(union(project("a").by(select("a")), select("b")).
+  unfold().
+  group().
+    by(select(keys)).
+    by(select(values)))
+g.V().as("a").
+  both().
+  map(group().by(label).by(unfold())).as("b").
+  select("a","b").
+  group().
+    by(select("a")).
+    by(select("b").
+         group().
+           by(select(keys)).
+           by(select(values).fold())).
+    unfold().
+    map(union(select(keys).project("a").by(), select(values)).
+    unfold().
+    group().
+      by(select(keys).unfold()).
+      by(select(values).unfold().unfold().fold()))
+----
