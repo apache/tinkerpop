@@ -89,4 +89,10 @@ public final class OptionalStep<S> extends AbstractStep<S, S> implements Travers
     public Set<TraverserRequirement> getRequirements() {
         return this.optionalTraversal.getTraverserRequirements();
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.optionalTraversal.reset();
+    }
 }
