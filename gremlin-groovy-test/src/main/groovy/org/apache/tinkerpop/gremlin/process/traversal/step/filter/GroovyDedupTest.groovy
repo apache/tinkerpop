@@ -101,8 +101,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').repeat(both()).times(3).emit.as('b').group.by(select('a')).by(select('b').dedup.order.by(id).fold).select(values).unfold.dedup")
+        public Traversal<Vertex, Collection<String>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').repeat(both()).times(3).emit.name.as('b').group.by(select('a')).by(select('b').dedup.order.fold).select(values).unfold.dedup")
         }
 
         @Override
