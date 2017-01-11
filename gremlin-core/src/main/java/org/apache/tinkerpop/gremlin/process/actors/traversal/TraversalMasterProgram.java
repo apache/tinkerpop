@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -144,6 +145,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     }
 
     private void processTraverser(final Traverser.Admin traverser) {
+        this.attachTraverser(traverser);
         if (traverser.isHalted() || traverser.get() instanceof Element) {
             this.sendTraverser(traverser);
         } else {
@@ -163,9 +165,9 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
         if (traverser.isHalted())
             this.results.add(traverser);
         else if (traverser.get() instanceof Element)
-            this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().getPartition((Element) traverser.get())), traverser);
+            this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().getPartition((Element) traverser.get())), this.detachTraverser(traverser));
         else
-            this.master.send(this.master.address(), traverser);
+            this.master.send(this.master.address(), this.detachTraverser(traverser));
     }
 
     private void orderBarrier(final Step step) {
@@ -175,5 +177,14 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
             rangingBarrier.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
             barrier.addBarrier(rangingBarrier);
         }
+    }
+
+    private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
+        return true ? traverser : traverser.detach();
+    }
+
+    private void attachTraverser(final Traverser.Admin traverser) {
+        if (false && traverser.get() instanceof Element)
+            traverser.attach(Attachable.Method.get(this.master.partitioner().getPartition((Element) traverser.get())));
     }
 }

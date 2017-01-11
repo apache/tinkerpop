@@ -37,11 +37,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
+import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -57,8 +57,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     private boolean executed = false;
 
     private AkkaGraphActors(final Configuration configuration) {
-        this.configuration = new BaseConfiguration();
-        ConfigurationUtils.copy(configuration, this.configuration);
+        this.configuration = new SerializableConfiguration(configuration);
         this.configuration.setProperty(GRAPH_ACTORS, AkkaGraphActors.class.getCanonicalName());
         GraphActorsHelper.configure(this, this.configuration);
     }
@@ -98,7 +97,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
                         stream().
                         map(Class::getCanonicalName).
                         collect(Collectors.toList()).toString()));
-        final ActorSystem system = ActorSystem.create("traversal-" + UUID.randomUUID(), config);
+        final ActorSystem system = ActorSystem.create("traversal", config);
         final ActorsResult<R> result = new DefaultActorsResult<>();
         final Partitioner partitioner = this.workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), this.workers);
         try {
@@ -126,5 +125,6 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     public static AkkaGraphActors open() {
         return new AkkaGraphActors(new BaseConfiguration());
     }
+
 }
 

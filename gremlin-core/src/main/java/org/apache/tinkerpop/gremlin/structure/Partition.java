@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.structure.util.Host;
+
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.Iterator;
@@ -32,7 +34,7 @@ import java.util.UUID;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Partition {
+public interface Partition extends Host {
 
     /**
      * Whether or not this element was, is, or will be contained in this partition.

@@ -24,8 +24,12 @@ package org.apache.tinkerpop.gremlin.process.actors.traversal.message;
  */
 public final class SideEffectAddMessage {
 
-    private final String key;
-    private final Object value;
+    private String key;
+    private Object value;
+
+    private SideEffectAddMessage() {
+        // for serialization
+    }
 
     public SideEffectAddMessage(final String key, final Object value) {
         this.value = value;

@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashMap;
@@ -99,10 +100,10 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         //System.out.println(message + "::" + this.isLeader);
         if (message instanceof StartMessage) {
             // initial message from master that says: "start processing"
-            final GraphStep<?,?> step = (GraphStep) this.matrix.getTraversal().getStartStep();
+            final GraphStep<?, ?> step = (GraphStep) this.matrix.getTraversal().getStartStep();
             while (step.hasNext()) {
                 final Traverser.Admin<? extends Element> traverser = step.next();
-                this.self.send(traverser.isHalted() ? this.self.master() : this.self.address(), traverser);
+                this.self.send(traverser.isHalted() ? this.self.master() : this.self.address(), this.detachTraverser(traverser));
             }
         } else if (message instanceof Traverser.Admin) {
             this.processTraverser((Traverser.Admin) message);
@@ -147,25 +148,41 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     //////////////
 
     private void processTraverser(final Traverser.Admin traverser) {
-        assert !(traverser.get() instanceof Element) || !traverser.isHalted() || this.self.partition().contains((Element) traverser.get());
-        final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
-        step.addStart(traverser);
-        if (step instanceof Barrier) {
-            this.barriers.put(step.getId(), (Barrier) step);
-        } else {
-            while (step.hasNext()) {
-                this.sendTraverser(step.next());
+        assert !(traverser.get() instanceof Element) || this.self.partition().contains((Element) traverser.get());
+        if (traverser.isHalted())
+            this.sendTraverser(traverser);
+        else {
+            this.attachTraverser(traverser);
+            final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
+            step.addStart(traverser);
+            if (step instanceof Barrier) {
+                this.barriers.put(step.getId(), (Barrier) step);
+            } else {
+                while (step.hasNext()) {
+                    this.sendTraverser(step.next());
+                }
             }
         }
     }
 
     private void sendTraverser(final Traverser.Admin traverser) {
         this.voteToHalt = false;
+        this.detachTraverser(traverser);
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
         else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
             this.self.send(this.partitionToWorkerMap.get(this.self.partitioner().getPartition((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
+    }
+
+    private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
+        return true ? traverser : traverser.detach();
+    }
+
+    private final Traverser.Admin attachTraverser(final Traverser.Admin traverser) {
+        if (false)
+            traverser.attach(Attachable.Method.get(this.self.partition()));
+        return traverser;
     }
 }

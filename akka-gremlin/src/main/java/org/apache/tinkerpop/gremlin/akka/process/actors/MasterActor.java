@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.akka.process.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorSelection;
+import akka.actor.AddressFromURIString;
+import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.dispatch.RequiresMessageQueue;
 import akka.japi.pf.ReceiveBuilder;
+import akka.remote.RemoteScope;
 import org.apache.tinkerpop.gremlin.process.actors.Actor;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
@@ -61,9 +64,10 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
+            akka.actor.Address addr = AddressFromURIString.parse("akka.tcp://traversal@127.0.0.1:2552");
             final String workerPathString = "worker-" + partition.id();
             this.workers.add(new Address.Worker(workerPathString, partition.location()));
-            context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner), workerPathString);
+            context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner).withDeploy(new Deploy(new RemoteScope(addr))), workerPathString);
         }
         this.masterProgram = program.createMasterProgram(this);
         receive(ReceiveBuilder.matchAny(this.masterProgram::execute).build());

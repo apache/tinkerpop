@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.actors;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,6 +99,19 @@ public interface ActorProgram extends Cloneable {
      */
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public ActorProgram clone();
+
+    public static <A extends ActorProgram> A createActorProgram(final Graph graph, final Configuration configuration) {
+        try {
+            final Class<A> actorProgramClass = (Class) Class.forName(configuration.getString(ACTOR_PROGRAM));
+            final Constructor<A> constructor = actorProgramClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final A actorProgram = constructor.newInstance();
+            actorProgram.loadState(graph, configuration);
+            return actorProgram;
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
     /**
      * The Worker program is executed by a worker process in the {@link GraphActors} system.

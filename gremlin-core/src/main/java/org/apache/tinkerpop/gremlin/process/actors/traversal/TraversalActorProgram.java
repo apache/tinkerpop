@@ -44,7 +44,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Repe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +55,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalActorProgram<R> implements ActorProgram {
+public final class TraversalActorProgram<R> implements ActorProgram, Serializable {
 
     public static final String TRAVERSAL_ACTOR_PROGRAM_BYTECODE = "gremlin.traversalActorProgram.bytecode";
 
@@ -68,9 +70,11 @@ public final class TraversalActorProgram<R> implements ActorProgram {
 
     private Traversal.Admin<?, R> traversal;
     public TraverserSet<R> result = new TraverserSet<>();
+    private Configuration configuration;
 
     public TraversalActorProgram(final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
+        this.configuration = new SerializableConfiguration(configuration);
         final TraversalStrategies strategies = this.traversal.getStrategies().clone();
         strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
         // TODO: make TinkerGraph/etc. strategies smart about actors

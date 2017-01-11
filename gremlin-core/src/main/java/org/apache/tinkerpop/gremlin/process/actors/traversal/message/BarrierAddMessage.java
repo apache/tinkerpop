@@ -27,8 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
  */
 public final class BarrierAddMessage {
 
-    private final Object barrier;
-    private final String stepId;
+    private Object barrier;
+    private  String stepId;
+
+    private BarrierAddMessage() {
+        // for serialization
+    }
 
     public BarrierAddMessage(final Barrier barrier) {
         this.barrier = barrier.nextBarrier();

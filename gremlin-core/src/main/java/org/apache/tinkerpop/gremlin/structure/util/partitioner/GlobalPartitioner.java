@@ -19,19 +19,24 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.partitioner;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,12 +66,14 @@ public final class GlobalPartitioner implements Partitioner {
 
     private class GlobalPartition implements Partition {
 
-        private final Graph graph;
+        private transient Graph graph;
+        private final Map<String, Object> configuration = new HashMap<>();
         private final String id;
         private final InetAddress location;
 
         private GlobalPartition(final Graph graph) {
             this.graph = graph;
+            graph.configuration().getKeys().forEachRemaining(key -> configuration.put(key, graph.configuration().getProperty(key)));
             this.id = "global-" + graph.getClass().getSimpleName().toLowerCase();
             try {
                 this.location = InetAddress.getLocalHost();
@@ -82,11 +89,15 @@ public final class GlobalPartitioner implements Partitioner {
 
         @Override
         public Iterator<Vertex> vertices(final Object... ids) {
+            if(null == this.graph)
+                this.graph = GraphFactory.open(new MapConfiguration(this.configuration));
             return this.graph.vertices(ids);
         }
 
         @Override
         public Iterator<Edge> edges(final Object... ids) {
+            if(null == this.graph)
+                this.graph = GraphFactory.open(new MapConfiguration(this.configuration));
             return this.graph.edges(ids);
         }
 
