@@ -24,7 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.Set;
@@ -135,6 +138,14 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
         if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
             this.t = ((Attachable<T>) this.t).attach(method);
         return this.t;
+    }
+
+    @Override
+    public Admin<T> attach(final Host host) {
+        // you do not want to attach a path because it will reference graph objects not at the current vertex
+        if (!(this.t instanceof Path) || host instanceof Graph || host instanceof Partition)
+            this.t = host.attach(this.t);
+        return this;
     }
 
     @Override

@@ -22,6 +22,11 @@ package org.apache.tinkerpop.gremlin.structure.util;
  * A marker interface that identifies an object as something that an {@link Attachable} can connect to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Host {
+
+    public default <T> T attach(final T t) {
+        return t instanceof Attachable ? ((Attachable<T>) t).attach(Attachable.Method.get(this)) : t;
+    }
 }

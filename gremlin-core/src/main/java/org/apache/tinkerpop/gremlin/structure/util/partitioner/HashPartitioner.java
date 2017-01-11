@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.util.partitioner;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -38,11 +39,13 @@ import java.util.List;
 public final class HashPartitioner implements Partitioner {
 
     private final List<Partition> partitions = new ArrayList<>();
+    private final Partitioner basePartitioner;
 
     public HashPartitioner(final Partitioner basePartitioner, final int splits) {
-        for (final Partition partition : basePartitioner.getPartitions()) {
+        this.basePartitioner = basePartitioner;
+        for (final Partition partition : this.basePartitioner.getPartitions()) {
             for (int i = 0; i < splits; i++) {
-                this.partitions.add(new HashPartition(partition, i, splits));
+                this.partitions.add(new HashPartition(this, partition, i, splits));
             }
         }
     }
@@ -50,6 +53,11 @@ public final class HashPartitioner implements Partitioner {
     @Override
     public String toString() {
         return StringFactory.partitionerString(this);
+    }
+
+    @Override
+    public Graph getGraph() {
+        return this.basePartitioner.getGraph();
     }
 
     @Override
@@ -68,12 +76,14 @@ public final class HashPartitioner implements Partitioner {
 
     private static final class HashPartition implements Partition {
 
+        private final HashPartitioner hashPartitioner;
         private final Partition basePartition;
         private final int totalSplits;
         private final int splitId;
         private final String id;
 
-        private HashPartition(final Partition basePartition, final int splitId, final int totalSplits) {
+        private HashPartition(final HashPartitioner partitioner, final Partition basePartition, final int splitId, final int totalSplits) {
+            this.hashPartitioner = partitioner;
             this.basePartition = basePartition;
             this.totalSplits = totalSplits;
             this.splitId = splitId;
@@ -118,6 +128,11 @@ public final class HashPartitioner implements Partitioner {
         @Override
         public InetAddress location() {
             return this.basePartition.location();
+        }
+
+        @Override
+        public Partitioner partitioner() {
+            return this.hashPartitioner;
         }
     }
 }

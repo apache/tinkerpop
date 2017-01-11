@@ -180,11 +180,11 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     }
 
     private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
-        return true ? traverser : traverser.detach();
+        return TraversalActorProgram.DETACH ? traverser.detach() : traverser;
     }
 
     private void attachTraverser(final Traverser.Admin traverser) {
-        if (false && traverser.get() instanceof Element)
-            traverser.attach(Attachable.Method.get(this.master.partitioner().getPartition((Element) traverser.get())));
+        if (TraversalActorProgram.DETACH && traverser.get() instanceof Element)
+            traverser.attach(this.master.partitioner().getPartition((Element) traverser.get()));
     }
 }

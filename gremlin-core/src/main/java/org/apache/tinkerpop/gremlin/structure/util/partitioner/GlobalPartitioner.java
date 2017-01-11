@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.partitioner;
 
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -44,9 +44,13 @@ import java.util.Map;
 public final class GlobalPartitioner implements Partitioner {
 
     private final GlobalPartition partition;
+    private transient Graph graph;
+    private final Map<String, Object> graphConfiguration;
 
     public GlobalPartitioner(final Graph graph) {
-        this.partition = new GlobalPartition(graph);
+        this.graph = graph;
+        this.graphConfiguration = (Map) ConfigurationConverter.getMap(graph.configuration());
+        this.partition = new GlobalPartition(this);
     }
 
     @Override
@@ -60,20 +64,26 @@ public final class GlobalPartitioner implements Partitioner {
     }
 
     @Override
+    public Graph getGraph() {
+        if (null == this.graph)
+            this.graph = GraphFactory.open(new MapConfiguration(this.graphConfiguration));
+        return this.graph;
+    }
+
+    @Override
     public String toString() {
         return StringFactory.partitionerString(this);
     }
 
     private class GlobalPartition implements Partition {
 
-        private transient Graph graph;
+        private final GlobalPartitioner partitioner;
         private final Map<String, Object> configuration = new HashMap<>();
         private final String id;
         private final InetAddress location;
 
-        private GlobalPartition(final Graph graph) {
-            this.graph = graph;
-            graph.configuration().getKeys().forEachRemaining(key -> configuration.put(key, graph.configuration().getProperty(key)));
+        private GlobalPartition(final GlobalPartitioner partitioner) {
+            this.partitioner = partitioner;
             this.id = "global-" + graph.getClass().getSimpleName().toLowerCase();
             try {
                 this.location = InetAddress.getLocalHost();
@@ -89,16 +99,12 @@ public final class GlobalPartitioner implements Partitioner {
 
         @Override
         public Iterator<Vertex> vertices(final Object... ids) {
-            if(null == this.graph)
-                this.graph = GraphFactory.open(new MapConfiguration(this.configuration));
-            return this.graph.vertices(ids);
+            return this.partitioner.getGraph().vertices(ids);
         }
 
         @Override
         public Iterator<Edge> edges(final Object... ids) {
-            if(null == this.graph)
-                this.graph = GraphFactory.open(new MapConfiguration(this.configuration));
-            return this.graph.edges(ids);
+            return this.partitioner.getGraph().edges(ids);
         }
 
         @Override
@@ -124,6 +130,11 @@ public final class GlobalPartitioner implements Partitioner {
         @Override
         public InetAddress location() {
             return this.location;
+        }
+
+        @Override
+        public Partitioner partitioner() {
+            return this.partitioner;
         }
     }
 }

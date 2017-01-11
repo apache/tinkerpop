@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -279,6 +280,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          */
         @Override
         public T attach(final Function<Attachable<T>, T> method);
+
+
+        public Traverser.Admin<T> attach(final Host host);
 
         /**
          * Set the sideEffects of the {@link Traversal}. Given that traversers can move between machines,

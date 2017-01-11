@@ -26,13 +26,15 @@ import java.util.List;
  */
 public interface Partitioner {
 
+    public Graph getGraph();
+
     public List<Partition> getPartitions();
 
     public Partition getPartition(final Element element);
 
     public default Partition getPartition(final String id) {
-        for(final Partition partition : this.getPartitions()) {
-            if(partition.id().equals(id))
+        for (final Partition partition : this.getPartitions()) {
+            if (partition.id().equals(id))
                 return partition;
         }
         throw new IllegalArgumentException("The provided partition does not exist in the partitioner");

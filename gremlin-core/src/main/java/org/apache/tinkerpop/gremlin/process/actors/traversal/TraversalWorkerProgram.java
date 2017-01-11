@@ -177,12 +177,12 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     }
 
     private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
-        return true ? traverser : traverser.detach();
+        return TraversalActorProgram.DETACH ? traverser.detach() : traverser;
     }
 
     private final Traverser.Admin attachTraverser(final Traverser.Admin traverser) {
-        if (false)
-            traverser.attach(Attachable.Method.get(this.self.partition()));
+        if (TraversalActorProgram.DETACH)
+            traverser.attach(this.self.partition());
         return traverser;
     }
 }

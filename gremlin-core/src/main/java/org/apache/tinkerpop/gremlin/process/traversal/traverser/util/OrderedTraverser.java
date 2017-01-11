@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.util.Set;
 import java.util.function.Function;
@@ -112,12 +113,19 @@ public final class OrderedTraverser<T> implements Traverser.Admin<T> {
 
     @Override
     public Admin<T> detach() {
-        return this.internal.detach();
+        this.internal.detach();
+        return this;
     }
 
     @Override
     public T attach(final Function<Attachable<T>, T> method) {
         return this.internal.attach(method);
+    }
+
+    @Override
+    public Admin<T> attach(final Host host) {
+        this.internal = this.internal.attach(host);
+        return this;
     }
 
     @Override

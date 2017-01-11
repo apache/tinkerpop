@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.util.Collections;
 import java.util.Set;
@@ -67,6 +68,11 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     @Override
     public void set(final T t) {
 
+    }
+
+    @Override
+    public Traverser.Admin<T> attach(final Host host) {
+        return this;
     }
 
     @Override

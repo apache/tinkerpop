@@ -57,6 +57,8 @@ import java.util.Optional;
  */
 public final class TraversalActorProgram<R> implements ActorProgram, Serializable {
 
+    public static boolean DETACH = true;
+
     public static final String TRAVERSAL_ACTOR_PROGRAM_BYTECODE = "gremlin.traversalActorProgram.bytecode";
 
     private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(

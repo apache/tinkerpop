@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.net.InetAddress;
@@ -75,6 +76,8 @@ public interface Partition extends Host {
      * @return the physical location of the partition.
      */
     public InetAddress location();
+
+    public Partitioner partitioner();
 
     public static interface PhysicalPartition extends Partition {
     }

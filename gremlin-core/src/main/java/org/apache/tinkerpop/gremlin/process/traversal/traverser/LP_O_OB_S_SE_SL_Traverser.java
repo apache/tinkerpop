@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.Set;
@@ -58,6 +61,14 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     public Traverser.Admin<T> detach() {
         super.detach();
         this.path = ReferenceFactory.detach(this.path);
+        return this;
+    }
+
+    @Override
+    public Traverser.Admin<T> attach(final Host host) {
+        super.attach(host);
+        if (host instanceof Partition || host instanceof Graph)
+            this.path = host.attach(this.path);
         return this;
     }
 

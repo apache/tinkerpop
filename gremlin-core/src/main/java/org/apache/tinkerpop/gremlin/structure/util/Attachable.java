@@ -186,7 +186,7 @@ public interface Attachable<V> {
         }
 
         public static Optional<Vertex> getVertex(final Attachable<Vertex> attachableVertex, final Partition hostPartition) {
-            final Iterator<Vertex> iterator = hostPartition.vertices(attachableVertex.get().id());
+            final Iterator<Vertex> iterator = hostPartition.partitioner().getGraph().vertices(attachableVertex.get().id());
             return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
         }
 
@@ -207,7 +207,7 @@ public interface Attachable<V> {
         }
 
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Partition hostPartition) {
-            final Iterator<Edge> iterator = hostPartition.edges(attachableEdge.get().id());
+            final Iterator<Edge> iterator = hostPartition.partitioner().getGraph().edges(attachableEdge.get().id());
             return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
         }
 
@@ -238,7 +238,7 @@ public interface Attachable<V> {
 
         public static Optional<VertexProperty> getVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Partition hostPartition) {
             final VertexProperty baseVertexProperty = attachableVertexProperty.get();
-            final Iterator<Vertex> vertexIterator= hostPartition.vertices(baseVertexProperty.element().id());
+            final Iterator<Vertex> vertexIterator= hostPartition.partitioner().getGraph().vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
                 final Iterator<VertexProperty<Object>> vertexPropertyIterator = vertexIterator.next().properties(baseVertexProperty.key());
                 while (vertexPropertyIterator.hasNext()) {
