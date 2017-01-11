@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.akka.process.actors
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer
 import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.structure.io.IoCore
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import org.apache.tinkerpop.gremlin.util.TimeUtil
 import org.junit.Ignore
@@ -36,14 +37,9 @@ class AkkaGroovyPlayTest {
     public void testStuff() {
 
         def graph = TinkerGraph.open()
+        graph.io(IoCore.gryo()).readGraph("/Users/marko/Desktop/test.kryo")
         def g = graph.traversal()
         def a = graph.traversal().withProcessor(AkkaGraphActors.open().workers(8));
-        def r = new Random(123)
-
-        (1..1000000).each {
-            def vid = ["a", "b", "c", "d"].collectEntries { [it, r.nextInt() % 400000] }
-            graph.addVertex(T.id, vid)
-        }; []
 
         println TimeUtil.clockWithResult(1) { g.V().id().select("c").count().next() }
         println TimeUtil.clockWithResult(1) { g.V().id().select("c").dedup().count().next() }

@@ -82,17 +82,17 @@ public final class HashPartitioner implements Partitioner {
 
         @Override
         public boolean contains(final Element element) {
-            return (this.splitId == element.hashCode() % this.totalSplits) && this.basePartition.contains(element);
+            return (this.splitId == Math.abs(element.hashCode()) % this.totalSplits) && this.basePartition.contains(element);
         }
 
         @Override
         public Iterator<Vertex> vertices(final Object... ids) {
-            return IteratorUtils.filter(this.basePartition.vertices(ids), vertex -> this.splitId == vertex.hashCode() % this.totalSplits);
+            return IteratorUtils.filter(this.basePartition.vertices(ids), vertex -> this.splitId == Math.abs(vertex.hashCode()) % this.totalSplits);
         }
 
         @Override
         public Iterator<Edge> edges(final Object... ids) {
-            return IteratorUtils.filter(this.basePartition.edges(ids), edge -> this.splitId == edge.hashCode() % this.totalSplits);
+            return IteratorUtils.filter(this.basePartition.edges(ids), edge -> this.splitId == Math.abs(edge.hashCode()) % this.totalSplits);
         }
 
         @Override
