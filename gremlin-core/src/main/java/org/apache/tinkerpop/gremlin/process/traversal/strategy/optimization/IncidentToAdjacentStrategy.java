@@ -23,11 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -68,10 +71,52 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
-    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, TreeStep.class, LambdaHolder.class));
     private static final String MARKER = Graph.Hidden.hide("gremlin.incidentToAdjacent");
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(CyclicPathStep.class,
+            PathStep.class, SimplePathStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
+    }
+
+    /**
+     * Checks whether a given step is optimizable or not.
+     *
+     * @param step1 an edge-emitting step
+     * @param step2 a vertex-emitting step
+     * @return <code>true</code> if step1 is not labeled and emits edges and step2 emits vertices,
+     * otherwise <code>false</code>
+     */
+    private static boolean isOptimizable(final Step step1, final Step step2) {
+        if (step1 instanceof VertexStep && ((VertexStep) step1).returnsEdge() && step1.getLabels().isEmpty()) {
+            final Direction step1Dir = ((VertexStep) step1).getDirection();
+            if (step1Dir.equals(Direction.BOTH)) {
+                return step2 instanceof EdgeOtherVertexStep;
+            }
+            return step2 instanceof EdgeOtherVertexStep || (step2 instanceof EdgeVertexStep &&
+                    ((EdgeVertexStep) step2).getDirection().equals(step1Dir.opposite()));
+        }
+        return false;
+    }
+
+    /**
+     * Optimizes the given edge-emitting step and the vertex-emitting step by replacing them with a single
+     * vertex-emitting step.
+     *
+     * @param traversal the traversal that holds the given steps
+     * @param step1     the edge-emitting step to replace
+     * @param step2     the vertex-emitting step to replace
+     */
+    private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
+        final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        for (final String label : (Iterable<String>) step2.getLabels()) {
+            newStep.addLabel(label);
+        }
+        TraversalHelper.replaceStep(step1, newStep, traversal);
+        traversal.removeStep(step2);
+    }
+
+    public static IncidentToAdjacentStrategy instance() {
+        return INSTANCE;
     }
 
     @Override
@@ -98,46 +143,6 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
                 optimizeSteps(traversal, pair.getValue0(), pair.getValue1());
             }
         }
-    }
-
-    /**
-     * Checks whether a given step is optimizable or not.
-     *
-     * @param step1 an edge-emitting step
-     * @param step2 a vertex-emitting step
-     * @return <code>true</code> if step1 is not labeled and emits edges and step2 emits vertices,
-     * otherwise <code>false</code>
-     */
-    private static boolean isOptimizable(final Step step1, final Step step2) {
-        if (step1 instanceof VertexStep && ((VertexStep) step1).returnsEdge() && step1.getLabels().isEmpty()) {
-            final Direction step1Dir = ((VertexStep) step1).getDirection();
-            if (step1Dir.equals(Direction.BOTH)) {
-                return step2 instanceof EdgeOtherVertexStep;
-            }
-            return step2 instanceof EdgeVertexStep && ((EdgeVertexStep) step2).getDirection().equals(step1Dir.opposite());
-        }
-        return false;
-    }
-
-    /**
-     * Optimizes the given edge-emitting step and the vertex-emitting step by replacing them with a single
-     * vertex-emitting step.
-     *
-     * @param traversal the traversal that holds the given steps
-     * @param step1     the edge-emitting step to replace
-     * @param step2     the vertex-emitting step to replace
-     */
-    private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
-        final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
-        for (final String label : (Iterable<String>) step2.getLabels()) {
-            newStep.addLabel(label);
-        }
-        TraversalHelper.replaceStep(step1, newStep, traversal);
-        traversal.removeStep(step2);
-    }
-
-    public static IncidentToAdjacentStrategy instance() {
-        return INSTANCE;
     }
 
     @Override

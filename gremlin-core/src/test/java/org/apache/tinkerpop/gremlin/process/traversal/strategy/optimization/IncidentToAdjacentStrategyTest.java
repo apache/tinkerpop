@@ -45,15 +45,6 @@ public class IncidentToAdjacentStrategyTest {
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
 
-    @Test
-    public void doTest() {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IncidentToAdjacentStrategy.instance());
-        this.original.asAdmin().setStrategies(strategies);
-        this.original.asAdmin().applyStrategies();
-        assertEquals(this.optimized, this.original);
-    }
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
 
@@ -67,12 +58,24 @@ public class IncidentToAdjacentStrategyTest {
                 {__.bothE().bothV(), __.bothE().bothV()},
                 {__.bothE().inV(), __.bothE().inV()},
                 {__.bothE().outV(), __.bothE().outV()},
+                {__.outE().otherV(), __.out()},
+                {__.inE().otherV(), __.in()},
                 {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
                 {__.outE().inV().path(), __.outE().inV().path()},
-                {__.outE().inV().tree().as("a"), __.outE().inV().tree().as("a")},
+                {__.outE().inV().simplePath(), __.outE().inV().simplePath()},
+                {__.outE().inV().tree(), __.outE().inV().tree()},
                 {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
                 {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
                 {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")}});
+    }
+
+    @Test
+    public void doTest() {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(IncidentToAdjacentStrategy.instance());
+        this.original.asAdmin().setStrategies(strategies);
+        this.original.asAdmin().applyStrategies();
+        assertEquals(this.optimized, this.original);
     }
 }
 
