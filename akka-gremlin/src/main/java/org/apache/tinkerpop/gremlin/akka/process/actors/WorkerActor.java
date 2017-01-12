@@ -56,10 +56,10 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
         final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
         this.partitioner = new HashPartitioner(graph.partitioner(), 5);
         this.localPartition = this.partitioner.getPartitions().get(workerIndex);
-        this.self = new Address.Worker(this.createWorkerAddress(localPartition), localPartition.location());
+        this.self = new Address.Worker(this.createWorkerAddress(this.localPartition), this.localPartition.location());
         this.master = master;
         this.workers = new ArrayList<>();
-        for (final Partition partition : partitioner.getPartitions()) {
+        for (final Partition partition : this.partitioner.getPartitions()) {
             this.workers.add(new Address.Worker(this.createWorkerAddress(partition), partition.location()));
         }
         this.workerProgram = actorProgram.createWorkerProgram(this);

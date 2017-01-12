@@ -70,11 +70,10 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
-            akka.actor.Address addr = AkkaConfigFactory.getMasterActorDeployment();
             final String workerPathString = "worker-" + partition.id();
             this.workers.add(new Address.Worker(workerPathString, partition.location()));
             context().actorOf(Props.create(WorkerActor.class, configuration, this.workers.size()-1, this.master)
-                    .withDeploy(new Deploy(new RemoteScope(addr))),
+                    .withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getWorkerActorDeployment(partition)))),
                     workerPathString);
         }
         this.masterProgram = actorProgram.createMasterProgram(this);

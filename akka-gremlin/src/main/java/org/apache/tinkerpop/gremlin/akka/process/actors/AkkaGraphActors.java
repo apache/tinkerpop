@@ -65,6 +65,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     @Override
     public GraphActors<R> program(final ActorProgram actorProgram) {
         this.actorProgram = actorProgram;
+        actorProgram.storeState(this.configuration);
         return this;
     }
 
@@ -91,8 +92,8 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
         final ActorsResult<R> result = new DefaultActorsResult<>();
         try {
             final Configuration programConfiguration = new SerializableConfiguration(this.configuration);
-            this.actorProgram.storeState(programConfiguration);
             ConfigurationUtils.copy(graph.configuration(), programConfiguration);
+            ///////
             final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment();
             new Address.Master(system.actorOf(
                     Props.create(MasterActor.class, programConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))),

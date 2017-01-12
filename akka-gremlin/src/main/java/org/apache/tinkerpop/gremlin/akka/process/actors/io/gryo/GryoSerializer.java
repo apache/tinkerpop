@@ -58,8 +58,7 @@ public final class GryoSerializer implements Serializer {
                                         BarrierDoneMessage.class,
                                         SideEffectSetMessage.class,
                                         SideEffectAddMessage.class,
-                                        DefaultActorsResult.class,
-                                        Address.Master.class)).create();
+                                        DefaultActorsResult.class)).create();
     }
 
     public GryoMapper getGryoMapper() {

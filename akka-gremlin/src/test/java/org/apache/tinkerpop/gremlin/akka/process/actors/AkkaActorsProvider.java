@@ -133,9 +133,9 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             if (null != loadGraphWith) {
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, loadGraphDataViaHadoopConfig(loadGraphWith));
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+                if (loadGraphWith == LoadGraphWith.GraphData.CREW)
+                    put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             }
-            if (loadGraphWith == LoadGraphWith.GraphData.CREW)
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         }};
     }
 
