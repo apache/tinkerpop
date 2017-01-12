@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.akka.process.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorSelection;
-import akka.actor.AddressFromURIString;
 import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.dispatch.RequiresMessageQueue;
@@ -32,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.actors.Actor;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
+import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -60,7 +60,8 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     public MasterActor(final Configuration configuration, final ActorsResult<?> result) {
         final Graph graph = GraphFactory.open(configuration);
         final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
-        this.partitioner = new HashPartitioner(graph.partitioner(), 5);
+        final int workers = configuration.getInt(GraphActors.GRAPH_ACTORS_WORKERS, 1);
+        this.partitioner = workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), workers);
         this.result = result;
         try {
             this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
@@ -70,11 +71,12 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
-            final String workerPathString = "worker-" + partition.id();
-            this.workers.add(new Address.Worker(workerPathString, partition.location()));
-            context().actorOf(Props.create(WorkerActor.class, configuration, this.workers.size()-1, this.master)
-                    .withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getWorkerActorDeployment(partition)))),
-                    workerPathString);
+            final Address.Worker workerAddress = new Address.Worker("worker-" + partition.id(), partition.location());
+            this.workers.add(workerAddress);
+            context().actorOf(
+                    Props.create(WorkerActor.class, configuration, partition.id(), this.master)
+                            .withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getWorkerActorDeployment(partition)))),
+                    workerAddress.getId());
         }
         this.masterProgram = actorProgram.createMasterProgram(this);
         receive(ReceiveBuilder.matchAny(this.masterProgram::execute).build());

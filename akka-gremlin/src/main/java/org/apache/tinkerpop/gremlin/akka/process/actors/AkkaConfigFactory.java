@@ -72,6 +72,6 @@ final class AkkaConfigFactory {
 
     static Address getWorkerActorDeployment(final Partition partition) {
         final String location = partition.location().isSiteLocalAddress() ? "127.0.0.1" : partition.location().getHostAddress().toString();
-        return AddressFromURIString.parse("akka.tcp://traversal@" + location + ":2552");
+        return AddressFromURIString.parse("akka.tcp://tinkerpop@" + location + ":2552");
     }
 }

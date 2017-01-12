@@ -27,6 +27,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.actors.Actor;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
+import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -51,11 +52,12 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
-    public WorkerActor(final Configuration configuration, final int workerIndex, final Address.Master master) {
+    public WorkerActor(final Configuration configuration, final String partitionId, final Address.Master master) {
         final Graph graph = GraphFactory.open(configuration);
         final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
-        this.partitioner = new HashPartitioner(graph.partitioner(), 5);
-        this.localPartition = this.partitioner.getPartitions().get(workerIndex);
+        final int workers = configuration.getInt(GraphActors.GRAPH_ACTORS_WORKERS, 1);
+        this.partitioner = workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), workers);
+        this.localPartition = this.partitioner.getPartition(partitionId);
         this.self = new Address.Worker(this.createWorkerAddress(this.localPartition), this.localPartition.location());
         this.master = master;
         this.workers = new ArrayList<>();

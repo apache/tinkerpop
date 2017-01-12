@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +77,6 @@ public final class GlobalPartitioner implements Partitioner {
     private class GlobalPartition implements Partition {
 
         private final GlobalPartitioner partitioner;
-        private final Map<String, Object> configuration = new HashMap<>();
         private final String id;
         private final InetAddress location;
 

@@ -28,7 +28,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
-import org.apache.tinkerpop.gremlin.process.actors.Address;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.util.GraphActorsHelper;
@@ -36,8 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -47,7 +44,6 @@ import java.util.concurrent.Future;
 public final class AkkaGraphActors<R> implements GraphActors<R> {
 
     private ActorProgram actorProgram;
-    private int workers = 1;
     private Configuration configuration;
     private boolean executed = false;
 
@@ -71,7 +67,6 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
 
     @Override
     public GraphActors<R> workers(final int workers) {
-        this.workers = workers;
         this.configuration.setProperty(GRAPH_ACTORS_WORKERS, workers);
         return this;
     }
@@ -88,20 +83,14 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
 
-        final ActorSystem system = ActorSystem.create("traversal", AkkaConfigFactory.generateAkkaConfig(this.actorProgram));
+        final ActorSystem system = ActorSystem.create("tinkerpop", AkkaConfigFactory.generateAkkaConfig(this.actorProgram));
         final ActorsResult<R> result = new DefaultActorsResult<>();
-        try {
-            final Configuration programConfiguration = new SerializableConfiguration(this.configuration);
-            ConfigurationUtils.copy(graph.configuration(), programConfiguration);
-            ///////
-            final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment();
-            new Address.Master(system.actorOf(
-                    Props.create(MasterActor.class, programConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))),
-                    "master").path().toString(),
-                    InetAddress.getByName(masterAddress.host().get()));
-        } catch (final UnknownHostException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        final Configuration finalConfiguration = new SerializableConfiguration(this.configuration);
+        ConfigurationUtils.copy(graph.configuration(), finalConfiguration);
+        ///////
+        final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment();
+        system.actorOf(Props.create(MasterActor.class, finalConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))), "master");
+
         return CompletableFuture.supplyAsync(() -> {
             while (!system.isTerminated()) {
 
