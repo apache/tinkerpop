@@ -623,6 +623,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed bug in `IncidentToAdjacentStrategy`, it was missing some invalidating steps.
 * Returned a confirmation on session close from Gremlin Server.
 * Use non-default port for running tests on Gremlin Server.
 * Fully shutdown metrics services in Gremlin Server on shutdown.
