@@ -26,7 +26,7 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.tinkerpop.gremlin.akka.process.actors.io.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
@@ -42,6 +42,8 @@ import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -91,12 +93,23 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
         if (this.executed)
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
-        final Config config = ConfigFactory.defaultApplication().withValue("message-priorities",
-                ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().
-                        orElse(Collections.singletonList(Object.class)).
-                        stream().
-                        map(Class::getCanonicalName).
-                        collect(Collectors.toList()).toString()));
+        final Map<String, String> registeredGryoClasses = new HashMap<>();
+        new GryoSerializer().getGryoMapper().getRegisteredClasses().stream().filter(clazz -> !clazz.isArray()).forEach(clazz -> {
+            int index = clazz.getCanonicalName().lastIndexOf(".");
+            registeredGryoClasses.put(null == clazz.getEnclosingClass() ?
+                    clazz.getCanonicalName() :
+                    clazz.getCanonicalName().substring(0, index) + "$" + clazz.getCanonicalName().substring(index + 1), "gryo");
+        });
+        final Config config = ConfigFactory.defaultApplication().
+                withValue("message-priorities",
+                        ConfigValueFactory.fromAnyRef(this.actorProgram.getMessagePriorities().
+                                orElse(Collections.singletonList(Object.class)).
+                                stream().
+                                map(Class::getCanonicalName).
+                                collect(Collectors.toList()).toString())).
+                withValue("akka.actor.serialization-bindings", ConfigValueFactory.fromMap(registeredGryoClasses));
+
+
         final ActorSystem system = ActorSystem.create("traversal", config);
         final ActorsResult<R> result = new DefaultActorsResult<>();
         final Partitioner partitioner = this.workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), this.workers);

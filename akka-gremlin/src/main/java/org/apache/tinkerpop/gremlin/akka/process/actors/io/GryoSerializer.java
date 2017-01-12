@@ -21,8 +21,12 @@ package org.apache.tinkerpop.gremlin.akka.process.actors.io;
 
 import akka.serialization.Serializer;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
+import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
@@ -45,9 +49,16 @@ public final class GryoSerializer implements Serializer {
                         builder.referenceTracking(true).
                                 registrationRequired(true).
                                 addCustom(
+                                        Terminate.class,
                                         StartMessage.class,
                                         BarrierAddMessage.class,
+                                        BarrierDoneMessage.class,
+                                        SideEffectSetMessage.class,
                                         SideEffectAddMessage.class)).create();
+    }
+
+    public GryoMapper getGryoMapper() {
+        return this.gryoPool.getMapper();
     }
 
     @Override
