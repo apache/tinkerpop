@@ -45,7 +45,7 @@ public final class GryoSerializer implements Serializer {
 
     public GryoSerializer() {
         this.gryoPool = GryoPool.build().
-                poolSize(100).
+                poolSize(1).
                 initializeMapper(builder ->
                         builder.referenceTracking(true).
                                 registrationRequired(true).
@@ -65,16 +65,15 @@ public final class GryoSerializer implements Serializer {
 
     @Override
     public int identifier() {
-        return 0;
+        return GryoVersion.V3_0.hashCode();
     }
 
     @Override
     public byte[] toBinary(final Object object) {
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final Output output = new Output(outputStream);
-        this.gryoPool.writeWithKryo(kryo -> kryo.writeClassAndObject(output, object));
+        final Output output = new Output(new ByteArrayOutputStream());
+        this.gryoPool.writeWithKryo(kryo -> kryo.writeObject(output, object));
         output.flush();
-        return outputStream.toByteArray();
+        return output.getBuffer();
     }
 
     @Override
@@ -96,8 +95,8 @@ public final class GryoSerializer implements Serializer {
 
     @Override
     public Object fromBinary(byte[] bytes, Class<?> aClass) {
-        final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-        final Input input = new Input(inputStream);
-        return this.gryoPool.readWithKryo(kryo -> kryo.readClassAndObject(input)); // todo: be smart about just reading object
+        final Input input = new Input();
+        input.setBuffer(bytes);
+        return this.gryoPool.readWithKryo(kryo -> kryo.readObject(input, aClass)); // todo: be smart about just reading object
     }
 }
