@@ -23,8 +23,11 @@ import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +49,17 @@ public final class SerializableConfiguration extends AbstractConfiguration imple
 
     @Override
     protected void addPropertyDirect(final String key, final Object value) {
-        this.properties.put(key, value);
+        Object previous = this.properties.get(key);
+        if(null == previous)
+            this.properties.put(key,value);
+        else if(previous instanceof Collection)
+            ((Collection) previous).add(value);
+        else {
+            final List list = new ArrayList<>();
+            list.add(previous);
+            list.add(value);
+            this.properties.put(key,list);
+        }
     }
 
     @Override
@@ -74,4 +87,8 @@ public final class SerializableConfiguration extends AbstractConfiguration imple
         return this.properties.keySet().iterator();
     }
 
+    @Override
+    public String toString() {
+        return this.properties.toString();
+    }
 }

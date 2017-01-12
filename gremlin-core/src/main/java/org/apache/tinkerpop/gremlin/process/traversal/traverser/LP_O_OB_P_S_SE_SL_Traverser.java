@@ -65,8 +65,7 @@ public class LP_O_OB_P_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     @Override
     public Traverser.Admin<T> attach(final Host host) {
         super.attach(host);
-        if (host instanceof Partition || host instanceof Graph)
-            this.path = host.attach(this.path);
+        this.path = host.attach(this.path).orElse(this.path);
         return this;
     }
 

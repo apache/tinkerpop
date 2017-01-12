@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.net.InetAddress;
-import java.net.URI;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -71,13 +71,22 @@ public interface Partition extends Host {
     public String id();
 
     /**
-     * Get the {@link InetAddress} of the locations physical location.
+     * Get the {@link InetAddress} of the partition's physical location.
      *
      * @return the physical location of the partition.
      */
     public InetAddress location();
 
+    /**
+     * Get the {@link Partitioner} containing this partition.
+     *
+     * @return the partitioner containing the collection of all partitions over the graph
+     */
     public Partitioner partitioner();
+
+    public default <A> Optional<A> attach(final A a) {
+        return a instanceof Attachable ? Optional.of(((Attachable<A>) a).attach(Attachable.Method.get(this.partitioner().getGraph()))) : Optional.of(a);
+    }
 
     public static interface PhysicalPartition extends Partition {
     }

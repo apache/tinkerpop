@@ -300,7 +300,6 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
-                        <exclude>**/resources/application.conf</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

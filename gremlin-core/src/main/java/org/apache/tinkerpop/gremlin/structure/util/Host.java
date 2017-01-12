@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import java.util.Optional;
+
 /**
  * A marker interface that identifies an object as something that an {@link Attachable} can connect to.
  *
@@ -26,7 +28,7 @@ package org.apache.tinkerpop.gremlin.structure.util;
  */
 public interface Host {
 
-    public default <T> T attach(final T t) {
-        return t instanceof Attachable ? ((Attachable<T>) t).attach(Attachable.Method.get(this)) : t;
+    public default <T> Optional<T> attach(final T t) {
+        return Optional.of(t instanceof Attachable ? ((Attachable<T>) t).attach(Attachable.Method.get(this)) : t);
     }
 }

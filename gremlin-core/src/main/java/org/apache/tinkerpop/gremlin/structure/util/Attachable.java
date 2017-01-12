@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -76,27 +75,21 @@ public interface Attachable<V> {
                 if (base instanceof Vertex) {
                     final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?
                             Method.getVertex((Attachable<Vertex>) attachable, (Graph) hostVertexOrGraph) :
-                            hostVertexOrGraph instanceof Vertex ?
-                                    Method.getVertex((Attachable<Vertex>) attachable, (Vertex) hostVertexOrGraph) :
-                                    Method.getVertex((Attachable<Vertex>) attachable, (Partition) hostVertexOrGraph);
+                            Method.getVertex((Attachable<Vertex>) attachable, (Vertex) hostVertexOrGraph);
                     return (V) optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
                             Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
                             Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
                 } else if (base instanceof Edge) {
                     final Optional<Edge> optional = hostVertexOrGraph instanceof Graph ?
                             Method.getEdge((Attachable<Edge>) attachable, (Graph) hostVertexOrGraph) :
-                            hostVertexOrGraph instanceof Vertex ?
-                                    Method.getEdge((Attachable<Edge>) attachable, (Vertex) hostVertexOrGraph) :
-                                    Method.getEdge((Attachable<Edge>) attachable, (Partition) hostVertexOrGraph);
+                            Method.getEdge((Attachable<Edge>) attachable, (Vertex) hostVertexOrGraph);
                     return (V) optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
                             Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
                             Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
                 } else if (base instanceof VertexProperty) {
                     final Optional<VertexProperty> optional = hostVertexOrGraph instanceof Graph ?
                             Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Graph) hostVertexOrGraph) :
-                            hostVertexOrGraph instanceof Vertex ?
-                                    Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Vertex) hostVertexOrGraph) :
-                                    Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Partition) hostVertexOrGraph);
+                            Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Vertex) hostVertexOrGraph);
                     return (V) optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
                             Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
                             Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
@@ -185,11 +178,6 @@ public interface Attachable<V> {
             return ElementHelper.areEqual(attachableVertex.get(), hostVertex) ? Optional.of(hostVertex) : Optional.empty();
         }
 
-        public static Optional<Vertex> getVertex(final Attachable<Vertex> attachableVertex, final Partition hostPartition) {
-            final Iterator<Vertex> iterator = hostPartition.partitioner().getGraph().vertices(attachableVertex.get().id());
-            return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
-        }
-
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Graph hostGraph) {
             final Iterator<Edge> edgeIterator = hostGraph.edges(attachableEdge.get().id());
             return edgeIterator.hasNext() ? Optional.of(edgeIterator.next()) : Optional.empty();
@@ -204,11 +192,6 @@ public interface Attachable<V> {
                     return Optional.of(edge);
             }
             return Optional.empty();
-        }
-
-        public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Partition hostPartition) {
-            final Iterator<Edge> iterator = hostPartition.partitioner().getGraph().edges(attachableEdge.get().id());
-            return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
         }
 
         public static Optional<VertexProperty> getVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Graph hostGraph) {
@@ -232,20 +215,6 @@ public interface Attachable<V> {
                 final VertexProperty vertexProperty = vertexPropertyIterator.next();
                 if (ElementHelper.areEqual(vertexProperty, baseVertexProperty))
                     return Optional.of(vertexProperty);
-            }
-            return Optional.empty();
-        }
-
-        public static Optional<VertexProperty> getVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Partition hostPartition) {
-            final VertexProperty baseVertexProperty = attachableVertexProperty.get();
-            final Iterator<Vertex> vertexIterator= hostPartition.partitioner().getGraph().vertices(baseVertexProperty.element().id());
-            if (vertexIterator.hasNext()) {
-                final Iterator<VertexProperty<Object>> vertexPropertyIterator = vertexIterator.next().properties(baseVertexProperty.key());
-                while (vertexPropertyIterator.hasNext()) {
-                    final VertexProperty vertexProperty = vertexPropertyIterator.next();
-                    if (ElementHelper.areEqual(vertexProperty, baseVertexProperty))
-                        return Optional.of(vertexProperty);
-                }
             }
             return Optional.empty();
         }

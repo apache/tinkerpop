@@ -23,13 +23,13 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,8 +80,7 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             PartitionStrategyProcessTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName(),
-            TraversalInterruptionTest.class.getCanonicalName(),
-            ProgramTest.Traversals.class.getCanonicalName()));
+            TraversalInterruptionTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
@@ -136,6 +136,16 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
                 if (loadGraphWith == LoadGraphWith.GraphData.CREW)
                     put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             }
+            // Akka specific configuration
+            put(Constants.AKKA_LOG_DEAD_LETTERS_DURING_SHUTDOWN, false);
+            put(Constants.AKKA_ACTOR_PROVIDER, "remote");
+            put(Constants.AKKA_ACTOR_SERIALIZE_MESSAGES, "on");
+            put(Constants.AKKA_ACTOR_SERIALIZERS_GRYO, GryoSerializer.class.getCanonicalName());
+            put(Constants.AKKA_REMOTE_ENABLED_TRANSPORTS, Collections.singletonList("akka.remote.netty.tcp"));
+            put(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME, "127.0.0.1");
+            put(Constants.AKKA_REMOTE_NETTY_TCP_PORT, 2552);
+            put(Constants.AKKA_CLUSTER_SEED_NODES, Collections.singletonList("akka.tcp://tinkerpop@127.0.0.1:2552"));
+            put(Constants.AKKA_CLUSTER_AUTO_DOWN_UNREACHABLE_AFTER, "10s");
         }};
     }
 
