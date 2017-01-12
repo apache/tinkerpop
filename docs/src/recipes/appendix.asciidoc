@@ -17,9 +17,11 @@ limitations under the License.
 Appendix
 ========
 
-Many of the recipes are based on questions and answers provided on the gremlin-users mailing list. This section
-contains a number of traversals from the mailing list that do not easily fit any particular pattern (i.e. a recipe),
-but are nonetheless interesting and thus remain good tools for learning Gremlin.
+Many of the recipes are based on questions and answers provided on the
+link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users mailing list] or on
+link:http://stackoverflow.com/questions/tagged/gremlin[StackOverflow]. This section contains those traversals from
+those sources that do not easily fit any particular pattern (i.e. a recipe), but are nonetheless interesting and thus
+remain good tools for learning Gremlin.
 
 [[appendix-a]]
 _For each person in a "follows" graph, determine the number of followers and list their names._
