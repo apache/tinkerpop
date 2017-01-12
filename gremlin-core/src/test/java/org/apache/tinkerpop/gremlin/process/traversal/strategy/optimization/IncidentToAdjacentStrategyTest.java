@@ -47,16 +47,15 @@ public class IncidentToAdjacentStrategyTest {
     @RunWith(Parameterized.class)
     public static class StandardTest extends AbstractIncidentToAdjacentStrategyTest {
 
+        @Parameterized.Parameter(value = 0)
+        public Traversal original;
+        @Parameterized.Parameter(value = 1)
+        public Traversal optimized;
+
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return generateTestParameters();
         }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
 
         @Before
         public void setup() {
@@ -73,16 +72,15 @@ public class IncidentToAdjacentStrategyTest {
     @RunWith(Parameterized.class)
     public static class ComputerTest extends AbstractIncidentToAdjacentStrategyTest {
 
+        @Parameterized.Parameter(value = 0)
+        public Traversal original;
+        @Parameterized.Parameter(value = 1)
+        public Traversal optimized;
+
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return generateTestParameters();
         }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
 
         @Before
         public void setup() {
@@ -100,6 +98,29 @@ public class IncidentToAdjacentStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
+        static Iterable<Object[]> generateTestParameters() {
+
+            Function<Traverser<Vertex>, Vertex> lambda = Traverser::get; // to ensure same hashCode
+            return Arrays.asList(new Traversal[][]{
+                    {__.outE().inV(), __.out()},
+                    {__.inE().outV(), __.in()},
+                    {__.bothE().otherV(), __.both()},
+                    {__.outE().outV(), __.outE().outV()},
+                    {__.inE().inV(), __.inE().inV()},
+                    {__.bothE().bothV(), __.bothE().bothV()},
+                    {__.bothE().inV(), __.bothE().inV()},
+                    {__.bothE().outV(), __.bothE().outV()},
+                    {__.outE().otherV(), __.out()},
+                    {__.inE().otherV(), __.in()},
+                    {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
+                    {__.outE().inV().path(), __.outE().inV().path()},
+                    {__.outE().inV().simplePath(), __.outE().inV().simplePath()},
+                    {__.outE().inV().tree(), __.outE().inV().tree()},
+                    {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
+                    {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
+                    {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")}});
+        }
+
         void applyIncidentToAdjacentStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(IncidentToAdjacentStrategy.instance());
@@ -113,25 +134,6 @@ public class IncidentToAdjacentStrategyTest {
         public void doTest(final Traversal traversal, final Traversal optimized) {
             applyIncidentToAdjacentStrategy(traversal);
             assertEquals(optimized, traversal);
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            Function<Traverser<Vertex>, Vertex> lambda = Traverser::get; // to ensure same hashCode
-            return Arrays.asList(new Traversal[][]{
-                    {__.outE().inV(), __.out()},
-                    {__.inE().outV(), __.in()},
-                    {__.bothE().otherV(), __.both()},
-                    {__.outE().outV(), __.outE().outV()},
-                    {__.inE().inV(), __.inE().inV()},
-                    {__.bothE().bothV(), __.bothE().bothV()},
-                    {__.bothE().inV(), __.bothE().inV()},
-                    {__.bothE().outV(), __.bothE().outV()},
-                    {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
-                    {__.outE().inV().path(), __.outE().inV().path()},
-                    {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
-                    {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
-                    {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")}});
         }
     }
 }
