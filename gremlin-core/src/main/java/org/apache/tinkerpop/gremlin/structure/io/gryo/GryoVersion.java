@@ -74,6 +74,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
@@ -270,7 +271,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(ProjectedTraverser.class, 168)); // ***LAST ID***
+            add(GryoTypeReg.of(ProjectedTraverser.class, 168));
+            add(GryoTypeReg.of(OrderedTraverser.class, 169));      // ***LAST ID***
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
@@ -526,7 +528,7 @@ public enum GryoVersion {
     }
 
     private static void tryAddDynamicType(final List<TypeRegistration<?>> types, final String type,
-                                            final String serializer, final int registrationId) {
+                                          final String serializer, final int registrationId) {
         try {
             final Class typeClass = Class.forName(type);
             final Optional<SerializerShim<?>> serializerInstance = Optional.of(serializer)
@@ -570,6 +572,7 @@ public enum GryoVersion {
             }
         }
 
-        private Types() {}
+        private Types() {
+        }
     }
 }
