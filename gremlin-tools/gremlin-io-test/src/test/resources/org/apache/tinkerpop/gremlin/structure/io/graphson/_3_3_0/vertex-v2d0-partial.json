@@ -15,10 +15,6 @@
             "@value" : 0
           },
           "value" : "marko",
-          "vertex" : {
-            "@type" : "g:Int32",
-            "@value" : 1
-          },
           "label" : "name"
         }
       } ],
@@ -30,10 +26,6 @@
             "@value" : 6
           },
           "value" : "san diego",
-          "vertex" : {
-            "@type" : "g:Int32",
-            "@value" : 1
-          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -54,10 +46,6 @@
             "@value" : 7
           },
           "value" : "santa cruz",
-          "vertex" : {
-            "@type" : "g:Int32",
-            "@value" : 1
-          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -78,10 +66,6 @@
             "@value" : 8
           },
           "value" : "brussels",
-          "vertex" : {
-            "@type" : "g:Int32",
-            "@value" : 1
-          },
           "label" : "location",
           "properties" : {
             "startTime" : {
@@ -102,10 +86,6 @@
             "@value" : 9
           },
           "value" : "santa fe",
-          "vertex" : {
-            "@type" : "g:Int32",
-            "@value" : 1
-          },
           "label" : "location",
           "properties" : {
             "startTime" : {

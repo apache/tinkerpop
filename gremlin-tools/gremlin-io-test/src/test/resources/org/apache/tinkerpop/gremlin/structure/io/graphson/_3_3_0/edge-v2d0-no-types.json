@@ -6,6 +6,9 @@
   "inV" : 10,
   "outV" : 1,
   "properties" : {
-    "since" : 2009
+    "since" : {
+      "key" : "since",
+      "value" : 2009
+    }
   }
 }

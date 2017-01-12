@@ -180,7 +180,11 @@ toJsonV2d0NoTypes = { o, type, mapper, comment = "" ->
   toJson(o, type, mapper, comment, "v2d0-no-types")
 }
 
-writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
+toJsonV3d0 = { o, type, mapper, comment = "" ->
+  toJson(o, type, mapper, comment, "v3d0")
+}
+
+writeSupportedV2V3Objects = { writer, mapper, toJsonFunction ->
   writer.write("Core\n")
   writer.write("~~~~\n\n")
   model.entries("Core").each {
@@ -241,7 +245,7 @@ mapper = GraphSONMapper.build().
 
 file = new File("${project.build.directory}/dev-docs/out-graphson-2d0-partial.txt")
 if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2Objects(it, mapper, toJsonV2d0PartialTypes) }
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0PartialTypes) }
 
 mapper = GraphSONMapper.build().
                         addRegistry(TinkerIoRegistryV2d0.instance()).
@@ -252,7 +256,17 @@ mapper = GraphSONMapper.build().
 
 file = new File("${project.build.directory}/dev-docs/out-graphson-2d0-no-type.txt")
 if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2Objects(it, mapper, toJsonV2d0NoTypes) }
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0NoTypes) }
+
+mapper = GraphSONMapper.build().
+                        addRegistry(TinkerIoRegistryV2d0.instance()).
+                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
+                        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+                        version(GraphSONVersion.V3_0).create().createMapper()
+
+file = new File("${project.build.directory}/dev-docs/out-graphson-3d0.txt")
+if (file.exists()) file.delete()
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV3d0) }
 
 def ver = "_" + "${project.version}".replace(".","_").replace("-SNAPSHOT","")
 def target = "${project.basedir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/graphson/" + ver

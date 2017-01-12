@@ -87,52 +87,49 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         om.registerModule(graphSONModule);
         customModules.forEach(om::registerModule);
 
-
         // plugin external serialization modules
         if (loadCustomSerializers)
             om.findAndRegisterModules();
 
+        // graphson 3.0 only allows type - there is no option to remove embedded types
+        if (version == GraphSONVersion.V3_0 || (version == GraphSONVersion.V2_0 && typeInfo != TypeInfo.NO_TYPES)) {
+            final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
+            final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder()
+                    .typesEmbedding(getTypeInfo())
+                    .valuePropertyName(GraphSONTokens.VALUEPROP)
+                    .init(JsonTypeInfo.Id.CUSTOM, graphSONTypeIdResolver)
+                    .typeProperty(GraphSONTokens.VALUETYPE);
 
-        if (version == GraphSONVersion.V1_0) {
+            // Registers native Java types that are supported by Jackson
+            registerJavaBaseTypes(graphSONTypeIdResolver);
+
+            // Registers the GraphSON Module's types
+            graphSONModule.getTypeDefinitions().forEach(
+                    (targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
+                            String.format("%s:%s", graphSONModule.getTypeNamespace(), typeId), targetClass));
+
+            // Register types to typeResolver for the Custom modules
+            customModules.forEach(e -> {
+                if (e instanceof TinkerPopJacksonModule) {
+                    final TinkerPopJacksonModule mod = (TinkerPopJacksonModule) e;
+                    final Map<Class, String> moduleTypeDefinitions = mod.getTypeDefinitions();
+                    if (moduleTypeDefinitions != null) {
+                        if (mod.getTypeNamespace() == null || mod.getTypeNamespace().isEmpty())
+                            throw new IllegalStateException("Cannot specify a module for GraphSON 2.0 with type definitions but without a type Domain. " +
+                                    "If no specific type domain is required, use Gremlin's default domain, \"gremlin\" but there may be collisions.");
+
+                        moduleTypeDefinitions.forEach((targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
+                                        String.format("%s:%s", mod.getTypeNamespace(), typeId), targetClass));
+                    }
+                }
+            });
+            om.setDefaultTyping(typer);
+        } else if (version == GraphSONVersion.V1_0 || version == GraphSONVersion.V2_0) {
             if (embedTypes) {
                 final TypeResolverBuilder<?> typer = new StdTypeResolverBuilder()
                         .init(JsonTypeInfo.Id.CLASS, null)
                         .inclusion(JsonTypeInfo.As.PROPERTY)
                         .typeProperty(GraphSONTokens.CLASS);
-                om.setDefaultTyping(typer);
-            }
-        } else if (version == GraphSONVersion.V2_0) {
-            if (typeInfo != TypeInfo.NO_TYPES) {
-                final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
-                final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder()
-                        .typesEmbedding(getTypeInfo())
-                        .valuePropertyName(GraphSONTokens.VALUEPROP)
-                        .init(JsonTypeInfo.Id.CUSTOM, graphSONTypeIdResolver)
-                        .typeProperty(GraphSONTokens.VALUETYPE);
-
-                // Registers native Java types that are supported by Jackson
-                registerJavaBaseTypes(graphSONTypeIdResolver);
-
-                // Registers the GraphSON Module's types
-                graphSONModule.getTypeDefinitions().forEach(
-                        (targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
-                                String.format("%s:%s", graphSONModule.getTypeNamespace(), typeId), targetClass));
-
-                // Register types to typeResolver for the Custom modules
-                customModules.forEach(e -> {
-                    if (e instanceof TinkerPopJacksonModule) {
-                        final TinkerPopJacksonModule mod = (TinkerPopJacksonModule) e;
-                        final Map<Class, String> moduleTypeDefinitions = mod.getTypeDefinitions();
-                        if (moduleTypeDefinitions != null) {
-                            if (mod.getTypeNamespace() == null || mod.getTypeNamespace().isEmpty())
-                                throw new IllegalStateException("Cannot specify a module for GraphSON 2.0 with type definitions but without a type Domain. " +
-                                        "If no specific type domain is required, use Gremlin's default domain, \"gremlin\" but there may be collisions.");
-
-                            moduleTypeDefinitions.forEach((targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
-                                            String.format("%s:%s", mod.getTypeNamespace(), typeId), targetClass));
-                        }
-                    }
-                });
                 om.setDefaultTyping(typer);
             }
         } else {
