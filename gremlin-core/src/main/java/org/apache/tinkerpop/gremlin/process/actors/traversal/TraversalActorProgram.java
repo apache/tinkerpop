@@ -55,7 +55,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalActorProgram<R> implements ActorProgram, Serializable {
+public final class TraversalActorProgram<R> implements ActorProgram {
 
     public static boolean DETACH = true;
 
@@ -72,11 +72,13 @@ public final class TraversalActorProgram<R> implements ActorProgram, Serializabl
 
     private Traversal.Admin<?, R> traversal;
     public TraverserSet<R> result = new TraverserSet<>();
-    private Configuration configuration;
+
+    public TraversalActorProgram() {
+
+    }
 
     public TraversalActorProgram(final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
-        this.configuration = new SerializableConfiguration(configuration);
         final TraversalStrategies strategies = this.traversal.getStrategies().clone();
         strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
         // TODO: make TinkerGraph/etc. strategies smart about actors
@@ -105,6 +107,22 @@ public final class TraversalActorProgram<R> implements ActorProgram, Serializabl
     public void loadState(final Graph graph, final Configuration configuration) {
         final Bytecode bytecode = (Bytecode) configuration.getProperty(TRAVERSAL_ACTOR_PROGRAM_BYTECODE);
         this.traversal = (Traversal.Admin<?, R>) JavaTranslator.of(graph.traversal()).translate(bytecode);
+        final TraversalStrategies strategies = this.traversal.getStrategies().clone();
+        strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
+        // TODO: make TinkerGraph/etc. strategies smart about actors
+        new ArrayList<>(strategies.toList()).stream().
+                filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).
+                map(TraversalStrategy::getClass).
+                forEach(strategies::removeStrategies);
+        strategies.removeStrategies(
+                ActorProgramStrategy.class,
+                LazyBarrierStrategy.class,
+                RepeatUnrollStrategy.class,
+                MatchPredicateStrategy.class,
+                InlineFilterStrategy.class,
+                PathRetractionStrategy.class);
+        this.traversal.setStrategies(strategies);
+        this.traversal.applyStrategies();
     }
 
     @Override

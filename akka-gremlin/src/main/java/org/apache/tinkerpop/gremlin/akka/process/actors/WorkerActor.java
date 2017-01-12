@@ -23,11 +23,15 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorSelection;
 import akka.dispatch.RequiresMessageQueue;
 import akka.japi.pf.ReceiveBuilder;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.actors.Actor;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,16 +51,18 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
 
-    public WorkerActor(final ActorProgram program, final Address.Master master, final Partition localPartition, final Partitioner partitioner) {
-        this.localPartition = localPartition;
-        this.partitioner = partitioner;
+    public WorkerActor(final Configuration configuration, final int workerIndex, final Address.Master master) {
+        final Graph graph = GraphFactory.open(configuration);
+        final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
+        this.partitioner = new HashPartitioner(graph.partitioner(), 5);
+        this.localPartition = this.partitioner.getPartitions().get(workerIndex);
         this.self = new Address.Worker(this.createWorkerAddress(localPartition), localPartition.location());
         this.master = master;
         this.workers = new ArrayList<>();
         for (final Partition partition : partitioner.getPartitions()) {
             this.workers.add(new Address.Worker(this.createWorkerAddress(partition), partition.location()));
         }
-        this.workerProgram = program.createWorkerProgram(this);
+        this.workerProgram = actorProgram.createWorkerProgram(this);
         receive(ReceiveBuilder.matchAny(this.workerProgram::execute).build());
     }
 

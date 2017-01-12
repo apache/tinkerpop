@@ -17,15 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.akka.process.actors.io;
+package org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo;
 
 import akka.serialization.Serializer;
+import org.apache.tinkerpop.gremlin.process.actors.Address;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
+import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
@@ -33,7 +35,6 @@ import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.Option;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -45,7 +46,7 @@ public final class GryoSerializer implements Serializer {
 
     public GryoSerializer() {
         this.gryoPool = GryoPool.build().
-                poolSize(1).
+                poolSize(10).
                 initializeMapper(builder ->
                         builder.referenceTracking(true).
                                 registrationRequired(true).
@@ -56,7 +57,9 @@ public final class GryoSerializer implements Serializer {
                                         BarrierAddMessage.class,
                                         BarrierDoneMessage.class,
                                         SideEffectSetMessage.class,
-                                        SideEffectAddMessage.class)).create();
+                                        SideEffectAddMessage.class,
+                                        DefaultActorsResult.class,
+                                        Address.Master.class)).create();
     }
 
     public GryoMapper getGryoMapper() {
@@ -69,34 +72,31 @@ public final class GryoSerializer implements Serializer {
     }
 
     @Override
+    public boolean includeManifest() {
+        return false;
+    }
+
+    @Override
     public byte[] toBinary(final Object object) {
         final Output output = new Output(new ByteArrayOutputStream());
-        this.gryoPool.writeWithKryo(kryo -> kryo.writeObject(output, object));
-        output.flush();
+        this.gryoPool.writeWithKryo(kryo -> kryo.writeClassAndObject(output, object));
         return output.getBuffer();
     }
 
     @Override
-    public boolean includeManifest() {
-        return true;
-    }
-
-    @Override
-    public Object fromBinary(byte[] bytes, Option<Class<?>> option) {
-        return option.isEmpty() ? this.fromBinary(bytes) : this.fromBinary(bytes, option.get());
-    }
-
-    @Override
-    public Object fromBinary(byte[] bytes) {
-        final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-        final Input input = new Input(inputStream);
+    public Object fromBinary(final byte[] bytes) {
+        final Input input = new Input();
+        input.setBuffer(bytes);
         return this.gryoPool.readWithKryo(kryo -> kryo.readClassAndObject(input));
     }
 
     @Override
-    public Object fromBinary(byte[] bytes, Class<?> aClass) {
-        final Input input = new Input();
-        input.setBuffer(bytes);
-        return this.gryoPool.readWithKryo(kryo -> kryo.readObject(input, aClass)); // todo: be smart about just reading object
+    public Object fromBinary(final byte[] bytes, final Class<?> aClass) {
+        return fromBinary(bytes);
+    }
+
+    @Override
+    public Object fromBinary(final byte[] bytes, final Option<Class<?>> option) {
+        return option.isEmpty() ? this.fromBinary(bytes) : this.fromBinary(bytes, option.get());
     }
 }

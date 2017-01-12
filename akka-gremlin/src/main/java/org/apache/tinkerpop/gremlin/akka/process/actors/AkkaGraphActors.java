@@ -20,9 +20,12 @@
 package org.apache.tinkerpop.gremlin.akka.process.actors;
 
 import akka.actor.ActorSystem;
+import akka.actor.Deploy;
 import akka.actor.Props;
+import akka.remote.RemoteScope;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
@@ -30,9 +33,7 @@ import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.util.GraphActorsHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Partitioner;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 
 import java.net.InetAddress;
@@ -88,9 +89,15 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
 
         final ActorSystem system = ActorSystem.create("traversal", AkkaConfigFactory.generateAkkaConfig(this.actorProgram));
         final ActorsResult<R> result = new DefaultActorsResult<>();
-        final Partitioner partitioner = this.workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), this.workers);
         try {
-            new Address.Master(system.actorOf(Props.create(MasterActor.class, this.actorProgram, partitioner, result), "master").path().toString(), InetAddress.getLocalHost());
+            final Configuration programConfiguration = new SerializableConfiguration(this.configuration);
+            this.actorProgram.storeState(programConfiguration);
+            ConfigurationUtils.copy(graph.configuration(), programConfiguration);
+            final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment();
+            new Address.Master(system.actorOf(
+                    Props.create(MasterActor.class, programConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))),
+                    "master").path().toString(),
+                    InetAddress.getByName(masterAddress.host().get()));
         } catch (final UnknownHostException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

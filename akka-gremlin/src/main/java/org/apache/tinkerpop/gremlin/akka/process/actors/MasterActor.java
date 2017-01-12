@@ -27,12 +27,16 @@ import akka.actor.Props;
 import akka.dispatch.RequiresMessageQueue;
 import akka.japi.pf.ReceiveBuilder;
 import akka.remote.RemoteScope;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.actors.Actor;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.util.partitioner.HashPartitioner;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -53,8 +57,10 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     private final ActorsResult<?> result;
     private final Partitioner partitioner;
 
-    public MasterActor(final ActorProgram program, final Partitioner partitioner, final ActorsResult<?> result) {
-        this.partitioner = partitioner;
+    public MasterActor(final Configuration configuration, final ActorsResult<?> result) {
+        final Graph graph = GraphFactory.open(configuration);
+        final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
+        this.partitioner = new HashPartitioner(graph.partitioner(), 5);
         this.result = result;
         try {
             this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
@@ -64,12 +70,14 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
         this.workers = new ArrayList<>();
         final List<Partition> partitions = partitioner.getPartitions();
         for (final Partition partition : partitions) {
-            akka.actor.Address addr = AddressFromURIString.parse("akka.tcp://traversal@127.0.0.1:2552");
+            akka.actor.Address addr = AkkaConfigFactory.getMasterActorDeployment();
             final String workerPathString = "worker-" + partition.id();
             this.workers.add(new Address.Worker(workerPathString, partition.location()));
-            context().actorOf(Props.create(WorkerActor.class, program, this.master, partition, partitioner).withDeploy(new Deploy(new RemoteScope(addr))), workerPathString);
+            context().actorOf(Props.create(WorkerActor.class, configuration, this.workers.size()-1, this.master)
+                    .withDeploy(new Deploy(new RemoteScope(addr))),
+                    workerPathString);
         }
-        this.masterProgram = program.createMasterProgram(this);
+        this.masterProgram = actorProgram.createMasterProgram(this);
         receive(ReceiveBuilder.matchAny(this.masterProgram::execute).build());
     }
 

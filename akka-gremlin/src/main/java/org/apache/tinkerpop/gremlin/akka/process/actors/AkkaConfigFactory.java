@@ -19,14 +19,21 @@
 
 package org.apache.tinkerpop.gremlin.akka.process.actors;
 
+import akka.actor.Address;
+import akka.actor.AddressFromURIString;
+import akka.actor.Deploy;
+import akka.actor.Props;
+import akka.remote.RemoteScope;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
-import org.apache.tinkerpop.gremlin.akka.process.actors.io.GryoSerializer;
+import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -58,5 +65,10 @@ final class AkkaConfigFactory {
                                 stream().
                                 map(Class::getCanonicalName).
                                 collect(Collectors.toList()).toString()));
+    }
+
+    static Address getMasterActorDeployment() {
+        final List<String> seedNodes = ConfigFactory.defaultApplication().getStringList("akka.cluster.seed-nodes");
+        return AddressFromURIString.parse(seedNodes.get(0));
     }
 }

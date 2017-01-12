@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.akka.process.actors;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -41,8 +43,12 @@ public class AkkaPlayTest {
     @Test
     @Ignore
     public void testPlay1() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
+        final Configuration configuration = new BaseConfiguration();
+        configuration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
+        configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/Users/marko/software/tinkerpop/data/tinkerpop-modern.kryo");
+        configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT,"gryo");
+        final Graph graph = TinkerGraph.open(configuration);
+        //graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
         GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(3));
      //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
