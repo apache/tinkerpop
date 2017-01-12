@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessag
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.Option;
@@ -48,6 +49,7 @@ public final class GryoSerializer implements Serializer {
                 initializeMapper(builder ->
                         builder.referenceTracking(true).
                                 registrationRequired(true).
+                                version(GryoVersion.V3_0).
                                 addCustom(
                                         Terminate.class,
                                         StartMessage.class,

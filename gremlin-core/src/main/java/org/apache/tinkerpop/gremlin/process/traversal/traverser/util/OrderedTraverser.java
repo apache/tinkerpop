@@ -35,7 +35,11 @@ import java.util.function.Function;
 public final class OrderedTraverser<T> implements Traverser.Admin<T> {
 
     private Traverser.Admin<T> internal;
-    private final int order;
+    private int order;
+
+    private OrderedTraverser() {
+        // for serialization
+    }
 
     public OrderedTraverser(final Traverser.Admin<T> internal, final int order) {
         this.internal = internal instanceof OrderedTraverser ? ((OrderedTraverser) internal).internal : internal;
@@ -113,7 +117,7 @@ public final class OrderedTraverser<T> implements Traverser.Admin<T> {
 
     @Override
     public Admin<T> detach() {
-        this.internal.detach();
+        this.internal = this.internal.detach();
         return this;
     }
 
