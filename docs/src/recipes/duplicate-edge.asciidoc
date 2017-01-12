@@ -86,6 +86,24 @@ the outgoing vertex, the edge label, and the incoming vertex as the key, with th
 value.
 <4> The rest of the traversal is the same as the previous one.
 
+Note that the above traversal could also be written using `match` step:
+
+[gremlin-groovy,existing]
+----
+g.V().match(
+    __.as("ov").outE().as("e"),
+    __.as("e").inV().as("iv"),
+    __.as("iv").inE().as("ie"),
+    __.as("ie").outV().as("ov")).
+      where("ie",neq("e")).
+      where("ie",eq("e")).by(label).
+    select("ie").
+    group().
+      by(select("ov","e","iv").by().by(label)).
+    unfold().select(values).
+      where(count(local).is(gt(1)))
+----
+
 A third way to approach this problem would be to force a link:https://en.wikipedia.org/wiki/Depth-first_search[depth-first search].
 The previous examples invoke traversal strategies that force a link:https://en.wikipedia.org/wiki/Breadth-first_search[breadth first search]
 as a performance optimization.

@@ -43,6 +43,29 @@ g.V().as('p').
                by(count(local)).by()).next()
 ----
 
+It might also be alternatively written as:
+
+[gremlin-groovy,existing]
+----
+g.V().group().
+        by('name').
+        by(project('numFollowers','followers').
+             by(__.in('follows').count()).
+             by(__.in('follows').values('name').fold())).next()
+----
+
+or even:
+
+[gremlin-groovy,existing]
+----
+g.V().group().
+        by('name').
+        by(__.in('follows').values('name').fold().
+            project('numFollowers','followers').
+              by(count(local)).
+              by()).next()
+----
+
 [[appendix-b]]
 _In the "modern" graph, show each person, the software they worked on and the co-worker count for the software and
 the names of those co-workers._
