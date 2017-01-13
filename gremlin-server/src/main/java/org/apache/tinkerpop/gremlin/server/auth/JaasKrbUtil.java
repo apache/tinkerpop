@@ -53,8 +53,7 @@ public final class JaasKrbUtil {
 
     private JaasKrbUtil() { }
 
-    public static Subject loginUsingPassword(
-            String principal, String password) throws LoginException {
+    public static Subject loginUsingPassword(String principal, String password) throws LoginException {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new KerberosPrincipal(principal));
 
@@ -69,8 +68,7 @@ public final class JaasKrbUtil {
         return loginContext.getSubject();
     }
 
-    public static Subject loginUsingTicketCache(
-            String principal, File cacheFile) throws LoginException {
+    public static Subject loginUsingTicketCache(String principal, File cacheFile) throws LoginException {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new KerberosPrincipal(principal));
 
@@ -84,8 +82,7 @@ public final class JaasKrbUtil {
         return loginContext.getSubject();
     }
 
-    public static Subject loginUsingKeytab(
-            String principal, File keytabFile) throws LoginException {
+    public static Subject loginUsingKeytab(String principal, File keytabFile) throws LoginException {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new KerberosPrincipal(principal));
 

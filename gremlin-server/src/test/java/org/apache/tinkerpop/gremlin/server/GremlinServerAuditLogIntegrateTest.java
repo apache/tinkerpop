@@ -36,7 +36,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import static org.apache.tinkerpop.gremlin.server.AuthKrb5Test.TESTCONSOLE;
+import static org.apache.tinkerpop.gremlin.server.GremlinServerAuthKrb5IntegrateTest.TESTCONSOLE;
 import static org.apache.tinkerpop.gremlin.server.GremlinServer.AUDIT_LOGGER_NAME;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.slf4j.LoggerFactory;
@@ -60,11 +60,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marc de Lignie
  *
- * Note: like other descendents of AbstractGremlinServerIntegrationTest this testsuite assumes that tests are
- *       run sequentially and thus the server variable can be reused.
+ * Note: like other descendents of AbstractGremlinServerIntegrationTest this test suite assumes that tests are
+ *       run sequentially and thus the server and kdcServer variables can be reused.
  */
-public class AuditLogTest extends AbstractGremlinServerIntegrationTest {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuditLogTest.class);
+public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuditLogIntegrateTest.class);
     private Log4jRecordingAppender recordingAppender = null;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -163,7 +163,8 @@ public class AuditLogTest extends AbstractGremlinServerIntegrationTest {
             cluster.close();
         }
 
-        // WebSocketChannelizer does not add SaslAuthenticationHandler, so no authenticated user log line available
+        // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
+        // so no authenticated user log line available
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, "User with address .*? requested: 1\\+1"));
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, "User with address .*? requested: 1\\+2"));
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, "User with address .*? requested: 1\\+3"));
@@ -260,7 +261,6 @@ public class AuditLogTest extends AbstractGremlinServerIntegrationTest {
 
     @Test
     public void shouldAuditLogWithNioTransport() throws Exception {
-        // ToDo issue (outside scope of this suite): .channelizer(Channelizer.NioChannelizer.class) fails
         final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.NioChannelizer.class.getName())
                 .jaasEntry(TESTCONSOLE).protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();

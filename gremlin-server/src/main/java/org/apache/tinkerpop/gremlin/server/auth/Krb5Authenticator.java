@@ -36,7 +36,7 @@ import java.util.Map;
 
 
 /**
- * A Kerberos implementation of an {@link Authenticator}
+ * A Kerberos (GSSAPI) implementation of an {@link Authenticator}
  *
  * @author Marc de Lignie
  */
@@ -102,10 +102,10 @@ public class Krb5Authenticator implements Authenticator {
     }
 
     /*
-     * Invoked by:
-     *   https://github.com/apache/tinkerpop/blob/3.1.1-incubating/gremlin-server/src/main/java/org/apache/tinkerpop/gremlin/server/handler/SaslAuthenticationHandler.java
+     * Krb5SaslAuthenticator is invoked by:
+     *   org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler
      * Negotiates with evaluateChallenge() of the generic sasl handler in gremlin console:
-     *   https://github.com/apache/tinkerpop/blob/3.1.1-incubating/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/Handler.java
+     *   org.apache.tinkerpop.gremlin.driver.Handler.java
      * See also:
      *   https://docs.oracle.com/javase/8/docs/technotes/guides/security/sasl/sasl-refguide.html
      *   https://docs.oracle.com/javase/8/docs/api/org/ietf/jgss/GSSContext.html
@@ -120,13 +120,11 @@ public class Krb5Authenticator implements Authenticator {
             try {
                 // For sasl properties regarding GSSAPI, see:
                 //   https://docs.oracle.com/javase/8/docs/technotes/guides/security/sasl/sasl-refguide.html#SERVER
-                // Rely on GSSAPI defaults for Sasl.MAX_BUFFER and "javax.security.sasl.sendmaxbuffer"
-                // Sasl policy properties are not relevant here, because the sasl mechanisme is not negotiated
-                // Kerberos implementations do not handle Sasl.QOP values reliably; rather use SSL for enhanced privacy,
-                // see https://issues.apache.org/jira/browse/HIVE-8377
+                // Rely on GSSAPI defaults for Sasl.MAX_BUFFER and Sasl.QOP. Note, however, that gremlin-driver has
+                // Sasl.SERVER_AUTH fixed to true (mutual authentication) and one can configure SSL for enhanced confidentiality,
+                // Sasl policy properties for negotiating the authenticatin mechanism are not relevant here, because
+                // GSSAPI is the only available mechanism for this authenticator
                 final Map props = new HashMap<String, Object>();
-                if (!System.getProperty(Sasl.QOP, "").equals(""))
-                    logger.warn("Gremlin server uses default Sasl.QOP values, use SSL for enhanced privacy");
                 final String[] principalParts = principalName.split("/|@");
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
@@ -139,9 +137,6 @@ public class Krb5Authenticator implements Authenticator {
         /*
          * This method is based on the handle() method from:
          *   https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/kerby-kerb/integration-test/src/main/java/org/apache/kerby/kerberos/kerb/integration/test/sasl/SaslAppServer.java
-         * Other example sources:
-         *   https://gist.github.com/honza889/1347ddee89311dd636d5 (APL)
-         *   https://github.com/wildfly-security/jboss-sasl/blob/master/src/test/java/org/jboss/sasl/test/ServerCallbackHandler.java (GPL)
          */
         @Override
         public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
@@ -188,7 +183,6 @@ public class Krb5Authenticator implements Authenticator {
         }
 
         @Override
-        // todo: apply for audit logging, see related todo in gremlin-server/.../SaslAuthenticationHandler.java
         public AuthenticatedUser getAuthenticatedUser() throws AuthenticationException {
             logger.debug("getAuthenticatedUser called: " + saslServer.getAuthorizationID());
             return new AuthenticatedUser(saslServer.getAuthorizationID());

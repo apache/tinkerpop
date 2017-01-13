@@ -46,10 +46,9 @@ import static org.junit.Assert.fail;
 /**
  * @author Marc de Lignie
  *
- * Todo: change back to integrate test later on
  */
-public class AuthKrb5Test extends AbstractGremlinServerIntegrationTest {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthKrb5Test.class);
+public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuthKrb5IntegrateTest.class);
     private Log4jRecordingAppender recordingAppender = null;
 
     static final String TESTCONSOLE = "GremlinConsole";
@@ -128,39 +127,10 @@ public class AuthKrb5Test extends AbstractGremlinServerIntegrationTest {
         return settings;
     }
 
-    /**
-     * Defaults from TestClientFactory:
-     * private int port = 45940;
-     * private MessageSerializer serializer = Serializers.GRYO_V1D0.simpleInstance();
-     * private int nioPoolSize = Runtime.getRuntime().availableProcessors();
-     * private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-     * private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
-     * private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
-     * private int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-     * private int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-     * private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
-     * private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
-     * private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
-     * private int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
-     * private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
-     * private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
-     * private int reconnectInterval = Connection.RECONNECT_INTERVAL;
-     * private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
-     * private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-     * private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
-     * private boolean enableSsl = false;
-     * private String trustCertChainFile = null;
-     * private String keyCertChainFile = null;
-     * private String keyFile = null;
-     * private String keyPassword = null;
-     * private SslContext sslContext = null;
-     * private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-     * private AuthProperties authProps = new AuthProperties();
-     */
     @Test
     public void shouldAuthenticateWithDefaults() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-            .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -243,6 +213,8 @@ public class AuthKrb5Test extends AbstractGremlinServerIntegrationTest {
 //    }
 
 
+    // This test backs a fix in gremlin-driver (cd628b251f6956c826df20c89177680fe120ff99)
+    // Maybe gremlin-driver needs its own test with client.submit("[1,2,3] as byte[]")
     @Test
     public void shouldAuthenticateWithSerializeResultToString() throws Exception {
         MessageSerializer serializer = new GryoMessageSerializerV1d0();
