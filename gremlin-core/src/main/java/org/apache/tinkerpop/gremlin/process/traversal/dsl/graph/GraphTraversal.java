@@ -989,7 +989,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.hasId((P) id);
         else {
             final List<Object> ids = new ArrayList<>();
-            if (id.getClass().isArray()) {
+            if (id instanceof Object[]) {
                 for (final Object i : (Object[]) id) {
                     ids.add(i);
                 }
@@ -1031,14 +1031,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.hasValue((P) value);
         else {
             final List<Object> values = new ArrayList<>();
-            if (value.getClass().isArray()) {
+            if (value instanceof Object[]) {
                 for (final Object v : (Object[]) value) {
                     values.add(v);
                 }
             } else
                 values.add(value);
             for (final Object v : otherValues) {
-                if (v.getClass().isArray()) {
+                if (v instanceof Object[]) {
                     for (final Object vv : (Object[]) v) {
                         values.add(vv);
                     }
