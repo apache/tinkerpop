@@ -53,6 +53,7 @@ public class IoGraphTest extends AbstractGremlinTest {
                 {"graphml", IoCore.graphml(), false, true, ".xml"},
                 {"graphsonv1d0", IoCore.graphson(), true, true, ".json"},
                 {"graphsonv2d0", GraphSONIo.build(GraphSONVersion.V2_0), true, true, ".json"},
+                {"graphsonv3d0", GraphSONIo.build(GraphSONVersion.V3_0), true, true, ".json"},
                 {"gryo", IoCore.gryo(), false, false, ".kryo"}
         });
     }

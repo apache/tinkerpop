@@ -251,7 +251,7 @@ public class GraphSONMessageSerializerV2d0Test {
 
         final JsonNode properties = edgeAsJson.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-        assertEquals(123, properties.get("abc").get(GraphSONTokens.VALUEPROP).asInt());
+        assertEquals(123, properties.get("abc").get(GraphSONTokens.VALUEPROP).get("value").get(GraphSONTokens.VALUEPROP).asInt());
     }
 
     @Test
@@ -315,7 +315,7 @@ public class GraphSONMessageSerializerV2d0Test {
 
         final JsonNode friendProperties = properties.get("friends");
         assertEquals(1, friendProperties.size());
-        final JsonNode friendsProperty = friendProperties.get(0).get(GraphSONTokens.VALUE);
+        final JsonNode friendsProperty = friendProperties.get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE);
         assertNotNull(friendsProperty);
         assertEquals(3, friendsProperty.size());
 
@@ -416,7 +416,6 @@ public class GraphSONMessageSerializerV2d0Test {
         final GraphTraversalSource g = graph.traversal();
         final Tree t = g.V(1).out().properties("name").tree().next();
 
-        
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(t).create());
 
         final JsonNode json = mapper.readTree(results);
@@ -440,7 +439,7 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get(GraphSONTokens.PROPERTIES)
                 .get("name")
                 .get(0)
-                .get(GraphSONTokens.VALUE).asText());
+                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
 
         //check the leafs
         assertEquals("vadas", converted.get(GraphSONTokens.VALUEPROP)
@@ -451,7 +450,7 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get(GraphSONTokens.PROPERTIES)
                 .get("name")
                 .get(0)
-                .get(GraphSONTokens.VALUE).asText());
+                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
 
         assertEquals("lop", converted.get(GraphSONTokens.VALUEPROP)
                 .get(0)
@@ -461,7 +460,7 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get(GraphSONTokens.PROPERTIES)
                 .get("name")
                 .get(0)
-                .get(GraphSONTokens.VALUE).asText());
+                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
 
         assertEquals("josh", converted.get(GraphSONTokens.VALUEPROP)
                 .get(0)
@@ -471,7 +470,7 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get(GraphSONTokens.PROPERTIES)
                 .get("name")
                 .get(0)
-                .get(GraphSONTokens.VALUE).asText());
+                .get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VALUE).asText());
     }
 
     @Test
