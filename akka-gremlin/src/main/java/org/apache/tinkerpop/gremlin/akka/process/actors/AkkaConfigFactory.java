@@ -29,6 +29,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.util.ClassUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,24 +49,17 @@ final class AkkaConfigFactory {
     }
 
     static Config generateAkkaConfig(final ActorProgram actorProgram, final Configuration configuration) {
-        final Map<String, String> registeredGryoClasses = new HashMap<>();
-        new GryoSerializer().getGryoMapper().getRegisteredClasses().stream().filter(clazz -> !clazz.isArray()).forEach(clazz -> {
-            int index = clazz.getCanonicalName().lastIndexOf(".");
-            registeredGryoClasses.put(null == clazz.getEnclosingClass() ?
-                    clazz.getCanonicalName() :
-                    clazz.getCanonicalName().substring(0, index) + "$" + clazz.getCanonicalName().substring(index + 1), "gryo");
-        });
         Config config = ConfigFactory.defaultApplication().
-                withValue("akka.actor.serialization-bindings", ConfigValueFactory.fromMap(registeredGryoClasses)).
+                withValue("akka.actor.serialization-bindings", ConfigValueFactory.fromMap(GryoSerializer.getSerializerBindings(configuration))).
                 withValue("custom-dispatcher.mailbox-requirement", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName())).
                 withValue("custom-dispatcher-mailbox.mailbox-type", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName())).
                 withValue("akka.actor.mailbox.requirements", ConfigValueFactory.fromMap(Collections.singletonMap(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName(), "custom-dispatcher-mailbox"))).
-                withValue("message-priorities",
+                withValue("custom-dispatcher-mailbox.message-priorities",
                         ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().
                                 orElse(Collections.singletonList(Object.class)).
                                 stream().
                                 map(Class::getCanonicalName).
-                                collect(Collectors.toList()).toString()));
+                                collect(Collectors.toList())));
         final Iterator<String> keys = configuration.getKeys();
         while (keys.hasNext()) {
             final String key = keys.next();

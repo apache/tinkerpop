@@ -121,7 +121,7 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
     // This constructor signature must exist, it will be called by Akka
     public ActorMailbox(final ActorSystem.Settings settings, final Config config) {
         try {
-            final String[] messages = ((String) settings.config().getAnyRef("message-priorities")).replace("[", "").replace("]", "").split(",");
+            final List<String> messages = config.getStringList("message-priorities");
             for (final String clazz : messages) {
                 this.messagePriorities.add(Class.forName(clazz.trim()));
             }
