@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -84,13 +85,15 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
         ///////
+        final String systemName = "tinkerpop-" + UUID.randomUUID();
         final Configuration finalConfiguration = new SerializableConfiguration(graph.configuration());
         ConfigurationUtils.copy(this.configuration, finalConfiguration);
+        finalConfiguration.setProperty(Constants.GREMLIN_AKKA_SYSTEM_NAME, systemName);
         final Config config = AkkaConfigFactory.generateAkkaConfig(this.actorProgram, finalConfiguration);
-        final ActorSystem system = ActorSystem.create("tinkerpop", config);
+        final ActorSystem system = ActorSystem.create(systemName, config);
         final ActorsResult<R> result = new DefaultActorsResult<>();
         ///////
-        final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment(config);
+        final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment(finalConfiguration);
         system.actorOf(Props.create(MasterActor.class, finalConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))), "master");
 
         return CompletableFuture.supplyAsync(() -> {

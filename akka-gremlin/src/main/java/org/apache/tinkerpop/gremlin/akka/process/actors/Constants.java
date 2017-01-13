@@ -37,5 +37,6 @@ public final class Constants {
     public static final String AKKA_REMOTE_NETTY_TCP_PORT = "akka.remote.netty.tcp.port";
     public static final String AKKA_CLUSTER_SEED_NODES = "akka.cluster.seed-nodes";
     public static final String AKKA_CLUSTER_AUTO_DOWN_UNREACHABLE_AFTER = "akka.cluster.auto-down-unreachable-after";
+    public static final String GREMLIN_AKKA_SYSTEM_NAME = "gremlin.akka.system-name";
 
 }

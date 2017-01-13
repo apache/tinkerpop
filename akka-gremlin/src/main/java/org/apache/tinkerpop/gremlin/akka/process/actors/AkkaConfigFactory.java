@@ -29,14 +29,10 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.structure.Partition;
-import org.apache.tinkerpop.gremlin.util.ClassUtil;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -80,13 +76,15 @@ final class AkkaConfigFactory {
             return value;
     }
 
-    static Address getMasterActorDeployment(final Config config) {
-        final List<String> seedNodes = config.getStringList(Constants.AKKA_CLUSTER_SEED_NODES);
-        return AddressFromURIString.parse(seedNodes.get(0));
+    static Address getMasterActorDeployment(final Configuration configuration) {
+        final String hostName = configuration.getString(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME);
+        final String port = configuration.getProperty(Constants.AKKA_REMOTE_NETTY_TCP_PORT).toString();
+        return AddressFromURIString.parse("akka.tcp://" + configuration.getString(Constants.GREMLIN_AKKA_SYSTEM_NAME) + "@" + hostName + ":" + port);
     }
 
-    static Address getWorkerActorDeployment(final Partition partition) {
-        final String location = partition.location().isSiteLocalAddress() ? "127.0.0.1" : partition.location().getHostAddress().toString();
-        return AddressFromURIString.parse("akka.tcp://tinkerpop@" + location + ":2552");
+    static Address getWorkerActorDeployment(final Configuration configuration, final Partition partition) {
+        final String hostName = partition.location().isSiteLocalAddress() ? "127.0.0.1" : partition.location().getHostAddress().toString();
+        final String port = configuration.getProperty(Constants.AKKA_REMOTE_NETTY_TCP_PORT).toString();
+        return AddressFromURIString.parse("akka.tcp://" + configuration.getString(Constants.GREMLIN_AKKA_SYSTEM_NAME) + "@" + hostName + ":" + port);
     }
 }

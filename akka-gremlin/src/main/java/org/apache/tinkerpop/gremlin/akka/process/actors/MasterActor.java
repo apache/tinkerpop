@@ -75,7 +75,7 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
             this.workers.add(workerAddress);
             context().actorOf(
                     Props.create(WorkerActor.class, configuration, partition.id(), this.master)
-                            .withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getWorkerActorDeployment(partition)))),
+                            .withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getWorkerActorDeployment(configuration, partition)))),
                     workerAddress.getId());
         }
         this.masterProgram = actorProgram.createMasterProgram(this);

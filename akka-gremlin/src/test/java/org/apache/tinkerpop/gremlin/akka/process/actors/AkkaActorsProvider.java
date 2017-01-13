@@ -144,8 +144,6 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             put(Constants.AKKA_REMOTE_ENABLED_TRANSPORTS, Collections.singletonList("akka.remote.netty.tcp"));
             put(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME, "127.0.0.1");
             put(Constants.AKKA_REMOTE_NETTY_TCP_PORT, 2552);
-            put(Constants.AKKA_CLUSTER_SEED_NODES, Collections.singletonList("akka.tcp://tinkerpop@127.0.0.1:2552"));
-            put(Constants.AKKA_CLUSTER_AUTO_DOWN_UNREACHABLE_AFTER, "10s");
         }};
     }
 
