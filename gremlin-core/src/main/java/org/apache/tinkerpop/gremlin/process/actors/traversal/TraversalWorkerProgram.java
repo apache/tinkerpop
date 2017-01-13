@@ -171,7 +171,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
         else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
-            this.self.send(this.partitionToWorkerMap.get(this.self.partitioner().getPartition((Element) traverser.get())), traverser);
+            this.self.send(this.partitionToWorkerMap.get(this.self.partitioner().find((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
     }

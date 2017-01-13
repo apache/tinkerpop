@@ -165,7 +165,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
         if (traverser.isHalted())
             this.results.add(traverser);
         else if (traverser.get() instanceof Element)
-            this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().getPartition((Element) traverser.get())), this.detachTraverser(traverser));
+            this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().find((Element) traverser.get())), this.detachTraverser(traverser));
         else
             this.master.send(this.master.address(), this.detachTraverser(traverser));
     }
@@ -185,6 +185,6 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     private void attachTraverser(final Traverser.Admin traverser) {
         if (TraversalActorProgram.DETACH && traverser.get() instanceof Element)
-            traverser.attach(this.master.partitioner().getPartition((Element) traverser.get()));
+            traverser.attach(this.master.partitioner().find((Element) traverser.get()));
     }
 }

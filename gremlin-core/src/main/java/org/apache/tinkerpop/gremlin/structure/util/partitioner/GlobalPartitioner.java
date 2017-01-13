@@ -58,7 +58,7 @@ public final class GlobalPartitioner implements Partitioner {
     }
 
     @Override
-    public Partition getPartition(final Element element) {
+    public Partition find(final Element element) {
         return this.partition;
     }
 

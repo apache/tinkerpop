@@ -103,7 +103,7 @@ public final class GryoSerializer implements Serializer {
                 forEach(clazz -> bindings.put(ClassUtil.getClassName(clazz), "gryo"));
         return bindings;
     }
-    
+
     @Override
     public int identifier() {
         return GryoVersion.V3_0.hashCode();

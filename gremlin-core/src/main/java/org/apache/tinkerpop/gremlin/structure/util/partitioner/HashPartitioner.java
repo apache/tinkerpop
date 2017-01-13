@@ -66,7 +66,7 @@ public final class HashPartitioner implements Partitioner {
     }
 
     @Override
-    public Partition getPartition(final Element element) {
+    public Partition find(final Element element) {
         for (final Partition partition : this.partitions) {
             if (partition.contains(element))
                 return partition;

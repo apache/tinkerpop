@@ -28,9 +28,9 @@ public interface Partitioner {
 
     public Graph getGraph();
 
-    public List<Partition> getPartitions();
+    public Partition find(final Element element);
 
-    public Partition getPartition(final Element element);
+    public List<Partition> getPartitions();
 
     public default Partition getPartition(final String id) {
         for (final Partition partition : this.getPartitions()) {
