@@ -166,7 +166,7 @@ public class ProcessActorsSuite extends AbstractGremlinSuite {
             SideEffectCapTest.Traversals.class,
             SideEffectTest.Traversals.class,
             StoreTest.Traversals.class,
-            SubgraphTest.Traversals.class,
+            // SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
 
             // compliance
@@ -182,7 +182,7 @@ public class ProcessActorsSuite extends AbstractGremlinSuite {
             EventStrategyProcessTest.class,
             ReadOnlyStrategyProcessTest.class,
             PartitionStrategyProcessTest.class,
-            SubgraphStrategyProcessTest.class
+            // SubgraphStrategyProcessTest.class
     };
 
     /**
@@ -250,7 +250,7 @@ public class ProcessActorsSuite extends AbstractGremlinSuite {
             SideEffectCapTest.class,
             SideEffectTest.class,
             StoreTest.class,
-            SubgraphTest.class,
+            // SubgraphTest.class,
             TreeTest.class,
     };
 

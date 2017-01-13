@@ -147,4 +147,5 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     public Map<K, V> generateFinalResult(final Map<K, ?> object) {
         return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
+
 }

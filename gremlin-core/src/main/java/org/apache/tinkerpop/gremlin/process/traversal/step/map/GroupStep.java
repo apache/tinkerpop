@@ -140,6 +140,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
 
+
     ///////////////////////
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
@@ -150,8 +151,10 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             // no-arg constructor for serialization
         }
 
+
         public GroupBiOperator(final BinaryOperator<V> barrierAggregator) {
             this.barrierAggregator = barrierAggregator;
+
         }
 
         @Override
@@ -168,7 +171,6 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             return mapA;
         }
     }
-
 
     ///////////////////////
 

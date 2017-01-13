@@ -126,6 +126,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                 if (this.orderCounter != -1)
                     this.results.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
 
+                this.results.forEach(this::attachTraverser);
                 this.master.close();
             }
         } else {

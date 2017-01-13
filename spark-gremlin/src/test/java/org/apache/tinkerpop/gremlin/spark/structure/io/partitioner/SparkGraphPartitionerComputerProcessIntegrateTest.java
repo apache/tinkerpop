@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark.structure.io.partitioner;
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -29,5 +30,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessComputerSuite.class)
 @GraphProviderClass(provider = TinkerGraphPartitionerProvider.class, graph = TinkerGraph.class)
+@Ignore
 public class SparkGraphPartitionerComputerProcessIntegrateTest {
 }
