@@ -153,7 +153,7 @@ class DriverRemoteConnection(RemoteConnection):
     @gen.coroutine
     def _execute_message(self, send_message):
         send_message = b"".join([b"\x21",
-                                 b"application/vnd.gremlin-v2.0+json",
+                                 b"application/vnd.gremlin-v3.0+json",
                                  json.dumps(send_message, separators=(',', ':')).encode("utf-8")])
         if self._websocket.protocol is None:
             self._websocket = yield websocket.websocket_connect(self.url)
@@ -219,7 +219,7 @@ class Response:
         if status_code == 407:
             self._websocket.write_message(
                 b"".join([b"\x21",
-                          b"application/vnd.gremlin-v2.0+json",
+                          b"application/vnd.gremlin-v3.0+json",
                           json.dumps({
                               "requestId": {
                                   "@type": "g:UUID",

@@ -38,7 +38,7 @@ import java.util.UUID;
  */
 public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessageSerializerV2d0 implements MessageTextSerializer {
     private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV3d0.class);
-    private static final String MIME_TYPE = SerTokens.MIME_JSON;
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V3D0;
 
     private static byte[] header;
 
@@ -65,7 +65,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         // override the 2.0 in AbstractGraphSONMessageSerializerV2d0
-        return builder.typeInfo(TypeInfo.PARTIAL_TYPES).version(GraphSONVersion.V3_0);
+        return builder.version(GraphSONVersion.V3_0);
     }
 
     @Override
