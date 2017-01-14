@@ -37,6 +37,7 @@ import java.util.Map;
 
 /**
  * A Kerberos (GSSAPI) implementation of an {@link Authenticator}
+ * This authenticator authenticates and autorizes all clients with a valid service ticket.
  *
  * @author Marc de Lignie
  */
@@ -137,6 +138,10 @@ public class Krb5Authenticator implements Authenticator {
         /*
          * This method is based on the handle() method from:
          *   https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/kerby-kerb/integration-test/src/main/java/org/apache/kerby/kerberos/kerb/integration/test/sasl/SaslAppServer.java
+         *
+         * This provides the simplest form of authorization, where each client that provides a valid service ticket,
+         * is authorized. More elaborate authorization schemes would interrogate a policy server like Apache Ranger
+         * or ACL's of a storage backend.
          */
         @Override
         public void handle(Callback[] callbacks) throws UnsupportedCallbackException {

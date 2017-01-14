@@ -205,15 +205,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         }
     }
 
-//    ToDo: Unclear how to test this
-//    @Test
-//    public void shouldFailWithAuthIdUnequalAuthzId() throws Exception {
-//        server = new GremlinServerAuthKrb5Integrate(getServerPrincipal(), serviceKeytabFile);
-//        server.setUp();
-//    }
-
-
-    // This test backs a fix in gremlin-driver (cd628b251f6956c826df20c89177680fe120ff99)
+    // This test backs a fix in gremlin-driver (see commit cd628b251f6956c826df20c89177680fe120ff99)
     // Maybe gremlin-driver needs its own test with client.submit("[1,2,3] as byte[]")
     @Test
     public void shouldAuthenticateWithSerializeResultToString() throws Exception {
