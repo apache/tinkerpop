@@ -41,10 +41,7 @@ import static org.apache.tinkerpop.gremlin.server.GremlinServer.AUDIT_LOGGER_NAM
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.slf4j.LoggerFactory;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -72,6 +69,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
 
     private static final boolean AUDIT_LOG_ENABLED = true;
     private static final boolean AUDIT_LOG_DISABLED = false;
+    private static final String TESTCONSOLE2 = "GremlinConsole2";
 
     private KdcFixture kdcServer;
 
@@ -131,6 +129,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             case "shouldNotAuditLogWhenDisabled":
                 authSettings.enableAuditLog = AUDIT_LOG_DISABLED;
             case "shouldAuditLogWithKrb5Authenticator":
+            case "shouldAuditLogTwoClientsWithKrb5Authenticator":
                 authConfig.put("keytab", kdcServer.serviceKeytabFile.getAbsolutePath());
                 authConfig.put("principal", kdcServer.serverPrincipal);
                 break;
@@ -318,5 +317,58 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 item.getMessage().toString().equals(String.format("User with address %s requested: 1-1", address))));
     }
 
-    //ToDo: test with two clients
+    @Test
+    public void shouldAuditLogTwoClientsWithKrb5Authenticator() throws Exception {
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Client client = cluster.connect();
+        final Cluster cluster2 = TestClientFactory.build().jaasEntry(TESTCONSOLE2)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Client client2 = cluster2.connect();
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(22, client2.submit("11+11").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(23, client2.submit("11+12").all().get().get(0).getInt());
+            assertEquals(24, client2.submit("11+13").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+            cluster2.close();
+        }
+        final List<LoggingEvent> log = recordingAppender.getEvents();
+        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
+        final Iterator<LoggingEvent> authEvents = auditEvents
+                .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator();
+
+        // First client
+        final LoggingEvent authEvent = authEvents.next();
+        final String authMsg = authEvent.getMessage().toString();
+        final Matcher m = Pattern.compile(".*?([\\d.:]{13,21}).*?").matcher(authMsg);
+        m.find();
+        final String address = m.group(1);
+        assertTrue(authEvent.getLevel() == INFO && authMsg.equals(
+                String.format("User %s with address %s authenticated by Krb5Authenticator", kdcServer.clientPrincipalName, address)));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 1+1", address))));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 1+2", address))));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 1+3", address))));
+
+        // Second client
+        final LoggingEvent authEvent2 = authEvents.next();
+        final String authMsg2 = authEvent2.getMessage().toString();
+        final Matcher m2 = Pattern.compile(".*?([\\d.:]{13,21}).*?").matcher(authMsg2);
+        m2.find();
+        final String address2 = m2.group(1);
+        assertTrue(authEvent2.getLevel() == INFO && authMsg2.equals(
+                String.format("User %s with address %s authenticated by Krb5Authenticator", kdcServer.clientPrincipalName2, address2)));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 11+11", address2))));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 11+12", address2))));
+        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
+                item.getMessage().toString().equals(String.format("User with address %s requested: 11+13", address2))));
+    }
 }

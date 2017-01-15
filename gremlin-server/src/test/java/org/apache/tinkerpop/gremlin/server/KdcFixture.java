@@ -34,10 +34,10 @@ import java.net.Inet4Address;
 /**
  * @author Marc de Lignie
  *
- * This class is derived from the following classes from https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/:
+ * This class is derived from the following classes from https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2:
  *  - org.apache.kerby.kerberos.kerb.server.TestKdcServer
  *  - org.apache.kerby.kerberos.kerb.server.KdcTestBase
- *  - org.apache.kerby.kerberos.kerb.server.LoginTestBase.java
+ *  - org.apache.kerby.kerberos.kerb.server.LoginTestBase
  *
  * See also: gremlin-server/src/main/static/NOTICE
  */
@@ -46,15 +46,20 @@ public class KdcFixture {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(KdcFixture.class);
 
     final String clientPassword = "123456";
+    final String clientPassword2 = "1234562";
     final String clientPrincipalName = "drankye";
+    final String clientPrincipalName2 = "drankye2";
     final String serverPrincipalName = "test-service";
     final String ticketCacheFileName = "test-tkt.cc";
+    final String ticketCacheFileName2 = "test-tkt2.cc";
     final String serviceKeytabFileName = "test-service.keytab";
 
     final String clientPrincipal;
+    final String clientPrincipal2;
     final String serverPrincipal;
     final File testDir;
     final File ticketCacheFile;
+    final File ticketCacheFile2;
     final File serviceKeytabFile;
 
     final String hostname;
@@ -66,8 +71,10 @@ public class KdcFixture {
         hostname = findHostname();
         serverPrincipal = serverPrincipalName + "/" + hostname + "@" + KdcFixture.TestKdcServer.KDC_REALM;
         clientPrincipal = clientPrincipalName + "@" + KdcFixture.TestKdcServer.KDC_REALM;
+        clientPrincipal2 = clientPrincipalName2 + "@" + KdcFixture.TestKdcServer.KDC_REALM;
         testDir = createTestDir();
         ticketCacheFile = new File(testDir, ticketCacheFileName);
+        ticketCacheFile2 = new File(testDir, ticketCacheFileName2);
         serviceKeytabFile = new File(testDir, serviceKeytabFileName);
     }
 
@@ -130,12 +137,17 @@ public class KdcFixture {
         kdcServer.createPrincipal(clientPrincipal, clientPassword);
         TgtTicket tgt = kdcServer.getKrbClient().requestTgt(clientPrincipal, clientPassword);
         kdcServer.getKrbClient().storeTicket(tgt, ticketCacheFile);
+
+        kdcServer.createPrincipal(clientPrincipal2, clientPassword2);
+        TgtTicket tgt2 = kdcServer.getKrbClient().requestTgt(clientPrincipal2, clientPassword2);
+        kdcServer.getKrbClient().storeTicket(tgt2, ticketCacheFile2);
     }
 
     public void close() throws Exception {
         deletePrincipals();
         kdcServer.stop();
         ticketCacheFile.delete();
+        ticketCacheFile2.delete();
         serviceKeytabFile.delete();
         testDir.delete();
         System.clearProperty("java.security.auth.login.config");
@@ -145,6 +157,7 @@ public class KdcFixture {
         kdcServer.getKadmin().deleteBuiltinPrincipals();
         kdcServer.deletePrincipals(serverPrincipal);
         kdcServer.deletePrincipal(clientPrincipal);
+        kdcServer.deletePrincipal(clientPrincipal2);
     }
 
     public void createPrincipal(final String principal) throws KrbException {
