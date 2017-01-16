@@ -108,7 +108,7 @@ writeSupportedV1Objects = { writer, mapper ->
     writer.write("~~~~~~~~~~~~~~~\n\n")
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
-    writer.write(toJsonV1d0NoTypes(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
+    writer.write(toJsonV1d0NoTypes(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server)."))
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
             result(Arrays.asList(graph.vertices().next())).create()
@@ -249,7 +249,7 @@ writeSupportedV2Objects = { writer, mapper, toJsonFunction ->
     writer.write("~~~~~~~~~~~~~~~\n\n")
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
-    writer.write(toJsonFunction(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
+    writer.write(toJsonFunction(msg, "Authentication Challenge", mapper, "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server)."))
     msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
             code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
             result(Arrays.asList(graph.vertices().next())).create()
