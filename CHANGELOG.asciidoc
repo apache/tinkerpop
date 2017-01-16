@@ -71,6 +71,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Make error messaging more consistent during result iteration timeouts in Gremlin Server.
 * `PathRetractionStrategy` does not add a `NoOpBarrierStep` to the end of local children as its wasted computation in 99% of traversals.
 * Fixed a bug in `AddVertexStartStep` where if a side-effect was being used in the parametrization, an NPE occurred.
 * Fixed a bug in `LazyBarrierStrategy` where `profile()` was deactivating it accidentally.
