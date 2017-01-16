@@ -1299,7 +1299,7 @@ ResponseMessage
 Authentication Challenge
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -4262,14 +4262,13 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 }
 ----
 
-
 ResponseMessage
 ~~~~~~~~~~~~~~~
 
 Authentication Challenge
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
 
 [source,json]
 ----

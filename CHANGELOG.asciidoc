@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* SASL negotiation supports both a byte array and Base64 encoded bytes as a string for authentication to Gremlin Server.
 * Deprecated `TinkerIoRegistry` replacing it with the more consistently named `TinkerIoRegistryV1d0`.
 * Made error messaging more consistent during result iteration timeouts in Gremlin Server.
 * `PathRetractionStrategy` does not add a `NoOpBarrierStep` to the end of local children as its wasted computation in 99% of traversals.
@@ -580,7 +581,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Bumped to Groovy 2.4.8.
 * Fixed bug in `IncidentToAdjacentStrategy`, it was missing some invalidating steps.
 * Returned a confirmation on session close from Gremlin Server.
 * Use non-default port for running tests on Gremlin Server.

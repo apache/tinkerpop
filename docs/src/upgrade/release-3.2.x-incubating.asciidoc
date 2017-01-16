@@ -240,6 +240,22 @@ and defaults to `false`.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
 link:http://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
 
+SASL Authentication
++++++++++++++++++++
+
+Gremlin Supports SASL based authentication. The server accepts either a byte array or Base64 encoded String as the in
+the `sasl` argument on the `RequestMessage`, however it sends back a byte array only. Some serializers or serializer
+configurations don't work well with that approach (specifically the "toString" configuration on the Gryo serializer) as
+the byte array is returned in the `ResponseMessage` result. In the case of the "toString" serializer the byte array
+gets "toString'd" and the can't be read by the client.
+
+In 3.2.4, the byte array is still returned in the `ResponseMessage` result, but is also returned in the status
+attributes under a `sasl` key as a Base64 encoded string. In this way, the client has options on how it chooses to
+process the authentication response and the change remains backward compatible. Drivers should upgrade to using the
+Base64 encoded string however as the old approach will likely be removed in the future.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1600[TINKERPOP-1600]
+
 TinkerPop 3.2.3
 ---------------
 
