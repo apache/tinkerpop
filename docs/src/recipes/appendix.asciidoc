@@ -136,6 +136,16 @@ g.V().as("a").
   select(keys)
 ----
 
+The following example assumes that the edges point in the `OUT` direction. Assuming undirected edges:
+
+[gremlin-groovy,modern]
+----
+g.V().where(without("x")).as("a").
+  outE().as("e").inV().as("b").
+  filter(bothE().where(neq("e")).otherV().where(eq("a"))).store("x").
+  select("a","b").dedup()
+----
+
 [[appendix-e]]
 _In the "crew" graph, find vertices that match on a complete set of multi-properties._
 
