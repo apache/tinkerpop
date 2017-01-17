@@ -61,13 +61,10 @@ public final class Bytecode implements Cloneable, Serializable {
      */
     public void addSource(final String sourceName, final Object... arguments) {
         if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
-            final Class<TraversalStrategy>[] classes = new Class[arguments.length];
-            for (int i = 0; i < arguments.length; i++) {
-                classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
-                        ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
-                        (Class) arguments[i];
+            for (final Object argument : arguments) {
+                this.sourceInstructions.add(new Instruction(sourceName, argument instanceof TraversalStrategyProxy
+                        ? ((TraversalStrategyProxy) argument).getStrategyClass() : (Class) argument));
             }
-            this.sourceInstructions.add(new Instruction(sourceName, classes));
         } else
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         Bindings.clear();
