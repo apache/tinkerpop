@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
@@ -95,7 +97,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Before
     public void adjustStrategies() {
-        g = g.withoutStrategies(LazyBarrierStrategy.class);
+        // exclude LazyBarrierStrategy and all provider specific strategies
+        final TraversalStrategies strategies = g.getStrategies();
+        strategies.toList().stream().map(TraversalStrategy::getClass)
+                .filter(clazz -> LazyBarrierStrategy.class.equals(clazz) ||
+                        !clazz.getCanonicalName().startsWith("org.apache.tinkerpop."))
+                .forEach(clazz -> g = g.withoutStrategies(clazz));
     }
 
     @Test
