@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.AbstractMap;
@@ -134,6 +135,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void shouldMaintainConfigurationAndShouldNotAlterGraphConfiguration() throws Exception {
         final Configuration graphConfiguration = new BaseConfiguration();
