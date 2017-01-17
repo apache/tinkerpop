@@ -865,7 +865,6 @@ The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the l
 ----
 g.V().limit(2)
 g.V().range(0, 2)
-g.V().limit(2).toString()
 ----
 
 The `limit()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.
@@ -1915,6 +1914,35 @@ g.V(1).both().both()
 g.V(1).both().both().simplePath()
 g.V(1).both().both().simplePath().path()
 ----
+
+[[skip-step]]
+Skip Step
+~~~~~~~~~
+
+The `skip()`-step is analogous to <<range-step,`range()`-step>> save that the higher end range is set to -1.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').order()
+g.V().values('age').order().skip(2)
+g.V().values('age').order().range(2, -1)
+----
+
+The `skip()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').filter(outE('created')).as('p'). <1>
+  map(out('created').values('name').fold()).
+  project('person','primary','other').
+    by(select('p').by('name')).
+    by(limit(local, 1)). <2>
+    by(skip(local, 1)) <3>
+----
+
+<1> For each person who created something...
+<2> ...select the first project (random order) as `primary` and...
+<3> ...select all other projects as `other`.
 
 [[store-step]]
 Store Step

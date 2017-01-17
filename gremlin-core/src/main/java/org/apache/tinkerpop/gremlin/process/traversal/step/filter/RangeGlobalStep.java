@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -33,9 +32,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
@@ -128,6 +125,15 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     }
 
     @Override
+    public boolean equals(final Object other) {
+        if (super.equals(other)) {
+            final RangeGlobalStep typedOther = (RangeGlobalStep) other;
+            return typedOther.low == this.low && typedOther.high == this.high;
+        }
+        return false;
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.BULK);
     }
@@ -178,8 +184,8 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
         private final long highRange;
 
-        private RangeBiOperator() {
-            this.highRange = Long.MAX_VALUE;
+        public RangeBiOperator() {
+            this(-1);
         }
 
         public RangeBiOperator(final long highRange) {
@@ -188,7 +194,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
         @Override
         public TraverserSet<S> apply(final TraverserSet<S> mutatingSeed, final TraverserSet<S> set) {
-            if (mutatingSeed.size() < this.highRange)
+            if (this.highRange == -1 || mutatingSeed.size() < this.highRange)
                 mutatingSeed.addAll(set);
             return mutatingSeed;
         }
