@@ -169,9 +169,9 @@ _Methods for performing some basic mathematical operations in the "modern" graph
 ----
 g.V().values("age").sum() // sum all ages
 g.V().values("age").fold(1, mult) // multiply all ages
-g.V().values("age").map(union(identity(), constant(-1)).sum()) // subtract 1
-g.V().values("age").map(union(identity(), identity()).sum()) // multiply by 2 (simple)
-g.V().values("age").map(union(identity(), constant(2)).fold(1, mult)) // multiply by 2 (generally useful for multiplications by n):
+g.withSack(0).V().values("age").sack(sum).sack(sum).by(constant(-1)).sack() // subtract 1
+g.withSack(0).V().values("age").sack(sum).sack(sum).sack() // multiply by 2 (simple)
+g.withSack(0).V().values("age").sack(sum).sack(mult).by(constant(2)).sack() // multiply by 2 (generally useful for multiplications by n)
 ----
 
 [[appendix-g]]
