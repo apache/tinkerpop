@@ -38,9 +38,10 @@ g.addV('name','marko').as('marko').
   addE('follows').from('daniel').to('marko').iterate()
 g.V().as('p').
   map(__.in('follows').values('name').fold()).
-  group().by(select('p').by('name')).
-          by(project('numFollowers','followers').
-               by(count(local)).by()).next()
+  project('person','followers','numFollowers').
+    by(select('p').by('name')).
+    by().
+    by(count(local))
 ----
 
 It might also be alternatively written as:
