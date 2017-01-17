@@ -75,6 +75,7 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             "g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name",
             "g_V_repeatXdedupX_timesX2X_count",
             "g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX",
+            "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
             GraphTest.Traversals.class.getCanonicalName(),
             GroupTest.Traversals.class.getCanonicalName(),
             ComplexTest.Traversals.class.getCanonicalName(),

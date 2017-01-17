@@ -52,6 +52,8 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLo
 
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool.CONFIG_IO_GRYO_POOL_SIZE;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -105,6 +107,7 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
+        config.put(CONFIG_IO_GRYO_POOL_SIZE, 10);
         return config;
     }
 
