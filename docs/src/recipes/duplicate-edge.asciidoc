@@ -1,0 +1,160 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[duplicate-edge]]
+Duplicate Edge Detection
+------------------------
+
+Whether part of a graph maintenance process or for some other analysis need, it is sometimes necessary to detect
+if there is more than one edge between two vertices. The following examples will assume that an edge with the same
+label and direction will be considered "duplicate".
+
+The "modern" graph does not have any duplicate edges that fit that definition, so the following example adds one
+that is duplicative of the "created" edge between vertex "1" and "3".
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").V(3).addE("created").from("a").iterate()
+g.V(1).outE("created")
+----
+
+One way to find the duplicate edges would be to do something like this:
+
+[gremlin-groovy,existing]
+----
+g.V().outE().
+  project("a","b").                         <1>
+    by().by(inV().path().by().by(label)).
+  group().                                  <2>
+    by(select("b")).
+    by(select("a").fold()).
+  unfold().                                 <3>
+  select(values).                           <4>
+  where(count(local).is(gt(1)))
+----
+
+<1> The "a" and "b" from the `project` contain the edge and the path respectively. The path consists of a the outgoing
+vertex, an edge, and the incoming vertex. The use of `by().by(label))` converts the edge to its label (recall that `by`
+are applied in round-robin fashion), so the path will look something like: `[v[1],created,v[3]]`.
+<2> Group by the path from "b" and construct a list of edges from "a". Any value in this `Map` that has a list of edges
+greater than one means that there is more than one edge for that edge label between those two vertices (i.e. the `Map`
+key).
+<3> Unroll the key-value pairs in the `Map` of paths-edges.
+<4> Only the values from the `Map` are needed and as mentioned earlier, those lists with more than one edge would
+containa  duplicate.
+
+This method find the duplicates, but does require more memory than other approaches. A slightly more complex approach
+that uses less memory might look like this:
+
+[gremlin-groovy,existing]
+----
+g.V().as("ov").
+  outE().as("e").
+  inV().as("iv").
+  inE().                                          <1>
+  where(neq("e")).                                <2>
+  where(eq("e")).by(label).
+  where(outV().as("ov")).
+  group().
+    by(select("ov","e","iv").by().by(label)).     <3>
+  unfold().                                       <4>
+  select(values).
+  where(count(local).is(gt(1)))
+----
+
+<1> To this point in the traversal, the outgoing edges of a vertex are being iterated with the current edge labelled
+as "e". For "e", Gremlin traverses to the incoming vertex and back on in edges of that vertex.
+<2> Those incoming edges are filtered with the following `where` steps. The first ensures that it does not traverse
+back over "e" (i.e. the current edge). The second determines if the edge label is equivalent (i.e. the test for the
+working definition of "duplicate"). The third determines if the outgoing vertex matches the one that started the
+path labelled as "ov".
+<3> This line is quite similar to the output achieved in the previous example at step 2. A `Map` is produced that uses
+the outgoing vertex, the edge label, and the incoming vertex as the key, with the list of edges for that path as the
+value.
+<4> The rest of the traversal is the same as the previous one.
+
+Note that the above traversal could also be written using `match` step:
+
+[gremlin-groovy,existing]
+----
+g.V().match(
+    __.as("ov").outE().as("e"),
+    __.as("e").inV().as("iv"),
+    __.as("iv").inE().as("ie"),
+    __.as("ie").outV().as("ov")).
+      where("ie",neq("e")).
+      where("ie",eq("e")).by(label).
+    select("ie").
+    group().
+      by(select("ov","e","iv").by().by(label)).
+    unfold().select(values).
+      where(count(local).is(gt(1)))
+----
+
+A third way to approach this problem would be to force a link:https://en.wikipedia.org/wiki/Depth-first_search[depth-first search].
+The previous examples invoke traversal strategies that force a link:https://en.wikipedia.org/wiki/Breadth-first_search[breadth first search]
+as a performance optimization.
+
+[gremlin-groovy,existing]
+----
+g.withoutStrategies(LazyBarrierStrategy, PathRetractionStrategy).V().as("ov").   <1>
+  outE().as("e1").
+  inV().as("iv").
+  inE().
+  where(neq("e1")).
+  where(outV().as("ov")).as("e2").                                               <2>
+  filter(select("e1","e2").by(label).where("e1", eq("e2")))                      <3>
+----
+
+<1> Remove strategies that will optimize for breadth first searches and thus allow Gremlin to go depth first.
+<2> To this point, the traversal is very much like the previous one. Review step 2 in the previous example to see the
+parallels here.
+<3> The final `filter` simply looks for edges that match on label, which would then meet the working definition of
+"duplicate".
+
+The basic pattern at play here is to compare the path of the outgoing vertex, its outgoing edge label and the incoming
+vertex. This model can obviously be contracted or expanded as needed to fit different definitions of "duplicate" For
+example, if the definition of "duplicate" was just two vertices with more than one edge of any label between them, then
+the approach might look something like this:
+
+[gremlin-groovy,existing]
+----
+----
+
+Alternatively, a "duplicate" definition could extended to the label and properties of the edge. For purposes of
+demonstration, an additional edge is added to the "modern" graph:
+
+[gremlin-groovy]
+----
+g = TinkerFactory.createModern().traversal()
+g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
+g.V(1).as("a").V(3).addE("created").property("weight",0.5d).from("a").iterate()
+g.V(1).outE("created").valueMap(true)
+----
+
+To identify the duplicate with this revised definition, the previous traversal can be modified to:
+
+[gremlin-groovy,existing]
+----
+g.withoutStrategies(LazyBarrierStrategy, PathRetractionStrategy).V().as("ov").
+  outE().as("e1").
+  inV().as("iv").
+  inE().
+  where(neq("e1")).
+  where(outV().as("ov")).as("e2").
+  filter(select("e1","e2").by(label).where("e1", eq("e2"))).
+  filter(select("e1","e2").by("weight").where("e1", eq("e2"))).valueMap(true)
+----

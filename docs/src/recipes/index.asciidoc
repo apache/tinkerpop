@@ -40,7 +40,13 @@ include::between-vertices.asciidoc[]
 
 include::centrality.asciidoc[]
 
+include::connected-components.asciidoc[]
+
 include::cycle-detection.asciidoc[]
+
+include::duplicate-edge.asciidoc[]
+
+include::duplicate-vertex.asciidoc[]
 
 include::if-then-based-grouping.asciidoc[]
 
@@ -131,4 +137,4 @@ GitHub and JIRA are linked.  As mentioned earlier in this section, the recipe wi
 committers prior to merging. This process may take several days to complete. We look forward to receiving your
 submissions!
 
-
+include::appendix.asciidoc[]
