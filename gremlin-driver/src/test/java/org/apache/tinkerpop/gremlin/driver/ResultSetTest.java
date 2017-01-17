@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -76,6 +77,9 @@ public class ResultSetTest extends AbstractResultQueueTest {
         }
 
         assertThat(atLeastOnce.get(), is(true));
+
+        // ensure there is enough time for the readComplete to complete the "all" future
+        all.get(30000, TimeUnit.MILLISECONDS);
         assertThat(all.isDone(), is(true));
     }
 
