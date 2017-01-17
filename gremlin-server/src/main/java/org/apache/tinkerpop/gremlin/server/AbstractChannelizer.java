@@ -242,8 +242,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword)
                     .trustManager(trustCertChainFile);
         }
+        
+        
 
-        builder.sslProvider(provider);
+        builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
 
         try {
             return builder.build();
