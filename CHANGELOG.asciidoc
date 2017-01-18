@@ -27,7 +27,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `ProjectedTraverser` which wraps a traverser with a `List<Object>` of projected data.
-* `OrderGlobalStep` and `SampleGlobalStep` now emit traversers with their `by()`-projections and thus, can move beyond the local star graph.
+* `OrderGlobalStep` and `SampleGlobalStep` use `ProjectedTraverser` and now can work up to the local star graph in OLAP.
 * SASL negotiation supports both a byte array and Base64 encoded bytes as a string for authentication to Gremlin Server.
 * Deprecated `TinkerIoRegistry` replacing it with the more consistently named `TinkerIoRegistryV1d0`.
 * Made error messaging more consistent during result iteration timeouts in Gremlin Server.

@@ -66,10 +66,8 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public void processAllStarts() {
-        if (this.starts.hasNext()) {
-            while (this.starts.hasNext()) {
-                this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
-            }
+        while (this.starts.hasNext()) {
+            this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
         }
     }
 
@@ -97,7 +95,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                         runningWeight = runningWeight + currentWeight;
                         if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
                             final Traverser.Admin<S> split = s.split();
-                            split.setBulk(1l);
+                            split.setBulk(1L);
                             sampledSet.add(split);
                             runningAmountToSample++;
                             totalWeight = totalWeight - currentWeight;

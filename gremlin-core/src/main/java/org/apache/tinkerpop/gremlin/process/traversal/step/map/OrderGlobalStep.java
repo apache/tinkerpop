@@ -53,7 +53,6 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
     private MultiComparator<C> multiComparator = null;
     private long limit = Long.MAX_VALUE;
-    private boolean isShuffle = false;
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -61,7 +60,9 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        if (this.isShuffle)
+        if (null == this.multiComparator) this.multiComparator = this.createMultiComparator();
+        //
+        if (this.multiComparator.isShuffle())
             traverserSet.shuffle();
         else
             traverserSet.sort((Comparator) this.multiComparator);
@@ -69,12 +70,8 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void processAllStarts() {
-        if (null == this.multiComparator)
-            this.multiComparator = this.createMultiComparator();
-        if (this.starts.hasNext()) {
-            while (this.starts.hasNext()) {
-                this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
-            }
+        while (this.starts.hasNext()) {
+            this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
         }
     }
 
@@ -88,7 +85,6 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void addComparator(final Traversal.Admin<S, C> traversal, final Comparator<C> comparator) {
-        this.isShuffle = Order.shuffle == (Comparator) comparator;
         this.comparators.add(new Pair<>(this.integrateChild(traversal), comparator));
     }
 
@@ -149,13 +145,12 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        if (null == this.multiComparator)
-            this.multiComparator = this.createMultiComparator();
+        if (null == this.multiComparator) this.multiComparator = this.createMultiComparator();
         return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.multiComparator), false, true);
     }
 
-    private final ProjectedTraverser<S,Object> createProjectedTraverser(final Traverser.Admin<S> traverser) {
-        final List<Object> projections = new ArrayList<>(this.comparators.size());
+    private final ProjectedTraverser<S, C> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+        final List<C> projections = new ArrayList<>(this.comparators.size());
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
             projections.add(TraversalUtil.apply(traverser, pair.getValue0()));
         }
