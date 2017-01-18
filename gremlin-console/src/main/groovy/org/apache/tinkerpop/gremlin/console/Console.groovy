@@ -378,7 +378,13 @@ class Console {
                 groovy.execute("args = []")
             }
 
-            final File file = new File(scriptFile)
+            File file = new File(scriptFile)
+            if (!file.exists() && !file.isAbsolute()) {
+                final String userWorkingDir = System.getProperty("user.working_dir");
+                if (userWorkingDir != null) {
+                    file = new File(userWorkingDir, scriptFile);
+                }
+            }
             int lineNumber = 0
             def lines = file.readLines()
             for (String line : lines) {

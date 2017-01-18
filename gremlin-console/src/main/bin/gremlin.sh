@@ -22,6 +22,8 @@
 set -e
 set -u
 
+USER_DIR=`pwd`
+
 cd $(dirname $0)
 DIR=`pwd`
 
@@ -90,7 +92,7 @@ while getopts ":l" opt; do
     esac
 done
 
-JAVA_OPTIONS="${JAVA_OPTIONS} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+JAVA_OPTIONS="${JAVA_OPTIONS} -Duser.working_dir=${USER_DIR} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
 JAVA_OPTIONS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JAVA_OPTIONS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then
