@@ -103,6 +103,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 * The root traversal now throws regular `NoSuchElementException` instead of `FastNoSuchElementException`. (*breaking*)
 * Added a short sleep to prevent traversal from finishing before it can be interrupted during `TraversalInterruptionComputerTest`.
+* Added support for SSL client authentication
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)

@@ -1036,7 +1036,7 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyPassword |The password of the `keyFile` if it is password-protected |_none_
-|ssl.needClientAuth | Optional. One of NONE, OPTIONAL, REQUIRE.  Enables client certificate authentication at the level specified. Can be used in combination with Authenticator. |_none_
+|ssl.needClientAuth | Optional. One of NONE, OPTIONAL, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
 |ssl.trustCertChainFile | Required when needClientAuth is OPTIONAL or REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
