@@ -34,21 +34,16 @@ import java.util.function.Function;
  */
 public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
 
-    private Traverser.Admin<T> internal;
+    private Traverser.Admin<T> baseTraverser;
     private List<P> projections;
 
     private ProjectedTraverser() {
         // for serialization
     }
 
-    public ProjectedTraverser(final Traverser.Admin<T> internal, final List<P> projections) {
-        this.internal = internal;
+    public ProjectedTraverser(final Traverser.Admin<T> baseTraverser, final List<P> projections) {
+        this.baseTraverser = baseTraverser;
         this.projections = projections;
-    }
-
-
-    public Traverser.Admin<T> getInternal() {
-        return this.internal;
     }
 
     public List<P> getProjections() {
@@ -57,140 +52,140 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
 
     @Override
     public void merge(final Admin<?> other) {
-        this.internal.merge(other);
+        this.baseTraverser.merge(other);
     }
 
     @Override
-    public <R> Admin<R> split(R r, Step<T, R> step) {
-        return new ProjectedTraverser<>(this.internal.split(r, step), this.projections);
+    public <R> Admin<R> split(final R r, final Step<T, R> step) {
+        return new ProjectedTraverser<>(this.baseTraverser.split(r, step), this.projections);
     }
 
     @Override
     public Admin<T> split() {
-        return new ProjectedTraverser<>(this.internal.split(), this.projections);
+        return new ProjectedTraverser<>(this.baseTraverser.split(), this.projections);
     }
 
     @Override
     public void addLabels(final Set<String> labels) {
-        this.internal.addLabels(labels);
+        this.baseTraverser.addLabels(labels);
     }
 
     @Override
     public void keepLabels(final Set<String> labels) {
-        this.internal.keepLabels(labels);
+        this.baseTraverser.keepLabels(labels);
     }
 
     @Override
     public void dropLabels(final Set<String> labels) {
-        this.internal.dropLabels(labels);
+        this.baseTraverser.dropLabels(labels);
     }
 
     @Override
     public void dropPath() {
-        this.internal.dropPath();
+        this.baseTraverser.dropPath();
     }
 
     @Override
     public void set(final T t) {
-        this.internal.set(t);
+        this.baseTraverser.set(t);
     }
 
     @Override
     public void incrLoops(final String stepLabel) {
-        this.internal.incrLoops(stepLabel);
+        this.baseTraverser.incrLoops(stepLabel);
     }
 
     @Override
     public void resetLoops() {
-        this.internal.resetLoops();
+        this.baseTraverser.resetLoops();
     }
 
     @Override
     public String getStepId() {
-        return this.internal.getStepId();
+        return this.baseTraverser.getStepId();
     }
 
     @Override
     public void setStepId(final String stepId) {
-        this.internal.setStepId(stepId);
+        this.baseTraverser.setStepId(stepId);
     }
 
     @Override
     public void setBulk(final long count) {
-        this.internal.setBulk(count);
+        this.baseTraverser.setBulk(count);
     }
 
     @Override
     public Admin<T> detach() {
-        this.internal = this.internal.detach();
+        this.baseTraverser = this.baseTraverser.detach();
         return this;
     }
 
     @Override
     public T attach(final Function<Attachable<T>, T> method) {
-        return this.internal.attach(method);
+        return this.baseTraverser.attach(method);
     }
 
     @Override
     public void setSideEffects(final TraversalSideEffects sideEffects) {
-        this.internal.setSideEffects(sideEffects);
+        this.baseTraverser.setSideEffects(sideEffects);
     }
 
     @Override
     public TraversalSideEffects getSideEffects() {
-        return this.internal.getSideEffects();
+        return this.baseTraverser.getSideEffects();
     }
 
     @Override
     public Set<String> getTags() {
-        return this.internal.getTags();
+        return this.baseTraverser.getTags();
     }
 
     @Override
     public T get() {
-        return this.internal.get();
+        return this.baseTraverser.get();
     }
 
     @Override
     public <S> S sack() {
-        return this.internal.sack();
+        return this.baseTraverser.sack();
     }
 
     @Override
     public <S> void sack(final S object) {
-        this.internal.sack(object);
+        this.baseTraverser.sack(object);
     }
 
     @Override
     public Path path() {
-        return this.internal.path();
+        return this.baseTraverser.path();
     }
 
     @Override
     public int loops() {
-        return this.internal.loops();
+        return this.baseTraverser.loops();
     }
 
     @Override
     public long bulk() {
-        return this.internal.bulk();
+        return this.baseTraverser.bulk();
     }
 
     @Override
     public int hashCode() {
-        return this.internal.hashCode();
+        return this.baseTraverser.hashCode();
     }
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof ProjectedTraverser && ((ProjectedTraverser) object).internal.equals(this.internal);
+        return object instanceof ProjectedTraverser && ((ProjectedTraverser) object).baseTraverser.equals(this.baseTraverser);
     }
 
     @Override
     public ProjectedTraverser<T, P> clone() {
         try {
             final ProjectedTraverser<T, P> clone = (ProjectedTraverser<T, P>) super.clone();
-            clone.internal = (Traverser.Admin<T>) this.internal.clone();
+            clone.baseTraverser = (Traverser.Admin<T>) this.baseTraverser.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -198,6 +193,6 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     public static <T> Traverser.Admin<T> tryUnwrap(final Traverser.Admin<T> traverser) {
-        return traverser instanceof ProjectedTraverser ? ((ProjectedTraverser) traverser).getInternal() : traverser;
+        return traverser instanceof ProjectedTraverser ? ((ProjectedTraverser) traverser).baseTraverser : traverser;
     }
 }
