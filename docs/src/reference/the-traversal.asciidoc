@@ -438,43 +438,6 @@ g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b') 
 <1> Group and count verticies by their label.  Emit the side effect labeled 'a', which is the group count by label.
 <2> Same as statement 1, but also emit the side effect labeled 'b' which groups vertices by the number of out edges.
 
-[[coalesce-step]]
-Coalesce Step
-~~~~~~~~~~~~~
-
-The `coalesce()`-step evaluates the provided traversals in order and returns the first traversal that emits at
-least one element.
-
-[gremlin-groovy,modern]
-----
-g.V(1).coalesce(outE('knows'), outE('created')).inV().path().by('name').by(label)
-g.V(1).coalesce(outE('created'), outE('knows')).inV().path().by('name').by(label)
-g.V(1).property('nickname', 'okram')
-g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
-----
-
-[[count-step]]
-Count Step
-~~~~~~~~~~
-
-image::count-step.png[width=195]
-
-The `count()`-step (*map*) counts the total number of represented traversers in the streams (i.e. the bulk count).
-
-[gremlin-groovy,modern]
-----
-g.V().count()
-g.V().hasLabel('person').count()
-g.V().hasLabel('person').outE('created').count().path()  <1>
-g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
-----
-
-<1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
-<2> The path of the traverser emanating from `count()` starts at `count()`.
-
-IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for
-`Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
-
 [[choose-step]]
 Choose Step
 ~~~~~~~~~~~
@@ -532,6 +495,21 @@ g.V().hasLabel('person').
         option(none, values('name'))
 ----
 
+[[coalesce-step]]
+Coalesce Step
+~~~~~~~~~~~~~
+
+The `coalesce()`-step evaluates the provided traversals in order and returns the first traversal that emits at
+least one element.
+
+[gremlin-groovy,modern]
+----
+g.V(1).coalesce(outE('knows'), outE('created')).inV().path().by('name').by(label)
+g.V(1).coalesce(outE('created'), outE('knows')).inV().path().by('name').by(label)
+g.V(1).property('nickname', 'okram')
+g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
+----
+
 [[coin-step]]
 Coin Step
 ~~~~~~~~~
@@ -564,6 +542,28 @@ g.V().coalesce(
 
 <1> Show the names of people, but show "inhuman" for other vertices.
 <2> Same as statement 1 (unless there is a person vertex with no name).
+
+[[count-step]]
+Count Step
+~~~~~~~~~~
+
+image::count-step.png[width=195]
+
+The `count()`-step (*map*) counts the total number of represented traversers in the streams (i.e. the bulk count).
+
+[gremlin-groovy,modern]
+----
+g.V().count()
+g.V().hasLabel('person').count()
+g.V().hasLabel('person').outE('created').count().path()  <1>
+g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
+----
+
+<1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
+<2> The path of the traverser emanating from `count()` starts at `count()`.
+
+IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for
+`Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
 
 [[cyclicpath-step]]
 CyclicPath Step
@@ -1182,6 +1182,22 @@ g.V().repeat(both()).times(3).values('age').min()
 
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
+
+[[not-step]]
+Not Step
+~~~~~~~~
+
+The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument does
+not return any objects.
+
+[gremlin-groovy,modern]
+----
+g.V().not(hasLabel('person')).valueMap(true)
+g.V().hasLabel('person').
+  not(out('created').count().is(gt(1))).values('name')   <1>
+----
+
+<1> josh created two projects and vadas none
 
 [[option-step]]
 Option Step
