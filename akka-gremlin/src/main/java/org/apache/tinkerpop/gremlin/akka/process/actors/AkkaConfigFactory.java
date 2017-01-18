@@ -77,14 +77,14 @@ final class AkkaConfigFactory {
     }
 
     static Address getMasterActorDeployment(final Configuration configuration) {
-        final String hostName = configuration.getString(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME);
-        final String port = configuration.getProperty(Constants.AKKA_REMOTE_NETTY_TCP_PORT).toString();
+        final String hostName = configuration.getString(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME, "127.0.0.1");
+        final String port = configuration.getInteger(Constants.AKKA_REMOTE_NETTY_TCP_PORT, 0).toString();
         return AddressFromURIString.parse("akka.tcp://" + configuration.getString(Constants.GREMLIN_AKKA_SYSTEM_NAME) + "@" + hostName + ":" + port);
     }
 
     static Address getWorkerActorDeployment(final Configuration configuration, final Partition partition) {
         final String hostName = partition.location().isSiteLocalAddress() ? "127.0.0.1" : partition.location().getHostAddress().toString();
-        final String port = configuration.getProperty(Constants.AKKA_REMOTE_NETTY_TCP_PORT).toString();
+        final String port = configuration.getInteger(Constants.AKKA_REMOTE_NETTY_TCP_PORT, 0).toString();
         return AddressFromURIString.parse("akka.tcp://" + configuration.getString(Constants.GREMLIN_AKKA_SYSTEM_NAME) + "@" + hostName + ":" + port);
     }
 }

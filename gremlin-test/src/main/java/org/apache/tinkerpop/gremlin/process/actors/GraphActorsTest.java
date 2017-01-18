@@ -19,13 +19,18 @@
 
 package org.apache.tinkerpop.gremlin.process.actors;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
+import java.util.UUID;
+
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,7 +46,25 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldHaveProperWorkerCounte() {
+    public void shouldNotAlterGraphConfiguration() {
+        final String uuid = UUID.randomUUID().toString();
+        final Configuration graphConfiguration = graph.configuration();
+        assertEquals(ConfigurationConverter.getMap(graphConfiguration), ConfigurationConverter.getMap(graph.configuration()));
+        assertFalse(graphConfiguration.containsKey("graphActorsTest.uuid-" + uuid));
+        final GraphActors actors = graphProvider.getGraphActors(graph);
+        actors.configure("graphActorsTest.uuid-" + uuid, "bloop");
+        actors.workers(1);
+        final Configuration actorsConfiguration = actors.configuration();
+        assertEquals("bloop", actorsConfiguration.getString("graphActorsTest.uuid-" + uuid));
+        assertEquals(1, actorsConfiguration.getInt(GraphActors.GRAPH_ACTORS_WORKERS));
+        ///
+        assertEquals(ConfigurationConverter.getMap(graphConfiguration), ConfigurationConverter.getMap(graph.configuration()));
+        assertFalse(graphConfiguration.containsKey("graphActorsTest.uuid-" + uuid));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldHaveProperWorkerCount() {
         final GraphActors actors = graphProvider.getGraphActors(graph);
         for (int i = 1; i < 10; i++) {
             assertEquals(6L, g.withProcessor(actors.workers(i)).V().count().next().longValue());

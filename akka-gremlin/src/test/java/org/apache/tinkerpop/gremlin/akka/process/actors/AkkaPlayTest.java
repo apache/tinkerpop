@@ -49,10 +49,10 @@ public class AkkaPlayTest {
         configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT,"gryo");
         final Graph graph = TinkerGraph.open(configuration);
         //graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(3));
+        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(2));
      //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
-        System.out.println(g.V().groupCount().by(T.label).toList());
+        System.out.println(g.V().has("lang").group("a").by("lang").by("name").out().cap("a").toList());
 
 
 
