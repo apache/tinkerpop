@@ -39,8 +39,8 @@ import java.util.function.BinaryOperator;
  */
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
 
-    private TraverserSet<S> traverserSet = new TraverserSet<>();
-    private int maxBarrierSize;
+    protected TraverserSet<S> traverserSet = new TraverserSet<>();
+    protected int maxBarrierSize;
 
     public CollectingBarrierStep(final Traversal.Admin traversal) {
         this(traversal, Integer.MAX_VALUE);

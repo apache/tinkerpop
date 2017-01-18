@@ -27,10 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
 public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBarrierStep<S> implements ComparatorHolder<S, C>, TraversalParent, ByModulating {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
-    private ChainedComparator<S, C> chainedComparator = null;
     private long limit = Long.MAX_VALUE;
+    private boolean isShuffle = false;
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -58,12 +58,30 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        if (null == this.chainedComparator)
-            this.chainedComparator = new ChainedComparator<>(true, this.comparators);
-        if (this.chainedComparator.isShuffle())
+        if (this.isShuffle)
             traverserSet.shuffle();
         else
-            traverserSet.sort((Comparator) this.chainedComparator);
+            traverserSet.sort(Comparator.naturalOrder());
+    }
+
+    @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            while (this.starts.hasNext()) {
+                this.traverserSet.add(new OrderedTraverser<S>(this.starts.next(), (List) this.comparators));
+            }
+            this.barrierConsumer(this.traverserSet);
+        }
+    }
+
+    @Override
+    public Traverser.Admin<S> processNextStart() {
+        if (!this.traverserSet.isEmpty()) {
+            return this.traverserSet.remove();
+        } else if (this.starts.hasNext()) {
+            this.processAllStarts();
+        }
+        return ((OrderedTraverser) this.traverserSet.remove()).getInternal();
     }
 
     public void setLimit(final long limit) {
@@ -76,6 +94,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void addComparator(final Traversal.Admin<S, C> traversal, final Comparator<C> comparator) {
+        this.isShuffle = Order.shuffle == (Comparator) comparator;
         this.comparators.add(new Pair<>(this.integrateChild(traversal), comparator));
     }
 
@@ -125,7 +144,6 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> comparator : this.comparators) {
             clone.comparators.add(new Pair<>(comparator.getValue0().clone(), comparator.getValue1()));
         }
-        clone.chainedComparator = null;
         return clone;
     }
 
@@ -137,47 +155,34 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        if (null == this.chainedComparator)
-            this.chainedComparator = new ChainedComparator<>(true, this.comparators);
-        return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.chainedComparator, this.limit), false, true);
+        return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.isShuffle), false, true);
     }
 
     ////////////////
 
-    public static final class OrderBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable, Cloneable {
+    public static final class OrderBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
 
-        private ChainedComparator chainedComparator;
         private long limit;
+        private boolean isShuffle;
 
         private OrderBiOperator() {
             // for serializers that need a no-arg constructor
         }
 
-        public OrderBiOperator(final ChainedComparator<S, ?> chainedComparator, final long limit) {
-            this.chainedComparator = chainedComparator;
+        public OrderBiOperator(final long limit, final boolean isShuffle) {
             this.limit = limit;
-        }
-
-        @Override
-        public OrderBiOperator<S> clone() {
-            try {
-                final OrderBiOperator<S> clone = (OrderBiOperator<S>) super.clone();
-                clone.chainedComparator = this.chainedComparator.clone();
-                return clone;
-            } catch (final CloneNotSupportedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            this.isShuffle = isShuffle;
         }
 
         @Override
         public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
             setA.addAll(setB);
             if (Long.MAX_VALUE != this.limit && setA.bulkSize() > this.limit) {
-                if (this.chainedComparator.isShuffle())
+                if (this.isShuffle)
                     setA.shuffle();
                 else
-                    setA.sort(this.chainedComparator);
-                long counter = 0l;
+                    setA.sort(Comparator.naturalOrder());
+                long counter = 0L;
                 final Iterator<Traverser.Admin<S>> traversers = setA.iterator();
                 while (traversers.hasNext()) {
                     final Traverser.Admin<S> traverser = traversers.next();
