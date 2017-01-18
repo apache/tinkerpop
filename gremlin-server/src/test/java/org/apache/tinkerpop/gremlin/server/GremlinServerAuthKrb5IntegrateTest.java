@@ -121,6 +121,9 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
                 };
                 authConfig.put("principal", principal);
                 break;
+            case "shouldAuthenticateWithSsl":
+                sslConfig.enabled = true;
+                break;
             case "shouldAuthenticateWithQop":
                 break;
         }
@@ -202,6 +205,20 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         } finally {
             cluster.close();
             System.setProperty("javax.security.sasl.qop", oldQop);
+        }
+    }
+
+    @Test
+    public void shouldAuthenticateWithSsl() throws Exception {
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final Client client = cluster.connect();
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
         }
     }
 
