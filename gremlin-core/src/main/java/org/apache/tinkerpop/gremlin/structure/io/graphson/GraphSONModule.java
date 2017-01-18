@@ -200,7 +200,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Tree.class, new GraphSONSerializersV3d0.TreeJacksonSerializer());
 
             // java.util
-            addSerializer(Map.Entry.class, new JavaUtilSerializersV2d0.MapEntryJacksonSerializer());
+            addSerializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonSerializer());
 
             // need to explicitly add serializers for those types because Jackson doesn't do it at all.
             addSerializer(Integer.class, new GraphSONSerializersV3d0.IntegerGraphSONSerializer());
@@ -238,8 +238,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Tree.class, new GraphSONSerializersV3d0.TreeJacksonDeserializer());
 
             // numbers
-            addDeserializer(Integer.class, new GraphSONSerializersV2d0.IntegerJackonsDeserializer());
-            addDeserializer(Double.class, new GraphSONSerializersV2d0.DoubleJackonsDeserializer());
+            addDeserializer(Integer.class, new GraphSONSerializersV3d0.IntegerJackonsDeserializer());
+            addDeserializer(Double.class, new GraphSONSerializersV3d0.DoubleJackonsDeserializer());
 
             // traversal
             addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
