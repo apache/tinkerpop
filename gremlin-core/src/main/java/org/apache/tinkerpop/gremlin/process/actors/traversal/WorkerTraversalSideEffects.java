@@ -73,7 +73,7 @@ public final class WorkerTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public void add(final String key, final Object value) {
-        this.sideEffects.add(key, value);
+        //this.sideEffects.add(key, value);
         this.worker.send(this.worker.master(), new SideEffectAddMessage(key, value));
     }
 

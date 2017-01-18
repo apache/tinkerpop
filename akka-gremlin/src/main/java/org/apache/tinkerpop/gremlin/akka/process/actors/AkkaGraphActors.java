@@ -23,7 +23,6 @@ import akka.actor.ActorSystem;
 import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.remote.RemoteScope;
-import com.typesafe.config.Config;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
@@ -85,16 +84,15 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
         ///////
-        final String systemName = "tinkerpop-" + UUID.randomUUID();
         final Configuration finalConfiguration = new SerializableConfiguration(graph.configuration());
         ConfigurationUtils.copy(this.configuration, finalConfiguration);
+        final String systemName = "tinkerpop-" + UUID.randomUUID();
         finalConfiguration.setProperty(Constants.GREMLIN_AKKA_SYSTEM_NAME, systemName);
-        final Config config = AkkaConfigFactory.generateAkkaConfig(this.actorProgram, finalConfiguration);
-        final ActorSystem system = ActorSystem.create(systemName, config);
+        final ActorSystem system = ActorSystem.create(systemName, AkkaConfigFactory.generateAkkaConfig(this.actorProgram, finalConfiguration));
         final ActorsResult<R> result = new DefaultActorsResult<>();
         ///////
-        final akka.actor.Address masterAddress = AkkaConfigFactory.getMasterActorDeployment(finalConfiguration);
-        system.actorOf(Props.create(MasterActor.class, finalConfiguration, result).withDeploy(new Deploy(new RemoteScope(masterAddress))), "master");
+        system.actorOf(Props.create(MasterActor.class, finalConfiguration, result).
+                withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getMasterActorDeployment(finalConfiguration)))), "master");
 
         return CompletableFuture.supplyAsync(() -> {
             while (!system.isTerminated()) {
