@@ -51,9 +51,9 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class GraphSONTraversalSerializersV2d0 {
+final class TraversalSerializersV2d0 {
 
-    private GraphSONTraversalSerializersV2d0() {
+    private TraversalSerializersV2d0() {
     }
 
     /////////////////
