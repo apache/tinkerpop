@@ -70,27 +70,17 @@ import java.util.Map;
  * custom data class like a "geographic point".
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link TinkerIoRegistryV1d0}.
  */
-@Deprecated
-public final class TinkerIoRegistry extends AbstractIoRegistry {
+public final class TinkerIoRegistryV1d0 extends AbstractIoRegistry {
 
-    private static final TinkerIoRegistry INSTANCE = new TinkerIoRegistry();
+    private static final TinkerIoRegistryV1d0 INSTANCE = new TinkerIoRegistryV1d0();
 
-    private TinkerIoRegistry() {
+    private TinkerIoRegistryV1d0() {
         register(GryoIo.class, TinkerGraph.class, new TinkerGraphGryoSerializer());
         register(GraphSONIo.class, null, new TinkerModule());
     }
 
-    /**
-     * @deprecated As of release 3.2.4, replaced by {@link #instance()}.
-     */
-    @Deprecated
-    public static TinkerIoRegistry getInstance() {
-        return instance();
-    }
-
-    public static TinkerIoRegistry instance() {
+    public static TinkerIoRegistryV1d0 instance() {
         return INSTANCE;
     }
 

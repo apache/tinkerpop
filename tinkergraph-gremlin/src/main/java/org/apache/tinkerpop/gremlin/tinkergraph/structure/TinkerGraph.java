@@ -233,7 +233,7 @@ public final class TinkerGraph implements Graph {
 
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
-        return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistry.instance())).create();
+        return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV1d0.instance())).create();
     }
 
     @Override

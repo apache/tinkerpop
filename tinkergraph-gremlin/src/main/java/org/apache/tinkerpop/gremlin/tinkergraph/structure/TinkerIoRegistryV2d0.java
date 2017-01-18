@@ -23,6 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
@@ -56,8 +57,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of the {@link org.apache.tinkerpop.gremlin.structure.io.IoRegistry} interface that provides serializers with custom configurations for
- * implementation specific classes that might need to be serialized.  This registry allows a {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph} to
+ * An implementation of the {@link IoRegistry} interface that provides serializers with custom configurations for
+ * implementation specific classes that might need to be serialized.  This registry allows a {@link TinkerGraph} to
  * be serialized directly which is useful for moving small graphs around on the network.
  * <p/>
  * Most providers need not implement this kind of custom serializer as they will deal with much larger graphs that

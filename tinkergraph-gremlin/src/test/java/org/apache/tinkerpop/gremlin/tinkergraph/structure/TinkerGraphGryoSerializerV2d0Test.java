@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
  * Unit tests for {@link TinkerIoRegistry.TinkerGraphGryoSerializer}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TinkerGraphGryoSerializerTest {
+public class TinkerGraphGryoSerializerV2d0Test {
 
     @Mock
     private Kryo kryo;
@@ -53,7 +53,7 @@ public class TinkerGraphGryoSerializerTest {
     private Input input;
 
     private TinkerGraph graph = TinkerGraph.open();
-    private TinkerIoRegistry.TinkerGraphGryoSerializer serializer = new TinkerIoRegistry.TinkerGraphGryoSerializer();
+    private TinkerIoRegistryV2d0.TinkerGraphGryoSerializer serializer = new TinkerIoRegistryV2d0.TinkerGraphGryoSerializer();
 
     @Before
     public void setUp() throws Exception {

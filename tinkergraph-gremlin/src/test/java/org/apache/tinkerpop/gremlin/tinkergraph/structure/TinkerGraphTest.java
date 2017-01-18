@@ -546,7 +546,35 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistry.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV1d0.instance()).classResolver(classResolver).create();
+        final Kryo kryo = mapper.createMapper();
+        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+
+            kryo.writeObject(out, colorList);
+            out.flush();
+            final byte[] b = stream.toByteArray();
+
+            try (final InputStream inputStream = new ByteArrayInputStream(b)) {
+                final Input input = new Input(inputStream);
+                final List m = kryo.readObject(input, ArrayList.class);
+                final TinkerGraph readX = (TinkerGraph) m.get(0);
+                assertEquals(104, IteratorUtils.count(readX.vertices()));
+                assertEquals(102, IteratorUtils.count(readX.edges()));
+            }
+        }
+    }
+
+    @Test
+    public void shouldSerializeWithColorClassResolverToTinkerGraphUsingDeprecatedTinkerIoRegistry() throws Exception {
+        final Map<String,Color> colors = new HashMap<>();
+        colors.put("red", Color.RED);
+        colors.put("green", Color.GREEN);
+
+        final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
+
+        final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
+        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV1d0.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
