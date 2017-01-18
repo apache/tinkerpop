@@ -28,6 +28,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -50,6 +53,8 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
 
     private final Authenticator authenticator;
 
@@ -80,7 +85,7 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                     if (saslObject instanceof byte[]) {
                         saslResponse = (byte[]) saslObject;
                     } else if(saslObject instanceof String) {
-                        saslResponse = Base64.getDecoder().decode((String) saslObject);
+                        saslResponse = BASE64_DECODER.decode((String) saslObject);
                     } else {
                         final ResponseMessage error = ResponseMessage.build(request.get())
                                 .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - byte[] or base64 encoded String is expected")
@@ -101,8 +106,13 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                             final RequestMessage original = request.get();
                             ctx.fireChannelRead(original);
                         } else {
-                            // not done here - send back the sasl message for next challenge
+                            // not done here - send back the sasl message for next challenge. note that we send back
+                            // the base64 encoded sasl as well as the byte array. the byte array will eventually be
+                            // phased out, but is present now for backward compatibility in 3.2.x
+                            final Map<String,Object> metadata = new HashMap<>();
+                            metadata.put(Tokens.ARGS_SASL, BASE64_ENCODER.encodeToString(saslMessage));
                             final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
+                                    .statusAttributes(metadata)
                                     .code(ResponseStatusCode.AUTHENTICATE).result(saslMessage).create();
                             ctx.writeAndFlush(authenticate);
                         }

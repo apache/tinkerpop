@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,9 @@ final class Handler {
         private static final Map<String, String> SASL_PROPERTIES = new HashMap<String, String>() {{ put(Sasl.SERVER_AUTH, "true"); }};
         private static final byte[] NULL_CHALLENGE = new byte[0];
 
+        private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
+        private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+
         private final AuthProperties authProps;
 
         public GremlinSaslAuthenticationHandler(final AuthProperties authProps) {
@@ -103,9 +107,16 @@ final class Handler {
 
                     messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
                     messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
-                                                                evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null);
+                            BASE64_ENCODER.encodeToString(evaluateChallenge(subject, saslClient, NULL_CHALLENGE)) : null);
                 } else {
-                    messageBuilder.addArg(Tokens.ARGS_SASL, evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData()));
+                    // the server sends base64 encoded sasl as well as the byte array. the byte array will eventually be
+                    // phased out, but is present now for backward compatibility in 3.2.x
+                    final String base64sasl = response.getStatus().getAttributes().containsKey(Tokens.ARGS_SASL) ?
+                        response.getStatus().getAttributes().get(Tokens.ARGS_SASL).toString() :
+                        BASE64_ENCODER.encodeToString((byte[]) response.getResult().getData());
+
+                    messageBuilder.addArg(Tokens.ARGS_SASL, BASE64_ENCODER.encodeToString(
+                        evaluateChallenge(subject, saslClient, BASE64_DECODER.decode(base64sasl))));
                 }
                 channelHandlerContext.writeAndFlush(messageBuilder.create());
             } else {
