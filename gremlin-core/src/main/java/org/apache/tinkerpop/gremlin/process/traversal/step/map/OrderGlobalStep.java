@@ -27,10 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.OrderedTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
 public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBarrierStep<S> implements ComparatorHolder<S, C>, TraversalParent, ByModulating {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
+    private MultiComparator<C> multiComparator = null;
     private long limit = Long.MAX_VALUE;
     private boolean isShuffle = false;
 
@@ -61,14 +64,16 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         if (this.isShuffle)
             traverserSet.shuffle();
         else
-            traverserSet.sort(Comparator.naturalOrder());
+            traverserSet.sort((Comparator) this.multiComparator);
     }
 
     @Override
     public void processAllStarts() {
+        if (null == this.multiComparator)
+            this.multiComparator = this.createMultiComparator();
         if (this.starts.hasNext()) {
             while (this.starts.hasNext()) {
-                this.traverserSet.add(new OrderedTraverser<S>(this.starts.next(), (List) this.comparators));
+                this.traverserSet.add(this.createOrderedTraverser(this.starts.next()));
             }
             this.barrierConsumer(this.traverserSet);
         }
@@ -81,7 +86,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         } else if (this.starts.hasNext()) {
             this.processAllStarts();
         }
-        return ((OrderedTraverser) this.traverserSet.remove()).getInternal();
+        return ((ProjectedTraverser) this.traverserSet.remove()).getInternal();
     }
 
     public void setLimit(final long limit) {
@@ -155,7 +160,25 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.isShuffle), false, true);
+        if (null == this.multiComparator)
+            this.multiComparator = this.createMultiComparator();
+        return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.isShuffle, this.multiComparator), false, true);
+    }
+
+    private ProjectedTraverser<S> createOrderedTraverser(final Traverser.Admin<S> traverser) {
+        final List<Object> projections = new ArrayList<>(this.comparators.size());
+        for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
+            projections.add(TraversalUtil.apply(traverser, pair.getValue0()));
+        }
+        return new ProjectedTraverser<S>(traverser, projections);
+    }
+
+    private MultiComparator<C> createMultiComparator() {
+        final List<Comparator<C>> list = new ArrayList<>(this.comparators.size());
+        for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
+            list.add(pair.getValue1());
+        }
+        return new MultiComparator<>(list);
     }
 
     ////////////////
@@ -164,14 +187,16 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
         private long limit;
         private boolean isShuffle;
+        private MultiComparator comparator;
 
         private OrderBiOperator() {
             // for serializers that need a no-arg constructor
         }
 
-        public OrderBiOperator(final long limit, final boolean isShuffle) {
+        public OrderBiOperator(final long limit, final boolean isShuffle, final MultiComparator multiComparator) {
             this.limit = limit;
             this.isShuffle = isShuffle;
+            this.comparator = multiComparator;
         }
 
         @Override
@@ -181,7 +206,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
                 if (this.isShuffle)
                     setA.shuffle();
                 else
-                    setA.sort(Comparator.naturalOrder());
+                    setA.sort(this.comparator);
                 long counter = 0L;
                 final Iterator<Traverser.Admin<S>> traversers = setA.iterator();
                 while (traversers.hasNext()) {

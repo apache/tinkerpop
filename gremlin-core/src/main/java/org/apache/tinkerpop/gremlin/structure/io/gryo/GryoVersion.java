@@ -51,13 +51,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_P_S_SE_S
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.OrderedTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -81,6 +79,7 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
@@ -246,7 +245,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(OrderedTraverser.class, 164));   // ***LAST ID***
+            add(GryoTypeReg.of(ProjectedTraverser.class, 164));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
@@ -261,6 +260,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
+            add(GryoTypeReg.of(MultiComparator.class, 165));   // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
