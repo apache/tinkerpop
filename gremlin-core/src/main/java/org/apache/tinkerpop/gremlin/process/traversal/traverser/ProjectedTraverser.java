@@ -32,16 +32,16 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ProjectedTraverser<T> implements Traverser.Admin<T> {
+public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
 
     private Traverser.Admin<T> internal;
-    private List<Object> projections;
+    private List<P> projections;
 
     private ProjectedTraverser() {
         // for serialization
     }
 
-    public ProjectedTraverser(final Traverser.Admin<T> internal, final List<Object> projections) {
+    public ProjectedTraverser(final Traverser.Admin<T> internal, final List<P> projections) {
         this.internal = internal;
         this.projections = projections;
     }
@@ -51,7 +51,7 @@ public final class ProjectedTraverser<T> implements Traverser.Admin<T> {
         return this.internal;
     }
 
-    public List<Object> getProjections() {
+    public List<P> getProjections() {
         return this.projections;
     }
 
@@ -187,13 +187,17 @@ public final class ProjectedTraverser<T> implements Traverser.Admin<T> {
     }
 
     @Override
-    public ProjectedTraverser<T> clone() {
+    public ProjectedTraverser<T, P> clone() {
         try {
-            final ProjectedTraverser<T> clone = (ProjectedTraverser<T>) super.clone();
+            final ProjectedTraverser<T, P> clone = (ProjectedTraverser<T, P>) super.clone();
             clone.internal = (Traverser.Admin<T>) this.internal.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public static <T> Traverser.Admin<T> tryUnwrap(final Traverser.Admin<T> traverser) {
+        return traverser instanceof ProjectedTraverser ? ((ProjectedTraverser) traverser).getInternal() : traverser;
     }
 }

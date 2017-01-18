@@ -23,11 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -40,7 +42,8 @@ import java.util.function.BinaryOperator;
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
 
     protected TraverserSet<S> traverserSet = new TraverserSet<>();
-    protected int maxBarrierSize;
+    private int maxBarrierSize;
+    private boolean barrierConsumed = false;
 
     public CollectingBarrierStep(final Traversal.Admin traversal) {
         this(traversal, Integer.MAX_VALUE);
@@ -68,7 +71,6 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
                     this.traverserSet.add(this.starts.next());
                 }
             }
-            this.barrierConsumer(this.traverserSet);
         }
     }
 
@@ -85,11 +87,10 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
             throw FastNoSuchElementException.instance();
         else {
             final TraverserSet<S> temp = new TraverserSet<>();
-            this.traverserSet.iterator().forEachRemaining(t -> {
+            IteratorUtils.removeOnNext(this.traverserSet.iterator()).forEachRemaining(t -> {
                 DetachedFactory.detach(t, true); // this should be dynamic
                 temp.add(t);
             });
-            this.traverserSet.clear();
             return temp;
         }
     }
@@ -98,23 +99,28 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     public void addBarrier(final TraverserSet<S> barrier) {
         this.traverserSet = barrier;
         this.traverserSet.forEach(traverser -> traverser.setSideEffects(this.getTraversal().getSideEffects()));
-        this.barrierConsumer(this.traverserSet);
+        this.barrierConsumed = false;
     }
 
     @Override
     public Traverser.Admin<S> processNextStart() {
-        if (!this.traverserSet.isEmpty()) {
-            return this.traverserSet.remove();
-        } else if (this.starts.hasNext()) {
+        if (this.traverserSet.isEmpty() && this.starts.hasNext()) {
             this.processAllStarts();
+            this.barrierConsumed = false;
         }
-        return this.traverserSet.remove();
+        //
+        if (!this.barrierConsumed) {
+            this.barrierConsumer(this.traverserSet);
+            this.barrierConsumed = true;
+        }
+        return ProjectedTraverser.tryUnwrap(this.traverserSet.remove());
     }
 
     @Override
     public CollectingBarrierStep<S> clone() {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
+        clone.barrierConsumed = false;
         return clone;
     }
 

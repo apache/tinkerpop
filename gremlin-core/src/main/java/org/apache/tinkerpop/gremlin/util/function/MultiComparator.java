@@ -32,9 +32,11 @@ import java.util.List;
 public final class MultiComparator<C> implements Comparator<C>, Serializable {
 
     private final List<Comparator> comparators;
+    private final boolean isShuffle;
 
     public MultiComparator(final List<Comparator<C>> comparators) {
         this.comparators = (List) comparators;
+        this.isShuffle = !this.comparators.isEmpty() && Order.shuffle == this.comparators.get(this.comparators.size() - 1);
     }
 
     @Override
@@ -43,12 +45,18 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
             return Order.incr.compare(objectA, objectB);
         } else {
             for (int i = 0; i < this.comparators.size(); i++) {
-                final int comparison = this.comparators.get(i).compare(this.getObject(objectA, i), this.getObject(objectB, i));
-                if (comparison != 0)
-                    return comparison;
+                if (Order.shuffle != this.comparators.get(i)) {
+                    final int comparison = this.comparators.get(i).compare(this.getObject(objectA, i), this.getObject(objectB, i));
+                    if (comparison != 0)
+                        return comparison;
+                }
             }
             return 0;
         }
+    }
+
+    public boolean isShuffle() {
+        return this.isShuffle;
     }
 
     private final Object getObject(final C object, final int index) {

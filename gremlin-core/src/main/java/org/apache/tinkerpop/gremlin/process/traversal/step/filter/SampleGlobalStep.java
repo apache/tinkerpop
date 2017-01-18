@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -64,6 +65,15 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            while (this.starts.hasNext()) {
+                this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
+            }
+        }
+    }
+
+    @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
         // return the entire traverser set if the set is smaller than the amount to sample
         if (traverserSet.bulkSize() <= this.amountToSample)
@@ -71,7 +81,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         //////////////// else sample the set
         double totalWeight = 0.0d;
         for (final Traverser.Admin<S> s : traverserSet) {
-            totalWeight = totalWeight + TraversalUtil.apply(s, this.probabilityTraversal).doubleValue() * s.bulk();
+            totalWeight = totalWeight + (((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue() * s.bulk());
         }
         ///////
         final TraverserSet<S> sampledSet = new TraverserSet<>();
@@ -82,7 +92,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             for (final Traverser.Admin<S> s : traverserSet) {
                 long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
                 if (sampleBulk < s.bulk()) {
-                    final double currentWeight = TraversalUtil.apply(s, this.probabilityTraversal).doubleValue();
+                    final double currentWeight = ((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue();
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                         runningWeight = runningWeight + currentWeight;
                         if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
@@ -102,6 +112,11 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         }
         traverserSet.clear();
         traverserSet.addAll(sampledSet);
+    }
+
+
+    private final ProjectedTraverser<S, Number> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+        return new ProjectedTraverser<>(traverser, Collections.singletonList(TraversalUtil.apply(traverser, this.probabilityTraversal)));
     }
 
     @Override
