@@ -31,8 +31,12 @@ import java.util.List;
  */
 public final class MultiComparator<C> implements Comparator<C>, Serializable {
 
-    private final List<Comparator> comparators;
-    private final boolean isShuffle;
+    private List<Comparator> comparators;
+    private boolean isShuffle;
+
+    private MultiComparator() {
+        // for serialization purposes
+    }
 
     public MultiComparator(final List<Comparator<C>> comparators) {
         this.comparators = (List) comparators;
