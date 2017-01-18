@@ -178,7 +178,17 @@ public final class OrderedTraverser<T> implements Traverser.Admin<T> {
     }
 
     @Override
-    public Traverser<T> clone() {
+    public int hashCode() {
+        return this.internal.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof OrderedTraverser && ((OrderedTraverser) object).internal.equals(this.internal);
+    }
+
+    @Override
+    public OrderedTraverser<T> clone() {
         try {
             final OrderedTraverser<T> clone = (OrderedTraverser<T>) super.clone();
             clone.internal = (Traverser.Admin<T>) this.internal.clone();
