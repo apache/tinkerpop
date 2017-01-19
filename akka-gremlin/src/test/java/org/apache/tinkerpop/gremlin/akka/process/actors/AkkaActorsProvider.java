@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
@@ -76,10 +77,11 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             "g_V_repeatXdedupX_timesX2X_count",
             "g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX",
             "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
-            "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
-            "g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X",
-            "g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX",
-            "g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
+            "g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X",
+            //"g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X",
+            //"g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX",
+            //"g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
+            OrderTest.Traversals.class.getCanonicalName(),
             GraphTest.Traversals.class.getCanonicalName(),
             ComplexTest.Traversals.class.getCanonicalName(),
             SideEffectTest.Traversals.class.getCanonicalName(),

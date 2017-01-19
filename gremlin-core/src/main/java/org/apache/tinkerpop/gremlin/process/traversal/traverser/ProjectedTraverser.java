@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.util.List;
 import java.util.Set;
@@ -124,6 +125,12 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     @Override
     public T attach(final Function<Attachable<T>, T> method) {
         return this.baseTraverser.attach(method);
+    }
+
+    @Override
+    public Admin<T> attach(final Host host) {
+        this.baseTraverser = this.baseTraverser.attach(host);
+        return this;
     }
 
     @Override
