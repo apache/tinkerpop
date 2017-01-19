@@ -43,6 +43,7 @@ public final class WorkerTraversalSideEffects implements TraversalSideEffects {
     }
 
     public WorkerTraversalSideEffects(final TraversalSideEffects sideEffects, final Actor.Worker worker) {
+        assert !(sideEffects instanceof WorkerTraversalSideEffects);
         this.sideEffects = sideEffects;
         this.worker = worker;
     }

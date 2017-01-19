@@ -46,7 +46,9 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,6 +59,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     private final Traversal.Admin<?, ?> traversal;
     private final TraversalMatrix<?, ?> matrix;
     private Map<String, Barrier> barriers = new HashMap<>();
+    private Set<String> sideEffects = new HashSet<>();
     private final TraverserSet<?> results;
     private Address.Worker leaderWorker;
     private int orderCounter = -1;
@@ -89,17 +92,29 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
             this.processTraverser((Traverser.Admin) message);
         } else if (message instanceof BarrierAddMessage) {
             final Barrier barrier = (Barrier) this.matrix.getStepById(((BarrierAddMessage) message).getStepId());
-            final Step<?, ?> step = (Step) barrier;
-            barrier.addBarrier(TraversalActorProgram.attach(((BarrierAddMessage) message).getBarrier(), this.master.partitioner().getGraph()));
-            this.barriers.put(step.getId(), barrier);
+            if (!(barrier instanceof LocalBarrier))
+                barrier.addBarrier(TraversalActorProgram.attach(((BarrierAddMessage) message).getBarrier(), this.master.partitioner().getGraph()));
+            if (barrier instanceof SideEffectCapable)
+                this.sideEffects.add(((SideEffectCapable) barrier).getSideEffectKey());
+            this.barriers.put(((Step) barrier).getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
-            this.traversal.getSideEffects().add(((SideEffectAddMessage) message).getKey(), ((SideEffectAddMessage) message).getValue());
+            final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;
+            this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), sideEffectAddMessage.getValue());
+            this.sideEffects.add(sideEffectAddMessage.getKey());
         } else if (message instanceof Terminate) {
             assert Terminate.YES == message;
-            if (!this.barriers.isEmpty()) {
+            if (!this.barriers.isEmpty() || !this.sideEffects.isEmpty()) {
+                // process all side-effect updates
+                for (final String key : this.sideEffects) {
+                    this.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
+                }
+                // process all barriers
                 for (final Barrier barrier : this.barriers.values()) {
                     final Step<?, ?> step = (Step) barrier;
-                    if (!(barrier instanceof LocalBarrier)) {
+                    if (barrier instanceof LocalBarrier) { // the barriers are distributed amongst the workers
+                        this.broadcast(new BarrierDoneMessage(barrier));
+                        barrier.done();
+                    } else {                               // the barrier is at the master
                         this.orderBarrier(step);
                         if (step instanceof OrderGlobalStep) this.orderCounter = 0;
                         while (step.hasNext()) {
@@ -107,15 +122,9 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                                     step.next() :
                                     new OrderedTraverser<>(step.next(), this.orderCounter++));
                         }
-                    } else {
-                        if (step instanceof SideEffectCapable) {
-                            final String key = ((SideEffectCapable) step).getSideEffectKey();
-                            this.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
-                        }
-                        this.broadcast(new BarrierDoneMessage(barrier));
-                        barrier.done();
                     }
                 }
+                this.sideEffects.clear();
                 this.barriers.clear();
                 this.master.send(this.leaderWorker, Terminate.MAYBE);
             } else {

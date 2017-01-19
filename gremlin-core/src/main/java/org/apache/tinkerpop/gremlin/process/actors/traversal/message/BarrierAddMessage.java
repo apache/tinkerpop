@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.actors.traversal.message;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,7 +36,7 @@ public final class BarrierAddMessage {
     }
 
     public BarrierAddMessage(final Barrier barrier) {
-        this.barrier = barrier.nextBarrier();
+        this.barrier = barrier instanceof LocalBarrier ? null : barrier.nextBarrier();
         this.stepId = ((Step) barrier).getId();
     }
 

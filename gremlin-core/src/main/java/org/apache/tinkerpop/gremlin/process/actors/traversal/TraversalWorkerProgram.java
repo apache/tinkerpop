@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -118,8 +119,13 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
             this.terminate = (Terminate) message;
             if (!this.barriers.isEmpty()) {
                 for (final Barrier barrier : this.barriers.values()) {
-                    while (barrier.hasNextBarrier()) {
+                    if (barrier instanceof LocalBarrier) {
+                        barrier.processAllStarts();
                         this.self.send(this.self.master(), new BarrierAddMessage(barrier));
+                    } else {
+                        while (barrier.hasNextBarrier()) {
+                            this.self.send(this.self.master(), new BarrierAddMessage(barrier));
+                        }
                     }
                 }
                 this.barriers.clear();
