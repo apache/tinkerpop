@@ -108,7 +108,8 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         } else if (message instanceof Traverser.Admin) {
             this.processTraverser((Traverser.Admin) message);
         } else if (message instanceof SideEffectSetMessage) {
-            this.matrix.getTraversal().getSideEffects().set(((SideEffectSetMessage) message).getKey(), ((SideEffectSetMessage) message).getValue());
+            this.matrix.getTraversal().getSideEffects().
+                    set(((SideEffectSetMessage) message).getKey(), TraversalActorProgram.attach(((SideEffectSetMessage) message).getValue(), this.self.partition()));
         } else if (message instanceof BarrierDoneMessage) {
             final Step<?, ?> step = (Step) this.matrix.getStepById(((BarrierDoneMessage) message).getStepId());
             while (step.hasNext()) {

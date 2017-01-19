@@ -182,7 +182,7 @@ public class ProcessActorsSuite extends AbstractGremlinSuite {
             EventStrategyProcessTest.class,
             ReadOnlyStrategyProcessTest.class,
             PartitionStrategyProcessTest.class,
-            // SubgraphStrategyProcessTest.class
+            SubgraphStrategyProcessTest.class
     };
 
     /**

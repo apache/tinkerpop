@@ -99,7 +99,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
             this.barriers.put(((Step) barrier).getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
             final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;
-            this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), sideEffectAddMessage.getValue());
+            this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), TraversalActorProgram.attach(sideEffectAddMessage.getValue(), this.master.partitioner().getGraph()));
             this.sideEffects.add(sideEffectAddMessage.getKey());
         } else if (message instanceof Terminate) {
             assert Terminate.YES == message;

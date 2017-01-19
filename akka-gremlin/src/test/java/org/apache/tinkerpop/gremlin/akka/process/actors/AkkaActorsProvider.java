@@ -27,10 +27,10 @@ import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
@@ -70,9 +70,11 @@ public class AkkaActorsProvider extends AbstractGraphProvider {
             "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
             "g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X",
             "g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX",
+            "classicRecommendation",
+            "coworkerSummaryOLTP",
             GraphTest.Traversals.class.getCanonicalName(),
-            ComplexTest.Traversals.class.getCanonicalName(),
             SideEffectTest.Traversals.class.getCanonicalName(),
+            SubgraphTest.Traversals.class.getCanonicalName(),
             ProfileTest.Traversals.class.getCanonicalName(),
             PartitionStrategyProcessTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),

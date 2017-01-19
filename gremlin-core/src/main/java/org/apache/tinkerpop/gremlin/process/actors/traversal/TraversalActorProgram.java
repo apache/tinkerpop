@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
@@ -48,11 +49,15 @@ import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -167,9 +172,25 @@ public final class TraversalActorProgram<R> implements ActorProgram {
                     list.set(i, TraversalActorProgram.attach(list.get(i), host));
                 }
                 return (A) list;
+            } else if (object instanceof Map.Entry) {
+                final Map.Entry entry = (Map.Entry) object;
+                entry.setValue(TraversalActorProgram.attach(entry.getValue(), host));
+                return (A) entry;
             } else if (object instanceof TraverserSet) {
                 ((TraverserSet<?>) object).forEach(traverser -> TraversalActorProgram.attach(traverser, host));
                 return object;
+            } else if (object instanceof BulkSet) {
+                final BulkSet<?> set = (BulkSet) object;
+                final BulkSet newSet = new BulkSet();
+                set.forEach((o, b) -> newSet.add(TraversalActorProgram.attach(o, host), b));
+                return (A) newSet;
+            } else if (object instanceof Set) {
+                final Set set = (Set) object;
+                final Set newSet = set instanceof HashSet ? new HashSet<>(set.size()) : new LinkedHashSet<>(set.size());
+                set.forEach(o -> newSet.add(TraversalActorProgram.attach(o, host)));
+                set.clear();
+                set.addAll(newSet);
+                return (A) set;
             } else if (object instanceof Traverser.Admin) {
                 final Traverser.Admin traverser = (Traverser.Admin) object;
                 traverser.attach(host);
