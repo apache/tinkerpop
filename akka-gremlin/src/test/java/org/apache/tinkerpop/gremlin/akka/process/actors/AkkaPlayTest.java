@@ -52,7 +52,7 @@ public class AkkaPlayTest {
         GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(2));
      //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
-        System.out.println(g.V().has("lang").group("a").by("lang").by("name").cap("a").toList());
+        System.out.println(g.V().order().by("name").values("name").toList());
 
 
 

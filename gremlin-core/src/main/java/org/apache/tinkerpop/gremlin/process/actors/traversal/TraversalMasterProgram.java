@@ -121,7 +121,8 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                 this.master.send(this.leaderWorker, Terminate.MAYBE);
             } else {
                 while (this.traversal.hasNext()) {
-                    this.results.add((Traverser.Admin) this.traversal.nextTraverser());
+                    final Traverser.Admin traverser = this.traversal.nextTraverser();
+                    this.results.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser,this.orderCounter++));
                 }
                 if (this.orderCounter != -1)
                     this.results.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));

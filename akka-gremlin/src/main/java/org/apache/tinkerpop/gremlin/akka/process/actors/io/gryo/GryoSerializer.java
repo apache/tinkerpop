@@ -123,8 +123,7 @@ public final class GryoSerializer implements Serializer {
 
     @Override
     public Object fromBinary(final byte[] bytes) {
-        final Input input = new Input();
-        input.setBuffer(bytes);
+        final Input input = new Input(bytes);
         return this.gryoPool.readWithKryo(kryo -> kryo.readClassAndObject(input));
     }
 
