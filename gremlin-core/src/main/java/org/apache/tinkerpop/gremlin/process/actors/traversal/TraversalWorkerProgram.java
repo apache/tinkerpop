@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashMap;
@@ -152,7 +151,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         if (traverser.isHalted())
             this.sendTraverser(traverser);
         else {
-            this.attachTraverser(traverser);
+            TraversalActorProgram.attach(traverser, this.self.partition());
             final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
             step.addStart(traverser);
             if (step instanceof Barrier) {
@@ -180,9 +179,4 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         return TraversalActorProgram.DETACH ? traverser.detach() : traverser;
     }
 
-    private final Traverser.Admin attachTraverser(final Traverser.Admin traverser) {
-        if (TraversalActorProgram.DETACH)
-            traverser.attach(this.self.partition());
-        return traverser;
-    }
 }

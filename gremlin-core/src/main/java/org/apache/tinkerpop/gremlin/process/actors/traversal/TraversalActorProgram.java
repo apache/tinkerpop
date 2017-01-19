@@ -44,12 +44,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Repe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
+import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -149,5 +151,36 @@ public final class TraversalActorProgram<R> implements ActorProgram {
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public static <A> A attach(final A object, final Host host) {
+        if (DETACH) {
+            if (object instanceof Map) {
+                final Map map = (Map) object;
+                for (final Object key : map.keySet()) {
+                    map.put(TraversalActorProgram.attach(key, host), TraversalActorProgram.attach(map.get(key), host));
+                }
+                return (A) map;
+            } else if (object instanceof List) {
+                final List list = (List) object;
+                for (int i = 0; i < list.size(); i++) {
+                    list.set(i, TraversalActorProgram.attach(list.get(i), host));
+                }
+                return (A) list;
+            } else if (object instanceof TraverserSet) {
+                ((TraverserSet<?>) object).forEach(traverser -> TraversalActorProgram.attach(traverser, host));
+                return object;
+            } else if (object instanceof Traverser.Admin) {
+                final Traverser.Admin traverser = (Traverser.Admin) object;
+                traverser.attach(host);
+                traverser.set(TraversalActorProgram.attach(traverser.get(), host));
+                return (A) traverser;
+            } else if (object instanceof Attachable) {
+                return (A) ((Attachable) object).attach(Attachable.Method.get(host instanceof Partition ? ((Partition) host).partitioner().getGraph() : host));
+            } else {
+                return host.attach(object).orElse(object);
+            }
+        } else
+            return object;
     }
 }

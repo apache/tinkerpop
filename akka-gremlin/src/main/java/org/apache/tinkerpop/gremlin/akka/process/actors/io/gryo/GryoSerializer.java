@@ -116,9 +116,11 @@ public final class GryoSerializer implements Serializer {
 
     @Override
     public byte[] toBinary(final Object object) {
-        final Output output = new Output(new ByteArrayOutputStream());
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final Output output = new Output(outputStream);
         this.gryoPool.writeWithKryo(kryo -> kryo.writeClassAndObject(output, object));
-        return output.getBuffer();
+        output.flush();
+        return outputStream.toByteArray();
     }
 
     @Override

@@ -44,7 +44,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +90,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
         } else if (message instanceof BarrierAddMessage) {
             final Barrier barrier = (Barrier) this.matrix.getStepById(((BarrierAddMessage) message).getStepId());
             final Step<?, ?> step = (Step) barrier;
-            barrier.addBarrier(((BarrierAddMessage) message).getBarrier());
+            barrier.addBarrier(TraversalActorProgram.attach(((BarrierAddMessage) message).getBarrier(), this.master.partitioner().getGraph()));
             this.barriers.put(step.getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
             this.traversal.getSideEffects().add(((SideEffectAddMessage) message).getKey(), ((SideEffectAddMessage) message).getValue());
@@ -122,12 +121,12 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
             } else {
                 while (this.traversal.hasNext()) {
                     final Traverser.Admin traverser = this.traversal.nextTraverser();
-                    this.results.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser,this.orderCounter++));
+                    this.results.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser, this.orderCounter++));
                 }
                 if (this.orderCounter != -1)
                     this.results.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
 
-                this.results.forEach(this::attachTraverser);
+                TraversalActorProgram.attach(this.results, this.master.partitioner().getGraph());
                 this.master.close();
             }
         } else {
@@ -147,7 +146,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     }
 
     private void processTraverser(final Traverser.Admin traverser) {
-        this.attachTraverser(traverser);
+        TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
         if (traverser.isHalted() || traverser.get() instanceof Element) {
             this.sendTraverser(traverser);
         } else {
@@ -185,8 +184,4 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
         return TraversalActorProgram.DETACH ? traverser.detach() : traverser;
     }
 
-    private void attachTraverser(final Traverser.Admin traverser) {
-        if (TraversalActorProgram.DETACH && traverser.get() instanceof Element)
-            traverser.attach(this.master.partitioner().find((Element) traverser.get()));
-    }
 }
