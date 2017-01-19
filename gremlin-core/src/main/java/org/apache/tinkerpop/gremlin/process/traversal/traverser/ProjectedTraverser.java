@@ -182,6 +182,11 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     @Override
+    public String toString() {
+        return this.baseTraverser.toString();
+    }
+
+    @Override
     public ProjectedTraverser<T, P> clone() {
         try {
             final ProjectedTraverser<T, P> clone = (ProjectedTraverser<T, P>) super.clone();
