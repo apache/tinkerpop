@@ -37,10 +37,12 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -89,6 +91,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Map<String, Number>>> get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX();
+
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -441,6 +445,23 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "m", HashMap.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX();
+        printTraversalForm(traversal);
+        final Map<String, Number> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(2.0d, map.get("software").doubleValue(), 0.01d);
+        assertEquals(5.0d, map.get("person").doubleValue(), 0.01d);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
+        final Map<String, Number> sideEffect = traversal.asAdmin().getSideEffects().get("a");
+        assertEquals(2, sideEffect.size());
+        assertEquals(4.0d, sideEffect.get("created").doubleValue(), 0.01d);
+        assertEquals(3.0d, sideEffect.get("knows").doubleValue(), 0.01d);
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -525,17 +546,22 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
-            return g.V().<Long, Map<String, List<Vertex>>>group().by(__.bothE().count()).by(__.group().by(T.label));
+            return g.V().<Long, Map<String, List<Vertex>>>group().by(bothE().count()).by(__.group().by(T.label));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Map<String, Number>>> get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX() {
-            return g.V().out("followedBy").<String, Map<String, Number>>group().by("songType").by(__.bothE().group().by(T.label).by(__.values("weight").sum()));
+            return g.V().out("followedBy").<String, Map<String, Number>>group().by("songType").by(bothE().group().by(T.label).by(values("weight").sum()));
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX() {
             return g.V().group("m").by("name").by(__.in("knows").values("name")).cap("m");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX() {
+            return g.V().<String, Number>group().by(T.label).by(bothE().group("a").by(T.label).by(values("weight").sum()).values("weight").sum());
         }
     }
 }
