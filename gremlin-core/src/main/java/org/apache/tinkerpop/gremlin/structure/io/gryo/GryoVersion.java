@@ -292,13 +292,13 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Operator.class, 107));
             add(GryoTypeReg.of(FoldStep.FoldBiOperator.class, 108));
             add(GryoTypeReg.of(GroupCountStep.GroupCountBiOperator.class, 109));
-            add(GryoTypeReg.of(GroupStep.GroupBiOperator.class, 117, new JavaSerializer())); // because they contain traversals
+            add(GryoTypeReg.of(GroupStep.GroupBiOperator.class, 117, new JavaSerializer()));
             add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
             add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
             add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
             add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
-            add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
+            add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
         }};
     }

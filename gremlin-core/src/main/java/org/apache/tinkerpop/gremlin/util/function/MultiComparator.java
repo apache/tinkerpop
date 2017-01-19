@@ -33,6 +33,7 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
 
     private List<Comparator> comparators;
     private boolean isShuffle;
+    int startIndex = 0;
 
     private MultiComparator() {
         // for serialization purposes
@@ -41,6 +42,10 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
     public MultiComparator(final List<Comparator<C>> comparators) {
         this.comparators = (List) comparators;
         this.isShuffle = !this.comparators.isEmpty() && Order.shuffle == this.comparators.get(this.comparators.size() - 1);
+        for (int i = 0; i < this.comparators.size(); i++) {
+            if (this.comparators.get(i) == Order.shuffle)
+                this.startIndex = i + 1;
+        }
     }
 
     @Override
@@ -48,12 +53,10 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
         if (this.comparators.isEmpty()) {
             return Order.incr.compare(objectA, objectB);
         } else {
-            for (int i = 0; i < this.comparators.size(); i++) {
-                if (Order.shuffle != this.comparators.get(i)) {
-                    final int comparison = this.comparators.get(i).compare(this.getObject(objectA, i), this.getObject(objectB, i));
-                    if (comparison != 0)
-                        return comparison;
-                }
+            for (int i = this.startIndex; i < this.comparators.size(); i++) {
+                final int comparison = this.comparators.get(i).compare(this.getObject(objectA, i), this.getObject(objectB, i));
+                if (comparison != 0)
+                    return comparison;
             }
             return 0;
         }

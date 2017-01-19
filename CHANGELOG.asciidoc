@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `GroupBiOperator` no longer maintains state and thus, no more side-effect related OLAP inconsistencies.
+* `GroupBiOperator` no longer maintains a detached traversal and thus, no more side-effect related OLAP inconsistencies.
 * Added `ProjectedTraverser` which wraps a traverser with a `List<Object>` of projected data.
 * Fixed an optimization bug in `CollectionBarrierSteps` where the barrier was being consumed on each `addBarrier()`.
 * `OrderGlobalStep` and `SampleGlobalStep` use `ProjectedTraverser` and now can work up to the local star graph in OLAP.
