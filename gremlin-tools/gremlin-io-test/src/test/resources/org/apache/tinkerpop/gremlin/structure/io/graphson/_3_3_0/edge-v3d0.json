@@ -18,8 +18,14 @@
     },
     "properties" : {
       "since" : {
-        "@type" : "g:Int32",
-        "@value" : 2009
+        "@type" : "g:Property",
+        "@value" : {
+          "key" : "since",
+          "value" : {
+            "@type" : "g:Int32",
+            "@value" : 2009
+          }
+        }
       }
     }
   }

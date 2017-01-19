@@ -11,70 +11,90 @@
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 0
+              },
+              "value" : "marko",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 6
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+              "value" : "san diego",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1997
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 7
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+              "value" : "santa cruz",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 8
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+              "value" : "brussels",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 9
+              },
+              "value" : "santa fe",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           } ]
@@ -90,54 +110,70 @@
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 1
-            },
-            "value" : "stephen"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 1
+              },
+              "value" : "stephen",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 10
-            },
-            "value" : "centreville",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1990
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 10
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2000
+              "value" : "centreville",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1990
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 11
-            },
-            "value" : "dulles",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2000
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 11
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2006
+              "value" : "dulles",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 12
-            },
-            "value" : "purcellville",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2006
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 12
+              },
+              "value" : "purcellville",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
               }
             }
           } ]
@@ -153,70 +189,90 @@
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 2
-            },
-            "value" : "matthias"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 2
+              },
+              "value" : "matthias",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 13
-            },
-            "value" : "bremen",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 13
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2007
+              "value" : "bremen",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 14
-            },
-            "value" : "baltimore",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2007
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 14
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2011
+              "value" : "baltimore",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 15
-            },
-            "value" : "oakland",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2011
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 15
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2014
+              "value" : "oakland",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 16
-            },
-            "value" : "seattle",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2014
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 16
+              },
+              "value" : "seattle",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
               }
             }
           } ]
@@ -232,54 +288,70 @@
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 3
-            },
-            "value" : "daniel"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 3
+              },
+              "value" : "daniel",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 17
-            },
-            "value" : "spremberg",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1982
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 17
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+              "value" : "spremberg",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1982
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 18
-            },
-            "value" : "kaiserslautern",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 18
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2009
+              "value" : "kaiserslautern",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 19
-            },
-            "value" : "aachen",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2009
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 19
+              },
+              "value" : "aachen",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
               }
             }
           } ]
@@ -295,11 +367,15 @@
         "label" : "software",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 4
-            },
-            "value" : "gremlin"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 4
+              },
+              "value" : "gremlin",
+              "label" : "name"
+            }
           } ]
         }
       }
@@ -313,11 +389,15 @@
         "label" : "software",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 5
-            },
-            "value" : "tinkergraph"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 5
+              },
+              "value" : "tinkergraph",
+              "label" : "name"
+            }
           } ]
         }
       }
@@ -342,8 +422,14 @@
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2009
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2009
+              }
+            }
           }
         }
       }
@@ -367,8 +453,14 @@
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2010
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2010
+              }
+            }
           }
         }
       }
@@ -392,8 +484,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 4
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 4
+              }
+            }
           }
         }
       }
@@ -417,8 +515,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -442,8 +546,14 @@
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2010
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2010
+              }
+            }
           }
         }
       }
@@ -467,8 +577,14 @@
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2011
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2011
+              }
+            }
           }
         }
       }
@@ -492,8 +608,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -517,8 +639,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 4
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 4
+              }
+            }
           }
         }
       }
@@ -542,8 +670,14 @@
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2012
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2012
+              }
+            }
           }
         }
       }
@@ -567,8 +701,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }
@@ -592,8 +732,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }
@@ -617,8 +763,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -642,8 +794,14 @@
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }

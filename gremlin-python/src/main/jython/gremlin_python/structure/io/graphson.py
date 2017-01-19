@@ -208,26 +208,20 @@ class PropertySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, property, writer):
-        element = property.element
-        elementDict = {}
-        if element is not None:
-            elementDict["id"] = element.id
-            elementDict["label"] = element.label
-            if isinstance(element, VertexProperty):
-                elementDict["value"] = element.value
-                elementDict["vertex"] = element.vertex.id
-                return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
-                                                            "value": writer.toDict(property.value),
-                                                            "vertexProperty": writer.toDict(elementDict)})
-            elif isinstance(element, Edge):
-                elementDict["outV"] = element.outV.id
-                elementDict["inV"] = element.inV.id
-                return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
-                                                            "value": writer.toDict(property.value),
-                                                            "edge": writer.toDict(elementDict)})
-        else:
-            return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
-                                                        "value": writer.toDict(property.value)})
+        elementDict = writer.toDict(property.element)
+        if elementDict is not None:
+            valueDict = elementDict["@value"]
+            if "outVLabel" in valueDict:
+                del valueDict["outVLabel"]
+            if "inVLabel" in valueDict:
+                del valueDict["inVLabel"]
+            if "properties" in valueDict:
+                del valueDict["properties"]
+            if "value" in valueDict:
+                del valueDict["value"]
+        return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
+                                                    "value": writer.toDict(property.value),
+                                                    "element": writer.toDict(elementDict)})
 
 
 class TraversalStrategySerializer(_GraphSONTypeIO):
@@ -392,22 +386,8 @@ class PropertyDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        if "edge" in d:
-            edge = reader.toObject(d["edge"])
-            return Property(d["key"], reader.toObject(d["value"]),
-                            Edge(edge["id"],
-                                 Vertex(edge["outV"]),
-                                 edge["label"],
-                                 Vertex(edge["inV"])))
-        elif "vertexProperty" in d:
-            vertex_property = reader.toObject(d["vertexProperty"])
-            return Property(d["key"], reader.toObject(d["value"]),
-                            VertexProperty(vertex_property["id"],
-                                           vertex_property["label"],
-                                           vertex_property["value"],
-                                           Vertex(vertex_property["vertex"])))
-        else:
-            return Property(d["key"], reader.toObject(d["value"]), None)
+        element = reader.toObject(d["element"]) if "element" in d else None
+        return Property(d["key"], reader.toObject(d["value"]), element)
 
 
 class PathDeserializer(_GraphSONTypeIO):

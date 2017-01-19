@@ -106,10 +106,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
                     assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
                     assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
-                    if (ioType.equals("graphson-v3")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });
@@ -134,10 +130,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
                     assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
-                    if (ioType.equals("graphson-v3")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });
@@ -161,10 +153,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                 reader.readProperty(bais, propertyAttachable -> {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
-                    if (ioType.equals("graphson-v3")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });
