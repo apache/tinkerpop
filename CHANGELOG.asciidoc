@@ -27,6 +27,9 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `GroupBiOperator` no longer maintains state and thus, no more side-effect related OLAP inconsistencies.
+* Added `ProjectedTraverser` which wraps a traverser with a `List<Object>` of projected data.
+* Fixed an optimization bug in `CollectionBarrierSteps` where the barrier was being consumed on each `addBarrier()`.
+* `OrderGlobalStep` and `SampleGlobalStep` use `ProjectedTraverser` and now can work up to the local star graph in OLAP.
 * SASL negotiation supports both a byte array and Base64 encoded bytes as a string for authentication to Gremlin Server.
 * Deprecated `TinkerIoRegistry` replacing it with the more consistently named `TinkerIoRegistryV1d0`.
 * Made error messaging more consistent during result iteration timeouts in Gremlin Server.
