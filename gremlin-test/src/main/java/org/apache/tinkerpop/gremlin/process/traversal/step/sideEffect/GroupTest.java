@@ -28,9 +28,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -93,6 +96,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX();
+
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -462,6 +467,23 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(3.0d, sideEffect.get("knows").doubleValue(), 0.01d);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX() {
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX();
+        printTraversalForm(traversal);
+        final Map<String, List<Object>> map = traversal.next();
+        assertEquals(7, map.size());
+        assertEquals(Collections.singleton("blah"), new HashSet<>(map.get("noone")));
+        assertEquals(new HashSet<>(Arrays.asList("created", "knows", 666)), new HashSet<>(map.get("marko")));
+        assertEquals(Collections.singleton("created"), new HashSet<>(map.get("josh")));
+        assertEquals(Collections.singleton("created"), new HashSet<>(map.get("peter")));
+        assertEquals(Collections.emptySet(), new HashSet<>(map.get("vadas")));
+        assertEquals(Collections.emptySet(), new HashSet<>(map.get("lop")));
+        assertEquals(Collections.emptySet(), new HashSet<>(map.get("ripple")));
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -562,6 +584,14 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX() {
             return g.V().<String, Number>group().by(T.label).by(bothE().group("a").by(T.label).by(values("weight").sum()).values("weight").sum());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX() {
+            final Map<String, List<Object>> map = new HashMap<>();
+            map.put("marko", new ArrayList<>(Collections.singleton(666)));
+            map.put("noone", new ArrayList<>(Collections.singleton("blah")));
+            return g.withSideEffect("a", map).V().group("a").by("name").by(outE().label().fold()).cap("a");
         }
     }
 }

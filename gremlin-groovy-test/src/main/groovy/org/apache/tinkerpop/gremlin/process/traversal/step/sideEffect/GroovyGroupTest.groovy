@@ -128,5 +128,10 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group().by(label).by(bothE().group('a').by(label).by(values('weight').sum).weight.sum)")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', map).V().group('a').by('name').by(outE().label.fold).cap('a')", "map", new HashMap<>(["marko": [666], "noone": ["blah"]]));
+        }
     }
 }
