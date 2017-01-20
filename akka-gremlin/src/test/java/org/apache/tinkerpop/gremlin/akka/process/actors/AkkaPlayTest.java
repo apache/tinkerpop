@@ -24,6 +24,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
@@ -49,10 +50,11 @@ public class AkkaPlayTest {
         configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT,"gryo");
         final Graph graph = TinkerGraph.open(configuration);
         //graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(2));
+        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(15));
      //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
-        System.out.println(g.V().order().by("name").values("name").toList());
+        //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
+        System.out.println(g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a").toList());
 
 
 

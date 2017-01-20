@@ -51,7 +51,6 @@ public class AkkaActorsProvider extends AbstractTinkerGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name",
             "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack",
-            "g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX",
             "g_V_repeatXdedupX_timesX2X_count",
             "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
             "g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X",

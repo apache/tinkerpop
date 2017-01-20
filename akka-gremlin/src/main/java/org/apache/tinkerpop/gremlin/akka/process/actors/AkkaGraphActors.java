@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
-import org.apache.tinkerpop.gremlin.process.actors.util.GraphActorsHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
@@ -51,7 +50,6 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     private AkkaGraphActors(final Configuration configuration) {
         this.configuration = new SerializableConfiguration(configuration);
         this.configuration.setProperty(GRAPH_ACTORS, AkkaGraphActors.class.getCanonicalName());
-        GraphActorsHelper.configure(this, this.configuration);
     }
 
     @Override

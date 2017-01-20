@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -112,9 +113,12 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                     set(((SideEffectSetMessage) message).getKey(), TraversalActorProgram.attach(((SideEffectSetMessage) message).getValue(), this.self.partition()));
         } else if (message instanceof BarrierDoneMessage) {
             final Step<?, ?> step = (Step) this.matrix.getStepById(((BarrierDoneMessage) message).getStepId());
-            while (step.hasNext()) {
-                sendTraverser(step.next());
-            }
+            if (step instanceof LocalBarrier) { // the worker drains the local barrier
+                while (step.hasNext()) {
+                    sendTraverser(step.next());
+                }
+            } else
+                ((Barrier) step).done();       // the master drains the global barrier
         } else if (message instanceof Terminate) {
             assert null == this.terminate;
             this.terminate = (Terminate) message;
@@ -123,20 +127,21 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                     if (barrier instanceof LocalBarrier) {
                         barrier.processAllStarts();
                         this.self.send(this.self.master(), new BarrierAddMessage(barrier));
-                    } else {
+                    } else if(!(barrier instanceof SideEffectCapStep)) { // why is this needed?
                         while (barrier.hasNextBarrier()) {
                             this.self.send(this.self.master(), new BarrierAddMessage(barrier));
                         }
                     }
                 }
                 this.barriers.clear();
+                this.voteToHalt = false; // is this necessary?
             }
             // use termination token to determine termination condition
             if (this.isLeader) {
                 if (this.voteToHalt && Terminate.YES == this.terminate)
                     this.self.send(this.self.master(), Terminate.YES);
                 else
-                    this.self.send(this.neighborWorker, Terminate.YES);
+                    this.self.send(this.neighborWorker, this.voteToHalt ? Terminate.YES : Terminate.NO);
             } else
                 this.self.send(this.neighborWorker, this.voteToHalt ? this.terminate : Terminate.NO);
             this.terminate = null;
