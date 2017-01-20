@@ -21,20 +21,15 @@ package org.apache.tinkerpop.gremlin.akka.process.actors;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.akka.process.actors.AkkaGraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,15 +42,22 @@ public class AkkaPlayTest {
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
         configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/Users/marko/software/tinkerpop/data/tinkerpop-modern.kryo");
-        configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT,"gryo");
+        configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
         final Graph graph = TinkerGraph.open(configuration);
         //graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
         GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(15));
-     //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
+        //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
         //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
         System.out.println(g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a").toList());
-
+        System.out.println(g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a").toList());
+        for (int i = 0; i < 1000; i++) {
+            Map<Object, Long> map = g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").<Map>cap("a").next();
+            if (24L != map.values().stream().reduce((a, b) -> a + b).get()) {
+                System.out.println(i + " -- " + map);
+                assert false;
+            }
+        }
 
 
         //3, 1.9, 1

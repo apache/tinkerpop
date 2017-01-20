@@ -55,6 +55,7 @@ public class AkkaActorsProvider extends AbstractTinkerGraphProvider {
             "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
             "g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X",
             "g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX",
+            "g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX",
             "classicRecommendation",
             "coworkerSummaryOLTP",
             GraphTest.Traversals.class.getCanonicalName(),

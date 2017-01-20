@@ -188,9 +188,7 @@ public final class TraversalActorProgram<R> implements ActorProgram {
                 final Set set = (Set) object;
                 final Set newSet = set instanceof HashSet ? new HashSet<>(set.size()) : new LinkedHashSet<>(set.size());
                 set.forEach(o -> newSet.add(TraversalActorProgram.attach(o, host)));
-                set.clear();
-                set.addAll(newSet);
-                return (A) set;
+                return (A) newSet;
             } else if (object instanceof Traverser.Admin) {
                 final Traverser.Admin traverser = (Traverser.Admin) object;
                 traverser.attach(host);
