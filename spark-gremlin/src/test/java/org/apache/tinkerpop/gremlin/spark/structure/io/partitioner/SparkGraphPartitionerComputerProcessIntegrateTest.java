@@ -30,6 +30,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessComputerSuite.class)
 @GraphProviderClass(provider = TinkerGraphPartitionerProvider.class, graph = TinkerGraph.class)
-@Ignore
 public class SparkGraphPartitionerComputerProcessIntegrateTest {
 }

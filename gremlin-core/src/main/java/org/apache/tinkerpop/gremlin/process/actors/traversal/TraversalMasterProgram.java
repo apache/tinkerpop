@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -96,6 +97,8 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                 barrier.addBarrier(TraversalActorProgram.attach(((BarrierAddMessage) message).getBarrier(), this.master.partitioner().getGraph()));
             if (barrier instanceof SideEffectCapable)
                 this.sideEffects.add(((SideEffectCapable) barrier).getSideEffectKey());
+            if (barrier instanceof SideEffectCapStep)
+                this.sideEffects.addAll(((SideEffectCapStep<?, ?>) barrier).getSideEffectKeys());
             this.barriers.put(((Step) barrier).getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
             final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;

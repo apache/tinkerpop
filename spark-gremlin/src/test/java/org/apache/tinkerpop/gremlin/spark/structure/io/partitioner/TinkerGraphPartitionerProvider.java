@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.partitioner.PartitionerInputFormat;
@@ -42,6 +43,8 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
@@ -55,6 +58,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,6 +92,32 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
         add(TinkerVertexProperty.class);
     }};
 
+    private static Map<String, String> PATHS = new HashMap<>();
+
+    static {
+        try {
+            final List<String> kryoResources = Arrays.asList(
+                    "tinkerpop-modern.kryo",
+                    "grateful-dead.kryo",
+                    "tinkerpop-classic.kryo",
+                    "tinkerpop-crew.kryo");
+            for (final String fileName : kryoResources) {
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+            }
+
+            final List<String> graphsonResources = Arrays.asList(
+                    "tinkerpop-modern-v2d0-typed.json",
+                    "grateful-dead-v2d0-typed.json",
+                    "tinkerpop-classic-v2d0-typed.json",
+                    "tinkerpop-crew-v2d0-typed.json");
+            for (final String fileName : graphsonResources) {
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
@@ -100,9 +130,15 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
-            put("skipTest", skipTest);
-            if (loadGraphWith == LoadGraphWith.GraphData.CREW)
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+            put("skipTest", SKIP_TESTS.contains(testMethodName) || SKIP_TESTS.contains(test.getCanonicalName()));
+            if (null != loadGraphWith) {
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, loadGraphDataViaHadoopConfig(loadGraphWith));
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+                if (loadGraphWith == LoadGraphWith.GraphData.CREW)
+                    put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+            }
+
+            // Spark specific configuration
             put("spark.master", "local[4]");
             put("spark.serializer", GryoSerializer.class.getCanonicalName());
             put("spark.kryo.registrationRequired", true);
@@ -113,25 +149,34 @@ public class TinkerGraphPartitionerProvider extends AbstractGraphProvider {
             if (!skipTest)
                 put(GraphComputer.GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
             put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-            put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-            // System.out.println(AbstractGremlinTest.class.getResource(loadGraphWith.location()).toString().replace("file:",""));
-            if (null != loadGraphWith)
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, AbstractGremlinTest.class.getResource(loadGraphWith.location()).toString().replace("file:", ""));
         }};
 
 
     }
 
-    protected void readIntoGraph(final Graph g, final String path) throws IOException {
+    public String loadGraphDataViaHadoopConfig(final LoadGraphWith.GraphData graphData) {
+        final String type = ".kryo";
+        if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
+            return PATHS.get("grateful-dead" + type);
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
+            return PATHS.get("tinkerpop-modern" + type);
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
+            return PATHS.get("tinkerpop-classic" + type);
+        } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
+            return PATHS.get("tinkerpop-crew" + type);
+        } else {
+            throw new RuntimeException("Could not load graph with " + graphData);
+        }
+    }
+
+    @Override
+    public void loadGraphData(final Graph graph, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
 
     }
 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        if (null != graph)
-            ((TinkerGraph) graph).clear();
-        // if (graph != null)
-        //    graph.close();
+        //  if (graph != null) graph.close();
     }
 
     @Override
