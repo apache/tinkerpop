@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.akka.process.actors;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
@@ -90,14 +89,8 @@ public class AkkaActorsProvider extends AbstractTinkerGraphProvider {
     }
 
     @Override
-    public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        // don't delete the loaded data
-    }
-
-
-    @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        if ((Boolean) graph.configuration().getProperty(GREMLIN_TINKERGRAPH_SKIP_TEST))
+        if (isSkipTest(graph.configuration()))
             return graph.traversal();
         else {
             final GraphTraversalSource g = graph.traversal();

@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class PythonComputerProvider extends PythonProvider {
-
     public GraphTraversalSource traversal(final Graph graph) {
         return super.traversal(graph).withComputer();
     }

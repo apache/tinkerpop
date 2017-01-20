@@ -83,6 +83,10 @@ public abstract class AbstractTinkerGraphProvider extends AbstractGraphProvider 
 
     public abstract Set<String> getSkipTests();
 
+    protected static boolean isSkipTest(final Configuration configuration) {
+        return configuration.getBoolean(GREMLIN_TINKERGRAPH_SKIP_TEST,false);
+    }
+
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
@@ -132,14 +136,15 @@ public abstract class AbstractTinkerGraphProvider extends AbstractGraphProvider 
 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        if (graph != null)
-            graph.close();
-
-        // in the even the graph is persisted we need to clean up
         final String graphLocation = configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        if (graphLocation != null) {
-            final File f = new File(graphLocation);
-            f.delete();
+        if (!PATHS.values().contains(graphLocation)) {
+            if (graph != null)
+                graph.close();
+            // in the event the graph is persisted we need to clean up
+            if (graphLocation != null) {
+                final File f = new File(graphLocation);
+                f.delete();
+            }
         }
     }
 

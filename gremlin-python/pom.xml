@@ -48,7 +48,7 @@
         <!-- TESTING -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
+            <artifactId>gremlin-tinkergraph-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

@@ -101,7 +101,7 @@ public class SparkTinkerGraphProvider extends AbstractTinkerGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        if (graph.configuration().getBoolean(GREMLIN_TINKERGRAPH_SKIP_TEST, false))
+        if (isSkipTest(graph.configuration()))
             return graph.traversal().withStrategies(ReadOnlyStrategy.instance()).withComputer();
         else
             return graph.traversal().withStrategies(ReadOnlyStrategy.instance()).withProcessor(SparkGraphComputer.open(graph.configuration()));
@@ -109,7 +109,7 @@ public class SparkTinkerGraphProvider extends AbstractTinkerGraphProvider {
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
-        if (graph.configuration().getBoolean(GREMLIN_TINKERGRAPH_SKIP_TEST, false))
+        if (isSkipTest(graph.configuration()))
             return new TinkerGraphComputer((TinkerGraph) graph);
         else
             return SparkGraphComputer.open(graph.configuration());
