@@ -176,15 +176,12 @@ final class Handler {
 
         /**
          * Work out the Sasl mechanism based on the user supplied parameters.
-         * If we have a username and password use PLAIN otherwise GSSAPI
+         * If we have a JAAS entry use GSSAPI otherwise PLAIN.
+         * Use of additional mechanisms (CRAM-MD5, DIGEST-MD5, EXTERNAL) requires the server to return the
+         * mechanism(s) it supports, so that getMechanism can get the negotiated mechanism from SaslClient.
          */
         private String getMechanism() {
-            if ((authProps.get(AuthProperties.Property.USERNAME) != null) &&
-                (authProps.get(AuthProperties.Property.PASSWORD) != null)) {
-                return "PLAIN";
-            } else {
-                return "GSSAPI";
-            }
+            return (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) ? "GSSAPI" : "PLAIN";
         }
     }
 

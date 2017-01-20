@@ -23,10 +23,10 @@ import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
-import org.ietf.jgss.GSSException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -154,7 +154,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(GSSException.class, root.getClass());
+            assertEquals(ResponseException.class, root.getClass());
         } finally {
             cluster.close();
         }
