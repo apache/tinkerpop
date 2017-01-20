@@ -1226,9 +1226,29 @@ public interface Graph extends AutoCloseable, Host {
          */
         @Deprecated
         public static String SUITE_PROCESS_PERFORMANCE = "org.apache.tinkerpop.gremlin.process.ProcessPerformanceSuite";
+
+        /**
+         * @deprecated As of release 3.2.4, not replaced as a test suite that Graph Providers need to implement.
+         */
+        @Deprecated
         public static String SUITE_GROOVY_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
+
+        /**
+         * @deprecated As of release 3.2.4, not replaced as a test suite that Graph Providers need to implement.
+         */
+        @Deprecated
         public static String SUITE_GROOVY_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
+
+        /**
+         * @deprecated As of release 3.2.4, not replaced as a test suite that Graph Providers need to implement.
+         */
+        @Deprecated
         public static String SUITE_GROOVY_ENVIRONMENT = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
+
+        /**
+         * @deprecated As of release 3.2.4, not replaced as a test suite that Graph Providers need to implement.
+         */
+        @Deprecated
         public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
 
         /**
