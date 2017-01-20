@@ -16,6 +16,7 @@
         <module>gremlin-benchmark</module>
         <module>gremlin-coverage</module>
         <module>gremlin-io-test</module>
+        <module>gremlin-tinkergraph-test</module>
     </modules>
 
     <build>

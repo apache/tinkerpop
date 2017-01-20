@@ -17,18 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.structure.io.partitioner;
+package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = TinkerGraphPartitionerProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = SparkTinkerGraphProvider.class, graph = TinkerGraph.class)
 public class SparkGraphPartitionerComputerProcessIntegrateTest {
 }

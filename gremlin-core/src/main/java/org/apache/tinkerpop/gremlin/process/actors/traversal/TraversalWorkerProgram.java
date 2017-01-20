@@ -90,8 +90,8 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         final int i = this.self.workers().indexOf(this.self.address());
         this.neighborWorker = this.self.workers().get(i == this.self.workers().size() - 1 ? 0 : i + 1);
         this.isLeader = i == 0;
-        for (int j = 0; j < this.self.partitioner().getPartitions().size(); j++) {
-            this.partitionToWorkerMap.put(this.self.partitioner().getPartitions().get(j), this.self.workers().get(j));
+        for (int j = 0; j < this.self.partition().partitioner().getPartitions().size(); j++) {
+            this.partitionToWorkerMap.put(this.self.partition().partitioner().getPartitions().get(j), this.self.workers().get(j));
         }
     }
 
@@ -177,7 +177,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
         else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
-            this.self.send(this.partitionToWorkerMap.get(this.self.partitioner().find((Element) traverser.get())), traverser);
+            this.self.send(this.partitionToWorkerMap.get(this.self.partition().partitioner().find((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
     }

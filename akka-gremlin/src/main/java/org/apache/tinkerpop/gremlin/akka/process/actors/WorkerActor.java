@@ -99,11 +99,6 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
     }
 
     @Override
-    public Partitioner partitioner() {
-        return this.partitioner;
-    }
-
-    @Override
     public Address.Worker address() {
         return this.self;
     }

@@ -69,19 +69,13 @@
         <!-- TEST -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-groovy</artifactId>
-            <version>3.3.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>3.3.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
+            <artifactId>gremlin-tinkergraph-test</artifactId>
             <version>3.3.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>

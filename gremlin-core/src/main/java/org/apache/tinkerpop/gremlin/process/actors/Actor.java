@@ -36,13 +36,6 @@ import java.util.List;
 public interface Actor {
 
     /**
-     * Get the {@link Partitioner} associated with the {@link GraphActors} system.
-     *
-     * @return the partitioner used to partition (logically and/or physically) the {@link org.apache.tinkerpop.gremlin.structure.Graph}
-     */
-    public Partitioner partitioner();
-
-    /**
      * Get the {@link Address} of the actors.
      *
      * @return the actors's address
@@ -67,7 +60,20 @@ public interface Actor {
 
     public interface Master extends Actor {
 
+        /**
+         * Get the master actors address.
+         *
+         * @return the master actor's address
+         */
+        @Override
         public Address.Master address();
+
+        /**
+         * Get the {@link Partitioner} associated with the {@link GraphActors} system.
+         *
+         * @return the partitioner used to partition (logically and/or physically) the {@link org.apache.tinkerpop.gremlin.structure.Graph}
+         */
+        public Partitioner partitioner();
 
         public void close();
 
