@@ -91,8 +91,7 @@ public class ScriptEngines implements AutoCloseable {
      * Evaluate a script with {@code Bindings} for a particular language.
      */
     public Object eval(final String script, final Bindings bindings, final String language) throws ScriptException {
-        if (!scriptEngines.containsKey(language))
-            throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
+        checkLanguageIsSupported(language);
 
         awaitControlOp();
 
@@ -107,8 +106,7 @@ public class ScriptEngines implements AutoCloseable {
      */
     public Object eval(final Reader reader, final Bindings bindings, final String language)
             throws ScriptException {
-        if (!scriptEngines.containsKey(language))
-            throw new IllegalArgumentException("Language [%s] not supported");
+        checkLanguageIsSupported(language);
 
         awaitControlOp();
 
@@ -411,5 +409,11 @@ public class ScriptEngines implements AutoCloseable {
         final Bindings all = new SimpleBindings(global);
         all.putAll(bindings);
         return all;
+    }
+
+    private void checkLanguageIsSupported(final String language) {
+        if (!scriptEngines.containsKey(language)) {
+            throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
+        }
     }
 }
