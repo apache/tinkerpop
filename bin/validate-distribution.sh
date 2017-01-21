@@ -169,9 +169,13 @@ echo "OK"
 if [ "${TYPE}" = "CONSOLE" ]; then
   echo -n "* testing script evaluation ... "
   SCRIPT="x = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal().V().count().next(); println x; x"
-  SCRIPT_FILENAME="${TMP_DIR}/test.groovy"
-  echo ${SCRIPT} > ${SCRIPT_FILENAME}
+  SCRIPT_FILENAME="test.groovy"
+  SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
+  echo ${SCRIPT} > ${SCRIPT_PATH}
   [[ `bin/gremlin.sh <<< ${SCRIPT} | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
-  [[ `bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
+  [[ `bin/gremlin.sh -e ${SCRIPT_PATH}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
+  CONSOLE_DIR=`pwd`
+  cd ${TMP_DIR}
+  [[ `${CONSOLE_DIR}/bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option (using a different working directory and a relative script path)"; exit 1; }
   echo "OK"
 fi
