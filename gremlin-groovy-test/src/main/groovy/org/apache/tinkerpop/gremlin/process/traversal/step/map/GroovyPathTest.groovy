@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -53,6 +53,11 @@ public abstract class GroovyPathTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
             TraversalScriptHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).outE('created').inV.inE.outV.path()", g, "v1Id", v1Id)
         }
     }
 }

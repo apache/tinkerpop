@@ -739,13 +739,13 @@ Gremlin Server will send:
 |=========================================================
 
 OpProcessors Arguments
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors`
 (i.e. ones packaged with Gremlin Server).
 
 Common
-++++++
+^^^^^^
 
 All `OpProcessor` instances support these arguments.
 
@@ -756,7 +756,7 @@ All `OpProcessor` instances support these arguments.
 |=========================================================
 
 Standard OpProcessor
-++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^
 
 The "standard" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin.
 Requests made to this `OpProcessor` are "sessionless" in the sense that a request must encapsulate the entirety
@@ -794,11 +794,11 @@ be aliased to different variable names for purposes of the current request.  The
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |=========================================================
 
 Session OpProcessor
-+++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^
 
 The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is
 like the "standard" `OpProcessor`, but instead maintains state between sessions and allows the option to leave all
@@ -817,7 +817,7 @@ Gremlin Server are deployed, session state is not shared among them.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`eval` !Evaluate a Gremlin script provided as a `String`.
-!`close` !Close the specified session and rollback any open transactions.
+!`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
 '`authentication` operation arguments'
@@ -836,7 +836,7 @@ Gremlin Server are deployed, session state is not shared among them.
 |session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
 |manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
 be aliased to different variable names for purposes of the current request.  The value represents the name the

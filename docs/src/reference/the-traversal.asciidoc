@@ -55,26 +55,26 @@ for an anonymous traversal, it is possible to simply write `inE()`. Be aware of 
 when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use
 the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
-[[lambda-steps]]
-Lambda Steps
-~~~~~~~~~~~~
+[[general-steps]]
+General Steps
+~~~~~~~~~~~~~
 
-WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
-Gremlin language. In practice, lambda steps should be avoided and traversal verification strategies exist to disallow t
-heir use unless explicitly "turned off." For more information on the problems with lambdas, please read
-<<a-note-on-lambdas,A Note on Lambdas>>.
-
-There are four generic steps by which all other specific steps described later extend.
+There are five general steps, each having a traversal and a lambda representation, by which all other specific steps described later extend.
 
 [width="100%",cols="10,12",options="header"]
 |=========================================================
 | Step| Description
-| `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
-| `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
-| `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
-| `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
+| `map(Traversal<S, E>)` <br> `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
+| `flatMap(Traversal<S, E>)` <br> `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
+| `filter(Traversal<?, ?>)` <br> `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
+| `sideEffect(Traversal<S, S>)` <br> `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
+| `branch(Traversal<S, M>)` <br> `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
 |=========================================================
+
+WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
+Gremlin language. In practice, lambda steps should be avoided in favor of their traversals representation and traversal
+verification strategies exist to disallow their use unless explicitly "turned off." For more information on the problems
+with lambdas, please read <<a-note-on-lambdas,A Note on Lambdas>>.
 
 The `Traverser<S>` object provides access to:
 
@@ -92,43 +92,54 @@ image:map-lambda.png[width=150,float=right]
 ----
 g.V(1).out().values('name') <1>
 g.V(1).out().map {it.get().value('name')} <2>
+g.V(1).out().map(values('name')) <3>
 ----
 
 <1> An outgoing traversal from vertex 1 to the name values of the adjacent vertices.
 <2> The same operation, but using a lambda to access the name property values.
+<3> Again the same operation, but using the traversal representation of `map()`.
 
 image:filter-lambda.png[width=160,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().filter {it.get().label() == 'person'} <1>
-g.V().hasLabel('person') <2>
+g.V().filter(label().is('person')) <2>
+g.V().hasLabel('person') <3>
 ----
 
 <1> A filter that only allows the vertex to pass if it has an age-property.
-<2> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
+<2> The same operation, but using the traversal represention of `filter()`.
+<3> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
 
 
 image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').sideEffect(System.out.&println) <1>
+g.V().sideEffect(outE().count().store("o")).
+      sideEffect(inE().count().store("i")).cap("o","i") <2>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
+<2> Compute the out- and in-degree for each vertex. Both `sideEffect()` are fed with the same vertex.
 
 image:branch-lambda.png[width=180,float=right]
 [gremlin-groovy,modern]
 ----
-g.V().branch(values('name')).
+g.V().branch {it.get().value('name')}.
       option('marko', values('age')).
       option(none, values('name')) <1>
+g.V().branch(values('name')).
+      option('marko', values('age')).
+      option(none, values('name')) <2>
 g.V().choose(has('name','marko'),
              values('age'),
-             values('name')) <2>
+             values('name')) <3>
 ----
 
 <1> If the vertex is "marko", get his age, else get the name of the vertex.
-<2> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
+<2> The same operation, but using the traversal represention of `branch()`.
+<3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
 [[addedge-step]]
 AddEdge Step
@@ -307,7 +318,7 @@ g.V().hasLabel('software').as('a','b','c').
 Barrier Step
 ~~~~~~~~~~~~
 
-The `barrier()`-step (*barrier*) turns the the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
+The `barrier()`-step (*barrier*) turns the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
 useful in the following situations:
 
   * When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e. ordering).
@@ -742,7 +753,7 @@ g.V().has('name',not(within('josh','marko'))).valueMap() <5>
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-<3> Find all vertices whose names are exact matches to any names in the the collection `[josh,marko]`, display all
+<3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
 the key,value pairs for those verticies.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
 <5> Same as the prior example save using `not` on `within` to yield `without`.
@@ -851,7 +862,7 @@ in a object-local traversal. As such, the `order().by()` and the `limit()` refer
 stream as a whole.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[match-step]]
@@ -1430,7 +1441,7 @@ g.V(1).repeat(out()).until(outE().count().is(0)).path().by('name') <3>
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
 
 WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally."
-In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the
+In OLAP, where the atomic unit of computing is the vertex and its local "star graph," it is important that the
 anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to
 an adjacent vertex's properties or edges.
 
@@ -2002,7 +2013,7 @@ g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
 edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see
 link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
@@ -2089,7 +2100,7 @@ supplier yields a single traverser to continue to the next step. Examples includ
 
 In Gremlin OLAP (see <<traversalvertexprogram,`TraversalVertexProgram`>>), a barrier is introduced at the end of
 every <<vertex-steps,adjacent vertex step>>. This means that the traversal does its best to compute as much as
-possible at the current, local vertex. What is can't compute without referencing an adjacent vertex is aggregated
+possible at the current, local vertex. What it can't compute without referencing an adjacent vertex is aggregated
 into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the
 messages that are propagated to remote vertices for further processing.
 

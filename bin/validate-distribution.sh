@@ -92,6 +92,7 @@ echo "* validating signatures and checksums ... "
 echo -n "  * PGP signature ... "
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
 { echo "failed"; exit 1; }
 echo "OK"
 
@@ -116,11 +117,11 @@ if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* building project ... "
 LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
-mvn clean install -q 2>&1 > "${LOG_FILE}" || {
+mvn clean install -q > "${LOG_FILE}" 2>&1 || {
   echo "failed"
   echo
   tail -n50 "${LOG_FILE}"
-  echo -e "\n\e[1mThe full log file can be inspected under `pwd`/${LOG_FILE}.\e[0m\n"
+  echo -e "\n\e[1mThe full log file can be inspected under ${LOG_FILE}.\e[0m\n"
   exit 1
 }
 echo "OK"

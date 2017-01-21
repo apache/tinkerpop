@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
@@ -135,7 +134,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
-        final Cluster cluster = Cluster.build().addContactPoint("localhost")
+        final Cluster cluster = TestClientFactory.build()
                 .reconnectIntialDelay(500)
                 .reconnectInterval(500)
                 .maxContentLength(1024).create();
@@ -156,7 +155,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEventuallySucceedAfterMuchFailure() throws Exception {
-        final Cluster cluster = Cluster.build().addContactPoint("localhost").create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         // tested independently to 10000 iterations but for speed, bumped back to 1000
@@ -179,7 +178,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldEventuallySucceedOnSameServer() throws Exception {
         stopServer();
 
-        final Cluster cluster = Cluster.build().addContactPoint("localhost").create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -203,7 +202,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEventuallySucceedWithRoundRobin() throws Exception {
         final String noGremlinServer = "74.125.225.19";
-        final Cluster cluster = Cluster.build(noGremlinServer).addContactPoint("localhost").create();
+        final Cluster cluster = TestClientFactory.build().addContactPoint(noGremlinServer).create();
         final Client client = cluster.connect();
 
         // the first host is dead on init.  request should succeed on localhost
@@ -218,7 +217,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldHandleResultsOfAllSizes() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final String script = "g.V().drop().iterate();\n" +
@@ -257,7 +256,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailWithBadClientSideSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("java.awt.Color.RED");
@@ -280,7 +279,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailWithScriptExecutionException() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("1/0");
@@ -303,7 +302,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
@@ -326,7 +325,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProcessSessionRequestsInOrder() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
@@ -352,7 +351,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWaitForAllResultsToArrive() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final AtomicInteger checked = new AtomicInteger(0);
@@ -370,7 +369,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkOverNioTransport() throws Exception {
-        final Cluster cluster = Cluster.build().channelizer(Channelizer.NioChannelizer.class.getName()).create();
+        final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.NioChannelizer.class.getName()).create();
         final Client client = cluster.connect();
 
         final AtomicInteger checked = new AtomicInteger(0);
@@ -388,7 +387,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldStream() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -405,7 +404,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldIterate() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -427,7 +426,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldGetSomeThenSomeMore() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -455,7 +454,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldGetOneThenSomeThenSomeMore() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -503,7 +502,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
         // by increasing the maxConnectionPoolSize.
         final int requests = workerPoolSizeForDriver * 4;
-        final Cluster cluster = Cluster.build()
+        final Cluster cluster = TestClientFactory.build()
                 .workerPoolSize(workerPoolSizeForDriver)
                 .maxWaitForConnection(300000)
                 .create();
@@ -527,7 +526,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldCloseWithServerDown() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         cluster.connect().init();
 
         stopServer();
@@ -537,7 +536,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         assertEquals(0, cluster.availableHosts().size());
         cluster.connect().init();
         assertEquals(1, cluster.availableHosts().size());
@@ -552,7 +551,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailWithBadServerSideSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("TinkerGraph.open().variables()");
@@ -580,7 +579,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
         serializer.configure(m, null);
 
-        final Cluster cluster = Cluster.build().serializer(serializer).create();
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
         final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
@@ -598,7 +597,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
         serializer.configure(m, null);
 
-        final Cluster cluster = Cluster.build().serializer(serializer).create();
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
         final List<Result> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
@@ -608,7 +607,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONSerialization() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
         final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
@@ -645,7 +644,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @org.junit.Ignore("Can't seem to make this test pass consistently")
     public void shouldHandleRequestSentThatNeverReturns() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("Thread.sleep(10000); 'should-not-ever-get-back-coz-we-killed-the-server'");
@@ -670,7 +669,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = Cluster.build().maxContentLength(1).create();
+        final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
         final Client client = cluster.connect();
 
         try {
@@ -687,7 +686,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReturnNiceMessageFromOpSelector() {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -705,7 +704,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptInSession() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -722,7 +721,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldNotThrowNoSuchElementException() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -735,7 +734,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldCloseSession() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -746,17 +745,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.close();
 
         try {
-            client.submit("x[0]+1");
+            client.submit("x[0]+1").all().get();
             fail("Should have thrown an exception because the connection is closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ConnectionException.class));
+            assertThat(root, instanceOf(IllegalStateException.class));
+        } finally {
+            cluster.close();
         }
     }
 
     @Test
     public void shouldExecuteScriptInSessionAssumingDefaultedImports() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("TinkerFactory.class.name");
@@ -769,7 +770,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final Vertex vertexBeforeTx = client.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
@@ -792,7 +793,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
         final Client sessionlessClient = cluster.connect();
         client.submit("graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);null").all().get();
@@ -829,7 +830,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client sessionClient = cluster.connect(name.getMethodName());
         final Client sessionlessClient = cluster.connect();
 
@@ -856,7 +857,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         // this line is important because it tests GraphTraversal which has a certain transactional path
@@ -877,7 +878,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptInSessionWithBindingsSavedOnServerBetweenRequests() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         final Map<String, Object> bindings1 = new HashMap<>();
@@ -905,7 +906,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptsInMultipleSession() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client1 = cluster.connect(name.getMethodName() + "1");
         final Client client2 = cluster.connect(name.getMethodName() + "2");
         final Client client3 = cluster.connect(name.getMethodName() + "3");
@@ -929,7 +930,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldNotHaveKnowledgeOfBindingsBetweenRequestsWhenSessionless() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client1 = cluster.connect();
         final Client client2 = cluster.connect();
         final Client client3 = cluster.connect();
@@ -973,7 +974,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
-        final Cluster cluster = Cluster.build().workerPoolSize(2)
+        final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
                 .maxInProcessPerConnection(64)
                 .minInProcessPerConnection(32)
                 .maxConnectionPoolSize(16)
@@ -1008,7 +1009,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldRequireAliasedGraphVariablesInStrictTransactionMode() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -1028,7 +1029,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldAliasGraphVariablesInStrictTransactionMode() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -1055,7 +1056,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariables() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -1082,7 +1083,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -1109,7 +1110,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1138,7 +1139,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1169,7 +1170,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldManageTransactionsInSession() throws Exception {
         assumeNeo4jIsPresent();
 
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
         final Client sessionWithManagedTx = cluster.connect(name.getMethodName() + "-managed", true);
         final Client sessionWithoutManagedTx = cluster.connect(name.getMethodName() + "-not-managed");
@@ -1207,7 +1208,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProcessSessionRequestsInOrderAfterTimeout() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
         for(int index = 0; index < 50; index++)
@@ -1248,6 +1249,78 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Test
+    public void shouldCloseAllClientsOnCloseOfCluster() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client sessionlessOne = cluster.connect();
+        final Client session = cluster.connect("session");
+        final Client sessionlessTwo = cluster.connect();
+        final Client sessionlessThree = cluster.connect();
+        final Client sessionlessFour = cluster.connect();
+
+        assertEquals(2, sessionlessOne.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, session.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessTwo.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessThree.submit("1+1").all().get().get(0).getInt());
+        // dont' send anything on the 4th client
+
+        // close one of these Clients before the Cluster
+        sessionlessThree.close();
+        cluster.close();
+
+        try {
+            sessionlessOne.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            session.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessTwo.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessThree.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessFour.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        // allow call to close() even though closed through cluster
+        sessionlessOne.close();
+        session.close();
+        sessionlessTwo.close();
+
+        cluster.close();
+    }
+
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
         try
         {
@@ -1258,7 +1331,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms for request"));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms"));
         }
     }
 }

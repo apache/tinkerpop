@@ -615,7 +615,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
 |connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
 |connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
-|connectionPool.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
+|connectionPool.keyPassword |The password of the `keyFile` if it is password-protected |_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
@@ -775,7 +775,7 @@ Configuring
 ~~~~~~~~~~~
 
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
-file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
+file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
 to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
@@ -851,8 +851,8 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
-|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
+|ssl.keyPassword |The password of the `keyFile` if it is password-protected |_none_
+|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. (Not supported) |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
@@ -920,7 +920,7 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
                                  .enableSsl(true).create();
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
-`config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
+`conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
 password as well as enablement of SSL from the client side.
 
 Similarly, Gremlin Server can be configured for REST and security.
@@ -1309,12 +1309,12 @@ client.submit("[1,2,3,x]", params);
 Cache Management
 ^^^^^^^^^^^^^^^^
 
-If Gremlin Server processes a large number of unique scripts, the cache will grow beyond the memory available to
-Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving this problem
-and running out of memory should not be an issue for those cases.  If it is a problem or if there is no script
-parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to better
-control the nature of the script cache from the client side, by issuing scripts with a parameter to help define how
-the garbage collector should treat the references.
+If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
+available to Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving
+this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no
+script parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to
+better control the nature of the global function cache from the client side, by issuing scripts with a parameter to
+help define how the garbage collector should treat the references.
 
 The parameter is called `#jsr223.groovy.engine.keep.globals` and has four options:
 
@@ -1324,8 +1324,19 @@ The parameter is called `#jsr223.groovy.engine.keep.globals` and has four option
 * `phantom` - removed immediately after being evaluated by the `ScriptEngine`.
 
 By specifying an option other than `hard`, an `OutOfMemoryError` in Gremlin Server should be avoided.  Of course,
-this approach will come with the downside that compiled scripts could be garbage collected and thus removed from the
+this approach will come with the downside that functions could be garbage collected and thus removed from the
 cache, forcing Gremlin Server to recompile later if that script is later encountered.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
+params.put("#jsr223.groovy.engine.keep.globals", "soft");
+client.submit("[1,2,3,x]", params);
+----
 
 [[sessions]]
 Considering Sessions

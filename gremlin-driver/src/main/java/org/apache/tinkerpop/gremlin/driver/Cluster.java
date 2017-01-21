@@ -36,6 +36,7 @@ import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -83,7 +84,9 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        return (T) new Client.ClusteredClient(this);
+        final Client client = new Client.ClusteredClient(this);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     /**
@@ -122,7 +125,9 @@ public final class Cluster {
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
         if (null == sessionId || sessionId.isEmpty())
             throw new IllegalArgumentException("sessionId cannot be null or empty");
-        return (T) new Client.SessionedClient(this, sessionId, manageTransactions);
+        final Client client = new Client.SessionedClient(this, sessionId, manageTransactions);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     @Override
@@ -232,7 +237,7 @@ public final class Cluster {
 
     /**
      * Gets the list of hosts that the {@code Cluster} was able to connect to.  A {@link Host} is assumed unavailable
-     * until a connection to it is proven to be present.  This will not happen until the the {@link Client} submits
+     * until a connection to it is proven to be present.  This will not happen until the {@link Client} submits
      * requests that succeed in reaching a server at the {@link Host} or {@link Client#init()} is called which
      * initializes the {@link ConnectionPool} for the {@link Client} itself.  The number of available hosts returned
      * from this method will change as different servers come on and offline.
@@ -684,6 +689,8 @@ public final class Cluster {
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
+        private final List<WeakReference<Client>> openedClients = new ArrayList<>();
+
         private Manager(final Builder builder) {
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
@@ -730,6 +737,10 @@ public final class Cluster {
             });
         }
 
+        void trackClient(final Client client) {
+            openedClients.add(new WeakReference<>(client));
+        }
+
         public Host add(final InetSocketAddress address) {
             final Host newHost = new Host(address, Cluster.this);
             final Host previous = hosts.putIfAbsent(address, newHost);
@@ -744,6 +755,13 @@ public final class Cluster {
             // this method is exposed publicly in both blocking and non-blocking forms.
             if (closeFuture.get() != null)
                 return closeFuture.get();
+
+            for (WeakReference<Client> openedClient : openedClients) {
+                final Client client = openedClient.get();
+                if (client != null && !client.isClosing()) {
+                    client.close();
+                }
+            }
 
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
             closeFuture.set(closeIt);

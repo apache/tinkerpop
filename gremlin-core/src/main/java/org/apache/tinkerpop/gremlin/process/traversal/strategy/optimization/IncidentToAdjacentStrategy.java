@@ -22,10 +22,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -63,29 +67,10 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
-    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, LambdaHolder.class));
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(CyclicPathStep.class,
+            PathStep.class, SimplePathStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
-    }
-
-    @Override
-    public void apply(Traversal.Admin<?, ?> traversal) {
-        final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, root))
-            return;
-        final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
-        Step prev = null;
-        for (final Step curr : traversal.getSteps()) {
-            if (isOptimizable(prev, curr)) {
-                stepsToReplace.add(Pair.with((VertexStep) prev, curr));
-            }
-            prev = curr;
-        }
-        if (!stepsToReplace.isEmpty()) {
-            for (final Pair<VertexStep, Step> pair : stepsToReplace) {
-                optimizeSteps(traversal, pair.getValue0(), pair.getValue1());
-            }
-        }
     }
 
     /**
@@ -102,7 +87,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
             if (step1Dir.equals(Direction.BOTH)) {
                 return step2 instanceof EdgeOtherVertexStep;
             }
-            return step2 instanceof EdgeVertexStep && ((EdgeVertexStep) step2).getDirection().equals(step1Dir.opposite());
+            return step2 instanceof EdgeOtherVertexStep || (step2 instanceof EdgeVertexStep &&
+                    ((EdgeVertexStep) step2).getDirection().equals(step1Dir.opposite()));
         }
         return false;
     }
@@ -126,6 +112,26 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
 
     public static IncidentToAdjacentStrategy instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public void apply(Traversal.Admin<?, ?> traversal) {
+        final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, root))
+            return;
+        final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
+        Step prev = null;
+        for (final Step curr : traversal.getSteps()) {
+            if (isOptimizable(prev, curr)) {
+                stepsToReplace.add(Pair.with((VertexStep) prev, curr));
+            }
+            prev = curr;
+        }
+        if (!stepsToReplace.isEmpty()) {
+            for (final Pair<VertexStep, Step> pair : stepsToReplace) {
+                optimizeSteps(traversal, pair.getValue0(), pair.getValue1());
+            }
+        }
     }
 
     @Override

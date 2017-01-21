@@ -299,7 +299,9 @@ public final class TinkerGraph implements Graph {
             f.delete();
         } else {
             final File parent = f.getParentFile();
-            if (!parent.exists()) {
+
+            // the parent would be null in the case of an relative path if the graphLocation was simply: "f.gryo"
+            if (parent != null && !parent.exists()) {
                 parent.mkdirs();
             }
         }

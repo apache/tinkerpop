@@ -748,9 +748,7 @@ public class IoTest {
         final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
         assertEquals(1, v1Edges.size());
         v1Edges.forEach(e -> {
-        	System.out.println("SERGE: e.inVertex().value(\"name\") : " + e.inVertex().value("name").equals("vadas"));
-
-            if (e.inVertex().value("name").equals("vadas")) {
+        	if (e.inVertex().value("name").equals("vadas")) {
                 assertEquals(Edge.DEFAULT_LABEL, e.label());
                 if (assertDouble)
                     assertWeightLoosely(0.5d, e);

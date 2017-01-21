@@ -173,21 +173,24 @@ class DependencyGrabber {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
             final JarFile jar = new JarFile(pathToInstalled.toFile())
-            final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
-            def additionalDependencies = [] as Set<URI>
-            if (attrLine != null) {
-                def splitLine = attrLine.split(";")
-                splitLine.each {
-                    def artifactBits = it.split(":")
-                    def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
+            try {
+                final Manifest manifest = jar.getManifest()
+                def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
+                def additionalDependencies = [] as Set<URI>
+                if (attrLine != null) {
+                    def splitLine = attrLine.split(";")
+                    splitLine.each {
+                        def artifactBits = it.split(":")
+                        def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
 
-                    final def additionalDep = makeDepsMap(additional)
-                    additionalDependencies.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep))
+                        final def additionalDep = makeDepsMap(additional)
+                        additionalDependencies.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep))
+                    }
                 }
+                return additionalDependencies
+            } finally {
+                jar.close()
             }
-
-            return additionalDependencies
         } catch (Exception ex) {
             throw new RuntimeException(ex)
         }
@@ -196,19 +199,23 @@ class DependencyGrabber {
     private static alterPaths(final String manifestEntry, final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
-            final JarFile jar = new JarFile(pathToInstalled.toFile());
-            final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue(manifestEntry)
-            if (attrLine != null) {
-                def splitLine = attrLine.split(";")
-                splitLine.each {
-                    if (it.endsWith("="))
-                        Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
-                    else {
-                        def kv = it.split("=")
-                        Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+            final JarFile jar = new JarFile(pathToInstalled.toFile())
+            try {
+                final Manifest manifest = jar.getManifest()
+                def attrLine = manifest.mainAttributes.getValue(manifestEntry)
+                if (attrLine != null) {
+                    def splitLine = attrLine.split(";")
+                    splitLine.each {
+                        if (it.endsWith("="))
+                            Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
+                        else {
+                            def kv = it.split("=")
+                            Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                        }
                     }
                 }
+            } finally {
+                jar.close()
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex)

@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.1.4-SNAPSHOT</version>
+    <version>3.1.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -127,7 +127,7 @@ limitations under the License.
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
-        <groovy.version>2.4.6</groovy.version>
+        <groovy.version>2.4.8</groovy.version>
         <junit.version>4.12</junit.version>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -266,7 +266,6 @@ limitations under the License.
                     <excludes>
                         <exclude>.travis.yml</exclude>
                         <exclude>.dockerignore</exclude>
-                        <exclude>appveyor.yml</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
@@ -286,6 +285,9 @@ limitations under the License.
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
+                        <exclude>**/.glv</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -675,6 +677,28 @@ limitations under the License.
                         <inherited>false</inherited>
                         <executions>
                             <execution>
+                                <id>home</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>reference-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
@@ -1036,46 +1060,6 @@ limitations under the License.
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>windows</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                <family>windows</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>download-hadoop-winutils</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>download-single</goal>
-                                </goals>
-                                <configuration>
-                                    <url>http://public-repo-1.hortonworks.com/</url>
-                                    <fromFile>hdp-win-alpha/winutils.exe</fromFile>
-                                    <toDir>${project.build.directory}/hadoop_home/bin</toDir>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home</argLine>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

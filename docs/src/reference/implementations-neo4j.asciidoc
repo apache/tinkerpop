@@ -29,7 +29,7 @@ Neo4j-Gremlin
 <dependency>
   <groupId>org.neo4j</groupId>
   <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-  <version>0.1-2.2</version>
+  <version>0.3-2.3.2</version>
 </dependency>
 ----
 
@@ -41,6 +41,8 @@ because it only references the Apache2-licensed Neo4j API (not its implementatio
 <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j implementation
 binaries. To access the binaries, use the `:install` command to download binaries from
 link:http://search.maven.org/[Maven Central Repository].
+
+TIP: For configuring Grape, the dependency resolver of Groovy, please refer to the <<gremlin-applications,Gremlin Applications>> section.
 
 [source,groovy]
 ----
@@ -329,4 +331,3 @@ a cluster handled by two Gremlin Servers or Neo4j Enterprise. The only limits as
 utilized are prescribed by Neo4j itself. Please refer to their
 link:http://neo4j.com/docs/operations-manual/current/#ha-setup-tutorial[documentation] for more information on how
 this feature works.
-

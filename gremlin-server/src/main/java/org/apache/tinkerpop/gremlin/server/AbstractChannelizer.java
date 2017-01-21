@@ -50,7 +50,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
 /**
- * A base implementation for the {@code Channelizer} which does a basic configuration of the the pipeline, one that
+ * A base implementation for the {@code Channelizer} which does a basic configuration of the pipeline, one that
  * is generally common to virtually any Gremlin Server operation (i.e. where the server's purpose is to process
  * Gremlin scripts).
  * <p/>

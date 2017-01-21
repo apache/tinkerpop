@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,6 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-hosts: [localhost]
-port: 45940
-serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}
+#
+# @author Daniel Kuppitz (http://gremlin.guru)
+#
+/^Files / {
+  print "U " gensub("^[^/]*/[^/]*/", "", "g", $2)
+}
+
+/^Only in (java)?docs/ {
+  print "D " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/", "", "g", $3)) "/" $4
+}
+
+/^Only in \.\./ {
+  print "A " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/[^/]*/", "", "g", $3)) "/" $4
+}
