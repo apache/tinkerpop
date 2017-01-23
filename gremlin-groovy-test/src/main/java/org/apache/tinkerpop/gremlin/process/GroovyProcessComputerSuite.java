@@ -97,7 +97,9 @@ import org.junit.runners.model.RunnerBuilder;
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.4, not replaced as a test suite that Graph Providers need to implement.
  */
+@Deprecated
 public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
     /**
