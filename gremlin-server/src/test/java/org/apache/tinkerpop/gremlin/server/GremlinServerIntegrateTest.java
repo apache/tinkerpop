@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -105,7 +106,13 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    private Log4jRecordingAppender recordingAppender = null;
+	private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
+	private static final String SERVER_CRT = "src/test/resources/server.crt";
+	private static final String KEY_PASS = "changeit";
+	private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
+	private static final String CLIENT_CRT = "src/test/resources/client.crt";
+
+	private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
     private final Configuration conf = new BaseConfiguration() {{
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
@@ -165,6 +172,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
                 break;
+            case "shouldEnableSslAndClientCertificateAuth":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust the client
+                settings.ssl.trustCertChainFile = CLIENT_CRT;
+            	break;
+            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCert":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust the client
+                settings.ssl.trustCertChainFile = CLIENT_CRT;
+            	break;
+            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust ONLY the server cert
+                settings.ssl.trustCertChainFile = SERVER_CRT;
+            	break;
             case "shouldStartWithDefaultSettings":
                 // test with defaults exception for port because we want to keep testing off of 8182
                 final Settings defaultSettings = new Settings();
@@ -373,7 +410,55 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+    
+    @Test
+    public void shouldEnableSslAndClientCertificateAuth() {
+		final Cluster cluster = TestClientFactory.build().enableSsl(true)
+				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+		final Client client = cluster.connect();
 
+        try {
+        	assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
+    
+    @Test
+    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
+        } catch(Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
+		final Cluster cluster = TestClientFactory.build().enableSsl(true)
+				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+		final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
+        } catch(Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+    
     @Test
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
