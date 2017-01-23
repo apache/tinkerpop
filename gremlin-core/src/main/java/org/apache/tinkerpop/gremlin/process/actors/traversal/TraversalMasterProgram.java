@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -61,9 +62,10 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     private Map<String, Barrier> barriers = new HashMap<>();
     private Set<String> sideEffects = new HashSet<>();
     private final TraverserSet<?> results;
-    private Address.Worker leaderWorker;
+    private Address.Worker neighborAddress;
     private int orderCounter = -1;
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
+    private boolean voteToHalt = true;
 
     public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal, final TraverserSet<?> results) {
         this.traversal = traversal;
@@ -78,12 +80,13 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     @Override
     public void setup() {
-        this.leaderWorker = this.master.workers().get(0);
+        this.neighborAddress = this.master.workers().get(0);
         for (int i = 0; i < this.master.partitioner().getPartitions().size(); i++) {
             this.partitionToWorkerMap.put(this.master.partitioner().getPartitions().get(i), this.master.workers().get(i));
         }
         this.broadcast(StartMessage.instance());
-        this.master.send(this.leaderWorker, Terminate.MAYBE);
+        this.voteToHalt = false;
+        this.master.send(this.neighborAddress, Terminate.NO);
     }
 
     @Override
@@ -96,18 +99,25 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                 barrier.addBarrier(TraversalActorProgram.attach(((BarrierAddMessage) message).getBarrier(), this.master.partitioner().getGraph()));
             if (barrier instanceof SideEffectCapable)
                 this.sideEffects.add(((SideEffectCapable) barrier).getSideEffectKey());
+            if (barrier instanceof SideEffectCapStep)
+                this.sideEffects.addAll(((SideEffectCapStep) barrier).getSideEffectKeys());
             this.barriers.put(((Step) barrier).getId(), barrier);
         } else if (message instanceof SideEffectAddMessage) {
             final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;
             this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), TraversalActorProgram.attach(sideEffectAddMessage.getValue(), this.master.partitioner().getGraph()));
             this.sideEffects.add(sideEffectAddMessage.getKey());
         } else if (message instanceof Terminate) {
-            assert Terminate.YES == message;
-            if (!this.barriers.isEmpty() || !this.sideEffects.isEmpty()) {
+            if (message == Terminate.NO)
+                this.voteToHalt = false;
+            if (this.voteToHalt && !this.sideEffects.isEmpty()) {
                 // process all side-effect updates
                 for (final String key : this.sideEffects) {
                     this.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
                 }
+                this.sideEffects.clear();
+                this.voteToHalt = false;
+                this.master.send(this.neighborAddress, Terminate.NO);
+            } else if (this.voteToHalt && !this.barriers.isEmpty()) {
                 // process all barriers
                 for (final Barrier barrier : this.barriers.values()) {
                     this.broadcast(new BarrierDoneMessage(barrier));
@@ -124,9 +134,12 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                         }
                     }
                 }
-                this.sideEffects.clear();
                 this.barriers.clear();
-                this.master.send(this.leaderWorker, Terminate.MAYBE);
+                this.voteToHalt = false;
+                this.master.send(this.neighborAddress, Terminate.NO);
+            } else if (!this.voteToHalt) {
+                this.voteToHalt = true;
+                this.master.send(this.neighborAddress, Terminate.YES);
             } else {
                 while (this.traversal.hasNext()) {
                     final Traverser.Admin traverser = this.traversal.nextTraverser();
@@ -172,9 +185,12 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     }
 
     private void sendTraverser(final Traverser.Admin traverser) {
-        if (traverser.isHalted())
+        if (traverser.isHalted()) {
             this.results.add(traverser);
-        else if (traverser.get() instanceof Element)
+            return;
+        }
+        this.voteToHalt = false;
+        if (traverser.get() instanceof Element)
             this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().find((Element) traverser.get())), this.detachTraverser(traverser));
         else
             this.master.send(this.master.address(), this.detachTraverser(traverser));

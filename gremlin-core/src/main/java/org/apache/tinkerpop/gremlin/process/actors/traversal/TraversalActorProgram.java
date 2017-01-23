@@ -70,11 +70,11 @@ public final class TraversalActorProgram<R> implements ActorProgram {
 
     private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
             StartMessage.class,
+            BarrierDoneMessage.class,
             Traverser.class,
             SideEffectAddMessage.class,
             BarrierAddMessage.class,
             SideEffectSetMessage.class,
-            BarrierDoneMessage.class,
             Terminate.class);
 
     private Traversal.Admin<?, R> traversal;

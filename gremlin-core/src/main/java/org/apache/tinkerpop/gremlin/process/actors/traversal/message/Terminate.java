@@ -24,5 +24,5 @@ package org.apache.tinkerpop.gremlin.process.actors.traversal.message;
  */
 public enum Terminate {
 
-    MAYBE, YES, NO
+    YES, NO
 }

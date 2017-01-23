@@ -55,10 +55,8 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     private final TraversalMatrix<?, ?> matrix;
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     //
-    private Address.Worker neighborWorker;
-    private boolean isLeader;
-    private Terminate terminate = null;
-    private boolean voteToHalt = false;
+    private Address neighborAddress;
+    private boolean voteToHalt = true;
     private Map<String, Barrier> barriers = new HashMap<>();
 
     public TraversalWorkerProgram(final Actor.Worker self, final Traversal.Admin<?, ?> traversal) {
@@ -88,8 +86,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     public void setup() {
         // create termination ring topology
         final int i = this.self.workers().indexOf(this.self.address());
-        this.neighborWorker = this.self.workers().get(i == this.self.workers().size() - 1 ? 0 : i + 1);
-        this.isLeader = i == 0;
+        this.neighborAddress = i == this.self.workers().size() - 1 ? this.self.master() : this.self.workers().get(i + 1);
         for (int j = 0; j < this.self.partition().partitioner().getPartitions().size(); j++) {
             this.partitionToWorkerMap.put(this.self.partition().partitioner().getPartitions().get(j), this.self.workers().get(j));
         }
@@ -102,8 +99,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
             // initial message from master that says: "start processing"
             final GraphStep<?, ?> step = (GraphStep) this.matrix.getTraversal().getStartStep();
             while (step.hasNext()) {
-                final Traverser.Admin<? extends Element> traverser = step.next();
-                this.self.send(traverser.isHalted() ? this.self.master() : this.self.address(), this.detachTraverser(traverser));
+                this.sendTraverser(step.next());
             }
         } else if (message instanceof Traverser.Admin) {
             this.processTraverser((Traverser.Admin) message);
@@ -119,9 +115,8 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
             } else
                 ((Barrier) step).done();       // the master drains the global barrier
         } else if (message instanceof Terminate) {
-            assert null == this.terminate;
-            this.terminate = (Terminate) message;
-            if (!this.barriers.isEmpty()) {
+            final Terminate terminate = (Terminate) message;
+            if (this.voteToHalt && !this.barriers.isEmpty()) {
                 for (final Barrier barrier : this.barriers.values()) {
                     if (barrier instanceof LocalBarrier) {
                         barrier.processAllStarts();
@@ -133,16 +128,10 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                     }
                 }
                 this.barriers.clear();
+                this.voteToHalt = false;
             }
             // use termination token to determine termination condition
-            if (this.isLeader) {
-                if (this.voteToHalt && Terminate.YES == this.terminate)
-                    this.self.send(this.self.master(), Terminate.YES);
-                else
-                    this.self.send(this.neighborWorker, this.voteToHalt ? Terminate.YES : Terminate.NO);
-            } else
-                this.self.send(this.neighborWorker, this.voteToHalt ? this.terminate : Terminate.NO);
-            this.terminate = null;
+            this.self.send(this.neighborAddress, this.voteToHalt ? terminate : Terminate.NO);
             this.voteToHalt = true;
         } else {
             throw new IllegalArgumentException("The following message is unknown: " + message);
