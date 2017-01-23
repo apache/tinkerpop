@@ -308,7 +308,7 @@ VM communicates with the JVM.
 [source,bash]
 ----
 # sudo easy_install pip
-$ pip install gremlin_python
+$ pip install gremlinpython
 ----
 
 The Groovy source code below uses Java reflection to generate a Python class that is in 1-to-1 correspondence with
