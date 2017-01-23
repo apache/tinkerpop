@@ -22,6 +22,7 @@ manager" (a committer fulfills this role), who ensures that the steps in this do
 multi-phased and can therefore take several weeks to complete given the time needed for Apache voting and community
 feedback.  Once a release point has been identified, the following phases represent the flow of "release":
 
+* Release manager key setup.
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
 * Submit the official release for PMC vote.
@@ -65,6 +66,28 @@ command will push the development version to link:https://pypi.python.org/pypi/g
 IMPORTANT: The `clean` in the above commands is more important to the pypi deployment because the process will deploy
 anything found in the `target/python-packaged/dist` directory. Since the names of the artifacts are based on
 timestamps, they will not overwrite one another and multiple artifacts will get uploaded.
+
+Release Manager Requirements
+----------------------------
+
+If this is your first time as release manager, you will need to setup keys for signing purposes per the Apache
+release process.  Generally speaking, this will mean that you will need to generate a key-pair and then upload your
+public key to a public keyserver.
+
+For a general overview of key basics, refer to link:https://www.apache.org/dev/release-signing.html#key-basics[this].  For detailed
+step-by-step instructions, please follow the instructions link:https://www.apache.org/dev/openpgp.html#generate-key[here].
+
+After completing the key-pair setup instructions, be sure to add yourself to the `PGP signature` section of `bin/validate-distribution.sh`.
+
+[source,text]
+----
+echo -n "  * PGP signature ... "
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
+{ echo "failed"; exit 1; }
+echo "OK"
+----
 
 Pre-flight Check
 ----------------
