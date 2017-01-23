@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
@@ -53,11 +52,10 @@ public class AkkaActorsProvider extends AbstractTinkerGraphProvider {
             "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack",
             "g_V_repeatXdedupX_timesX2X_count",
             "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
-            "g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX",
-            "classicRecommendation",
+            "g_VX1X_sideEffectXstore_aX_name",
+            "g_VX1X_out_sideEffectXincr_cX_name",
             "coworkerSummaryOLTP",
             GraphTest.Traversals.class.getCanonicalName(),
-            SideEffectTest.Traversals.class.getCanonicalName(),
             SubgraphTest.Traversals.class.getCanonicalName(),
             ProfileTest.Traversals.class.getCanonicalName(),
             PartitionStrategyProcessTest.class.getCanonicalName(),

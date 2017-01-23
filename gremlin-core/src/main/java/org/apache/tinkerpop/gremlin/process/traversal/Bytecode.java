@@ -277,7 +277,9 @@ public final class Bytecode implements Cloneable, Serializable {
         if (argument instanceof Traversal)
             return ((Traversal) argument).asAdmin().getBytecode();
         else if (argument instanceof Map) {
-            final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
+            final Map<Object, Object> map = argument instanceof LinkedHashMap ?
+                    new LinkedHashMap<>(((Map) argument).size()) :
+                    new HashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
                 map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));
             }

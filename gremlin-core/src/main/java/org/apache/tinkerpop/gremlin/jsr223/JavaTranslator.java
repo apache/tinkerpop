@@ -121,7 +121,9 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } else if (object instanceof Map) {
-            final Map<Object, Object> map = new LinkedHashMap<>(((Map) object).size());
+            final Map<Object, Object> map = object instanceof LinkedHashMap ?
+                    new LinkedHashMap<>(((Map) object).size()) :
+                    new HashMap<>(((Map) object).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
                 map.put(translateObject(entry.getKey()), translateObject(entry.getValue()));
             }

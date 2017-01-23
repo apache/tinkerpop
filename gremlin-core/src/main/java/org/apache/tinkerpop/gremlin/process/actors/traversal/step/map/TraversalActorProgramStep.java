@@ -24,11 +24,13 @@ import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.TraversalActorProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.javatuples.Pair;
 
 import java.util.NoSuchElementException;
 
@@ -54,9 +56,11 @@ public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final GraphActors<TraverserSet<E>> graphActors = GraphActors.open(this.graphActorsConfiguration);
+                final GraphActors<Pair<TraverserSet<E>, TraversalSideEffects>> graphActors = GraphActors.open(this.graphActorsConfiguration);
                 final ActorProgram actorProgram = new TraversalActorProgram<>(this.actorsTraversal);
-                graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get().forEach(this.starts::add);
+                final Pair<TraverserSet<E>, TraversalSideEffects> pair = graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get();
+                pair.getValue0().forEach(this.starts::add);
+                this.getTraversal().setSideEffects(pair.getValue1());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

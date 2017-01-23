@@ -49,7 +49,6 @@ import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -163,7 +162,7 @@ public final class TraversalActorProgram<R> implements ActorProgram {
             if (object instanceof Map) {
                 final Map map = (Map) object;
                 for (final Object key : map.keySet()) {
-                    map.put(TraversalActorProgram.attach(key, host), TraversalActorProgram.attach(map.get(key), host));
+                    map.put(key, TraversalActorProgram.attach(map.get(key), host));
                 }
                 return (A) map;
             } else if (object instanceof List) {

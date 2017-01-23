@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.javatuples.Pair;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,11 +81,15 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     @Override
     public void setup() {
+        // create termination ring
         this.neighborAddress = this.master.workers().get(0);
+        // create worker lookup table
         for (int i = 0; i < this.master.partitioner().getPartitions().size(); i++) {
             this.partitionToWorkerMap.put(this.master.partitioner().getPartitions().get(i), this.master.workers().get(i));
         }
+        // initiate all workers
         this.broadcast(StartMessage.instance());
+        // first pass of a two pass termination detection
         this.voteToHalt = false;
         this.master.send(this.neighborAddress, Terminate.NO);
     }
@@ -158,7 +163,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     @Override
     public void terminate() {
-        this.master.result().setResult(this.results);
+        this.master.result().setResult(Pair.with(this.results, this.traversal.getSideEffects()));
     }
 
     private void broadcast(final Object message) {
