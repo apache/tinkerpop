@@ -58,6 +58,12 @@ public interface Actor {
      */
     public <M> void send(final Address toActor, final M message);
 
+    /**
+     * Shutdown the actor. This entails the {@link GraphActors} system calling the respective
+     * {@link ActorProgram.Master#terminate()} and {@link ActorProgram.Worker#terminate()} methods.
+     */
+    public void close();
+
     public interface Master extends Actor {
 
         /**
@@ -74,8 +80,6 @@ public interface Actor {
          * @return the partitioner used to partition (logically and/or physically) the {@link org.apache.tinkerpop.gremlin.structure.Graph}
          */
         public Partitioner partitioner();
-
-        public void close();
 
         public <R> ActorsResult<R> result();
 

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -69,7 +70,19 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
         for (int i = 1; i < 10; i++) {
             assertEquals(6L, g.withProcessor(actors.workers(i)).V().count().next().longValue());
             assertEquals(i, actors.configuration().getProperty(GraphActors.GRAPH_ACTORS_WORKERS));
+        }
+    }
 
+    @Test
+    public void shouldSetupAndTerminateProperly() throws Exception {
+
+        for (int i = 1; i < 10; i++) {
+            final GraphActors actors = graphProvider.getGraphActors(graph);
+            final List<Integer> counts = (List) actors.workers(i).program(new TestSetupTerminateActorProgram()).submit(graph).get();
+            assertEquals(i, counts.get(0).intValue());
+            assertEquals(i, counts.get(1).intValue());
+            assertEquals(1, counts.get(2).intValue());
+            assertEquals(1, counts.get(3).intValue());
         }
     }
 }

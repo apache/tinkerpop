@@ -33,10 +33,31 @@ import java.util.concurrent.Future;
  */
 public interface Processor {
 
+    /**
+     * Get the {@link Configuration} that represents the current state of the Processor.
+     * In other words, as the Processor is fluently built, the configuration should mutate
+     * accordingly to capture all such changes.
+     *
+     * @return the configuration representing the current state of the processor
+     */
     public Configuration configuration();
 
+    /**
+     * Every processor must be able to execute Gremlin {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode}.
+     * In order to do this, there must be a {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy} capable
+     * of taking a traversal and configuring it to execute on the processor.
+     *
+     * @return the traversal strategy which will configure a traversal for execution on the processor
+     */
     public ProcessorTraversalStrategy<? extends Processor> getProcessorTraversalStrategy();
 
+    /**
+     * Execute the Processor against the provided {@link Graph}.
+     * The processor typically has a "program" associated with it that will execute some algorithm against the graph.
+     *
+     * @param graph the graph to execute the processor against
+     * @return a future result
+     */
     public Future submit(final Graph graph);
 
 }

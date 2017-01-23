@@ -108,6 +108,11 @@ public final class WorkerActor extends AbstractActor implements RequiresMessageQ
         return this.master;
     }
 
+    @Override
+    public void close() {
+        this.context().system().stop(self());
+    }
+
     private String createWorkerAddress(final Partition partition) {
         return "../worker-" + partition.id();
     }
