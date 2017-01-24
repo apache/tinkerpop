@@ -57,6 +57,7 @@ public class AkkaPlayTest {
                 System.out.println(i + " -- " + map);
                 assert false;
             }
+            //assert 0L == g.V().repeat(dedup()).times(2).count().next();
         }
 
 

@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -88,16 +87,17 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
-        if (null != this.barrier) {
-            this.barrierIterator = this.barrier.entrySet().iterator();
-            this.barrier = null;
-        }
-        while (this.barrierIterator != null && this.barrierIterator.hasNext()) {
-            if (null == this.barrierIterator)
-                this.barrierIterator = this.barrier.entrySet().iterator();
-            final Map.Entry<Object, Traverser.Admin<S>> entry = this.barrierIterator.next();
-            if (this.duplicateSet.add(entry.getKey()))
-                return PathProcessor.processTraverserPathLabels(entry.getValue(), this.keepLabels);
+        while (null != this.barrier || null != this.barrierIterator) {
+            if (null == this.barrierIterator) {
+                this.barrierIterator = null == this.barrier ? Collections.emptyIterator() : this.barrier.entrySet().iterator();
+                this.barrier = null;
+            }
+            while (this.barrierIterator.hasNext()) {
+                final Map.Entry<Object, Traverser.Admin<S>> entry = this.barrierIterator.next();
+                if (this.duplicateSet.add(entry.getKey()))
+                    return PathProcessor.processTraverserPathLabels(entry.getValue(), this.keepLabels);
+            }
+            this.barrierIterator = null;
         }
         return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
@@ -186,7 +186,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             } else {
                 object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
             }
-            if (!map.containsKey(object)) {
+            if (this.duplicateSet.add(object) && !map.containsKey(object)) {
                 traverser.setBulk(1L);
                 // traverser.detach();
                 traverser.set(DetachedFactory.detach(traverser.get(), true)); // TODO: detect required detachment accordingly
@@ -195,10 +195,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
         }
         this.barrier = null;
         this.barrierIterator = null;
-        if (map.isEmpty())
-            throw FastNoSuchElementException.instance();
-        else
-            return map;
+        return map;
     }
 
     @Override

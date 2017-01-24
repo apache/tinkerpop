@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.actors;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +30,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TestSetupTerminateActorProgram implements ActorProgram {
+class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
 
     private static final String WORKER_SETUP = "workerSetup";
     private static final String WORKER_TERMINATE = "workerTerminate";
@@ -105,6 +106,7 @@ class TestSetupTerminateActorProgram implements ActorProgram {
             @Override
             public void terminate() {
                 assertEquals(this.workerSetup, this.workerTerminate);
+                assertEquals(this.workerSetup, master.workers().size());
                 assertEquals(1, this.masterSetup);
                 assertEquals(0, this.masterTerminate);
                 master.setResult(Arrays.asList(

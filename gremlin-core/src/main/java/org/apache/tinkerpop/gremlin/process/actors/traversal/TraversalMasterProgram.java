@@ -66,6 +66,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
     private int orderCounter = -1;
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     private boolean voteToHalt = true;
+    private boolean barriersDone = false;
 
     public TraversalMasterProgram(final Actor.Master<Pair<TraverserSet<R>, Map<String, Object>>> master, final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
@@ -102,6 +103,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
             if (barrier instanceof SideEffectCapStep)
                 this.sideEffects.addAll(((SideEffectCapStep) barrier).getSideEffectKeys());
             this.barriers.put(((Step) barrier).getId(), barrier);
+            this.barriersDone = false;
         } else if (message instanceof SideEffectAddMessage) {
             final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;
             this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), TraversalActorProgram.attach(sideEffectAddMessage.getValue(), this.master.partitioner().getGraph()));
@@ -118,23 +120,31 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
                 this.voteToHalt = false;
                 this.master.send(this.neighborAddress, Terminate.NO);
             } else if (this.voteToHalt && !this.barriers.isEmpty()) {
-                // process all barriers
-                for (final Barrier barrier : this.barriers.values()) {
-                    this.broadcast(new BarrierDoneMessage(barrier));
-                    final Step<?, ?> step = (Step) barrier;
-                    if (barrier instanceof LocalBarrier)  // the barriers are distributed amongst the workers
-                        barrier.done();
-                    else {                                // the barrier is at the master
-                        this.orderBarrier(step);
-                        if (step instanceof OrderGlobalStep) this.orderCounter = 0;
-                        while (step.hasNext()) {
-                            this.sendTraverser(-1 == this.orderCounter ?
-                                    step.next() :
-                                    new OrderedTraverser<>(step.next(), this.orderCounter++));
+                if (!this.barriersDone) {
+                    // tell all workers that the barrier is complete
+                    for (final Barrier barrier : this.barriers.values()) {
+                        this.broadcast(new BarrierDoneMessage(barrier));
+                    }
+                    this.barriersDone = true;
+                } else {
+                    // process all barriers
+                    for (final Barrier barrier : this.barriers.values()) {
+                        final Step<?, ?> step = (Step) barrier;
+                        if (barrier instanceof LocalBarrier)  // the barriers are distributed amongst the workers
+                            barrier.done();
+                        else {                                // the barrier is at the master
+                            this.orderBarrier(step);
+                            if (step instanceof OrderGlobalStep) this.orderCounter = 0;
+                            while (step.hasNext()) {
+                                this.sendTraverser(-1 == this.orderCounter ?
+                                        step.next() :
+                                        new OrderedTraverser<>(step.next(), this.orderCounter++));
+                            }
                         }
                     }
+                    this.barriers.clear();
+                    this.barriersDone = false;
                 }
-                this.barriers.clear();
                 this.voteToHalt = false;
                 this.master.send(this.neighborAddress, Terminate.NO);
             } else if (!this.voteToHalt) {
@@ -185,6 +195,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
             step.addStart(traverser);
             if (step instanceof Barrier) {
                 this.barriers.put(step.getId(), (Barrier) step);
+                this.barriersDone = false;
             } else {
                 while (step.hasNext()) {
                     this.processTraverser(step.next());
