@@ -23,17 +23,21 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.IO;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.script.ScriptException;
 import javax.tools.JavaCompiler;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
@@ -42,11 +46,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -67,7 +74,15 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
+    // ***********************
+    // This test will be removed as the old "plugin" infrastructure was deprecated in 3.2.4. need to rework the
+    // tests a bi for this to see what the model is for validating the jsr223 plugins. note that the code from
+    // gremlin-groovy-test, specifically TestableConsolePluginAcceptor, has been copied to the bottom of this
+    // file for reference
+    // ***********************
 
+
+    /**
     @Before
     public void setupTest() {
         try {
@@ -308,4 +323,73 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
             return code;
         }
     }
+        **/
+
+
+    /////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+
+//package org.apache.tinkerpop.gremlin.groovy.util;
+//
+//import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+//import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+//import org.codehaus.groovy.tools.shell.Groovysh;
+//import org.codehaus.groovy.tools.shell.IO;
+//
+//import javax.script.ScriptException;
+//import java.io.IOException;
+//import java.io.OutputStream;
+//import java.util.Collections;
+//import java.util.HashMap;
+//import java.util.Map;
+//import java.util.Set;
+//
+//    /**
+//     * @author Marko A. Rodriguez (http://markorodriguez.com)
+//     */
+//    public class TestableConsolePluginAcceptor implements PluginAcceptor {
+//
+//        public static final String ENVIRONMENT_NAME = "console";
+//        public static final String ENVIRONMENT_SHELL = "ConsolePluginAcceptor.shell";
+//        public static final String ENVIRONMENT_IO = "ConsolePluginAcceptor.io";
+//
+//        private Groovysh shell = new Groovysh(new IO(System.in, new OutputStream() {
+//            @Override
+//            public void write(int b) throws IOException {
+//
+//            }
+//        }, System.err));
+//
+//        @Override
+//        public void addImports(final Set<String> importStatements) {
+//            importStatements.forEach(this.shell::execute);
+//        }
+//
+//        @Override
+//        public void addBinding(final String key, final Object val) {
+//            this.shell.getInterp().getContext().setVariable(key, val);
+//        }
+//
+//        @Override
+//        public Map<String, Object> getBindings() {
+//            return Collections.unmodifiableMap(this.shell.getInterp().getContext().getVariables());
+//        }
+//
+//        @Override
+//        public Object eval(final String script) throws ScriptException {
+//            return this.shell.execute(script);
+//        }
+//
+//        @Override
+//        public Map<String, Object> environment() {
+//            final Map<String, Object> env = new HashMap<>();
+//            env.put(GremlinPlugin.ENVIRONMENT, ENVIRONMENT_NAME);
+//            env.put(ENVIRONMENT_IO, this.shell.getIo());
+//            env.put(ENVIRONMENT_SHELL, this.shell);
+//            return env;
+//        }
+//
+//    }
 }

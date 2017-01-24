@@ -114,7 +114,6 @@ limitations under the License.
         <module>gremlin-core</module>
         <module>gremlin-test</module>
         <module>gremlin-groovy</module>
-        <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>gremlin-python</module>
         <module>hadoop-gremlin</module>

@@ -88,7 +88,6 @@ public class PythonProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
-
         final TinkerGraph.DefaultIdManager idManager = selectIdMakerFromGraphData(loadGraphWith);
         final String idMaker = (idManager.equals(TinkerGraph.DefaultIdManager.ANY) ? selectIdMakerFromGraphData(loadGraphWith) : idManager).name();
         return new HashMap<String, Object>() {{
@@ -151,5 +150,4 @@ public class PythonProvider extends AbstractGraphProvider {
             return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(PythonTranslator.of("g", IMPORT_STATICS), JavaTranslator.of(g))));
         }
     }
-
 }

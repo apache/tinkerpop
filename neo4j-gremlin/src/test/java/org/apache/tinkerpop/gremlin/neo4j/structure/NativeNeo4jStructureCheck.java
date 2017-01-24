@@ -19,13 +19,10 @@
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -38,12 +35,14 @@ import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 import org.neo4j.tinkerpop.api.Neo4jTx;
 
-import javax.script.Bindings;
-import javax.script.ScriptException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -125,48 +124,6 @@ public class NativeNeo4jStructureCheck extends AbstractNeo4jGremlinTest {
         assertEquals(1, IteratorUtils.count(graph.vertices()));
         graph.tx().close();
         tx2.close();
-    }
-
-    @Test
-    public void shouldEnsureTraverseRelationshipNeedsTx() throws ScriptException {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-        final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal());
-        bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
-
-        Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
-        Vertex john = this.graph.addVertex(T.label, "Person", "name", "john");
-        Vertex pete = this.graph.addVertex(T.label, "Person", "name", "pete");
-        marko.addEdge("friend", john);
-        marko.addEdge("friend", pete);
-        this.graph.tx().commit();
-
-        Object result = engine.eval("g.V(" + marko.id().toString() + ").outE('friend')", bindings);
-        assertTrue(result instanceof GraphTraversal);
-
-        this.graph.tx().commit();
-        assertEquals(2L, ((GraphTraversal) result).count().next());
-    }
-
-    @Test
-    public void shouldEnsureTraversalOfVerticesNeedsTx() throws ScriptException {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-        final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal());
-        bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
-
-        Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
-        Vertex john = this.graph.addVertex(T.label, "Person", "name", "john");
-        Vertex pete = this.graph.addVertex(T.label, "Person", "name", "pete");
-        marko.addEdge("friend", john);
-        marko.addEdge("friend", pete);
-        this.graph.tx().commit();
-
-        Object result = engine.eval("g.V(" + marko.id().toString() + ").out('friend')", bindings);
-        assertTrue(result instanceof GraphTraversal);
-
-        this.graph.tx().commit();
-        assertEquals(2L, ((GraphTraversal) result).count().next());
     }
 
     @Test
