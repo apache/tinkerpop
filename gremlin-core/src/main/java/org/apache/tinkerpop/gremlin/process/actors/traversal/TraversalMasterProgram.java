@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddM
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -39,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -85,8 +85,13 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
         for (int i = 0; i < this.master.partitioner().getPartitions().size(); i++) {
             this.partitionToWorkerMap.put(this.master.partitioner().getPartitions().get(i), this.master.workers().get(i));
         }
-        // initiate all workers
-        this.broadcast(StartMessage.instance());
+        // inject step processing should start at the master traversal
+        if (this.traversal.getStartStep() instanceof InjectStep) {
+            final Step<?, ?> step = this.traversal.getStartStep().getNextStep();
+            while (step.hasNext()) {
+                this.processTraverser(step.next());
+            }
+        }
         // first pass of a two pass termination detection
         this.voteToHalt = false;
         this.master.send(this.neighborAddress, Terminate.NO);

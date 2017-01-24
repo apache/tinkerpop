@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddM
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.verification.ActorVerificationStrategy;
@@ -36,13 +35,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
@@ -65,7 +64,6 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
     public static final String TRAVERSAL_ACTOR_PROGRAM_BYTECODE = "gremlin.traversalActorProgram.bytecode";
 
     private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
-            StartMessage.class,
             BarrierDoneMessage.class,
             Traverser.class,
             SideEffectAddMessage.class,
@@ -81,22 +79,7 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
 
     public TraversalActorProgram(final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
-        final TraversalStrategies strategies = this.traversal.getStrategies().clone();
-        strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
-        // TODO: make TinkerGraph/etc. strategies smart about actors
-        new ArrayList<>(strategies.toList()).stream().
-                filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).
-                map(TraversalStrategy::getClass).
-                forEach(strategies::removeStrategies);
-        strategies.removeStrategies(
-                ActorProgramStrategy.class,
-                LazyBarrierStrategy.class,
-                RepeatUnrollStrategy.class,
-                MatchPredicateStrategy.class,
-                InlineFilterStrategy.class,
-                PathRetractionStrategy.class);
-        this.traversal.setStrategies(strategies);
-        this.traversal.applyStrategies();
+        TraversalHelper.applyTraversalRecursively(ActorVerificationStrategy.instance()::apply, traversal);
     }
 
     @Override
@@ -111,7 +94,6 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
         this.traversal = (Traversal.Admin<?, R>) JavaTranslator.of(graph.traversal()).translate(bytecode);
         final TraversalStrategies strategies = this.traversal.getStrategies().clone();
         strategies.addStrategies(ActorVerificationStrategy.instance(), ReadOnlyStrategy.instance());
-        // TODO: make TinkerGraph/etc. strategies smart about actors
         new ArrayList<>(strategies.toList()).stream().
                 filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).
                 map(TraversalStrategy::getClass).
@@ -121,7 +103,6 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
                 LazyBarrierStrategy.class,
                 RepeatUnrollStrategy.class,
                 MatchPredicateStrategy.class,
-                InlineFilterStrategy.class,
                 PathRetractionStrategy.class);
         this.traversal.setStrategies(strategies);
         this.traversal.applyStrategies();

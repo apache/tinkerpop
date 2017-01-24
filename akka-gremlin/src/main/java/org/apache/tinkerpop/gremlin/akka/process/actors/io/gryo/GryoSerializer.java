@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddM
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -73,7 +72,6 @@ public final class GryoSerializer implements Serializer {
                                 addRegistries(registryList).
                                 addCustom(
                                         Terminate.class,
-                                        StartMessage.class,
                                         BarrierAddMessage.class,
                                         BarrierDoneMessage.class,
                                         SideEffectSetMessage.class,
@@ -90,7 +88,6 @@ public final class GryoSerializer implements Serializer {
                 addRegistries(IoRegistryHelper.createRegistries(configuration)).
                 addCustom(
                         Terminate.class,
-                        StartMessage.class,
                         BarrierAddMessage.class,
                         BarrierDoneMessage.class,
                         SideEffectSetMessage.class,

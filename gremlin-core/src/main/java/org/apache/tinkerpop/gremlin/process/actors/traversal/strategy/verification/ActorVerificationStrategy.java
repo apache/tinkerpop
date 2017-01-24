@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -38,8 +39,10 @@ public final class ActorVerificationStrategy extends AbstractTraversalStrategy<T
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.getStepsOfAssignableClass(InjectStep.class, traversal).isEmpty())
-            throw new VerificationException("Inject traversal currently not supported", traversal);
+        if (TraversalHelper.getStepsOfAssignableClass(InjectStep.class, TraversalHelper.getRootTraversal(traversal)).size() > 0)
+            if (!(TraversalHelper.getRootTraversal(traversal).getStartStep() instanceof InjectStep))
+                throw new VerificationException("Inject traversal currently not supported", traversal);
+        ReadOnlyStrategy.instance().apply(traversal);
     }
 
     public static ActorVerificationStrategy instance() {

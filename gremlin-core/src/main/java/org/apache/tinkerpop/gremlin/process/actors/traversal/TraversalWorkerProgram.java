@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.actors.Address;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.StartMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -35,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -86,17 +86,18 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                         () -> IteratorUtils.filter(self.partition().edges(graphStep.getIds()), this.self.partition()::contains));
             }
         });
+        // once loaded, start processing start step (unless its an inject step)
+        final Step<?, ?> step = this.matrix.getTraversal().getStartStep();
+        if (!(step instanceof InjectStep)) {
+            while (step.hasNext()) {
+                this.processTraverser(step.next());
+            }
+        }
     }
 
     @Override
     public void execute(final Object message) {
-        if (message instanceof StartMessage) {
-            // initial message from master that says: "start processing"
-            final GraphStep<?, ?> step = (GraphStep) this.matrix.getTraversal().getStartStep();
-            while (step.hasNext()) {
-                this.sendTraverser(step.next());
-            }
-        } else if (message instanceof Traverser.Admin) {
+        if (message instanceof Traverser.Admin) {
             this.processTraverser((Traverser.Admin) message);
         } else if (message instanceof SideEffectSetMessage) {
             this.matrix.getTraversal().getSideEffects().
