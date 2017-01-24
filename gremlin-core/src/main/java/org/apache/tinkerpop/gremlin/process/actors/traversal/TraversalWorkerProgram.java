@@ -37,10 +37,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Partition;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashMap;
@@ -61,25 +59,11 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
 
     public TraversalWorkerProgram(final Actor.Worker self, final Traversal.Admin<?, ?> traversal) {
         this.self = self;
-        // System.out.println("worker[created]: " + this.self.address().getId());
-        // set up partition and traversal information
         final WorkerTraversalSideEffects sideEffects = new WorkerTraversalSideEffects(traversal.getSideEffects(), this.self);
         TraversalHelper.applyTraversalRecursively(t -> t.setSideEffects(sideEffects), traversal);
         this.matrix = new TraversalMatrix<>(traversal);
         Distributing.configure(traversal, false, true);
         Pushing.configure(traversal, true, false);
-        //////
-        final GraphStep graphStep = (GraphStep) traversal.getStartStep();
-        if (0 == graphStep.getIds().length)
-            ((GraphStep) traversal.getStartStep()).setIteratorSupplier(graphStep.returnsVertex() ? this.self.partition()::vertices : this.self.partition()::edges);
-        else {
-            if (graphStep.returnsVertex())
-                ((GraphStep<Vertex, Vertex>) traversal.getStartStep()).setIteratorSupplier(
-                        () -> IteratorUtils.filter(self.partition().vertices(graphStep.getIds()), this.self.partition()::contains));
-            else
-                ((GraphStep<Edge, Edge>) traversal.getStartStep()).setIteratorSupplier(
-                        () -> IteratorUtils.filter(self.partition().edges(graphStep.getIds()), this.self.partition()::contains));
-        }
     }
 
     @Override
@@ -90,6 +74,18 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         for (int j = 0; j < this.self.partition().partitioner().getPartitions().size(); j++) {
             this.partitionToWorkerMap.put(this.self.partition().partitioner().getPartitions().get(j), this.self.workers().get(j));
         }
+        // configure all the GraphSteps to be partition-centric
+        TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, this.matrix.getTraversal()).forEach(graphStep -> {
+            if (0 == graphStep.getIds().length)
+                graphStep.setIteratorSupplier(graphStep.returnsVertex() ?
+                        this.self.partition()::vertices :
+                        this.self.partition()::edges);
+            else {
+                graphStep.setIteratorSupplier(graphStep.returnsVertex() ?
+                        () -> IteratorUtils.filter(self.partition().vertices(graphStep.getIds()), this.self.partition()::contains) :
+                        () -> IteratorUtils.filter(self.partition().edges(graphStep.getIds()), this.self.partition()::contains));
+            }
+        });
     }
 
     @Override
@@ -120,7 +116,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                     if (barrier instanceof LocalBarrier) {
                         barrier.processAllStarts();
                         this.self.send(this.self.master(), new BarrierAddMessage(barrier));
-                    } else { // why is this needed?
+                    } else {
                         while (barrier.hasNextBarrier()) {
                             this.self.send(this.self.master(), new BarrierAddMessage(barrier));
                         }
