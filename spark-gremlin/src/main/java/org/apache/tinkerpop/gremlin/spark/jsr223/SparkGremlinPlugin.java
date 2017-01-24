@@ -81,8 +81,14 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
         return bindings;
     });
 
+    private static final SparkGremlinPlugin instance = new SparkGremlinPlugin();
+
     public SparkGremlinPlugin() {
         super(NAME, imports, bindings);
+    }
+
+    public static SparkGremlinPlugin instance() {
+        return instance;
     }
 
     @Override

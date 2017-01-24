@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import javax.script.ScriptEngineManager;
 import java.util.Collection;
 import java.util.List;
 
 /**
  * A {@link Customizer} that executes scripts in a {@link GremlinScriptEngine} instance for purpose of initialization.
+ * Implementors of a {@link GremlinScriptEngine} do not need to be concerned with supporting this {@link Customizer}.
+ * This is work for the {@link ScriptEngineManager} implementation since scripts typically require access to global
+ * bindings and those are not applied to the {@link GremlinScriptEngine} until after construction.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
