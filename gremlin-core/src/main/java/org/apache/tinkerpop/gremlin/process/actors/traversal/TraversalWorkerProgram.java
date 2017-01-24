@@ -142,7 +142,9 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     //////////////
 
     private void processTraverser(final Traverser.Admin traverser) {
-        assert !(traverser.get() instanceof Element) || this.self.partition().contains((Element) traverser.get());
+        assert !(traverser.get() instanceof Element) ||
+                this.self.partition().contains((Element) traverser.get()) ||
+                this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep; // only mid-traversal V()/E() traversers can be non-locally processed
         if (traverser.isHalted())
             this.sendTraverser(traverser);
         else {
@@ -164,10 +166,20 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
         this.detachTraverser(traverser);
         if (traverser.isHalted())
             this.self.send(this.self.master(), traverser);
+        else if (this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep)
+            this.broadcast(traverser);
         else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
             this.self.send(this.partitionToWorkerMap.get(this.self.partition().partitioner().find((Element) traverser.get())), traverser);
         else
             this.self.send(this.self.address(), traverser);
+
+
+    }
+
+    private void broadcast(final Object message) {
+        for (final Address.Worker worker : this.self.workers()) {
+            this.self.send(worker, message);
+        }
     }
 
     private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
