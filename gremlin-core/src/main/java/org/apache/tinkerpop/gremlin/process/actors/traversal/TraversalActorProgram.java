@@ -72,7 +72,6 @@ public final class TraversalActorProgram<R> implements ActorProgram {
             Terminate.class);
 
     private Traversal.Admin<?, R> traversal;
-    public TraverserSet<R> result = new TraverserSet<>();
 
     public TraversalActorProgram() {
 
@@ -133,7 +132,7 @@ public final class TraversalActorProgram<R> implements ActorProgram {
 
     @Override
     public TraversalActorProgram.Master createMasterProgram(final Actor.Master master) {
-        return new TraversalMasterProgram(master, this.traversal.clone(), this.result);
+        return new TraversalMasterProgram(master, this.traversal.clone());
     }
 
     @Override

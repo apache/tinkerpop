@@ -107,7 +107,7 @@ class TestSetupTerminateActorProgram implements ActorProgram {
                 assertEquals(this.workerSetup, this.workerTerminate);
                 assertEquals(1, this.masterSetup);
                 assertEquals(0, this.masterTerminate);
-                master.result().setResult(Arrays.asList(
+                master.setResult(Arrays.asList(
                         this.workerSetup,
                         this.workerTerminate,
                         this.masterSetup,

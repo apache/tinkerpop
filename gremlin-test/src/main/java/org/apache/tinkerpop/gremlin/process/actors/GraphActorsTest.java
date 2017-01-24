@@ -78,7 +78,7 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
 
         for (int i = 1; i < 10; i++) {
             final GraphActors actors = graphProvider.getGraphActors(graph);
-            final List<Integer> counts = (List) actors.workers(i).program(new TestSetupTerminateActorProgram()).submit(graph).get();
+            final List<Integer> counts = (List)((ActorsResult) actors.workers(i).program(new TestSetupTerminateActorProgram()).submit(graph).get()).getResult();
             assertEquals(i, counts.get(0).intValue());
             assertEquals(i, counts.get(1).intValue());
             assertEquals(1, counts.get(2).intValue());

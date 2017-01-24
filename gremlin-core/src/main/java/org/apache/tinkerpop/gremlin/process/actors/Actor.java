@@ -81,7 +81,7 @@ public interface Actor {
          */
         public Partitioner partitioner();
 
-        public <R> ActorsResult<R> result();
+        public <R> void setResult(final R result);
 
     }
 

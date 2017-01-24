@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.Address;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
+import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.Partitioner;
@@ -54,15 +55,14 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     private final Address.Master master;
     private final List<Address.Worker> workers;
     private final Map<Address, ActorSelection> actors = new HashMap<>();
-    private final ActorsResult<?> result;
     private final Partitioner partitioner;
 
-    public MasterActor(final Configuration configuration, final ActorsResult<?> result) {
+    public MasterActor(final Configuration configuration) {
         final Graph graph = GraphFactory.open(configuration);
         final ActorProgram actorProgram = ActorProgram.createActorProgram(graph, configuration);
         final int workers = configuration.getInt(GraphActors.GRAPH_ACTORS_WORKERS, 1);
         this.partitioner = workers == 1 ? graph.partitioner() : new HashPartitioner(graph.partitioner(), workers);
-        this.result = result;
+
         try {
             this.master = new Address.Master(self().path().toString(), InetAddress.getLocalHost());
         } catch (final UnknownHostException e) {
@@ -120,12 +120,14 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     @Override
     public void close() {
         this.context().system().stop(self());
-        context().system().terminate();
+        this.context().system().terminate();
     }
 
     @Override
-    public <R> ActorsResult<R> result() {
-        return (ActorsResult<R>) this.result;
+    public <R> void setResult(final R object) {
+       final ActorsResult<R> result = new DefaultActorsResult<>();
+        result.setResult(object);
+        self().tell(result,self());
     }
 
 }

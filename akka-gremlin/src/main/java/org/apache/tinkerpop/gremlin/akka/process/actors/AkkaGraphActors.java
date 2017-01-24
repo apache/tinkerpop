@@ -19,23 +19,24 @@
 
 package org.apache.tinkerpop.gremlin.akka.process.actors;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Deploy;
 import akka.actor.Props;
+import akka.pattern.Patterns;
 import akka.remote.RemoteScope;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
-import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.config.SerializableConfiguration;
+import scala.compat.java8.FutureConverters;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -87,17 +88,20 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
         final String systemName = "tinkerpop-" + UUID.randomUUID();
         finalConfiguration.setProperty(Constants.GREMLIN_AKKA_SYSTEM_NAME, systemName);
         final ActorSystem system = ActorSystem.create(systemName, AkkaConfigFactory.generateAkkaConfig(this.actorProgram, finalConfiguration));
-        final ActorsResult<R> result = new DefaultActorsResult<>();
         ///////
-        system.actorOf(Props.create(MasterActor.class, finalConfiguration, result).
+        final ActorRef master = system.actorOf(Props.create(MasterActor.class, finalConfiguration).
                 withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getMasterActorDeployment(finalConfiguration)))), "master");
 
-        return CompletableFuture.supplyAsync(() -> {
+
+        return (Future) FutureConverters.toJava(Patterns.ask(master, new DefaultActorsResult<>(), 10000000)).toCompletableFuture();
+
+
+        /*return CompletableFuture.supplyAsync(() -> {
             while (!system.isTerminated()) {
 
             }
             return result.getResult();
-        });
+        });*/
     }
 
     @Override

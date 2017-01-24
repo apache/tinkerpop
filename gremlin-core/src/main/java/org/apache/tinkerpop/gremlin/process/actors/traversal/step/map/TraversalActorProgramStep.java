@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.actors.traversal.step.map;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.TraversalActorProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -56,11 +58,13 @@ public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final GraphActors<Pair<TraverserSet<E>, TraversalSideEffects>> graphActors = GraphActors.open(this.graphActorsConfiguration);
+                final GraphActors graphActors = GraphActors.open(this.graphActorsConfiguration);
                 final ActorProgram actorProgram = new TraversalActorProgram<>(this.actorsTraversal);
-                final Pair<TraverserSet<E>, TraversalSideEffects> pair = graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get();
+                final Pair<TraverserSet<E>, Map<String,Object>> pair = (Pair)((ActorsResult)graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get()).getResult();
                 pair.getValue0().forEach(this.starts::add);
-                this.getTraversal().setSideEffects(pair.getValue1());
+                for(final Map.Entry<String,Object> entry : pair.getValue1().entrySet()) {
+                    this.getTraversal().getSideEffects().set(entry.getKey(),entry.getValue());
+                }
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

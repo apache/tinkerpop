@@ -68,12 +68,12 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     private boolean voteToHalt = true;
 
-    public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal, final TraverserSet<?> results) {
+    public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal) {
         this.traversal = traversal;
         // System.out.println("master[created]: " + master.address().getId());
         // System.out.println(this.traversal);
         this.matrix = new TraversalMatrix<>(this.traversal);
-        this.results = results;
+        this.results = new TraverserSet<>();
         this.master = master;
         Distributing.configure(this.traversal, true, true);
         Pushing.configure(this.traversal, true, false);
@@ -163,7 +163,11 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     @Override
     public void terminate() {
-        this.master.result().setResult(Pair.with(this.results, this.traversal.getSideEffects()));
+        final Map<String, Object> sideEffects = new HashMap<>();
+        for (final String key : this.traversal.getSideEffects().keys()) {
+            sideEffects.put(key, this.traversal.getSideEffects().get(key));
+        }
+        this.master.setResult(Pair.with(this.results, sideEffects));
     }
 
     private void broadcast(final Object message) {
