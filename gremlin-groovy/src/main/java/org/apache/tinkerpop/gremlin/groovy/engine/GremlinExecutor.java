@@ -22,6 +22,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultBindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -121,13 +122,15 @@ public class GremlinExecutor implements AutoCloseable {
         this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
         initializeGremlinScriptEngineManager();
 
-        // this is temporary so that we can have backward compatibilty to the old plugin system and ScriptEngines
+        // this is temporary so that we can have backward compatibility to the old plugin system and ScriptEngines
         // approach to configuring Gremlin Server and GremlinExecutor. This code/check should be removed with the
         // deprecated code around this is removed.
         if (!useGremlinScriptEngineManager)
             this.scriptEngines = createScriptEngines();
-        else
+        else {
             this.scriptEngines = null;
+            gremlinScriptEngineManager.getEngineByName("gremlin-groovy");
+        }
 
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
@@ -489,6 +492,10 @@ public class GremlinExecutor implements AutoCloseable {
                     throw new IllegalStateException(ex);
                 }
             }
+        }
+
+        if (this.useGremlinScriptEngineManager) {
+            gremlinScriptEngineManager.setBindings(globalBindings);
         }
     }
 
