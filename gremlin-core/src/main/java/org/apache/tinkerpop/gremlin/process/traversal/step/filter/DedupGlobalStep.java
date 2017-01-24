@@ -59,7 +59,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<String> keepLabels;
     private Map<Object, Traverser.Admin<S>> barrier;
     private Iterator<Map.Entry<Object, Traverser.Admin<S>>> barrierIterator;
-    private boolean atWorker = true;
+    private boolean atWorker = false;
     private boolean pushBased = false;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
@@ -69,7 +69,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (this.pushBased && this.atWorker) return true;
+        if (this.pushBased && this.atWorker) return false;
         traverser.setBulk(1);
         if (null == this.dedupLabels) {
             return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
@@ -186,7 +186,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             } else {
                 object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);
             }
-            if (this.duplicateSet.add(object)) {
+            if (this.duplicateSet.add(object) && !map.containsKey(object)) {
                 traverser.setBulk(1L);
                 // traverser.detach();
                 traverser.set(DetachedFactory.detach(traverser.get(), true)); // TODO: detect required detachment accordingly

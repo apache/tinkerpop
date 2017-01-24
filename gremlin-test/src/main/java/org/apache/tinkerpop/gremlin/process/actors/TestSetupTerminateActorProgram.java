@@ -35,7 +35,6 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
     private static final String WORKER_SETUP = "workerSetup";
     private static final String WORKER_TERMINATE = "workerTerminate";
     private static final String MASTER_SETUP = "masterSetup";
-    private static final String MASTER_TERMINATE = "masterTerminate";
 
     @Override
     public Worker createWorkerProgram(final Actor.Worker worker) {
@@ -53,7 +52,7 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
 
             @Override
             public void execute(final String message) {
-                fail("The worker should not have received any messages");
+                fail("The worker should not have received any messages: " + message);
             }
 
             @Override
@@ -65,7 +64,7 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
     }
 
     @Override
-    public Master createMasterProgram(Actor.Master master) {
+    public Master createMasterProgram(final Actor.Master master) {
         return new Master<String>() {
             private int masterSetup = 0;
             private int masterTerminate = 0;
@@ -108,12 +107,12 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
                 assertEquals(this.workerSetup, this.workerTerminate);
                 assertEquals(this.workerSetup, master.workers().size());
                 assertEquals(1, this.masterSetup);
-                assertEquals(0, this.masterTerminate);
+                assertEquals(0, this.masterTerminate++);
                 master.setResult(Arrays.asList(
                         this.workerSetup,
                         this.workerTerminate,
                         this.masterSetup,
-                        ++this.masterTerminate));
+                        this.masterTerminate));
             }
         };
     }

@@ -95,9 +95,9 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
                 withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getMasterActorDeployment(finalConfiguration)))), "master");
 
         return FutureConverters.<ActorsResult<R>>toJava((scala.concurrent.Future) Patterns.ask(master, new DefaultActorsResult<>(), 10000000)).
-                thenApply(x -> {
-                    ((ActorsResult) x).setRuntime(System.currentTimeMillis() - startTime);
-                    return x;
+                thenApply(actorsResult -> {
+                    ((ActorsResult) actorsResult).setRuntime(System.currentTimeMillis() - startTime);
+                    return actorsResult;
                 }).toCompletableFuture();
     }
 

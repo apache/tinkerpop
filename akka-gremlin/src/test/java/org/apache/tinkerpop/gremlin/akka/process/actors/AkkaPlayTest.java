@@ -31,6 +31,8 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.dedup;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -45,19 +47,19 @@ public class AkkaPlayTest {
         configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
         final Graph graph = TinkerGraph.open(configuration);
         //graph.io(GryoIo.build()).readGraph("../data/tinkerpop-modern.kryo");
-        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(15));
+        GraphTraversalSource g = graph.traversal().withProcessor(GraphActors.open(AkkaGraphActors.class).workers(3));
         //  System.out.println(g.V().group().by("name").by(outE().values("weight").fold()).toList());
 
         //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
         System.out.println(g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a").toList());
         System.out.println(g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a").toList());
         for (int i = 0; i < 1000; i++) {
-            Map<Object, Long> map = g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").<Map>cap("a").next();
+            /*Map<Object, Long> map = g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").<Map>cap("a").next();
             if (24L != map.values().stream().reduce((a, b) -> a + b).get()) {
                 System.out.println(i + " -- " + map);
                 assert false;
-            }
-            //assert 0L == g.V().repeat(dedup()).times(2).count().next();
+            }*/
+            assert 0L == g.V().repeat(dedup()).times(2).count().next();
         }
 
 
