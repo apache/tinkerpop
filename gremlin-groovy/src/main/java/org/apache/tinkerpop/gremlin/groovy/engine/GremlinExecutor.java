@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultBindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -469,9 +469,9 @@ public class GremlinExecutor implements AutoCloseable {
                             final Method configMethod = Stream.of(methods).filter(m -> {
                                 final Class<?> type = customizerConfig.getValue().getClass();
                                 return m.getName().equals(customizerConfig.getKey()) && m.getParameters().length <= 1
-                                        && m.getParameters()[0].getType().isAssignableFrom(type);
+                                        && ClassUtils.isAssignable(type, m.getParameters()[0].getType(), true);
                             }).findFirst()
-                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
+                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method '" + customizerConfig.getKey() + "' on " + builderClazz.getCanonicalName()));
                             if (null == customizerConfig.getValue())
                                 pluginBuilder = configMethod.invoke(pluginBuilder);
                             else
