@@ -60,8 +60,14 @@ public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
         }
     }
 
+    private static final Neo4jGremlinPlugin instance = new Neo4jGremlinPlugin();
+
     public Neo4jGremlinPlugin() {
         super(NAME, imports);
+    }
+
+    public static Neo4jGremlinPlugin instance() {
+        return instance;
     }
 
     @Override
