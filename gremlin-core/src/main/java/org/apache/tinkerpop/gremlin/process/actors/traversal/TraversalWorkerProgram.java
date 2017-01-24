@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -59,22 +58,14 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
 
     public TraversalWorkerProgram(final Actor.Worker self, final Traversal.Admin<?, ?> traversal) {
         this.self = self;
+        // create a pass-through side-effects which sends SideEffectAddMessages to the master actor
         final WorkerTraversalSideEffects sideEffects = new WorkerTraversalSideEffects(traversal.getSideEffects(), this.self);
         TraversalHelper.applyTraversalRecursively(t -> t.setSideEffects(sideEffects), traversal);
         this.matrix = new TraversalMatrix<>(traversal);
+        // configure distributing and pushing semantics for worker execution
         Distributing.configure(traversal, false, true);
         Pushing.configure(traversal, true, false);
-    }
-
-    @Override
-    public void setup() {
-        // create termination ring topology
-        final int i = this.self.workers().indexOf(this.self.address());
-        this.neighborAddress = i == this.self.workers().size() - 1 ? this.self.master() : this.self.workers().get(i + 1);
-        for (int j = 0; j < this.self.partition().partitioner().getPartitions().size(); j++) {
-            this.partitionToWorkerMap.put(this.self.partition().partitioner().getPartitions().get(j), this.self.workers().get(j));
-        }
-        // configure all the GraphSteps to be partition-centric
+        // configure all the GraphSteps to be partition-centric (TODO: GraphStep should implement distributing and be smart to get the partition from the traversal)
         TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, this.matrix.getTraversal()).forEach(graphStep -> {
             if (0 == graphStep.getIds().length)
                 graphStep.setIteratorSupplier(graphStep.returnsVertex() ?
@@ -86,12 +77,20 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                         () -> IteratorUtils.filter(self.partition().edges(graphStep.getIds()), this.self.partition()::contains));
             }
         });
-        // once loaded, start processing start step (unless its an inject step)
+    }
+
+    @Override
+    public void setup() {
+        // create termination ring topology
+        final int i = this.self.workers().indexOf(this.self.address());
+        this.neighborAddress = i == this.self.workers().size() - 1 ? this.self.master() : this.self.workers().get(i + 1);
+        for (int j = 0; j < this.self.partition().partitioner().getPartitions().size(); j++) {
+            this.partitionToWorkerMap.put(this.self.partition().partitioner().getPartitions().get(j), this.self.workers().get(j));
+        }
+        // once loaded, start processing start step
         final Step<?, ?> step = this.matrix.getTraversal().getStartStep();
-        if (!(step instanceof InjectStep)) {
-            while (step.hasNext()) {
-                this.processTraverser(step.next());
-            }
+        while (step.hasNext()) {
+            this.sendTraverser(step.next());
         }
     }
 
@@ -142,12 +141,15 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     //////////////
 
     private void processTraverser(final Traverser.Admin traverser) {
+        // only mid-traversal V()/E() traversers can be non-locally processed
         assert !(traverser.get() instanceof Element) ||
                 this.self.partition().contains((Element) traverser.get()) ||
-                this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep; // only mid-traversal V()/E() traversers can be non-locally processed
-        if (traverser.isHalted())
+                this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep;
+        if (traverser.isHalted()) {
+            // send halted traversers to master
             this.sendTraverser(traverser);
-        else {
+        } else {
+            // locally process traverser
             TraversalActorProgram.attach(traverser, this.self.partition());
             final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
             step.addStart(traverser);
@@ -164,26 +166,24 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
     private void sendTraverser(final Traverser.Admin traverser) {
         this.voteToHalt = false;
         this.detachTraverser(traverser);
-        if (traverser.isHalted())
+        if (traverser.isHalted()) {
+            // send halted traversers to master
             this.self.send(this.self.master(), traverser);
-        else if (this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep)
-            this.broadcast(traverser);
-        else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get()))
+        } else if (this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep) {
+            // mid-traversal V()/E() traversers need to be broadcasted across all workers/partitions
+            for (final Address.Worker worker : this.self.workers()) {
+                this.self.send(worker, traverser);
+            }
+        } else if (traverser.get() instanceof Element && !this.self.partition().contains((Element) traverser.get())) {
+            // if the traverser references a non-local element, send the traverser to the appropriate worker/partition
             this.self.send(this.partitionToWorkerMap.get(this.self.partition().partitioner().find((Element) traverser.get())), traverser);
-        else
+        } else {
+            // if the traverser is local to the worker, send traverser to self
             this.self.send(this.self.address(), traverser);
-
-
-    }
-
-    private void broadcast(final Object message) {
-        for (final Address.Worker worker : this.self.workers()) {
-            this.self.send(worker, message);
         }
     }
 
     private final Traverser.Admin detachTraverser(final Traverser.Admin traverser) {
         return TraversalActorProgram.DETACH ? traverser.detach() : traverser;
     }
-
 }

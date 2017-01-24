@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -84,13 +83,6 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
         // create worker lookup table
         for (int i = 0; i < this.master.partitioner().getPartitions().size(); i++) {
             this.partitionToWorkerMap.put(this.master.partitioner().getPartitions().get(i), this.master.workers().get(i));
-        }
-        // inject step processing should start at the master traversal
-        if (this.traversal.getStartStep() instanceof InjectStep) {
-            final Step<?, ?> step = this.traversal.getStartStep().getNextStep();
-            while (step.hasNext()) {
-                this.processTraverser(step.next());
-            }
         }
         // first pass of a two pass termination detection
         this.voteToHalt = false;
@@ -149,22 +141,22 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
                 this.voteToHalt = true;
                 this.master.send(this.neighborAddress, Terminate.YES);
             } else {
-                // get any dangling local results
+                // get any dangling local results (e.g. workers have no data but a reducing barrier is waiting for data)
                 while (this.traversal.hasNext()) {
                     final Traverser.Admin traverser = this.traversal.nextTraverser();
                     this.traverserResults.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser, this.orderCounter++));
                 }
+                // if there is an ordering, order the result set
                 if (this.orderCounter != -1)
                     this.traverserResults.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
-
-                TraversalActorProgram.attach(this.traverserResults, this.master.partitioner().getGraph());
                 // generate the final result to send back to the GraphActors program
                 final Map<String, Object> sideEffects = new HashMap<>();
                 for (final String key : this.traversal.getSideEffects().keys()) {
                     sideEffects.put(key, this.traversal.getSideEffects().get(key));
                 }
+                // set the result (traversers and side-effects) to return to user
                 this.master.setResult(Pair.with(this.traverserResults, sideEffects));
-                // close master
+                // close master (and cascade close all workers)
                 this.master.close();
             }
         } else {
@@ -184,10 +176,11 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
     }
 
     private void processTraverser(final Traverser.Admin traverser) {
-        TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
         if (traverser.isHalted() || traverser.get() instanceof Element) {
             this.sendTraverser(traverser);
         } else {
+            // attach traverser for local processing at the master actor
+            TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
             final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
             step.addStart(traverser);
             if (step instanceof Barrier) {
@@ -202,6 +195,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
 
     private void sendTraverser(final Traverser.Admin traverser) {
         if (traverser.isHalted()) {
+            TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
             this.traverserResults.add(traverser);
             return;
         }

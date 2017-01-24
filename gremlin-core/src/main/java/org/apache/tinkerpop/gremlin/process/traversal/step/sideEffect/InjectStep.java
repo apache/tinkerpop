@@ -19,14 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Distributing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
+
+import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InjectStep<S> extends StartStep<S> {
+public final class InjectStep<S> extends StartStep<S> implements Distributing, Pushing {
 
     private final S[] injections;
+    private boolean pushedBased = false;
+    private boolean atMaster = true;
 
     @SafeVarargs
     public InjectStep(final Traversal.Admin traversal, final S... injections) {
@@ -46,5 +53,22 @@ public final class InjectStep<S> extends StartStep<S> {
     public void reset() {
         super.reset();
         this.start = new ArrayIterator<>(this.injections);
+    }
+
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        if (this.first && !this.atMaster && this.pushedBased)
+            this.start = Collections.emptyIterator();
+        return super.processNextStart();
+    }
+
+    @Override
+    public void setAtMaster(final boolean atMaster) {
+        this.atMaster = atMaster;
+    }
+
+    @Override
+    public void setPushBased(final boolean pushBased) {
+        this.pushedBased = pushBased;
     }
 }
