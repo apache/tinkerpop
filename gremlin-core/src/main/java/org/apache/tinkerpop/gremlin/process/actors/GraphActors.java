@@ -46,7 +46,7 @@ public interface GraphActors<R> extends Processor {
      * @param program the program to execute
      * @return the updated GraphActors with newly defined program
      */
-    public GraphActors<R> program(final ActorProgram program);
+    public GraphActors<R> program(final ActorProgram<R> program);
 
     /**
      * Specify the number of workers per {@link Graph} {@link org.apache.tinkerpop.gremlin.structure.Partition}.
@@ -72,7 +72,7 @@ public interface GraphActors<R> extends Processor {
      * @return a {@link Future} denoting a reference to the asynchronous computation's result
      */
     @Override
-    public Future<R> submit(final Graph graph);
+    public Future<ActorsResult<R>> submit(final Graph graph);
 
     /**
      * Returns an {@link ActorProgramStrategy} which enables a {@link Traversal} to execute on {@link GraphActors}.

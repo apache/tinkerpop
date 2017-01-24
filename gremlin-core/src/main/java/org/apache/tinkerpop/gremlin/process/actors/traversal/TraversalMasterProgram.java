@@ -55,25 +55,23 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class TraversalMasterProgram implements ActorProgram.Master<Object> {
+final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
 
-    private final Actor.Master master;
-    private final Traversal.Admin<?, ?> traversal;
-    private final TraversalMatrix<?, ?> matrix;
+    private final Actor.Master<Pair<TraverserSet<R>, Map<String, Object>>> master;
+    private final Traversal.Admin<?, R> traversal;
+    private final TraversalMatrix<?, R> matrix;
     private Map<String, Barrier> barriers = new HashMap<>();
     private Set<String> sideEffects = new HashSet<>();
-    private final TraverserSet<?> results;
+    private final TraverserSet<R> traverserResults;
     private Address.Worker neighborAddress;
     private int orderCounter = -1;
     private final Map<Partition, Address.Worker> partitionToWorkerMap = new HashMap<>();
     private boolean voteToHalt = true;
 
-    public TraversalMasterProgram(final Actor.Master master, final Traversal.Admin<?, ?> traversal) {
+    public TraversalMasterProgram(final Actor.Master<Pair<TraverserSet<R>, Map<String, Object>>> master, final Traversal.Admin<?, R> traversal) {
         this.traversal = traversal;
-        // System.out.println("master[created]: " + master.address().getId());
-        // System.out.println(this.traversal);
         this.matrix = new TraversalMatrix<>(this.traversal);
-        this.results = new TraverserSet<>();
+        this.traverserResults = new TraverserSet<>();
         this.master = master;
         Distributing.configure(this.traversal, true, true);
         Pushing.configure(this.traversal, true, false);
@@ -146,14 +144,22 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
                 this.voteToHalt = true;
                 this.master.send(this.neighborAddress, Terminate.YES);
             } else {
+                // get any dangling local results
                 while (this.traversal.hasNext()) {
                     final Traverser.Admin traverser = this.traversal.nextTraverser();
-                    this.results.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser, this.orderCounter++));
+                    this.traverserResults.add(-1 == this.orderCounter ? traverser : new OrderedTraverser(traverser, this.orderCounter++));
                 }
                 if (this.orderCounter != -1)
-                    this.results.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
+                    this.traverserResults.sort((a, b) -> Integer.compare(((OrderedTraverser<?>) a).order(), ((OrderedTraverser<?>) b).order()));
 
-                TraversalActorProgram.attach(this.results, this.master.partitioner().getGraph());
+                TraversalActorProgram.attach(this.traverserResults, this.master.partitioner().getGraph());
+                // generate the final result to send back to the GraphActors program
+                final Map<String, Object> sideEffects = new HashMap<>();
+                for (final String key : this.traversal.getSideEffects().keys()) {
+                    sideEffects.put(key, this.traversal.getSideEffects().get(key));
+                }
+                this.master.setResult(Pair.with(this.traverserResults, sideEffects));
+                // close master
                 this.master.close();
             }
         } else {
@@ -163,11 +169,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     @Override
     public void terminate() {
-        final Map<String, Object> sideEffects = new HashMap<>();
-        for (final String key : this.traversal.getSideEffects().keys()) {
-            sideEffects.put(key, this.traversal.getSideEffects().get(key));
-        }
-        this.master.setResult(Pair.with(this.results, sideEffects));
+
     }
 
     private void broadcast(final Object message) {
@@ -195,7 +197,7 @@ final class TraversalMasterProgram implements ActorProgram.Master<Object> {
 
     private void sendTraverser(final Traverser.Admin traverser) {
         if (traverser.isHalted()) {
-            this.results.add(traverser);
+            this.traverserResults.add(traverser);
             return;
         }
         this.voteToHalt = false;

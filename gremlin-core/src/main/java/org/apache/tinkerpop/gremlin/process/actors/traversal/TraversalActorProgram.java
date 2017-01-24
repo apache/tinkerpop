@@ -47,16 +47,18 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Partition;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalActorProgram<R> implements ActorProgram {
+public final class TraversalActorProgram<R> implements ActorProgram<Pair<TraverserSet<R>, Map<String, Object>>> {
 
     public static boolean DETACH = true;
 
@@ -131,8 +133,8 @@ public final class TraversalActorProgram<R> implements ActorProgram {
     }
 
     @Override
-    public TraversalActorProgram.Master createMasterProgram(final Actor.Master master) {
-        return new TraversalMasterProgram(master, this.traversal.clone());
+    public TraversalActorProgram.Master createMasterProgram(final Actor.Master<Pair<TraverserSet<R>, Map<String, Object>>> master) {
+        return new TraversalMasterProgram<>(master, this.traversal.clone());
     }
 
     @Override

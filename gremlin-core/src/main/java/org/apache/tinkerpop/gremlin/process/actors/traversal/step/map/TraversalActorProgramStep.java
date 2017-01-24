@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.TraversalActorProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -58,12 +57,13 @@ public final class TraversalActorProgramStep<S, E> extends AbstractStep<E, E> {
         if (this.first) {
             this.first = false;
             try {
-                final GraphActors graphActors = GraphActors.open(this.graphActorsConfiguration);
-                final ActorProgram actorProgram = new TraversalActorProgram<>(this.actorsTraversal);
-                final Pair<TraverserSet<E>, Map<String,Object>> pair = (Pair)((ActorsResult)graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get()).getResult();
+                final GraphActors<Pair<TraverserSet<E>, Map<String, Object>>> graphActors = GraphActors.open(this.graphActorsConfiguration);
+                final ActorProgram<Pair<TraverserSet<E>, Map<String, Object>>> actorProgram = new TraversalActorProgram<>(this.actorsTraversal);
+                final ActorsResult<Pair<TraverserSet<E>, Map<String, Object>>> result = graphActors.program(actorProgram).submit(this.getTraversal().getGraph().get()).get();
+                final Pair<TraverserSet<E>, Map<String, Object>> pair = result.getResult();
                 pair.getValue0().forEach(this.starts::add);
-                for(final Map.Entry<String,Object> entry : pair.getValue1().entrySet()) {
-                    this.getTraversal().getSideEffects().set(entry.getKey(),entry.getValue());
+                for (final Map.Entry<String, Object> entry : pair.getValue1().entrySet()) {
+                    this.getTraversal().getSideEffects().set(entry.getKey(), entry.getValue());
                 }
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);

@@ -44,7 +44,7 @@ final class AkkaConfigFactory {
         // static method class
     }
 
-    static Config generateAkkaConfig(final ActorProgram actorProgram, final Configuration configuration) {
+    static Config generateAkkaConfig(final ActorProgram<?> actorProgram, final Configuration configuration) {
         Config config = ConfigFactory.defaultApplication().
                 withValue("akka.actor.serialization-bindings", ConfigValueFactory.fromMap(GryoSerializer.getSerializerBindings(configuration))).
                 withValue("custom-dispatcher.mailbox-requirement", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName())).

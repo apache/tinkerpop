@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 public final class DefaultActorsResult<R> implements ActorsResult<R> {
 
     private R result;
+    private long runtime;
 
     public DefaultActorsResult() {
 
@@ -38,5 +39,13 @@ public final class DefaultActorsResult<R> implements ActorsResult<R> {
 
     public void setResult(final R result) {
         this.result = result;
+    }
+
+    public void setRuntime(final long runtime) {
+        this.runtime = runtime;
+    }
+
+    public long getRuntime() {
+        return this.runtime;
     }
 }

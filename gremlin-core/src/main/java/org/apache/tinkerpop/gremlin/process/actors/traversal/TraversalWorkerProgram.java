@@ -94,7 +94,6 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
 
     @Override
     public void execute(final Object message) {
-        //System.out.println(message + "::" + this.isLeader);
         if (message instanceof StartMessage) {
             // initial message from master that says: "start processing"
             final GraphStep<?, ?> step = (GraphStep) this.matrix.getTraversal().getStartStep();

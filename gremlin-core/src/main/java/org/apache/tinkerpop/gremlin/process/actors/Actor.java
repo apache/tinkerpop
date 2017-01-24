@@ -64,7 +64,7 @@ public interface Actor {
      */
     public void close();
 
-    public interface Master extends Actor {
+    public interface Master<R> extends Actor {
 
         /**
          * Get the master actors address.
@@ -81,7 +81,7 @@ public interface Actor {
          */
         public Partitioner partitioner();
 
-        public <R> void setResult(final R result);
+        public void setResult(final R result);
 
     }
 

@@ -29,7 +29,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ActorProgram extends Cloneable {
+public interface ActorProgram<R> extends Cloneable {
 
     public static final String ACTOR_PROGRAM = "gremlin.actorProgram";
 
@@ -74,7 +74,7 @@ public interface ActorProgram extends Cloneable {
      * @param master the master actors creating the master program
      * @return the master program
      */
-    public ActorProgram.Master createMasterProgram(final Actor.Master master);
+    public ActorProgram.Master createMasterProgram(final Actor.Master<R> master);
 
     /**
      * Get the ordered list of message classes where order determines the priority

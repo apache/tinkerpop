@@ -27,4 +27,8 @@ public interface ActorsResult<R> {
     public R getResult();
 
     public void setResult(final R result);
+
+    public long getRuntime();
+
+    public void setRuntime(final long runtime);
 }

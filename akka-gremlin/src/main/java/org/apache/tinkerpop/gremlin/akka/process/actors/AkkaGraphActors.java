@@ -29,6 +29,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
+import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.actors.GraphActors;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -59,7 +60,7 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     }
 
     @Override
-    public GraphActors<R> program(final ActorProgram actorProgram) {
+    public GraphActors<R> program(final ActorProgram<R> actorProgram) {
         this.actorProgram = actorProgram;
         actorProgram.storeState(this.configuration);
         return this;
@@ -78,11 +79,12 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
     }
 
     @Override
-    public Future<R> submit(final Graph graph) {
+    public Future<ActorsResult<R>> submit(final Graph graph) {
         if (this.executed)
             throw new IllegalStateException("Can not execute twice");
         this.executed = true;
         ///////
+        final long startTime = System.currentTimeMillis();
         final Configuration finalConfiguration = new SerializableConfiguration(graph.configuration());
         ConfigurationUtils.copy(this.configuration, finalConfiguration);
         final String systemName = "tinkerpop-" + UUID.randomUUID();
@@ -92,16 +94,11 @@ public final class AkkaGraphActors<R> implements GraphActors<R> {
         final ActorRef master = system.actorOf(Props.create(MasterActor.class, finalConfiguration).
                 withDeploy(new Deploy(new RemoteScope(AkkaConfigFactory.getMasterActorDeployment(finalConfiguration)))), "master");
 
-
-        return (Future) FutureConverters.toJava(Patterns.ask(master, new DefaultActorsResult<>(), 10000000)).toCompletableFuture();
-
-
-        /*return CompletableFuture.supplyAsync(() -> {
-            while (!system.isTerminated()) {
-
-            }
-            return result.getResult();
-        });*/
+        return FutureConverters.<ActorsResult<R>>toJava((scala.concurrent.Future) Patterns.ask(master, new DefaultActorsResult<>(), 10000000)).
+                thenApply(x -> {
+                    ((ActorsResult) x).setRuntime(System.currentTimeMillis() - startTime);
+                    return x;
+                }).toCompletableFuture();
     }
 
     @Override

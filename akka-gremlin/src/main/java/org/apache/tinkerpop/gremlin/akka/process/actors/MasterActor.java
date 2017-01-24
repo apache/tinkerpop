@@ -49,7 +49,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MasterActor extends AbstractActor implements RequiresMessageQueue<ActorMailbox.ActorSemantics>, Actor.Master {
+public final class MasterActor<R> extends AbstractActor implements RequiresMessageQueue<ActorMailbox.ActorSemantics>, Actor.Master<R> {
 
     private final ActorProgram.Master masterProgram;
     private final Address.Master master;
@@ -124,7 +124,7 @@ public final class MasterActor extends AbstractActor implements RequiresMessageQ
     }
 
     @Override
-    public <R> void setResult(final R object) {
+    public void setResult(final R object) {
        final ActorsResult<R> result = new DefaultActorsResult<>();
         result.setResult(object);
         self().tell(result,self());
