@@ -40,6 +40,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -479,8 +480,8 @@ public class GremlinExecutor implements AutoCloseable {
                         }
 
                         try {
-                            final Method appliesTo = builderClazz.getMethod("appliesTo");
-                            pluginBuilder = appliesTo.invoke(pluginBuilder, language);
+                            final Method appliesTo = builderClazz.getMethod("appliesTo", Collection.class);
+                            pluginBuilder = appliesTo.invoke(pluginBuilder, Collections.singletonList(language));
                         } catch (NoSuchMethodException ignored) {
 
                         }
