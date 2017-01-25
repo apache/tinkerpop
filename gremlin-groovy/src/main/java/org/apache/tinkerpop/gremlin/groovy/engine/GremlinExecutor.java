@@ -128,10 +128,8 @@ public class GremlinExecutor implements AutoCloseable {
         // deprecated code around this is removed.
         if (!useGremlinScriptEngineManager)
             this.scriptEngines = createScriptEngines();
-        else {
+        else
             this.scriptEngines = null;
-            gremlinScriptEngineManager.getEngineByName("gremlin-groovy");
-        }
 
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
