@@ -149,7 +149,13 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         // the GremlinExecutor is using the GremlinScriptEngineManager. this is a bit of hack, but it at least allows
         // the global bindings to become available after the init scripts are run (DefaultGremlinScriptEngineManager
         // runs the init scripts when the GremlinScriptEngine is created.
-        settings.scriptEngines.keySet().forEach(engineName -> gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join());
+        settings.scriptEngines.keySet().forEach(engineName -> {
+            try {
+                gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+            } catch (Exception ex) {
+                logger.warn(String.format("Could not initialize {} ScriptEngine as script could not be evaluated - %s", engineName), ex);
+            }
+        });
 
         // script engine init may have altered the graph bindings or maybe even created new ones - need to
         // re-apply those references back
