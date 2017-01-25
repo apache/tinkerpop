@@ -55,7 +55,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -80,7 +79,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -96,7 +94,6 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -106,13 +103,13 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-	private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
-	private static final String SERVER_CRT = "src/test/resources/server.crt";
-	private static final String KEY_PASS = "changeit";
-	private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
-	private static final String CLIENT_CRT = "src/test/resources/client.crt";
+    private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
+    private static final String SERVER_CRT = "src/test/resources/server.crt";
+    private static final String KEY_PASS = "changeit";
+    private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
+    private static final String CLIENT_CRT = "src/test/resources/client.crt";
 
-	private Log4jRecordingAppender recordingAppender = null;
+    private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
     private final Configuration conf = new BaseConfiguration() {{
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
