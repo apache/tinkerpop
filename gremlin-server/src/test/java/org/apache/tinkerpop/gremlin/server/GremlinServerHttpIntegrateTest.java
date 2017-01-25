@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.http.Consts;
@@ -68,7 +69,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases":
             case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases":
-                settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-classic.groovy");
+                final Map<String,Object> m = new HashMap<>();
+                m.put("files", Collections.singletonList("scripts/generate-classic.groovy"));
+                settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
                 break;
             case "should200OnPOSTTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));

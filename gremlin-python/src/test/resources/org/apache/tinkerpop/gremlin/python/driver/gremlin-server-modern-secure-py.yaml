@@ -32,10 +32,9 @@ graphs: {
   graph: src/test/resources/org/apache/tinkerpop/gremlin/python/driver/tinkergraph-empty.properties}
 scriptEngines: {
   gremlin-groovy: {
-    imports: [java.lang.Math],
-    staticImports: [java.lang.Math.PI],
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [src/test/resources/org/apache/tinkerpop/gremlin/python/driver/generate-modern.groovy]}}},
   gremlin-jython: {},
   gremlin-python: {}
