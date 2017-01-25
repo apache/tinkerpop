@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Pushing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.OrderedTraverser;
@@ -198,7 +199,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
                 this.barriersDone = false;
             } else {
                 while (step.hasNext()) {
-                    this.processTraverser(step.next());
+                    this.sendTraverser(step.next());
                 }
             }
         }
@@ -210,11 +211,18 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
             this.traverserResults.add(traverser);
             return;
         }
+        //////
         this.voteToHalt = false;
-        if (traverser.get() instanceof Element)
+        if (this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep) {
+            // mid-traversal V()/E() traversers need to be broadcasted across all workers/partitions
+            for (final Address.Worker worker : this.master.workers()) {
+                this.master.send(worker, traverser);
+            }
+        } else if (traverser.get() instanceof Element) {
             this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().find((Element) traverser.get())), this.detachTraverser(traverser));
-        else
+        } else {
             this.master.send(this.master.address(), this.detachTraverser(traverser));
+        }
     }
 
     private void orderBarrier(final Step step) {

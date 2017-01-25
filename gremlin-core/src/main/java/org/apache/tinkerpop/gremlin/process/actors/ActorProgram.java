@@ -114,6 +114,33 @@ public interface ActorProgram<R> extends Cloneable {
     }
 
     /**
+     * The Master program is executed by the master process in the {@link GraphActors} system.
+     * There are many workers and a single master.
+     *
+     * @param <M> The message type accepted by the master
+     */
+    public static interface Master<M> {
+        /**
+         * This method is evaluated when the master actor is spawned.
+         */
+        public void setup();
+
+        /**
+         * This method is evaluated when the master actor receives a new message.
+         *
+         * @param message the received message
+         */
+        public void execute(final M message);
+
+        /**
+         * This method is evaluated when the master actor is destroyed.
+         */
+        public void terminate();
+
+    }
+
+
+    /**
      * The Worker program is executed by a worker process in the {@link GraphActors} system.
      * There are many workers and a single master.
      * All workers execute the same program.
@@ -123,7 +150,7 @@ public interface ActorProgram<R> extends Cloneable {
     public static interface Worker<M> {
 
         /**
-         * This method is evaluated when the worker process is spawned.
+         * This method is evaluated when the worker actor is spawned.
          */
         public void setup();
 
@@ -135,25 +162,11 @@ public interface ActorProgram<R> extends Cloneable {
         public void execute(final M message);
 
         /**
-         * This method is evaluated when the worker process is destroyed.
+         * This method is evaluated when the worker actor is destroyed.
          */
         public void terminate();
 
     }
 
-    /**
-     * The Master program is executed by the master process in the {@link GraphActors} system.
-     * There are many workers and a single master.
-     *
-     * @param <M> The message type accepted by the master
-     */
-    public static interface Master<M> {
-        public void setup();
-
-        public void execute(final M message);
-
-        public void terminate();
-
-    }
 
 }

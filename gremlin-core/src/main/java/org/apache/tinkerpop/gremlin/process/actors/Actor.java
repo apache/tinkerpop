@@ -36,7 +36,7 @@ import java.util.List;
 public interface Actor {
 
     /**
-     * Get the {@link Address} of the actors.
+     * Get the {@link Address} of the actor.
      *
      * @return the actors's address
      */
@@ -81,14 +81,30 @@ public interface Actor {
          */
         public Partitioner partitioner();
 
+        /**
+         * The master actor is responsible for yielding the final result of the computation.
+         *
+         * @param result the final result of the computation
+         */
         public void setResult(final R result);
 
     }
 
     public interface Worker extends Actor {
 
+        /**
+         * Get the worker actor's address.
+         *
+         * @return the worker actor's address
+         */
+        @Override
         public Address.Worker address();
 
+        /**
+         * Get the address of the worker's master actor.
+         *
+         * @return the master actor's address
+         */
         public Address.Master master();
 
         /**
