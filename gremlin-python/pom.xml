@@ -491,6 +491,8 @@ settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
 settings.port = 45940
 
+println settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files
+
 def server = new GremlinServer(settings)
 server.start().join()
 
@@ -499,7 +501,7 @@ log.info("Gremlin Server with no authentication started on port 45940")
 
 def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
 settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
-settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
 settingsSecure.port = 45941
 settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
 settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties"]
