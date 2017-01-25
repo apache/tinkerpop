@@ -29,7 +29,9 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.akka.process.actors.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.structure.Partition;
+import org.apache.tinkerpop.gremlin.util.ClassUtil;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,11 +52,13 @@ final class AkkaConfigFactory {
                 withValue("custom-dispatcher.mailbox-requirement", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName())).
                 withValue("custom-dispatcher-mailbox.mailbox-type", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName())).
                 withValue("akka.actor.mailbox.requirements", ConfigValueFactory.fromMap(Collections.singletonMap(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName(), "custom-dispatcher-mailbox"))).
-                withValue("custom-dispatcher-mailbox.message-priorities",
-                        ConfigValueFactory.fromAnyRef(actorProgram.getMessagePriorities().
-                                orElse(Collections.singletonList(Object.class)).
+                withValue("custom-dispatcher-mailbox.message-types",
+                        ConfigValueFactory.fromAnyRef(actorProgram.getMessageTypes().
+                                entrySet().
                                 stream().
-                                map(Class::getCanonicalName).
+                                map(entry -> Arrays.asList(
+                                        ClassUtil.getClassName(entry.getKey()),
+                                        ClassUtil.getClassName(null == entry.getValue() ? Object.class : entry.getValue().getClass()))).
                                 collect(Collectors.toList())));
         final Iterator<String> keys = configuration.getKeys();
         while (keys.hasNext()) {

@@ -29,32 +29,36 @@ import com.typesafe.config.Config;
 import org.apache.tinkerpop.gremlin.process.actors.ActorsResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.util.ClassUtil;
 import scala.Option;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ActorMailbox implements MailboxType, ProducesMessageQueue<ActorMailbox.ActorMessageQueue> {
 
-    private final List<Class> messagePriorities = new ArrayList<>();
+    private final LinkedHashMap<Class, BinaryOperator> messageTypes = new LinkedHashMap<>();
 
     public static class ActorMessageQueue implements MessageQueue, ActorSemantics {
-        private final List<Class> messagePriorities;
+        private final Map<Class, BinaryOperator> messageTypes;
         private final List<Queue> messages;
         private ActorsResult result = null;
         private ActorRef home = null;
         private final Object MUTEX = new Object();
 
 
-        public ActorMessageQueue(final List<Class> messagePriorities) {
-            this.messagePriorities = messagePriorities;
-            this.messages = new ArrayList<>(this.messagePriorities.size());
-            for (final Class clazz : this.messagePriorities) {
+        public ActorMessageQueue(final Map<Class, BinaryOperator> messageTypes) {
+            this.messageTypes = messageTypes;
+            this.messages = new ArrayList<>(this.messageTypes.size());
+            for (final Class clazz : this.messageTypes.keySet()) {
                 final Queue queue;
                 if (Traverser.class.isAssignableFrom(clazz))
                     queue = new TraverserSet<>();
@@ -73,12 +77,19 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
                     else
                         this.home = handle.sender();
                 } else {
-                    for (int i = 0; i < this.messagePriorities.size(); i++) {
-                        final Class clazz = this.messagePriorities.get(i);
+                    int i = 0;
+                    for (final Map.Entry<Class, BinaryOperator> entry : this.messageTypes.entrySet()) {
+                        final Class clazz = entry.getKey();
                         if (clazz.isInstance(message)) {
-                            this.messages.get(i).offer(message instanceof Traverser ? message : handle);
+                            if (null != entry.getValue()) {
+                                this.messages.get(i).offer(this.messages.get(i).isEmpty() ?
+                                        message :
+                                        entry.getValue().apply(this.messages.get(i).poll(), message));
+                            } else
+                                this.messages.get(i).offer(message);
                             return;
                         }
+                        i++;
                     }
                     throw new IllegalArgumentException("The provided message type is not registered: " + handle.message().getClass());
                 }
@@ -89,8 +100,7 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
             synchronized (MUTEX) {
                 for (final Queue queue : this.messages) {
                     if (!queue.isEmpty()) {
-                        final Object m = queue.poll();
-                        return m instanceof Traverser ? new Envelope(m, ActorRef.noSender()) : (Envelope) m;
+                        return new Envelope(queue.poll(), ActorRef.noSender());
                     }
                 }
                 return null;
@@ -123,7 +133,7 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
                 for (final Queue queue : this.messages) {
                     while (!queue.isEmpty()) {
                         final Object m = queue.poll();
-                        deadLetters.enqueue(owner, m instanceof Traverser ? new Envelope(m, ActorRef.noSender()) : (Envelope) m);
+                        deadLetters.enqueue(owner, new Envelope(m, ActorRef.noSender()));
                     }
                 }
             }
@@ -132,19 +142,20 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
 
     // This constructor signature must exist, it will be called by Akka
     public ActorMailbox(final ActorSystem.Settings settings, final Config config) {
-        try {
-            final List<String> messages = config.getStringList("message-priorities");
-            for (final String clazz : messages) {
-                this.messagePriorities.add(Class.forName(clazz.trim()));
-            }
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+        final List<List<String>> messages = (List<List<String>>) config.getAnyRef("message-types");
+        for (final List<String> message : messages) {
+            this.messageTypes.put(
+                    ClassUtil.getClassOrEnum(message.get(0)),
+                    Object.class.getCanonicalName().equals(message.get(1)) ?
+                            null :
+                            ClassUtil.getClassOrEnum(message.get(1)));
         }
+
     }
 
     // The create method is called to create the MessageQueue
     public MessageQueue create(final Option<ActorRef> owner, final Option<ActorSystem> system) {
-        return new ActorMessageQueue(this.messagePriorities);
+        return new ActorMessageQueue(this.messageTypes);
     }
 
     public static interface ActorSemantics {

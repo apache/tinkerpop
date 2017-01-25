@@ -103,20 +103,15 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
             assert !(traverser.get() instanceof Element) ||
                     this.worker.partition().contains((Element) traverser.get()) ||
                     this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep;
-            if (traverser.isHalted()) {
-                // send halted traversers to master
-                this.sendTraverser(traverser);
+            // attach traverser to the worker's partition
+            TraversalActorProgram.attach(traverser, this.worker.partition());
+            final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
+            step.addStart(traverser);
+            if (step instanceof Barrier) {
+                this.barriers.put(step.getId(), (Barrier) step);
             } else {
-                // locally process traverser
-                TraversalActorProgram.attach(traverser, this.worker.partition());
-                final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
-                step.addStart(traverser);
-                if (step instanceof Barrier) {
-                    this.barriers.put(step.getId(), (Barrier) step);
-                } else {
-                    while (step.hasNext()) {
-                        this.sendTraverser(step.next());
-                    }
+                while (step.hasNext()) {
+                    this.sendTraverser(step.next());
                 }
             }
         } else if (message instanceof SideEffectSetMessage) {

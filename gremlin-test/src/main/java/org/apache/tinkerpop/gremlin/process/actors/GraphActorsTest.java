@@ -24,6 +24,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -74,6 +75,7 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     public void shouldSetupAndTerminateProperly() throws Exception {
         for (int i = 1; i < 10; i++) {
             final GraphActors<List<Integer>> actors = graphProvider.getGraphActors(graph);
@@ -82,6 +84,14 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
             assertEquals(i, counts.get(1).intValue());
             assertEquals(1, counts.get(2).intValue());
             assertEquals(1, counts.get(3).intValue());
+        }
+    }
+
+    @Test
+    public void shouldSupportMessageCombiners() throws Exception {
+        for (int i = 1; i < 10; i++) {
+            final GraphActors actors = graphProvider.getGraphActors(graph);
+            actors.workers(i).program(new TestMessageCombinersActorProgram()).submit(graph).get();
         }
     }
 }

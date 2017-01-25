@@ -94,7 +94,23 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
     @Override
     public void execute(final Object message) {
         if (message instanceof Traverser.Admin) {
-            this.processTraverser((Traverser.Admin) message);
+            final Traverser.Admin traverser = (Traverser.Admin) message;
+            if (traverser.isHalted() || traverser.get() instanceof Element) {
+                this.sendTraverser(traverser);
+            } else {
+                // attach traverser for local processing at the master actor
+                TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
+                final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
+                step.addStart(traverser);
+                if (step instanceof Barrier) {
+                    this.barriers.put(step.getId(), (Barrier) step);
+                    this.barriersDone = false;
+                } else {
+                    while (step.hasNext()) {
+                        this.sendTraverser(step.next());
+                    }
+                }
+            }
         } else if (message instanceof BarrierAddMessage) {
             final Barrier barrier = (Barrier) this.matrix.getStepById(((BarrierAddMessage) message).getStepId());
             if (!(barrier instanceof LocalBarrier))
@@ -186,25 +202,6 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
         }
     }
 
-    private void processTraverser(final Traverser.Admin traverser) {
-        if (traverser.isHalted() || traverser.get() instanceof Element) {
-            this.sendTraverser(traverser);
-        } else {
-            // attach traverser for local processing at the master actor
-            TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
-            final Step<?, ?> step = this.matrix.<Object, Object, Step<Object, Object>>getStepById(traverser.getStepId());
-            step.addStart(traverser);
-            if (step instanceof Barrier) {
-                this.barriers.put(step.getId(), (Barrier) step);
-                this.barriersDone = false;
-            } else {
-                while (step.hasNext()) {
-                    this.sendTraverser(step.next());
-                }
-            }
-        }
-    }
-
     private void sendTraverser(final Traverser.Admin traverser) {
         if (traverser.isHalted()) {
             TraversalActorProgram.attach(traverser, this.master.partitioner().getGraph());
@@ -219,8 +216,10 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
                 this.master.send(worker, traverser);
             }
         } else if (traverser.get() instanceof Element) {
+            // if the traverser references an element of the graph, send it to respect data-local worker
             this.master.send(this.partitionToWorkerMap.get(this.master.partitioner().find((Element) traverser.get())), this.detachTraverser(traverser));
         } else {
+            // if the traverser references a non-element, process it locally at the master // TODO: hash() distribute to load balance across workers
             this.master.send(this.master.address(), this.detachTraverser(traverser));
         }
     }

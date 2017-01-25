@@ -23,8 +23,10 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Constructor;
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -77,17 +79,18 @@ public interface ActorProgram<R> extends Cloneable {
     public ActorProgram.Master createMasterProgram(final Actor.Master<R> master);
 
     /**
-     * Get the ordered list of message classes where order determines the priority
-     * of message reception by the respective {@link Actor}. For instance,
-     * if an {@link Actor} has a message of type {@code X} and a message of type {@code Y}
+     * Get the ordered list of message classes and their combiners/reducers, where order determines the priority
+     * of message reception by the respective {@link Actor} -- a {@link java.util.LinkedHashMap} should be used to
+     * ensure ordering. For instance, if an {@link Actor} has a message of type {@code X} and a message of type {@code Y}
      * in its message buffer, and {@code X} has a higher priority, it will be fetched
-     * first from the buffer. If no list is provided then its FIFO.
+     * first from the buffer. If no list is provided then its FIFO. If the provided {@link BinaryOperator} is
+     * null, then no combiner is used and the messages are appended into a queue.
      * The default implementation returns an {@link Optional#empty()}.
      *
      * @return the optional ordered list of message priorities.
      */
-    public default Optional<List<Class>> getMessagePriorities() {
-        return Optional.empty();
+    public default Map<Class, BinaryOperator> getMessageTypes() {
+        return Collections.singletonMap(Object.class, null);
     }
 
     /**

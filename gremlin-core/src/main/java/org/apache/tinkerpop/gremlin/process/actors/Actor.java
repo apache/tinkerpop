@@ -64,6 +64,12 @@ public interface Actor {
      */
     public void close();
 
+    public default <M> void broadcast(final M message) {
+        for (final Address.Worker worker : this.workers()) {
+            this.send(worker, message);
+        }
+    }
+
     public interface Master<R> extends Actor {
 
         /**

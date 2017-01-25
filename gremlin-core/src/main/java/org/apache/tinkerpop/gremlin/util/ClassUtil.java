@@ -32,9 +32,26 @@ public final class ClassUtil {
         if (null == clazz.getEnclosingClass())
             return clazz.getCanonicalName();
         else {
-            final String className = clazz.getCanonicalName();
-            int index = className.lastIndexOf(".");
-            return className.substring(0, index) + "$" + className.substring(index + 1);
+            if (clazz.getEnclosingClass().isEnum())
+                return clazz.getName().replace("$", "#");
+            else {
+                final String className = clazz.getCanonicalName();
+                int index = className.lastIndexOf(".");
+                return className.substring(0, index) + "$" + className.substring(index + 1);
+            }
+        }
+    }
+
+    public static <V> V getClassOrEnum(final String name) {
+        try {
+            if (name.contains("#")) { // this is an enum
+                String[] names = name.split("#");
+                return (V) Class.forName(names[0]).getEnumConstants()[Integer.valueOf(names[1]) - 1];
+            } else {
+                return (V) Class.forName(name);
+            }
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

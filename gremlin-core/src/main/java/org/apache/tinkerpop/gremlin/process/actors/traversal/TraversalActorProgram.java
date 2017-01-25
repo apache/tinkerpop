@@ -49,10 +49,10 @@ import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,13 +63,16 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
 
     public static final String TRAVERSAL_ACTOR_PROGRAM_BYTECODE = "gremlin.traversalActorProgram.bytecode";
 
-    private static final List<Class> MESSAGE_PRIORITIES = Arrays.asList(
-            BarrierDoneMessage.class,
-            Traverser.class,
-            SideEffectAddMessage.class,
-            BarrierAddMessage.class,
-            SideEffectSetMessage.class,
-            Terminate.class);
+    private static final Map<Class, BinaryOperator> MESSAGES = new LinkedHashMap<>();
+
+    static {
+        MESSAGES.put(BarrierDoneMessage.class, null);
+        MESSAGES.put(Traverser.class, null);
+        MESSAGES.put(SideEffectAddMessage.class, null);
+        MESSAGES.put(BarrierAddMessage.class, null);
+        MESSAGES.put(SideEffectSetMessage.class, null);
+        MESSAGES.put(Terminate.class, null);
+    }
 
     private Traversal.Admin<?, R> traversal;
 
@@ -119,8 +122,8 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
     }
 
     @Override
-    public Optional<List<Class>> getMessagePriorities() {
-        return Optional.of(MESSAGE_PRIORITIES);
+    public Map<Class, BinaryOperator> getMessageTypes() {
+        return MESSAGES;
     }
 
     @Override
