@@ -24,11 +24,7 @@ import akka.serialization.Serializer;
 import com.typesafe.config.Config;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
+import org.apache.tinkerpop.gremlin.process.actors.ActorProgram;
 import org.apache.tinkerpop.gremlin.process.actors.util.DefaultActorsResult;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
@@ -43,8 +39,12 @@ import scala.Option;
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.apache.tinkerpop.gremlin.akka.process.actors.Constants.AKKA_ACTOR_SERIALIZATION_BINDINGS;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -55,6 +55,22 @@ public final class GryoSerializer implements Serializer {
 
     public GryoSerializer(final ExtendedActorSystem actorSystem) {
         final Config config = actorSystem.settings().config();
+        final Set<Class> gryoClasses = new HashSet<>();
+        for (final Map.Entry<String, String> entry : ((Map<String, String>) config.getAnyRef(AKKA_ACTOR_SERIALIZATION_BINDINGS)).entrySet()) {
+            if (entry.getValue().equals("gryo")) {
+                gryoClasses.add(ClassUtil.getClassOrEnum(entry.getKey()));
+            }
+        }
+        // remove Gryo 3.0 classes
+        GryoVersion.V3_0.getRegistrations().forEach(type -> gryoClasses.remove(type.getTargetClass()));
+        // this sucks. how to do this automatically?
+        gryoClasses.remove(Short.class);
+        gryoClasses.remove(Integer.class);
+        gryoClasses.remove(Float.class);
+        gryoClasses.remove(Double.class);
+        gryoClasses.remove(Long.class);
+        gryoClasses.remove(String.class);
+        //
         final List<IoRegistry> registryList;
         if (config.hasPath(IoRegistry.IO_REGISTRY)) {
             final Configuration configuration = new BaseConfiguration();
@@ -66,33 +82,24 @@ public final class GryoSerializer implements Serializer {
         this.gryoPool = GryoPool.build().
                 poolSize(10).
                 initializeMapper(builder ->
-                        builder.referenceTracking(true).
-                                registrationRequired(true).
+                        builder.referenceTracking(true). // config.getBoolean("gremlin.gryo.referenceTracking")).
+                                registrationRequired(true). // config.getBoolean("gremlin.gryo.registrationRequired")).
                                 version(GryoVersion.V3_0).
-                                addRegistries(registryList).
-                                addCustom(
-                                        Terminate.class,
-                                        BarrierAddMessage.class,
-                                        BarrierDoneMessage.class,
-                                        SideEffectSetMessage.class,
-                                        SideEffectAddMessage.class,
-                                        DefaultActorsResult.class)).create();
+                                addCustom(gryoClasses.toArray(new Class[gryoClasses.size()])).
+                                addRegistries(registryList)).create();
     }
 
-    public static Map<String, String> getSerializerBindings(final Configuration configuration) {
+    public static Map<String, String> getSerializerBindings(final ActorProgram<?> actorProgram, final Configuration configuration) {
+        final Set<Class> programMessageClasses = new HashSet<>(actorProgram.getMessageTypes().keySet());
+        programMessageClasses.add(DefaultActorsResult.class); // todo: may make this a Gryo3.0 class in the near future
+        GryoVersion.V3_0.getRegistrations().forEach(type -> programMessageClasses.remove(type.getTargetClass()));
         final Map<String, String> bindings = new HashMap<>();
         GryoMapper.build().
-                referenceTracking(true).
-                registrationRequired(true).
+                referenceTracking(configuration.getBoolean("gremlin.gryo.referenceTracking", true)).
+                registrationRequired(configuration.getBoolean("gremlin.gryo.registrationRequired", true)).
                 version(GryoVersion.V3_0).
+                addCustom(programMessageClasses.toArray(new Class[programMessageClasses.size()])).
                 addRegistries(IoRegistryHelper.createRegistries(configuration)).
-                addCustom(
-                        Terminate.class,
-                        BarrierAddMessage.class,
-                        BarrierDoneMessage.class,
-                        SideEffectSetMessage.class,
-                        SideEffectAddMessage.class,
-                        DefaultActorsResult.class).
                 create().
                 getRegisteredClasses().
                 stream().

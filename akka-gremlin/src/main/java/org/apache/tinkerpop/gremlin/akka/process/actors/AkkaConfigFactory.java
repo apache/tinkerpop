@@ -48,7 +48,7 @@ final class AkkaConfigFactory {
 
     static Config generateAkkaConfig(final ActorProgram<?> actorProgram, final Configuration configuration) {
         Config config = ConfigFactory.defaultApplication().
-                withValue("akka.actor.serialization-bindings", ConfigValueFactory.fromMap(GryoSerializer.getSerializerBindings(configuration))).
+                withValue(Constants.AKKA_ACTOR_SERIALIZATION_BINDINGS, ConfigValueFactory.fromMap(GryoSerializer.getSerializerBindings(actorProgram, configuration))).
                 withValue("custom-dispatcher.mailbox-requirement", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName())).
                 withValue("custom-dispatcher-mailbox.mailbox-type", ConfigValueFactory.fromAnyRef(ActorMailbox.class.getCanonicalName())).
                 withValue("akka.actor.mailbox.requirements", ConfigValueFactory.fromMap(Collections.singletonMap(ActorMailbox.class.getCanonicalName() + "$" + ActorMailbox.ActorSemantics.class.getSimpleName(), "custom-dispatcher-mailbox"))).
