@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddM
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.decoration.ActorProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.strategy.verification.ActorVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -51,7 +50,6 @@ import org.javatuples.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BinaryOperator;
 
 /**
@@ -66,12 +64,12 @@ public final class TraversalActorProgram<R> implements ActorProgram<Pair<Travers
     private static final Map<Class, BinaryOperator> MESSAGES = new LinkedHashMap<>();
 
     static {
-        MESSAGES.put(BarrierDoneMessage.class, null);
         MESSAGES.put(Traverser.class, null);
         MESSAGES.put(SideEffectAddMessage.class, null);
-        MESSAGES.put(BarrierAddMessage.class, null);
         MESSAGES.put(SideEffectSetMessage.class, null);
-        MESSAGES.put(Terminate.class, null);
+        MESSAGES.put(BarrierAddMessage.class, null);
+        MESSAGES.put(BarrierDoneMessage.class, null);
+        MESSAGES.put(Boolean.class, null);
     }
 
     private Traversal.Admin<?, R> traversal;

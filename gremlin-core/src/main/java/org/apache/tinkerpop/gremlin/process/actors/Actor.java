@@ -64,6 +64,14 @@ public interface Actor {
      */
     public void close();
 
+    /**
+     * A helper method that will broadcast the provided message to all workers.
+     * The default implementation simply loops through {@link Actor#workers()}
+     * and sends the message.
+     *
+     * @param message the message to broadcast to all workers
+     * @param <M>     the message type
+     */
     public default <M> void broadcast(final M message) {
         for (final Address.Worker worker : this.workers()) {
             this.send(worker, message);

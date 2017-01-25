@@ -63,14 +63,6 @@ public final class GryoSerializer implements Serializer {
         }
         // remove Gryo 3.0 classes
         GryoVersion.V3_0.getRegistrations().forEach(type -> gryoClasses.remove(type.getTargetClass()));
-        // this sucks. how to do this automatically?
-        gryoClasses.remove(Short.class);
-        gryoClasses.remove(Integer.class);
-        gryoClasses.remove(Float.class);
-        gryoClasses.remove(Double.class);
-        gryoClasses.remove(Long.class);
-        gryoClasses.remove(String.class);
-        //
         final List<IoRegistry> registryList;
         if (config.hasPath(IoRegistry.IO_REGISTRY)) {
             final Configuration configuration = new BaseConfiguration();
@@ -82,7 +74,7 @@ public final class GryoSerializer implements Serializer {
         this.gryoPool = GryoPool.build().
                 poolSize(10).
                 initializeMapper(builder ->
-                        builder.referenceTracking(true). // config.getBoolean("gremlin.gryo.referenceTracking")).
+                        builder.referenceTracking(true).    // config.getBoolean("gremlin.gryo.referenceTracking")).
                                 registrationRequired(true). // config.getBoolean("gremlin.gryo.registrationRequired")).
                                 version(GryoVersion.V3_0).
                                 addCustom(gryoClasses.toArray(new Class[gryoClasses.size()])).
@@ -91,8 +83,18 @@ public final class GryoSerializer implements Serializer {
 
     public static Map<String, String> getSerializerBindings(final ActorProgram<?> actorProgram, final Configuration configuration) {
         final Set<Class> programMessageClasses = new HashSet<>(actorProgram.getMessageTypes().keySet());
-        programMessageClasses.add(DefaultActorsResult.class); // todo: may make this a Gryo3.0 class in the near future
         GryoVersion.V3_0.getRegistrations().forEach(type -> programMessageClasses.remove(type.getTargetClass()));
+        // this sucks. how to do this automatically?
+        programMessageClasses.add(DefaultActorsResult.class); // todo: may make this a Gryo3.0 class in the near future
+        programMessageClasses.remove(Short.class);
+        programMessageClasses.remove(Integer.class);
+        programMessageClasses.remove(Float.class);
+        programMessageClasses.remove(Double.class);
+        programMessageClasses.remove(Long.class);
+        programMessageClasses.remove(String.class);
+        programMessageClasses.remove(Boolean.class);
+        programMessageClasses.remove(Character.class);
+        //
         final Map<String, String> bindings = new HashMap<>();
         GryoMapper.build().
                 referenceTracking(configuration.getBoolean("gremlin.gryo.referenceTracking", true)).

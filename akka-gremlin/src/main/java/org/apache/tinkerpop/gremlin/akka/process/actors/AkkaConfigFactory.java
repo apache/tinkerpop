@@ -58,7 +58,7 @@ final class AkkaConfigFactory {
                                 stream().
                                 map(entry -> Arrays.asList(
                                         ClassUtil.getClassName(entry.getKey()),
-                                        ClassUtil.getClassName(null == entry.getValue() ? Object.class : entry.getValue().getClass()))).
+                                        null == entry.getValue() ? null : ClassUtil.getClassName(entry.getValue().getClass()))).
                                 collect(Collectors.toList())));
         final Iterator<String> keys = configuration.getKeys();
         while (keys.hasNext()) {

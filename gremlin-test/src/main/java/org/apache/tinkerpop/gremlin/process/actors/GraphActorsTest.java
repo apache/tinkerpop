@@ -88,10 +88,19 @@ public class GraphActorsTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     public void shouldSupportMessageCombiners() throws Exception {
         for (int i = 1; i < 10; i++) {
             final GraphActors actors = graphProvider.getGraphActors(graph);
             actors.workers(i).program(new TestMessageCombinersActorProgram()).submit(graph).get();
+        }
+    }
+
+    @Test
+    public void shouldSupportMessagePriorities() throws Exception {
+        for (int i = 1; i < 10; i++) {
+            final GraphActors actors = graphProvider.getGraphActors(graph);
+            actors.workers(i).program(new TestMessagePrioritiesActorProgram()).submit(graph).get();
         }
     }
 }

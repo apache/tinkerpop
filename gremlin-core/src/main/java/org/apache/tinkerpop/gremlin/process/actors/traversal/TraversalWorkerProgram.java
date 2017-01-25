@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.actors.Address;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -128,9 +127,8 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                 }
             } else
                 ((Barrier) step).done();       // the master drains the global barrier
-        } else if (message instanceof Terminate) {
+        } else if (message instanceof Boolean) {
             ////////// DETERMINE TERMINATION CONDITION //////////
-            final Terminate terminate = (Terminate) message;
             if (this.voteToHalt && !this.barriers.isEmpty()) {
                 for (final Barrier barrier : this.barriers.values()) {
                     if (barrier instanceof LocalBarrier) {
@@ -146,7 +144,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
                 this.voteToHalt = false;
             }
             // use termination token to determine termination condition
-            this.worker.send(this.neighborAddress, this.voteToHalt ? terminate : Terminate.NO);
+            this.worker.send(this.neighborAddress, this.voteToHalt ? message : Boolean.FALSE);
             this.voteToHalt = true;
         } else {
             throw new IllegalArgumentException("The following message is unknown: " + message);
@@ -168,9 +166,7 @@ final class TraversalWorkerProgram implements ActorProgram.Worker<Object> {
             this.worker.send(this.worker.master(), traverser);
         } else if (this.matrix.getStepById(traverser.getStepId()) instanceof GraphStep) {
             // mid-traversal V()/E() traversers need to be broadcasted across all workers/partitions
-            for (final Address.Worker worker : this.worker.workers()) {
-                this.worker.send(worker, traverser);
-            }
+            this.worker.broadcast(traverser);
         } else if (traverser.get() instanceof Element && !this.worker.partition().contains((Element) traverser.get())) {
             // if the traverser references a non-local element, send the traverser to the appropriate worker/partition
             this.worker.send(this.partitionToWorkerMap.get(this.worker.partition().partitioner().find((Element) traverser.get())), traverser);

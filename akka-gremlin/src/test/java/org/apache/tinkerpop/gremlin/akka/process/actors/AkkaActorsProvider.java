@@ -70,8 +70,8 @@ public class AkkaActorsProvider extends AbstractTinkerGraphProvider {
         final Map<String, Object> configuration = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         // Akka specific configuration
         configuration.put(Constants.AKKA_LOG_DEAD_LETTERS_DURING_SHUTDOWN, false);
-        configuration.put(Constants.AKKA_ACTOR_PROVIDER, "remote");
-        configuration.put(Constants.AKKA_ACTOR_SERIALIZE_MESSAGES, "on");
+        configuration.put(Constants.AKKA_ACTOR_PROVIDER, RANDOM.nextBoolean() ? "remote" : "local");
+        configuration.put(Constants.AKKA_ACTOR_SERIALIZE_MESSAGES, RANDOM.nextBoolean() ? "on" : "off");
         configuration.put(Constants.AKKA_ACTOR_SERIALIZERS_GRYO, GryoSerializer.class.getCanonicalName());
         configuration.put(Constants.AKKA_REMOTE_ENABLED_TRANSPORTS, Collections.singletonList("akka.remote.netty.tcp"));
         configuration.put(Constants.AKKA_REMOTE_NETTY_TCP_HOSTNAME, "127.0.0.1");

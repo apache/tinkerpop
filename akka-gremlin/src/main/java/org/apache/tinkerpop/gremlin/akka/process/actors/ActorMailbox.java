@@ -146,7 +146,7 @@ public final class ActorMailbox implements MailboxType, ProducesMessageQueue<Act
         for (final List<String> message : messages) {
             this.messageTypes.put(
                     ClassUtil.getClassOrEnum(message.get(0)),
-                    Object.class.getCanonicalName().equals(message.get(1)) ?
+                    null == message.get(1) ?
                             null :
                             ClassUtil.getClassOrEnum(message.get(1)));
         }

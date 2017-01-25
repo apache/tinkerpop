@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierAddM
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.BarrierDoneMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectAddMessage;
 import org.apache.tinkerpop.gremlin.process.actors.traversal.message.SideEffectSetMessage;
-import org.apache.tinkerpop.gremlin.process.actors.traversal.message.Terminate;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -88,7 +87,7 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
         }
         // first pass of a two pass termination detection
         this.voteToHalt = false;
-        this.master.send(this.neighborAddress, Terminate.NO);
+        this.master.send(this.neighborAddress, Boolean.FALSE);
     }
 
     @Override
@@ -125,22 +124,22 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
             final SideEffectAddMessage sideEffectAddMessage = (SideEffectAddMessage) message;
             this.traversal.getSideEffects().add(sideEffectAddMessage.getKey(), TraversalActorProgram.attach(sideEffectAddMessage.getValue(), this.master.partitioner().getGraph()));
             this.sideEffects.add(sideEffectAddMessage.getKey());
-        } else if (message instanceof Terminate) {
-            if (message == Terminate.NO)
+        } else if (message instanceof Boolean) {
+            if (!(Boolean) message)
                 this.voteToHalt = false;
             if (this.voteToHalt && !this.sideEffects.isEmpty()) {
                 // process all side-effect updates
                 for (final String key : this.sideEffects) {
-                    this.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
+                    this.master.broadcast(new SideEffectSetMessage(key, this.traversal.getSideEffects().get(key)));
                 }
                 this.sideEffects.clear();
                 this.voteToHalt = false;
-                this.master.send(this.neighborAddress, Terminate.NO);
+                this.master.send(this.neighborAddress, Boolean.FALSE);
             } else if (this.voteToHalt && !this.barriers.isEmpty()) {
                 if (!this.barriersDone) {
                     // tell all workers that the barrier is complete
                     for (final Barrier barrier : this.barriers.values()) {
-                        this.broadcast(new BarrierDoneMessage(barrier));
+                        this.master.broadcast(new BarrierDoneMessage(barrier));
                     }
                     this.barriersDone = true;
                 } else {
@@ -163,10 +162,10 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
                     this.barriersDone = false;
                 }
                 this.voteToHalt = false;
-                this.master.send(this.neighborAddress, Terminate.NO);
+                this.master.send(this.neighborAddress, Boolean.FALSE);
             } else if (!this.voteToHalt) {
                 this.voteToHalt = true;
-                this.master.send(this.neighborAddress, Terminate.YES);
+                this.master.send(this.neighborAddress, Boolean.TRUE);
             } else {
                 // get any dangling local results (e.g. workers have no data but a reducing barrier is waiting for data)
                 while (this.traversal.hasNext()) {
@@ -194,12 +193,6 @@ final class TraversalMasterProgram<R> implements ActorProgram.Master<Object> {
     @Override
     public void terminate() {
 
-    }
-
-    private void broadcast(final Object message) {
-        for (final Address.Worker worker : this.master.workers()) {
-            this.master.send(worker, message);
-        }
     }
 
     private void sendTraverser(final Traverser.Admin traverser) {
