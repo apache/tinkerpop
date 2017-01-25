@@ -59,6 +59,7 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
             public void terminate() {
                 assertTrue(this.hasSetup);
                 worker.send(worker.master(), WORKER_TERMINATE);
+                worker.send(worker.master(), "kill");
             }
         };
     }
@@ -74,11 +75,6 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
             @Override
             public void setup() {
                 master.send(master.address(), MASTER_SETUP);
-                try {
-                    Thread.sleep(250);
-                } catch (final Exception e) {
-                }
-                master.send(master.address(), "kill");
             }
 
             @Override
@@ -98,6 +94,7 @@ class TestSetupTerminateActorProgram implements ActorProgram<List<Integer>> {
                     assertEquals(1, this.masterSetup);
                     assertEquals(0, this.masterTerminate);
                     assertEquals(this.workerSetup, this.workerTerminate);
+                    assertEquals(master.workers().size(), master.workers().stream().map(Address::toString).distinct().count());
                     master.close();
                 }
             }
