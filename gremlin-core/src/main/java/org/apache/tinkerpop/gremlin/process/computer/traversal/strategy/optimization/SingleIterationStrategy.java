@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
@@ -93,13 +94,14 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
             }
             if (doesMessagePass &&                                                                                                  // if the traversal doesn't message pass, then don't try and localize it as its just wasted computation
                     TraversalHelper.isLocalStarGraph(computerTraversal) &&                                                          // if we move beyond the star graph, then localization is not possible.
-                    (computerTraversal.getStartStep() instanceof GraphStep) &&                                                      // while GraphComputer requires GraphStep starts, this is just a precaution when inject() starts are supported
+                    computerTraversal.getStartStep() instanceof GraphStep &&                                                        // while GraphComputer requires GraphStep starts, this is just a precaution when inject() starts are supported
                     !(computerTraversal.getStartStep().getNextStep() instanceof EmptyStep) &&                                       // if its just a g.V()/E(), then don't localize
                     !(computerTraversal.getStartStep().getNextStep() instanceof LocalStep) &&                                       // removes the potential for the infinite recursive application of the traversal
                     !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&                                         // if the second step is a barrier, no point in trying to localize anything
                     !computerTraversal.getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH) &&                    // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
                     !computerTraversal.getTraverserRequirements().contains(TraverserRequirement.PATH) &&                            // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
-                    TraversalHelper.getStepsOfAssignableClassRecursively(SideEffectCapable.class, computerTraversal).isEmpty() &&   // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
+                    !TraversalHelper.hasStepOfAssignableClassRecursively(LambdaHolder.class, computerTraversal) &&                  // this is because we might be accessing data on an adjacent vertex and that is bad
+                    !TraversalHelper.hasStepOfAssignableClassRecursively(SideEffectCapable.class, computerTraversal) &&             // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
                     !(TraversalHelper.getStepsOfAssignableClass(TraversalParent.class, computerTraversal).                          // this is a strict precaution that could be loosed with deeper logic on barriers in global children
                             stream().
                             filter(parent -> !parent.getGlobalChildren().isEmpty()).findAny().isPresent())) {
