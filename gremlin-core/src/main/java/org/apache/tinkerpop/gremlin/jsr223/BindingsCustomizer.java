@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import javax.script.Bindings;
 
 /**
- * Provides a way to alter the bindings on a {@link GremlinScriptEngine}.
+ * Provides a way to alter the bindings on a {@link GremlinScriptEngine}. Those implementing {@link GremlinScriptEngine}
+ * instances need to be concerned with accounting for this {@link Customizer}. It is handled automatically by the
+ * {@link DefaultGremlinScriptEngineManager}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -30,4 +32,11 @@ public interface BindingsCustomizer extends Customizer {
      * Gets the bindings to add to a {@link GremlinScriptEngine}.
      */
     public Bindings getBindings();
+
+    /**
+     * Gets the scope to which the bindings apply. The scope is determined by the {@code ScriptContext} values where
+     * "100" is {@code EngineScope} (bindings apply to the current {@link GremlinScriptEngine}) and "200" is
+     * {@code GlobalScope} (bindings apply to the engines created by the current {@link GremlinScriptEngineManager}.
+     */
+    public int getScope();
 }

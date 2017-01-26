@@ -23,7 +23,6 @@ import javax.script.ScriptContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -442,7 +441,22 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
     private GremlinScriptEngine createGremlinScriptEngine(final GremlinScriptEngineFactory spi) {
         final GremlinScriptEngine engine = spi.getScriptEngine();
+
+        // merge in bindings that are marked with global scope. these get applied to all GremlinScriptEngine instances
+        getCustomizers(spi.getEngineName()).stream()
+                .filter(p -> p instanceof BindingsCustomizer)
+                .map(p -> ((BindingsCustomizer) p))
+                .filter(bc -> bc.getScope() == ScriptContext.GLOBAL_SCOPE)
+                .forEach(bc -> globalScope.putAll(bc.getBindings()));
         engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
+
+        // merge in bindings that are marked with engine scope. these get applied to only those GremlinScriptEngine
+        // instances that are of this gremlin language
+        getCustomizers(spi.getEngineName()).stream()
+                .filter(p -> p instanceof BindingsCustomizer)
+                .map(p -> ((BindingsCustomizer) p))
+                .filter(bc -> bc.getScope() == ScriptContext.ENGINE_SCOPE)
+                .forEach(bc -> engine.setBindings(bc.getBindings(), ScriptContext.ENGINE_SCOPE));
 
         final List<ScriptCustomizer> scriptCustomizers = getCustomizers(spi.getEngineName()).stream()
                 .filter(p -> p instanceof ScriptCustomizer)
