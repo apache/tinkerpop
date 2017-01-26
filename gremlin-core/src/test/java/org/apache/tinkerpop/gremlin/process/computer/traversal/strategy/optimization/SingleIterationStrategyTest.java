@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,6 +36,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -77,8 +82,9 @@ public class SingleIterationStrategyTest {
                 {__.V().id(), __.V().id(), Collections.emptyList()},
                 {__.V().out().count(), __.V().out().count(), Collections.emptyList()},
                 {__.V().out().label().count(), __.V().out().label().count(), Collections.emptyList()},
-                {__.V().in().id(), __.V().local(__.in().id()), Collections.emptyList()},
-                {__.V().out().id(), __.V().local(__.out().id()), Collections.emptyList()},
+                {__.V().in().id(), __.V().local(in().id()), Collections.emptyList()},
+                {in().id(), in().id(), Collections.emptyList()}, // test inject
+                {__.V().out().id(), __.V().local(out().id()), Collections.emptyList()},
                 {__.V().both().id(), __.V().local(__.both().id()), Collections.emptyList()},
                 {__.V().outE().inV().id().count(), __.V().local(__.outE().inV().id()).count(), Collections.emptyList()},
                 {__.V().map(__.outE().inV()).count(), __.V().map(__.outE().inV()).count(), Collections.emptyList()},
@@ -86,15 +92,25 @@ public class SingleIterationStrategyTest {
                 {__.V().outE().map(__.inV()).id().count(), __.V().outE().map(__.inV()).id().count(), Collections.emptyList()},
                 {__.V().outE().map(__.inV()).count(), __.V().outE().map(__.inV()).count(), Collections.emptyList()},
                 {__.V().outE().map(__.inV()).values("name").count(), __.V().outE().map(__.inV()).values("name").count(), Collections.emptyList()},
-                {__.V().outE().inV().count(), __.V().outE().inV().count(), Collections.emptyList()},
-                {__.V().out().id().count(), __.V().local(__.out().id()).count(), Collections.emptyList()},
-                {__.V().in().id().count(), __.V().local(__.in().id()).count(), Collections.emptyList()},
-                {__.V().in().id().select("id-map").dedup().count(), __.V().local(__.in().id().select("id-map")).dedup().count(), Collections.emptyList()},
+                {__.V().outE().inV().count(), __.V().local(__.outE().inV()).count(), Collections.emptyList()},
+                {__.V().out().id().count(), __.V().local(out().id()).count(), Collections.emptyList()},
+                {__.V().in().id().count(), __.V().local(in().id()).count(), Collections.emptyList()},
+                {__.V().in().id().select("id-map").dedup().count(), __.V().local(in().id().select("id-map")).dedup().count(), Collections.emptyList()},
+                {__.V().in().id().groupCount().select(keys).unfold().dedup().count(), __.V().local(in().id()).groupCount().select(keys).unfold().dedup().count(), Collections.emptyList()},
                 {__.V().outE().values("weight"), __.V().outE().values("weight"), Collections.emptyList()},
                 {__.V().outE().values("weight").sum(), __.V().outE().values("weight").sum(), Collections.emptyList()},
-                {__.V().inE().values("weight"), __.V().local(__.inE().values("weight")), Collections.emptyList()},
-                {__.V().inE().values("weight").sum(), __.V().local(__.inE().values("weight")).sum(), Collections.emptyList()},
-                {__.V().inE().values("weight").sum().dedup().count(), __.V().local(__.inE().values("weight")).sum().dedup().count(), Collections.emptyList()},
+                {__.V().inE().values("weight"), __.V().local(inE().values("weight")), Collections.emptyList()},
+                {__.V().inE().values("weight").sum(), __.V().local(inE().values("weight")).sum(), Collections.emptyList()},
+                {__.V().inE().values("weight").sum().dedup().count(), __.V().local(inE().values("weight")).sum().dedup().count(), Collections.emptyList()},
+                {__.V().as("a").out("knows").as("b").select("a", "b"), __.V().as("a").out("knows").as("b").select("a", "b"), Collections.emptyList()},
+                {__.V().out().groupCount("x").cap("x"), __.V().out().groupCount("x").cap("x"), Collections.emptyList()},
+                {__.V().outE().inV().groupCount().select(Column.values).unfold().dedup().count(), __.V().outE().inV().groupCount().select(Column.values).unfold().dedup().count(), Collections.emptyList()},
+                {__.V().outE().inV().groupCount(), __.V().outE().inV().groupCount(), Collections.emptyList()},
+                {__.V().outE().inV().groupCount().by("name"), __.V().outE().inV().groupCount().by("name"), Collections.emptyList()},
+                {__.V().inE().id().groupCount(), __.V().local(inE().id()).groupCount(), Collections.emptyList()},
+                {__.V().inE().values("weight").groupCount(), __.V().local(inE().values("weight")).groupCount(), Collections.emptyList()},
+                {__.V().outE().inV().tree(), __.V().outE().inV().tree(), Collections.emptyList()},
+                {__.V().in().values("name").groupCount(), __.V().in().values("name").groupCount(), Collections.emptyList()}
         });
     }
 }

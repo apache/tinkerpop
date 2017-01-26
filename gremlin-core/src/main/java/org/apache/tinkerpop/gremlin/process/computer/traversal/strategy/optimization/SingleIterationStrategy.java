@@ -29,9 +29,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
@@ -41,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Adja
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -93,22 +96,25 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
                 final boolean beyondStarGraph =
                         TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, LambdaHolder.class, computerTraversal) ||
                                 !TraversalHelper.isLocalStarGraph(computerTraversal);
-                if (!beyondStarGraph &&                                                                        // if we move beyond the star graph, then localization is not possible.
-                        !(computerTraversal.getStartStep().getNextStep() instanceof EmptyStep) &&              // if its just a g.V()/E(), then don't localize
-                        !(computerTraversal.getStartStep().getNextStep() instanceof LocalStep) &&              // removes the potential for the infinite recursive application of the traversal
-                        !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&                // if the second step is a barrier, no point in trying to localize anything
-                        !(TraversalHelper.getStepsOfAssignableClass(TraversalParent.class, computerTraversal). // this is a strict precaution that could be loosed with deeper logic on barriers in global children
+                if (!beyondStarGraph &&                                                                                                 // if we move beyond the star graph, then localization is not possible.
+                        (computerTraversal.getStartStep() instanceof GraphStep) &&                                                      // while GraphComputer requires GraphStep starts, this is just a precaution when inject() starts are supported
+                        !(computerTraversal.getStartStep().getNextStep() instanceof EmptyStep) &&                                       // if its just a g.V()/E(), then don't localize
+                        !(computerTraversal.getStartStep().getNextStep() instanceof LocalStep) &&                                       // removes the potential for the infinite recursive application of the traversal
+                        !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&                                         // if the second step is a barrier, no point in trying to localize anything
+                        !computerTraversal.getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH) &&                    // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
+                        !computerTraversal.getTraverserRequirements().contains(TraverserRequirement.PATH) &&                            // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
+                        TraversalHelper.getStepsOfAssignableClassRecursively(SideEffectCapable.class, computerTraversal).isEmpty() &&   // this is to alleviate issues with DetachedElement in paths (TODO: when detachment is dynamic, remove this)
+                        !(TraversalHelper.getStepsOfAssignableClass(TraversalParent.class, computerTraversal).                          // this is a strict precaution that could be loosed with deeper logic on barriers in global children
                                 stream().
                                 filter(parent -> !parent.getGlobalChildren().isEmpty()).findAny().isPresent())) {
 
                     final Traversal.Admin<?, ?> newComputerTraversal = step.computerTraversal.getPure();
                     final Traversal.Admin localTraversal = new DefaultGraphTraversal<>();
                     final Step barrier = (Step) TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, newComputerTraversal).orElse(null);
-                    final Step endStep = null == barrier ? newComputerTraversal.getEndStep() : barrier.getPreviousStep();
-                    if (!(endStep instanceof VertexStep || endStep instanceof EdgeVertexStep)) {
+                    if (null == barrier || !(barrier instanceof TraversalParent && (barrier.getPreviousStep() instanceof VertexStep || barrier.getPreviousStep() instanceof EdgeVertexStep))) {
                         TraversalHelper.removeToTraversal(newComputerTraversal.getStartStep().getNextStep(), null == barrier ? EmptyStep.instance() : barrier, localTraversal);
                         assert !localTraversal.getSteps().isEmpty(); // given the if() constraints, this is impossible
-                        if (localTraversal.getSteps().size() > 1) { // if its just a single step, a local wrap will not alter its locus of computation
+                        if (localTraversal.getSteps().size() > 1) {  // if its just a single step, a local wrap will not alter its locus of computation
                             if (null == barrier)
                                 TraversalHelper.insertTraversal(0, (Traversal.Admin) __.local(localTraversal), newComputerTraversal);
                             else

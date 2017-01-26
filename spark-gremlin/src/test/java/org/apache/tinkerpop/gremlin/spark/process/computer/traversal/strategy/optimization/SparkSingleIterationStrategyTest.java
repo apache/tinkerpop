@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -127,12 +128,23 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(true, 6L, g.V().inE().id().count());
         test(true, 6L, g.V().outE().count());
         test(true, 4L, g.V().outE().inV().id().dedup().count());
-        test(true, 6L, g.V().as("a").outE().inV().as("b").id().dedup("a", "b").by(T.id).count());
         test(true, 4L, g.V().filter(__.in()).count());
         test(true, 6L, g.V().sideEffect(__.in()).count());
+        test(true, 6L, g.V().map(__.constant("hello")).count());
+        test(true, g.V().groupCount());
+        test(true, g.V().groupCount("x"));
+        test(true, g.V().groupCount("x").cap("x"));
+        test(true, g.V().id().groupCount("x").cap("x"));
+        test(true, g.V().outE().groupCount());
+        test(true, g.V().outE().groupCount().by("weight"));
+        test(true, g.V().inE().id().groupCount());
+        test(true, g.V().inE().values("weight").groupCount());
         /////
+        test(false, 6L, g.V().as("a").outE().inV().as("b").id().dedup("a", "b").by(T.id).count());
         test(false, 6L, g.V().local(__.inE()).count());
         test(false, 6L, g.V().outE().outV().count()); // todo: low probability traversal, but none the less could be optimized for
+        test(false, g.V().out().id().groupCount("x")); // todo: low probability traversal, but none the less could be optimized for
+        test(false, g.V().inE().values("weight").groupCount("x")); // todo: low probability traversal, but none the less could be optimized for
         test(false, 6L, g.V().in().count());
         test(false, 6L, g.V().flatMap(__.in()).count());
         test(false, 4L, g.V().map(__.in()).count());
@@ -150,6 +162,18 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(false, g.V().out().valueMap());
         test(false, 6L, g.V().as("a").outE().inV().values("name").as("b").dedup("a", "b").count());
         test(false, 2L, g.V().outE().inV().groupCount().select(Column.values).unfold().dedup().count());
+        test(false, g.V().out().groupCount("x"));
+        test(false, g.V().out().groupCount("x").cap("x"));
+        test(false, 6L, g.V().both().groupCount("x").cap("x").select(keys).unfold().count());
+        test(false, g.V().outE().inV().groupCount());
+        test(false, g.V().outE().inV().groupCount().by("name"));
+        test(false, g.V().outE().inV().tree());
+        test(false, g.V().inE().groupCount());
+        test(false, g.V().inE().groupCount().by("weight"));
+        test(false, g.V().in().values("name").groupCount());
+        test(false, g.V().out().groupCount("x"));
+        test(false, g.V().in().groupCount("x"));
+        test(false, g.V().both().groupCount("x").cap("x"));
     }
 
     private static <R> void test(boolean singleIteration, final Traversal<?, R> traversal) {
