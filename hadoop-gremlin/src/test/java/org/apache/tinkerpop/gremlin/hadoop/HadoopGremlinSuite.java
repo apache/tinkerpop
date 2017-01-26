@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPluginCheck;
+import org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPluginCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.junit.runners.model.InitializationError;

@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +57,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     private boolean graphSONInput = false;
 
     public static Map<String, String> PATHS = new HashMap<>();
-    private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
+    public static final Set<Class> IMPLEMENTATION = Collections.unmodifiableSet(new HashSet<Class>() {{
         add(HadoopEdge.class);
         add(HadoopElement.class);
         add(HadoopGraph.class);
@@ -70,7 +71,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         add(ComputerGraph.ComputerVertexProperty.class);
         add(ComputerGraph.ComputerAdjacentVertex.class);
         add(ComputerGraph.ComputerProperty.class);
-    }};
+    }});
 
     static {
         try {

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.util
 
-import org.apache.tinkerpop.gremlin.GraphProvider
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__

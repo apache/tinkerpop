@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
+package org.apache.tinkerpop.gremlin.hadoop.jsr223;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -80,7 +79,10 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
     // gremlin-groovy-test, specifically TestableConsolePluginAcceptor, has been copied to the bottom of this
     // file for reference
     // ***********************
-
+    @Test
+    public void nothing() {
+        // this is just to stop junit failures until this test gets figured out
+    }
 
     /**
     @Before

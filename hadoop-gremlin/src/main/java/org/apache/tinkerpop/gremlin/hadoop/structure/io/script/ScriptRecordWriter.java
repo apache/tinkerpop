@@ -24,10 +24,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -49,6 +48,7 @@ public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexW
     private final static String UTF8 = "UTF-8";
     private final static byte[] NEWLINE;
     private final DataOutputStream out;
+    private final static GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
     private final ScriptEngine engine;
 
     static {
@@ -62,8 +62,7 @@ public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexW
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
-        this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
-        //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
+        this.engine = manager.getEngineByName(configuration.get(SCRIPT_ENGINE, "gremlin-groovy"));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
@@ -90,7 +89,7 @@ public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexW
     }
 
     @Override
-    public synchronized void close(TaskAttemptContext context) throws IOException {
+    public synchronized void close(final TaskAttemptContext context) throws IOException {
         this.out.close();
     }
 }
