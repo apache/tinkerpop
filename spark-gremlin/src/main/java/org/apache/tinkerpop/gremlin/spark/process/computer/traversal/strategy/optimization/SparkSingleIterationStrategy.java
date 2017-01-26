@@ -33,14 +33,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -83,7 +82,10 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
                     }
                 }
             }
-            if (!doesMessagePass && !SparkSingleIterationStrategy.endsWithInElement(computerTraversal)) {
+            if (!doesMessagePass &&
+                    !SparkSingleIterationStrategy.endsWithInElement(computerTraversal) &&
+                    !(computerTraversal.getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH) || // todo: remove this when dynamic detachment is available in 3.3.0
+                            computerTraversal.getTraverserRequirements().contains(TraverserRequirement.PATH))) {  // todo: remove this when dynamic detachment is available in 3.3.0
                 step.setComputer(step.getComputer()
                         // if no message passing, don't partition the loaded graph
                         .configure(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, true)
@@ -95,6 +97,9 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
 
     private static final boolean endsWithInElement(final Traversal.Admin<?, ?> traversal) {
         Step<?, ?> current = traversal.getEndStep();
+        while (current instanceof Barrier) { // clip off any tail barriers
+            current = current.getPreviousStep();
+        }
         while (!(current instanceof EmptyStep)) {
             if ((current instanceof VertexStep && (((VertexStep) current).returnsVertex() ||
                     !((VertexStep) current).getDirection().equals(Direction.OUT))) ||
@@ -107,11 +112,7 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
                 if (((TraversalParent) current).getGlobalChildren().stream().filter(SparkSingleIterationStrategy::endsWithInElement).findAny().isPresent())
                     return true;
             }
-            if (!(current instanceof FilterStep ||
-                    current instanceof SideEffectStep ||
-                    current instanceof SelectStep ||
-                    current instanceof SelectOneStep ||
-                    current instanceof Barrier)) {
+            if (!(current instanceof FilterStep || current instanceof SideEffectStep)) { // side-effects and filters do not alter the mapping and thus, deeper analysis is required
                 return false;
             }
             current = current.getPreviousStep();
