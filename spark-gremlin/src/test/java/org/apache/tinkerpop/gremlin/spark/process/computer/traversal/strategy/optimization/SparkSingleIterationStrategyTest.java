@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.SingleIterationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -32,7 +33,9 @@ import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
 
@@ -60,29 +63,93 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
 
+        /////////// WITHOUT SINGLE-ITERATION STRATEGY LESS SINGLE-PASS OPTIONS ARE AVAILABLE
+
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class);
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class, SingleIterationStrategy.class);
         assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
-        assertFalse(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
+        assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
+        assertFalse(g.getStrategies().toList().contains(SingleIterationStrategy.instance()));
+        assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SingleIterationStrategy).findAny().isPresent());
         assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
-        assertTrue(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
+        assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
 
         test(true, g.V().limit(10));
         test(true, g.V().values("age").groupCount());
         test(true, g.V().groupCount().by(__.out().count()));
         test(true, g.V().outE());
-        test(true, 6l, g.V().count());
-        test(true, 6l, g.V().out().count());
-        test(true, 6l, g.V().local(__.inE()).count());
-        test(true, 6l, g.V().outE().inV().count());
+        test(true, 6L, g.V().count());
+        test(true, 6L, g.V().out().count());
+        test(true, 6L, g.V().outE().inV().count());
         ////
+        test(false, 6L, g.V().local(__.inE()).count());
         test(false, g.V().outE().inV());
         test(false, g.V().both());
-        test(false, 12l, g.V().both().count());
+        test(false, 12L, g.V().both().count());
         test(false, g.V().out().id());
-        test(false, 2l, g.V().out().out().count());
-        test(false, 6l, g.V().in().count());
-        test(false, 6l, g.V().inE().count());
+        test(false, 2L, g.V().out().out().count());
+        test(false, 6L, g.V().in().count());
+        test(false, 6L, g.V().inE().count());
+
+        /////////// WITH SINGLE-ITERATION STRATEGY MORE SINGLE-PASS OPTIONS ARE AVAILABLE
+
+        graph = GraphFactory.open(configuration);
+        g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class).withStrategies(SingleIterationStrategy.instance());
+        assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
+        assertTrue(g.getStrategies().toList().contains(SingleIterationStrategy.instance()));
+        assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SingleIterationStrategy).findAny().isPresent());
+        assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
+
+        test(true, g.V().limit(10));
+        test(true, g.V().values("age").groupCount());
+        test(true, g.V().groupCount().by(__.out().count()));
+        test(true, g.V().outE());
+        test(true, 6L, g.V().outE().values("weight").count());
+        test(true, 6L, g.V().inE().values("weight").count());
+        test(true, 12L, g.V().bothE().values("weight").count());
+        test(true, g.V().bothE().values("weight"));
+        test(true, g.V().bothE().values("weight").limit(2));
+        test(true, 6L, g.V().count());
+        test(true, 6L, g.V().id().count());
+        test(true, 6L, g.V().out().count());
+        test(true, 6L, g.V().outE().inV().count());
+        test(true, 6L, g.V().outE().inV().id().count());
+        test(true, 2L, g.V().outE().inV().id().groupCount().select(Column.values).unfold().dedup().count());
+        test(true, g.V().out().id());
+        test(true, 6L, g.V().outE().valueMap().count());
+        test(true, g.V().outE().valueMap());
+        test(true, 6L, g.V().inE().valueMap().count());
+        test(true, g.V().inE().valueMap());
+        test(true, 12L, g.V().bothE().valueMap().count());
+        test(true, g.V().bothE().valueMap());
+        test(true, 6L, g.V().inE().id().count());
+        test(true, 6L, g.V().outE().count());
+        test(true, 4L, g.V().outE().inV().id().dedup().count());
+        test(true, 6L, g.V().as("a").outE().inV().as("b").id().dedup("a", "b").by(T.id).count());
+        test(true, 4L, g.V().filter(__.in()).count());
+        test(true, 6L, g.V().sideEffect(__.in()).count());
+        /////
+        test(false, 6L, g.V().local(__.inE()).count());
+        test(false, 6L, g.V().outE().outV().count()); // todo: low probability traversal, but none the less could be optimized for
+        test(false, 6L, g.V().in().count());
+        test(false, 6L, g.V().flatMap(__.in()).count());
+        test(false, 4L, g.V().map(__.in()).count());
+        test(false, 6L, g.V().local(__.in()).count());
+        test(false, 6L, g.V().inE().count());
+        test(false, g.V().outE().inV());
+        test(false, g.V().both());
+        test(false, 12L, g.V().both().count());
+        test(false, g.V().outE().inV().dedup());
+        test(false, 4L, g.V().outE().inV().dedup().count());
+        test(false, 2L, g.V().out().out().count());
+        test(false, 6L, g.V().as("a").map(__.both()).select("a").count());
+        test(false, g.V().out().values("name"));
+        test(false, g.V().out().properties("name"));
+        test(false, g.V().out().valueMap());
+        test(false, 6L, g.V().as("a").outE().inV().values("name").as("b").dedup("a", "b").count());
+        test(false, 2L, g.V().outE().inV().groupCount().select(Column.values).unfold().dedup().count());
     }
 
     private static <R> void test(boolean singleIteration, final Traversal<?, R> traversal) {

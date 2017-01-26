@@ -23,12 +23,23 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -48,9 +59,8 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
 
     private static final Set<Class> MULTI_ITERATION_CLASSES = new HashSet<>(Arrays.asList(
             EdgeVertexStep.class,
-            LambdaMapStep.class, // maybe?
-            LambdaFlatMapStep.class // maybe?
-            // VertexStep is special as you need to see if the return class is Edge or Vertex (logic below)
+            LambdaMapStep.class,
+            LambdaFlatMapStep.class
     ));
 
     private SparkSingleIterationStrategy() {
@@ -63,6 +73,7 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
             final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
             if (!computerTraversal.isLocked())
                 computerTraversal.applyStrategies();
+            ///
             boolean doesMessagePass = TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, MULTI_ITERATION_CLASSES, computerTraversal);
             if (!doesMessagePass) {
                 for (final VertexStep vertexStep : TraversalHelper.getStepsOfAssignableClassRecursively(Scope.global, VertexStep.class, computerTraversal)) {
@@ -72,18 +83,45 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
                     }
                 }
             }
-            if (!doesMessagePass) {
+            if (!doesMessagePass && !SparkSingleIterationStrategy.endsWithInElement(computerTraversal)) {
                 step.setComputer(step.getComputer()
                         // if no message passing, don't partition the loaded graph
                         .configure(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, true)
-                                // if no message passing, don't cache the loaded graph
+                        // if no message passing, don't cache the loaded graph
                         .configure(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, true));
             }
         }
     }
 
+    private static final boolean endsWithInElement(final Traversal.Admin<?, ?> traversal) {
+        Step<?, ?> current = traversal.getEndStep();
+        while (!(current instanceof EmptyStep)) {
+            if ((current instanceof VertexStep && (((VertexStep) current).returnsVertex() ||
+                    !((VertexStep) current).getDirection().equals(Direction.OUT))) ||
+                    current instanceof EdgeVertexStep) {
+                return true;
+            } else if (current instanceof TraversalMapStep || current instanceof TraversalFlatMapStep || current instanceof LocalStep) {
+                if (endsWithInElement(((TraversalParent) current).getLocalChildren().get(0)))
+                    return true;
+            } else if (current instanceof TraversalParent) {
+                if (((TraversalParent) current).getGlobalChildren().stream().filter(SparkSingleIterationStrategy::endsWithInElement).findAny().isPresent())
+                    return true;
+            }
+            if (!(current instanceof FilterStep ||
+                    current instanceof SideEffectStep ||
+                    current instanceof SelectStep ||
+                    current instanceof SelectOneStep ||
+                    current instanceof Barrier)) {
+                return false;
+            }
+            current = current.getPreviousStep();
+        }
+        return false;
+    }
+
     public static SparkSingleIterationStrategy instance() {
         return INSTANCE;
     }
+
 
 }
