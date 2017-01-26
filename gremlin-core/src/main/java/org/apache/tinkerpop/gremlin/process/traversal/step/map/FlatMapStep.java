@@ -64,16 +64,16 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> implements Au
     }
 
     private void closeIterator() {
-        if (this.iterator instanceof AutoCloseable) {
-            try {
+        try {
+            if (this.iterator instanceof AutoCloseable) {
                 ((AutoCloseable) this.iterator).close();
             }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            finally {
-                this.iterator = EmptyIterator.instance();
-            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            this.iterator = EmptyIterator.instance();
         }
     }
 }
