@@ -28,7 +28,9 @@ import java.util.Set;
 
 /**
  * Loads scripts from one or more files into the {@link GremlinScriptEngine} at startup. This {@link GremlinPlugin} is
- * not enabled for the {@code ServiceLoader}. It is designed to be instantiated manually.
+ * not enabled for the {@code ServiceLoader}. It is designed to be instantiated manually. Those implementing
+ * {@link GremlinScriptEngine} instances need to be concerned with accounting for this {@link Customizer}. It is
+ * handled automatically by the {@link DefaultGremlinScriptEngineManager}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

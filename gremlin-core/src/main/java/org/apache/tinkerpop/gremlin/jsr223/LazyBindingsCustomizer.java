@@ -19,21 +19,41 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 import javax.script.Bindings;
+import javax.script.ScriptContext;
 import java.util.function.Supplier;
 
 /**
+ * A customizer implementation that provides bindings to a {@link GremlinScriptEngine}. If this customizer is applied
+ * directly to a {@link GremlinScriptEngine} it will not apply {@code GLOBAL_SCOPE} bindings. Those can only be applied
+ * if the customizer is applied via the {@link GremlinScriptEngineManager} (which would do so through the
+ * {@link BindingsGremlinPlugin}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class LazyBindingsCustomizer implements BindingsCustomizer {
 
     private final Supplier<Bindings> bindingsSupplier;
+    private final int scope;
 
+    /**
+     * Creates a new object with {@code ScriptContext.ENGINE_SCOPE}.
+     */
     public LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier) {
+        this(bindingsSupplier, ScriptContext.ENGINE_SCOPE);
+    }
+
+    public LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier, final int scope) {
         this.bindingsSupplier = bindingsSupplier;
+        this.scope = scope;
     }
 
     @Override
     public Bindings getBindings() {
         return bindingsSupplier.get();
+    }
+
+    @Override
+    public int getScope() {
+        return scope;
     }
 }

@@ -19,22 +19,40 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 import javax.script.Bindings;
+import javax.script.ScriptContext;
 
 /**
- * Default implementation of the {@link BindingsCustomizer}.
+ * Default implementation of the {@link BindingsCustomizer}. If this customizer is applied directly to a
+ * {@link GremlinScriptEngine} it will not apply {@code GLOBAL_SCOPE} bindings. Those can only be applied if the
+ * customizer is applied via the {@link GremlinScriptEngineManager} (which would do so through the
+ * {@link BindingsGremlinPlugin}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DefaultBindingsCustomizer implements BindingsCustomizer {
 
     private final Bindings bindings;
+    private final int scope;
 
+    /**
+     * Creates a new object with {@code ScriptContext.ENGINE_SCOPE}.
+     */
     public DefaultBindingsCustomizer(final Bindings bindings) {
+        this(bindings, ScriptContext.ENGINE_SCOPE);
+    }
+
+    public DefaultBindingsCustomizer(final Bindings bindings, final int scope) {
         this.bindings = bindings;
+        this.scope = scope;
     }
 
     @Override
     public Bindings getBindings() {
         return bindings;
+    }
+
+    @Override
+    public int getScope() {
+        return scope;
     }
 }
