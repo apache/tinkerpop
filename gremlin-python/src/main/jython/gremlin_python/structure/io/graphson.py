@@ -74,9 +74,13 @@ class GraphSONWriter(object):
         """
         Encodes python objects in GraphSON type-tagged dict values
         """
-        for key, serializer in self.serializers.items():
-            if isinstance(obj, key):
-                return serializer.dictify(obj, self)
+        try:
+            return self.serializers[type(obj)].dictify(obj, self)
+        except KeyError:
+            for key, serializer in self.serializers.items():
+                if isinstance(obj, key):
+                    return serializer.dictify(obj, self)
+
         # list and map are treated as normal json objs (could be isolated serializers)
         if isinstance(obj, (list, set)):
             return [self.toDict(o) for o in obj]
