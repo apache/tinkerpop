@@ -293,11 +293,7 @@ class Int32IO(_NumberIO):
     def dictify(cls, n, writer):
         if isinstance(n, bool):
             return n
-        if isinstance(n, LongType):
-            graphson_base_type = Int64IO.graphson_base_type
-        else:
-            graphson_base_type = cls.graphson_base_type
-        return GraphSONUtil.typedValue(graphson_base_type, n)
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n)
 
 
 class VertexDeserializer(_GraphSONTypeIO):
