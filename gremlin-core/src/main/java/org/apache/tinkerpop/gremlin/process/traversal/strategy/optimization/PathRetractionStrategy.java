@@ -27,8 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -95,7 +99,10 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             // add the keep labels to the path processor
             if (currentStep instanceof PathProcessor) {
                 final PathProcessor pathProcessor = (PathProcessor) currentStep;
-                if (currentStep instanceof MatchStep && (currentStep.getNextStep().equals(EmptyStep.instance()) || currentStep.getNextStep() instanceof DedupGlobalStep)) {
+                if (currentStep instanceof MatchStep &&
+                        (currentStep.getNextStep().equals(EmptyStep.instance()) ||
+                            currentStep.getNextStep() instanceof DedupGlobalStep ||
+                            currentStep.getNextStep() instanceof SelectOneStep && currentStep.getNextStep().getNextStep() instanceof FilterStep)) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep).getMatchStartLabels());
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
                 } else {

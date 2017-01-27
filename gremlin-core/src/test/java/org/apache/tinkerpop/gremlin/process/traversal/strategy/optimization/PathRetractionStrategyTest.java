@@ -179,7 +179,7 @@ public class PathRetractionStrategyTest {
                         "[[[z, seen]], [[z, seen]]]", null},
                 {__.V().as("a").optional(bothE().dedup().as("b")).
                         choose(select("b"), select("a","b"), project("a").by(select("a"))),
-                        "[[[a, b]], [[a, b]], [[a, b]], [[[a, b]]], [[a, b]]]", null}
+                        "[[[a, b]], [[a, b]], [[a, b]], [[[a, b]]], [[a, b]]]", null},
         });
     }
 }
