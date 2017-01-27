@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -48,19 +49,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inci
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SingleIterationStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class MessagePassingReductionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final SingleIterationStrategy INSTANCE = new SingleIterationStrategy();
+    private static final MessagePassingReductionStrategy INSTANCE = new MessagePassingReductionStrategy();
 
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             IncidentToAdjacentStrategy.class,
@@ -68,7 +71,7 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
             FilterRankingStrategy.class,
             InlineFilterStrategy.class));
 
-    private SingleIterationStrategy() {
+    private MessagePassingReductionStrategy() {
     }
 
     @Override
@@ -79,31 +82,37 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
             final Traversal.Admin<?, ?> compiledComputerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
             if (!compiledComputerTraversal.isLocked())
                 compiledComputerTraversal.applyStrategies();
-            if (!TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(LocalStep.class, LambdaHolder.class), compiledComputerTraversal) &&
+            if (!TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(LocalStep.class, LambdaHolder.class), compiledComputerTraversal) && // don't do anything with lambdas or locals as this leads to unknown adjacencies
                     !compiledComputerTraversal.getTraverserRequirements().contains(TraverserRequirement.PATH) &&            // when dynamic detachment is provided in 3.3.0, remove this (TODO)
                     !compiledComputerTraversal.getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH) &&    // when dynamic detachment is provided in 3.3.0, remove this (TODO)
                     !(TraversalHelper.getStepsOfAssignableClass(TraversalParent.class, compiledComputerTraversal).          // this is a strict precaution that could be loosed with deeper logic on barriers in global children
                             stream().
                             filter(parent -> !parent.getGlobalChildren().isEmpty()).findAny().isPresent())) {
-                final Traversal.Admin<?, ?> computerTraversal = step.computerTraversal.getPure();
+                final Traversal.Admin<?, ?> computerTraversal = step.computerTraversal.get().clone();
+                // apply the strategies up to this point
+                final List<TraversalStrategy<?>> strategies = step.getTraversal().getStrategies().toList();
+                final int indexOfStrategy = strategies.indexOf(MessagePassingReductionStrategy.instance());
+                if (indexOfStrategy > 0)
+                    TraversalHelper.applySingleLevelStrategies(step.getTraversal(), computerTraversal, strategies.get(indexOfStrategy - 1).getClass());
                 if (computerTraversal.getSteps().size() > 1 &&
                         !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&
                         TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStep.class, EdgeVertexStep.class), computerTraversal) &&
                         TraversalHelper.isLocalStarGraph(computerTraversal)) {
-                    final Traversal.Admin newChildTraversal = new DefaultGraphTraversal<>();
                     final Step barrier = (Step) TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, computerTraversal).orElse(null);
-                    if (SingleIterationStrategy.insertElementId(barrier)) // out().count() -> out().id().count()
+                    if (MessagePassingReductionStrategy.insertElementId(barrier)) // out().count() -> out().id().count()
                         TraversalHelper.insertBeforeStep(new IdStep(computerTraversal), barrier, computerTraversal);
-                    if (!(SingleIterationStrategy.endsWithElement(null == barrier ? computerTraversal.getEndStep() : barrier.getPreviousStep()))) {
+                    if (!(MessagePassingReductionStrategy.endsWithElement(null == barrier ? computerTraversal.getEndStep() : barrier))) {
+                        Traversal.Admin newChildTraversal = new DefaultGraphTraversal<>();
                         TraversalHelper.removeToTraversal(computerTraversal.getStartStep() instanceof GraphStep ?
                                 computerTraversal.getStartStep().getNextStep() :
                                 (Step) computerTraversal.getStartStep(), null == barrier ?
                                 EmptyStep.instance() :
                                 barrier, newChildTraversal);
+                        newChildTraversal = newChildTraversal.getSteps().size() > 1 ? (Traversal.Admin) __.local(newChildTraversal) : newChildTraversal;
                         if (null == barrier)
-                            TraversalHelper.insertTraversal(0, (Traversal.Admin) __.local(newChildTraversal), computerTraversal);
+                            TraversalHelper.insertTraversal(0, newChildTraversal, computerTraversal);
                         else
-                            TraversalHelper.insertTraversal(barrier.getPreviousStep(), (Traversal.Admin) __.local(newChildTraversal), computerTraversal);
+                            TraversalHelper.insertTraversal(barrier.getPreviousStep(), newChildTraversal, computerTraversal);
                     }
                 }
                 step.setComputerTraversal(computerTraversal);
@@ -127,13 +136,15 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
             return false;
     }
 
-    private static boolean endsWithElement(Step<?, ?> currentStep) {
+    public static final boolean endsWithElement(Step<?, ?> currentStep) {
         while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexStep || currentStep instanceof EdgeVertexStep) // TODO: add GraphStep but only if its mid-traversal V()/E()
+            if (currentStep instanceof VertexStep) // only inE, in, and out send messages
+                return (((VertexStep) currentStep).returnsVertex() || !((VertexStep) currentStep).getDirection().equals(Direction.OUT));
+            else if (currentStep instanceof EdgeVertexStep) // TODO: add GraphStep but only if its mid-traversal V()/E()
                 return true;
-            else if (currentStep instanceof TraversalFlatMapStep || currentStep instanceof TraversalMapStep)
+            else if (currentStep instanceof TraversalFlatMapStep || currentStep instanceof TraversalMapStep || currentStep instanceof LocalStep)
                 return endsWithElement(((TraversalParent) currentStep).getLocalChildren().get(0).getEndStep());
-            else if (!(currentStep instanceof FilterStep || currentStep instanceof SideEffectStep))
+            else if (!(currentStep instanceof FilterStep || currentStep instanceof SideEffectStep || currentStep instanceof IdentityStep || currentStep instanceof Barrier))
                 return false;
             currentStep = currentStep.getPreviousStep();
         }
@@ -145,7 +156,7 @@ public final class SingleIterationStrategy extends AbstractTraversalStrategy<Tra
         return PRIORS;
     }
 
-    public static SingleIterationStrategy instance() {
+    public static MessagePassingReductionStrategy instance() {
         return INSTANCE;
     }
 }

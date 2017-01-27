@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.SingleIterationStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -67,11 +67,11 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         /////////// WITHOUT SINGLE-ITERATION STRATEGY LESS SINGLE-PASS OPTIONS ARE AVAILABLE
 
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class, SingleIterationStrategy.class);
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class, MessagePassingReductionStrategy.class);
         assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
         assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
-        assertFalse(g.getStrategies().toList().contains(SingleIterationStrategy.instance()));
-        assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SingleIterationStrategy).findAny().isPresent());
+        assertFalse(g.getStrategies().toList().contains(MessagePassingReductionStrategy.instance()));
+        assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof MessagePassingReductionStrategy).findAny().isPresent());
         assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
         assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
 
@@ -95,11 +95,11 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         /////////// WITH SINGLE-ITERATION STRATEGY MORE SINGLE-PASS OPTIONS ARE AVAILABLE
 
         graph = GraphFactory.open(configuration);
-        g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class).withStrategies(SingleIterationStrategy.instance());
+        g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class).withStrategies(MessagePassingReductionStrategy.instance());
         assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
         assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
-        assertTrue(g.getStrategies().toList().contains(SingleIterationStrategy.instance()));
-        assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SingleIterationStrategy).findAny().isPresent());
+        assertTrue(g.getStrategies().toList().contains(MessagePassingReductionStrategy.instance()));
+        assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof MessagePassingReductionStrategy).findAny().isPresent());
         assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
         assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
 
@@ -114,6 +114,8 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(true, g.V().bothE().values("weight").limit(2));
         test(true, 6L, g.V().count());
         test(true, 6L, g.V().id().count());
+        test(true, 6L, g.V().identity().outE().identity().count());
+        test(true, 6L, g.V().identity().outE().has("weight").count());
         test(true, 6L, g.V().out().count());
         test(true, 6L, g.V().outE().inV().count());
         test(true, 6L, g.V().outE().inV().id().count());
@@ -167,6 +169,7 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(false, g.V().out().groupCount("x").cap("x"));
         test(false, 6L, g.V().both().groupCount("x").cap("x").select(keys).unfold().count());
         test(false, g.V().outE().inV().groupCount());
+        test(false, g.V().outE().unfold().inV().groupCount());
         test(false, g.V().outE().inV().groupCount().by("name"));
         test(false, g.V().outE().inV().tree());
         test(false, g.V().outE().inV().id().tree());

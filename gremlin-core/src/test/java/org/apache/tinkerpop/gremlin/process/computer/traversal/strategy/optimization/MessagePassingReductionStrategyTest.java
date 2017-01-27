@@ -52,7 +52,7 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
-public class SingleIterationStrategyTest {
+public class MessagePassingReductionStrategyTest {
 
     @Parameterized.Parameter(value = 0)
     public Traversal original;
@@ -70,7 +70,7 @@ public class SingleIterationStrategyTest {
         rootTraversal.addStep(parent.asStep());
         parent.setComputerTraversal(this.original.asAdmin());
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(SingleIterationStrategy.instance());
+        strategies.addStrategies(MessagePassingReductionStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {
             strategies.addStrategies(strategy);
         }
@@ -82,10 +82,15 @@ public class SingleIterationStrategyTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
-        final Function<Traverser<Vertex>,Vertex> mapFunction = t -> t.get().vertices(Direction.OUT).next();
+        final Function<Traverser<Vertex>, Vertex> mapFunction = t -> t.get().vertices(Direction.OUT).next();
         return Arrays.asList(new Object[][]{
-                {__.V().out().count(), __.V().local(out().id()).count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())}, // TODO
+                {__.V().out().count(), __.V().outE().count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())},
+                {__.V().in().count(), __.V().local(__.inE().id()).count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())},
                 {__.V().id(), __.V().id(), Collections.emptyList()},
+                {__.V().local(out()), __.V().local(out()), Collections.emptyList()},
+                {__.V().local(in()), __.V().local(in()), Collections.emptyList()},
+                {__.V().local(out()).count(), __.V().local(out()).count(), Collections.emptyList()},
+                {__.V().local(in()).count(), __.V().local(in()).count(), Collections.emptyList()},
                 {__.V().out().count(), __.V().local(out().id()).count(), Collections.emptyList()},
                 {__.V().out().label().count(), __.V().out().label().count(), Collections.emptyList()},
                 {__.V().in().id(), __.V().local(in().id()), Collections.emptyList()},
@@ -122,7 +127,9 @@ public class SingleIterationStrategyTest {
                 {__.V().bothE().dedup().count(), __.V().local(bothE().id()).dedup().count(), Collections.emptyList()},
                 {__.V().bothE().dedup().by("name").count(), __.V().bothE().dedup().by("name").count(), Collections.emptyList()},
                 {__.V().map(mapFunction).inV().count(), __.V().map(mapFunction).inV().count(), Collections.emptyList()},
-                {__.V().groupCount().by(__.out().count()),__.V().groupCount().by(__.out().count()),Collections.emptyList()}
+                {__.V().groupCount().by(__.out().count()), __.V().groupCount().by(__.out().count()), Collections.emptyList()},
+                {__.V().identity().out().identity().count(), __.V().local(__.identity().out().identity().id()).count(), Collections.emptyList()},
+                {__.V().identity().out().identity().dedup().count(), __.V().local(__.identity().out().identity().id()).dedup().count(), Collections.emptyList()},
         });
     }
 }
