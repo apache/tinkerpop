@@ -23,11 +23,14 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,10 +38,13 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.junit.Assert.assertEquals;
 
@@ -76,29 +82,29 @@ public class SingleIterationStrategyTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
-
+        final Function<Traverser<Vertex>,Vertex> mapFunction = t -> t.get().vertices(Direction.OUT).next();
         return Arrays.asList(new Object[][]{
-                {__.V().out().count(), __.V().outE().count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())},
+                {__.V().out().count(), __.V().local(out().id()).count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())}, // TODO
                 {__.V().id(), __.V().id(), Collections.emptyList()},
-                {__.V().out().count(), __.V().out().count(), Collections.emptyList()},
+                {__.V().out().count(), __.V().local(out().id()).count(), Collections.emptyList()},
                 {__.V().out().label().count(), __.V().out().label().count(), Collections.emptyList()},
                 {__.V().in().id(), __.V().local(in().id()), Collections.emptyList()},
-                {in().id(), in().id(), Collections.emptyList()}, // test inject
+                {in().id(), __.local(in().id()), Collections.emptyList()}, // test inject
                 {__.V().out().id(), __.V().local(out().id()), Collections.emptyList()},
                 {__.V().both().id(), __.V().local(__.both().id()), Collections.emptyList()},
-                {__.V().outE().inV().id().count(), __.V().local(__.outE().inV().id()).count(), Collections.emptyList()},
-                {__.V().map(__.outE().inV()).count(), __.V().map(__.outE().inV()).count(), Collections.emptyList()},
-                {__.V().out().map(__.outE().inV()).count(), __.V().out().map(__.outE().inV()).count(), Collections.emptyList()},
-                {__.V().outE().map(__.inV()).id().count(), __.V().outE().map(__.inV()).id().count(), Collections.emptyList()},
-                {__.V().outE().map(__.inV()).count(), __.V().outE().map(__.inV()).count(), Collections.emptyList()},
+                {__.V().outE().inV().id().count(), __.V().local(outE().inV().id()).count(), Collections.emptyList()},
+                {__.V().map(outE().inV()).count(), __.V().local(__.map(outE().inV()).id()).count(), Collections.emptyList()},
+                {__.V().out().map(outE().inV()).count(), __.V().out().map(outE().inV()).count(), Collections.emptyList()},
+                {__.V().outE().map(__.inV()).id().count(), __.V().local(__.outE().map(__.inV()).id()).count(), Collections.emptyList()},
+                {__.V().outE().map(__.inV()).count(), __.V().local(outE().map(__.inV()).id()).count(), Collections.emptyList()},
                 {__.V().outE().map(__.inV()).values("name").count(), __.V().outE().map(__.inV()).values("name").count(), Collections.emptyList()},
-                {__.V().outE().inV().count(), __.V().local(__.outE().inV()).count(), Collections.emptyList()},
+                {__.V().outE().inV().count(), __.V().local(outE().inV().id()).count(), Collections.emptyList()},
                 {__.V().out().id().count(), __.V().local(out().id()).count(), Collections.emptyList()},
                 {__.V().in().id().count(), __.V().local(in().id()).count(), Collections.emptyList()},
                 {__.V().in().id().select("id-map").dedup().count(), __.V().local(in().id().select("id-map")).dedup().count(), Collections.emptyList()},
                 {__.V().in().id().groupCount().select(keys).unfold().dedup().count(), __.V().local(in().id()).groupCount().select(keys).unfold().dedup().count(), Collections.emptyList()},
-                {__.V().outE().values("weight"), __.V().outE().values("weight"), Collections.emptyList()},
-                {__.V().outE().values("weight").sum(), __.V().outE().values("weight").sum(), Collections.emptyList()},
+                {__.V().outE().hasLabel("knows").values("weight"), __.V().local(outE().hasLabel("knows").values("weight")), Collections.emptyList()},
+                {__.V().outE().values("weight").sum(), __.V().local(outE().values("weight")).sum(), Collections.emptyList()},
                 {__.V().inE().values("weight"), __.V().local(inE().values("weight")), Collections.emptyList()},
                 {__.V().inE().values("weight").sum(), __.V().local(inE().values("weight")).sum(), Collections.emptyList()},
                 {__.V().inE().values("weight").sum().dedup().count(), __.V().local(inE().values("weight")).sum().dedup().count(), Collections.emptyList()},
@@ -110,7 +116,13 @@ public class SingleIterationStrategyTest {
                 {__.V().inE().id().groupCount(), __.V().local(inE().id()).groupCount(), Collections.emptyList()},
                 {__.V().inE().values("weight").groupCount(), __.V().local(inE().values("weight")).groupCount(), Collections.emptyList()},
                 {__.V().outE().inV().tree(), __.V().outE().inV().tree(), Collections.emptyList()},
-                {__.V().in().values("name").groupCount(), __.V().in().values("name").groupCount(), Collections.emptyList()}
+                {__.V().in().values("name").groupCount(), __.V().in().values("name").groupCount(), Collections.emptyList()},
+                {__.V().outE().inV().groupCount("x"), __.V().outE().inV().groupCount("x"), Collections.emptyList()},
+                {__.V().in().dedup().count(), __.V().local(in().id()).dedup().count(), Collections.emptyList()},
+                {__.V().bothE().dedup().count(), __.V().local(bothE().id()).dedup().count(), Collections.emptyList()},
+                {__.V().bothE().dedup().by("name").count(), __.V().bothE().dedup().by("name").count(), Collections.emptyList()},
+                {__.V().map(mapFunction).inV().count(), __.V().map(mapFunction).inV().count(), Collections.emptyList()},
+                {__.V().groupCount().by(__.out().count()),__.V().groupCount().by(__.out().count()),Collections.emptyList()}
         });
     }
 }

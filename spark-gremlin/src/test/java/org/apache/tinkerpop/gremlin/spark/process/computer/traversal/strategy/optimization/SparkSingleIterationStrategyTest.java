@@ -139,22 +139,23 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(true, g.V().outE().groupCount().by("weight"));
         test(true, g.V().inE().id().groupCount());
         test(true, g.V().inE().values("weight").groupCount());
+        test(true, 6L, g.V().outE().outV().count());
+        test(true, g.V().out().id().groupCount("x"));
+        test(true, g.V().inE().values("weight").groupCount("x"));
+        test(true, 6L, g.V().in().count());
+        test(true, 12L, g.V().both().count());
+        test(true, 6L, g.V().flatMap(__.in()).count());
+        test(true, 4L, g.V().map(__.in()).count());
+        test(true, 6L, g.V().inE().count());
+        test(true, 4L, g.V().outE().inV().dedup().count());
         /////
         test(false, 6L, g.V().as("a").outE().inV().as("b").id().dedup("a", "b").by(T.id).count());
         test(false, 6L, g.V().local(__.inE()).count());
-        test(false, 6L, g.V().outE().outV().count()); // todo: low probability traversal, but none the less could be optimized for
-        test(false, g.V().out().id().groupCount("x")); // todo: low probability traversal, but none the less could be optimized for
-        test(false, g.V().inE().values("weight").groupCount("x")); // todo: low probability traversal, but none the less could be optimized for
-        test(false, 6L, g.V().in().count());
-        test(false, 6L, g.V().flatMap(__.in()).count());
-        test(false, 4L, g.V().map(__.in()).count());
+        test(false, 4L, g.V().outE().inV().dedup().by("name").count());
         test(false, 6L, g.V().local(__.in()).count());
-        test(false, 6L, g.V().inE().count());
         test(false, g.V().outE().inV());
         test(false, g.V().both());
-        test(false, 12L, g.V().both().count());
         test(false, g.V().outE().inV().dedup());
-        test(false, 4L, g.V().outE().inV().dedup().count());
         test(false, 2L, g.V().out().out().count());
         test(false, 6L, g.V().as("a").map(__.both()).select("a").count());
         test(false, g.V().out().values("name"));
@@ -168,6 +169,7 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         test(false, g.V().outE().inV().groupCount());
         test(false, g.V().outE().inV().groupCount().by("name"));
         test(false, g.V().outE().inV().tree());
+        test(false, g.V().outE().inV().id().tree());
         test(false, g.V().inE().groupCount());
         test(false, g.V().inE().groupCount().by("weight"));
         test(false, g.V().in().values("name").groupCount());
