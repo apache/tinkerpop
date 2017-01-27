@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.o
 
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -48,9 +50,8 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
 
     private static final Set<Class> MULTI_ITERATION_CLASSES = new HashSet<>(Arrays.asList(
             EdgeVertexStep.class,
-            LambdaMapStep.class, // maybe?
-            LambdaFlatMapStep.class // maybe?
-            // VertexStep is special as you need to see if the return class is Edge or Vertex (logic below)
+            LambdaMapStep.class,
+            LambdaFlatMapStep.class
     ));
 
     private SparkSingleIterationStrategy() {
@@ -63,6 +64,7 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
             final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
             if (!computerTraversal.isLocked())
                 computerTraversal.applyStrategies();
+            ///
             boolean doesMessagePass = TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, MULTI_ITERATION_CLASSES, computerTraversal);
             if (!doesMessagePass) {
                 for (final VertexStep vertexStep : TraversalHelper.getStepsOfAssignableClassRecursively(Scope.global, VertexStep.class, computerTraversal)) {
@@ -72,11 +74,14 @@ public final class SparkSingleIterationStrategy extends AbstractTraversalStrateg
                     }
                 }
             }
-            if (!doesMessagePass) {
+            if (!doesMessagePass &&
+                    !MessagePassingReductionStrategy.endsWithElement(computerTraversal.getEndStep()) &&
+                    !(computerTraversal.getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH) || // TODO: remove this when dynamic detachment is available in 3.3.0
+                            computerTraversal.getTraverserRequirements().contains(TraverserRequirement.PATH))) {  // TODO: remove this when dynamic detachment is available in 3.3.0
                 step.setComputer(step.getComputer()
                         // if no message passing, don't partition the loaded graph
                         .configure(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, true)
-                                // if no message passing, don't cache the loaded graph
+                        // if no message passing, don't cache the loaded graph
                         .configure(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, true));
             }
         }

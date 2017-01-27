@@ -54,6 +54,11 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         return Collections.singletonList(this.computerTraversal.get());
     }
 
+    public void setComputerTraversal(final Traversal.Admin<?,?> computerTraversal) {
+        this.computerTraversal = new PureTraversal<>(computerTraversal);
+        this.integrateChild(this.computerTraversal.get());
+    }
+
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.computerTraversal.get(), new GraphFilter(this.computer));
