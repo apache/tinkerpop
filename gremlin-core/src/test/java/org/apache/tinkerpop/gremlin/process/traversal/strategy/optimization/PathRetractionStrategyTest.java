@@ -37,8 +37,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.project;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.store;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
@@ -109,8 +120,8 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").out().where(out().where(neq("a"))).out(), "[[[]]]", null},
                 {__.V().as("a").out().where(neq("a")).out().select("a"), "[[a], []]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), "[[a, b], [b], []]", null},
-                {__.V().match(__.as("a").out().as("b")), "[[a, b]]", null},
-                {__.V().match(__.as("a").out().as("b")).select("a"), "[[a], []]", null},
+                {__.V().match(as("a").out().as("b")), "[[a, b]]", null},
+                {__.V().match(as("a").out().as("b")).select("a"), "[[a], []]", null},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
