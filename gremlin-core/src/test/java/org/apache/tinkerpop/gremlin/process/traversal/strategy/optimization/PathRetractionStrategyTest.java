@@ -40,11 +40,16 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.project;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.store;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
@@ -115,8 +120,8 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").out().where(out().where(neq("a"))).out(), "[[[]]]", null},
                 {__.V().as("a").out().where(neq("a")).out().select("a"), "[[a], []]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), "[[a, b], [b], []]", null},
-                {__.V().match(__.as("a").out().as("b")), "[[a, b]]", null},
-                {__.V().match(__.as("a").out().as("b")).select("a"), "[[a], []]", null},
+                {__.V().match(as("a").out().as("b")), "[[a, b]]", null},
+                {__.V().match(as("a").out().as("b")).select("a"), "[[a], []]", null},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
@@ -153,7 +158,7 @@ public class PathRetractionStrategyTest {
                         as("c").out().as("d", "e").select("c", "e").out().select("c"),
                         as("c").out().as("d", "e").select("c", "e").out().select("c")).
                         out().select("c"),
-                        "[[b, c, e], [c, e], [[c], [c]], [[c], [c]], []]", null},
+                        "[[b, c, e], [c, e], [[c, e], [c, e]], [[c, e], [c, e]], []]", null},
                 {__.V().as("a").out().as("b").select("a").select("b").
                         local(as("c").out().as("d", "e").select("c", "e").out().select("c")).
                         out().select("c"),
@@ -180,7 +185,12 @@ public class PathRetractionStrategyTest {
                 {__.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(select("b")).select("a"), "[[[a]], []]", null},
                 {__.order().by("weight", Order.decr).store("w").by("weight").filter(values("weight").as("cw").
                         select("w").by(limit(Scope.local, 1)).as("mw").where("cw", eq("mw"))).project("from", "to", "weight").by(__.outV()).by(__.inV()).by("weight"),
-                        "[[[cw, mw], []]]", null}
+                        "[[[cw, mw], []]]", null},
+                {__.V().limit(1).as("z").out().repeat(store("seen").out().where(without("seen"))).until(where(eq("z"))),
+                        "[[[z, seen]], [[z, seen]]]", null},
+                {__.V().as("a").optional(bothE().dedup().as("b")).
+                        choose(select("b"), select("a","b"), project("a").by(select("a"))),
+                        "[[[a, b]], [[a, b]], [[a, b]], [[[a, b]]], [[a, b]]]", null},
         });
     }
 }

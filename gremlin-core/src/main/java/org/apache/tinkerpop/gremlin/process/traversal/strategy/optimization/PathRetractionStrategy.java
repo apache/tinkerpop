@@ -24,10 +24,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -93,11 +96,18 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             // add the keep labels to the path processor
             if (currentStep instanceof PathProcessor) {
                 final PathProcessor pathProcessor = (PathProcessor) currentStep;
-                if (currentStep instanceof MatchStep && (currentStep.getNextStep().equals(EmptyStep.instance()) || currentStep.getNextStep() instanceof DedupGlobalStep)) {
+                if (currentStep instanceof MatchStep &&
+                        (currentStep.getNextStep().equals(EmptyStep.instance()) ||
+                            currentStep.getNextStep() instanceof DedupGlobalStep ||
+                            currentStep.getNextStep() instanceof SelectOneStep && currentStep.getNextStep().getNextStep() instanceof FilterStep)) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep).getMatchStartLabels());
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
-                } else
-                    pathProcessor.setKeepLabels(new HashSet<>(keepLabels));
+                } else {
+                    if (pathProcessor.getKeepLabels() == null)
+                        pathProcessor.setKeepLabels(new HashSet<>(keepLabels));
+                    else
+                        pathProcessor.getKeepLabels().addAll(new HashSet<>(keepLabels));
+                }
 
                 if (currentStep.getTraversal().getParent() instanceof MatchStep) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchStartLabels());
@@ -111,6 +121,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                         !(currentStep.getNextStep() instanceof Barrier) &&
                         !(currentStep.getTraversal().getParent() instanceof MatchStep) &&
                         (!(currentStep.getNextStep() instanceof EmptyStep) || TraversalHelper.isGlobalChild(currentStep.getTraversal())))
+
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, this.standardBarrierSize), currentStep, traversal);
             }
         }
@@ -121,7 +132,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         Step<?, ?> parent = traversal.getParent().asStep();
         final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
         while (!parent.equals(EmptyStep.instance())) {
-            Set<String> parentKeepLabels = new HashSet<>(PathUtil.getReferencedLabels(parent));
+            final Set<String> parentKeepLabels = new HashSet<>(PathUtil.getReferencedLabels(parent));
             parentKeepLabels.addAll(PathUtil.getReferencedLabelsAfterStep(parent));
             parentKeeperPairs.add(new Pair<>(parent, parentKeepLabels));
             parent = parent.getTraversal().getParent().asStep();
@@ -141,16 +152,29 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                 hasRepeat = true;
             }
 
+            // if parent step is a TraversalParent itself and it has more than 1 child traversal
+            // propagate labels to children
+            if (step instanceof TraversalParent) {
+                final List<Traversal.Admin<Object, Object>> children = new ArrayList<>();
+                children.addAll(((TraversalParent) step).getGlobalChildren());
+                children.addAll(((TraversalParent) step).getLocalChildren());
+                // if this is the only child traversal, do not re-push labels
+                if (children.size() > 1)
+                    applyToChildren(keepLabels, children);
+            }
+
             // propagate requirements of keep labels back through the traversal's previous steps
             // to ensure that the label is not dropped before it reaches the step(s) that require it
             step = step.getPreviousStep();
             while (!(step.equals(EmptyStep.instance()))) {
                 if (step instanceof PathProcessor) {
-                    if (((PathProcessor) step).getKeepLabels() == null) {
-                        ((PathProcessor) step).setKeepLabels(new HashSet<>(keepLabels));
-                    } else {
-                        ((PathProcessor) step).getKeepLabels().addAll(new HashSet<>(keepLabels));
-                    }
+                    addLabels((PathProcessor) step, keepLabels);
+                }
+                if (step instanceof TraversalParent) {
+                    final List<Traversal.Admin<Object, Object>> children = new ArrayList<>();
+                    children.addAll(((TraversalParent) step).getGlobalChildren());
+                    children.addAll(((TraversalParent) step).getLocalChildren());
+                    applyToChildren(keepLabels, children);
                 }
                 step = step.getPreviousStep();
             }
@@ -187,6 +211,28 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                     ((PathProcessor) currentStep).getKeepLabels().addAll(keepLabels);
                 }
             }
+        }
+    }
+
+    private void applyToChildren(final Set<String> keepLabels, final List<Traversal.Admin<Object, Object>> children) {
+        for (final Traversal.Admin<Object, Object> child : children) {
+            TraversalHelper.applyTraversalRecursively(trav -> addLabels(trav, keepLabels), child);
+        }
+    }
+
+    private void addLabels(final Traversal.Admin traversal, final Set<String> keepLabels) {
+        for (final Object s : traversal.getSteps()) {
+            if (s instanceof PathProcessor) {
+                addLabels((PathProcessor) s, keepLabels);
+            }
+        }
+    }
+
+    private void addLabels(final PathProcessor s, final Set<String> keepLabels) {
+        if (s.getKeepLabels() == null) {
+            s.setKeepLabels(new HashSet<>(keepLabels));
+        } else {
+            s.getKeepLabels().addAll(new HashSet<>(keepLabels));
         }
     }
 
