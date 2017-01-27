@@ -141,6 +141,15 @@ removed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1562[TINKERPOP-1562]
 
+
+SSL Client Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added new server configuration option `ssl.needClientAuth`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1602[TINKERPOP-1602]
+
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
