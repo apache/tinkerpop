@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCloseable {
+public class PropertiesStep<E> extends FlatMapStep<Element, E> {
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
@@ -76,10 +76,5 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCl
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
-    }
-
-    @Override
-    public void close() {
-        closeIterator();
     }
 }

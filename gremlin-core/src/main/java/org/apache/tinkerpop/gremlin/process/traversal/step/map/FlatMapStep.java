@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Iterator;
@@ -29,10 +28,10 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
+public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> implements AutoCloseable {
 
     private Traverser.Admin<S> head = null;
-    protected Iterator<E> iterator = EmptyIterator.instance();
+    private Iterator<E> iterator = EmptyIterator.instance();
 
     public FlatMapStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -57,10 +56,24 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     public void reset() {
         super.reset();
         closeIterator();
-        this.iterator = EmptyIterator.instance();
     }
 
-    protected void closeIterator() {
-        CloseableIterator.closeIterator(this.iterator);
+    @Override
+    public void close() {
+        closeIterator();
+    }
+
+    private void closeIterator() {
+        try {
+            if (this.iterator instanceof AutoCloseable) {
+                ((AutoCloseable) this.iterator).close();
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            this.iterator = EmptyIterator.instance();
+        }
     }
 }

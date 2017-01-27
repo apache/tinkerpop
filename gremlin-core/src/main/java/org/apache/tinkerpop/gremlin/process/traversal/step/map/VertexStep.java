@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> {
 
     private final String[] edgeLabels;
     private Direction direction;
@@ -96,10 +96,5 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
-    }
-
-    @Override
-    public void close() {
-        closeIterator();
     }
 }
