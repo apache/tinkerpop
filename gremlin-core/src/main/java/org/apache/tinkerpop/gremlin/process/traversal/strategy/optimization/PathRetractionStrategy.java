@@ -132,7 +132,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         Step<?, ?> parent = traversal.getParent().asStep();
         final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
         while (!parent.equals(EmptyStep.instance())) {
-            Set<String> parentKeepLabels = new HashSet<>(PathUtil.getReferencedLabels(parent));
+            final Set<String> parentKeepLabels = new HashSet<>(PathUtil.getReferencedLabels(parent));
             parentKeepLabels.addAll(PathUtil.getReferencedLabelsAfterStep(parent));
             parentKeeperPairs.add(new Pair<>(parent, parentKeepLabels));
             parent = parent.getTraversal().getParent().asStep();
@@ -214,21 +214,21 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         }
     }
 
-    private void applyToChildren(Set<String> keepLabels, List<Traversal.Admin<Object, Object>> children) {
-        for (Traversal.Admin<Object, Object> child : children) {
+    private void applyToChildren(final Set<String> keepLabels, final List<Traversal.Admin<Object, Object>> children) {
+        for (final Traversal.Admin<Object, Object> child : children) {
             TraversalHelper.applyTraversalRecursively(trav -> addLabels(trav, keepLabels), child);
         }
     }
 
     private void addLabels(final Traversal.Admin traversal, final Set<String> keepLabels) {
-        for (Object s : traversal.getSteps()) {
+        for (final Object s : traversal.getSteps()) {
             if (s instanceof PathProcessor) {
                 addLabels((PathProcessor) s, keepLabels);
             }
         }
     }
 
-    private void addLabels(PathProcessor s, Set<String> keepLabels) {
+    private void addLabels(final PathProcessor s, final Set<String> keepLabels) {
         if (s.getKeepLabels() == null) {
             s.setKeepLabels(new HashSet<>(keepLabels));
         } else {
