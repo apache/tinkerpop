@@ -16,58 +16,53 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-
-
-__author__ = 'David M. Brown (davebshow@gmail.com)'
-
-
 import sys
 from threading import Thread
 
 import pytest
-
 from six.moves import queue
-from tornado import ioloop
 
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.structure.graph import Graph
 
-
-skip = False
-try:
-    connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-    connection.close()
-except:
-    skip = True
+__author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
-@pytest.mark.skipif(skip, reason='Gremlin Server is not running')
-class TestDriverRemoteConnectionThreaded:
+def test_conns_in_threads(remote_connection):
+    q = queue.Queue()
+    child = Thread(target=_executor, args=(q, None))
+    child2 = Thread(target=_executor, args=(q, None))
+    child.start()
+    child2.start()
+    for x in range(2):
+        success = q.get()
+        assert success == 'success!'
+    child.join()
+    child2.join()
 
-    def test_threaded_client(self):
-        q = queue.Queue()
-        # Here if we give each thread its own loop there is no problem.
-        loop1 = ioloop.IOLoop()
-        loop2 = ioloop.IOLoop()
-        child = Thread(target=self._executor, args=(q, loop1))
-        child2 = Thread(target=self._executor, args=(q, loop2))
-        child.start()
-        child2.start()
-        for x in range(2):
-            success = q.get()
-            assert success == 'success!'
-        child.join()
-        child2.join()
+def test_conn_in_threads(remote_connection):
+    q = queue.Queue()
+    child = Thread(target=_executor, args=(q, remote_connection))
+    child2 = Thread(target=_executor, args=(q, remote_connection))
+    child.start()
+    child2.start()
+    for x in range(2):
+        success = q.get()
+        assert success == 'success!'
+    child.join()
+    child2.join()
 
-    def _executor(self, q, loop):
-        try:
-            connection = DriverRemoteConnection(
-                'ws://localhost:45940/gremlin', 'g', loop=loop)
-            g = Graph().traversal().withRemote(connection)
-            assert len(g.V().toList()) == 6
-        except:
-            q.put(sys.exc_info()[0])
-        else:
-            q.put('success!')
-            connection.close()
+def _executor(q, conn):
+    if not conn:
+        conn = DriverRemoteConnection(
+            'ws://localhost:45940/gremlin', 'g', pool_size=4)
+    try:
+        g = Graph().traversal().withRemote(conn)
+        future = g.V().promise()
+        t = future.result()
+        assert len(t.toList()) == 6
+    except:
+        q.put(sys.exc_info()[0])
+    else:
+        q.put('success!')
