@@ -76,6 +76,10 @@ class ManagedConcurrentValueMap<K, V> {
         internalMap.put(key, ref);
     }
 
+    public void remove(final K key) {
+        internalMap.remove(key);
+    }
+
     /**
      * Clear the map.
      */
