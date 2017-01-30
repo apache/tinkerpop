@@ -100,14 +100,6 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     private List<GremlinPlugin> plugins = new ArrayList<>();
 
     /**
-     * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
-     * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
-     *
-     * @deprecated As of release 3.2.4, replaced by {@link #plugins}.
-     */
-    private List<GremlinModule> modules = new ArrayList<>();
-
-    /**
      * The effect of calling this constructor is the same as calling
      * {@code DefaultGremlinScriptEngineManager(Thread.currentThread().getContextClassLoader())}.
      */
@@ -133,24 +125,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             return Stream.of(customizers.orElse(new Customizer[0]));
         }).collect(Collectors.toList());
 
-        // modules are deprecated in favor of GremlinPlugin - this line will eventually be removed
-        pluginCustomizers.addAll(modules.stream().flatMap(plugin -> {
-            final Optional<Customizer[]> customizers = plugin.getCustomizers(scriptEngineName);
-            return Stream.of(customizers.orElse(new Customizer[0]));
-        }).collect(Collectors.toList()));
-
-
         return pluginCustomizers;
-    }
-
-    /**
-     * @deprecated As of release 3.2.4, replaced by {@link #addPlugin(GremlinPlugin)}.
-     */
-    @Override
-    @Deprecated
-    public void addModule(final GremlinModule module) {
-        // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
-        if (module != null) modules.add(module);
     }
 
     @Override

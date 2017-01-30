@@ -21,10 +21,10 @@ package org.apache.tinkerpop.gremlin.console.commands
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.PluggedIn
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
 import org.apache.tinkerpop.gremlin.groovy.util.Artifact
 import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
@@ -64,17 +64,9 @@ class InstallCommand extends CommandSupport {
 
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
-        def pluginClass = mediator.useV3d3 ? org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin : GremlinPlugin
-        ServiceLoader.load(pluginClass, shell.getInterp().getClassLoader()).forEach { plugin ->
+        ServiceLoader.load(GremlinPlugin, shell.getInterp().getClassLoader()).forEach { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
-
-                if (Mediator.useV3d3) {
-                    mediator.availablePlugins.put(plugin.class.name, new PluggedIn(new PluggedIn.GremlinPluginAdapter((org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin) plugin, shell, io), shell, io, false))
-                } else {
-                    mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, shell, io, false))
-                }
-
-                //mediator.availablePlugins.put(plugin.class.name, new PluggedIn(plugin, shell, io, false))
+                mediator.availablePlugins.put(plugin.class.name, new PluggedIn(new PluggedIn.GremlinPluginAdapter((GremlinPlugin) plugin, shell, io), shell, io, false))
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart << plugin.name
             }
