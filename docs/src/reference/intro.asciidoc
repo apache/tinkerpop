@@ -250,7 +250,7 @@ called a step and each step modulates the results of the previous step in one of
 
  . `map`: transform the incoming traverser's object to another object (S &rarr; E).
  . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E*).
- . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; S &cup; &empty;).
+ . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; E &sube; S).
  . `sideEffect`: allow the traverser to proceed unchanged, but yield some computational sideEffect in the process (S &rarrlp; S).
  . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rarr; { S~1~ &rarr; E*, ..., S~n~ &rarr; E* } &rarr; E*).
 

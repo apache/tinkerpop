@@ -64,11 +64,11 @@ There are five general steps, each having a traversal and a lambda representatio
 [width="100%",cols="10,12",options="header"]
 |=========================================================
 | Step| Description
-| `map(Traversal<S, E>)` <br> `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
-| `flatMap(Traversal<S, E>)` <br> `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
-| `filter(Traversal<?, ?>)` <br> `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
-| `sideEffect(Traversal<S, S>)` <br> `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Traversal<S, M>)` <br> `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
+| `map(Traversal<S, E>)`  `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
+| `flatMap(Traversal<S, E>)`  `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
+| `filter(Traversal<?, ?>)`  `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
+| `sideEffect(Traversal<S, S>)`  `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
+| `branch(Traversal<S, M>)`  `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
 |=========================================================
 
 WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
