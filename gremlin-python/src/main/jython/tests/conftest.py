@@ -38,7 +38,7 @@ def connection(request):
     try:
         conn = Connection('ws://localhost:45940/gremlin', 'g', protocol,
                           lambda: TornadoTransport(), executor, pool)
-    except:
+    except OSError:
         executor.shutdown()
         pytest.skip('Gremlin Server is not running')
     else:
@@ -52,7 +52,7 @@ def connection(request):
 def client(request):
     try:
         client = Client('ws://localhost:45940/gremlin', 'g')
-    except:
+    except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
         def fin():
@@ -64,7 +64,7 @@ def client(request):
 def remote_connection(request):
     try:
         remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-    except:
+    except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
         def fin():
