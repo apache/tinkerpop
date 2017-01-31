@@ -41,7 +41,6 @@ def test_client(client):
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
-    client.close()
 
 def test_iterate_result_set(client):
     g = Graph().traversal()
@@ -52,7 +51,6 @@ def test_iterate_result_set(client):
     for result in result_set:
         results += result
     assert len(results) == 6
-    client.close()
 
 def test_client_async(client):
     g = Graph().traversal()
@@ -62,7 +60,6 @@ def test_client_async(client):
     assert not future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
-    client.close()
 
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
@@ -80,7 +77,6 @@ def test_connection_share(client):
     assert future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
-    client.close()
 
 def test_multi_conn_pool(client):
     g = Graph().traversal()
@@ -95,4 +91,3 @@ def test_multi_conn_pool(client):
     # with connection pool `future` may or may not be done here
     result_set = future.result()
     assert len(result_set.all().result()) == 6
-    client.close()
