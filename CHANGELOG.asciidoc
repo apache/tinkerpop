@@ -27,7 +27,6 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug where `PathProcessor.keepLabels` were not being pushed down into child traversals by `PathRetractionStrategy`.
-* Added `SingleIterationStrategy` as a default `GraphComputer` strategy that can re-write some traversals to not require message passing.
 * Added default `MessagePassingReductionStrategy` for `GraphComputer` that can reduce the number of message passing iterations.
 * Fixed a bug associated with user-provided maps and `GroupSideEffectStep`.
 * `GroupBiOperator` no longer maintains a detached traversal and thus, no more side-effect related OLAP inconsistencies.
