@@ -54,7 +54,10 @@ def test_conn_in_threads(remote_connection):
     child2.join()
 
 def _executor(q, conn):
+    close = False
     if not conn:
+        # This isn't a fixture so close manually
+        close = True
         conn = DriverRemoteConnection(
             'ws://localhost:45940/gremlin', 'g', pool_size=4)
     try:
@@ -66,3 +69,6 @@ def _executor(q, conn):
         q.put(sys.exc_info()[0])
     else:
         q.put('success!')
+        # Close conn
+        if close:
+            conn.close()
