@@ -95,7 +95,6 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
                 data = self._transport.read()
                 self.data_received(data, results_dict)
             else:
-                # result_set.done.set_result(None)
                 del results_dict[request_id]
         else:
             del results_dict[request_id]

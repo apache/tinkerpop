@@ -31,14 +31,15 @@ from gremlin_python.driver.tornado.transport import TornadoTransport
 
 @pytest.fixture
 def connection(request):
+    protocol = GremlinServerWSProtocol(
+        username='stephen', password='password')
+    executor = concurrent.futures.ThreadPoolExecutor(5)
+    pool = queue.Queue()
     try:
-        protocol = GremlinServerWSProtocol(
-            username='stephen', password='password')
-        executor = concurrent.futures.ThreadPoolExecutor(5)
-        pool = queue.Queue()
         conn = Connection('ws://localhost:45940/gremlin', 'g', protocol,
                           lambda: TornadoTransport(), executor, pool)
     except:
+        executor.shutdown()
         pytest.skip('Gremlin Server is not running')
     else:
         def fin():
