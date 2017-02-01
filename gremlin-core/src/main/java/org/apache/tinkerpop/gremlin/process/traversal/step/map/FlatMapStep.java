@@ -44,8 +44,8 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
             if (this.iterator.hasNext()) {
                 return this.head.split(this.iterator.next(), this);
             } else {
-                this.head = this.starts.next();
                 closeIterator();
+                this.head = this.starts.next();
                 this.iterator = this.flatMap(this.head);
             }
         }

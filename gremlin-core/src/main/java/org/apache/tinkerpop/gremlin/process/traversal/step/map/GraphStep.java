@@ -169,10 +169,8 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
      * be released at some point.
      */
     @Override
-    public void close() throws Exception {
-        if (iterator instanceof CloseableIterator) {
-            ((CloseableIterator) iterator).close();
-        }
+    public void close() {
+        CloseableIterator.closeIterator(iterator);
     }
 
     /**
