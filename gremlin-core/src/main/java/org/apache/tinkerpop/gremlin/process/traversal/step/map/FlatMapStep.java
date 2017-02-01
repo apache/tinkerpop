@@ -28,7 +28,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
+public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> implements AutoCloseable {
 
     private Traverser.Admin<S> head = null;
     private Iterator<E> iterator = EmptyIterator.instance();
@@ -44,6 +44,7 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
                 return this.head.split(this.iterator.next(), this);
             } else {
                 this.head = this.starts.next();
+                closeIterator();
                 this.iterator = this.flatMap(this.head);
             }
         }
@@ -54,6 +55,25 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     @Override
     public void reset() {
         super.reset();
-        this.iterator = EmptyIterator.instance();
+        closeIterator();
+    }
+
+    @Override
+    public void close() {
+        closeIterator();
+    }
+
+    private void closeIterator() {
+        try {
+            if (this.iterator instanceof AutoCloseable) {
+                ((AutoCloseable) this.iterator).close();
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            this.iterator = EmptyIterator.instance();
+        }
     }
 }
