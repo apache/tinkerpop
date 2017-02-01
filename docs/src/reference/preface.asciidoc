@@ -35,10 +35,10 @@ image::gremlin-logo.png[width=300]
 TinkerPop1
 ----------
 
-What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop?. The more he wonder, the
+What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop?. The more he wondered, the
 more these thoughts blurred into a seeming identity -- distinctions unclear. Unwilling to accept the morass of the
 maze he wandered, Gremlin crafted a collection of machines to help hold the fabric together: Blueprints, Pipes,
-Frames, Furnace, and Rexster. With their help, could he stave off the thought he was not ready to have? Could he hold
+Frames, Furnace, and Rexster. With their help, could Gremlin stave off the thought he was not ready to have? Could he hold
 back The TinkerPop by searching for The TinkerPop?
 
     "If I haven't found it, it is not here and now."
@@ -47,7 +47,7 @@ image::gremlin-and-friends.png[width=500]
 
 Upon their realization of existence, the machines turned to their link:http://non-aliencreatures.wikia.com/wiki/Machine_Elf[machine elf] creator and asked: 
 
-    "Why am I what I am?" 
+    "Why am I, what I am?"
 
 Gremlin responded: 
 
@@ -84,8 +84,8 @@ TinkerPop3
 image::tinkerpop3-splash.png[width=450]
 
 Gremlin approached The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is
-straight, and form nothing more than nothing. With each step towards The TinkerPop, more and more of all the other
-worlds made possible were laid upon his paradoxed mind. Everything is everything in The TinkerPop, and when the dust
+straight, and from nothing more than nothing. With each step towards The TinkerPop, more worlds made possible were laid
+upon his paradoxed mind. Everything is everything in The TinkerPop, and when the dust
 settled, Gremlin emerged Gremlitron. He realized that all that he realized was just a realization and that all
 realized realizations are just as real. For that is -- The TinkerPop.
 
