@@ -28,8 +28,11 @@
 
 TMP_DIR="/tmp/tpdv"
 
+# Required. Only the latest version on each release stream is available on dist.
 VERSION=${1}
+# Optional. Provide the zip file URL.
 URL=${2}
+# Optional. Specifiy CONSOLE, SERVER, or SOURCE for additional validation.
 TYPE=${3}
 
 if [ -z ${VERSION} ]; then
@@ -93,6 +96,7 @@ echo -n "  * PGP signature ... "
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Jason Plurad (CODE SIGNING KEY) <pluradj@apache.org>"'` -eq 1 ] || \
 { echo "failed"; exit 1; }
 echo "OK"
 
@@ -169,9 +173,13 @@ echo "OK"
 if [ "${TYPE}" = "CONSOLE" ]; then
   echo -n "* testing script evaluation ... "
   SCRIPT="x = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal().V().count().next(); println x; x"
-  SCRIPT_FILENAME="${TMP_DIR}/test.groovy"
-  echo ${SCRIPT} > ${SCRIPT_FILENAME}
+  SCRIPT_FILENAME="test.groovy"
+  SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
+  echo ${SCRIPT} > ${SCRIPT_PATH}
   [[ `bin/gremlin.sh <<< ${SCRIPT} | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
-  [[ `bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
+  [[ `bin/gremlin.sh -e ${SCRIPT_PATH}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
+  CONSOLE_DIR=`pwd`
+  cd ${TMP_DIR}
+  [[ `${CONSOLE_DIR}/bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option (using a different working directory and a relative script path)"; exit 1; }
   echo "OK"
 fi

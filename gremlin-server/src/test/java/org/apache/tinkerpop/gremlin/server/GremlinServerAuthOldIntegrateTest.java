@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.ietf.jgss.GSSException;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -181,8 +183,8 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         final Client client = cluster.connect();
 
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
         } finally {
             cluster.close();
@@ -211,12 +213,11 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         final Client client = cluster.connect(name.getMethodName());
 
         try {
-            Map vertex = (Map) client.submit("v=graph.addVertex(\"name\", \"stephen\")").all().get().get(0).getObject();
-            Map<String, List<Map>> properties = (Map) vertex.get("properties");
-            assertEquals("stephen", properties.get("name").get(0).get("value"));
-            
-            final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
-            assertEquals("stephen", vpName.get("value"));
+            final Vertex vertex = (Vertex) client.submit("v=graph.addVertex(\"name\", \"stephen\")").all().get().get(0).getObject();
+            assertEquals("stephen", vertex.value("name"));
+
+            final Property vpName = (Property)client.submit("v.property('name')").all().get().get(0).getObject();
+            assertEquals("stephen", vpName.value());
         } finally {
             cluster.close();
         }
@@ -229,10 +230,10 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         final Client client = cluster.connect(name.getMethodName());
 
         try {
-            Map vertex = (Map) client.submit("v=graph.addVertex('name', 'stephen')").all().get().get(0).getObject();
-            Map<String, List<Map>> properties = (Map) vertex.get("properties");
+            final Map vertex = (Map) client.submit("v=graph.addVertex('name', 'stephen')").all().get().get(0).getObject();
+            final Map<String, List<Map>> properties = (Map) vertex.get("properties");
             assertEquals("stephen", properties.get("name").get(0).get("value"));
-            
+
             final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.get("value"));
         } finally {

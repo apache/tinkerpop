@@ -25,7 +25,8 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
  */
 public enum GraphSONVersion {
     V1_0(GraphSONModule.GraphSONModuleV1d0.build(), "1.0"),
-    V2_0(GraphSONModule.GraphSONModuleV2d0.build(), "2.0");
+    V2_0(GraphSONModule.GraphSONModuleV2d0.build(), "2.0"),
+    V3_0(GraphSONModule.GraphSONModuleV3d0.build(), "3.0");
 
     private final GraphSONModule.GraphSONModuleBuilder builder;
     private final String versionNumber;

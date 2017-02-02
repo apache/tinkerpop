@@ -83,6 +83,9 @@ public class IoVertexTest extends AbstractGremlinTest {
                 {"graphson-v2-embedded", true, false,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                {"graphson-v3", true, false,
+                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().create()).create()},
                 {"gryo", true, true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.gryo()).reader().create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.gryo()).writer().create()}

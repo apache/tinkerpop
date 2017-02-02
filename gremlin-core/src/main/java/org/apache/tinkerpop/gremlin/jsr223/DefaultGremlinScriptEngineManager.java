@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -440,7 +441,40 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
     private GremlinScriptEngine createGremlinScriptEngine(final GremlinScriptEngineFactory spi) {
         final GremlinScriptEngine engine = spi.getScriptEngine();
+
+        // merge in bindings that are marked with global scope. these get applied to all GremlinScriptEngine instances
+        getCustomizers(spi.getEngineName()).stream()
+                .filter(p -> p instanceof BindingsCustomizer)
+                .map(p -> ((BindingsCustomizer) p))
+                .filter(bc -> bc.getScope() == ScriptContext.GLOBAL_SCOPE)
+                .forEach(bc -> globalScope.putAll(bc.getBindings()));
         engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
+
+        // merge in bindings that are marked with engine scope. these get applied to only those GremlinScriptEngine
+        // instances that are of this gremlin language
+        getCustomizers(spi.getEngineName()).stream()
+                .filter(p -> p instanceof BindingsCustomizer)
+                .map(p -> ((BindingsCustomizer) p))
+                .filter(bc -> bc.getScope() == ScriptContext.ENGINE_SCOPE)
+                .forEach(bc -> engine.setBindings(bc.getBindings(), ScriptContext.ENGINE_SCOPE));
+
+        final List<ScriptCustomizer> scriptCustomizers = getCustomizers(spi.getEngineName()).stream()
+                .filter(p -> p instanceof ScriptCustomizer)
+                .map(p -> ((ScriptCustomizer) p))
+                .collect(Collectors.toList());
+
+        // since the bindings aren't added until after the ScriptEngine is constructed, running init scripts that
+        // require bindings creates a problem. as a result, init scripts are applied here
+        scriptCustomizers.stream().flatMap(sc -> sc.getScripts().stream()).
+                map(l -> String.join(System.lineSeparator(), l)).forEach(initScript -> {
+            try {
+                final Object initializedBindings = engine.eval(initScript);
+                if (initializedBindings != null && initializedBindings instanceof Map)
+                    ((Map<String,Object>) initializedBindings).forEach((k,v) -> put(k,v));
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
         return engine;
     }
 }

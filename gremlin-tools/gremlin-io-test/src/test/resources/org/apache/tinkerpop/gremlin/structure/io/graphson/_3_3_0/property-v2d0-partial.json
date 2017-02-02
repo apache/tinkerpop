@@ -5,24 +5,6 @@
     "value" : {
       "@type" : "g:Int32",
       "@value" : 2009
-    },
-    "element" : {
-      "@type" : "g:Edge",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 13
-        },
-        "label" : "develops",
-        "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 1
-        },
-        "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
-        }
-      }
     }
   }
 }

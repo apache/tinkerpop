@@ -29,6 +29,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added more specific typing to various `__` traversal steps. E.g. `<A,Vertex>out()` is `<Vertex,Vertex>out()`.
 * Updated Docker build scripts to include Python dependencies (NOTE: users should remove any previously generated TinkerPop Docker images).
 * Added "attachment requisite" `VertexProperty.element()` and `Property.element()` data in GraphSON serialization.
+* GraphSON 3.0 is now the default serialization format in TinkerGraph and Gremlin Server.
+* Established the GraphSON 3.0 format.
 * Added `Vertex`, `Edge`, `VertexProperty`, and `Property` serializers to Gremlin-Python and exposed tests that use graph object arguments.
 * `Bytecode.getSourceInstructions()` and `Bytecode.getStepInstructions()` now returns `List<Instruction>` instead of `Iterable<Instruction>`.
 * Added various `TraversalStrategy` registrations with `GryoMapper`.
@@ -74,9 +76,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug where `PathProcessor.keepLabels` were not being pushed down into child traversals by `PathRetractionStrategy`.
+* Added default `MessagePassingReductionStrategy` for `GraphComputer` that can reduce the number of message passing iterations.
+* Fixed a bug associated with user-provided maps and `GroupSideEffectStep`.
+* `GroupBiOperator` no longer maintains a detached traversal and thus, no more side-effect related OLAP inconsistencies.
+* Added `ProjectedTraverser` which wraps a traverser with a `List<Object>` of projected data.
+* Fixed an optimization bug in `CollectingBarrierSteps` where the barrier was being consumed on each `addBarrier()`.
+* `OrderGlobalStep` and `SampleGlobalStep` use `ProjectedTraverser` and now can work up to the local star graph in OLAP.
 * SASL negotiation supports both a byte array and Base64 encoded bytes as a string for authentication to Gremlin Server.
+* Deprecated all test suites in `gremlin-groovy-test` - Graph Providers no longer need to implement these.
 * Deprecated `TinkerIoRegistry` replacing it with the more consistently named `TinkerIoRegistryV1d0`.
 * Made error messaging more consistent during result iteration timeouts in Gremlin Server.
+* Fixed a memory leak in the classloader for the `GremlinGroovyScriptEngine` where classes in the loader were not releasing from memory as a strong reference was always maintained.
 * `PathRetractionStrategy` does not add a `NoOpBarrierStep` to the end of local children as its wasted computation in 99% of traversals.
 * Fixed a bug in `AddVertexStartStep` where if a side-effect was being used in the parametrization, an NPE occurred.
 * Fixed a bug in `LazyBarrierStrategy` where `profile()` was deactivating it accidentally.
@@ -142,6 +153,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 * The root traversal now throws regular `NoSuchElementException` instead of `FastNoSuchElementException`. (*breaking*)
 * Added a short sleep to prevent traversal from finishing before it can be interrupted during `TraversalInterruptionComputerTest`.
+* Added support for SSL client authentication
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)

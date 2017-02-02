@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -54,7 +55,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -79,7 +79,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -95,7 +94,6 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -104,6 +102,12 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
+
+    private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
+    private static final String SERVER_CRT = "src/test/resources/server.crt";
+    private static final String KEY_PASS = "changeit";
+    private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
+    private static final String CLIENT_CRT = "src/test/resources/client.crt";
 
     private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
@@ -165,6 +169,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
                 break;
+            case "shouldEnableSslAndClientCertificateAuth":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust the client
+                settings.ssl.trustCertChainFile = CLIENT_CRT;
+            	break;
+            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCert":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust the client
+                settings.ssl.trustCertChainFile = CLIENT_CRT;
+            	break;
+            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyCertChainFile = SERVER_CRT;
+                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyPassword =KEY_PASS;
+                // Trust ONLY the server cert
+                settings.ssl.trustCertChainFile = SERVER_CRT;
+            	break;
             case "shouldStartWithDefaultSettings":
                 // test with defaults exception for port because we want to keep testing off of 8182
                 final Settings defaultSettings = new Settings();
@@ -373,7 +407,55 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+    
+    @Test
+    public void shouldEnableSslAndClientCertificateAuth() {
+		final Cluster cluster = TestClientFactory.build().enableSsl(true)
+				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+		final Client client = cluster.connect();
 
+        try {
+        	assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
+    
+    @Test
+    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
+        } catch(Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
+		final Cluster cluster = TestClientFactory.build().enableSsl(true)
+				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+		final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
+        } catch(Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+    
     @Test
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
@@ -675,7 +757,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
         final Client client = cluster.connect();
 
         try {

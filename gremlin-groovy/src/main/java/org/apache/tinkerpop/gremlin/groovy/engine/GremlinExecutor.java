@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -39,6 +40,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,13 +123,15 @@ public class GremlinExecutor implements AutoCloseable {
         this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
         initializeGremlinScriptEngineManager();
 
-        // this is temporary so that we can have backward compatibilty to the old plugin system and ScriptEngines
+        // this is temporary so that we can have backward compatibility to the old plugin system and ScriptEngines
         // approach to configuring Gremlin Server and GremlinExecutor. This code/check should be removed with the
         // deprecated code around this is removed.
         if (!useGremlinScriptEngineManager)
             this.scriptEngines = createScriptEngines();
-        else
+        else {
             this.scriptEngines = null;
+            gremlinScriptEngineManager.getEngineByName("gremlin-groovy");
+        }
 
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
@@ -466,9 +470,9 @@ public class GremlinExecutor implements AutoCloseable {
                             final Method configMethod = Stream.of(methods).filter(m -> {
                                 final Class<?> type = customizerConfig.getValue().getClass();
                                 return m.getName().equals(customizerConfig.getKey()) && m.getParameters().length <= 1
-                                        && m.getParameters()[0].getType().isAssignableFrom(type);
+                                        && ClassUtils.isAssignable(type, m.getParameters()[0].getType(), true);
                             }).findFirst()
-                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method on " + builderClazz.getCanonicalName()));
+                                    .orElseThrow(() -> new IllegalStateException("Could not find builder method '" + customizerConfig.getKey() + "' on " + builderClazz.getCanonicalName()));
                             if (null == customizerConfig.getValue())
                                 pluginBuilder = configMethod.invoke(pluginBuilder);
                             else
@@ -476,8 +480,8 @@ public class GremlinExecutor implements AutoCloseable {
                         }
 
                         try {
-                            final Method appliesTo = builderClazz.getMethod("appliesTo");
-                            pluginBuilder = appliesTo.invoke(pluginBuilder, language);
+                            final Method appliesTo = builderClazz.getMethod("appliesTo", Collection.class);
+                            pluginBuilder = appliesTo.invoke(pluginBuilder, Collections.singletonList(language));
                         } catch (NoSuchMethodException ignored) {
 
                         }
@@ -489,6 +493,10 @@ public class GremlinExecutor implements AutoCloseable {
                     throw new IllegalStateException(ex);
                 }
             }
+        }
+
+        if (this.useGremlinScriptEngineManager) {
+            gremlinScriptEngineManager.setBindings(globalBindings);
         }
     }
 

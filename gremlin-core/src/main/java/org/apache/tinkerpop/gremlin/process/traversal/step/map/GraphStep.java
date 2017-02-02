@@ -164,15 +164,13 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     /**
-     * Attemps to close an underlying iterator if it is of type {@link CloseableIterator}. Graph providers may choose
+     * Attempts to close an underlying iterator if it is of type {@link CloseableIterator}. Graph providers may choose
      * to return this interface containing their vertices and edges if there are expensive resources that might need to
      * be released at some point.
      */
     @Override
-    public void close() throws Exception {
-        if (iterator != null && iterator instanceof CloseableIterator) {
-            ((CloseableIterator) iterator).close();
-        }
+    public void close() {
+        CloseableIterator.closeIterator(iterator);
     }
 
     /**

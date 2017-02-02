@@ -1,0 +1,40 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+-----BEGIN CERTIFICATE-----
+MIIDajCCAlICCQCG0QGj7JgLvTANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV
+UzELMAkGA1UECAwCTkMxEDAOBgNVBAcMB1JhbGVpZ2gxEzARBgNVBAoMCkNsaWVu
+dCBBcHAxDzANBgNVBAMMBmNsaWVudDEiMCAGCSqGSIb3DQEJARYTZ3JlbWxpbi11
+c2VyQGNsaWVudDAgFw0xNzAxMjMxODQzMjNaGA8yMTE2MTIzMDE4NDMyM1owdjEL
+MAkGA1UEBhMCVVMxCzAJBgNVBAgMAk5DMRAwDgYDVQQHDAdSYWxlaWdoMRMwEQYD
+VQQKDApDbGllbnQgQXBwMQ8wDQYDVQQDDAZjbGllbnQxIjAgBgkqhkiG9w0BCQEW
+E2dyZW1saW4tdXNlckBjbGllbnQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQDU7U5tNN+0HCKZX31ZKMZwAUI7qGCpYXd05z5SKRWesNsrEeCLnu1DgYhL
+j+hSi2LI+RwTF45DH8zEPIzQ6HEMzuCd2uy7bdDrXv6H/tFUx9Iw0ea5oXGX1qNa
+tzjPTSmw22VXbSo+B5EG0coC5oDy9SpYb2HxeDmegI2OZL6ROFPKbCUTzyJfqTpy
+1mdgnnKTVuQdtWvj/sXDAZzRqtFHwBkHezKCOC4yLNi5+pI01+0V7FbtyCqH7iPS
+VS9VKsLuhPkzAkRh/x9CxaSrwicyzyB3Kyfg7kjmtdrUOrfgxdw+MMPog3JrGoLr
+tfvc9LUh0ImpLPngyWhwc5iNGwmLAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAEi0
+IVUIbDuirNivJXXXT5eFUgfAx5iPjbR1XBjCuHO061d0B8itU7cidKs0y5mDoauy
+vuywNBih6FAsHoYLrqI1gt65fybGxq3wlhnqdLH7GDeHw65e2PB2x+M4NtQlkPTq
+dUgUtQzAo8Hc4DNR5BrvCtLjqT7Knq8QHtGLys8eoDur09894+6WeUjrgUTp88Jl
+uqrZqRHvdMW7sge73cpU1dsDJW0rJqCLZ+qA2V+ZRRCQY1oHuHeK6Dkokabaq3rr
+WrpxfppIPCusJx4nnIwu4d0gZwAKwabOS8lJPjV0frRkA0BuAEpMIbOwZ10Tw7ZM
+2HzamAOiiks4NFDSs94=
+-----END CERTIFICATE-----

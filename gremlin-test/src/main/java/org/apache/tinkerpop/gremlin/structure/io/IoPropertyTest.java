@@ -63,6 +63,9 @@ public class IoPropertyTest extends AbstractGremlinTest {
                 {"graphson-v2-embedded", true, true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                {"graphson-v3", true, true,
+                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().create()).create()},
                 {"gryo", true, true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.gryo()).reader().create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.gryo()).writer().create()}
@@ -92,7 +95,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
 
             // select any vertexproperty that has both start/end time
             final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
-            final Vertex v = p.element();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -104,10 +106,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
                     assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
                     assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
-                    if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });
@@ -123,7 +121,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphWriter writer = writerMaker.apply(graph);
             final VertexProperty p = g.V(convertToVertexId("marko")).next().property("name");
-            final Vertex v = p.element();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -133,10 +130,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
                     assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
-                    if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });
@@ -152,7 +145,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphWriter writer = writerMaker.apply(graph);
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
-            final Edge e = (Edge) p.element();
             writer.writeProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -161,10 +153,6 @@ public class IoPropertyTest extends AbstractGremlinTest {
                 reader.readProperty(bais, propertyAttachable -> {
                     assertEquals(p.value(), propertyAttachable.get().value());
                     assertEquals(p.key(), propertyAttachable.get().key());
-                    if (ioType.equals("graphson-v2-embedded")) { // TODO: make this work with Gryo
-                        assertEquals(p, propertyAttachable.get());
-                        assertEquals(p.element(), propertyAttachable.get().element());
-                    }
                     called.set(true);
                     return propertyAttachable.get();
                 });

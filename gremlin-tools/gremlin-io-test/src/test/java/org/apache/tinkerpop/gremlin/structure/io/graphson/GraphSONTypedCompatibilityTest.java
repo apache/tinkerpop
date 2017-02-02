@@ -40,12 +40,19 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
             addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
             version(GraphSONVersion.V2_0).create().createMapper();
 
+    private static ObjectMapper mapperV3 = GraphSONMapper.build().
+            addRegistry(TinkerIoRegistryV2d0.instance()).
+            addCustomModule(GraphSONXModuleV2d0.build().create(false)).
+            addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+            version(GraphSONVersion.V3_0).create().createMapper();
+
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {GraphSONCompatibility.V2D0_PARTIAL_3_2_3, mapperV2 },
                 {GraphSONCompatibility.V2D0_PARTIAL_3_2_4, mapperV2 },
-                {GraphSONCompatibility.V2D0_PARTIAL_3_3_0, mapperV2 }});
+                {GraphSONCompatibility.V2D0_PARTIAL_3_3_0, mapperV2 },
+                {GraphSONCompatibility.V3D0_PARTIAL_3_3_0, mapperV3 }});
     }
 
     @Parameterized.Parameter(value = 0)

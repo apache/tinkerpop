@@ -6,13 +6,11 @@
       "name" : [ {
         "id" : 0,
         "value" : "marko",
-        "vertex" : 1,
         "label" : "name"
       } ],
       "location" : [ {
         "id" : 6,
         "value" : "san diego",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 1997,
@@ -21,7 +19,6 @@
       }, {
         "id" : 7,
         "value" : "santa cruz",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2001,
@@ -30,7 +27,6 @@
       }, {
         "id" : 8,
         "value" : "brussels",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2004,
@@ -39,7 +35,6 @@
       }, {
         "id" : 9,
         "value" : "santa fe",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2005

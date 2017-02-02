@@ -24,9 +24,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
@@ -72,7 +71,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             new Settings.SerializerSettings(GryoMessageSerializerV1d0.class.getName(), new HashMap<String,Object>(){{
                 put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
             }}),
-            new Settings.SerializerSettings(GraphSONMessageSerializerV1d0.class.getName(), Collections.emptyMap())
+            new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap())
     );
 
     protected Settings settings;
@@ -242,8 +241,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword)
                     .trustManager(trustCertChainFile);
         }
+        
+        
 
-        builder.sslProvider(provider);
+        builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
 
         try {
             return builder.build();

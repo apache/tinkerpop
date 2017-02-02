@@ -48,25 +48,31 @@ public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final ImportCustomizer imports = DefaultImportCustomizer.build()
             .addClassImports(TinkerEdge.class,
-                             TinkerElement.class,
-                             TinkerFactory.class,
-                             TinkerGraph.class,
-                             TinkerGraphVariables.class,
-                             TinkerHelper.class,
-                             TinkerIoRegistry.class,
-                             TinkerIoRegistryV2d0.class,
-                             TinkerProperty.class,
-                             TinkerVertex.class,
-                             TinkerVertexProperty.class,
-                             TinkerGraphComputer.class,
-                             TinkerGraphComputerView.class,
-                             TinkerMapEmitter.class,
-                             TinkerMemory.class,
-                             TinkerMessenger.class,
-                             TinkerReduceEmitter.class,
-                             TinkerWorkerPool.class).create();
+                    TinkerElement.class,
+                    TinkerFactory.class,
+                    TinkerGraph.class,
+                    TinkerGraphVariables.class,
+                    TinkerHelper.class,
+                    TinkerIoRegistry.class,
+                    TinkerIoRegistryV2d0.class,
+                    TinkerProperty.class,
+                    TinkerVertex.class,
+                    TinkerVertexProperty.class,
+                    TinkerGraphComputer.class,
+                    TinkerGraphComputerView.class,
+                    TinkerMapEmitter.class,
+                    TinkerMemory.class,
+                    TinkerMessenger.class,
+                    TinkerReduceEmitter.class,
+                    TinkerWorkerPool.class).create();
+
+    private static final TinkerGraphGremlinPlugin instance = new TinkerGraphGremlinPlugin();
 
     public TinkerGraphGremlinPlugin() {
         super(NAME, imports);
+    }
+
+    public static TinkerGraphGremlinPlugin instance() {
+        return instance;
     }
 }

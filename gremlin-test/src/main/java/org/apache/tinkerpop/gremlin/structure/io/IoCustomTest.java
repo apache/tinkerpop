@@ -67,6 +67,9 @@ public class IoCustomTest extends AbstractGremlinTest {
                 {"graphson-v2-embedded", true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                {"graphson-v3", true,
+                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(moduleV2d0).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(moduleV2d0).create()).create()},
                 {"gryo", true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.gryo()).reader().mapper(g.io(IoCore.gryo()).mapper().addCustom(CustomId.class).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.gryo()).writer().mapper(g.io(IoCore.gryo()).mapper().addCustom(CustomId.class).create()).create()}

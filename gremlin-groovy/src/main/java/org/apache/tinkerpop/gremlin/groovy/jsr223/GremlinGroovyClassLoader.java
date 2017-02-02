@@ -20,19 +20,39 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.util.ReferenceBundle;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- * A {@code GroovyClassLoader} extension that provides access to the {@code removeClassCacheEntry(String)} method.
+ * A {@code GroovyClassLoader} extension that uses a {@link ManagedConcurrentValueMap} configured with soft references.
+ * In this way, the classloader will "forget" scripts allowing them to be garbage collected and thus prevent memory
+ * issues in JVM metaspace.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinGroovyClassLoader extends GroovyClassLoader {
+    private final ManagedConcurrentValueMap<String, Class> classSoftCache;
+
     public GremlinGroovyClassLoader(final ClassLoader parent, final CompilerConfiguration conf) {
         super(parent, conf);
+        classSoftCache = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
     }
 
     @Override
     protected void removeClassCacheEntry(final String name) {
-        super.removeClassCacheEntry(name);
+        this.classSoftCache.remove(name);
+    }
+
+    @Override
+    protected void setClassCacheEntry(final Class cls) {
+        this.classSoftCache.put(cls.getName(), cls);
+    }
+
+    @Override
+    protected Class getClassCacheEntry(final String name) {
+        if(null == name)  return null;
+        return this.classSoftCache.get(name);
     }
 }
