@@ -28,8 +28,11 @@
 
 TMP_DIR="/tmp/tpdv"
 
+# Required. Only the latest version on each release stream is available on dist.
 VERSION=${1}
+# Optional. Provide the zip file URL.
 URL=${2}
+# Optional. Specifiy CONSOLE, SERVER, or SOURCE for additional validation.
 TYPE=${3}
 
 if [ -z ${VERSION} ]; then
@@ -93,6 +96,7 @@ echo -n "  * PGP signature ... "
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Jason Plurad (CODE SIGNING KEY) <pluradj@apache.org>"'` -eq 1 ] || \
 { echo "failed"; exit 1; }
 echo "OK"
 
