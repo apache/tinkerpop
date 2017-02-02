@@ -177,20 +177,31 @@ Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
 
+* `giraph-gremlin`
+** org.apache.tinkerpop.gremlin.giraph.groovy.plugin.GiraphGremlinPlugin
 * `gremlin-console`
 ** `org.apache.tinkerpop.gremlin.console.Console(String)`
+* `gremlin-core`
+** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
 * `gremlin-groovy`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(ImportCustomizerProvider)`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine#plugins()`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension`
+* `spark-gremlin`
+** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
+* `tinkergraph-gremlin`
+** `org.apache.tinkerpop.gremlin.tinkergraph.groovy.plugin.TinkerGraphGremlinPlugin`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283], link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
-link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040]
+link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,24 +209,34 @@ Upgrading for Providers
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Performance Tests
-+++++++++++++++++
+Test Suite Removal
+++++++++++++++++++
 
-Performance tests based on `junit-benchmarks` have been removed from TinkerPop. Specifically, providers should be
-concerned with breaking changes related to the removal of:
+A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
+providers who are implementing TinkerPop. Test suites related to perfrmance based on `junit-benchmarks` have been
+removed as have the suites in `gremlin-groovy-test` (in fact, this entire module has been removed). Specifically,
+providers should be concerned with breaking changes related to the removal of:
 
 * `StructurePerformanceSuite`
 * `ProcessPerformanceSuite`
 * `GroovyEnvironmentPerformanceSuite`
+* `GroovyProcessStandardSuite`
+* `GroovyProcessComputerSuite`
+* `GroovyEnvironmentSuite`
+* `GroovyEnvironmentIntegrateSuite`
 
-Those graph providers who relied on these tests should simply remove them from their respective test suites.
+Those graph providers who relied on these tests should simply remove them from their respective test suites. Beware of
+`OptOut` annotations that reference tests in these suites as test failure will occur if those references are not
+removed.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the foreground with defaults like previous usage, please use the `console` parameter. Also, `gremlin-server.sh` will continue to start in the foreground when provided a yaml configuration file.
+`gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the
+foreground with defaults like previous usage, please use the `console` parameter. Also, `gremlin-server.sh` will
+continue to start in the foreground when provided a yaml configuration file.
 
 How to install as a service has been added to the link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_as_a_service[Reference Documentation - As A Service].
 
