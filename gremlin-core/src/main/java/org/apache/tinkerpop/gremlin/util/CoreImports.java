@@ -19,16 +19,35 @@
 
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.CombinedConfiguration;
+import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationBuilder;
+import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.SubsetConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader;
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -82,16 +101,17 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -109,7 +129,6 @@ public final class CoreImports {
         // CLASSES //
         /////////////
 
-        // graph
         CLASS_IMPORTS.add(Edge.class);
         CLASS_IMPORTS.add(Element.class);
         CLASS_IMPORTS.add(Graph.class);
@@ -117,6 +136,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Transaction.class);
         CLASS_IMPORTS.add(Vertex.class);
         CLASS_IMPORTS.add(VertexProperty.class);
+        CLASS_IMPORTS.add(GraphFactory.class);
+        CLASS_IMPORTS.add(ElementHelper.class);
         // tokens
         CLASS_IMPORTS.add(SackFunctions.class);
         CLASS_IMPORTS.add(SackFunctions.Barrier.class);
@@ -141,7 +162,18 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Io.class);
         CLASS_IMPORTS.add(IoCore.class);
         CLASS_IMPORTS.add(Storage.class);
+        CLASS_IMPORTS.add(BaseConfiguration.class);
+        CLASS_IMPORTS.add(CombinedConfiguration.class);
+        CLASS_IMPORTS.add(CompositeConfiguration.class);
         CLASS_IMPORTS.add(Configuration.class);
+        CLASS_IMPORTS.add(ConfigurationBuilder.class);
+        CLASS_IMPORTS.add(ConfigurationUtils.class);
+        CLASS_IMPORTS.add(FileConfiguration.class);
+        CLASS_IMPORTS.add(HierarchicalConfiguration.class);
+        CLASS_IMPORTS.add(MapConfiguration.class);
+        CLASS_IMPORTS.add(PropertiesConfiguration.class);
+        CLASS_IMPORTS.add(SubsetConfiguration.class);
+        CLASS_IMPORTS.add(XMLConfiguration.class);
         // strategies
         CLASS_IMPORTS.add(ConnectiveStrategy.class);
         CLASS_IMPORTS.add(ElementIdStrategy.class);
@@ -178,13 +210,22 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Memory.class);
         CLASS_IMPORTS.add(VertexProgram.class);
         CLASS_IMPORTS.add(BulkDumperVertexProgram.class);
+        CLASS_IMPORTS.add(BulkLoader.class);
         CLASS_IMPORTS.add(BulkLoaderVertexProgram.class);
+        CLASS_IMPORTS.add(IncrementalBulkLoader.class);
+        CLASS_IMPORTS.add(OneTimeBulkLoader.class);
+        CLASS_IMPORTS.add(ClusterCountMapReduce.class);
+        CLASS_IMPORTS.add(ClusterPopulationMapReduce.class);
+        CLASS_IMPORTS.add(MemoryTraversalSideEffects.class);
         CLASS_IMPORTS.add(PeerPressureVertexProgram.class);
+        CLASS_IMPORTS.add(PageRankMapReduce.class);
         CLASS_IMPORTS.add(PageRankVertexProgram.class);
         CLASS_IMPORTS.add(GraphFilterStrategy.class);
+        CLASS_IMPORTS.add(TraversalVertexProgram.class);
         CLASS_IMPORTS.add(VertexProgramStrategy.class);
         // utils
         CLASS_IMPORTS.add(Gremlin.class);
+        CLASS_IMPORTS.add(IteratorUtils.class);
         CLASS_IMPORTS.add(TimeUtil.class);
 
         /////////////
