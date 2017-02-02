@@ -30,7 +30,7 @@ import java.util.Set;
  * Plugin for the "credentials graph".  This plugin imports the {@link CredentialGraph} to its environment.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphGremlinPlugin}.
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphGremlinPlugin}.
  */
 @Deprecated
 public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
