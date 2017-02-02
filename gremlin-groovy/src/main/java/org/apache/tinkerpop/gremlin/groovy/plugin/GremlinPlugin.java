@@ -30,6 +30,7 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @deprecated As for 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin}
  */
+@Deprecated
 public interface GremlinPlugin {
     public static final String ENVIRONMENT = "GremlinPlugin.env";
 
