@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.groovy;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
@@ -131,7 +130,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
         imports.add(GremlinLoader.class.getPackage().getName() + DOT_STAR);
         imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
-        imports.add(GFunction.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalMetrics.class.getPackage().getName() + DOT_STAR);
         staticImports.add(TimeUtil.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Computer.class.getCanonicalName() + DOT_STAR);

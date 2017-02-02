@@ -191,6 +191,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
 * `gremlin-groovy`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
+** `org.apache.tinkerpop.gremlin.groovy.function.*`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(ImportCustomizerProvider)`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine#plugins()`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor`
@@ -205,7 +206,7 @@ understand how to resolve this breaking change.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283], link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
 link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612], link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
