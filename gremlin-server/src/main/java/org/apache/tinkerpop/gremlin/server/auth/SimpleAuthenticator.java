@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
