@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactor SparkContext handler to support external kill and stop operations
 * Fixed a bug where `PathProcessor.keepLabels` were not being pushed down into child traversals by `PathRetractionStrategy`.
 * Added default `MessagePassingReductionStrategy` for `GraphComputer` that can reduce the number of message passing iterations.
 * Fixed a bug associated with user-provided maps and `GroupSideEffectStep`.
