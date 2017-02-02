@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -130,7 +132,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
             fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(ResponseException.class, root.getClass());
+            assertTrue(root instanceof ResponseException || root instanceof GSSException);
 
             // removed this assert as the text of the message changes based on kerberos config - stupid kerberos
             // assertThat(root.getMessage(), startsWith("Invalid name provided"));

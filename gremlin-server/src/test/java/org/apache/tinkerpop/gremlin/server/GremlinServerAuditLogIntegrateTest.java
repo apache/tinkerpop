@@ -295,13 +295,13 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
-        final CloseableHttpResponse response = httpclient.execute(httpget);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", response.getEntity().getContentType().getValue());
-        final String json = EntityUtils.toString(response.getEntity());
-        final JsonNode node = mapper.readTree(json);
-        response.close();
-        assertEquals(0, node.get("result").get("data").get(0).intValue());
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get("data").get(0).intValue());
+        }
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
         final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));

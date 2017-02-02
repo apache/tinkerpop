@@ -64,7 +64,6 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `skip(long)` and `skip((Scope,long)` which call the `range(low,high)` equivalents with -1 as the high.
 * Added Kerberos authentication to `gremlin-server` for websockets and nio transport.
 * Added audit logging of authenticated users and gremlin queries to `gremlin-server`.
-* Fixed `gremlin-driver`'s support for string results regarding returned byte arrays from `Sasl` authentication.
 
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------

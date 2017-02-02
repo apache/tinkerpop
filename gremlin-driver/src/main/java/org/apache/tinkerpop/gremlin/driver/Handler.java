@@ -176,12 +176,17 @@ final class Handler {
 
         /**
          * Work out the Sasl mechanism based on the user supplied parameters.
-         * If we have a JAAS entry use GSSAPI otherwise PLAIN.
-         * Use of additional mechanisms (CRAM-MD5, DIGEST-MD5, EXTERNAL) requires the server to return the
-         * mechanism(s) it supports, so that getMechanism can get the negotiated mechanism from SaslClient.
+         * If we have a username and password use PLAIN otherwise GSSAPI
+         * ToDo: have gremlin-server provide the mechanism(s) it is configured with, so that additional mechanisms can
+         * be supported in the driver and confusing GSSException messages from the driver are avoided
          */
         private String getMechanism() {
-            return (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) ? "GSSAPI" : "PLAIN";
+            if ((authProps.get(AuthProperties.Property.USERNAME) != null) &&
+                (authProps.get(AuthProperties.Property.PASSWORD) != null)) {
+                return "PLAIN";
+            } else {
+                return "GSSAPI";
+            }
         }
     }
 
