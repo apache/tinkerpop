@@ -39,7 +39,7 @@ while [ ${i} -lt ${pluginsCount} ]; do
   for part in $(tr '-' '\n' <<< ${pluginName}); do
     className="${className}$(tr '[:lower:]' '[:upper:]' <<< ${part:0:1})${part:1}"
   done
-  pluginClassFile=$(find . -name "${className}Plugin.java")
+  pluginClassFile=$(find . -name "${className}Plugin.java" | grep plugin)
   pluginClass=`sed -e 's@.*src/main/java/@@' -e 's/\.java$//' <<< ${pluginClassFile} | tr '/' '.'`
   installed=`grep -c "${pluginClass}" ${CONSOLE_HOME}/ext/plugins.txt`
   if [ ${installed} -eq 0 ]; then
