@@ -120,10 +120,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
       mv ext/spark-gremlin .ext/
       mv ext/giraph-gremlin .ext/
       mv ext/hadoop-gremlin .ext/
-      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'Neo4jGremlinPlugin' > .ext/plugins.txt
-      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'SparkGremlinPlugin' > .ext/plugins.txt
-      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'GiraphGremlinPlugin' > .ext/plugins.txt
-      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'HadoopGremlinPlugin' > .ext/plugins.txt
+      cat ext/plugins.txt | tee .ext/plugins.all | grep -v 'Neo4jGremlinPlugin\|SparkGremlinPlugin\|GiraphGremlinPlugin\|HadoopGremlinPlugin' > .ext/plugins.txt
       ;;
   esac
 
