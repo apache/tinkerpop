@@ -25,16 +25,16 @@ limitations under the License.
     </parent>
     <artifactId>giraph-gremlin</artifactId>
     <name>Apache TinkerPop :: Giraph Gremlin</name>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<!-- see: https://github.com/apache/hadoop/pull/84 -->
-				<groupId>io.netty</groupId>
-				<artifactId>netty</artifactId>
-				<version>3.7.1.Final</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- see: https://github.com/apache/hadoop/pull/84 -->
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.7.1.Final</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -89,6 +89,11 @@ limitations under the License.
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>
                 </exclusion>
+                <!-- uses an older version that conflicts with spark 2.0 -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
@@ -128,6 +133,11 @@ limitations under the License.
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.6.5</version>
         </dependency>
         <!-- TEST -->
         <dependency>
