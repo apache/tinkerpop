@@ -215,7 +215,7 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <version>${commons.lang.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>

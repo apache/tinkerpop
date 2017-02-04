@@ -37,8 +37,7 @@ limitations under the License.
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.15</version>
-            <type>jar</type>
+            <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
             <groupId>org.javatuples</groupId>
@@ -53,7 +52,7 @@ limitations under the License.
         <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-manifests</artifactId>
-            <version>1.1</version>
+            <version>${jcabi.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
