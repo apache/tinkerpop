@@ -134,15 +134,22 @@ limitations under the License.
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
+        <commons.lang.version>2.6</commons.lang.version>
+        <commons.lang3.version>3.3.1</commons.lang3.version>
         <groovy.version>2.4.8</groovy.version>
-        <metrics.version>3.0.2</metrics.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <skipIntegrationTests>true</skipIntegrationTests>
-        <slf4j.version>1.7.21</slf4j.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
+        <jcabi.version>1.1</jcabi.version>
+        <metrics.version>3.0.2</metrics.version>
+        <netty.version>4.0.42.Final</netty.version>
+        <slf4j.version>1.7.21</slf4j.version>
+        <snakeyaml.version>1.15</snakeyaml.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <skipIntegrationTests>true</skipIntegrationTests>
+        <skipPerformanceTests>true</skipPerformanceTests>
 
         <!--
         This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
@@ -461,7 +468,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.3.1</version>
+                <version>${commons.lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -1097,6 +1104,48 @@ limitations under the License.
                                             <groupId>org.apache.tinkerpop</groupId>
                                             <artifactId>gremlin-shaded</artifactId>
                                             <version>${project.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-groovysh</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-json</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-lang3</artifactId>
+                                            <version>${commons.lang3.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>commons-lang</groupId>
+                                            <artifactId>commons-lang</artifactId>
+                                            <version>${commons.lang.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.slf4j</groupId>
+                                            <artifactId>slf4j-api</artifactId>
+                                            <version>${slf4j.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-all</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.yaml</groupId>
+                                            <artifactId>snakeyaml</artifactId>
+                                            <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.jcabi</groupId>
+                                            <artifactId>jcabi-manifests</artifactId>
+                                            <version>${jcabi.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>

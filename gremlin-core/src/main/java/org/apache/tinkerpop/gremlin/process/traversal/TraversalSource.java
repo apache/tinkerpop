@@ -63,7 +63,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public TraversalStrategies getStrategies();
 
     /**
-     * Get the {@link Graph) associated with this traversal source.
+     * Get the {@link Graph} associated with this traversal source.
      *
      * @return the graph of the traversal source
      */

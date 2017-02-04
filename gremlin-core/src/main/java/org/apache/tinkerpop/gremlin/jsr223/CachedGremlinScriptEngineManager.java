@@ -34,14 +34,14 @@ public class CachedGremlinScriptEngineManager extends DefaultGremlinScriptEngine
     private final ConcurrentHashMap<String,String> mimeToName = new ConcurrentHashMap<>();
 
     /**
-     * {@inheritDoc}
+     * @see DefaultGremlinScriptEngineManager#DefaultGremlinScriptEngineManager()
      */
     public CachedGremlinScriptEngineManager() {
         super();
     }
 
     /**
-     * {@inheritDoc}
+     * @see DefaultGremlinScriptEngineManager#DefaultGremlinScriptEngineManager(ClassLoader loader)
      */
     public CachedGremlinScriptEngineManager(final ClassLoader loader) {
         super(loader);

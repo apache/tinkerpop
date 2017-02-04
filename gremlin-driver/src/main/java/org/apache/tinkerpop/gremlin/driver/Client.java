@@ -738,7 +738,7 @@ public abstract class Client {
     }
 
     /**
-     * Settings given to {@link Cluster#connect(Settings)} that configures how a {@link Client} will behave.
+     * Settings given to {@link Cluster#connect(Client.Settings)} that configures how a {@link Client} will behave.
      */
     public static class Settings {
         private final Optional<SessionSettings> session;
@@ -874,7 +874,7 @@ public abstract class Client {
              * decided how to proceed with those orphaned transactions. Setting this to {@code true} tends to lead to
              * faster close operation which can be desirable if Gremlin Server has a long session timeout and a long
              * script evaluation timeout as attempts to close long run jobs can occur more rapidly. By default, this
-             * value is {@link false}.
+             * value is {@code false}.
              */
             public Builder forceClosed(final boolean forced) {
                 this.forceClosed = forced;
