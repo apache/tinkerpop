@@ -51,7 +51,7 @@ The documentation generation process is not Maven-based and uses shell scripts t
 scripts should work on Mac and Linux.
 
 To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 2.7.x] is running in
-link:https://hadoop.apache.org/docs/r2.7.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
+link:https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
 link:http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
 to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `map-red-site.xml`.
@@ -85,7 +85,8 @@ This section is only useful to TinkerPop release managers and describes prerequi
 release of TinkerPop. All Apache releases must be signed. Please see link:http://www.apache.org/dev/release-signing.html[this guide]
 in the Apache documentation for instructions on to set up gpg. Keys should be added to KEYS files in both the
 link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
-link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories.
+link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
+using Apache Subversion (SVN).
 
 Uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically installed by the build
 process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy environments and username
@@ -109,7 +110,8 @@ username = <username>
 password =
 ----
 
-If the `password` is left blank then the deployment process in Maven will prompt for it at deployment time.
+The release manager shall use the project's pypi credentials, which are available in the PMC repository.
+The `password` should be left blank so the deployment process in Maven will prompt for it at deployment time.
 
 [[building-testing]]
 Building and Testing

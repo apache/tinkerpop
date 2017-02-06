@@ -1604,7 +1604,7 @@ Range Step
 
 As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through
 with `range()`-step (*filter*). When the low-end of the range is not met, objects are continued to be iterated. When
-within the low and high range (both inclusive), traversers are emitted. Finally, when above the high range, the
+within the low (inclusive) and high (exclusive) range, traversers are emitted. Finally, when above the high range, the
 traversal breaks out of iteration.
 
 [gremlin-groovy,modern]

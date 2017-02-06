@@ -54,14 +54,16 @@ For JVM-based artifacts, simply use the following command:
 mvn clean deploy
 
 and artifacts will be pushed to the link:http://repository.apache.org/snapshots/[Apache Snapshot Repository]. Python
-development artifacts must be deployed separately with a separate command:
+development artifacts must be generated and deployed separately with additional commands:
 
 [source,text]
-mvn clean deploy -pl gremlin-python -Dpypi
+mvn clean install -Pglv-python
+mvn deploy -pl gremlin-python -Dpypi
 
 Python does not use the snapshot model that the JVM does, however, the build is smart in that it will dynamically
 generate a development version number for the Python artifacts when "-SNAPSHOT" is in the `pom.xml`. The previous
 command will push the development version to link:https://pypi.python.org/pypi/gremlinpython/[pypi] for distribution.
+Use the `testpypi` test environment by updating the `gremlin-python/pom.xml` to verify the `mvn deploy` command works.
 
 IMPORTANT: The `clean` in the above commands is more important to the pypi deployment because the process will deploy
 anything found in the `target/python-packaged/dist` directory. Since the names of the artifacts are based on
