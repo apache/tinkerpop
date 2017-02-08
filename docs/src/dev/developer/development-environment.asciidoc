@@ -54,7 +54,7 @@ To generate documentation, it is required that link:https://hadoop.apache.org[Ha
 link:https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
 link:http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
-to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `map-red-site.xml`.
+to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
 
