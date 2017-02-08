@@ -648,8 +648,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-6]]
-TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.1.6 (Release Date: February 3, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed bug in `IncidentToAdjacentStrategy`, it was missing some invalidating steps.
 * Returned a confirmation on session close from Gremlin Server.
@@ -659,10 +659,20 @@ TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Minor fixes to various test feature requirements in `gremlin-test`.
 * Allow developers to pass options to `docker run` with TINKERPOP_DOCKER_OPTS environment variable
 
+Bugs
+^^^^
+
+* TINKERPOP-1493 Groovy project doesn't build on Windows
+* TINKERPOP-1545 IncidentToAdjacentStrategy is buggy
+
 Improvements
 ^^^^^^^^^^^^
 
+* TINKERPOP-1538 Gremlin Server spawned by test suites should use a different port
+* TINKERPOP-1544 Return a confirmation of session close
 * TINKERPOP-1556 Allow Hadoop to run on IPv6 systems
+* TINKERPOP-1557 Improve docker build time with this one weird trick!
+* TINKERPOP-1598 Bump to Grovy 2.4.8
 
 [[release-3-1-5]]
 TinkerPop 3.1.5 (Release Date: October 17, 2016)

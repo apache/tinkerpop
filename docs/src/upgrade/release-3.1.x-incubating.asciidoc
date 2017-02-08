@@ -25,9 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.6
 ---------------
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: February 3, 2017*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#release-3-1-6[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#tinkerpop-316-release-date-february-3-2017[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
