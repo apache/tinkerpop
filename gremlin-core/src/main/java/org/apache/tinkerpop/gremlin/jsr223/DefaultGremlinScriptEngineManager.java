@@ -444,7 +444,15 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 .filter(p -> p instanceof BindingsCustomizer)
                 .map(p -> ((BindingsCustomizer) p))
                 .filter(bc -> bc.getScope() == ScriptContext.GLOBAL_SCOPE)
-                .forEach(bc -> globalScope.putAll(bc.getBindings()));
+                .flatMap(bc -> bc.getBindings().entrySet().stream())
+                .forEach(kv -> {
+                    if (globalScope.containsKey(kv.getKey())) {
+                        logger.warn("Overriding the global binding [{}] - was [{}] and is now [{}]",
+                                kv.getKey(), globalScope.get(kv.getKey()), kv.getValue());
+                    }
+
+                    globalScope.put(kv.getKey(), kv.getValue());
+                });
         engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
 
         // merge in bindings that are marked with engine scope. there typically won't be any of these but it's just
