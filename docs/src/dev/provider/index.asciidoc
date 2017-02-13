@@ -1074,46 +1074,99 @@ Gremlin Plugins
 
 image:gremlin-plugin.png[width=125]
 
-Plugins provide a way to expand the features of Gremlin Console and Gremlin Server. The first step to developing a
-plugin is to implement the `GremlinPlugin` interface:
+Plugins provide a way to expand the features of a `GremlinScriptEngine`, which stands at that core of both Gremlin
+Console and Gremlin Server. Providers may wish to create plugins for a variety of reasons, but some common examples
+include:
+
+* Initialize the `GremlinScriptEngine` application with important classes so that the user doesn't need to type their
+own imports.
+* Place specific objects in the bindings of the `GremlinScriptEngine` for the convenience of the user.
+* Bootstrap the `GremlinScriptEngine` with custom functions so that they are ready for usage at startup.
+
+The first step to developing a plugin is to implement the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/GremlinPlugin.html[GremlinPlugin]
+interface:
 
 [source,java]
 ----
-include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
+include::{basedir}/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/jsr223/GremlinPlugin.java[]
 ----
 
 The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes
-to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure
-and Process APIs to make their implementations available to users.  The TinkerGraph implementation has just such a plugin:
+for import.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to
+make their implementations available to users.  The TinkerGraph implementation has just such a plugin:
 
 [source,java]
 ----
-include::{basedir}/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/groovy/plugin/TinkerGraphGremlinPlugin.java[]
+include::{basedir}/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/jsr223/TinkerGraphGremlinPlugin.java[]
 ----
 
-Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_
-(e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make TinkerGraph
-classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The
-`PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin`
-implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering
-new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for
-the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand
-which environment the plugin is being used in.
+This plugin extends from the abstract base class of link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/AbstractGremlinPlugin.html[AbstractGremlinPlugin]
+which provides some default implementations of the `GremlinPlugin` methods. It simply allows those who extend from it
+to be able to just supply the name of the module and a list of link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/Customizer.html[Customizer]
+instances to apply to the `GremlinScriptEngine`. In this case, the TinkerGraph plugin just needs an
+link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer]
+which describes the list of classes to import when the plugin is activated and applied to the `GremlinScriptEngine`.
 
-There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin`
-implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader]
+The `ImportCustomizer` is just one of several provided `Customizer` implementations that can be used in conjunction
+with plugin development:
+
+* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingCustomizer.html[BindingCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
+* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer] - Add imports to a `GremlinScriptEngine`
+* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ScriptCustomizer.html[ScriptCustomizer] - Execute a script on a `GremlinScriptEngine` at startup
+
+Individual `GremlinScriptEngine` instances may have their own `Customizer` instances that can be used only with that
+engine - e.g. `gremlin-groovy` has some that are specific to controlling the Groovy compiler configuration. Developing
+a new `Customizer` implementation is not really possible without changes to TinkerPop, as the framework is not designed
+to respond to external ones. The base `Customizer` implementations listed above should cover most needs.
+
+A `GremlinPlugin` must support one of two instantiation models so that it can be instantiated from configuration files
+for use in various situations - e.g. Gremlin Server. The first option is to use a static initializer given a method
+with the following signature:
+
+[source,java]
+----
+public static GremlinPlugin instance()
+----
+
+The limitation with this approach is that it does not provide a way to supply any configuration to the plugin so it
+tends to only be useful for fairly simplistic plugins. The more advanced approach is to provide a "builder" given a
+method with the following signature:
+
+[source,java]
+----
+public static Builder build()
+----
+
+It doesn't really matter what kind of class is returned from `build` so long as it follows a "Builder" pattern, where
+methods on that object return an instance of itself, so that builder methods can be chained together prior to calling
+a final `create` method as follows:
+
+[source,java]
+----
+public GremlinPlugin create()
+----
+
+Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportGremlinPlugin.html
+for an example of what implementing a `Builder` might look like in this context.
+
+Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_
+(e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins).
+
+For plugins that will work with Gremlin Console, there is one other step to follow to ensure that the `GremlinPlugin`
+will work there.  The console loads `GremlinPlugin` instances via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader]
 and therefore need a resource file added to the jar file where the plugin exists.  Add a file called
-`org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the TinkerGraph
+`org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin` to `META-INF/services`.  In the case of the TinkerGraph
 plugin above, that file will have this line in it:
 
 [source,java]
 ----
-include::{basedir}/tinkergraph-gremlin/src/main/resources/META-INF/services/org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
+include::{basedir}/tinkergraph-gremlin/src/main/resources/META-INF/services/org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin[]
 ----
 
 Once the plugin is packaged, there are two ways to test it out:
 
-. Copy the jar and its dependencies to the Gremlin Console path and start it.
+. Copy the jar and its dependencies to the Gremlin Console path and start it. It is preferrable that the plugin is
+copied to the `/ext/_plugin_name_` directory.
 . Start Gremlin Console and try the `:install` command: `:install com.company my-plugin 1.0.0`.
 
 In either case, once one of these two approaches is taken, the jars and their dependencies are available to the
