@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import java.security.AccessController;
@@ -63,7 +66,7 @@ import java.util.stream.Stream;
  */
 public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineManager {
 
-    private static final boolean DEBUG = false;
+    private static final Logger logger = LoggerFactory.getLogger(DefaultGremlinScriptEngineManager.class);
 
     /**
      * Set of script engine factories discovered.
@@ -222,7 +225,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error(String.format("Could not create GremlinScriptEngine for %s", shortName), exp);
             }
         }
 
@@ -231,7 +234,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 names = spi.getNames();
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error("Could not get GremlinScriptEngine names", exp);
             }
 
             if (names != null) {
@@ -240,7 +243,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                         try {
                             return createGremlinScriptEngine(spi);
                         } catch (Exception exp) {
-                            if (DEBUG) exp.printStackTrace();
+                            logger.error(String.format("Could not create GremlinScriptEngine for %s", shortName), exp);
                         }
                     }
                 }
@@ -269,7 +272,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error(String.format("Could not create GremlinScriptEngine for %s", extension), exp);
             }
         }
 
@@ -278,7 +281,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 exts = spi.getExtensions();
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error("Could not get GremlinScriptEngine extensions", exp);
             }
             if (exts == null) continue;
             for (String ext : exts) {
@@ -286,7 +289,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                     try {
                         return createGremlinScriptEngine(spi);
                     } catch (Exception exp) {
-                        if (DEBUG) exp.printStackTrace();
+                        logger.error(String.format("Could not create GremlinScriptEngine for %s", extension), exp);
                     }
                 }
             }
@@ -314,7 +317,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error(String.format("Could not create GremlinScriptEngine for %s", mimeType), exp);
             }
         }
 
@@ -323,7 +326,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             try {
                 types = spi.getMimeTypes();
             } catch (Exception exp) {
-                if (DEBUG) exp.printStackTrace();
+                logger.error("Could not get GremlinScriptEngine mimetypes", exp);
             }
             if (types == null) continue;
             for (String type : types) {
@@ -331,7 +334,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                     try {
                         return createGremlinScriptEngine(spi);
                     } catch (Exception exp) {
-                        if (DEBUG) exp.printStackTrace();
+                        logger.error(String.format("Could not create GremlinScriptEngine for %s", mimeType), exp);
                     }
                 }
             }
@@ -409,9 +412,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                     (PrivilegedAction<ServiceLoader<GremlinScriptEngineFactory>>) () -> getServiceLoader(loader));
             itty = sl.iterator();
         } catch (ServiceConfigurationError err) {
-            System.err.println("Can't find GremlinScriptEngineFactory providers: " +
-                    err.getMessage());
-            if (DEBUG) err.printStackTrace();
+            logger.error("Can't find GremlinScriptEngineFactory providers: " + err.getMessage(), err);
 
             // do not throw any exception here. user may want to manager their own factories using this manager
             // by explicit registration (by registerXXX) methods.
@@ -425,15 +426,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                     factory.setCustomizerManager(this);
                     engineSpis.add(factory);
                 } catch (ServiceConfigurationError err) {
-                    System.err.println("GremlinScriptEngineManager providers.next(): "
-                            + err.getMessage());
-                    if (DEBUG) err.printStackTrace();
+                    logger.error("GremlinScriptEngineManager providers.next(): " + err.getMessage(), err);
                 }
             }
         } catch (ServiceConfigurationError err) {
-            System.err.println("GremlinScriptEngineManager providers.hasNext(): "
-                    + err.getMessage());
-            if (DEBUG) err.printStackTrace();
+            logger.error("GremlinScriptEngineManager providers.hasNext(): " + err.getMessage(), err);
             // do not throw any exception here. user may want to manage their own factories using this manager
             // by explicit registration (by registerXXX) methods.
         }
@@ -450,13 +447,14 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 .forEach(bc -> globalScope.putAll(bc.getBindings()));
         engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
 
-        // merge in bindings that are marked with engine scope. these get applied to only those GremlinScriptEngine
-        // instances that are of this gremlin language
+        // merge in bindings that are marked with engine scope. there typically won't be any of these but it's just
+        // here for completeness. bindings will typically apply with global scope only as engine scope will generally
+        // be overridden at the time of eval() with the bindings that are supplied to it
         getCustomizers(spi.getEngineName()).stream()
                 .filter(p -> p instanceof BindingsCustomizer)
                 .map(p -> ((BindingsCustomizer) p))
                 .filter(bc -> bc.getScope() == ScriptContext.ENGINE_SCOPE)
-                .forEach(bc -> engine.setBindings(bc.getBindings(), ScriptContext.ENGINE_SCOPE));
+                .forEach(bc -> engine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(bc.getBindings()));
 
         final List<ScriptCustomizer> scriptCustomizers = getCustomizers(spi.getEngineName()).stream()
                 .filter(p -> p instanceof ScriptCustomizer)
@@ -475,6 +473,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 throw new IllegalStateException(ex);
             }
         });
+
         return engine;
     }
 }
