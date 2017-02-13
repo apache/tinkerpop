@@ -239,4 +239,4 @@ The Apache TinkerPop project bundles the following components under the BSD/MIT 
 
 The Apache TinkerPop project bundles the following components under the ISC License:
 
-     jBCrypt (com.github.jeremyh:jBCrypt:0.4 - https://github.com/jeremyh/jBCrypt) - for details, see licenses/jbcrypt
+     jBCrypt (org.mindrot:jbcrypt:0.4 - https://github.com/djmdjm/jBCrypt) - for details, see licenses/jbcrypt
