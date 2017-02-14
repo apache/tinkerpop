@@ -82,10 +82,6 @@ limitations under the License.
             <id>hyracks-releases</id>
             <url>http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/</url>
         </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
     <build>
         <directory>${basedir}/target</directory>
