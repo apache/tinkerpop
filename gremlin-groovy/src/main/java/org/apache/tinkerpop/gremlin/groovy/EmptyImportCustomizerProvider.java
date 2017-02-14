@@ -29,7 +29,9 @@ import java.util.Set;
  * This {@link ImportCustomizerProvider} is empty and comes with no pre-defined imports at all.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link ImportCustomizer}
  */
+@Deprecated
 public class EmptyImportCustomizerProvider extends DefaultImportCustomizerProvider {
 
     /**

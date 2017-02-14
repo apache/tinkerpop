@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy;
 
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 /**
@@ -26,7 +27,9 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
  * {@link GremlinGroovyScriptEngine}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link Customizer}.
  */
+@Deprecated
 public interface CompilerCustomizerProvider {
 
     /**

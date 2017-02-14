@@ -28,7 +28,9 @@ import java.util.Set;
  * Provides no imports.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link ImportCustomizer}
  */
+@Deprecated
 public final class NoImportCustomizerProvider implements ImportCustomizerProvider {
 
     public static final NoImportCustomizerProvider INSTANCE = new NoImportCustomizerProvider();
