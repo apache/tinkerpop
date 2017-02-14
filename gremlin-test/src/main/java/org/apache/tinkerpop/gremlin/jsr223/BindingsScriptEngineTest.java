@@ -33,6 +33,7 @@ import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGIN
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -83,6 +84,7 @@ public class BindingsScriptEngineTest {
 
     @Test
     public void shouldExtractGlobalBindingsAfterScriptExecution() throws Exception {
+        assumeThat("Only works with gremlin-groovy", ENGINE_TO_TEST, is("gremlin-groovy"));
         final GremlinScriptEngineManager manager = new DefaultGremlinScriptEngineManager();
 
         final Bindings b1 = new SimpleBindings();
