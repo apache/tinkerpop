@@ -26,7 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+* Deprecated `CustomizerProvider` infrastructure.
+* Improved consistency of the application of bindings to `GremlinScriptEngine` implementations in the `BindingsGremlinPlugin`.
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)
