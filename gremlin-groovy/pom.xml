@@ -61,14 +61,14 @@ limitations under the License.
             <classifier>indy</classifier>
         </dependency>
         <dependency>
-            <groupId>com.github.jeremyh</groupId>
-            <artifactId>jBCrypt</artifactId>
-            <version>jbcrypt-0.4</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons.lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
         </dependency>
         <!-- TEST -->
         <dependency>
@@ -87,10 +87,6 @@ limitations under the License.
         <repository>
             <id>hyracks-releases</id>
             <url>http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/</url>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
         </repository>
     </repositories>
     <build>

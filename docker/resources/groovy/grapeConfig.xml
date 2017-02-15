@@ -16,7 +16,6 @@
         <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]"/>
       </filesystem>
       <ibiblio name="ibiblio" m2compatible="true"/>
-      <ibiblio name="jitpack" root="https://jitpack.io" m2compatible="true"/>
       <ibiblio name="local" root="file:${user.home}/.m2/repository/" m2compatible="true"/>
     </chain>
   </resolvers>
