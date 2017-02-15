@@ -29,72 +29,74 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class Processor:
     """Base class for OpProcessor serialization system."""
 
-    _graphson_writer = graphson.GraphSONWriter()
-
-    def __init__(self, default_args):
-        self._default_args = default_args
+    def __init__(self, writer):
+        self._graphson_writer = writer
 
     def get_op_args(self, op, args):
         op_method = getattr(self, op, None)
         if not op_method:
             raise Exception("Processor does not support op: {}".format(op))
-        args_ = self._default_args.get(op, dict()).copy()
-        args_.update(args)
-        return op_method(args_)
+        return op_method(args)
+
+
+class Standard(Processor):
+
+    def authentication(self, args):
+        return args
+
+    def eval(self, args):
+        return args
+
+
+class Traversal(Processor):
+
+    def authentication(self, args):
+        return args
+
+    def bytecode(self, args):
+        gremlin = args['gremlin']
+        args['gremlin'] = self._graphson_writer.toDict(gremlin)
+        aliases = args.get('aliases', '')
+        if not aliases:
+            aliases = {'g': 'g'}
+        args['aliases'] = aliases
+        return args
+
+    def close(self, args):
+        return self.keys(args)
+
+    def gather(self, args):
+        side_effect = args['sideEffect']
+        args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
+        aliases = args.get('aliases', '')
+        if not aliases:
+            aliases = {'g': 'g'}
+        args['aliases'] = aliases
+        return args
+
+    def keys(self, args):
+        side_effect = args['sideEffect']
+        args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
+        return args
 
 
 class GraphSONMessageSerializer:
     """Message serializer for GraphSON"""
 
-    _graphson_reader = graphson.GraphSONReader()
-
-
-    class standard(Processor):
-
-        def authentication(self, args):
-            return args
-
-        def eval(self, args):
-            return args
-
-
-    class traversal(Processor):
-
-        def authentication(self, args):
-            return args
-
-        def bytecode(self, args):
-            gremlin = args['gremlin']
-            args['gremlin'] = self._graphson_writer.toDict(gremlin)
-            aliases = args.get('aliases', '')
-            if not aliases:
-                aliases = {'g': 'g'}
-            args['aliases'] = aliases
-            return args
-
-        def close(self, args):
-            return self.keys(args)
-
-        def gather(self, args):
-            side_effect = args['sideEffect']
-            args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
-            aliases = args.get('aliases', '')
-            if not aliases:
-                aliases = {'g': 'g'}
-            args['aliases'] = aliases
-            return args
-
-        def keys(self, args):
-            side_effect = args['sideEffect']
-            args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
-            return args
-
+    def __init__(self, reader=None, writer=None):
+        if not reader:
+            reader = graphson.GraphSONReader()
+        self._graphson_reader = reader
+        if not writer:
+            writer = graphson.GraphSONWriter()
+        self.standard = Standard(writer)
+        self.traversal = Traversal(writer)
 
     def get_processor(self, processor):
         processor = getattr(self, processor, None)
         if not processor:
             raise Exception("Unknown processor")
-        return processor({})
+        return processor
 
     def serialize_message(self, request_id, request_message):
         processor = request_message.processor

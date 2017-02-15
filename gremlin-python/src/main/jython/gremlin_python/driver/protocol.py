@@ -19,10 +19,13 @@ under the License.
 import abc
 import base64
 import collections
-import json
 import uuid
 
 import six
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 from gremlin_python.driver import serializer, request
 
@@ -51,9 +54,7 @@ class AbstractBaseProtocol:
 
 class GremlinServerWSProtocol(AbstractBaseProtocol):
 
-    def __init__(self, message_serializer=None, username='', password=''):
-        if message_serializer is None:
-            message_serializer = serializer.GraphSONMessageSerializer()
+    def __init__(self, message_serializer, username='', password=''):
         self._message_serializer = message_serializer
         self._username = username
         self._password = password

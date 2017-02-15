@@ -18,7 +18,7 @@ under the License.
 """
 from concurrent.futures import Future
 
-from gremlin_python.driver import client
+from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
     RemoteConnection, RemoteTraversal, RemoteTraversalSideEffects)
 
@@ -29,10 +29,20 @@ class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 username="", password=""):
-        self._client = client.Client(url, traversal_source, protocol_factory,
-                                     transport_factory, pool_size, max_workers,
-                                     None, username, password)
+                 username="", password="", message_serializer=None,
+                 graphson_reader=None, graphson_writer=None):
+        if message_serializer is None:
+            message_serializer = serializer.GraphSONMessageSerializer(
+                reader=graphson_reader,
+                writer=graphson_writer)
+        self._client = client.Client(url, traversal_source,
+                                     protocol_factory=protocol_factory,
+                                     transport_factory=transport_factory,
+                                     pool_size=pool_size,
+                                     max_workers=max_workers,
+                                     message_serializer=message_serializer,
+                                     username=username,
+                                     password=password)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
 
