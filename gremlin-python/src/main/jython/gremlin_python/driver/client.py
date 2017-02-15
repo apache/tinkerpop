@@ -103,10 +103,10 @@ class Client:
             self._url, self._traversal_source, protocol,
             self._transport_factory, self._executor, self._pool)
 
-    def submit(self, message):
-        return self.submitAsync(message).result()
+    def submit(self, message, bindings=None):
+        return self.submitAsync(message, bindings=bindings).result()
 
-    def submitAsync(self, message):
+    def submitAsync(self, message, bindings=None):
         if isinstance(message, traversal.Bytecode):
             message = request.RequestMessage(
                 processor='traversal', op='bytecode',
@@ -117,5 +117,7 @@ class Client:
                 processor='', op='eval',
                 args={'gremlin': message,
                       'aliases': {'g': self._traversal_source}})
+            if bindings:
+                message.args.update(bindings)
         conn = self._pool.get(True)
         return conn.write(message)
