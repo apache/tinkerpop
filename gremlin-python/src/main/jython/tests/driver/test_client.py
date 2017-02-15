@@ -40,6 +40,10 @@ def test_client_simple_eval(client):
     assert client.submit('1 + 1').all().result()[0] == 2
 
 
+def test_client_simple_eval_bindings(client):
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+
+
 def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
