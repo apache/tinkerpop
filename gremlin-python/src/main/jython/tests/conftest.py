@@ -26,12 +26,14 @@ from gremlin_python.driver.connection import Connection
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
+from gremlin_python.driver.serializer import GraphSONMessageSerializer
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
 
 @pytest.fixture
 def connection(request):
     protocol = GremlinServerWSProtocol(
+        GraphSONMessageSerializer(),
         username='stephen', password='password')
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()

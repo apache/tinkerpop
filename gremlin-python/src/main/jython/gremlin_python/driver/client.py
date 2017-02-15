@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from six.moves import queue
 
-from gremlin_python.driver import connection, protocol, request
+from gremlin_python.driver import connection, protocol, request, serializer
 from gremlin_python.process import traversal
 
 # This is until concurrent.futures backport 3.1.0 release
@@ -44,6 +44,8 @@ class Client:
                  message_serializer=None, username="", password=""):
         self._url = url
         self._traversal_source = traversal_source
+        if message_serializer is None:
+            message_serializer = serializer.GraphSONMessageSerializer()
         self._message_serializer = message_serializer
         self._username = username
         self._password = password
@@ -59,7 +61,7 @@ class Client:
         self._transport_factory = transport_factory
         if protocol_factory is None:
             protocol_factory = lambda: protocol.GremlinServerWSProtocol(
-                message_serializer=self._message_serializer,
+                self._message_serializer,
                 username=self._username,
                 password=self._password)
         self._protocol_factory = protocol_factory
