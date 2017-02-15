@@ -35,12 +35,22 @@ def test_connection(connection):
     assert len(results) == 6
     assert isinstance(results, list)
 
-def test_client(client):
+
+def test_client_simple_eval(client):
+    assert client.submit('1 + 1').all().result()[0] == 2
+
+
+def test_client_eval_traversal(client):
+    assert len(client.submit('g.V()').all().result()) == 6
+
+
+def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
+
 
 def test_iterate_result_set(client):
     g = Graph().traversal()
@@ -52,6 +62,7 @@ def test_iterate_result_set(client):
         results += result
     assert len(results) == 6
 
+
 def test_client_async(client):
     g = Graph().traversal()
     t = g.V()
@@ -60,6 +71,7 @@ def test_client_async(client):
     assert not future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
+
 
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
@@ -77,6 +89,7 @@ def test_connection_share(client):
     assert future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
+
 
 def test_multi_conn_pool(client):
     g = Graph().traversal()

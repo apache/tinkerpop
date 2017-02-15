@@ -48,6 +48,16 @@ class GraphSONMessageSerializer:
 
     _graphson_reader = graphson.GraphSONReader()
 
+
+    class standard(Processor):
+
+        def authentication(self, args):
+            return args
+
+        def eval(self, args):
+            return args
+
+
     class traversal(Processor):
 
         def authentication(self, args):

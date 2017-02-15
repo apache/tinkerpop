@@ -110,5 +110,10 @@ class Client:
                 processor='traversal', op='bytecode',
                 args={'gremlin': message,
                       'aliases': {'g': self._traversal_source}})
+        elif isinstance(message, str):
+            message = request.RequestMessage(
+                processor='', op='eval',
+                args={'gremlin': message,
+                      'aliases': {'g': self._traversal_source}})
         conn = self._pool.get(True)
         return conn.write(message)
