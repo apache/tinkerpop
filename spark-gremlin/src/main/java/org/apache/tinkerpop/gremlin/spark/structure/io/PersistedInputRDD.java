@@ -39,7 +39,7 @@ public final class PersistedInputRDD implements InputRDD {
         if (!configuration.containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " to read the persisted RDD from");
         Spark.create(sparkContext.sc());
-        final Optional<String> graphLocation = Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), SparkContextStorage.open(sparkContext.sc()));
+        final Optional<String> graphLocation = Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), SparkContextStorage.open());
         return graphLocation.isPresent() ? JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(graphLocation.get()).toJavaRDD()) : JavaPairRDD.fromJavaRDD(sparkContext.emptyRDD());
     }
 

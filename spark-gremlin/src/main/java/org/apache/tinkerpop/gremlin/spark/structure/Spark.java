@@ -46,31 +46,62 @@ public class Spark {
     private Spark() {
     }
 
-    public static void create(final Configuration configuration) {
+    public static SparkContext create(final SparkConf sparkConf) {
+        if (null == CONTEXT || CONTEXT.isStopped()) {
+            sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
+            CONTEXT = SparkContext.getOrCreate(sparkConf);
+        }
+        return CONTEXT;
+    }
+
+    public static SparkContext create(org.apache.hadoop.conf.Configuration hadoopConfiguration) {
+        final SparkConf sparkConfiguration = new SparkConf();
+        hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
+        return Spark.create(sparkConfiguration);
+    }
+
+    public static SparkContext create(final Configuration configuration) {
         final SparkConf sparkConf = new SparkConf();
         configuration.getKeys().forEachRemaining(key -> sparkConf.set(key, configuration.getProperty(key).toString()));
-        sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
-        CONTEXT = SparkContext.getOrCreate(sparkConf);
+        return Spark.create(sparkConf);
     }
 
-    public static void create(final String master) {
+    public static SparkContext create(final String master) {
         final SparkConf sparkConf = new SparkConf();
-        sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
         sparkConf.setMaster(master);
-        CONTEXT = SparkContext.getOrCreate(sparkConf);
+        return Spark.create(sparkConf);
     }
 
-    public static void create(final SparkContext sparkContext) {
+    public static SparkContext create(final SparkContext sparkContext) {
+        if (null != CONTEXT && !CONTEXT.isStopped() && sparkContext !=CONTEXT /*exact the same object => NOP*/
+                && !sparkContext.getConf().getBoolean("spark.driver.allowMultipleContexts", false)) {
+            throw new IllegalStateException(
+                    "Active Spark context exists. Call Spark.close() to close it before creating a new one");
+        }
         CONTEXT = sparkContext;
+        return CONTEXT;
     }
 
+    public static SparkContext recreateStopped() {
+        if (null == CONTEXT)
+            throw new IllegalStateException("The Spark context has not been created.");
+        if (!CONTEXT.isStopped())
+            throw new IllegalStateException("The Spark context is not stopped.");
+        CONTEXT = SparkContext.getOrCreate(CONTEXT.getConf());
+        return CONTEXT;
+    }
     public static SparkContext getContext() {
+        if (null != CONTEXT && CONTEXT.isStopped())
+            recreateStopped();
         return CONTEXT;
     }
 
     public static void refresh() {
         if (null == CONTEXT)
             throw new IllegalStateException("The Spark context has not been created.");
+        if (CONTEXT.isStopped())
+            recreateStopped();
+
         final Set<String> keepNames = new HashSet<>();
         for (final RDD<?> rdd : JavaConversions.asJavaIterable(CONTEXT.persistentRdds().values())) {
             if (null != rdd.name()) {
@@ -114,4 +145,5 @@ public class Spark {
             CONTEXT.stop();
         CONTEXT = null;
     }
+
 }

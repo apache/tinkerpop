@@ -140,27 +140,27 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             graphComputerConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
             final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(graphComputerConfiguration);
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
-            final Storage sparkContextStorage = SparkContextStorage.open(graphComputerConfiguration);
             final boolean inputFromHDFS = FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
             final boolean skipPartitioner = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false);
             final boolean skipPersist = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, false);
-            String inputLocation = null;
-            if (inputFromSpark)
-                inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), sparkContextStorage).orElse(null);
-            else if (inputFromHDFS)
-                inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), fileSystemStorage).orElse(null);
-            if (null == inputLocation)
-                inputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
-
-            if (null != inputLocation && inputFromHDFS) {
-                try {
-                    graphComputerConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
-                    hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
-                } catch (final IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+            if (inputFromHDFS) {
+                String inputLocation = Constants
+                        .getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION),
+                                fileSystemStorage).orElse(null);
+                if (null != inputLocation) {
+                    try {
+                        graphComputerConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR,
+                                FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath()
+                                        .toString());
+                        hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR,
+                                FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath()
+                                        .toString());
+                    } catch (final IOException e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
                 }
             }
             final InputRDD inputRDD;
@@ -189,6 +189,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 throw new IllegalStateException(e.getMessage(), e);
             }
 
+            // create the spark context from the graph computer configuration
+            final JavaSparkContext sparkContext = new JavaSparkContext(Spark.create(hadoopConfiguration));
+            final Storage sparkContextStorage = SparkContextStorage.open();
+
             SparkMemory memory = null;
             // delete output location
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
@@ -202,15 +206,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // the Spark application name will always be set by SparkContextStorage, thus, INFO the name to make it easier to debug
             logger.debug(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
 
-            // create the spark configuration from the graph computer configuration
-            final SparkConf sparkConfiguration = new SparkConf();
-            hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             try {
-                final JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
                 this.loadJars(hadoopConfiguration, sparkContext); // add the project jars to the cluster
-                Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
-                updateLocalConfiguration(sparkContext, sparkConfiguration);
+                updateLocalConfiguration(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 boolean partitioned = false;
                 JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(graphComputerConfiguration, sparkContext);
@@ -394,7 +393,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * in configuration. Spark allows us to override these inherited properties via
      * SparkContext.setLocalProperty
      */
-    private void updateLocalConfiguration(final JavaSparkContext sparkContext, final SparkConf sparkConfiguration) {
+    private void updateLocalConfiguration(final JavaSparkContext sparkContext, final Configuration configuration) {
         /*
          * While we could enumerate over the entire SparkConfiguration and copy into the Thread
          * Local properties of the Spark Context this could cause adverse effects with future
@@ -410,12 +409,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         };
 
         for (String propertyName : validPropertyNames) {
-            if (sparkConfiguration.contains(propertyName)) {
-                String propertyValue = sparkConfiguration.get(propertyName);
+            String propertyValue = configuration.get(propertyName);
+            if (propertyValue != null) {
                 this.logger.info("Setting Thread Local SparkContext Property - "
                         + propertyName + " : " + propertyValue);
-
-                sparkContext.setLocalProperty(propertyName, sparkConfiguration.get(propertyName));
+                sparkContext.setLocalProperty(propertyName, configuration.get(propertyName));
             }
         }
     }
