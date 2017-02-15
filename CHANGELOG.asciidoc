@@ -29,6 +29,11 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Refactor `SparkContext` handler to support external kill and stop operations.
 * Fixed an optimization bug in `LazyBarrierStrategy` around appending barriers to the end of a `Traversal`.
 * `TraverserIterator` in GremlinServer is smart to try and bulk traversers prior to network I/O.
+* Improved Gremlin-Python Driver implementation by adding a threaded client with basic connection pooling and support for pluggable websocket clients.
+
+Improvements
+^^^^^^^^^^^^
+TINKERPOP-1599 implement real gremlin-python driver
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)
