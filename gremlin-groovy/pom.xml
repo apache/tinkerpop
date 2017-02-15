@@ -61,9 +61,9 @@ limitations under the License.
             <classifier>indy</classifier>
         </dependency>
         <dependency>
-            <groupId>com.github.jeremyh</groupId>
-            <artifactId>jBCrypt</artifactId>
-            <version>jbcrypt-0.4</version>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
