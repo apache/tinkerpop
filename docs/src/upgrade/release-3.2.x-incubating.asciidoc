@@ -32,6 +32,33 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Gremlin-Python Driver
+^^^^^^^^^^^^^^^^^^^^^
+Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
+the Python `concurrent.futures` module to provide asynchronous I/0 using threading. The default underlying
+websocket client implementation is still provided by Tornado, but it is trivial to plug in another client by
+defining the `Transport` interface.
+
+Using the `DriverRemoteConnection` class is the exact same as in previous versions; however,
+`DriverRemoteConnection` now uses the new `Client` class to submit messages to the server.
+
+The `Client` class implementation/interface is based on the Java Driver, with some restrictions.
+Most notably, Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is
+instantiated directly. Usage is as follows:
+
+[source,python]
+----
+from gremlin_python.driver import client
+
+client = client.Client('ws://localhost:8182/gremlin', 'g')
+result_set = client.submit('1 + 1')
+future_results = result_set.all()  # returns a concurrent.futures.Future
+results = future_results.result()  # returns a list
+assert results == [2]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -44,9 +71,6 @@ but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. T
 some `ProviderStrategies`. Most likely not, but just be aware.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1627[TINKERPOP-1627]
-
-TinkerGraph Deserialization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TinkerPop 3.2.4
 ---------------
