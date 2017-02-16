@@ -1215,6 +1215,42 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>apply-filters-to-javadoc</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/javadoc-temp</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/site/apidocs</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-java-doc-back</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/site/apidocs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/javadoc-temp</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
