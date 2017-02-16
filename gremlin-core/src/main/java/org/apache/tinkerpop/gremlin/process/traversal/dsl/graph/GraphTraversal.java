@@ -745,11 +745,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
     }
 
+    /**
+     * Adds a {@link Vertex}.
+     *
+     * @param vertexLabel the label of the {@link Vertex} to add
+     * @return the traversal with the {@link AddVertexStep} added
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step">Reference Documentation - AddVertex Step</a>
+     */
     public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
         this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabel);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabel));
     }
 
+    /**
+     * Adds a {@link Vertex} with a default vertex label.
+     *
+     * @return the traversal with the {@link AddVertexStep} added
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step">Reference Documentation - AddVertex Step</a>
+     */
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getBytecode().addStep(Symbols.addV);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null));
@@ -768,29 +781,68 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal<S, Vertex>) this;
     }
 
+    /**
+     * Adds an {@link Edge} with the specified edge label.
+     *
+     * @param edgeLabel the label of the newly added edge
+     * @return the traversal with the {@link AddEdgeStep} added
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step">Reference Documentation - AddEdge Step</a>
+     */
     public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
         this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabel);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabel));
     }
 
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the step label to use for selecting the
+     * incoming vertex of the newly added {@link Edge}.
+     *
+     * @param toStepLabel the step label of the incoming vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step">Reference Documentation - AddEdge Step</a>
+     */
     public default GraphTraversal<S, E> to(final String toStepLabel) {
         this.asAdmin().getBytecode().addStep(Symbols.to, toStepLabel);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addTo(__.select(toStepLabel));
         return this;
     }
 
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the step label to use for selecting the
+     * outgoing vertex of the newly added {@link Edge}.
+     *
+     * @param fromStepLabel the step label of the outgoing vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step">Reference Documentation - AddEdge Step</a>
+     */
     public default GraphTraversal<S, E> from(final String fromStepLabel) {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromStepLabel);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(__.select(fromStepLabel));
         return this;
     }
 
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+     * incoming vertex of the newly added {@link Edge}.
+     *
+     * @param toVertex the traversal for selecting the incoming vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step">Reference Documentation - AddEdge Step</a>
+     */
     public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addTo(toVertex);
         return this;
     }
 
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+     * outgoing vertex of the newly added {@link Edge}.
+     *
+     * @param fromVertex the traversal for selecting the outgoing vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step">Reference Documentation - AddEdge Step</a>
+     */
     public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(fromVertex);
@@ -1205,6 +1257,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new SampleLocalStep<>(this.asAdmin(), amountToSample));
     }
 
+    /**
+     * Removes elements and properties from the graph. This step is not a terminating, in the sense that it does not
+     * automatically iterate the traversal. It is therefore necessary to do some form of iteration for the removal
+     * to actually take place. In most cases, iteration is best accomplished with {@code g.V().drop().iterate()}.
+     *
+     * @return the traversal with the {@link DropStep} added
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#drop-step">Reference Documentation - Drop Step</a>
+     */
     public default GraphTraversal<S, E> drop() {
         this.asAdmin().getBytecode().addStep(Symbols.drop);
         return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
@@ -1318,6 +1378,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param key         the key for the property
      * @param value       the value for the property
      * @param keyValues   any meta properties to be assigned to this property
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step">AddProperty Step</a>
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
         if (null == cardinality)
@@ -1349,6 +1410,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param key       the key for the property
      * @param value     the value for the property
      * @param keyValues any meta properties to be assigned to this property
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step">AddProperty Step</a>
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         return key instanceof VertexProperty.Cardinality ?
