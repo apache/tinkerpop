@@ -242,6 +242,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Element} to its {@link Element#id}.
      *
      * @return the traversal with an appended {@link IdStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#id-step">Reference Documentation - Id Step</a>
      */
     public default GraphTraversal<S, Object> id() {
         this.asAdmin().getBytecode().addStep(Symbols.id);
@@ -252,6 +253,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Element} to its {@link Element#label}.
      *
      * @return the traversal with an appended {@link LabelStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#label-step">Reference Documentation - Label Step</a>
      */
     public default GraphTraversal<S, String> label() {
         this.asAdmin().getBytecode().addStep(Symbols.label);
