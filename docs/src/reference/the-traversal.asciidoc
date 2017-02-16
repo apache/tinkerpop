@@ -807,6 +807,20 @@ the key,value pairs for those verticies.
 TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop
 may provide a partial match extension.
 
+[[id-step]]
+Id Step
+~~~~~~~
+
+The `id()`-step (*map*) takes an `Element` and extracts its identifier from it.
+
+[gremlin-groovy,modern]
+----
+g.V().id()
+g.V(1).out().id().is(2)
+g.V(1).outE().id()
+g.V(1).properties().id()
+----
+
 [[inject-step]]
 Inject Step
 ~~~~~~~~~~~
@@ -854,6 +868,19 @@ g.V().where(__.in('created').values('age').
 <1> Find projects having exactly one contributor.
 <2> Find projects having two or more contributors.
 <3> Find projects whose contributors average age is between 30 and 35.
+
+[[label-step]]
+Label Step
+~~~~~~~~~~
+
+The `label()`-step (*map*) takes an `Element` and extracts its label from it.
+
+[gremlin-groovy,modern]
+----
+g.V().label()
+g.V(1).outE().label()
+g.V(1).properties().label()
+----
 
 [[limit-step]]
 Limit Step
