@@ -86,7 +86,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
                 if (foundFlatMap && !labeledPath &&
                         !(step.getNextStep() instanceof Barrier) &&
-                        (!(step.getNextStep() instanceof EmptyStep) || step.getTraversal().getParent() instanceof EmptyStep)) {
+                        !(step.getNextStep() instanceof EmptyStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);
                     TraversalHelper.copyLabels(step, noOpBarrierStep, true);
                     TraversalHelper.insertAfterStep(noOpBarrierStep, step, traversal);

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -88,20 +87,20 @@ public class LazyBarrierStrategyTest {
                 {__.repeat(__.out()).times(4), __.repeat(__.out()).times(4), Collections.emptyList()},
                 {__.repeat(__.out()).times(4), __.out().barrier(REPEAT_SIZE).out().barrier(REPEAT_SIZE).out().barrier(REPEAT_SIZE).out().barrier(REPEAT_SIZE), Collections.singletonList(RepeatUnrollStrategy.instance())},
                 {__.out().out().as("a").select("a").out(), __.out().out().barrier(LAZY_SIZE).as("a").select("a").out(), Collections.emptyList()},
-                {__.out().out().as("a").select("a").out(), __.out().out().barrier(LAZY_SIZE).as("a").select("a").barrier(PATH_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
-                {__.out().out().as("a").out().select("a").out(), __.out().out().barrier(LAZY_SIZE).as("a").out().select("a").barrier(PATH_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
-                {__.out().out().out().limit(10).out(), __.out().out().barrier(LAZY_SIZE).out().limit(10).out().barrier(LAZY_SIZE), Collections.emptyList()},
+                {__.out().out().as("a").select("a").out(), __.out().out().barrier(LAZY_SIZE).as("a").select("a").barrier(PATH_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().out().as("a").out().select("a").out(), __.out().out().barrier(LAZY_SIZE).as("a").out().select("a").barrier(PATH_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().out().out().limit(10).out(), __.out().out().barrier(LAZY_SIZE).out().limit(10).out(), Collections.emptyList()},
                 {__.V().out().in().where(P.neq("a")), __.V().out().barrier(LAZY_SIZE).in().barrier(LAZY_SIZE).where(P.neq("a")), Collections.emptyList()},
                 {__.V().as("a").out().in().where(P.neq("a")), __.V().as("a").out().in().where(P.neq("a")), Collections.emptyList()},
                 {__.out().out().in().where(P.neq("a")), __.out().out().barrier(LAZY_SIZE).in().barrier(LAZY_SIZE).where(P.neq("a")), Collections.emptyList()},
                 {__.out().as("a").out().in().where(P.neq("a")), __.out().as("a").out().in().where(P.neq("a")), Collections.emptyList()},
-                {__.out().as("a").out().in().where(P.neq("a")).out().out(), __.out().as("a").out().in().where(P.neq("a")).barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
-                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().as("a").out().in().where(P.neq("a")).out().out(), __.out().as("a").out().in().where(P.neq("a")).barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), Collections.emptyList()},
-                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
-                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
-                {__.V().out().out().groupCount().by(__.out().out().out()).out(), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().barrier(LAZY_SIZE), Collections.emptyList()},
-                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().barrier(LAZY_SIZE).as("a"), Collections.emptyList()}
+                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.V().out().out().groupCount().by(__.out().out().out()).out(), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out(), Collections.emptyList()},
+                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().as("a"), Collections.emptyList()}
         });
     }
 }
