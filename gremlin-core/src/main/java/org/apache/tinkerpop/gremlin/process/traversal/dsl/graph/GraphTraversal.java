@@ -263,6 +263,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map any object to a fixed <code>E</code> value.
      *
      * @return the traversal with an appended {@link ConstantStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#constant-step">Reference Documentation - Constant Step</a>
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
         this.asAdmin().getBytecode().addStep(Symbols.constant, e);
