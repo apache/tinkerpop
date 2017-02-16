@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
@@ -69,6 +71,12 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     // SIDE-EFFECTS
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX();
+
+    // BARRIERS
+
+    public abstract Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(final Object v1Id, final Object v4Id, final Object v6Id);
 
     //
 
@@ -212,6 +220,50 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX() {
+        final Vertex v1 = convertToVertex(graph, "marko");
+        final Vertex v2 = convertToVertex(graph, "vadas");
+        final Vertex v3 = convertToVertex(graph, "lop");
+        final Vertex v4 = convertToVertex(graph, "josh");
+        final Vertex v5 = convertToVertex(graph, "ripple");
+        final Vertex v6 = convertToVertex(graph, "peter");
+        final List<List<Vertex>> expected = Arrays.asList(
+                Arrays.asList(v1),
+                Arrays.asList(v2, v3, v4),
+                Arrays.asList(v5, v6));
+        final Traversal<Vertex, List<List<Vertex>>> traversal = get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(v1.id());
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final List<List<Vertex>> result = traversal.next();
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).size(), result.get(i).size());
+            assertTrue(result.get(i).stream().allMatch(expected.get(i)::contains));
+        }
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name() {
+        final Object v1Id = convertToVertexId("marko");
+        final Object v4Id = convertToVertexId("josh");
+        final Object v6Id = convertToVertexId("peter");
+        final List<String> expected = Arrays.asList("josh","peter");
+        final Traversal<Vertex, String> traversal = get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(v1Id, v4Id, v6Id);
+        printTraversalForm(traversal);
+        while (!expected.isEmpty()) {
+            final String name;
+            assertTrue(traversal.hasNext());
+            assertTrue(expected.contains(name = traversal.next()));
+            expected.remove(name);
+        }
+        assertTrue(expected.isEmpty());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX();
         printTraversalForm(traversal);
@@ -279,6 +331,16 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             return g.V().repeat(groupCount("m").by("name").out()).times(2).cap("m");
+        }
+
+        @Override
+        public Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
+            return g.V(v1Id).repeat(aggregate("a").fold().store("x").unfold().both().where(without("a")).dedup()).cap("x");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(final Object v1Id, final Object v4Id, final Object v6Id) {
+            return g.V(v1Id).repeat(bothE().values("weight").sum().choose(is(gt(1)), V(v6Id), V(v4Id)).out("created").dedup()).emit().values("name");
         }
 
         @Override

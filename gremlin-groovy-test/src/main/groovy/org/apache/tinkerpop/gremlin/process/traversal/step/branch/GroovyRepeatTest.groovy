@@ -23,6 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.without
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -73,6 +76,16 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')")
+        }
+
+        @Override
+        public Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(aggregate('a').fold.store('x').unfold.both.where(without('a')).dedup).cap('x')", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(final Object v1Id, final Object v4Id, final Object v6Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(bothE.weight.sum.choose(__.is(gt(1)), V(v6Id), V(v4Id)).out('created').dedup).emit.name", v1Id, v4Id, v6Id)
         }
 
         @Override
