@@ -290,6 +290,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param direction  the direction to traverse from the current vertex
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.to, direction, edgeLabels);
@@ -301,6 +302,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.out, edgeLabels);
@@ -312,6 +314,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.in, edgeLabels);
@@ -323,6 +326,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.both, edgeLabels);
@@ -335,6 +339,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param direction  the direction to traverse from the current vertex
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.toE, direction, edgeLabels);
@@ -346,6 +351,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.outE, edgeLabels);
@@ -357,6 +363,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.inE, edgeLabels);
@@ -368,6 +375,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.bothE, edgeLabels);
@@ -379,6 +387,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param direction the direction to traverser from the current edge
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
         this.asAdmin().getBytecode().addStep(Symbols.toV, direction);
@@ -389,6 +398,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its incoming/head incident {@link Vertex}.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> inV() {
         this.asAdmin().getBytecode().addStep(Symbols.inV);
@@ -399,6 +409,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its outgoing/tail incident {@link Vertex}.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> outV() {
         this.asAdmin().getBytecode().addStep(Symbols.outV);
@@ -409,6 +420,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its incident vertices.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> bothV() {
         this.asAdmin().getBytecode().addStep(Symbols.bothV);
@@ -419,6 +431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to the incident vertex that was not just traversed from in the path history.
      *
      * @return the traversal with an appended {@link EdgeOtherVertexStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> otherV() {
         this.asAdmin().getBytecode().addStep(Symbols.otherV);
