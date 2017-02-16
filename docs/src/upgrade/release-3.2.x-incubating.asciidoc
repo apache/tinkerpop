@@ -35,12 +35,21 @@ Upgrading for Users
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+HasPropertyStep
++++++++++++++++
+
+`HasPropertyStep` was added in order to alleviate the complexity of the compilation of `has(key)` to `filter(values('key'))`.
+A few of TinkerPop's `TraversalStrategy` test cases had to be tweaked given the new compilation. Nothing too complicated
+and providers may run into similar test case issues with their specific `ProviderTraverserStrategies`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1554[TINKERPOP-1554]
+
 LazyBarrierStrategy No Longer End Appends Barriers
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 `LazyBarrierStrategy` was trying to do to much by considering `Traverser` effects on network I/O by appending an
 `NoOpBarrierStrategy` to the end of the root traversal. This should not be accomplished by `LazyBarrierStrategy`,
-but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoninig logic in
+but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoning logic in
 some `ProviderStrategies`. Most likely not, but just be aware.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1627[TINKERPOP-1627]
