@@ -27,7 +27,7 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed an optimization bug in `LazyBarrierStrategy` around appending barriers to the end of a `Traversal`.
-* `RemoteStrategy` is smart to try and append a `NoOpBarrierStep` in order to bulk traversers prior to network I/O.
+* `TraverserIterator` in GremlinServer is smart to try and bulk traversers prior to network I/O.
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)

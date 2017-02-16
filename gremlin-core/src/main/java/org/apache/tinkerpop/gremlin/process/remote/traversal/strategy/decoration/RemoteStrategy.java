@@ -24,8 +24,6 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -49,7 +47,6 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         implements TraversalStrategy.DecorationStrategy {
 
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();
-    protected static final int MAX_BARRIER_SIZE = 1000;
     private final Optional<RemoteConnection> remoteConnection;
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
@@ -91,10 +88,6 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
-
-        // given that we send traversers over the wire, try our best to bulk to limit network traffic
-        if (!(traversal.getEndStep() instanceof Barrier))
-            traversal.addStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE));
 
         // verifications to ensure unsupported steps do not exist in the traversal
         if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
