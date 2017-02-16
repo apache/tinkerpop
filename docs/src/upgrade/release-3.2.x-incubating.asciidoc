@@ -22,6 +22,32 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.5
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asciidoc#release-3-2-5[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+LazyBarrierStrategy No Longer End Appends Barriers
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+`LazyBarrierStrategy` was trying to do to much by considering `Traverser` effects on network I/O by appending an
+`NoOpBarrierStrategy` to the end of the root traversal. This should not be accomplished by `LazyBarrierStrategy`,
+but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoninig logic in
+some `ProviderStrategies`. Most likely not, but just be aware.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1627[TINKERPOP-1627]
+
+TinkerGraph Deserialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 TinkerPop 3.2.4
 ---------------
 

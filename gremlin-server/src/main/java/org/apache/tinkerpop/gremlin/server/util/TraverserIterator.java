@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
 import java.util.Iterator;
 
@@ -32,9 +34,12 @@ public class TraverserIterator implements Iterator<Object> {
 
     private final Traversal.Admin traversal;
     private final HaltedTraverserStrategy haltedTraverserStrategy;
+    private final TraverserSet bulker = new TraverserSet();
+    private final int barrierSize;
 
     public TraverserIterator(final Traversal.Admin traversal) {
         this.traversal = traversal;
+        this.barrierSize = traversal.getTraverserRequirements().contains(TraverserRequirement.ONE_BULK) ? 1 : 1000;
         this.haltedTraverserStrategy = traversal.getStrategies().getStrategy(HaltedTraverserStrategy.class).orElse(
                 Boolean.valueOf(System.getProperty("is.testing", "false")) ?
                         HaltedTraverserStrategy.detached() :
@@ -42,17 +47,27 @@ public class TraverserIterator implements Iterator<Object> {
     }
 
     public Traversal.Admin getTraversal() {
-        return traversal;
+        return this.traversal;
     }
 
     @Override
     public boolean hasNext() {
-        return this.traversal.hasNext();
+        if (this.bulker.isEmpty())
+            this.fillBulker();
+        return !this.bulker.isEmpty();
     }
 
     @Override
     public Object next() {
-        final Traverser.Admin t = this.haltedTraverserStrategy.halt(traversal.nextTraverser());
+        if (this.bulker.isEmpty())
+            this.fillBulker();
+        final Traverser.Admin t = this.haltedTraverserStrategy.halt(this.bulker.remove());
         return new DefaultRemoteTraverser<>(t.get(), t.bulk());
+    }
+
+    private final void fillBulker() {
+        while (this.traversal.hasNext() && this.bulker.size() < this.barrierSize) {
+            this.bulker.add(this.traversal.nextTraverser());
+        }
     }
 }

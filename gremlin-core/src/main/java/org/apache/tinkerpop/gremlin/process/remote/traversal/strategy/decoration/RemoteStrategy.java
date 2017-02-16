@@ -47,7 +47,6 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         implements TraversalStrategy.DecorationStrategy {
 
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();
-
     private final Optional<RemoteConnection> remoteConnection;
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
