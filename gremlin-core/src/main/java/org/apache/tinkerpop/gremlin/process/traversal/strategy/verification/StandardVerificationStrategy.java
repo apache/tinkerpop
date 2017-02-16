@@ -57,8 +57,9 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }
-            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
-                throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
+            // TODO: REMOVE THIS WHEN THIS BRANCH IS DONE (TINKERPOP-1629)
+            /*if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
+                throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);*/
         }
 
         // The ProfileSideEffectStep must be the last step, 2nd last step when accompanied by the cap step,
