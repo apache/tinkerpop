@@ -2082,51 +2082,120 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
+    /**
+     * Returns the result of the specified traversal if it yields a result, otherwise it returns the calling element.
+     *
+     * @param optionalTraversal the traversal to execute for a potential result
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#optional-step" target="_blank">Reference Documentation - Optional Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.optional, optionalTraversal);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) optionalTraversal, (Traversal.Admin<E, E2>) optionalTraversal.asAdmin().clone(), (Traversal.Admin<E, E2>) __.<E2>identity()));
     }
 
+    /**
+     * Merges the results of an arbitrary number of traversals.
+     *
+     * @param unionTraversals the traversals to merge
+     * @return the traversal with the appended {@link UnionStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#union-step" target="_blank">Reference Documentation - Union Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.union, unionTraversals);
         return this.asAdmin().addStep(new UnionStep(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
 
+    /**
+     * Evaluates the provided traversals and returns the result of the first traversal to emit at least one object.
+     *
+     * @param coalesceTraversals the traversals to coalesce
+     * @return the traversal with the appended {@link CoalesceStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#coalesce-step" target="_blank">Reference Documentation - Coalesce Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.coalesce, coalesceTraversals);
         return this.asAdmin().addStep(new CoalesceStep(this.asAdmin(), Arrays.copyOf(coalesceTraversals, coalesceTraversals.length, Traversal.Admin[].class)));
     }
 
+    /**
+     * This step is used for looping over a some traversal given some break predicate.
+     *
+     * @param repeatTraversal the traversal to repeat over
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.repeat, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to determine what objects get emit from the loop.
+     *
+     * @param emitTraversal the emit predicate defined as a traversal
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.emit, emitTraversal);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) emitTraversal);
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to determine what objects get emit from the loop.
+     *
+     * @param emitPredicate the emit predicate
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
         this.asAdmin().getBytecode().addStep(Symbols.emit, emitPredicate);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(emitPredicate));
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to emit all objects from the loop.
+     *
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit() {
         this.asAdmin().getBytecode().addStep(Symbols.emit);
         return RepeatStep.addEmitToTraversal(this, TrueTraversal.instance());
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to determine when the loop should exit.
+     *
+     * @param untilTraversal the traversal that determines when the loop exits
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.until, untilTraversal);
         return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) untilTraversal);
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to determine when the loop should exit.
+     *
+     * @param untilPredicate the predicate that determines when the loop exits
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
         this.asAdmin().getBytecode().addStep(Symbols.until, untilPredicate);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(untilPredicate));
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to specify how many loops should occur before exiting.
+     *
+     * @param maxLoops the number of loops to execute prior to exiting
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> times(final int maxLoops) {
         this.asAdmin().getBytecode().addStep(Symbols.times, maxLoops);
         if (this.asAdmin().getEndStep() instanceof TimesModulating) {
@@ -2136,6 +2205,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return RepeatStep.addUntilToTraversal(this, new LoopTraversal<>(maxLoops));
     }
 
+    /**
+     * Provides a execute a specified traversal on a single element within a stream.
+     *
+     * @param localTraversal the traversal to execute locally
+     * @return the traversal with the appended {@link LocalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#local-step" target="_blank">Reference Documentation - Local Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.local, localTraversal);
         return this.asAdmin().addStep(new LocalStep<>(this.asAdmin(), localTraversal.asAdmin()));
