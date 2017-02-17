@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
@@ -1203,16 +1204,40 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param propertyKey the key of the property to filter on
+     * @param predicate the filter to apply to the key's value
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param accessor the {@link T} accessor of the property to filter on
+     * @param predicate the filter to apply to the key's value
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param propertyKey the key of the property to filter on
+     * @param value the value to compare the property value to for equality
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
         if (value instanceof P)
             return this.has(propertyKey, (P) value);
@@ -1224,6 +1249,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param accessor the {@link T} accessor of the property to filter on
+     * @param value the value to compare the accessor value to for equality
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         if (value instanceof P)
             return this.has(accessor, (P) value);
@@ -1235,18 +1268,44 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param label the label of the {@link Element}
+     * @param propertyKey the key of the property to filter on
+     * @param predicate the filter to apply to the key's value
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, predicate);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param label the label of the {@link Element}
+     * @param propertyKey the key of the property to filter on
+     * @param value the value to compare the accessor value to for equality
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
         this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, value);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param accessor the {@link T} accessor of the property to filter on
+     * @param propertyTraversal the traversal to filter the accessor value by
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
         return this.asAdmin().addStep(
@@ -1254,6 +1313,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                         new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, accessor.getAccessor()))));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param propertyKey the key of the property to filter on
+     * @param propertyTraversal the traversal to filter the property value by
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, propertyTraversal);
         return this.asAdmin().addStep(
@@ -1261,16 +1328,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                         new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey))));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on the existence of properties.
+     *
+     * @param propertyKey the key of the property to filter on for existence
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> has(final String propertyKey) {
         this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey);
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), __.values(propertyKey)));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on the non-existence of properties.
+     *
+     * @param propertyKey the key of the property to filter on for existence
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasNot(final String propertyKey) {
         this.asAdmin().getBytecode().addStep(Symbols.hasNot, propertyKey);
         return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), __.values(propertyKey)));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their label.
+     *
+     * @param label the label of the {@link Element}
+     * @param otherLabels additional labels of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasLabel(final String label, final String... otherLabels) {
         final String[] labels = new String[otherLabels.length + 1];
         labels[0] = label;
@@ -1279,11 +1368,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their label.
+     *
+     * @param predicate the filter to apply to the label of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasLabel(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasLabel, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their identifier.
+     *
+     * @param id the identifier of the {@link Element}
+     * @param otherIds additional identifiers of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
         if (id instanceof P)
             return this.hasId((P) id);
@@ -1308,11 +1412,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their identifier.
+     *
+     * @param predicate the filter to apply to the identifier of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasId, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their key.
+     *
+     * @param label the key of the {@link Element}
+     * @param otherLabels additional key of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasKey(final String label, final String... otherLabels) {
         final String[] labels = new String[otherLabels.length + 1];
         labels[0] = label;
@@ -1321,11 +1440,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their key.
+     *
+     * @param predicate the filter to apply to the key of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasKey(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasKey, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate));
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their value.
+     *
+     * @param value the value of the {@link Element}
+     * @param otherValues additional values of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasValue(final Object value, final Object... otherValues) {
         if (value instanceof P)
             return this.hasValue((P) value);
@@ -1350,6 +1484,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
     }
 
+    /**
+     * Filters vertices, edges and vertex properties based on their value.
+     *
+     * @param predicate the filter to apply to the value of the {@link Element}
+     * @return the traverse with an appended {@link HasStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step">Reference Documentation - Has Step</a>
+     */
     public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
