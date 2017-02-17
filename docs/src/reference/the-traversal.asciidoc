@@ -882,6 +882,18 @@ g.V(1).outE().label()
 g.V(1).properties().label()
 ----
 
+[[key-step]]
+Key Step
+~~~~~~~~
+
+The `key()`-step (*map*) takes a `Property` and extracts the key from it.
+
+[gremlin-groovy,theCrew]
+----
+g.V(1).properties().key()
+g.V(1).properties().properties().key()
+----
+
 [[limit-step]]
 Limit Step
 ~~~~~~~~~~
@@ -2210,6 +2222,18 @@ g.V(4).union(
 g.V(4).union(
          __.in().values('age'),
          out().values('lang')).path()
+----
+
+[[value-step]]
+Value Step
+~~~~~~~~~~
+
+The `value()`-step (*map*) takes a `Property` and extracts the value from it.
+
+[gremlin-groovy,theCrew]
+----
+g.V(1).properties().value()
+g.V(1).properties().properties().value()
 ----
 
 [[valuemap-step]]
