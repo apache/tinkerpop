@@ -1096,16 +1096,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) filterTraversal));
     }
 
+    /**
+     * Ensures that at least one of the provided traversals yield a result.
+     *
+     * @param orTraversals filter traversals where at least one must be satisfied
+     * @return the traversal with an appended {@link OrStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#or-step">Reference Documentation - Or Step</a>
+     */
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.or, orTraversals);
         return this.asAdmin().addStep(new OrStep(this.asAdmin(), orTraversals));
     }
 
+    /**
+     * Ensures that all of the provided traversals yield a result.
+     *
+     * @param andTraversals filter traversals that must be satisfied
+     * @return the traversal with an appended {@link AndStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#and-step">Reference Documentation - And Step</a>
+     */
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.and, andTraversals);
         return this.asAdmin().addStep(new AndStep(this.asAdmin(), andTraversals));
     }
 
+    /**
+     * Provides a way to add arbitrary objects to a traversal stream.
+     *
+     * @param injections the objects to add to the stream
+     * @return the traversal with an appended {@link InjectStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#inject-step">Reference Documentation - Inject Step</a>
+     *
+     */
     public default GraphTraversal<S, E> inject(final E... injections) {
         this.asAdmin().getBytecode().addStep(Symbols.inject, injections);
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
@@ -1117,6 +1139,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope       whether the deduplication is on the stream (global) or the current object (local).
      * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.dedup, scope, dedupLabels);
@@ -1128,22 +1151,51 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param dedupLabels if labels are provided, then the scoped object's labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.dedup, dedupLabels);
         return this.asAdmin().addStep(new DedupGlobalStep<>(this.asAdmin(), dedupLabels));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param startKey the key containing the object to filter
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.where, startKey, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.where, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.empty(), predicate));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param whereTraversal the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.where, whereTraversal);
         return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
