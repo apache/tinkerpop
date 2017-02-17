@@ -542,18 +542,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * A version of {@code select} that allows for the extraction of a {@link Column} from objects in the traversal.
-     *
-     * @param column the column to extract
-     * @return the traversal with an appended {@link TraversalMapStep}
-     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
-     */
-    public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, column);
-        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
-    }
-
-    /**
      * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
@@ -639,6 +627,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
     }
 
+    /**
+     * Projects the current object in the stream into a {@code Map} that is keyed by the provided labels.
+     *
+     * @return the traversal with an appended {@link ProjectStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#project-step">Reference Documentation - Project Step</a>
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
         final String[] projectKeys = new String[otherProjectKeys.length + 1];
         projectKeys[0] = projectKey;
@@ -713,16 +707,50 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), null, selectKey));
     }
 
+    /**
+     * A version of {@code select} that allows for the extraction of a {@link Column} from objects in the traversal.
+     *
+     * @param column the column to extract
+     * @return the traversal with an appended {@link TraversalMapStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
+     */
+    public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
+        this.asAdmin().getBytecode().addStep(Symbols.select, column);
+        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
+    }
+
+    /**
+     * Unrolls a {@code Iterator}, {@code Iterable} or {@code Map} into a linear form or simply emits the object if it
+     * is not one of those types.
+     *
+     * @return the traversal with an appended {@link UnfoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#unfold-step">Reference Documentation - Unfold Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> unfold() {
         this.asAdmin().getBytecode().addStep(Symbols.unfold);
         return this.asAdmin().addStep(new UnfoldStep<>(this.asAdmin()));
     }
 
+    /**
+     * Rolls up objects in the stream into an aggregate list.
+     *
+     * @return the traversal with an appended {@link FoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step">Reference Documentation - Fold Step</a>
+     */
     public default GraphTraversal<S, List<E>> fold() {
         this.asAdmin().getBytecode().addStep(Symbols.fold);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin()));
     }
 
+    /**
+     * Rolls up objects in the stream into an aggregate value as defined by a {@code seed} and {@code BiFunction}.
+     *
+     * @param seed the value to provide as the first argument to the {@code foldFunction}
+     * @param foldFunction the function to fold by where the first argument is the {@code seed} or the value returned from subsequent calss and
+     *                     the second argument is the value from the stream
+     * @return the traversal with an appended {@link FoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step">Reference Documentation - Fold Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
         this.asAdmin().getBytecode().addStep(Symbols.fold, seed, foldFunction);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
