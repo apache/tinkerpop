@@ -543,18 +543,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * A version of {@code select} that allows for the extraction of a {@link Column} from objects in the traversal.
-     *
-     * @param column the column to extract
-     * @return the traversal with an appended {@link TraversalMapStep}
-     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
-     */
-    public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, column);
-        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
-    }
-
-    /**
      * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
@@ -628,11 +616,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
+    /**
+     * If the {@link Traverser} supports looping then calling this method will extract the number of loops for that
+     * traverser.
+     *
+     * @return the traversal with an appended {@link LoopsStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#loops-step">Reference Documentation - Loops Step</a>
+     */
     public default GraphTraversal<S, Integer> loops() {
         this.asAdmin().getBytecode().addStep(Symbols.loops);
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
     }
 
+    /**
+     * Projects the current object in the stream into a {@code Map} that is keyed by the provided labels.
+     *
+     * @return the traversal with an appended {@link ProjectStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#project-step">Reference Documentation - Project Step</a>
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
         final String[] projectKeys = new String[otherProjectKeys.length + 1];
         projectKeys[0] = projectKey;
@@ -730,16 +731,50 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
 
+    /**
+     * A version of {@code select} that allows for the extraction of a {@link Column} from objects in the traversal.
+     *
+     * @param column the column to extract
+     * @return the traversal with an appended {@link TraversalMapStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
+     */
+    public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
+        this.asAdmin().getBytecode().addStep(Symbols.select, column);
+        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
+    }
+
+    /**
+     * Unrolls a {@code Iterator}, {@code Iterable} or {@code Map} into a linear form or simply emits the object if it
+     * is not one of those types.
+     *
+     * @return the traversal with an appended {@link UnfoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#unfold-step">Reference Documentation - Unfold Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> unfold() {
         this.asAdmin().getBytecode().addStep(Symbols.unfold);
         return this.asAdmin().addStep(new UnfoldStep<>(this.asAdmin()));
     }
 
+    /**
+     * Rolls up objects in the stream into an aggregate list.
+     *
+     * @return the traversal with an appended {@link FoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step">Reference Documentation - Fold Step</a>
+     */
     public default GraphTraversal<S, List<E>> fold() {
         this.asAdmin().getBytecode().addStep(Symbols.fold);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin()));
     }
 
+    /**
+     * Rolls up objects in the stream into an aggregate value as defined by a {@code seed} and {@code BiFunction}.
+     *
+     * @param seed the value to provide as the first argument to the {@code foldFunction}
+     * @param foldFunction the function to fold by where the first argument is the {@code seed} or the value returned from subsequent calss and
+     *                     the second argument is the value from the stream
+     * @return the traversal with an appended {@link FoldStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step">Reference Documentation - Fold Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
         this.asAdmin().getBytecode().addStep(Symbols.fold, seed, foldFunction);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
@@ -859,6 +894,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
+    /**
+     * Organize objects in the stream into a {@code Map}. Calls to {@code group()} are typically accompanied with
+     * {@link #by()} modulators which help specify how the grouping should occur.
+     *
+     * @return the traversal with an appended {@link GroupStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step">Reference Documentation - Group Step</a>
+     */
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
         this.asAdmin().getBytecode().addStep(Symbols.group);
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
@@ -873,11 +915,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
     }
 
+    /**
+     * Counts the number of times a particular objects has been part of a traversal, returning a {@code Map} where the
+     * object is the key and the value is the count.
+     *
+     * @return the traversal with an appended {@link GroupCountStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step">Reference Documentation - GroupCount Step</a>
+     */
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
         this.asAdmin().getBytecode().addStep(Symbols.groupCount);
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
+    /**
+     * Aggregates the emanating paths into a {@link Tree} data structure.
+     *
+     * @return the traversal with an appended {@link TreeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step">Reference Documentation - Tree Step</a>
+     */
     public default GraphTraversal<S, Tree> tree() {
         this.asAdmin().getBytecode().addStep(Symbols.tree);
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
@@ -1065,16 +1120,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) filterTraversal));
     }
 
+    /**
+     * Ensures that at least one of the provided traversals yield a result.
+     *
+     * @param orTraversals filter traversals where at least one must be satisfied
+     * @return the traversal with an appended {@link OrStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#or-step">Reference Documentation - Or Step</a>
+     */
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.or, orTraversals);
         return this.asAdmin().addStep(new OrStep(this.asAdmin(), orTraversals));
     }
 
+    /**
+     * Ensures that all of the provided traversals yield a result.
+     *
+     * @param andTraversals filter traversals that must be satisfied
+     * @return the traversal with an appended {@link AndStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#and-step">Reference Documentation - And Step</a>
+     */
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.and, andTraversals);
         return this.asAdmin().addStep(new AndStep(this.asAdmin(), andTraversals));
     }
 
+    /**
+     * Provides a way to add arbitrary objects to a traversal stream.
+     *
+     * @param injections the objects to add to the stream
+     * @return the traversal with an appended {@link InjectStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#inject-step">Reference Documentation - Inject Step</a>
+     *
+     */
     public default GraphTraversal<S, E> inject(final E... injections) {
         this.asAdmin().getBytecode().addStep(Symbols.inject, injections);
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
@@ -1086,6 +1163,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope       whether the deduplication is on the stream (global) or the current object (local).
      * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.dedup, scope, dedupLabels);
@@ -1097,22 +1175,51 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param dedupLabels if labels are provided, then the scoped object's labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.dedup, dedupLabels);
         return this.asAdmin().addStep(new DedupGlobalStep<>(this.asAdmin(), dedupLabels));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param startKey the key containing the object to filter
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.where, startKey, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.where, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.empty(), predicate));
     }
 
+    /**
+     * Filters the current object based on the object itself or the path history.
+     *
+     * @param whereTraversal the filter to apply
+     * @return the traversal with an appended {@link WherePredicateStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step">Reference Documentation - Where Step</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match">Reference Documentation - Where with Match</a>
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select">Reference Documentation - Where with Select</a>
+     */
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.where, whereTraversal);
         return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?

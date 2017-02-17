@@ -949,6 +949,17 @@ WARNING: The anonymous traversal of `local()` processes the current object "loca
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
+[[loops-step]]
+Loops Step
+~~~~~~~~~~
+
+The `loops()`-step (*map*) extracts the number of times the `Traverser` has gone through the current loop.
+
+[gremlin-groovy,modern]
+----
+g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("name")
+----
+
 [[match-step]]
 Match Step
 ~~~~~~~~~~
