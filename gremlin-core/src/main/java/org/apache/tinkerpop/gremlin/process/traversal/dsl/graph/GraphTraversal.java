@@ -627,6 +627,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
+    /**
+     * If the {@link Traverser} supports looping then calling this method will extract the number of loops for that
+     * traverser.
+     *
+     * @return the traversal with an appended {@link LoopsStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#loops-step">Reference Documentation - Loops Step</a>
+     */
     public default GraphTraversal<S, Integer> loops() {
         this.asAdmin().getBytecode().addStep(Symbols.loops);
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
