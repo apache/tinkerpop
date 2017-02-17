@@ -870,6 +870,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
+    /**
+     * Organize objects in the stream into a {@code Map}. Calls to {@code group()} are typically accompanied with
+     * {@link #by()} modulators which help specify how the grouping should occur.
+     *
+     * @return the traversal with an appended {@link GroupStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step">Reference Documentation - Group Step</a>
+     */
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
         this.asAdmin().getBytecode().addStep(Symbols.group);
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
@@ -884,11 +891,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
     }
 
+    /**
+     * Counts the number of times a particular objects has been part of a traversal, returning a {@code Map} where the
+     * object is the key and the value is the count.
+     *
+     * @return the traversal with an appended {@link GroupCountStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step">Reference Documentation - GroupCount Step</a>
+     */
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
         this.asAdmin().getBytecode().addStep(Symbols.groupCount);
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
+    /**
+     * Aggregates the emanating paths into a {@link Tree} data structure.
+     *
+     * @return the traversal with an appended {@link TreeStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step">Reference Documentation - Tree Step</a>
+     */
     public default GraphTraversal<S, Tree> tree() {
         this.asAdmin().getBytecode().addStep(Symbols.tree);
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
