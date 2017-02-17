@@ -1537,17 +1537,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param probability the probability that the object will pass through
      * @return the traversal with an appended {@link CoinStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#coin-step" target="_blank">Reference Documentation - Coin Step</a>
      */
     public default GraphTraversal<S, E> coin(final double probability) {
         this.asAdmin().getBytecode().addStep(Symbols.coin, probability);
         return this.asAdmin().addStep(new CoinStep<>(this.asAdmin(), probability));
     }
 
+    /**
+     * Filter the objects in the traversal by the number of them to pass through the stream. Those before the value
+     * of {@code low} do not pass through and those that exceed the value of {@code high} will end the iteration.
+     *
+     * @param low the number at which to start allowing objects through the stream
+     * @param high the number at which to end the stream
+     * @return the traversal with an appended {@link RangeGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
+     */
     public default GraphTraversal<S, E> range(final long low, final long high) {
         this.asAdmin().getBytecode().addStep(Symbols.range, low, high);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), low, high));
     }
 
+    /**
+     * Filter the objects in the traversal by the number of them to pass through the stream as constrained by the
+     * {@link Scope}. Those before the value of {@code low} do not pass through and those that exceed the value of
+     * {@code high} will end the iteration.
+     *
+     * @param scope the scope of how to apply the {@code range}
+     * @param low the number at which to start allowing objects through the stream
+     * @param high the number at which to end the stream
+     * @return the traversal with an appended {@link RangeGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
         this.asAdmin().getBytecode().addStep(Symbols.range, scope, low, high);
         return this.asAdmin().addStep(scope.equals(Scope.global)
@@ -1555,11 +1576,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new RangeLocalStep<>(this.asAdmin(), low, high));
     }
 
+    /**
+     * Filter the objects in the traversal by the number of them to pass through the stream, where only the first
+     * {@code n} objects are allowed as defined by the {@code limit} argument.
+     *
+     * @param limit the number at which to end the stream
+     * @return the traversal with an appended {@link RangeGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#limit-step" target="_blank">Reference Documentation - Limit Step</a>
+     */
     public default GraphTraversal<S, E> limit(final long limit) {
         this.asAdmin().getBytecode().addStep(Symbols.limit, limit);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), 0, limit));
     }
 
+    /**
+     * Filter the objects in the traversal by the number of them to pass through the stream given the {@link Scope},
+     * where only the first {@code n} objects are allowed as defined by the {@code limit} argument.
+     *
+     * @param scope the scope of how to apply the {@code limit}
+     * @param limit the number at which to end the stream
+     * @return the traversal with an appended {@link RangeGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#limit-step" target="_blank">Reference Documentation - Limit Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
         this.asAdmin().getBytecode().addStep(Symbols.limit, scope, limit);
         return this.asAdmin().addStep(scope.equals(Scope.global)
@@ -1567,16 +1605,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new RangeLocalStep<>(this.asAdmin(), 0, limit));
     }
 
+    /**
+     * Filters the objects in the traversal emitted as being last objects in the stream. In this case, only the last
+     * object will be returned.
+     *
+     * @return the traversal with an appended {@link TailGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
+     */
     public default GraphTraversal<S, E> tail() {
         this.asAdmin().getBytecode().addStep(Symbols.tail);
         return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), 1));
     }
 
+    /**
+     * Filters the objects in the traversal emitted as being last objects in the stream. In this case, only the last
+     * {@code n} objects will be returned as defined by the {@code limit}.
+     *
+     * @param limit the number at which to end the stream
+     * @return the traversal with an appended {@link TailGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
+     */
     public default GraphTraversal<S, E> tail(final long limit) {
         this.asAdmin().getBytecode().addStep(Symbols.tail, limit);
         return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), limit));
     }
 
+    /**
+     * Filters the objects in the traversal emitted as being last objects in the stream given the {@link Scope}. In
+     * this case, only the last object in the stream will be returned.
+     *
+     * @param scope the scope of how to apply the {@code tail}
+     * @return the traversal with an appended {@link TailGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.tail, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global)
@@ -1584,6 +1645,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new TailLocalStep<>(this.asAdmin(), 1));
     }
 
+    /**
+     * Filters the objects in the traversal emitted as being last objects in the stream given the {@link Scope}. In
+     * this case, only the last {@code n} objects will be returned as defined by the {@code limit}.
+     *
+     * @param scope the scope of how to apply the {@code tail}
+     * @param limit the number at which to end the stream
+     * @return the traversal with an appended {@link TailGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
         this.asAdmin().getBytecode().addStep(Symbols.tail, scope, limit);
         return this.asAdmin().addStep(scope.equals(Scope.global)
