@@ -1761,21 +1761,53 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), (Traversal) sideEffectTraversal));
     }
 
+    /**
+     * Iterates the traversal up to the itself and emits the side-effect referenced by the key. If multiple keys are
+     * supplied then the side-effects are emitted as a {@code Map}.
+     *
+     * @param sideEffectKey the side-effect to emit
+     * @param sideEffectKeys other side-effects to emit
+     * @return the traversal with an appended {@link SideEffectCapStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#cap-step" target="_blank">Reference Documentation - Cap Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.cap, sideEffectKey, sideEffectKeys);
         return this.asAdmin().addStep(new SideEffectCapStep<>(this.asAdmin(), sideEffectKey, sideEffectKeys));
     }
 
+    /**
+     * Extracts a portion of the graph being traversed into a {@link Graph} object held in the specified side-effect
+     * key.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the subgraph
+     * @return the traversal with an appended {@link SubgraphStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#subgraph-step" target="_blank">Reference Documentation - Subgraph Step</a>
+     */
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.subgraph, sideEffectKey);
         return this.asAdmin().addStep(new SubgraphStep(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Eagerly collects objects up to this step into a side-effect.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
+     * @return the traversal with an appended {@link AggregateStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
+     */
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, sideEffectKey);
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Organize objects in the stream into a {@code Map}. Calls to {@code group()} are typically accompanied with
+     * {@link #by()} modulators which help specify how the grouping should occur.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
+     * @return the traversal with an appended {@link GroupStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step" target="_blank">Reference Documentation - Group Step</a>
+     */
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.group, sideEffectKey);
         return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
@@ -1789,16 +1821,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Counts the number of times a particular objects has been part of a traversal, returning a {@code Map} where the
+     * object is the key and the value is the count.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
+     * @return the traversal with an appended {@link GroupCountStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step" target="_blank">Reference Documentation - GroupCount Step</a>
+     */
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.groupCount, sideEffectKey);
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Aggregates the emanating paths into a {@link Tree} data structure.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the tree
+     * @return the traversal with an appended {@link TreeStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step" target="_blank">Reference Documentation - Tree Step</a>
+     */
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.tree, sideEffectKey);
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Map the {@link Traverser} to its {@link Traverser#sack} value.
+     *
+     * @param sackOperator the operator to apply to the sack value
+     * @return the traversal with an appended {@link SackStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sack-step" target="_blank">Reference Documentation - Sack Step</a>
+     */
     public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
         this.asAdmin().getBytecode().addStep(Symbols.sack, sackOperator);
         return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
@@ -1812,16 +1866,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.sack(sackOperator).by(elementPropertyKey);
     }
 
+    /**
+     * Lazily aggregates objects in the stream into a side-effect collection.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregate
+     * @return the traversal with an appended {@link StoreStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#store-step" target="_blank">Reference Documentation - Store Step</a>
+     */
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
         return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Allows developers to examine statistical information about a traversal providing data like execution times,
+     * counts, etc.
+     *
+     * @param sideEffectKey the name of the side-effect key within which to hold the profile object
+     * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
+     */
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Traversal.Symbols.profile, sideEffectKey);
         return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Allows developers to examine statistical information about a traversal providing data like execution times,
+     * counts, etc.
+     *
+     * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
+     */
     @Override
     public default GraphTraversal<S, TraversalMetrics> profile() {
         return (GraphTraversal<S, TraversalMetrics>) Traversal.super.profile();
