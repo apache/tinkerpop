@@ -1797,21 +1797,53 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), (Traversal) sideEffectTraversal));
     }
 
+    /**
+     * Iterates the traversal up to the itself and emits the side-effect referenced by the key. If multiple keys are
+     * supplied then the side-effects are emitted as a {@code Map}.
+     *
+     * @param sideEffectKey the side-effect to emit
+     * @param sideEffectKeys other side-effects to emit
+     * @return the traversal with an appended {@link SideEffectCapStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#cap-step" target="_blank">Reference Documentation - Cap Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.cap, sideEffectKey, sideEffectKeys);
         return this.asAdmin().addStep(new SideEffectCapStep<>(this.asAdmin(), sideEffectKey, sideEffectKeys));
     }
 
+    /**
+     * Extracts a portion of the graph being traversed into a {@link Graph} object held in the specified side-effect
+     * key.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the subgraph
+     * @return the traversal with an appended {@link SubgraphStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#subgraph-step" target="_blank">Reference Documentation - Subgraph Step</a>
+     */
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.subgraph, sideEffectKey);
         return this.asAdmin().addStep(new SubgraphStep(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Eagerly collects objects up to this step into a side-effect.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
+     * @return the traversal with an appended {@link AggregateStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
+     */
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, sideEffectKey);
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Organize objects in the stream into a {@code Map}. Calls to {@code group()} are typically accompanied with
+     * {@link #by()} modulators which help specify how the grouping should occur.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
+     * @return the traversal with an appended {@link GroupStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step" target="_blank">Reference Documentation - Group Step</a>
+     */
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.group, sideEffectKey);
         return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
@@ -1825,16 +1857,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Counts the number of times a particular objects has been part of a traversal, returning a {@code Map} where the
+     * object is the key and the value is the count.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
+     * @return the traversal with an appended {@link GroupCountStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step" target="_blank">Reference Documentation - GroupCount Step</a>
+     */
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.groupCount, sideEffectKey);
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Aggregates the emanating paths into a {@link Tree} data structure.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the tree
+     * @return the traversal with an appended {@link TreeStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step" target="_blank">Reference Documentation - Tree Step</a>
+     */
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.tree, sideEffectKey);
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Map the {@link Traverser} to its {@link Traverser#sack} value.
+     *
+     * @param sackOperator the operator to apply to the sack value
+     * @return the traversal with an appended {@link SackStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sack-step" target="_blank">Reference Documentation - Sack Step</a>
+     */
     public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
         this.asAdmin().getBytecode().addStep(Symbols.sack, sackOperator);
         return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
@@ -1848,16 +1902,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.sack(sackOperator).by(elementPropertyKey);
     }
 
+    /**
+     * Lazily aggregates objects in the stream into a side-effect collection.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregate
+     * @return the traversal with an appended {@link StoreStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#store-step" target="_blank">Reference Documentation - Store Step</a>
+     */
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
         return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Allows developers to examine statistical information about a traversal providing data like execution times,
+     * counts, etc.
+     *
+     * @param sideEffectKey the name of the side-effect key within which to hold the profile object
+     * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
+     */
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Traversal.Symbols.profile, sideEffectKey);
         return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * Allows developers to examine statistical information about a traversal providing data like execution times,
+     * counts, etc.
+     *
+     * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
+     */
     @Override
     public default GraphTraversal<S, TraversalMetrics> profile() {
         return (GraphTraversal<S, TraversalMetrics>) Traversal.super.profile();
@@ -1952,85 +2028,210 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(branchStep);
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal. A {@code choose} is modified by {@link #option} which provides the various
+     * branch choices.
+     *
+     * @param choiceTraversal the traversal used to determine the value for the branch
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choiceTraversal);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) choiceTraversal));
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal.
+     *
+     * @param traversalPredicate the traversal used to determine the "if" portion of the if-then-else
+     * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @param falseChoice the traversal to execute in the event the {@code traversalPredicate} returns false
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then
+     * like semantics within a traversal.
+     *
+     * @param traversalPredicate the traversal used to determine the "if" portion of the if-then-else
+     * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                                      final Traversal<?, E2> trueChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal. A {@code choose} is modified by {@link #option} which provides the various
+     * branch choices.
+     *
+     * @param choiceFunction the function used to determine the value for the branch
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choiceFunction);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) __.map(new FunctionTraverser<>(choiceFunction))));
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal.
+     *
+     * @param choosePredicate the function used to determine the "if" portion of the if-then-else
+     * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @param falseChoice the traversal to execute in the event the {@code traversalPredicate} returns false
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then
+     * like semantics within a traversal.
+     *
+     * @param choosePredicate the function used to determine the "if" portion of the if-then-else
+     * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
+    /**
+     * Returns the result of the specified traversal if it yields a result, otherwise it returns the calling element.
+     *
+     * @param optionalTraversal the traversal to execute for a potential result
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#optional-step" target="_blank">Reference Documentation - Optional Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.optional, optionalTraversal);
         return this.asAdmin().addStep(new OptionalStep<>(this.asAdmin(), (Traversal.Admin<E2, E2>) optionalTraversal));
     }
 
+    /**
+     * Merges the results of an arbitrary number of traversals.
+     *
+     * @param unionTraversals the traversals to merge
+     * @return the traversal with the appended {@link UnionStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#union-step" target="_blank">Reference Documentation - Union Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.union, unionTraversals);
         return this.asAdmin().addStep(new UnionStep<>(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
 
+    /**
+     * Evaluates the provided traversals and returns the result of the first traversal to emit at least one object.
+     *
+     * @param coalesceTraversals the traversals to coalesce
+     * @return the traversal with the appended {@link CoalesceStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#coalesce-step" target="_blank">Reference Documentation - Coalesce Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.coalesce, coalesceTraversals);
         return this.asAdmin().addStep(new CoalesceStep<>(this.asAdmin(), Arrays.copyOf(coalesceTraversals, coalesceTraversals.length, Traversal.Admin[].class)));
     }
 
+    /**
+     * This step is used for looping over a some traversal given some break predicate.
+     *
+     * @param repeatTraversal the traversal to repeat over
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.repeat, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to determine what objects get emit from the loop.
+     *
+     * @param emitTraversal the emit predicate defined as a traversal
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.emit, emitTraversal);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) emitTraversal);
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to determine what objects get emit from the loop.
+     *
+     * @param emitPredicate the emit predicate
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
         this.asAdmin().getBytecode().addStep(Symbols.emit, emitPredicate);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(emitPredicate));
     }
 
+    /**
+     * Emit is used in conjunction with {@link #repeat(Traversal)} to emit all objects from the loop.
+     *
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> emit() {
         this.asAdmin().getBytecode().addStep(Symbols.emit);
         return RepeatStep.addEmitToTraversal(this, TrueTraversal.instance());
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to determine when the loop should exit.
+     *
+     * @param untilTraversal the traversal that determines when the loop exits
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.until, untilTraversal);
         return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) untilTraversal);
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to determine when the loop should exit.
+     *
+     * @param untilPredicate the predicate that determines when the loop exits
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
         this.asAdmin().getBytecode().addStep(Symbols.until, untilPredicate);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(untilPredicate));
     }
 
+    /**
+     * Modifies a {@link #repeat(Traversal)} to specify how many loops should occur before exiting.
+     *
+     * @param maxLoops the number of loops to execute prior to exiting
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     */
     public default GraphTraversal<S, E> times(final int maxLoops) {
         this.asAdmin().getBytecode().addStep(Symbols.times, maxLoops);
         if (this.asAdmin().getEndStep() instanceof TimesModulating) {
@@ -2040,6 +2241,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return RepeatStep.addUntilToTraversal(this, new LoopTraversal<>(maxLoops));
     }
 
+    /**
+     * Provides a execute a specified traversal on a single element within a stream.
+     *
+     * @param localTraversal the traversal to execute locally
+     * @return the traversal with the appended {@link LocalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#local-step" target="_blank">Reference Documentation - Local Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.local, localTraversal);
         return this.asAdmin().addStep(new LocalStep<>(this.asAdmin(), localTraversal.asAdmin()));
