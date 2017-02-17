@@ -2255,27 +2255,59 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /////////////////// VERTEX PROGRAM STEPS ////////////////
 
+    /**
+     * Calculates a PageRank over the graph using a 0.85 for the {@code alpha} value.
+     *
+     * @return the traversal with the appended {@link PageRankVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#pagerank-step" target="_blank">Reference Documentation - PageRank Step</a>
+     */
     public default GraphTraversal<S, E> pageRank() {
         this.asAdmin().getBytecode().addStep(Symbols.pageRank);
         return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), 0.85d));
     }
 
+    /**
+     * Calculates a PageRank over the graph.
+     *
+     * @return the traversal with the appended {@link PageRankVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#pagerank-step" target="_blank">Reference Documentation - PageRank Step</a>
+     */
     public default GraphTraversal<S, E> pageRank(final double alpha) {
         this.asAdmin().getBytecode().addStep(Symbols.pageRank, alpha);
         return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), alpha));
     }
 
+    /**
+     * Executes a Peer Pressure community detection algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#peerpressure-step" target="_blank">Reference Documentation - PeerPressure Step</a>
+     */
     public default GraphTraversal<S, E> peerPressure() {
         this.asAdmin().getBytecode().addStep(Symbols.peerPressure);
         return this.asAdmin().addStep((Step<E, E>) new PeerPressureVertexProgramStep(this.asAdmin()));
     }
 
+    /**
+     * Executes a Peer Pressure community detection algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#peerpressure-step" target="_blank">Reference Documentation - PeerPressure Step</a>
+     */
     public default GraphTraversal<S, E> program(final VertexProgram<?> vertexProgram) {
         return this.asAdmin().addStep((Step<E, E>) new ProgramVertexProgramStep(this.asAdmin(), vertexProgram));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
 
+    /**
+     * A step modulator that provides a lable to the step that can be accessed later in the traversal by other steps.
+     *
+     * @param stepLabel the name of the step
+     * @param stepLabels additional names for the label
+     * @return the traversal with the modified end step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#as-step" target="_blank">Reference Documentation - As Step</a>
+     */
     public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
         this.asAdmin().getBytecode().addStep(Symbols.as, stepLabel, stepLabels);
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
@@ -2287,16 +2319,41 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    /**
+     * Turns the lazy traversal pipeline into a bulk-synchronous pipeline which basically iterates that traversal to
+     * the size of the barrier. In this case, it iterates the entire thing as the default barrier size is set to
+     * {@code Integer.MAX_VALUE}.
+     *
+     * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
+     */
     public default GraphTraversal<S, E> barrier() {
         this.asAdmin().getBytecode().addStep(Symbols.barrier);
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), Integer.MAX_VALUE));
     }
 
+    /**
+     * Turns the lazy traversal pipeline into a bulk-synchronous pipeline which basically iterates that traversal to
+     * the size of the barrier.
+     *
+     * @param maxBarrierSize the size of the barrier
+     * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
+     */
     public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
         this.asAdmin().getBytecode().addStep(Symbols.barrier, maxBarrierSize);
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), maxBarrierSize));
     }
 
+    /**
+     * Turns the lazy traversal pipeline into a bulk-synchronous pipeline which basically iterates that traversal to
+     * the size of the barrier. In this case, it iterates the entire thing as the default barrier size is set to
+     * {@code Integer.MAX_VALUE}.
+     *
+     * @param barrierConsumer a consumer function that is applied to the objects aggregated to the barrier
+     * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
+     */
     public default GraphTraversal<S, E> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
         this.asAdmin().getBytecode().addStep(Symbols.barrier, barrierConsumer);
         return this.asAdmin().addStep(new LambdaCollectingBarrierStep<>(this.asAdmin(), (Consumer) barrierConsumer, Integer.MAX_VALUE));
@@ -2305,30 +2362,69 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     //// BY-MODULATORS
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. This form is essentially
+     * an {@link #identity()} modulation.
+     *
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by() {
         this.asAdmin().getBytecode().addStep(Symbols.by);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy();
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified traversal.
+     *
+     * @param traversal the traversal to apply
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
         this.asAdmin().getBytecode().addStep(Symbols.by, traversal);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin());
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified token of {@link T}.
+     *
+     * @param token the token to apply
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by(final T token) {
         this.asAdmin().getBytecode().addStep(Symbols.by, token);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token);
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified key.
+     *
+     * @param key the key to apply
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by(final String key) {
         this.asAdmin().getBytecode().addStep(Symbols.by, key);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key);
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param function the function to apply
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
         this.asAdmin().getBytecode().addStep(Symbols.by, function);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function);
@@ -2337,40 +2433,73 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     //// COMPARATOR BY-MODULATORS
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param traversal the traversal to apply
+     * @param comparator the comparator to apply typically for some {@link #order()}
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
         this.asAdmin().getBytecode().addStep(Symbols.by, traversal, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin(), comparator);
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param comparator the comparator to apply typically for some {@link #order()}
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
         this.asAdmin().getBytecode().addStep(Symbols.by, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(comparator);
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param order the comparator to apply typically for some {@link #order()}
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default GraphTraversal<S, E> by(final Order order) {
         this.asAdmin().getBytecode().addStep(Symbols.by, order);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(order);
         return this;
     }
 
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param key the key to apply                                                                                                     traversal
+     * @param comparator the comparator to apply typically for some {@link #order()}
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
         this.asAdmin().getBytecode().addStep(Symbols.by, key, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key, comparator);
         return this;
     }
 
-    /*public default <V> GraphTraversal<S, E> by(final Column column, final Comparator<V> comparator) {
-        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(column, comparator);
-        return this;
-    }
-
-    public default <V> GraphTraversal<S, E> by(final T token, final Comparator<V> comparator) {
-        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token, comparator);
-        return this;
-    }*/
-
+    /**
+     * The {@code by()} can be applied to a number of different step to alter their behaviors. Modifies the previous
+     * step with the specified function.
+     *
+     * @param function the function to apply
+     * @param comparator the comparator to apply typically for some {@link #order()}
+     * @return the traversal with a modulated step.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
+     */
     public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
         this.asAdmin().getBytecode().addStep(Symbols.by, function, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function, comparator);
@@ -2379,12 +2508,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
+    /**
+     * This step modifies {@link #choose(Function)} to specifies the available choices that might be executed.
+     *
+     * @param pickToken the token that would trigger this option
+     * @param traversalOption the option as a traversal
+     * @return the traversal with the modulated step
+     */
     public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, pickToken, traversalOption);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pickToken, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
         return this;
     }
 
+    /**
+     * This step modifies {@link #choose(Function)} to specifies the available choices that might be executed.
+     *
+     * @param traversalOption the option as a traversal
+     * @return the traversal with the modulated step
+     */
     public default <E2> GraphTraversal<S, E> option(final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
         ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(TraversalOptionParent.Pick.any, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
@@ -2393,6 +2535,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
+    /**
+     * Iterates the traversal presumably for the generation of side-effects.
+     */
     @Override
     public default GraphTraversal<S, E> iterate() {
         Traversal.super.iterate();
