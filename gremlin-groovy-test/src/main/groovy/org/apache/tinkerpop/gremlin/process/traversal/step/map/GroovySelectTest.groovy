@@ -33,6 +33,16 @@ public abstract class GroovySelectTest {
     public static class Traversals extends SelectTest {
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').repeat(__.out().as('a')).times(2).select(Pop.first, 'a')", "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').repeat(__.out().as('a')).times(2).select(Pop.last, 'a')", "v1Id", v1Id)
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').out('knows').as('b').select('a','b')", "v1Id", v1Id)
         }

@@ -595,6 +595,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Traverser} to its {@link Path} history via {@link Traverser#path}.
      *
      * @return the traversal with an appended {@link PathStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#path-step">Reference Documentation - Path Step</a>
      */
     public default GraphTraversal<S, Path> path() {
         this.asAdmin().getBytecode().addStep(Symbols.path);
@@ -607,6 +608,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param matchTraversals the traversal that maintain variables which must hold for the life of the traverser
      * @param <E2>            the type of the obejcts bound in the variables
      * @return the traversal with an appended {@link MatchStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#match-step">Reference Documentation - Match Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
         this.asAdmin().getBytecode().addStep(Symbols.match, matchTraversals);
@@ -618,6 +620,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param <E2> the sack value type
      * @return the traversal with an appended {@link SackStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sack-step">Reference Documentation - Sack Step</a>
      */
     public default <E2> GraphTraversal<S, E2> sack() {
         this.asAdmin().getBytecode().addStep(Symbols.sack);
@@ -646,6 +649,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param otherSelectKeys the third+ keys to project
      * @param <E2>            the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
         final String[] selectKeys = new String[otherSelectKeys.length + 2];
@@ -664,6 +668,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param otherSelectKeys the third+ keys to project
      * @param <E2>            the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
         final String[] selectKeys = new String[otherSelectKeys.length + 2];
@@ -674,11 +679,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), null, selectKeys));
     }
 
+    /**
+     * Map the {@link Traverser} to the object specified by the {@code selectKey} and apply the {@link Pop} operation
+     * to it.
+     *
+     * @param selectKey the key to project
+     * @return the traversal with an appended {@link SelectStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.select, pop, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectKey));
     }
 
+    /**
+     * Map the {@link Traverser} to the object specified by the {@code selectKey}. Note that unlike other uses of
+     * {@code select} where there are multiple keys, this use of {@code select} with a single key does not produce a
+     * {@code Map}.
+     *
+     * @param selectKey the key to project
+     * @return the traversal with an appended {@link SelectStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step">Reference Documentation - Select Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.select, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), null, selectKey));

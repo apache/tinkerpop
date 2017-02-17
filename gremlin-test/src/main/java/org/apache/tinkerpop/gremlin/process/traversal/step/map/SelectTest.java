@@ -117,6 +117,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop);
 
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(final Object v1Id);
+
     // when labels don't exist
 
     public abstract Traversal<Vertex, String> get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX();
@@ -646,6 +650,20 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(convertToVertexId("marko"));
+        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "marko")), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(convertToVertexId("marko"));
+        checkResults(Arrays.asList(convertToVertex(graph, "ripple"), convertToVertex(graph, "lop")), traversal);
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -845,6 +863,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX() {
             return g.V().as("a").out("knows").as("b").local(__.<Vertex, String>select("a", "b").by("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(final Object v1Id) {
+            return g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.first, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(final Object v1Id) {
+            return g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.last, "a");
         }
     }
 }

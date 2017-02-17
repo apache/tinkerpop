@@ -1960,6 +1960,15 @@ g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfo
 
 WARNING: Note that `by()`-modulation is not supported with `select(keys)` and `select(values)`.
 
+There is also an option to supply a `Pop` operation to `select()` to manipulate `List` objects in the `Traverser`:
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").repeat(out().as("a")).times(2).select(first, "a")
+g.V(1).as("a").repeat(out().as("a")).times(2).select(last, "a")
+g.V(1).as("a").repeat(out().as("a")).times(2).select(all, "a")
+----
+
 [[using-where-with-select]]
 Using Where with Select
 ^^^^^^^^^^^^^^^^^^^^^^^
