@@ -46,10 +46,8 @@ import java.util.Collections;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -122,7 +120,7 @@ public class Neo4jGraphStepStrategyTest {
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
                         g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob"), "age", eq(10).or(gt(32))).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(Neo4jGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(Neo4jGraph.class).toList()},
+                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(has("age")), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(Neo4jGraph.class).toList()},
                 {__.V().has("name", P.eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"),
                         g_V("name", eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"), Collections.emptyList()},
                 {__.V().has("name", P.eq("marko").and(P.eq("bob").and(P.eq("stephen")))).out("knows"),

@@ -40,7 +40,6 @@ public class HasStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.has("name"),
                 __.has("name", "marko"),
                 __.has("name", out("knows").values("name")),
                 __.hasId(1),
@@ -49,8 +48,6 @@ public class HasStepTest extends StepTest {
                 __.hasKey("age"),
                 __.hasLabel("person"),
                 __.hasLabel("project"),
-                __.hasNot("name"),
-                __.hasNot("age"),
                 __.hasValue("marko"),
                 __.hasValue("josh")
         );
