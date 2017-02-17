@@ -1625,6 +1625,33 @@ g.V().hasLabel('person').
   valueMap('name', 'rank')
 ----
 
+[properties-step]]
+Properties Step
+~~~~~~~~~~~~~~~
+
+The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
+
+[gremlin-groovy,theCrew]
+----
+g.V(1).properties()
+g.V(1).properties('location').valueMap()
+g.V(1).properties('location').has('endTime').valueMap()
+----
+
+[[propertymap-step]]
+PropertyMap Step
+~~~~~~~~~~~~~
+
+The `propertiesMap()`-step yields a Map representation of the properties of an element.
+
+[gremlin-groovy,modern]
+----
+g.V().propertyMap()
+g.V().propertyMap('age')
+g.V().propertyMap('age','blah')
+g.E().propertyMap()
+----
+
 [[range-step]]
 Range Step
 ~~~~~~~~~~
@@ -2219,6 +2246,19 @@ returned map.
 g.V().hasLabel('person').valueMap(true)
 g.V().hasLabel('person').valueMap(true,'name')
 g.V().hasLabel('person').properties('location').valueMap(true)
+----
+
+[values-step]]
+Values Step
+~~~~~~~~~~~
+
+The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.
+
+[gremlin-groovy,theCrew]
+----
+g.V(1).values()
+g.V(1).values('location')
+g.V(1).properties('location').values()
 ----
 
 [[vertex-steps]]

@@ -281,6 +281,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
     }
 
+    /**
+     * A {@code V} step is usually used to start a traversal but it may also be used mid-traversal.
+     *
+     * @param vertexIdsOrElements vertices to inject into the traversal
+     * @return the traversal with an appended {@link GraphStep}
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#graph-step">Reference Documentation - Graph Step</a>
+     */
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
         this.asAdmin().getBytecode().addStep(Symbols.V, vertexIdsOrElements);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, vertexIdsOrElements));
@@ -470,6 +477,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertiesStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#properties-step">Reference Documentation - Properties Step</a>
      */
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.properties, propertyKeys);
@@ -483,6 +491,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve their value from
      * @param <E2>         the value type of the properties
      * @return the traversal with an appended {@link PropertiesStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#values-step">Reference Documentation - Values Step</a>
      */
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.values, propertyKeys);
@@ -496,6 +505,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#propertymap-step">Reference Documentation - PropertyMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.propertyMap, propertyKeys);
@@ -509,6 +519,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step">Reference Documentation - ValueMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, propertyKeys);
@@ -523,6 +534,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys  the properties to retrieve
      * @param <E2>          the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @see <a target="_blank" href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step">Reference Documentation - ValueMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, includeTokens, propertyKeys);
