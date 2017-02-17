@@ -800,6 +800,8 @@ result_set = future_result_set.result() <6>
 result = result_set.one() <7>
 assert results == [1, 2, 3, 4] <8>
 assert result_set.done.done() <9>
+
+client.close() <10>
 ----
 
 <1> Submit a script that simply returns a `List` of integers.  This method blocks until the request is written to
@@ -814,6 +816,7 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 <7> Read a single result off the result stream.
 <8> Again, verify the result.
 <9> Verify that the all results have been read and stream is closed.
+<10> Close client and underlying pool connections.
 
 Configuration
 ^^^^^^^^^^^^^

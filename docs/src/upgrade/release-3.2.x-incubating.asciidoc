@@ -55,6 +55,7 @@ result_set = client.submit('1 + 1')
 future_results = result_set.all()  # returns a concurrent.futures.Future
 results = future_results.result()  # returns a list
 assert results == [2]
+client.close()  # don't forget to close underlying connections
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
