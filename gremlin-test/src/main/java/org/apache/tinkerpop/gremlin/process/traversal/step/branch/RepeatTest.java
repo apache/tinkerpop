@@ -31,7 +31,9 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +76,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     // BARRIERS
 
-    public abstract Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id);
+    public abstract Traversal<Vertex, Collection<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(final Object v1Id, final Object v4Id, final Object v6Id);
 
@@ -231,15 +233,18 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
                 Arrays.asList(v1),
                 Arrays.asList(v2, v3, v4),
                 Arrays.asList(v5, v6));
-        final Traversal<Vertex, List<List<Vertex>>> traversal = get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(v1.id());
+        final Traversal<Vertex, Collection<List<Vertex>>> traversal = get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(v1.id());
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        final List<List<Vertex>> result = traversal.next();
-        assertEquals(expected.size(), result.size());
-        for (int i = 0; i < expected.size(); i++) {
-            assertEquals(expected.get(i).size(), result.get(i).size());
-            assertTrue(result.get(i).stream().allMatch(expected.get(i)::contains));
+        final Collection<List<Vertex>> result = traversal.next();
+        final Iterator<List<Vertex>> itty = result.iterator();
+        for (final List<Vertex> expectedList : expected) {
+            assertTrue(itty.hasNext());
+            final List<Vertex> list = itty.next();
+            assertEquals(expectedList.size(), list.size());
+            assertTrue(list.stream().allMatch(expectedList::contains));
         }
+        assertFalse(itty.hasNext());
         assertFalse(traversal.hasNext());
     }
 
@@ -334,7 +339,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
+        public Traversal<Vertex, Collection<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
             return g.V(v1Id).repeat(aggregate("a").fold().store("x").unfold().both().where(without("a")).dedup()).cap("x");
         }
 

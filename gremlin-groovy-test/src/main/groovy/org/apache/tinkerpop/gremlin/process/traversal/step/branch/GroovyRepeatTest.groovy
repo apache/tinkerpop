@@ -79,7 +79,7 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
-        public Traversal<Vertex, List<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
+        public Traversal<Vertex, Collection<List<Vertex>>> get_g_VX1X_repeatXaggregateXaX_fold_storeXxX_unfold_both_whereXwithoutXaXX_dedupX_capXxX(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(aggregate('a').fold.store('x').unfold.both.where(without('a')).dedup).cap('x')", v1Id)
         }
 
