@@ -1663,7 +1663,7 @@ g.V(1).properties('location').has('endTime').valueMap()
 
 [[propertymap-step]]
 PropertyMap Step
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 The `propertiesMap()`-step yields a Map representation of the properties of an element.
 
