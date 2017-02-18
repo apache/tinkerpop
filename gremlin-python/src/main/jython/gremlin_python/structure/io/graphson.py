@@ -225,7 +225,7 @@ class PropertySerializer(_GraphSONTypeIO):
                 del valueDict["value"]
         return GraphSONUtil.typedValue("Property", {"key": writer.toDict(property.key),
                                                     "value": writer.toDict(property.value),
-                                                    "element": writer.toDict(elementDict)})
+                                                    "element": elementDict})
 
 
 class TraversalStrategySerializer(_GraphSONTypeIO):
