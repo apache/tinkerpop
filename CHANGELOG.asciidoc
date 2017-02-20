@@ -386,6 +386,7 @@ This release also includes changes from <<release-3-1-4, 3.1.4>>.
 * Added color preferences
 * Added input, result prompt preferences
 * Added multi-line indicator in Gremlin Console
+* Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API
 
 Bugs
 ^^^^
