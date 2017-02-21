@@ -1685,11 +1685,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new TailLocalStep<>(this.asAdmin(), limit));
     }
 
+    /**
+     * Filters out the first {@code n} objects in the traversal.
+     *
+     * @param skip the number of objects to skip
+     * @return the traversal with an appended {@link RangeGlobalStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
+     */
     public default GraphTraversal<S, E> skip(final long skip) {
         this.asAdmin().getBytecode().addStep(Symbols.skip, skip);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), skip, -1));
     }
 
+    /**
+     * Filters out the first {@code n} objects in the traversal.
+     *
+     * @param scope the scope of how to apply the {@code tail}
+     * @param skip the number of objects to skip
+     * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
+     */
     public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long skip) {
         this.asAdmin().getBytecode().addStep(Symbols.skip, scope, skip);
         return this.asAdmin().addStep(scope.equals(Scope.global)
