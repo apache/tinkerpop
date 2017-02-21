@@ -118,6 +118,6 @@ class Client:
                 args={'gremlin': message,
                       'aliases': {'g': self._traversal_source}})
             if bindings:
-                message.args.update(bindings)
+                message.args.update({'bindings': bindings})
         conn = self._pool.get(True)
         return conn.write(message)
