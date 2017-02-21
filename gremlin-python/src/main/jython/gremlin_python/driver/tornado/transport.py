@@ -16,8 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-from tornado import ioloop, gen
-from tornado import websocket
+from tornado import ioloop, websocket
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
