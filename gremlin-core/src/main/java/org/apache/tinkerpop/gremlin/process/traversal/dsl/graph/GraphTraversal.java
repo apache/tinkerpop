@@ -1800,6 +1800,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param skip the number of objects to skip
      * @return the traversal with an appended {@link RangeGlobalStep}
+     * @since 3.3.0
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
      */
     public default GraphTraversal<S, E> skip(final long skip) {
@@ -1813,6 +1814,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope the scope of how to apply the {@code tail}
      * @param skip the number of objects to skip
      * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
+     * @since 3.3.0
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
      */
     public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long skip) {
