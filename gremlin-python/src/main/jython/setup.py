@@ -56,7 +56,9 @@ if sys.version_info < (3,2):
 setup(
     name='gremlinpython',
     version=version,
-    packages=['gremlin_python', 'gremlin_python.driver', 'gremlin_python.process', 'gremlin_python.structure', 'gremlin_python.structure.io'],
+    packages=['gremlin_python', 'gremlin_python.driver',
+              'gremlin_python.driver.tornado', 'gremlin_python.process',
+              'gremlin_python.structure', 'gremlin_python.structure.io'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
