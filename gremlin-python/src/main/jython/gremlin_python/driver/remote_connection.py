@@ -17,7 +17,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 import abc
-import collections
 import six
 
 from gremlin_python.driver import request

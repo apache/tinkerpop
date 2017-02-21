@@ -18,8 +18,6 @@ under the License.
 """
 import abc
 import base64
-import collections
-import uuid
 
 import six
 try:
