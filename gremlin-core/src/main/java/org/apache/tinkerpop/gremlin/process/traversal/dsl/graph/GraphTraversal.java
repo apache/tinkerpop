@@ -193,6 +193,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param function the lambda expression that does the functional mapping
      * @return the traversal with an appended {@link LambdaMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
@@ -205,6 +206,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param mapTraversal the traversal expression that does the functional mapping
      * @return the traversal with an appended {@link LambdaMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <E2> GraphTraversal<S, E2> map(final Traversal<?, E2> mapTraversal) {
@@ -219,6 +221,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param function the lambda expression that does the functional mapping
      * @param <E2>     the type of the returned iterator objects
      * @return the traversal with an appended {@link LambdaFlatMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
@@ -233,6 +236,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param flatMapTraversal the traversal generating objects of type <code>E2</code>
      * @param <E2>             the end type of the internal traversal
      * @return the traversal with an appended {@link TraversalFlatMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
@@ -244,6 +248,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Element} to its {@link Element#id}.
      *
      * @return the traversal with an appended {@link IdStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#id-step" target="_blank">Reference Documentation - Id Step</a>
      */
     public default GraphTraversal<S, Object> id() {
@@ -255,6 +260,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Element} to its {@link Element#label}.
      *
      * @return the traversal with an appended {@link LabelStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#label-step" target="_blank">Reference Documentation - Label Step</a>
      */
     public default GraphTraversal<S, String> label() {
@@ -266,6 +272,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the <code>E</code> object to itself. In other words, a "no op."
      *
      * @return the traversal with an appended {@link IdentityStep}.
+     * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> identity() {
         this.asAdmin().getBytecode().addStep(Symbols.identity);
@@ -276,6 +283,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map any object to a fixed <code>E</code> value.
      *
      * @return the traversal with an appended {@link ConstantStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#constant-step" target="_blank">Reference Documentation - Constant Step</a>
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
@@ -288,6 +296,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param vertexIdsOrElements vertices to inject into the traversal
      * @return the traversal with an appended {@link GraphStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#graph-step" target="_blank">Reference Documentation - Graph Step</a>
      */
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
@@ -301,6 +310,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param direction  the direction to traverse from the current vertex
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
@@ -313,6 +323,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
@@ -325,6 +336,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
@@ -337,6 +349,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
@@ -350,6 +363,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param direction  the direction to traverse from the current vertex
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
@@ -362,6 +376,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
@@ -374,6 +389,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
@@ -386,6 +402,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabels the edge labels to traverse
      * @return the traversal with an appended {@link VertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
@@ -398,6 +415,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param direction the direction to traverser from the current edge
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
@@ -409,6 +427,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its incoming/head incident {@link Vertex}.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> inV() {
@@ -420,6 +439,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its outgoing/tail incident {@link Vertex}.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> outV() {
@@ -431,6 +451,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to its incident vertices.
      *
      * @return the traversal with an appended {@link EdgeVertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> bothV() {
@@ -442,6 +463,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Edge} to the incident vertex that was not just traversed from in the path history.
      *
      * @return the traversal with an appended {@link EdgeOtherVertexStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      */
     public default GraphTraversal<S, Vertex> otherV() {
@@ -453,6 +475,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Order all the objects in the traversal up to this point and then emit them one-by-one in their ordered sequence.
      *
      * @return the traversal with an appended {@link OrderGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#order-step" target="_blank">Reference Documentation - Order Step</a>
      */
     public default GraphTraversal<S, E> order() {
@@ -464,7 +487,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Order either the {@link Scope#local} object (e.g. a list, map, etc.) or the entire {@link Scope#global} traversal stream.
      *
      * @param scope whether the ordering is the current local object or the entire global stream.
-     * @return the traversal with an appended {@link OrderGlobalStep} or {@link OrderLocalStep}.
+     * @return the traversal with an appended {@link OrderGlobalStep} or {@link OrderLocalStep} depending on the {@code scope}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#order-step" target="_blank">Reference Documentation - Order Step</a>
      */
     public default GraphTraversal<S, E> order(final Scope scope) {
@@ -479,6 +503,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertiesStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#properties-step" target="_blank">Reference Documentation - Properties Step</a>
      */
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
@@ -493,6 +518,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve their value from
      * @param <E2>         the value type of the properties
      * @return the traversal with an appended {@link PropertiesStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#values-step" target="_blank">Reference Documentation - Values Step</a>
      */
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
@@ -507,6 +533,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#propertymap-step" target="_blank">Reference Documentation - PropertyMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
@@ -521,6 +548,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys the properties to retrieve
      * @param <E2>         the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
@@ -536,6 +564,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKeys  the properties to retrieve
      * @param <E2>          the value type of the returned properties
      * @return the traversal with an appended {@link PropertyMapStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      */
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
@@ -544,6 +573,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
@@ -552,6 +582,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
@@ -563,6 +594,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Property} to its {@link Property#key}.
      *
      * @return the traversal with an appended {@link PropertyKeyStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#key-step" target="_blank">Reference Documentation - Key Step</a>
      */
     public default GraphTraversal<S, String> key() {
@@ -574,6 +606,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Property} to its {@link Property#value}.
      *
      * @return the traversal with an appended {@link PropertyValueStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#value-step" target="_blank">Reference Documentation - Value Step</a>
      */
     public default <E2> GraphTraversal<S, E2> value() {
@@ -585,6 +618,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Traverser} to its {@link Path} history via {@link Traverser#path}.
      *
      * @return the traversal with an appended {@link PathStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#path-step" target="_blank">Reference Documentation - Path Step</a>
      */
     public default GraphTraversal<S, Path> path() {
@@ -598,6 +632,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param matchTraversals the traversal that maintain variables which must hold for the life of the traverser
      * @param <E2>            the type of the obejcts bound in the variables
      * @return the traversal with an appended {@link MatchStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#match-step" target="_blank">Reference Documentation - Match Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
@@ -610,6 +645,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param <E2> the sack value type
      * @return the traversal with an appended {@link SackStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sack-step" target="_blank">Reference Documentation - Sack Step</a>
      */
     public default <E2> GraphTraversal<S, E2> sack() {
@@ -622,6 +658,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * traverser.
      *
      * @return the traversal with an appended {@link LoopsStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#loops-step" target="_blank">Reference Documentation - Loops Step</a>
      */
     public default GraphTraversal<S, Integer> loops() {
@@ -633,6 +670,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Projects the current object in the stream into a {@code Map} that is keyed by the provided labels.
      *
      * @return the traversal with an appended {@link ProjectStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#project-step" target="_blank">Reference Documentation - Project Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
@@ -652,6 +690,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param otherSelectKeys the third+ keys to project
      * @param <E2>            the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
@@ -671,6 +710,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param otherSelectKeys the third+ keys to project
      * @param <E2>            the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
@@ -688,6 +728,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param selectKey the key to project
      * @return the traversal with an appended {@link SelectStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
@@ -702,6 +743,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param selectKey the key to project
      * @return the traversal with an appended {@link SelectStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
@@ -737,6 +779,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param column the column to extract
      * @return the traversal with an appended {@link TraversalMapStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      */
     public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
@@ -749,6 +792,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * is not one of those types.
      *
      * @return the traversal with an appended {@link UnfoldStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#unfold-step" target="_blank">Reference Documentation - Unfold Step</a>
      */
     public default <E2> GraphTraversal<S, E2> unfold() {
@@ -760,6 +804,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Rolls up objects in the stream into an aggregate list.
      *
      * @return the traversal with an appended {@link FoldStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step" target="_blank">Reference Documentation - Fold Step</a>
      */
     public default GraphTraversal<S, List<E>> fold() {
@@ -774,6 +819,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param foldFunction the function to fold by where the first argument is the {@code seed} or the value returned from subsequent calss and
      *                     the second argument is the value from the stream
      * @return the traversal with an appended {@link FoldStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#fold-step" target="_blank">Reference Documentation - Fold Step</a>
      */
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
@@ -786,6 +832,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * of traversers up to this point).
      *
      * @return the traversal with an appended {@link CountGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#count-step" target="_blank">Reference Documentation - Count Step</a>
      */
     public default GraphTraversal<S, Long> count() {
@@ -798,6 +845,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link Scope} (i.e. count the number of traversers up to this point).
      *
      * @return the traversal with an appended {@link CountGlobalStep} or {@link CountLocalStep} depending on the {@link Scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#count-step" target="_blank">Reference Documentation - Count Step</a>
      */
     public default GraphTraversal<S, Long> count(final Scope scope) {
@@ -810,6 +858,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link Traverser#bulk} (i.e. sum the traverser values up to this point).
      *
      * @return the traversal with an appended {@link SumGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sum-step" target="_blank">Reference Documentation - Sum Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> sum() {
@@ -822,6 +871,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link Traverser#bulk} given the specified {@link Scope} (i.e. sum the traverser values up to this point).
      *
      * @return the traversal with an appended {@link SumGlobalStep} or {@link SumLocalStep} depending on the {@link Scope}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sum-step" target="_blank">Reference Documentation - Sum Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
@@ -833,6 +883,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the largest value in the stream.
      *
      * @return the traversal with an appended {@link MaxGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#max-step" target="_blank">Reference Documentation - Max Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
@@ -844,6 +895,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the largest value in the stream given the {@link Scope}.
      *
      * @return the traversal with an appended {@link MaxGlobalStep} or {@link MaxLocalStep} depending on the {@link Scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#max-step" target="_blank">Reference Documentation - Max Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
@@ -855,6 +907,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the smallest value in the stream.
      *
      * @return the traversal with an appended {@link MinGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#min-step" target="_blank">Reference Documentation - Min Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
@@ -866,6 +919,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the smallest value in the stream given the {@link Scope}.
      *
      * @return the traversal with an appended {@link MinGlobalStep} or {@link MinLocalStep} depending on the {@link Scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#min-step" target="_blank">Reference Documentation - Min Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
@@ -877,6 +931,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the mean value in the stream.
      *
      * @return the traversal with an appended {@link MeanGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mean-step" target="_blank">Reference Documentation - Mean Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> mean() {
@@ -888,6 +943,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Determines the mean value in the stream given the {@link Scope}.
      *
      * @return the traversal with an appended {@link MeanGlobalStep} or {@link MeanLocalStep} depending on the {@link Scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mean-step" target="_blank">Reference Documentation - Mean Step</a>
      */
     public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
@@ -900,6 +956,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link #by()} modulators which help specify how the grouping should occur.
      *
      * @return the traversal with an appended {@link GroupStep}.
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step" target="_blank">Reference Documentation - Group Step</a>
      */
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
@@ -909,6 +966,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * @deprecated As of release 3.1.0, replaced by {@link #group()}
+     * @since 3.0.0-incubating
      */
     @Deprecated
     public default <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
@@ -921,6 +979,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * object is the key and the value is the count.
      *
      * @return the traversal with an appended {@link GroupCountStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step" target="_blank">Reference Documentation - GroupCount Step</a>
      */
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
@@ -932,6 +991,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Aggregates the emanating paths into a {@link Tree} data structure.
      *
      * @return the traversal with an appended {@link TreeStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step" target="_blank">Reference Documentation - Tree Step</a>
      */
     public default GraphTraversal<S, Tree> tree() {
@@ -944,6 +1004,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param vertexLabel the label of the {@link Vertex} to add
      * @return the traversal with the {@link AddVertexStep} added
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      */
     public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
@@ -955,6 +1016,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Adds a {@link Vertex} with a default vertex label.
      *
      * @return the traversal with the {@link AddVertexStep} added
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      */
     public default GraphTraversal<S, Vertex> addV() {
@@ -963,6 +1025,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #addV()}
      */
     @Deprecated
@@ -980,6 +1043,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param edgeLabel the label of the newly added edge
      * @return the traversal with the {@link AddEdgeStep} added
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      */
     public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
@@ -993,6 +1057,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param toStepLabel the step label of the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      */
     public default GraphTraversal<S, E> to(final String toStepLabel) {
@@ -1007,6 +1072,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param fromStepLabel the step label of the outgoing vertex
      * @return the traversal with the modified {@link AddEdgeStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      */
     public default GraphTraversal<S, E> from(final String fromStepLabel) {
@@ -1021,6 +1087,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param toVertex the traversal for selecting the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      */
     public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
@@ -1035,6 +1102,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param fromVertex the traversal for selecting the outgoing vertex
      * @return the traversal with the modified {@link AddEdgeStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      */
     public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
@@ -1044,6 +1112,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
      */
     @Deprecated
@@ -1078,6 +1147,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
      */
     @Deprecated
@@ -1086,6 +1156,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
      */
     @Deprecated
@@ -1101,6 +1172,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter function to apply
      * @return the traversal with the {@link LambdaFilterStep} added
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -1114,6 +1186,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param filterTraversal the filter traversal to apply
      * @return the traversal with the {@link TraversalFilterStep} added
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default GraphTraversal<S, E> filter(final Traversal<?, ?> filterTraversal) {
@@ -1126,6 +1199,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param orTraversals filter traversals where at least one must be satisfied
      * @return the traversal with an appended {@link OrStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#or-step" target="_blank">Reference Documentation - Or Step</a>
      */
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
@@ -1138,6 +1212,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param andTraversals filter traversals that must be satisfied
      * @return the traversal with an appended {@link AndStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#and-step" target="_blank">Reference Documentation - And Step</a>
      */
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
@@ -1150,6 +1225,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param injections the objects to add to the stream
      * @return the traversal with an appended {@link InjectStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#inject-step" target="_blank">Reference Documentation - Inject Step</a>
      *
      */
@@ -1164,6 +1240,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope       whether the deduplication is on the stream (global) or the current object (local).
      * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step" target="_blank">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
@@ -1176,6 +1253,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param dedupLabels if labels are provided, then the scoped object's labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step" target="_blank">Reference Documentation - Dedup Step</a>
      */
     public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
@@ -1189,6 +1267,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param startKey the key containing the object to filter
      * @param predicate the filter to apply
      * @return the traversal with an appended {@link WherePredicateStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step" target="_blank">Reference Documentation - Where Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match" target="_blank">Reference Documentation - Where with Match</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select" target="_blank">Reference Documentation - Where with Select</a>
@@ -1203,6 +1282,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply
      * @return the traversal with an appended {@link WherePredicateStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step" target="_blank">Reference Documentation - Where Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match" target="_blank">Reference Documentation - Where with Match</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select" target="_blank">Reference Documentation - Where with Select</a>
@@ -1217,6 +1297,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param whereTraversal the filter to apply
      * @return the traversal with an appended {@link WherePredicateStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#where-step" target="_blank">Reference Documentation - Where Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-match" target="_blank">Reference Documentation - Where with Match</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#using-where-with-select" target="_blank">Reference Documentation - Where with Select</a>
@@ -1234,6 +1315,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKey the key of the property to filter on
      * @param predicate the filter to apply to the key's value
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
@@ -1247,6 +1329,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param accessor the {@link T} accessor of the property to filter on
      * @param predicate the filter to apply to the key's value
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
@@ -1260,6 +1343,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKey the key of the property to filter on
      * @param value the value to compare the property value to for equality
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
@@ -1279,6 +1363,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param accessor the {@link T} accessor of the property to filter on
      * @param value the value to compare the accessor value to for equality
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
@@ -1299,6 +1384,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKey the key of the property to filter on
      * @param predicate the filter to apply to the key's value
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
@@ -1314,6 +1400,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKey the key of the property to filter on
      * @param value the value to compare the accessor value to for equality
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
@@ -1328,6 +1415,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param accessor the {@link T} accessor of the property to filter on
      * @param propertyTraversal the traversal to filter the accessor value by
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.1.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
@@ -1343,6 +1431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param propertyKey the key of the property to filter on
      * @param propertyTraversal the traversal to filter the property value by
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
@@ -1357,6 +1446,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param propertyKey the key of the property to filter on for existence
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> has(final String propertyKey) {
@@ -1369,6 +1459,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param propertyKey the key of the property to filter on for existence
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasNot(final String propertyKey) {
@@ -1382,6 +1473,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param label the label of the {@link Element}
      * @param otherLabels additional labels of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.2
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasLabel(final String label, final String... otherLabels) {
@@ -1397,6 +1489,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply to the label of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasLabel(final P<String> predicate) {
@@ -1410,6 +1503,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param id the identifier of the {@link Element}
      * @param otherIds additional identifiers of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.2
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
@@ -1441,6 +1535,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply to the identifier of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
@@ -1454,6 +1549,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param label the key of the {@link Element}
      * @param otherLabels additional key of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.2
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasKey(final String label, final String... otherLabels) {
@@ -1469,6 +1565,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply to the key of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasKey(final P<String> predicate) {
@@ -1513,6 +1610,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply to the value of the {@link Element}
      * @return the traversal with an appended {@link HasStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      */
     public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
@@ -1525,6 +1623,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param predicate the filter to apply
      * @return the traversal with an appended {@link IsStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#is-step" target="_blank">Reference Documentation - Is Step</a>
      */
     public default GraphTraversal<S, E> is(final P<E> predicate) {
@@ -1537,6 +1636,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param value the value that the object must equal.
      * @return the traversal with an appended {@link IsStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#is-step" target="_blank">Reference Documentation - Is Step</a>
      */
     public default GraphTraversal<S, E> is(final Object value) {
@@ -1549,6 +1649,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param notTraversal the traversal to filter by.
      * @return the traversal with an appended {@link NotStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#not-step" target="_blank">Reference Documentation - Not Step</a>
      */
     public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
@@ -1561,6 +1662,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param probability the probability that the object will pass through
      * @return the traversal with an appended {@link CoinStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#coin-step" target="_blank">Reference Documentation - Coin Step</a>
      */
     public default GraphTraversal<S, E> coin(final double probability) {
@@ -1575,6 +1677,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param low the number at which to start allowing objects through the stream
      * @param high the number at which to end the stream
      * @return the traversal with an appended {@link RangeGlobalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
      */
     public default GraphTraversal<S, E> range(final long low, final long high) {
@@ -1591,6 +1694,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param low the number at which to start allowing objects through the stream
      * @param high the number at which to end the stream
      * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
      */
     public default <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
@@ -1606,6 +1710,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param limit the number at which to end the stream
      * @return the traversal with an appended {@link RangeGlobalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#limit-step" target="_blank">Reference Documentation - Limit Step</a>
      */
     public default GraphTraversal<S, E> limit(final long limit) {
@@ -1620,6 +1725,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope the scope of how to apply the {@code limit}
      * @param limit the number at which to end the stream
      * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#limit-step" target="_blank">Reference Documentation - Limit Step</a>
      */
     public default <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
@@ -1634,6 +1740,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * object will be returned.
      *
      * @return the traversal with an appended {@link TailGlobalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
      */
     public default GraphTraversal<S, E> tail() {
@@ -1647,6 +1754,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param limit the number at which to end the stream
      * @return the traversal with an appended {@link TailGlobalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
      */
     public default GraphTraversal<S, E> tail(final long limit) {
@@ -1660,6 +1768,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param scope the scope of how to apply the {@code tail}
      * @return the traversal with an appended {@link TailGlobalStep} or {@link TailLocalStep} depending on {@code scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
      */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope) {
@@ -1676,6 +1785,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope the scope of how to apply the {@code tail}
      * @param limit the number at which to end the stream
      * @return the traversal with an appended {@link TailGlobalStep} or {@link TailLocalStep} depending on {@code scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tail-step" target="_blank">Reference Documentation - Tail Step</a>
      */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
@@ -1717,6 +1827,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param timeLimit the count down time
      * @return the traversal with an appended {@link TimeLimitStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#timelimit-step" target="_blank">Reference Documentation - TimeLimit Step</a>
      */
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
@@ -1728,6 +1839,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Filter the <code>E</code> object if its {@link Traverser#path} is not {@link Path#isSimple}.
      *
      * @return the traversal with an appended {@link SimplePathStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#simplepath-step" target="_blank">Reference Documentation - SimplePath Step</a>
      */
     public default GraphTraversal<S, E> simplePath() {
@@ -1739,6 +1851,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Filter the <code>E</code> object if its {@link Traverser#path} is {@link Path#isSimple}.
      *
      * @return the traversal with an appended {@link CyclicPathStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#cyclicpath-step" target="_blank">Reference Documentation - CyclicPath Step</a>
      */
     public default GraphTraversal<S, E> cyclicPath() {
@@ -1751,6 +1864,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param amountToSample the number of objects to allow
      * @return the traversal with an appended {@link SampleGlobalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sample-step" target="_blank">Reference Documentation - Sample Step</a>
      */
     public default GraphTraversal<S, E> sample(final int amountToSample) {
@@ -1764,6 +1878,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param scope the scope of how to apply the {@code sample}
      * @param amountToSample the number of objects to allow
      * @return the traversal with an appended {@link SampleGlobalStep} or {@link SampleLocalStep} depending on the {@code scope}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sample-step" target="_blank">Reference Documentation - Sample Step</a>
      */
     public default GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
@@ -1779,6 +1894,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * to actually take place. In most cases, iteration is best accomplished with {@code g.V().drop().iterate()}.
      *
      * @return the traversal with the {@link DropStep} added
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#drop-step" target="_blank">Reference Documentation - Drop Step</a>
      */
     public default GraphTraversal<S, E> drop() {
@@ -1793,6 +1909,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param consumer the operation to perform at this step in relation to the {@link Traverser}
      * @return the traversal with an appended {@link LambdaSideEffectStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
@@ -1805,6 +1922,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectTraversal the operation to perform at this step in relation to the {@link Traverser}
      * @return the traversal with an appended {@link TraversalSideEffectStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default GraphTraversal<S, E> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
@@ -1819,6 +1937,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param sideEffectKey the side-effect to emit
      * @param sideEffectKeys other side-effects to emit
      * @return the traversal with an appended {@link SideEffectCapStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#cap-step" target="_blank">Reference Documentation - Cap Step</a>
      */
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
@@ -1832,6 +1951,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the subgraph
      * @return the traversal with an appended {@link SubgraphStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#subgraph-step" target="_blank">Reference Documentation - Subgraph Step</a>
      */
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
@@ -1844,6 +1964,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
      * @return the traversal with an appended {@link AggregateStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
      */
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
@@ -1857,6 +1978,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
      * @return the traversal with an appended {@link GroupStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#group-step" target="_blank">Reference Documentation - Group Step</a>
      */
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
@@ -1865,6 +1987,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
      */
     public default GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
@@ -1878,6 +2001,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated grouping
      * @return the traversal with an appended {@link GroupCountStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#groupcount-step" target="_blank">Reference Documentation - GroupCount Step</a>
      */
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
@@ -1890,6 +2014,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the tree
      * @return the traversal with an appended {@link TreeStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#tree-step" target="_blank">Reference Documentation - Tree Step</a>
      */
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
@@ -1902,6 +2027,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sackOperator the operator to apply to the sack value
      * @return the traversal with an appended {@link SackStep}.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#sack-step" target="_blank">Reference Documentation - Sack Step</a>
      */
     public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
@@ -1910,6 +2036,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * @since 3.0.0-incubating
      * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)} with {@link #by(String)}.
      */
     @Deprecated
@@ -1922,6 +2049,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregate
      * @return the traversal with an appended {@link StoreStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#store-step" target="_blank">Reference Documentation - Store Step</a>
      */
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
@@ -1935,6 +2063,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param sideEffectKey the name of the side-effect key within which to hold the profile object
      * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
      */
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
@@ -1947,6 +2076,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * counts, etc.
      *
      * @return the traversal with an appended {@link ProfileSideEffectStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#profile-step" target="_blank">Reference Documentation - Profile Step</a>
      */
     @Override
@@ -1970,6 +2100,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param key         the key for the property
      * @param value       the value for the property
      * @param keyValues   any meta properties to be assigned to this property
+     * @return the traversal with the last step modified to add a property
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
@@ -2002,6 +2134,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param key       the key for the property
      * @param value     the value for the property
      * @param keyValues any meta properties to be assigned to this property
+     * @return the traversal with the last step modified to add a property
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addproperty-step" target="_blank">AddProperty Step</a>
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
@@ -2020,6 +2154,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param branchTraversal the traversal to branch the {@link Traverser} to
      * @return the {@link Traversal} with the {@link BranchStep} added
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
@@ -2034,6 +2169,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param function the traversal to branch the {@link Traverser} to
      * @return the {@link Traversal} with the {@link BranchStep} added
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#general-steps" target="_blank">Reference Documentation - General Steps</a>
      */
     public default <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
@@ -2050,6 +2186,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param choiceTraversal the traversal used to determine the value for the branch
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
@@ -2065,6 +2202,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
      * @param falseChoice the traversal to execute in the event the {@code traversalPredicate} returns false
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
@@ -2080,6 +2218,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param traversalPredicate the traversal used to determine the "if" portion of the if-then-else
      * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
@@ -2095,6 +2234,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param choiceFunction the function used to determine the value for the branch
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
@@ -2110,6 +2250,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
      * @param falseChoice the traversal to execute in the event the {@code traversalPredicate} returns false
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
@@ -2125,6 +2266,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param choosePredicate the function used to determine the "if" portion of the if-then-else
      * @param trueChoice the traversal to execute in the event the {@code traversalPredicate} returns true
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.2.4
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
@@ -2138,6 +2280,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param optionalTraversal the traversal to execute for a potential result
      * @return the traversal with the appended {@link ChooseStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#optional-step" target="_blank">Reference Documentation - Optional Step</a>
      */
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
@@ -2150,6 +2293,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param unionTraversals the traversals to merge
      * @return the traversal with the appended {@link UnionStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#union-step" target="_blank">Reference Documentation - Union Step</a>
      */
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
@@ -2162,6 +2306,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param coalesceTraversals the traversals to coalesce
      * @return the traversal with the appended {@link CoalesceStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#coalesce-step" target="_blank">Reference Documentation - Coalesce Step</a>
      */
     public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
@@ -2174,6 +2319,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param repeatTraversal the traversal to repeat over
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
@@ -2186,6 +2332,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param emitTraversal the emit predicate defined as a traversal
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
@@ -2198,6 +2345,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param emitPredicate the emit predicate
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
@@ -2209,6 +2357,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Emit is used in conjunction with {@link #repeat(Traversal)} to emit all objects from the loop.
      *
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> emit() {
@@ -2221,6 +2370,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param untilTraversal the traversal that determines when the loop exits
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
@@ -2233,6 +2383,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param untilPredicate the predicate that determines when the loop exits
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
@@ -2245,6 +2396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param maxLoops the number of loops to execute prior to exiting
      * @return the traversal with the appended {@link RepeatStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      */
     public default GraphTraversal<S, E> times(final int maxLoops) {
@@ -2261,6 +2413,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param localTraversal the traversal to execute locally
      * @return the traversal with the appended {@link LocalStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#local-step" target="_blank">Reference Documentation - Local Step</a>
      */
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
@@ -2274,6 +2427,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Calculates a PageRank over the graph using a 0.85 for the {@code alpha} value.
      *
      * @return the traversal with the appended {@link PageRankVertexProgramStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#pagerank-step" target="_blank">Reference Documentation - PageRank Step</a>
      */
     public default GraphTraversal<S, E> pageRank() {
@@ -2285,6 +2439,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Calculates a PageRank over the graph.
      *
      * @return the traversal with the appended {@link PageRankVertexProgramStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#pagerank-step" target="_blank">Reference Documentation - PageRank Step</a>
      */
     public default GraphTraversal<S, E> pageRank(final double alpha) {
@@ -2296,6 +2451,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Executes a Peer Pressure community detection algorithm over the graph.
      *
      * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#peerpressure-step" target="_blank">Reference Documentation - PeerPressure Step</a>
      */
     public default GraphTraversal<S, E> peerPressure() {
@@ -2307,6 +2463,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Executes a Peer Pressure community detection algorithm over the graph.
      *
      * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#peerpressure-step" target="_blank">Reference Documentation - PeerPressure Step</a>
      */
     public default GraphTraversal<S, E> program(final VertexProgram<?> vertexProgram) {
@@ -2321,6 +2478,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param stepLabel the name of the step
      * @param stepLabels additional names for the label
      * @return the traversal with the modified end step
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#as-step" target="_blank">Reference Documentation - As Step</a>
      */
     public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
@@ -2340,6 +2498,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@code Integer.MAX_VALUE}.
      *
      * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
      */
     public default GraphTraversal<S, E> barrier() {
@@ -2353,6 +2512,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param maxBarrierSize the size of the barrier
      * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
      */
     public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
@@ -2367,6 +2527,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param barrierConsumer a consumer function that is applied to the objects aggregated to the barrier
      * @return the traversal with an appended {@link NoOpBarrierStep}
+     * @since 3.2.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#barrier-step" target="_blank">Reference Documentation - Barrier Step</a>
      */
     public default GraphTraversal<S, E> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
@@ -2382,6 +2543,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * an {@link #identity()} modulation.
      *
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by() {
@@ -2396,6 +2558,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param traversal the traversal to apply
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
@@ -2410,6 +2573,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param token the token to apply
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by(final T token) {
@@ -2424,6 +2588,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param key the key to apply
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by(final String key) {
@@ -2438,6 +2603,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param function the function to apply
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
@@ -2455,6 +2621,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param traversal the traversal to apply
      * @param comparator the comparator to apply typically for some {@link #order()}
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
@@ -2469,6 +2636,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param comparator the comparator to apply typically for some {@link #order()}
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
@@ -2483,6 +2651,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param order the comparator to apply typically for some {@link #order()}
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default GraphTraversal<S, E> by(final Order order) {
@@ -2498,6 +2667,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param key the key to apply                                                                                                     traversal
      * @param comparator the comparator to apply typically for some {@link #order()}
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
@@ -2513,6 +2683,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param function the function to apply
      * @param comparator the comparator to apply typically for some {@link #order()}
      * @return the traversal with a modulated step.
+     * @since 3.0.0-incubating
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#by-step" target="_blank">Reference Documentation - By Step</a>
      */
     public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
@@ -2529,6 +2700,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param pickToken the token that would trigger this option
      * @param traversalOption the option as a traversal
      * @return the traversal with the modulated step
+     * @since 3.0.0-incubating
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, pickToken, traversalOption);
@@ -2541,6 +2714,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param traversalOption the option as a traversal
      * @return the traversal with the modulated step
+     * @since 3.0.0-incubating
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      */
     public default <E2> GraphTraversal<S, E> option(final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
