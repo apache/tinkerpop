@@ -58,5 +58,10 @@ public abstract class GroovyChooseTest {
         public Traversal<Vertex, String> get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(out('knows').count.is(gt(0)), out('knows')).name")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').as('p1').choose(outE('knows'), out('knows')).as('p2').select('p1', 'p2').by('name')");
+        }
     }
 }
