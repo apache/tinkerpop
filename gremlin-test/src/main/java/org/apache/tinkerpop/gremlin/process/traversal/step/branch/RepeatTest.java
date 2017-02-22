@@ -40,8 +40,20 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.groupCount;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.is;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -251,20 +263,13 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name() {
-        final Object v1Id = convertToVertexId("marko");
-        final Object v4Id = convertToVertexId("josh");
-        final Object v6Id = convertToVertexId("peter");
-        final List<String> expected = Arrays.asList("josh","peter");
-        final Traversal<Vertex, String> traversal = get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(v1Id, v4Id, v6Id);
+        final Traversal<Vertex, String> traversal =
+                get_g_VX1X_repeatXbothE_weight_sum_chooseXisXgtX1XX_VX6X_VX4XX_outXcreatedX_dedupX_emit_name(
+                        convertToVertexId("marko"),
+                        convertToVertexId("josh"),
+                        convertToVertexId("peter"));
         printTraversalForm(traversal);
-        while (!expected.isEmpty()) {
-            final String name;
-            assertTrue(traversal.hasNext());
-            assertTrue(expected.contains(name = traversal.next()));
-            expected.remove(name);
-        }
-        assertTrue(expected.isEmpty());
-        assertFalse(traversal.hasNext());
+        checkResults(Arrays.asList("lop", "ripple"), traversal);
     }
 
     @Test
