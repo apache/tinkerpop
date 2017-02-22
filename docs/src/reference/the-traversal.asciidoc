@@ -49,6 +49,9 @@ inherit from the more general forms diagrammed above. A list of all the steps (a
 in the TinkerPop3 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
 The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
+IMPORTANT: The basics for starting a traversal are described in <<the-graph-process,The Graph Process>> section as
+well as in the link:http://tinkerpop.apache.org/docs/current/tutorials/getting-started/[Getting Started] tutorial.
+
 NOTE: To reduce the verbosity of the expression, it is good to
 `import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()`
 for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords
