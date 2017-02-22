@@ -32,6 +32,69 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+GraphSON 2.0
+^^^^^^^^^^^^
+
+Both TinkerGraph and Gremlin Server have been defaulted to work with GraphSON 2.0. For TinkerGraph this means that
+the following commands:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+graph.io(IoCore.graphson()).writeGraph("tinkerpop-modern.json");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io(IoCore.graphson()).readGraph("tinkerpop-modern.json");
+----
+
+will write and read GraphSON 2.0 format rather than 1.0. To use 1.0 format simply set the `version()` on the
+appropriate builder methods:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().version(GraphSONVersion.V1_0).create()
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
+    graph.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
+}
+
+final Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
+    newGraph.io(IoCore.graphson()).reader().mapper(mapper).vertexIdKey("name").create().readGraph(stream, newGraph);
+}
+----
+
+For Gremlin Server, this change means that the `application/json` mime type no longer returns GraphSON 1.0 without
+type embedding. Instead, Gremlin Server will return GraphSON 2.0 with partial types enabled (i.e. which is equivalent
+to `application/vnd.gremlin-v2.0+json`). The `serializers` section the sample Gremlin Server YAML files now typically
+look like this:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}             # application/vnd.gremlin-v1.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/vnd.gremlin-v1.0+gryo-lite
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}         # application/vnd.gremlin-v1.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry] }} # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { useMapperFromGraph: graph  }} # application/vnd.gremlin-v2.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0, config: { useMapperFromGraph: graph }}         # application/json
+----
+
+It is possible to bring back the original configuration for `application/json` by changing the last entry as follows:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}             # application/vnd.gremlin-v1.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/vnd.gremlin-v1.0+gryo-lite
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}         # application/vnd.gremlin-v1.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry] }} # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { useMapperFromGraph: graph  }} # application/vnd.gremlin-v2.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/json
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414]
+
 GraphTraversal Has-Methods Re-Organized
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -99,6 +162,15 @@ GraphTraversal valueMap() Signature Updated
 `GraphTraversal.valueMap(includeTokens,propertyKeys...)` now returns a `Map<Object,E>` to account for the presence of `T.id` or `T.label` if you pass `true` to it.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1483]
+
+HADOOP_GREMLIN_LIBS and Spark
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TinkerPop reference documentation has always mentioned that the `gremlin-spark` `/lib` directory needed to be
+added to `HADOOP_GREMLIN_LIBS` environment variable. In reality, that was not truly necessary. With Spark 1.x having
+`gremlin-spark` in `HADOOP_GREMLIN_LIBS` hasn't been a problem, but Spark 2.0 introduces a check for duplicate jars
+on the path which will cause job initialization to fail. As a result, going forward with TinkerPop 3.3.0, the
+`gremlin-spark` `lib` directory should not be included in `HADOOP_GREMLIN_LIBS`.
 
 Deprecation Removal
 ^^^^^^^^^^^^^^^^^^^

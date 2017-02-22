@@ -98,8 +98,6 @@ public class Model {
         final GraphTraversalSource g = graph.traversal();
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
-        final Compatibility[] graphsonV2NoType = Compatibilities.with(GraphSONCompatibility.class)
-                .configuredAs(".*no-types").matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
@@ -114,19 +112,16 @@ public class Model {
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
-        // TODO: remove incompatibilities in Element on GraphSON 2.0
-        // temporary incompatibility in v2 graphson starting at 3.3.0 with Element properties - need to revert some
-        // changes on master (which is what helped start this mess) once this work is merged
-        addGraphStructureEntry(graph.edges().next(), "Edge", "", graphsonV2NoType);
-        addGraphStructureEntry(g.V().out().out().path().next(), "Path", "", graphsonV2NoType);
-        addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "", graphsonV2NoType);
+        addGraphStructureEntry(graph.edges().next(), "Edge", "");
+        addGraphStructureEntry(g.V().out().out().path().next(), "Path", "");
+        addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "");
         // TODO: missing a stargraph deserializer in graphson v1/v2
         addEntry("Graph Structure", StarGraph.of(graph.vertices().next()), "StarGraph", "", Compatibilities.GRYO_ONLY.match());
         addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
         // TODO: tree has bugs for graphson
         addEntry("Graph Structure", g.V(1).out().out().tree().next(), "Tree", "", Compatibilities.GRYO_ONLY.match());
-        addGraphStructureEntry(graph.vertices().next(), "Vertex", "", graphsonV2NoType);
-        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "", graphsonV2NoType);
+        addGraphStructureEntry(graph.vertices().next(), "Vertex", "");
+        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());

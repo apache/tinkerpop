@@ -3849,3 +3849,2370 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
   "@value" : "+03:06:09"
 }
 ----
+
+[[graphson-3d0]]
+Version 3.0
+-----------
+
+Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0. It is quite similar to GraphSON 2.0 in many ways in
+terms of features, but it does not have an "untyped" version as previous version of GraphSON had.
+
+Core
+~~~~
+
+Class
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Class",
+  "@value" : "java.io.File"
+}
+----
+
+Date
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Date",
+  "@value" : 1481750076295
+}
+----
+
+Double
+^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Double",
+  "@value" : 100.0
+}
+----
+
+Float
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Float",
+  "@value" : 100.0
+}
+----
+
+Integer
+^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Int32",
+  "@value" : 100
+}
+----
+
+Long
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Int64",
+  "@value" : 100
+}
+----
+
+Timestamp
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Timestamp",
+  "@value" : 1481750076295
+}
+----
+
+UUID
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:UUID",
+  "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+}
+----
+
+
+Graph Structure
+~~~~~~~~~~~~~~~
+
+Edge
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Edge",
+  "@value" : {
+    "id" : {
+      "@type" : "g:Int32",
+      "@value" : 13
+    },
+    "label" : "develops",
+    "inVLabel" : "software",
+    "outVLabel" : "person",
+    "inV" : {
+      "@type" : "g:Int32",
+      "@value" : 10
+    },
+    "outV" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    },
+    "properties" : {
+      "since" : {
+        "@type" : "g:Int32",
+        "@value" : 2009
+      }
+    }
+  }
+}
+----
+
+Path
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Path",
+  "@value" : {
+    "labels" : [ [ ], [ ], [ ] ],
+    "objects" : [ {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
+            },
+            "value" : "san diego",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
+            },
+            "value" : "santa cruz",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
+            },
+            "value" : "brussels",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "label" : "software",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 4
+            },
+            "value" : "gremlin"
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "label" : "software",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 5
+            },
+            "value" : "tinkergraph"
+          } ]
+        }
+      }
+    } ]
+  }
+}
+----
+
+Property
+^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Property",
+  "@value" : {
+    "key" : "since",
+    "value" : {
+      "@type" : "g:Int32",
+      "@value" : 2009
+    },
+    "edge" : {
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 13
+      },
+      "label" : "develops",
+      "inV" : {
+        "@type" : "g:Int32",
+        "@value" : 10
+      },
+      "outV" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}
+----
+
+StarGraph
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "starVertex" : {
+    "@type" : "g:Vertex",
+    "@value" : {
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      },
+      "label" : "person",
+      "properties" : {
+        "name" : [ {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 0
+          },
+          "value" : "marko"
+        } ],
+        "location" : [ {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 6
+          },
+          "value" : "san diego",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 1997
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2001
+            }
+          }
+        }, {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          },
+          "value" : "santa cruz",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2001
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2004
+            }
+          }
+        }, {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 8
+          },
+          "value" : "brussels",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2004
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2005
+            }
+          }
+        }, {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 9
+          },
+          "value" : "santa fe",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2005
+            }
+          }
+        } ]
+      }
+    }
+  }
+}
+----
+
+TinkerGraph
+^^^^^^^^^^^
+
+`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.
+
+[source,json]
+----
+{
+  "@type" : "tinker:graph",
+  "@value" : {
+    "vertices" : [ {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
+            },
+            "value" : "san diego",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
+            },
+            "value" : "santa cruz",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
+            },
+            "value" : "brussels",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 1
+            },
+            "value" : "stephen"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 10
+            },
+            "value" : "centreville",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1990
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2000
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 11
+            },
+            "value" : "dulles",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2000
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2006
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 12
+            },
+            "value" : "purcellville",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2006
+              }
+            }
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 8
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 2
+            },
+            "value" : "matthias"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 13
+            },
+            "value" : "bremen",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2007
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 14
+            },
+            "value" : "baltimore",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2007
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2011
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 15
+            },
+            "value" : "oakland",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2011
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2014
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 16
+            },
+            "value" : "seattle",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2014
+              }
+            }
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 9
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 3
+            },
+            "value" : "daniel"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 17
+            },
+            "value" : "spremberg",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1982
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 18
+            },
+            "value" : "kaiserslautern",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2009
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 19
+            },
+            "value" : "aachen",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2009
+              }
+            }
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "label" : "software",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 4
+            },
+            "value" : "gremlin"
+          } ]
+        }
+      }
+    }, {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "label" : "software",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 5
+            },
+            "value" : "tinkergraph"
+          } ]
+        }
+      }
+    } ],
+    "edges" : [ {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 13
+        },
+        "label" : "develops",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "properties" : {
+          "since" : {
+            "@type" : "g:Int32",
+            "@value" : 2009
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 14
+        },
+        "label" : "develops",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "properties" : {
+          "since" : {
+            "@type" : "g:Int32",
+            "@value" : 2010
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 15
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 4
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 16
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 5
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 17
+        },
+        "label" : "develops",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "properties" : {
+          "since" : {
+            "@type" : "g:Int32",
+            "@value" : 2010
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 18
+        },
+        "label" : "develops",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "properties" : {
+          "since" : {
+            "@type" : "g:Int32",
+            "@value" : 2011
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 19
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 5
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 20
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 7
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 4
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 21
+        },
+        "label" : "develops",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 8
+        },
+        "properties" : {
+          "since" : {
+            "@type" : "g:Int32",
+            "@value" : 2012
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 22
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 8
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 3
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 23
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 8
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 3
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 24
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 9
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 5
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 25
+        },
+        "label" : "uses",
+        "inVLabel" : "software",
+        "outVLabel" : "person",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 9
+        },
+        "properties" : {
+          "skill" : {
+            "@type" : "g:Int32",
+            "@value" : 3
+          }
+        }
+      }
+    }, {
+      "@type" : "g:Edge",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 26
+        },
+        "label" : "traverses",
+        "inVLabel" : "software",
+        "outVLabel" : "software",
+        "inV" : {
+          "@type" : "g:Int32",
+          "@value" : 11
+        },
+        "outV" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        }
+      }
+    } ]
+  }
+}
+----
+
+Tree
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Tree",
+  "@value" : [ {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
+            },
+            "value" : "san diego",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
+            },
+            "value" : "santa cruz",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
+            },
+            "value" : "brussels",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 10
+            },
+            "label" : "software",
+            "properties" : {
+              "name" : [ {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 4
+                },
+                "value" : "gremlin"
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ {
+            "key" : {
+              "@type" : "g:Vertex",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int32",
+                  "@value" : 11
+                },
+                "label" : "software",
+                "properties" : {
+                  "name" : [ {
+                    "id" : {
+                      "@type" : "g:Int64",
+                      "@value" : 5
+                    },
+                    "value" : "tinkergraph"
+                  } ]
+                }
+              }
+            },
+            "value" : {
+              "@type" : "g:Tree",
+              "@value" : [ ]
+            }
+          } ]
+        }
+      } ]
+    }
+  } ]
+}
+----
+
+Vertex
+^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Vertex",
+  "@value" : {
+    "id" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    },
+    "label" : "person",
+    "properties" : {
+      "name" : [ {
+        "id" : {
+          "@type" : "g:Int64",
+          "@value" : 0
+        },
+        "value" : "marko"
+      } ],
+      "location" : [ {
+        "id" : {
+          "@type" : "g:Int64",
+          "@value" : 6
+        },
+        "value" : "san diego",
+        "properties" : {
+          "startTime" : {
+            "@type" : "g:Int32",
+            "@value" : 1997
+          },
+          "endTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2001
+          }
+        }
+      }, {
+        "id" : {
+          "@type" : "g:Int64",
+          "@value" : 7
+        },
+        "value" : "santa cruz",
+        "properties" : {
+          "startTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2001
+          },
+          "endTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2004
+          }
+        }
+      }, {
+        "id" : {
+          "@type" : "g:Int64",
+          "@value" : 8
+        },
+        "value" : "brussels",
+        "properties" : {
+          "startTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2004
+          },
+          "endTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2005
+          }
+        }
+      }, {
+        "id" : {
+          "@type" : "g:Int64",
+          "@value" : 9
+        },
+        "value" : "santa fe",
+        "properties" : {
+          "startTime" : {
+            "@type" : "g:Int32",
+            "@value" : 2005
+          }
+        }
+      } ]
+    }
+  }
+}
+----
+
+VertexProperty
+^^^^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:VertexProperty",
+  "@value" : {
+    "id" : {
+      "@type" : "g:Int64",
+      "@value" : 0
+    },
+    "value" : "marko",
+    "vertex" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    },
+    "label" : "name"
+  }
+}
+----
+
+
+Graph Process
+~~~~~~~~~~~~~
+
+Barrier
+^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Barrier",
+  "@value" : "normSack"
+}
+----
+
+Binding
+^^^^^^^
+
+A "Binding" refers to a `Bytecode.Binding`.
+
+[source,json]
+----
+{
+  "@type" : "g:Binding",
+  "@value" : {
+    "key" : "x",
+    "value" : {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }
+  }
+}
+----
+
+Bytecode
+^^^^^^^^
+
+The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.
+
+[source,json]
+----
+{
+  "@type" : "g:Bytecode",
+  "@value" : {
+    "step" : [ [ "V" ], [ "hasLabel", "person" ], [ "out" ], [ "in" ], [ "tree" ] ]
+  }
+}
+----
+
+Cardinality
+^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Cardinality",
+  "@value" : "list"
+}
+----
+
+Column
+^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Column",
+  "@value" : "keys"
+}
+----
+
+Direction
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Direction",
+  "@value" : "OUT"
+}
+----
+
+Operator
+^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Operator",
+  "@value" : "sum"
+}
+----
+
+Order
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Order",
+  "@value" : "incr"
+}
+----
+
+Pick
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
+Pop
+^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Pop",
+  "@value" : "all"
+}
+----
+
+Lambda
+^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Lambda",
+  "@value" : {
+    "script" : "{ it.get() }",
+    "language" : "gremlin-groovy",
+    "arguments" : 1
+  }
+}
+----
+
+Metrics
+^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Metrics",
+  "@value" : {
+    "dur" : {
+      "@type" : "g:Double",
+      "@value" : 100.0
+    },
+    "counts" : {
+      "traverserCount" : {
+        "@type" : "g:Int64",
+        "@value" : 4
+      },
+      "elementCount" : {
+        "@type" : "g:Int64",
+        "@value" : 4
+      }
+    },
+    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+    "annotations" : {
+      "percentDur" : {
+        "@type" : "g:Double",
+        "@value" : 25.0
+      }
+    },
+    "id" : "7.0.0()",
+    "metrics" : [ {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 100.0
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 25.0
+          }
+        },
+        "id" : "3.0.0()"
+      }
+    } ]
+  }
+}
+----
+
+P
+^
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "gt",
+    "value" : {
+      "@type" : "g:Int32",
+      "@value" : 0
+    }
+  }
+}
+----
+
+P and
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "and",
+    "value" : [ {
+      "@type" : "g:P",
+      "@value" : {
+        "predicate" : "gt",
+        "value" : {
+          "@type" : "g:Int32",
+          "@value" : 0
+        }
+      }
+    }, {
+      "@type" : "g:P",
+      "@value" : {
+        "predicate" : "lt",
+        "value" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        }
+      }
+    } ]
+  }
+}
+----
+
+P or
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "or",
+    "value" : [ {
+      "@type" : "g:P",
+      "@value" : {
+        "predicate" : "gt",
+        "value" : {
+          "@type" : "g:Int32",
+          "@value" : 0
+        }
+      }
+    }, {
+      "@type" : "g:P",
+      "@value" : {
+        "predicate" : "within",
+        "value" : [ {
+          "@type" : "g:Int32",
+          "@value" : -1
+        }, {
+          "@type" : "g:Int32",
+          "@value" : -10
+        }, {
+          "@type" : "g:Int32",
+          "@value" : -100
+        } ]
+      }
+    } ]
+  }
+}
+----
+
+Scope
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Scope",
+  "@value" : "local"
+}
+----
+
+T
+^
+
+[source,json]
+----
+{
+  "@type" : "g:T",
+  "@value" : "label"
+}
+----
+
+TraversalMetrics
+^^^^^^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:TraversalMetrics",
+  "@value" : {
+    "dur" : {
+      "@type" : "g:Double",
+      "@value" : 0.004
+    },
+    "metrics" : [ {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 100.0
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          }
+        },
+        "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 25.0
+          }
+        },
+        "id" : "7.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 100.0
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 25.0
+          }
+        },
+        "id" : "2.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 100.0
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 25.0
+          }
+        },
+        "id" : "3.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 100.0
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          }
+        },
+        "name" : "TreeStep",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 25.0
+          }
+        },
+        "id" : "4.0.0()"
+      }
+    } ]
+  }
+}
+----
+
+Traverser
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Traverser",
+  "@value" : {
+    "bulk" : {
+      "@type" : "g:Int64",
+      "@value" : 1
+    },
+    "value" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
+            },
+            "value" : "san diego",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
+            },
+            "value" : "santa cruz",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
+            },
+            "value" : "brussels",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          } ]
+        }
+      }
+    }
+  }
+}
+----
+
+
+RequestMessage
+~~~~~~~~~~~~~~
+
+Authentication Response
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "authentication",
+  "processor" : "",
+  "args" : {
+    "saslMechanism" : "PLAIN",
+    "sasl" : "AHN0ZXBocGhlbgBwYXNzd29yZA=="
+  }
+}
+----
+
+Session Eval
+^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "eval",
+  "processor" : "session",
+  "args" : {
+    "gremlin" : "g.V(x)",
+    "language" : "gremlin-groovy",
+    "session" : {
+      "@type" : "g:UUID",
+      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+    },
+    "bindings" : {
+      "x" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}
+----
+
+Session Eval Aliased
+^^^^^^^^^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "eval",
+  "processor" : "session",
+  "args" : {
+    "gremlin" : "social.V(x)",
+    "language" : "gremlin-groovy",
+    "aliases" : {
+      "g" : "social"
+    },
+    "session" : {
+      "@type" : "g:UUID",
+      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+    },
+    "bindings" : {
+      "x" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}
+----
+
+Session Close
+^^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of a request to close a session.
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "close",
+  "processor" : "session",
+  "args" : {
+    "session" : {
+      "@type" : "g:UUID",
+      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+    }
+  }
+}
+----
+
+Sessionless Eval
+^^^^^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "eval",
+  "processor" : "",
+  "args" : {
+    "gremlin" : "g.V(x)",
+    "language" : "gremlin-groovy",
+    "bindings" : {
+      "x" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}
+----
+
+Sessionless Eval Aliased
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
+
+[source,json]
+----
+{
+  "requestId" : "cb682578-9d92-4499-9ebc-5c6aa73c5397",
+  "op" : "eval",
+  "processor" : "",
+  "args" : {
+    "gremlin" : "social.V(x)",
+    "language" : "gremlin-groovy",
+    "aliases" : {
+      "g" : "social"
+    },
+    "bindings" : {
+      "x" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }
+    }
+  }
+}
+----
+
+
+ResponseMessage
+~~~~~~~~~~~~~~~
+
+Authentication Challenge
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
+
+[source,json]
+----
+{
+  "requestId" : "41d2e28a-20a4-4ab0-b379-d810dede3786",
+  "status" : {
+    "message" : "",
+    "code" : 407,
+    "attributes" : { }
+  },
+  "result" : {
+    "data" : null,
+    "meta" : { }
+  }
+}
+----
+
+Standard Result
+^^^^^^^^^^^^^^^
+
+The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
+
+[source,json]
+----
+{
+  "requestId" : "41d2e28a-20a4-4ab0-b379-d810dede3786",
+  "status" : {
+    "message" : "",
+    "code" : 200,
+    "attributes" : { }
+  },
+  "result" : {
+    "data" : [ {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 1
+        },
+        "label" : "person",
+        "properties" : {
+          "name" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko"
+          } ],
+          "location" : [ {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
+            },
+            "value" : "san diego",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
+            },
+            "value" : "santa cruz",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
+            },
+            "value" : "brussels",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          }, {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
+            }
+          } ]
+        }
+      }
+    } ],
+    "meta" : { }
+  }
+}
+----
+
+
+Extended
+~~~~~~~~
+
+Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:
+
+[source,java]
+----
+mapper = GraphSONMapper.build().
+                        typeInfo(TypeInfo.PARTIAL_TYPES).
+                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
+                        version(GraphSONVersion.V2_0).create().createMapper()
+----
+
+BigDecimal
+^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:BigDecimal",
+  "@value" : 123456789987654321123456789987654321
+}
+----
+
+BigInteger
+^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:BigInteger",
+  "@value" : 123456789987654321123456789987654321
+}
+----
+
+Byte
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:Byte",
+  "@value" : 1
+}
+----
+
+ByteBuffer
+^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:ByteBuffer",
+  "@value" : "c29tZSBieXRlcyBmb3IgeW91"
+}
+----
+
+Char
+^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:Char",
+  "@value" : "x"
+}
+----
+
+Duration
+^^^^^^^^
+
+The following example is a `Duration` of five days.
+
+[source,json]
+----
+{
+  "@type" : "gx:Duration",
+  "@value" : "PT120H"
+}
+----
+
+InetAddress
+^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:InetAddress",
+  "@value" : "localhost"
+}
+----
+
+Instant
+^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:Instant",
+  "@value" : "2016-12-14T16:39:19.349Z"
+}
+----
+
+LocalDate
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:LocalDate",
+  "@value" : "2016-01-01"
+}
+----
+
+LocalDateTime
+^^^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:LocalDateTime",
+  "@value" : "2016-01-01T12:30"
+}
+----
+
+LocalTime
+^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:LocalTime",
+  "@value" : "12:30:45"
+}
+----
+
+MonthDay
+^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:MonthDay",
+  "@value" : "--01-01"
+}
+----
+
+OffsetDateTime
+^^^^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:OffsetDateTime",
+  "@value" : "2007-12-03T10:15:30+01:00"
+}
+----
+
+OffsetTime
+^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:OffsetTime",
+  "@value" : "10:15:30+01:00"
+}
+----
+
+Period
+^^^^^^
+
+The following example is a `Period` of one year, six months and fifteen days.
+
+[source,json]
+----
+{
+  "@type" : "gx:Period",
+  "@value" : "P1Y6M15D"
+}
+----
+
+Short
+^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:Int16",
+  "@value" : 100
+}
+----
+
+Year
+^^^^
+
+The following example is of the `Year` "2016".
+
+[source,json]
+----
+{
+  "@type" : "gx:Year",
+  "@value" : "2016"
+}
+----
+
+YearMonth
+^^^^^^^^^
+
+The following example is a `YearMonth` of "June 2016"
+
+[source,json]
+----
+{
+  "@type" : "gx:YearMonth",
+  "@value" : "2016-06"
+}
+----
+
+ZonedDateTime
+^^^^^^^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "gx:ZonedDateTime",
+  "@value" : "2016-12-23T12:12:24.000000036+02:00[GMT+02:00]"
+}
+----
+
+ZoneOffset
+^^^^^^^^^^
+
+The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.
+
+[source,json]
+----
+{
+  "@type" : "gx:ZoneOffset",
+  "@value" : "+03:06:09"
+}
+----

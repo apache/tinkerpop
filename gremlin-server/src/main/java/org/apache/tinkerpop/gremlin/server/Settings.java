@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
@@ -425,6 +426,11 @@ public class Settings {
          * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
          */
         public String trustCertChainFile = null;
+        
+        /**
+         * Require client certificate authentication
+         */
+        public ClientAuth needClientAuth = ClientAuth.NONE;
 
         private SslContext sslContext;
 

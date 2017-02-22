@@ -6,13 +6,11 @@
       "name" : [ {
         "id" : 0,
         "value" : "marko",
-        "vertex" : 1,
         "label" : "name"
       } ],
       "location" : [ {
         "id" : 6,
         "value" : "san diego",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 1997,
@@ -21,7 +19,6 @@
       }, {
         "id" : 7,
         "value" : "santa cruz",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2001,
@@ -30,7 +27,6 @@
       }, {
         "id" : 8,
         "value" : "brussels",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2004,
@@ -39,7 +35,6 @@
       }, {
         "id" : 9,
         "value" : "santa fe",
-        "vertex" : 1,
         "label" : "location",
         "properties" : {
           "startTime" : 2005
@@ -53,13 +48,11 @@
       "name" : [ {
         "id" : 1,
         "value" : "stephen",
-        "vertex" : 7,
         "label" : "name"
       } ],
       "location" : [ {
         "id" : 10,
         "value" : "centreville",
-        "vertex" : 7,
         "label" : "location",
         "properties" : {
           "startTime" : 1990,
@@ -68,7 +61,6 @@
       }, {
         "id" : 11,
         "value" : "dulles",
-        "vertex" : 7,
         "label" : "location",
         "properties" : {
           "startTime" : 2000,
@@ -77,7 +69,6 @@
       }, {
         "id" : 12,
         "value" : "purcellville",
-        "vertex" : 7,
         "label" : "location",
         "properties" : {
           "startTime" : 2006
@@ -91,13 +82,11 @@
       "name" : [ {
         "id" : 2,
         "value" : "matthias",
-        "vertex" : 8,
         "label" : "name"
       } ],
       "location" : [ {
         "id" : 13,
         "value" : "bremen",
-        "vertex" : 8,
         "label" : "location",
         "properties" : {
           "startTime" : 2004,
@@ -106,7 +95,6 @@
       }, {
         "id" : 14,
         "value" : "baltimore",
-        "vertex" : 8,
         "label" : "location",
         "properties" : {
           "startTime" : 2007,
@@ -115,7 +103,6 @@
       }, {
         "id" : 15,
         "value" : "oakland",
-        "vertex" : 8,
         "label" : "location",
         "properties" : {
           "startTime" : 2011,
@@ -124,7 +111,6 @@
       }, {
         "id" : 16,
         "value" : "seattle",
-        "vertex" : 8,
         "label" : "location",
         "properties" : {
           "startTime" : 2014
@@ -138,13 +124,11 @@
       "name" : [ {
         "id" : 3,
         "value" : "daniel",
-        "vertex" : 9,
         "label" : "name"
       } ],
       "location" : [ {
         "id" : 17,
         "value" : "spremberg",
-        "vertex" : 9,
         "label" : "location",
         "properties" : {
           "startTime" : 1982,
@@ -153,7 +137,6 @@
       }, {
         "id" : 18,
         "value" : "kaiserslautern",
-        "vertex" : 9,
         "label" : "location",
         "properties" : {
           "startTime" : 2005,
@@ -162,7 +145,6 @@
       }, {
         "id" : 19,
         "value" : "aachen",
-        "vertex" : 9,
         "label" : "location",
         "properties" : {
           "startTime" : 2009
@@ -176,7 +158,6 @@
       "name" : [ {
         "id" : 4,
         "value" : "gremlin",
-        "vertex" : 10,
         "label" : "name"
       } ]
     }
@@ -187,7 +168,6 @@
       "name" : [ {
         "id" : 5,
         "value" : "tinkergraph",
-        "vertex" : 11,
         "label" : "name"
       } ]
     }
@@ -200,7 +180,10 @@
     "inV" : 10,
     "outV" : 1,
     "properties" : {
-      "since" : 2009
+      "since" : {
+        "key" : "since",
+        "value" : 2009
+      }
     }
   }, {
     "id" : 14,
@@ -210,7 +193,10 @@
     "inV" : 11,
     "outV" : 1,
     "properties" : {
-      "since" : 2010
+      "since" : {
+        "key" : "since",
+        "value" : 2010
+      }
     }
   }, {
     "id" : 15,
@@ -220,7 +206,10 @@
     "inV" : 10,
     "outV" : 1,
     "properties" : {
-      "skill" : 4
+      "skill" : {
+        "key" : "skill",
+        "value" : 4
+      }
     }
   }, {
     "id" : 16,
@@ -230,7 +219,10 @@
     "inV" : 11,
     "outV" : 1,
     "properties" : {
-      "skill" : 5
+      "skill" : {
+        "key" : "skill",
+        "value" : 5
+      }
     }
   }, {
     "id" : 17,
@@ -240,7 +232,10 @@
     "inV" : 10,
     "outV" : 7,
     "properties" : {
-      "since" : 2010
+      "since" : {
+        "key" : "since",
+        "value" : 2010
+      }
     }
   }, {
     "id" : 18,
@@ -250,7 +245,10 @@
     "inV" : 11,
     "outV" : 7,
     "properties" : {
-      "since" : 2011
+      "since" : {
+        "key" : "since",
+        "value" : 2011
+      }
     }
   }, {
     "id" : 19,
@@ -260,7 +258,10 @@
     "inV" : 10,
     "outV" : 7,
     "properties" : {
-      "skill" : 5
+      "skill" : {
+        "key" : "skill",
+        "value" : 5
+      }
     }
   }, {
     "id" : 20,
@@ -270,7 +271,10 @@
     "inV" : 11,
     "outV" : 7,
     "properties" : {
-      "skill" : 4
+      "skill" : {
+        "key" : "skill",
+        "value" : 4
+      }
     }
   }, {
     "id" : 21,
@@ -280,7 +284,10 @@
     "inV" : 10,
     "outV" : 8,
     "properties" : {
-      "since" : 2012
+      "since" : {
+        "key" : "since",
+        "value" : 2012
+      }
     }
   }, {
     "id" : 22,
@@ -290,7 +297,10 @@
     "inV" : 10,
     "outV" : 8,
     "properties" : {
-      "skill" : 3
+      "skill" : {
+        "key" : "skill",
+        "value" : 3
+      }
     }
   }, {
     "id" : 23,
@@ -300,7 +310,10 @@
     "inV" : 11,
     "outV" : 8,
     "properties" : {
-      "skill" : 3
+      "skill" : {
+        "key" : "skill",
+        "value" : 3
+      }
     }
   }, {
     "id" : 24,
@@ -310,7 +323,10 @@
     "inV" : 10,
     "outV" : 9,
     "properties" : {
-      "skill" : 5
+      "skill" : {
+        "key" : "skill",
+        "value" : 5
+      }
     }
   }, {
     "id" : 25,
@@ -320,7 +336,10 @@
     "inV" : 11,
     "outV" : 9,
     "properties" : {
-      "skill" : 3
+      "skill" : {
+        "key" : "skill",
+        "value" : 3
+      }
     }
   }, {
     "id" : 26,

@@ -265,14 +265,8 @@ arguably easier for developers to work with than native Hadoop MapReduce. Spark-
 the bulk-synchronous parallel, distributed message passing algorithm within Spark and thus, any `VertexProgram` can be
 executed over `SparkGraphComputer`.
 
-If `SparkGraphComputer` will be used as the `GraphComputer` for `HadoopGraph` then its `lib` directory should be
-specified in `HADOOP_GREMLIN_LIBS`.
-
-[source,shell]
-export HADOOP_GREMLIN_LIBS=$HADOOP_GREMLIN_LIBS:/usr/local/gremlin-console/ext/spark-gremlin/lib
-
-Furthermore the `lib/` directory should be distributed across all machines in the SparkServer cluster. For this purpose TinkerPop
-provides a helper script, which takes the Spark installation directory and the Spark machines as input:
+Furthermore the `lib/` directory should be distributed across all machines in the SparkServer cluster. For this purpose
+TinkerPop provides a helper script, which takes the Spark installation directory and the Spark machines as input:
 
 [source,shell]
 bin/hadoop/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark@10.0.0.3
