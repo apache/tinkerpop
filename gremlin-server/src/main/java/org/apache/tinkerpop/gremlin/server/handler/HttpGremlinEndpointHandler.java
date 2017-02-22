@@ -190,7 +190,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
                         requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
                 if (settings.authentication.enableAuditLog) {
-                    final String address = ctx.channel().remoteAddress().toString().substring(1);
+                    String address = ctx.channel().remoteAddress().toString();
+                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     auditLogger.info("User with address {} requested: {}", address, requestArguments.getValue0());
                 }
                 final ChannelPromise promise = ctx.channel().newPromise();

@@ -105,9 +105,11 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();
                             // User name logged with the remote socket address and authenticator classname for audit logging
                             if (authenticationSettings.enableAuditLog) {
+                                String address = ctx.channel().remoteAddress().toString();
+                                if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                                 String[] authClassParts = authenticator.getClass().toString().split("[.]");
-                                auditLogger.info("User {} with address {} authenticated by {}", user.getName(),
-                                        ctx.channel().remoteAddress().toString().substring(1), authClassParts[authClassParts.length - 1]);
+                                auditLogger.info("User {} with address {} authenticated by {}",
+                                        user.getName(), address, authClassParts[authClassParts.length - 1]);
                             }
                             // If we have got here we are authenticated so remove the handler and pass
                             // the original message down the pipeline for processing

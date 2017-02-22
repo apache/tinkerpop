@@ -246,7 +246,8 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
                     logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
                     if (settings.authentication.enableAuditLog) {
-                        final String address = context.getChannelHandlerContext().channel().remoteAddress().toString().substring(1);
+                        String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
+                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                         auditLogger.info("User with address {} requested: {}", address, script);
                     }
 

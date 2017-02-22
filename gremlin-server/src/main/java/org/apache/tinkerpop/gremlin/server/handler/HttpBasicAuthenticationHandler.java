@@ -26,7 +26,6 @@ import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.slf4j.Logger;
@@ -105,9 +104,11 @@ public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter
 
                 // User name logged with the remote socket address and authenticator classname for audit logging
                 if (authenticationSettings.enableAuditLog) {
-                    String[] authClassParts = authenticator.getClass().toString().split("[.]");
-                    auditLogger.info("User {} with address {} authenticated by {}", credentials.get(PROPERTY_USERNAME),
-                            ctx.channel().remoteAddress().toString().substring(1), authClassParts[authClassParts.length - 1]);
+                    String address = ctx.channel().remoteAddress().toString();
+                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                    final String[] authClassParts = authenticator.getClass().toString().split("[.]");
+                    auditLogger.info("User {} with address {} authenticated by {}",
+                            credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);
                 }
             } catch (AuthenticationException ae) {
                 sendError(ctx, msg);
