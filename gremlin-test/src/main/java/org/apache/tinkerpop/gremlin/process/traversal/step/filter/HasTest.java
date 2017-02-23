@@ -384,37 +384,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // only validate for OLTP
-    public void g_V_hasId_compilationEquality() {
-        final Traversal<Vertex, Vertex> traversala1 = get_g_VX1X(convertToVertexId("marko"));
-        final Traversal<Vertex, Vertex> traversala2 = get_g_V_hasIdX1X(convertToVertexId("marko"));
-        final Traversal<Vertex, Vertex> traversalb1 = get_g_VX1_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        final Traversal<Vertex, Vertex> traversalb2 = get_g_V_hasIdX1_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        final Traversal<Vertex, Vertex> traversalb3 = get_g_V_hasIdXwithinX1_2XX(convertToVertexId("marko"), convertToVertexId("vadas"));
-        printTraversalForm(traversala1);
-        printTraversalForm(traversala2);
-        printTraversalForm(traversalb1);
-        printTraversalForm(traversalb2);
-        checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversala1);
-        checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversala2);
-        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb1);
-        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb2);
-        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb3);
-        // if providers don't have their own custom GraphStep, then ignore validating compilation equality
-        if ((traversala1.asAdmin().getStartStep() instanceof GraphStep) &&
-                !traversala1.asAdmin().getStartStep().getClass().equals(GraphStep.class)) {
-            assertEquals(traversala1, traversala2);
-            assertEquals(traversalb1, traversalb2);
-            assertEquals(traversalb1, traversalb3);
-            assertNotEquals(traversala1, traversalb1);
-            assertNotEquals(traversala1, traversalb2);
-            assertNotEquals(traversala2, traversalb1);
-            assertNotEquals(traversala2, traversalb2);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
         printTraversalForm(traversal);

@@ -147,7 +147,7 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
                 {__.V().as("a").out().as("b").dedup("a", "b").out(), "[[]]", __.V().as("a").out().as("b").dedup("a", "b").out()},
                 {__.V().as("a").out().as("b").match(as("a").out().as("b")), "[[a, b]]", __.V().as("a").out().as("b").match(as("a").out().as("b"))},
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE)},
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a")},
                 {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE).out().dedup("a")},
                 {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
