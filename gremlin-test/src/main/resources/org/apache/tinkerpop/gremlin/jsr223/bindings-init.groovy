@@ -16,24 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.jsr223.Customizer;
-import org.codehaus.groovy.control.customizers.CompilationCustomizer;
-
-/**
- * Provides a way to plugin Groovy {@code CompilationCustomizer} implementations to the
- * {@link GremlinGroovyScriptEngine}.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.5, replaced by {@link Customizer}.
- */
-@Deprecated
-public interface CompilerCustomizerProvider {
-
-    /**
-     * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
-     */
-    public CompilationCustomizer create();
-}
+def addItUp(x, y) { x + y }
+def globals = [:]
+globals << [z : addItUp(x,y)]

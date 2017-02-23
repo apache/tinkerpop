@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy;
 
+import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +27,9 @@ import java.util.Set;
  * Grabs the standard Gremlin core classes and allows additional imports to be added.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link DefaultImportCustomizer}.
  */
+@Deprecated
 public class DefaultImportCustomizerProvider extends AbstractImportCustomizerProvider {
     private static Set<String> staticExtraImports = new HashSet<>();
     private static Set<String> staticExtraStaticImports = new HashSet<>();

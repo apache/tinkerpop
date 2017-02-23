@@ -28,21 +28,13 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * A module that allows {@code Bindings} to be applied to a {@link GremlinScriptEngine}. The bindings are controled by
- * their {@code scope} which are determined by the {@code ScriptContext} values where "100" is {@code ENGINE_SCOPE}
- * (bindings apply to the current {@link GremlinScriptEngine}) and "200" is {@code GLOBAL_SCOPE} (bindings apply to the
- * engines created by the current {@link GremlinScriptEngineManager}.
+ * A plugin that allows {@code Bindings} to be applied to a {@link GremlinScriptEngine} at the time of creation.
+ * {@code Bindings} defined with this plugin will always be assigned as {@code ScriptContext.GLOBAL_SCOPE} and as such
+ * will be visible to all {@link GremlinScriptEngine} instances.
  * <p/>
- * Note that bindings are applied in the following order:
- * <ol>
- *   <li>The order in which the {@link GremlinScriptEngine} is requested from the {@link GremlinScriptEngineManager}</li>
- *   <li>The order in which the {@code BindingsGremlinPlugin} instances are added to the {@link GremlinScriptEngineManager}</li>
- * </ol>
- * <p/>
- * Moreover, they will override one another within a scope and among scopes. For instance, {@code ENGINE_SCOPE} bindings
- * will override {@code GLOBAL_SCOPE}. Those bindings that are {@code GLOBAL_SCOPE} and applied to a single
- * {@link GremlinScriptEngine} via an {@link Builder#appliesTo} configuration will still appear present to all other
- * {@link GremlinScriptEngine} created by the {@link GremlinScriptEngineManager} that the plugin was bound to.
+ * Note that bindings are applied in the order in which the {@code BindingsGremlinPlugin} instances are added to the
+ * {@link GremlinScriptEngineManager}. Therefore if there are two plugins added and both include a variable called "x"
+ * then the value of "x" will be the equal to the value provided by the second plugin that overrides the first.
  * <p/>
  * This {@link GremlinPlugin} is not enabled for the {@code ServiceLoader}. It is designed to be instantiated manually.
  *
@@ -52,17 +44,16 @@ public class BindingsGremlinPlugin extends AbstractGremlinPlugin {
     private static final String NAME = "tinkerpop.bindings";
 
     private BindingsGremlinPlugin(final Builder builder) {
-        super(NAME, builder.appliesTo, new DefaultBindingsCustomizer(builder.bindings, builder.scope));
+        super(NAME, new DefaultBindingsCustomizer(builder.bindings));
     }
 
-    public BindingsGremlinPlugin(final Bindings bindings, final int scope) {
-        super(NAME, new DefaultBindingsCustomizer(bindings, scope));
+    BindingsGremlinPlugin(final Supplier<Bindings> bindingsSupplier) {
+        super(NAME, new LazyBindingsCustomizer(bindingsSupplier));
     }
 
-    public BindingsGremlinPlugin(final Supplier<Bindings> bindingsSupplier, final int scope) {
-        super(NAME, new LazyBindingsCustomizer(bindingsSupplier, scope));
-    }
-
+    /**
+     * Builds a set of static bindings.
+     */
     public static BindingsGremlinPlugin.Builder build() {
         return new Builder();
     }
@@ -70,27 +61,11 @@ public class BindingsGremlinPlugin extends AbstractGremlinPlugin {
     public static final class Builder {
 
         private Bindings bindings = new SimpleBindings();
-        private int scope = ScriptContext.ENGINE_SCOPE;
-        private final Set<String> appliesTo = new HashSet<>();
 
         private Builder() {}
 
-        /**
-         * The name of the {@link GremlinScriptEngine} that this module will apply to. Setting no values here will
-         * make the module available to all the engines.
-         */
-        public BindingsGremlinPlugin.Builder appliesTo(final Collection<String> scriptEngineName) {
-            this.appliesTo.addAll(scriptEngineName);
-            return this;
-        }
-
         public Builder bindings(final Map<String, Object> bindings) {
             this.bindings = new SimpleBindings(bindings);
-            return this;
-        }
-
-        public Builder scope(final int scope) {
-            this.scope = scope;
             return this;
         }
 

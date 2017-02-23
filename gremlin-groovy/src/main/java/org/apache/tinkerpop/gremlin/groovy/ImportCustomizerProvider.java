@@ -18,13 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.groovy;
 
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+
 import java.util.Set;
 
 /**
  * Allows customization of the imports used by the GremlinGroovyScriptEngine implementation.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link ImportCustomizer}
  */
+@Deprecated
 public interface ImportCustomizerProvider extends CompilerCustomizerProvider {
 
     Set<String> getExtraImports();

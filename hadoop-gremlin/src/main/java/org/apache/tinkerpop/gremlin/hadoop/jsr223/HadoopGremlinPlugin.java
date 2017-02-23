@@ -77,11 +77,10 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final ImportCustomizer imports;
 
-    private static final Set<String> appliesTo = new HashSet<>(Collections.singletonList("gremlin-groovy"));
+    private static final Set<String> appliesTo = Collections.emptySet();
 
     static {
         try {
-            // TODO: most of the imports here were wildcarded, but we dont' allow that anymore - needs review
             imports = DefaultImportCustomizer.build()
                     .addClassImports(
                             Configuration.class,
@@ -131,7 +130,9 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         }
     }
 
-    public HadoopGremlinPlugin() {
+    private static final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
+
+    private HadoopGremlinPlugin() {
         super(NAME, appliesTo, imports, bindings, new HadoopConsoleCustomizer());
     }
 
@@ -148,6 +149,10 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
     @Override
     public boolean requireRestart() {
         return true;
+    }
+
+    public static HadoopGremlinPlugin instance() {
+        return plugin;
     }
 
     private static class HadoopConsoleCustomizer implements ConsoleCustomizer {

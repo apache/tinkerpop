@@ -23,10 +23,8 @@ import javax.script.ScriptContext;
 import java.util.function.Supplier;
 
 /**
- * A customizer implementation that provides bindings to a {@link GremlinScriptEngine}. If this customizer is applied
- * directly to a {@link GremlinScriptEngine} it will not apply {@code GLOBAL_SCOPE} bindings. Those can only be applied
- * if the customizer is applied via the {@link GremlinScriptEngineManager} (which would do so through the
- * {@link BindingsGremlinPlugin}.
+ * A customizer implementation that provides bindings to a {@link GremlinScriptEngine} in the
+ * {@code ScriptContext.GLOBAL_SCOPE}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -36,13 +34,19 @@ public class LazyBindingsCustomizer implements BindingsCustomizer {
     private final int scope;
 
     /**
-     * Creates a new object with {@code ScriptContext.ENGINE_SCOPE}.
+     * Creates a new object with {@code ScriptContext.GLOBAL_SCOPE}.
      */
     public LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier) {
-        this(bindingsSupplier, ScriptContext.ENGINE_SCOPE);
+        this(bindingsSupplier, ScriptContext.GLOBAL_SCOPE);
     }
 
-    public LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier, final int scope) {
+    /**
+     * Creates a new object with a specified scope. There really can't be anything other than a {@code GLOBAL_SCOPE}
+     * specification so this constructor isn't public at the moment. Assigning to {@code ENGINE_SCOPE} is useless
+     * because it is the nature of the {@code ScriptEngine} to override that scope with {@code Bindings} supplied at
+     * the time of execution.
+     */
+    LazyBindingsCustomizer(final Supplier<Bindings> bindingsSupplier, final int scope) {
         this.bindingsSupplier = bindingsSupplier;
         this.scope = scope;
     }
