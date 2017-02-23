@@ -211,10 +211,10 @@ class TestGraphSONWriter(TestCase):
                 "@value": {"key": "name", "value": "marko", "element": {"@type": "g:VertexProperty",
                                                                         "@value": {
                                                                             "vertex": "vertexId",
-                                                                            "id": "anId",
+                                                                            "id": {"@type": "g:Int32", "@value": 1234},
                                                                             "label": "aKey"}}}} == json.loads(
             self.graphson_writer.writeObject(
-                Property("name", "marko", VertexProperty("anId", "aKey", 21345, Vertex("vertexId")))))
+                Property("name", "marko", VertexProperty(1234, "aKey", 21345, Vertex("vertexId")))))
 
     def test_custom_mapping(self):
         # extended mapping
