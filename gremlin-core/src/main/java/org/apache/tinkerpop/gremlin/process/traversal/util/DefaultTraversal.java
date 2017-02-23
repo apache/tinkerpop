@@ -113,7 +113,8 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         TraversalHelper.reIdSteps(this.stepPosition, this);
         this.strategies.applyStrategies(this);
         boolean hasGraph = null != this.graph;
-        for (final Step<?, ?> step : this.getSteps()) {
+        for (int i = 0, j = this.steps.size(); i < j; i++) { // "foreach" can lead to ConcurrentModificationExceptions
+            final Step step = this.steps.get(i);
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.setStrategies(this.strategies);

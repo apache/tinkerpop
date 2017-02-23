@@ -27,8 +27,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,6 +57,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_hasXnoX_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_fold_countXlocalX();
+
+    public abstract Traversal<Vertex, String> get_g_V_whereXinXknowsX_outXcreatedX_count_is_0XX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -136,6 +141,14 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_whereXinXkknowsX_outXcreatedX_count_is_0XX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_whereXinXknowsX_outXcreatedX_count_is_0XX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "lop", "ripple", "peter"), traversal);
+    }
+
     public static class Traversals extends CountTest {
 
         @Override
@@ -176,6 +189,11 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
             return g.V().fold().count(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXinXknowsX_outXcreatedX_count_is_0XX_name() {
+            return g.V().where(in("knows").out("created").count().is(0)).values("name");
         }
     }
 }
