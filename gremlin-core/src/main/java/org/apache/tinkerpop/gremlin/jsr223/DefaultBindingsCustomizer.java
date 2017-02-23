@@ -22,10 +22,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 
 /**
- * Default implementation of the {@link BindingsCustomizer}. If this customizer is applied directly to a
- * {@link GremlinScriptEngine} it will not apply {@code GLOBAL_SCOPE} bindings. Those can only be applied if the
- * customizer is applied via the {@link GremlinScriptEngineManager} (which would do so through the
- * {@link BindingsGremlinPlugin}.
+ * Default implementation of the {@link BindingsCustomizer} which adds bindings to the {@code ScriptContext.GLOBAL_SCOPE}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -35,13 +32,19 @@ public class DefaultBindingsCustomizer implements BindingsCustomizer {
     private final int scope;
 
     /**
-     * Creates a new object with {@code ScriptContext.ENGINE_SCOPE}.
+     * Creates a new object with {@code ScriptContext.GLOBAL_SCOPE}.
      */
     public DefaultBindingsCustomizer(final Bindings bindings) {
-        this(bindings, ScriptContext.ENGINE_SCOPE);
+        this(bindings, ScriptContext.GLOBAL_SCOPE);
     }
 
-    public DefaultBindingsCustomizer(final Bindings bindings, final int scope) {
+    /**
+     * Creates a new object with a specified scope. There really can't be anything other than a {@code GLOBAL_SCOPE}
+     * specification so this constructor isn't public at the moment. Assigning to {@code ENGINE_SCOPE} is useless
+     * because it is the nature of the {@code ScriptEngine} to override that scope with {@code Bindings} supplied at
+     * the time of execution.
+     */
+    DefaultBindingsCustomizer(final Bindings bindings, final int scope) {
         this.bindings = bindings;
         this.scope = scope;
     }

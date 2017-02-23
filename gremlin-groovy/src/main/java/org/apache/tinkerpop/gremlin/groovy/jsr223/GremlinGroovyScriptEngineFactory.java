@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
@@ -29,45 +30,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * A {@link GremlinScriptEngineFactory} implementation that creates {@link GremlinGroovyScriptEngine} instances.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngineFactory implements GremlinScriptEngineFactory {
+public class GremlinGroovyScriptEngineFactory extends AbstractGremlinScriptEngineFactory {
 
     private static final String ENGINE_NAME = "gremlin-groovy";
     private static final String LANGUAGE_NAME = "gremlin-groovy";
     private static final String PLAIN = "plain";
     private static final List<String> EXTENSIONS = Collections.singletonList("groovy");
 
-    private GremlinScriptEngineManager manager;
-
-    @Override
-    public void setCustomizerManager(final GremlinScriptEngineManager manager) {
-        this.manager = manager;
-    }
-
-    @Override
-    public String getEngineName() {
-        return ENGINE_NAME;
-    }
-
-    @Override
-    public String getEngineVersion() {
-        return Gremlin.version();
-    }
-
-    @Override
-    public List<String> getExtensions() {
-        return EXTENSIONS;
-    }
-
-    @Override
-    public String getLanguageName() {
-        return LANGUAGE_NAME;
-    }
-
-    @Override
-    public String getLanguageVersion() {
-        return Gremlin.version();
+    public GremlinGroovyScriptEngineFactory() {
+        super(ENGINE_NAME, LANGUAGE_NAME, EXTENSIONS, Collections.singletonList(PLAIN));
     }
 
     @Override
@@ -76,45 +52,8 @@ public class GremlinGroovyScriptEngineFactory implements GremlinScriptEngineFact
     }
 
     @Override
-    public List<String> getMimeTypes() {
-        return Collections.singletonList(PLAIN);
-    }
-
-    @Override
-    public List<String> getNames() {
-        return Collections.singletonList(LANGUAGE_NAME);
-    }
-
-    @Override
     public String getOutputStatement(final String toDisplay) {
         return "println " + toDisplay;
-    }
-
-    @Override
-    public Object getParameter(final String key) {
-        if (key.equals(ScriptEngine.ENGINE)) {
-            return this.getEngineName();
-        } else if (key.equals(ScriptEngine.ENGINE_VERSION)) {
-            return this.getEngineVersion();
-        } else if (key.equals(ScriptEngine.NAME)) {
-            return ENGINE_NAME;
-        } else if (key.equals(ScriptEngine.LANGUAGE)) {
-            return this.getLanguageName();
-        } else if (key.equals(ScriptEngine.LANGUAGE_VERSION)) {
-            return this.getLanguageVersion();
-        } else
-            return null;
-    }
-
-    @Override
-    public String getProgram(final String... statements) {
-        String program = "";
-
-        for (String statement : statements) {
-            program = program + statement + "\n";
-        }
-
-        return program;
     }
 
     @Override

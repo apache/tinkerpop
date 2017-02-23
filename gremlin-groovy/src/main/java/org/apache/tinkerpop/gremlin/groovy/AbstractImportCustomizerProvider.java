@@ -76,7 +76,9 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, replaced by {@link ImportCustomizer}
  */
+@Deprecated
 public abstract class AbstractImportCustomizerProvider implements ImportCustomizerProvider {
     protected static final String DOT_STAR = ".*";
     protected static final String EMPTY_STRING = "";

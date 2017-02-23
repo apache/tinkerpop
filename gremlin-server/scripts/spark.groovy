@@ -44,4 +44,4 @@ globals << [hook : [
 //
 // Please see conf/gremlin-server-spark.yaml for a working example of a config file that will
 // work with this init script.
-globals << [g : graph.traversal(computer(SparkGraphComputer))]
+globals << [g : graph.traversal().withComputer(SparkGraphComputer)]
