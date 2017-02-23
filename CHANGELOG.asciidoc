@@ -31,6 +31,7 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Refactor `SparkContext` handler to support external kill and stop operations.
 * Fixed an optimization bug in `LazyBarrierStrategy` around appending barriers to the end of a `Traversal`.
 * `TraverserIterator` in GremlinServer is smart to try and bulk traversers prior to network I/O.
+* Fixed a bug in `RangeByIsCountStrategy` that changed the meaning of inner traversals.
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)
