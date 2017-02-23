@@ -28,8 +28,10 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Deprecated `CustomizerProvider` infrastructure.
 * Improved consistency of the application of bindings to `GremlinScriptEngine` implementations in the `BindingsGremlinPlugin`.
+* Fixed a bug in OLAP `ComputerAwareStep` where end-step labels were not being appended to the traverser correctly.
 * Refactor `SparkContext` handler to support external kill and stop operations.
 * Fixed an optimization bug in `LazyBarrierStrategy` around appending barriers to the end of a `Traversal`.
+* Fixed an optimization bug in `PathRetractionStrategy` around appending barriers to the end of a `Traversal`.
 * `TraverserIterator` in GremlinServer is smart to try and bulk traversers prior to network I/O.
 
 [[release-3-2-4]]

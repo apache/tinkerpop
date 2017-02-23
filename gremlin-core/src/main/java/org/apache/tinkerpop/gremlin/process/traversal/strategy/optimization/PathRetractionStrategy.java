@@ -98,8 +98,8 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                 final PathProcessor pathProcessor = (PathProcessor) currentStep;
                 if (currentStep instanceof MatchStep &&
                         (currentStep.getNextStep().equals(EmptyStep.instance()) ||
-                            currentStep.getNextStep() instanceof DedupGlobalStep ||
-                            currentStep.getNextStep() instanceof SelectOneStep && currentStep.getNextStep().getNextStep() instanceof FilterStep)) {
+                                currentStep.getNextStep() instanceof DedupGlobalStep ||
+                                currentStep.getNextStep() instanceof SelectOneStep && currentStep.getNextStep().getNextStep() instanceof FilterStep)) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep).getMatchStartLabels());
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
                 } else {
@@ -120,8 +120,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                         !(currentStep instanceof Barrier) &&
                         !(currentStep.getNextStep() instanceof Barrier) &&
                         !(currentStep.getTraversal().getParent() instanceof MatchStep) &&
-                        (!(currentStep.getNextStep() instanceof EmptyStep) || TraversalHelper.isGlobalChild(currentStep.getTraversal())))
-
+                        !(currentStep.getNextStep() instanceof EmptyStep))
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, this.standardBarrierSize), currentStep, traversal);
             }
         }
