@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -59,9 +59,9 @@ public class DefaultImportCustomizer implements ImportCustomizer {
     }
 
     public static class Builder {
-        private Set<Class> classImports = new HashSet<>();
-        private Set<Method> methodImports = new HashSet<>();
-        private Set<Enum> enumImports = new HashSet<>();
+        private Set<Class> classImports = new LinkedHashSet<>();
+        private Set<Method> methodImports = new LinkedHashSet<>();
+        private Set<Enum> enumImports = new LinkedHashSet<>();
 
         private Builder() {}
 

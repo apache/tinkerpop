@@ -129,7 +129,7 @@ import org.javatuples.Pair;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -138,9 +138,9 @@ import java.util.stream.Stream;
  */
 public final class CoreImports {
 
-    private final static Set<Class> CLASS_IMPORTS = new HashSet<>();
-    private final static Set<Method> METHOD_IMPORTS = new HashSet<>();
-    private final static Set<Enum> ENUM_IMPORTS = new HashSet<>();
+    private final static Set<Class> CLASS_IMPORTS = new LinkedHashSet<>();
+    private final static Set<Method> METHOD_IMPORTS = new LinkedHashSet<>();
+    private final static Set<Enum> ENUM_IMPORTS = new LinkedHashSet<>();
 
     static {
         /////////////
@@ -310,7 +310,7 @@ public final class CoreImports {
      * Filters to unique method names on each class.
      */
     private static Stream<Method> uniqueMethods(final Class<?> clazz) {
-        final Set<String> unique = new HashSet<>();
+        final Set<String> unique = new LinkedHashSet<>();
         return Stream.of(clazz.getMethods())
                 .filter(m -> Modifier.isStatic(m.getModifiers()))
                 .map(m -> Pair.with(generateMethodDescriptor(m), m))
