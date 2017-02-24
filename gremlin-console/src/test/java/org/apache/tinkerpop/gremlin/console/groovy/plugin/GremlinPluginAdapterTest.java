@@ -65,13 +65,10 @@ public class GremlinPluginAdapterTest {
         adapter.pluginTo(spy);
 
         final Set<String> imports = spy.getImports();
-        assertEquals(6, imports.size());
-        assertThat(imports, hasItems("import " + java.awt.Color.class.getCanonicalName()));
-        assertThat(imports, hasItems("import " + java.sql.CallableStatement.class.getCanonicalName()));
-        assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + "." + DayOfWeek.SATURDAY.name()));
-        assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + "." + DayOfWeek.SUNDAY.name()));
-        assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + ".from"));
-        assertThat(imports, hasItems("import static " + DayOfWeek.class.getCanonicalName() + ".values"));
+        assertEquals(3, imports.size());
+        assertThat(imports, hasItems("import " + java.awt.Color.class.getPackage().getName() + ".*",
+                                     "import " + java.sql.CallableStatement.class.getPackage().getName() + ".*",
+                                     "import static " + DayOfWeek.class.getCanonicalName() + ".*"));
     }
 
     @Test
