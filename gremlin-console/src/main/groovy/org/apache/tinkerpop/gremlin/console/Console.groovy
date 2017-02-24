@@ -57,8 +57,6 @@ class Console {
         Colorizer.installAnsi()
     }
 
-    private static final String IMPORT_SPACE = "import "
-    private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String ELLIPSIS = "..."
 
     private Iterator tempIterator = Collections.emptyIterator()
@@ -99,15 +97,15 @@ class Console {
 
         if (Mediator.useV3d3) {
             def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
-            imports.classImports.collect { IMPORT_SPACE + it.canonicalName }.each { groovy.execute(it) }
-            imports.methodImports.collect { IMPORT_STATIC_SPACE + it.getDeclaringClass().getCanonicalName() + "." + it.name}.each{ groovy.execute(it) }
-            imports.enumImports.collect { IMPORT_STATIC_SPACE + it.getDeclaringClass().getCanonicalName() + "." + it.name()}.each{ groovy.execute(it) }
+            imports.getClassPackages().collect { Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { groovy.execute(it) }
+            imports.getMethodClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
+            imports.getEnumClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
         } else {
             // add the default imports
             new ConsoleImportCustomizerProvider().getCombinedImports().stream()
-                    .collect { IMPORT_SPACE + it }.each { groovy.execute(it) }
+                    .collect { Mediator.IMPORT_SPACE + it }.each { groovy.execute(it) }
             new ConsoleImportCustomizerProvider().getCombinedStaticImports().stream()
-                    .collect { IMPORT_STATIC_SPACE + it }.each { groovy.execute(it) }
+                    .collect { Mediator.IMPORT_STATIC_SPACE + it }.each { groovy.execute(it) }
         }
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)

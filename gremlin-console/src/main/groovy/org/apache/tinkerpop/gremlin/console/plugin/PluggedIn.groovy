@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.plugin
 
+import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
@@ -88,9 +89,9 @@ class PluggedIn {
             corePlugin.getCustomizers("gremlin-groovy").get().each {
                 if (it instanceof ImportCustomizer) {
                     def imports = [] as Set
-                    it.classImports.each { imports.add("import " + it.canonicalName )}
-                    it.methodImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name) }
-                    it.enumImports.each { imports.add("import static " + it.declaringClass.canonicalName + "." + it.name()) }
+                    it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { imports.add(it) }
+                    it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {imports.add(it)}
+                    it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {imports.add(it)}
                     pluginAcceptor.addImports(imports)
                 } else if (it instanceof ScriptCustomizer) {
                     it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { pluginAcceptor.eval(it) }

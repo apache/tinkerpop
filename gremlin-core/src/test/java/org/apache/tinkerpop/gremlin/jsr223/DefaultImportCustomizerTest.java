@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.time.DayOfWeek;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -46,12 +47,18 @@ public class DefaultImportCustomizerTest {
 
         assertEquals(2, imports.getClassImports().size());
         assertThat(imports.getClassImports(), hasItems(java.awt.Color.class, java.awt.AlphaComposite.class));
+        assertEquals(1, imports.getClassPackages().size());
+        assertThat(imports.getClassPackages(), hasItems(java.awt.Color.class.getPackage()));
 
         assertEquals(1, imports.getMethodImports().size());
         assertThat(imports.getMethodImports(), hasItems(abs));
+        assertEquals(1, imports.getMethodClasses().size());
+        assertThat(imports.getMethodClasses(), hasItems(Math.class));
 
         assertEquals(2, imports.getEnumImports().size());
         assertThat(imports.getEnumImports(), hasItems(dayOfWeekEnum, tEnum));
+        assertEquals(2, imports.getEnumClasses().size());
+        assertThat(imports.getEnumClasses(), hasItems(T.class, DayOfWeek.class));
     }
 
     @Test
