@@ -61,6 +61,9 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
      * Set becomes Set (order-preserving)
      * </li>
      * <li>
+     * String becomes String
+     * </li>
+     * <li>
      * Other Collection types become List
      * </li>
      * </ul>
@@ -70,6 +73,11 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
             return (S) applyRangeMap((Map) start, low, high);
         } else if (start instanceof Iterable) {
             return (S) applyRangeIterable((Iterable) start, low, high);
+        } else if (start instanceof CharSequence) {
+            final CharSequence seq = (CharSequence) start;
+            final int length = seq.length();
+            return (S) (low >= length ? "" : seq.subSequence((int) Math.max(0, low),
+                    high > length || high == -1 ? length : (int) high).toString());
         }
         return start;
     }

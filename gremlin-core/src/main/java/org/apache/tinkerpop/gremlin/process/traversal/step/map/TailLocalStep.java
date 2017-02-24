@@ -53,8 +53,9 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
                 start instanceof Map ? ((Map) start).size() :
                         start instanceof Collection ? ((Collection) start).size() :
                                 start instanceof Path ? ((Path) start).size() :
-                                        start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
-                                                this.limit;
+                                        start instanceof CharSequence ? ((CharSequence) start).length() :
+                                                start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
+                                                        this.limit;
         final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
         return result;

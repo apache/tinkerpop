@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added support for simple String operations. `CountLocalStep`, `RangeLocalStep` and `TailLocalStep` can now imitate `String::length()` and `String::substring()`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.
 * Deprecated `CustomizerProvider` infrastructure.
 * Improved consistency of the application of bindings to `GremlinScriptEngine` implementations in the `BindingsGremlinPlugin`.

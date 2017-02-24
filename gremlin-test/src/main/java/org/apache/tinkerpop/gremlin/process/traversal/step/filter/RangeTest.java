@@ -79,6 +79,10 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
 
+    public abstract Traversal<Vertex, String> get_g_V_name_limitXlocal_3X();
+
+    public abstract Traversal<Vertex, String> get_g_V_name_rangeXlocal_1_4X();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_limitX2X() {
@@ -295,6 +299,22 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_name_limitXlocal_3X() {
+        final Traversal<Vertex, String> traversal = get_g_V_name_limitXlocal_3X();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("mar", "vad", "lop", "jos", "rip", "pet"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_name_rangeXlocal_1_4X() {
+        final Traversal<Vertex, String> traversal = get_g_V_name_rangeXlocal_1_4X();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("ark", "ada", "op", "osh", "ipp", "ete"), traversal);
+    }
+
     public static class Traversals extends RangeTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
@@ -374,6 +394,16 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
             return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a","b","c").by("name").range(local, 1, 2);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_limitXlocal_3X() {
+            return g.V().values("name").limit(local, 3);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_rangeXlocal_1_4X() {
+            return g.V().values("name").range(local, 1, 4);
         }
     }
 }

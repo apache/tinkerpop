@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -66,6 +67,11 @@ public abstract class GroovyCountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.fold.count(local)")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_name_countXlocalX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.name.count(local)")
         }
     }
 }
