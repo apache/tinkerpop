@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,20 +58,20 @@ public interface ImportCustomizer extends Customizer {
      * Gets the set of packages from the {@link #getClassImports()}.
      */
     public default Set<Package> getClassPackages() {
-        return getClassImports().stream().map(Class::getPackage).collect(Collectors.toSet());
+        return getClassImports().stream().map(Class::getPackage).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Gets the set of classes from the {@link #getMethodImports()}.
      */
     public default Set<Class> getMethodClasses() {
-        return getMethodImports().stream().map(Method::getDeclaringClass).collect(Collectors.toSet());
+        return getMethodImports().stream().map(Method::getDeclaringClass).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Gets the set of classes from the {@link #getEnumImports()}.
      */
     public default Set<Class> getEnumClasses() {
-        return getEnumImports().stream().map(Enum::getDeclaringClass).collect(Collectors.toSet());
+        return getEnumImports().stream().map(Enum::getDeclaringClass).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
