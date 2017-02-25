@@ -572,6 +572,7 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :remote connect tinkerpop.server conf/remote-objects.yaml
 :remote config alias x g
 :> x.E().label().groupCount()
+:remote close
 ----
 
 [[console-sessions]]
@@ -581,9 +582,10 @@ Sessions
 A `:remote` created in the following fashion will be "sessionless", meaning each script issued to the server with
 `:>` will be encased in a transaction and no state will be maintained from one request to the next.
 
-[gremlin-groovy]
+[source,groovy]
 ----
-:remote connect tinkerpop.server conf/remote-objects.yaml
+gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml
+==>Configured localhost/127.0.0.1:8182
 ----
 
 In other words, the transaction will be automatically committed (or rolledback on error) and any variables declared
@@ -598,6 +600,7 @@ To enable the remote to connect with a session the `connect` argument takes anot
 :> x = 1
 :> y = 2
 :> x + y
+:remote close
 ----
 
 With the above command a session gets created with a random UUID for a session identifier. It is also possible to
@@ -622,6 +625,7 @@ x = 1
 y = 2
 x + y
 :remote console
+:remote close
 ----
 
 In the above example, the `:remote console` command is executed. It places the console in a state where the `:>` is
@@ -649,7 +653,7 @@ Connecting via Java
    <version>x.y.z</version>
 </dependency>
 ----
-
+                         gremlin-groovy
 image:gremlin-java.png[width=175,float=left] TinkerPop3 comes equipped with a reference client for Java-based
 applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server
 and get back results.
