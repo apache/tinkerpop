@@ -24,7 +24,7 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
  * be displayed to the user in the Console.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.RemoteException};
+ * @deprecated As of release 3.2.4, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.console.RemoteException};
  */
 @Deprecated
 public class RemoteException extends Exception {

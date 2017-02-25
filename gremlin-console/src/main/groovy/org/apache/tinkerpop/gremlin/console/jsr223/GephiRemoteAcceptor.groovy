@@ -28,7 +28,6 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException

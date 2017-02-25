@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultBindingsCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.junit.Test;
 
@@ -36,7 +34,6 @@ import java.io.File;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

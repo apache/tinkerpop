@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.plugin
+package org.apache.tinkerpop.gremlin.console.jsr223
 
 import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.process.traversal.Step
@@ -39,16 +39,14 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 import java.util.stream.Collectors
 
 /**
- * A strategy that works in conjuction with the {@link GephiRemoteAcceptor} to automatically inject visualization
+ * A strategy that works in conjuction with the {@link org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor} to automatically inject visualization
  * steps after "vertex" steps to show the vertices traversed for a step.  If the traversal was evaluated in the
  * console normally then the visualization strategy will not be applied.  It must be {@code :submit} to the
  * console for the strategy to be applied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.5, replaced by {@link org.apache.tinkerpop.gremlin.console.jsr223.GephiTraversalVisualizationStrategy}
  */
 @CompileStatic
-@Deprecated
 class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy>
         implements TraversalStrategy.FinalizationStrategy {
 
