@@ -101,7 +101,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                         final boolean update = highRange == null || highRangeCandidate > highRange;
                         if (update) {
                             if (parent instanceof EmptyStep) {
-                                useNotStep = true;
+                                useNotStep = false;
                             } else {
                                 if (parent instanceof RepeatStep) {
                                     final RepeatStep repeatStep = (RepeatStep) parent;

@@ -56,11 +56,17 @@ public class RangeByIsCountStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Traversal[][]{
-                {__.count().is(0), __.not(__.identity())},
+                {__.count().is(0), __.limit(1).count().is(0)},
                 {__.count().is(1), __.limit(2).count().is(1)},
-                {__.out().count().is(0), __.not(__.out())},
-                {__.outE().count().is(lt(1)), __.not(__.outE())},
-                {__.both().count().is(lte(0)), __.not(__.both())},
+                {__.out().count().is(0), __.out().limit(1).count().is(0)},
+                {__.outE().count().is(lt(1)), __.outE().limit(1).count().is(lt(1))},
+                {__.both().count().is(lte(0)), __.both().limit(1).count().is(lte(0))},
+                {__.map(__.out().count().is(0)), __.map(__.out().limit(1).count().is(0))},
+                {__.map(__.outE().count().is(lt(1))), __.map(__.outE().limit(1).count().is(lt(1)))},
+                {__.map(__.both().count().is(lte(0))), __.map(__.both().limit(1).count().is(lte(0)))},
+                {__.filter(__.out().count().is(0)), __.not(__.out())},
+                {__.filter(__.outE().count().is(lt(1))), __.not(__.outE())},
+                {__.filter(__.both().count().is(lte(0))), __.not(__.both())},
                 {__.store("x").count().is(0).as("a"), __.store("x").limit(1).count().is(0).as("a")},
                 {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
                 {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
