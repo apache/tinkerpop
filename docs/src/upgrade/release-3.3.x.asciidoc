@@ -181,6 +181,13 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** org.apache.tinkerpop.gremlin.giraph.groovy.plugin.GiraphGremlinPlugin
 * `gremlin-console`
 ** `org.apache.tinkerpop.gremlin.console.Console(String)`
+** `org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor`
+** `org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverRemoteAcceptor`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.GephiGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.UtilitiesGremlinPlugin`
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
