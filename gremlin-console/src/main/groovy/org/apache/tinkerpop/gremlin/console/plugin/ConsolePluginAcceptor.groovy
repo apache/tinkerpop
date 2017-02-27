@@ -25,7 +25,9 @@ import org.codehaus.groovy.tools.shell.IO
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, not replaced.
  */
+@Deprecated
 class ConsolePluginAcceptor implements PluginAcceptor, org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor {
 
     public static final String ENVIRONMENT_NAME = "console";

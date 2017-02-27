@@ -31,7 +31,9 @@ import java.util.Set;
  * and provides the abstractions required for a plugin to work regardless of the environmental implementations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.5, not replaced.
  */
+@Deprecated
 public interface PluginAcceptor {
 
     public void addImports(final Set<String> importStatements);

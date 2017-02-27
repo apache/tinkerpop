@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn;
+import org.apache.tinkerpop.gremlin.console.PluggedIn;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultBindingsCustomizer;

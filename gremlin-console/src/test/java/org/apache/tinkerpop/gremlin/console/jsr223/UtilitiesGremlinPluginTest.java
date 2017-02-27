@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor;
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn;
+import org.apache.tinkerpop.gremlin.console.PluggedIn;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
