@@ -101,7 +101,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                         final boolean update = highRange == null || highRangeCandidate > highRange;
                         if (update) {
                             if (parent instanceof EmptyStep) {
-                                useNotStep = true;
+                                useNotStep = false;
                             } else {
                                 if (parent instanceof RepeatStep) {
                                     final RepeatStep repeatStep = (RepeatStep) parent;
@@ -138,25 +138,34 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                         traversal.asAdmin().removeStep(curr); // CountStep
                         size -= 2;
                         if (!dismissCountIs) {
-                            final Traversal.Admin inner;
-                            if (prev != null) {
-                                inner = __.start().asAdmin();
-                                for (; ; ) {
-                                    final Step pp = prev.getPreviousStep();
-                                    inner.addStep(0, prev);
-                                    if (pp instanceof EmptyStep || pp instanceof GraphStep ||
-                                            !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
-                                    traversal.removeStep(prev);
-                                    prev = pp;
-                                    size--;
-                                }
+                            if (traversal.getParent() instanceof FilterStep) {
+                                final Step<?, ?> filterStep = parent.asStep();
+                                final Traversal.Admin parentTraversal = filterStep.getTraversal();
+                                final Step notStep = new NotStep<>(parentTraversal,
+                                        traversal.getSteps().isEmpty() ? __.identity() : traversal);
+                                filterStep.getLabels().forEach(notStep::addLabel);
+                                TraversalHelper.replaceStep(filterStep, notStep, parentTraversal);
                             } else {
-                                inner = __.identity().asAdmin();
+                                final Traversal.Admin inner;
+                                if (prev != null) {
+                                    inner = __.start().asAdmin();
+                                    for (; ; ) {
+                                        final Step pp = prev.getPreviousStep();
+                                        inner.addStep(0, prev);
+                                        if (pp instanceof EmptyStep || pp instanceof GraphStep ||
+                                                !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
+                                        traversal.removeStep(prev);
+                                        prev = pp;
+                                        size--;
+                                    }
+                                } else {
+                                    inner = __.identity().asAdmin();
+                                }
+                                if (prev != null)
+                                    TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
+                                else
+                                    traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
                             }
-                            if (prev != null)
-                                TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
-                            else
-                                traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
                         }
                     } else {
                         TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
