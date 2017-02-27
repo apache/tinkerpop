@@ -88,5 +88,10 @@ public abstract class GroovyTailTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 1)")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_tailXlocal_4X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.name.tail(local, 4)")
+        }
     }
 }

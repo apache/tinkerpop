@@ -108,5 +108,15 @@ public abstract class GroovyRangeTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').range(local,1,2)")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_limitXlocal_3X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.name.limit(local, 3)")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_rangeXlocal_1_4X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.name.range(local, 1, 4)")
+        }
     }
 }

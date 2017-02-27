@@ -43,7 +43,9 @@ public final class CountLocalStep<S> extends MapStep<S, Long> {
         final S item = traverser.get();
         return (item instanceof Collection) ? ((Collection) item).size()
                 : (item instanceof Map) ? ((Map) item).size()
-                : (item instanceof Path) ? ((Path) item).size() : 1L;
+                : (item instanceof Path) ? ((Path) item).size()
+                : (item instanceof Object[]) ? ((Object[]) item).length
+                : (item instanceof CharSequence) ? ((CharSequence) item).length() : 1L;
     }
 
     @Override
