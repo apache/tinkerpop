@@ -1205,12 +1205,11 @@ find it.
 
 [source,java]
 ----
-include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
+include::{basedir}/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/jsr223/console/RemoteAcceptor.java[]
 ----
 
-The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin
-Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method
-of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of
-a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the
-`RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh`
-to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
+The `RemoteAcceptor` can be bound to a `GremlinPlugin` by adding a `ConsoleCustomizer` implementation to the list of
+`Customizer` instances that are returned from the `GremlinPlugin`. The `ConsoleCustomizer` will only be executed when
+in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the
+`ConsoleCustomizer.getRemoteAcceptor(GremlinShellEnvironment)` method.  Generally speaking, each call to
+`getRemoteAcceptor(GremlinShellEnvironment)` should produce a new instance of a `RemoteAcceptor`.
