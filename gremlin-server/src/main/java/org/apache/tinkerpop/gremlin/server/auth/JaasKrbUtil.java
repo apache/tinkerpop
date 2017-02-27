@@ -44,8 +44,6 @@ import java.util.Set;
  * package org.apache.kerby.kerberos.kerb.client, see:
  *     https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/kerby-kerb/kerb-simplekdc/
  *         src/main/java/org/apache/kerby/kerberos/kerb/client/JaasKrbUtil.java
- *
- * See also: gremlin-server/src/main/static/NOTICE
  */
 public final class JaasKrbUtil {
 
