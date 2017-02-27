@@ -18,8 +18,9 @@ under the License.
 '''
 import codecs
 import os
+import sys
 import time
-from setuptools import setup, Command
+from setuptools import setup
 
 # Folder containing the setup.py
 root = os.path.dirname(os.path.abspath(__file__))
@@ -43,10 +44,21 @@ from gremlin_python import __version__
 
 version = __version__.version
 
+install_requires = [
+    'aenum==1.4.5',
+    'tornado==4.4.1',
+    'six==1.10.0'
+]
+
+if sys.version_info < (3,2):
+    install_requires += ['futures==3.0.5']
+
 setup(
     name='gremlinpython',
     version=version,
-    packages=['gremlin_python', 'gremlin_python.driver', 'gremlin_python.process', 'gremlin_python.structure', 'gremlin_python.structure.io'],
+    packages=['gremlin_python', 'gremlin_python.driver',
+              'gremlin_python.driver.tornado', 'gremlin_python.process',
+              'gremlin_python.structure', 'gremlin_python.structure.io'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
@@ -60,11 +72,7 @@ setup(
         'pytest',
         'mock'
     ],
-    install_requires=[
-        'aenum==1.4.5',
-        'tornado==4.4.1',
-        'six==1.10.0'
-    ],
+    install_requires=install_requires,
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",

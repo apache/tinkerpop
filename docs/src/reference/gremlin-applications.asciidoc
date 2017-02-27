@@ -762,6 +762,80 @@ The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry`
 what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same
 approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
+[[connecting-via-python]]
+Connecting via Python
+~~~~~~~~~~~~~~~~~~~~~
+
+[source,python]
+----
+pip install gremlinpython
+----
+
+TinkerPop3 also includes a client for Python-based applications.  It is referred to as Gremlin-Python Driver.
+The `Client` class implementation/interface is based on the Java Driver, with some restrictions. Most notably,
+Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is instantiated directly.
+Usage is as follows:
+
+[source,python]
+----
+from gremlin_python.driver import client <1>
+client = client.Client('ws://localhost:8182/gremlin', 'g') <2>
+----
+
+<1> Import the Gremlin-Python `client` module.
+<2> Opens a reference to `localhost` - note that there are various configuration options that can be passed
+to the `Client` object upon instantiation as keyword arguments.
+
+Once a `Client` instance is ready, it is possible to issue some Gremlin:
+
+[source,python]
+----
+result_set = client.submit("[1,2,3,4]")  <1>
+future_results = result_set.all()  <2>
+results = future_results.result() <3>
+assert results == [1, 2, 3, 4] <4>
+
+future_result_set = client.submitAsync("[1,2,3,4]") <5>
+result_set = future_result_set.result() <6>
+result = result_set.one() <7>
+assert results == [1, 2, 3, 4] <8>
+assert result_set.done.done() <9>
+
+client.close() <10>
+----
+
+<1> Submit a script that simply returns a `List` of integers.  This method blocks until the request is written to
+the server and a `ResultSet` is constructed.
+<2> Even though the `ResultSet` is constructed, it does not mean that the server has sent back the results (or even
+evaluated the script potentially).  The `ResultSet` is just a holder that is awaiting the results from the server. The `all` method
+returns a `concurrent.futures.Future` that resolves to a list when it is complete.
+<3> Block until the the script is evaluated and results are sent back by the server.
+<4> Verify the result.
+<5> Submit the same script to the server but don't block.
+<6> Wait until request is written to the server and `ResultSet` is constructed.
+<7> Read a single result off the result stream.
+<8> Again, verify the result.
+<9> Verify that the all results have been read and stream is closed.
+<10> Close client and underlying pool connections.
+
+Configuration
+^^^^^^^^^^^^^
+
+The following table describes the various configuration options for the Gremlin-Python Driver. They
+can be passed to the `Client` instance as keyword arguments:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
+|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
+|pool_size |The number of connections used by the pool. |4
+|max_workers |Maximum number of worker threads. |Number of CPUs * 5
+|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
+|password |The password to submit on requests that require authentication. |""
+|username |The username to submit on requests that require authentication. |""
+|=========================================================
+
 Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
 

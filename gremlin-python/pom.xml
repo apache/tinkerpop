@@ -314,6 +314,7 @@
                                         <param>aenum==1.4.5</param>
                                         <param>tornado==4.4.1</param>
                                         <param>six==1.10.0</param>
+                                        <param>futures==3.0.5</param>
                                     </libraries>
                                 </configuration>
                             </execution>
