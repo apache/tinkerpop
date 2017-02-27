@@ -68,7 +68,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             // not occur. It may not be a safe assumption that the handler
             // is sharable so create a new handler each time.
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new HttpBasicAuthenticationHandler(authenticator);
+                    null : new HttpBasicAuthenticationHandler(authenticator, settings.authentication);
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }

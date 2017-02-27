@@ -384,6 +384,11 @@ public class Settings {
         public String className = AllowAllAuthenticator.class.getName();
 
         /**
+         * Enable audit logging of authenticated users and gremlin evaluation requests.
+         */
+        public boolean enableAuditLog = false;
+
+        /**
          * A {@link Map} containing {@link Authenticator} specific configurations. Consult the
          * {@link Authenticator} implementation for specifics on what configurations are expected.
          */

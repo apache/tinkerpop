@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     /**
@@ -243,6 +245,11 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     final Iterator itty = IteratorUtils.asIterator(o);
 
                     logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
+                    if (settings.authentication.enableAuditLog) {
+                        String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
+                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                        auditLogger.info("User with address {} requested: {}", address, script);
+                    }
 
                     try {
                         handleIterator(context, itty);

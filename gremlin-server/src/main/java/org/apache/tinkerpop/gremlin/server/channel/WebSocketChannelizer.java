@@ -67,7 +67,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         // configure authentication - null means don't bother to add authentication to the pipeline
         if (authenticator != null)
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new SaslAuthenticationHandler(authenticator);
+                    null : new SaslAuthenticationHandler(authenticator, settings.authentication);
     }
 
     @Override
