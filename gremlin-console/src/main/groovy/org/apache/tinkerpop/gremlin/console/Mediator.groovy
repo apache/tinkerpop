@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

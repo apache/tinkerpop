@@ -182,6 +182,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-console`
 ** `org.apache.tinkerpop.gremlin.console.Console(String)`
 ** `org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor`
 ** `org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor`
 ** `org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy`
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverGremlinPlugin`
@@ -192,6 +193,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
+** `org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_COMPUTER`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`

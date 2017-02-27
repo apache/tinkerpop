@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
-import org.apache.tinkerpop.gremlin.groovy.plugin.*
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
@@ -55,7 +55,17 @@ class PluggedIn {
     }
 
     void activate() {
-        plugin.pluginTo(new ConsolePluginAcceptor(shell, io))
+        plugin.getCustomizers("gremlin-groovy").get().each {
+            if (it instanceof ImportCustomizer) {
+                it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { shell.execute(it) }
+                it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+                it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+            } else if (it instanceof ScriptCustomizer) {
+                it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { shell.execute(it) }
+            } else if (it instanceof BindingsCustomizer) {
+                it.bindings.entrySet().each { kv -> shell.getInterp().getContext().setProperty(kv.key, kv.value) }
+            }
+        }
         this.activated = true
     }
 
@@ -63,104 +73,35 @@ class PluggedIn {
         this.activated = false
     }
 
-    public static class GremlinPluginAdapter implements GremlinPlugin {
-        org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin
-        private final Groovysh shell
-        private final IO io
+    Optional<RemoteAcceptor> remoteAcceptor() {
+        // find a consoleCustomizer if available
+        if (!plugin.getCustomizers("gremlin-groovy").isPresent() || !plugin.getCustomizers("gremlin-groovy").get().any{ it instanceof ConsoleCustomizer })
+            return Optional.empty()
 
-        public GremlinPluginAdapter(final org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin corePlugin, final Groovysh shell, final IO io) {
-            this.corePlugin = corePlugin
-            this.shell = shell
-            this.io = io
-        }
-
-        @Override
-        String getName() {
-            return corePlugin.getName()
-        }
-
-        @Override
-        void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-            corePlugin.getCustomizers("gremlin-groovy").get().each {
-                if (it instanceof ImportCustomizer) {
-                    def imports = [] as Set
-                    it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { imports.add(it) }
-                    it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {imports.add(it)}
-                    it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {imports.add(it)}
-                    pluginAcceptor.addImports(imports)
-                } else if (it instanceof ScriptCustomizer) {
-                    it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { pluginAcceptor.eval(it) }
-                } else if (it instanceof BindingsCustomizer) {
-                    it.bindings.entrySet().each { kv -> pluginAcceptor.addBinding(kv.key, kv.value) }
-                }
-            }
-        }
-
-        @Override
-        boolean requireRestart() {
-            return corePlugin.requireRestart()
-        }
-
-        @Override
-        Optional<RemoteAcceptor> remoteAcceptor() {
-            // find a consoleCustomizer if available
-            if (!corePlugin.getCustomizers("gremlin-groovy").isPresent() || !corePlugin.getCustomizers("gremlin-groovy").get().any{ it instanceof ConsoleCustomizer })
-                return Optional.empty()
-
-            ConsoleCustomizer customizer = (ConsoleCustomizer) corePlugin.getCustomizers("gremlin-groovy").get().find{ it instanceof ConsoleCustomizer }
-            return Optional.of(new RemoteAcceptorAdapter(customizer.getRemoteAcceptor(new GroovyGremlinShellEnvironment())))
-        }
-
-        public class GroovyGremlinShellEnvironment implements GremlinShellEnvironment {
-
-            @Override
-            def <T> T getVariable(final String variableName) {
-                return (T) shell.interp.context.getVariable(variableName)
-            }
-
-            @Override
-            def <T> void setVariable(final String variableName, final T variableValue) {
-                shell.interp.context.setVariable(variableName, variableValue)
-            }
-
-            @Override
-            void println(final String line) {
-                io.println(line)
-            }
-
-            @Override
-            def <T> T execute(final String line) {
-                return (T) shell.execute(line)
-            }
-        }
+        ConsoleCustomizer customizer = (ConsoleCustomizer) plugin.getCustomizers("gremlin-groovy").get().find{ it instanceof ConsoleCustomizer }
+        return Optional.of(customizer.getRemoteAcceptor(new GroovyGremlinShellEnvironment()))
     }
 
-    public static class RemoteAcceptorAdapter implements RemoteAcceptor {
+    public class GroovyGremlinShellEnvironment implements GremlinShellEnvironment {
 
-        private org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor remoteAcceptor
-
-        public RemoteAcceptorAdapter(org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor remoteAcceptor) {
-            this.remoteAcceptor = remoteAcceptor
+        @Override
+        def <T> T getVariable(final String variableName) {
+            return (T) shell.interp.context.getVariable(variableName)
         }
 
         @Override
-        Object connect(final List<String> args) throws RemoteException {
-            return remoteAcceptor.connect(args)
+        def <T> void setVariable(final String variableName, final T variableValue) {
+            shell.interp.context.setVariable(variableName, variableValue)
         }
 
         @Override
-        Object configure(final List<String> args) throws RemoteException {
-            return remoteAcceptor.configure(args)
+        void println(final String line) {
+            io.println(line)
         }
 
         @Override
-        Object submit(final List<String> args) throws RemoteException {
-            return remoteAcceptor.submit(args)
-        }
-
-        @Override
-        void close() throws IOException {
-            remoteAcceptor.close()
+        def <T> T execute(final String line) {
+            return (T) shell.execute(line)
         }
     }
 }

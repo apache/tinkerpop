@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.apache.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.console.PluggedIn;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -60,10 +59,8 @@ public class UtilitiesGremlinPluginTest {
         final Groovysh groovysh = new Groovysh();
         groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
 
-        final PluggedIn.GremlinPluginAdapter adapter = new PluggedIn.GremlinPluginAdapter(plugin, groovysh, io);
-        final ConsolePluginAcceptor acceptor = new ConsolePluginAcceptor(groovysh, io);
-
-        adapter.pluginTo(acceptor);
+        final PluggedIn pluggedIn = new PluggedIn(plugin, groovysh, io, false);
+        pluggedIn.activate();
 
         assertThat(groovysh.execute("describeGraph(org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph)").toString(), containsString("IMPLEMENTATION - org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"));
     }
