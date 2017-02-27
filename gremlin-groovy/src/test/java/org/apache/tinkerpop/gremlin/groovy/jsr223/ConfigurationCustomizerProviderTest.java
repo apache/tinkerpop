@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.junit.Test;
 
@@ -33,19 +32,19 @@ import static org.junit.Assert.assertNull;
 public class ConfigurationCustomizerProviderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionForNoSettings() {
-        new ConfigurationCustomizerProvider();
+        new ConfigurationGroovyCustomizer();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionForInvalidSettings() {
-        new ConfigurationCustomizerProvider("only-one-arg");
+        new ConfigurationGroovyCustomizer("only-one-arg");
     }
 
     @Test
     public void shouldThrowExceptionForNotFoundSetting() {
         final CompilerConfiguration configuration = new CompilerConfiguration();
         try {
-            final ConfigurationCustomizerProvider provider = new ConfigurationCustomizerProvider(
+            final ConfigurationGroovyCustomizer provider = new ConfigurationGroovyCustomizer(
                     "Tolerance", 3,
                     "NotRealSettingThatWouldEverOccur2", new java.util.Date());
 
@@ -64,7 +63,7 @@ public class ConfigurationCustomizerProviderTest {
         assertNull(configuration.getScriptBaseClass());
         assertEquals(false, configuration.getDebug());
 
-        final ConfigurationCustomizerProvider provider = new ConfigurationCustomizerProvider(
+        final ConfigurationGroovyCustomizer provider = new ConfigurationGroovyCustomizer(
                 "Tolerance", 3,
                 "ScriptBaseClass", "Something",
                 "Debug", true);

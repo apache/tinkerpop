@@ -22,7 +22,6 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;

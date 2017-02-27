@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.transform.TypeChecked;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 

@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPluginCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.junit.runners.model.InitializationError;
@@ -31,6 +30,6 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class HadoopGremlinSuite extends AbstractGremlinSuite {
     public HadoopGremlinSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, new Class<?>[]{HadoopGremlinPluginCheck.class, FileSystemStorageCheck.class}, new Class<?>[]{HadoopGremlinPluginCheck.class, FileSystemStorageCheck.class}, true, TraversalEngine.Type.COMPUTER);
+        super(klass, builder, new Class<?>[]{FileSystemStorageCheck.class}, new Class<?>[]{FileSystemStorageCheck.class}, true, TraversalEngine.Type.COMPUTER);
     }
 }

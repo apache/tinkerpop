@@ -182,7 +182,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-console`
 ** `org.apache.tinkerpop.gremlin.console.Console(String)`
 ** `org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider`
-** `org.apache.tinkerpop.gremlin.console.plugin.*
+** `org.apache.tinkerpop.gremlin.console.plugin.*`
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverGremlinPlugin`
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverRemoteAcceptor`
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.GephiGremlinPlugin`
@@ -197,12 +197,36 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
 * `gremlin-groovy`
+** `org.apache.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#build(String,List,List,List,Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getScriptEngines()`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#enabledPlugins(Set)
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#addEngineSettings(String,List,List,List,Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#engineSettings(Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#use(List)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines`
 ** `org.apache.tinkerpop.gremlin.groovy.function.*`
+** `org.apache.tinkerpop.gremlin.groovy.plugin.*`
+** `org.apache.tinkerpop.gremlin.groovy.plugin.credential.*`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(ImportCustomizerProvider)`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(CompilerCustomizerProvider)`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine#plugins()`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptEnginePluginAcceptor`
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.*`
+** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#deleteDependenciesFromPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#copyDependenciesToPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+* `gremlin-server`
+** `org.apache.tinkerpop.gremlin.server.Settings#plugins`
+** `org.apache.tinkerpop.gremlin.server.op.control.*`
 * `spark-gremlin`
 ** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
 * `tinkergraph-gremlin`
@@ -212,8 +236,9 @@ Please see the javadoc deprecation notes or upgrade documentation specific to wh
 understand how to resolve this breaking change.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283], link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
-link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612], link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1421[TINKERPOP-1421], link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~

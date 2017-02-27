@@ -18,11 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TypeCheckedCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -48,18 +44,18 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {TypeCheckedCustomizerProvider.class.getSimpleName(), new TypeCheckedCustomizerProvider(), new TypeCheckedCustomizerProvider(SimpleSandboxExtension.class.getName())},
-                {CompileStaticCustomizerProvider.class.getSimpleName(), new CompileStaticCustomizerProvider(), new CompileStaticCustomizerProvider(SimpleSandboxExtension.class.getName())}});
+                {TypeCheckedGroovyCustomizer.class.getSimpleName(), new TypeCheckedGroovyCustomizer(), new TypeCheckedGroovyCustomizer(SimpleSandboxExtension.class.getName())},
+                {CompileStaticGroovyCustomizer.class.getSimpleName(), new CompileStaticGroovyCustomizer(), new CompileStaticGroovyCustomizer(SimpleSandboxExtension.class.getName())}});
     }
 
     @Parameterized.Parameter(value = 0)
     public String name;
 
     @Parameterized.Parameter(value = 1)
-    public CompilerCustomizerProvider notSandboxed;
+    public GroovyCustomizer notSandboxed;
 
     @Parameterized.Parameter(value = 2)
-    public CompilerCustomizerProvider sandboxed;
+    public GroovyCustomizer sandboxed;
 
     @Test
     public void shouldEvalGraphTraversalSource() throws Exception {

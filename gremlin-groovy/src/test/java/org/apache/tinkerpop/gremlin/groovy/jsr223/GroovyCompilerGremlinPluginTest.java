@@ -18,12 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TypeCheckedCustomizerProvider;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.junit.Test;

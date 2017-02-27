@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPluginCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
@@ -80,14 +79,6 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         if (test.equals(SparkContextStorageCheck.class)) {
             config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
             config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
-        }
-
-        // sugar plugin causes meta-method issues with a persisted context
-        if (test.equals(HadoopGremlinPluginCheck.class)) {
-            Spark.close();
-            HadoopPools.close();
-            KryoShimServiceLoader.close();
-            SugarTestHelper.clearRegistry();
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());

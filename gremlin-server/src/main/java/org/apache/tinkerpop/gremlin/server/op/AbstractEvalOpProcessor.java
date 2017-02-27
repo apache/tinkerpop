@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -285,11 +285,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                 if (t instanceof OpProcessorException) {
                     ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
                 } else if (t instanceof TimedInterruptTimeoutException) {
-                    // occurs when the TimedInterruptCustomizerProvider is in play
-                    final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
-                    logger.warn(errorMessage);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider").create());
-                } else if (t instanceof org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);

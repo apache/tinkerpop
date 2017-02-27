@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
@@ -32,26 +31,6 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineThreadInterruptTest {
-    @Test
-    public void shouldInterruptWhileDeprecated() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptCustomizerProvider());
-        final AtomicBoolean asserted = new AtomicBoolean(false);
-
-        final Thread t = new Thread(() -> {
-            try {
-                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
-            } catch (ScriptException se) {
-                asserted.set(se.getCause().getCause() instanceof InterruptedException);
-            }
-        });
-
-        t.start();
-        Thread.sleep(100);
-        t.interrupt();
-        while(t.isAlive()) {}
-
-        assertTrue(asserted.get());
-    }
 
     @Test
     public void shouldInterruptWhile() throws Exception {

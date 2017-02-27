@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.FileSandboxExtension;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -69,7 +67,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
 
     @Test
     public void shouldEvalAsTheMethodIsWhiteListed() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
             assertThat(engine.eval("new Boolean(true)"), is(true));
@@ -79,7 +77,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
 
     @Test
     public void shouldEvalAsGroovyPropertiesWhenWhiteListed() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             assertThat(Arrays.equals("test".getBytes(), (byte[]) engine.eval("'test'.bytes")), is(true));
         }
@@ -87,10 +85,10 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
 
     @Test
     public void shouldPreventMaliciousStuffWithSystemButAllowSomeMethodsOnSystem() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertThat((long) engine.eval("System.currentTimeMillis()"), greaterThan(0l));
-            assertThat((long) engine.eval("System.nanoTime()"), greaterThan(0l));
+            assertThat((long) engine.eval("System.currentTimeMillis()"), greaterThan(0L));
+            assertThat((long) engine.eval("System.nanoTime()"), greaterThan(0L));
 
             engine.eval("System.exit(0)");
             fail("Should have a compile error because class/method is not white listed");
@@ -102,7 +100,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
 
     @Test
     public void shouldPreventMaliciousStuffWithFile() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             engine.eval("java.nio.file.FileSystems.getDefault()");
             fail("Should have a compile error because class/method is not white listed");
@@ -115,7 +113,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvalOnGAsTheMethodIsWhiteListed() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);

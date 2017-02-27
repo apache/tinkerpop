@@ -20,10 +20,6 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -32,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +37,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -78,51 +72,13 @@ public class GremlinGroovyScriptEngineOverGraphTest {
     public void shouldLoadImports() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
-        try {
-            engineNoImports.eval("Vertex.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
+        final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine();
         engineWithImports.put("g", g);
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
         assertEquals(2l, engineWithImports.eval("g.V().has('age',gt(30)).count().next()"));
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
-    }
-
-
-    @Test
-    public void shouldLoadStandardImportsAndThenAddToThem() throws Exception {
-        final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal();
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
-        engine.put("g", g);
-        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(2l, engine.eval("g.V().has('age',gt(30)).count().next()"));
-        assertEquals(Direction.IN, engine.eval("Direction.IN"));
-        assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
-        assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
-
-        try {
-            engine.eval("YamlConfiguration.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import " + YamlConfiguration.class.getCanonicalName())));
-        engine.put("g", g);
-        assertEquals(YamlConfiguration.class.getName(), engine.eval("YamlConfiguration.class.getName()"));
-        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(2l, engine.eval("g.V().has('age',gt(30)).count().next()"));
-        assertEquals(Direction.IN, engine.eval("Direction.IN"));
-        assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
-        assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
     }
 
     @Test

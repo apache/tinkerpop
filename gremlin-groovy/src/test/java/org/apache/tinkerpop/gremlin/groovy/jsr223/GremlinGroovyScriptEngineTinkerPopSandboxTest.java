@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TinkerPopSandboxExtension;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -42,7 +39,7 @@ import static org.junit.Assert.fail;
 public class GremlinGroovyScriptEngineTinkerPopSandboxTest {
     @Test
     public void shouldNotEvalAsTheMethodIsNotWhiteListed() throws Exception {
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(TinkerPopSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(TinkerPopSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             engine.eval("java.lang.Math.abs(123)");
             fail("Should have a compile error because class/method is not white listed");
@@ -56,7 +53,7 @@ public class GremlinGroovyScriptEngineTinkerPopSandboxTest {
     public void shouldEvalOnGAsTheMethodIsWhiteListed() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(TinkerPopSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(TinkerPopSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);

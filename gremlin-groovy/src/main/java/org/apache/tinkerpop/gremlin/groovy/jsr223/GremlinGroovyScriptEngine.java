@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.DelegatingMetaClass;
@@ -27,17 +26,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
@@ -91,7 +80,7 @@ import java.util.stream.Collectors;
  * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
-        implements DependencyManager, AutoCloseable, GremlinScriptEngine {
+        implements AutoCloseable, GremlinScriptEngine {
 
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
@@ -136,7 +125,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
     /**
      * Name of variable that holds local variables to be globally bound if "interpreter mode" is enabled with
-     * {@link InterpreterModeCustomizerProvider}.
+     * {@link InterpreterModeGroovyCustomizer}.
      */
     public static final String COLLECTED_BOUND_VARS_MAP_VARNAME = "gremlin_script_engine_collected_boundvars";
 
@@ -175,17 +164,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private static final String DOT_GROOVY = ".groovy";
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
-    private ImportCustomizerProvider importCustomizerProvider;
-    private final List<CompilerCustomizerProvider> customizerProviders;
-
     private final ImportGroovyCustomizer importGroovyCustomizer;
     private final List<GroovyCustomizer> groovyCustomizers;
 
-    private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
 
     /**
-     * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
+     * Creates a new instance using no {@link Customizer}.
      */
     public GremlinGroovyScriptEngine() {
         this(new Customizer[0]);
@@ -215,135 +200,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
 
-        // not using the old provider model so set that to empty list so that when createClassLoader is called
-        // it knows to use groovyCustomizers instead
-        customizerProviders = Collections.emptyList();
-
         createClassLoader();
-    }
-
-    /**
-     * Creates a new instance with the specified {@link CompilerCustomizerProvider} objects.
-     *
-     * @deprecated As of release 3.2.4, replaced by {@link #GremlinGroovyScriptEngine(Customizer...)}.
-     */
-    @Deprecated
-    public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
-        final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
-
-        GremlinLoader.load();
-
-        importCustomizerProvider = providers.stream()
-                .filter(p -> p instanceof ImportCustomizerProvider)
-                .map(p -> (ImportCustomizerProvider) p)
-                .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
-
-        // determine if interpreter mode should be enabled
-        interpreterModeEnabled = providers.stream()
-                .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
-
-        // remove used providers as the rest will be applied directly
-        customizerProviders = providers.stream()
-                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider))
-                .collect(Collectors.toList());
-
-        // groovy customizers are not used here - set to empty list so that the customizerProviders get used
-        // in createClassLoader
-        groovyCustomizers = Collections.emptyList();
-        importGroovyCustomizer = null;
-
-        createClassLoader();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * This method should be called after "expected" imports have been added to the {@code DependencyManager}
-     * because adding imports with {@link #addImports(java.util.Set)} will reset the classloader and flush away
-     * dependencies.
-     */
-    @Override
-    public synchronized List<GremlinPlugin> use(final String group, final String artifact, final String version) {
-        final Map<String, Object> dependency = new HashMap<String, Object>() {{
-            put("group", group);
-            put("module", artifact);
-            put("version", version);
-        }};
-
-        final Map<String, Object> args = new HashMap<String, Object>() {{
-            put("classLoader", loader);
-        }};
-
-        Grape.grab(args, dependency);
-
-        // note that the service loader utilized the classloader from the groovy shell as shell class are available
-        // from within there given loading through Grape.
-        final List<GremlinPlugin> pluginsFound = new ArrayList<>();
-        ServiceLoader.load(GremlinPlugin.class, loader).forEach(pluginsFound::add);
-
-        artifactsToUse.add(new Artifact(group, artifact, version));
-
-        return pluginsFound;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException {
-        for (GremlinPlugin gremlinPlugin : plugins) {
-            if (!loadedPlugins.contains(gremlinPlugin.getName())) {
-                gremlinPlugin.pluginTo(new ScriptEnginePluginAcceptor(this));
-                loadedPlugins.add(gremlinPlugin.getName());
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map[] dependencies() {
-        return Grape.listDependencies(loader);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String, Set<String>> imports() {
-        final Map<String, Set<String>> m = new HashMap<>();
-        m.put("imports", importCustomizerProvider.getImports());
-        m.put("staticImports", importCustomizerProvider.getStaticImports());
-        m.put("extraImports", importCustomizerProvider.getExtraImports());
-        m.put("extraStaticImports", importCustomizerProvider.getExtraStaticImports());
-        return m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void addImports(final Set<String> importStatements) {
-        // can't use this feature because imports can't come in as String for the revised model
-        if (null == importCustomizerProvider)
-            throw new IllegalStateException("Imports cannot be added to a GremlinGroovyScriptEngine that uses Customizer instances");
-
-            final Set<String> staticImports = new HashSet<>();
-        final Set<String> imports = new HashSet<>();
-
-        importStatements.forEach(s -> {
-            final String trimmed = s.trim();
-            if (patternImportStatic.matcher(trimmed).matches()) {
-                final int pos = trimmed.indexOf(STATIC);
-                staticImports.add(s.substring(pos + 6).trim());
-            } else
-                imports.add(s.substring(6).trim());
-        });
-
-        importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
-
-        internalReset();
     }
 
     /**
@@ -376,21 +233,16 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     /**
-     * {@inheritDoc}
+     * Resets the entire {@code GremlinGroovyScriptEngine} by clearing script caches, recreating the classloader,
+     * clearing bindings.
      */
-    @Override
     public void reset() {
         internalReset();
-
-        loadedPlugins.clear();
-
         getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
     /**
-     * Resets the {@code ScriptEngine} but does not clear the loaded plugins or bindings.  Typically called by
-     * {@link DependencyManager} methods that need to just force the classloader to be recreated and script caches
-     * cleared.
+     * Resets the {@code ScriptEngine} but does not clear the loaded plugins or bindings.
      */
     private void internalReset() {
         createClassLoader();
@@ -399,9 +251,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         // referenced before that might not have evaluated might cleanly evaluate now.
         classMap.clear();
         globalClosures.clear();
-
-        final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
-        toReuse.forEach(this::use);
     }
 
     /**
@@ -670,36 +519,17 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     private synchronized void createClassLoader() {
-        // check for customizerProviders temporarily until this deprecated stuff is gone
-        if (groovyCustomizers.isEmpty() && null == importGroovyCustomizer) {
-            final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-            conf.addCompilationCustomizers(this.importCustomizerProvider.create());
+        final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
+        conf.addCompilationCustomizers(this.importGroovyCustomizer.create());
 
-            // ConfigurationCustomizerProvider is treated separately
-            customizerProviders.stream().filter(cp -> !(cp instanceof ConfigurationCustomizerProvider))
-                    .forEach(p -> conf.addCompilationCustomizers(p.create()));
+        // ConfigurationCustomizerProvider is treated separately
+        groovyCustomizers.stream().filter(cp -> !(cp instanceof ConfigurationGroovyCustomizer))
+                .forEach(p -> conf.addCompilationCustomizers(p.create()));
 
-            customizerProviders.stream().filter(cp -> cp instanceof ConfigurationCustomizerProvider).findFirst()
-                    .ifPresent(cp -> ((ConfigurationCustomizerProvider) cp).applyCustomization(conf));
+        groovyCustomizers.stream().filter(cp -> cp instanceof ConfigurationGroovyCustomizer).findFirst()
+                .ifPresent(cp -> ((ConfigurationGroovyCustomizer) cp).applyCustomization(conf));
 
-            this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
-        } else {
-            final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-            conf.addCompilationCustomizers(this.importGroovyCustomizer.create());
-
-            // ConfigurationCustomizerProvider is treated separately
-            groovyCustomizers.stream().filter(cp -> !(cp instanceof ConfigurationGroovyCustomizer))
-                    .forEach(p -> conf.addCompilationCustomizers(p.create()));
-
-            groovyCustomizers.stream().filter(cp -> cp instanceof ConfigurationGroovyCustomizer).findFirst()
-                    .ifPresent(cp -> ((ConfigurationGroovyCustomizer) cp).applyCustomization(conf));
-
-            this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
-        }
-    }
-
-    private void use(final Artifact artifact) {
-        use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
+        this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
     }
 
     private Object callGlobal(final String name, final Object args[]) {
