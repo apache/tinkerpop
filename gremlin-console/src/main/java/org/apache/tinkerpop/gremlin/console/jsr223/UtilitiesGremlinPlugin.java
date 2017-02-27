@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
-import groovyx.gbench.Benchmark;
-import groovyx.gbench.BenchmarkStaticExtension;
 import groovyx.gprof.ProfileStaticExtension;
-import groovyx.gprof.Profiler;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
