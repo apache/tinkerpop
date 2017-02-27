@@ -16,15 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.plugin
+package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
-import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException
-import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
-import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
+import org.apache.tinkerpop.gremlin.groovy.plugin.*
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
@@ -35,9 +30,7 @@ import org.codehaus.groovy.tools.shell.IO
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.5, replaced by {@link org.apache.tinkerpop.gremlin.console.PluggedIn}
  */
-@Deprecated
 class PluggedIn {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator")
     private final GremlinPlugin plugin

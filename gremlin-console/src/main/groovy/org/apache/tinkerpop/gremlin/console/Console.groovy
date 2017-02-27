@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
 import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
 import org.apache.tinkerpop.gremlin.console.commands.SubmitCommand
 import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin

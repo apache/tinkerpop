@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
+import org.apache.tinkerpop.gremlin.console.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
 import org.apache.tinkerpop.gremlin.groovy.util.Artifact

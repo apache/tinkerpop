@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 
 /**
