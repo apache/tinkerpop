@@ -67,5 +67,10 @@ public abstract class GroovyCountTest {
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.fold.count(local)")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXinXknowsX_outXcreatedX_count_is_0XX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.where(__.in('knows').out('created').count.is(0)).name")
+        }
     }
 }
