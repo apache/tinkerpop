@@ -16,19 +16,14 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
-
-import unittest
-from unittest import TestCase
-
 import pytest
 
 from tornado import ioloop, gen
 
 from gremlin_python import statics
 from gremlin_python.statics import long
-from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from gremlin_python.driver.driver_remote_connection import (
+    DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
@@ -36,16 +31,17 @@ from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.process.strategies import SubgraphStrategy
 
+__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-class TestDriverRemoteConnection(TestCase):
-    def test_traversals(self):
+
+class TestDriverRemoteConnection(object):
+    def test_traversals(self, remote_connection):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        assert "remoteconnection[ws://localhost:45940/gremlin,g]" == str(connection)
-        g = Graph().traversal().withRemote(connection)
+        assert "remoteconnection[ws://localhost:45940/gremlin,g]" == str(remote_connection)
+        g = Graph().traversal().withRemote(remote_connection)
 
         assert long(6) == g.V().count().toList()[0]
-        #
+        # #
         assert Vertex(1) == g.V(1).next()
         assert 1 == g.V(1).id().next()
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
@@ -56,26 +52,24 @@ class TestDriverRemoteConnection(TestCase):
         assert 2 == len(results)
         assert "lop" in results
         assert "ripple" in results
-        #
+        # #
         assert 10 == g.V().repeat(both()).times(5)[0:10].count().next()
         assert 1 == g.V().repeat(both()).times(5)[0:1].count().next()
         assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
-        #
+        # #
         results = g.withSideEffect('a',['josh','peter']).V(1).out('created').in_('created').values('name').where(within('a')).toList()
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
-        # todo: need a traversal metrics deserializer
+        # # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
-        connection.close()
 
-    def test_strategies(self):
+    def test_strategies(self, remote_connection):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         #
-        g = Graph().traversal().withRemote(connection). \
+        g = Graph().traversal().withRemote(remote_connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.hasLabel("person"),
                                               "edges": __.hasLabel("created")}))
@@ -84,7 +78,7 @@ class TestDriverRemoteConnection(TestCase):
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = Graph().traversal().withRemote(connection). \
+        g = Graph().traversal().withRemote(remote_connection). \
             withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
@@ -98,24 +92,19 @@ class TestDriverRemoteConnection(TestCase):
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
         #
-        g = Graph().traversal().withRemote(connection).withComputer()
+        g = Graph().traversal().withRemote(remote_connection).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
-        connection.close()
 
-    def test_side_effects(self):
+    def test_side_effects(self, remote_connection):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         #
-        g = Graph().traversal().withRemote(connection)
+        g = Graph().traversal().withRemote(remote_connection)
         ###
         t = g.V().hasLabel("project").name.iterate()
         assert 0 == len(t.side_effects.keys())
-        try:
+        with pytest.raises(Exception):
             m = t.side_effects["m"]
-            raise Exception("Accessing a non-existent key should throw an error")
-        except KeyError:
-            pass
         ###
         t = g.V().out("created").groupCount("m").by("name")
         results = t.toSet()
@@ -131,7 +120,7 @@ class TestDriverRemoteConnection(TestCase):
         assert 1 == m["ripple"]
         assert isinstance(m["lop"], long)
         assert isinstance(m["ripple"], long)
-        ###
+        ##
         t = g.V().out("created").groupCount("m").by("name").name.aggregate("n")
         results = t.toSet()
         assert 2 == len(results)
@@ -154,16 +143,11 @@ class TestDriverRemoteConnection(TestCase):
         assert 32 == list(results)[0]
         assert 32 == t.side_effects['m']
         assert 1 == len(t.side_effects.keys())
-        try:
+        with pytest.raises(Exception):
             x = t.side_effects["x"]
-            raise Exception("Accessing a non-existent key should throw an error")
-        except KeyError:
-            pass
-        connection.close()
 
-    def test_side_effect_close(self):
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        g = Graph().traversal().withRemote(connection)
+    def test_side_effect_close(self, remote_connection):
+        g = Graph().traversal().withRemote(remote_connection)
         t = g.V().aggregate('a').aggregate('b')
         t.toList()
 
@@ -193,76 +177,30 @@ class TestDriverRemoteConnection(TestCase):
         # Try to get 'b' directly from server, should throw error
         with pytest.raises(Exception):
             t.side_effects.value_lambda('b')
-        connection.close()
 
-    def test_promise(self):
-        loop = ioloop.IOLoop.current()
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        g = Graph().traversal().withRemote(connection)
-
-        @gen.coroutine
-        def go():
-            future_traversal = g.V().promise(lambda x: x.toList())
-            assert not future_traversal.done()
-            resp = yield future_traversal
-            assert future_traversal.done()
-            assert len(resp) == 6
-            count = yield g.V().count().promise(lambda x: x.next())
-            assert count == 6
-
-        loop.run_sync(go)
-        connection.close()
-
-    def test_promise_side_effects(self):
-        loop = ioloop.IOLoop.current()
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        g = Graph().traversal().withRemote(connection)
-
-        # Side effects are problematic in coroutines.
-        # Because they are designed to be synchronous (calling `run_sync`)
-        # they result in an error if called from a coroutine because
-        # the event loop is already running
-        @gen.coroutine
-        def go():
-            traversal = yield g.V().aggregate('a').promise()
-            # Calling synchronous side effect methods from coroutine raises.
-            with pytest.raises(RuntimeError):
-                keys = traversal.side_effects.keys()
-
-            with pytest.raises(RuntimeError):
-                keys = traversal.side_effects.get('a')
-
-            with pytest.raises(RuntimeError):
-                keys = traversal.side_effects.close()
-
-        loop.run_sync(go)
-
-        # If we return the traversal though, we can use side effects per usual.
-        @gen.coroutine
-        def go():
-            traversal = yield g.V().aggregate('a').promise()
-            raise gen.Return(traversal)  # Weird legacy Python compatible idiom
-
-        # See, normal side effects.
-        traversal = loop.run_sync(go)
-        a, = traversal.side_effects.keys()
+    def test_promise(self, remote_connection):
+        g = Graph().traversal().withRemote(remote_connection)
+        future = g.V().aggregate('a').promise()
+        t = future.result()
+        assert len(t.toList()) == 6
+        a, = t.side_effects.keys()
         assert  a == 'a'
-        results = traversal.side_effects.get('a')
+        results = t.side_effects.get('a')
         assert results
-        results = traversal.side_effects.close()
+        results = t.side_effects.close()
         assert not results
 
-        connection.close()
 
+def test_in_tornado_app(remote_connection):
+    # Make sure nothing weird with loops
+    @gen.coroutine
+    def go():
+        conn = DriverRemoteConnection(
+            'ws://localhost:45940/gremlin', 'g', pool_size=4)
+        g = Graph().traversal().withRemote(conn)
+        yield gen.sleep(0)
+        assert len(g.V().toList()) == 6
+        conn.close()
 
-if __name__ == '__main__':
-    test = False
-    try:
-        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-        test = True
-        connection.close()
-    except:
-        print("GremlinServer is not running and this test case will not execute: " + __file__)
-
-    if test:
-        unittest.main()
+    io_loop = ioloop.IOLoop.current()
+    io_loop.run_sync(go)
