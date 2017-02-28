@@ -117,7 +117,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummaryOLTP();
 
-    public abstract Traversal<Vertex, List<String>> getAllShortestPaths();
+    public abstract Traversal<Vertex, List<Object>> getAllShortestPaths();
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
@@ -176,39 +176,45 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void allShortestPaths() {
-        final Traversal<Vertex, List<String>> traversal = getAllShortestPaths();
+        final Traversal<Vertex, List<Object>> traversal = getAllShortestPaths();
         printTraversalForm(traversal);
-        final List<List<String>> allShortestPaths = Arrays.asList(
-                Arrays.asList("josh", "lop"),
-                Arrays.asList("josh", "marko"),
-                Arrays.asList("josh", "ripple"),
-                Arrays.asList("josh", "marko", "vadas"),
-                Arrays.asList("josh", "lop", "peter"),
-                Arrays.asList("lop", "marko"),
-                Arrays.asList("lop", "peter"),
-                Arrays.asList("lop", "josh"),
-                Arrays.asList("lop", "josh", "ripple"),
-                Arrays.asList("lop", "marko", "vadas"),
-                Arrays.asList("marko", "lop"),
-                Arrays.asList("marko", "josh"),
-                Arrays.asList("marko", "vadas"),
-                Arrays.asList("marko", "josh", "ripple"),
-                Arrays.asList("marko", "lop", "peter"),
-                Arrays.asList("peter", "lop"),
-                Arrays.asList("peter", "lop", "marko"),
-                Arrays.asList("peter", "lop", "josh"),
-                Arrays.asList("peter", "lop", "josh", "ripple"),
-                Arrays.asList("peter", "lop", "marko", "vadas"),
-                Arrays.asList("ripple", "josh"),
-                Arrays.asList("ripple", "josh", "lop"),
-                Arrays.asList("ripple", "josh", "marko"),
-                Arrays.asList("ripple", "josh", "marko", "vadas"),
-                Arrays.asList("ripple", "josh", "lop", "peter"),
-                Arrays.asList("vadas", "marko"),
-                Arrays.asList("vadas", "marko", "josh"),
-                Arrays.asList("vadas", "marko", "lop"),
-                Arrays.asList("vadas", "marko", "josh", "ripple"),
-                Arrays.asList("vadas", "marko", "lop", "peter")
+        final Object marko = convertToVertexId(graph, "marko");
+        final Object vadas = convertToVertexId(graph, "vadas");
+        final Object lop = convertToVertexId(graph, "lop");
+        final Object josh = convertToVertexId(graph, "josh");
+        final Object ripple = convertToVertexId(graph, "ripple");
+        final Object peter = convertToVertexId(graph, "peter");
+        final List<List<Object>> allShortestPaths = Arrays.asList(
+                Arrays.asList(josh, lop),
+                Arrays.asList(josh, marko),
+                Arrays.asList(josh, ripple),
+                Arrays.asList(josh, marko, vadas),
+                Arrays.asList(josh, lop, peter),
+                Arrays.asList(lop, marko),
+                Arrays.asList(lop, peter),
+                Arrays.asList(lop, josh),
+                Arrays.asList(lop, josh, ripple),
+                Arrays.asList(lop, marko, vadas),
+                Arrays.asList(marko, lop),
+                Arrays.asList(marko, josh),
+                Arrays.asList(marko, vadas),
+                Arrays.asList(marko, josh, ripple),
+                Arrays.asList(marko, lop, peter),
+                Arrays.asList(peter, lop),
+                Arrays.asList(peter, lop, marko),
+                Arrays.asList(peter, lop, josh),
+                Arrays.asList(peter, lop, josh, ripple),
+                Arrays.asList(peter, lop, marko, vadas),
+                Arrays.asList(ripple, josh),
+                Arrays.asList(ripple, josh, lop),
+                Arrays.asList(ripple, josh, marko),
+                Arrays.asList(ripple, josh, marko, vadas),
+                Arrays.asList(ripple, josh, lop, peter),
+                Arrays.asList(vadas, marko),
+                Arrays.asList(vadas, marko, josh),
+                Arrays.asList(vadas, marko, lop),
+                Arrays.asList(vadas, marko, josh, ripple),
+                Arrays.asList(vadas, marko, lop, peter)
         );
         checkResults(allShortestPaths, traversal);
     }
@@ -252,7 +258,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> getAllShortestPaths() {
+        public Traversal<Vertex, List<Object>> getAllShortestPaths() {
             // TODO: remove .withoutStrategies(PathRetractionStrategy.class)
             return g.withoutStrategies(PathRetractionStrategy.class).V().as("v").both().as("v").
                     project("src", "tgt", "p").by(select(first, "v")).
@@ -272,7 +278,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                                     filter(select(values).unfold().or(count(local).where(lt("l")), where(eq("p"))))).
                             group("x").by(select("src", "tgt")).
                             by(select("p").fold()).select("tgt").barrier()).
-                    cap("x").select(values).unfold().unfold().map(unfold().<String>values("name").fold());
+                    cap("x").select(values).unfold().unfold().map(unfold().id().fold());
         }
     }
 }
