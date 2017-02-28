@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -260,23 +261,29 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, List<Object>> getAllShortestPaths() {
             // TODO: remove .withoutStrategies(PathRetractionStrategy.class)
-            return g.withoutStrategies(PathRetractionStrategy.class).V().as("v").both().as("v").
-                    project("src", "tgt", "p").by(select(first, "v")).
+            return g.withoutStrategies(ComputerVerificationStrategy.class, PathRetractionStrategy.class).
+                    V().as("v").both().as("v").
+                    project("src", "tgt", "p").
+                    by(select(first, "v")).
                     by(select(last, "v")).
                     by(select("v")).as("triple").
-                    group("x").by(select("src", "tgt")).
+                    group("x").
+                    by(select("src", "tgt")).
                     by(select("p").fold()).select("tgt").barrier().
                     repeat(both().as("v").
-                            project("src", "tgt", "p").by(select(first, "v")).
+                            project("src", "tgt", "p").
+                            by(select(first, "v")).
                             by(select(last, "v")).
                             by(select("v")).as("t").
                             filter(select("p").count(local).as("l").
-                                    select(last, "t").select("p").dedup(local).count(local).where(eq("l"))
-                            ).select(last, "t").not(
-                            select("p").as("p").count(local).as("l").
+                                    select(last, "t").select("p").dedup(local).count(local).where(eq("l"))).
+                            select(last, "t").
+                            not(select("p").as("p").count(local).as("l").
                                     select("x").unfold().filter(select(keys).where(eq("t")).by(select("src", "tgt"))).
                                     filter(select(values).unfold().or(count(local).where(lt("l")), where(eq("p"))))).
-                            group("x").by(select("src", "tgt")).
+                            barrier().
+                            group("x").
+                            by(select("src", "tgt")).
                             by(select("p").fold()).select("tgt").barrier()).
                     cap("x").select(values).unfold().unfold().map(unfold().id().fold());
         }

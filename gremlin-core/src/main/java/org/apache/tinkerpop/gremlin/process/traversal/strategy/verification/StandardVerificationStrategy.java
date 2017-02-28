@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -31,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
@@ -47,7 +47,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!traversal.getStrategies().toList().contains(ComputerVerificationStrategy.instance())) {
+        if (!traversal.getStrategies().toList().contains(ComputerFinalizationStrategy.instance())) {
             if (!TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal).isEmpty())
                 throw new VerificationException("VertexComputing steps must be executed with a GraphComputer: " + TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal), traversal);
         }
