@@ -67,12 +67,12 @@ image:betweeness-example.png[width=600]
 
 [gremlin-groovy ]
 ----
-g.addV(id,'A').as('a').
-  addV(id,'B').as('b').
-  addV(id,'C').as('c').
-  addV(id,'D').as('d').
-  addV(id,'E').as('e').
-  addV(id,'F').as('f').
+g.addV().property(id,'A').as('a').
+  addV().property(id,'B').as('b').
+  addV().property(id,'C').as('c').
+  addV().property(id,'D').as('d').
+  addV().property(id,'E').as('e').
+  addV().property(id,'F').as('f').
   addE('next').from('a').to('b').
   addE('next').from('b').to('c').
   addE('next').from('b').to('d').

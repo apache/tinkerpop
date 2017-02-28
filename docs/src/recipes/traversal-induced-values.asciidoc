@@ -63,12 +63,12 @@ image:traversal-induced-values-3.png[width=600]
 
 [gremlin-groovy]
 ----
-g.addV("name", "alice", label, "user").as("u1").
-  addV("name", "jen", label, "user").as("u2").
-  addV("name", "dave", label, "user").as("u3").
-  addV("name", "the wild bunch", label, "movie").as("m1").
-  addV("name", "young guns", label, "movie").as("m2").
-  addV("name", "unforgiven", label, "movie").as("m3").
+g.addV("user").property("name", "alice").as("u1").
+  addV("user").property("name", "jen").as("u2").
+  addV("user").property("name", "dave").as("u3").
+  addV("movie").property("name", "the wild bunch").as("m1").
+  addV("movie").property("name", "young guns").as("m2").
+  addV("movie").property("name", "unforgiven").as("m3").
   addE("friend").from("u1").to("u2").
   addE("friend").from("u1").to("u3").
   addE("like").from("u2").to("m1").
@@ -133,9 +133,9 @@ Using Gremlin `sack()`, this kind of operation could be specified as a single tr
 
 [gremlin-groovy]
 ----
-g.addV(label, 'tank', 'name', 'a', 'amount', 100.0).as('a').
-  addV(label, 'tank', 'name', 'b', 'amount', 0.0).as('b').
-  addV(label, 'tank', 'name', 'c', 'amount', 0.0).as('c').
+g.addV('tank').property('name', 'a').property('amount', 100.0).as('a').
+  addV('tank').property('name', 'b').property('amount', 0.0).as('b').
+  addV('tank').property('name', 'c').property('amount', 0.0).as('c').
   addE('drain').property('factor', 0.5).from('a').to('b').
   addE('drain').property('factor', 0.1).from('b').to('c').iterate()
 a = g.V().has('name','a').next()

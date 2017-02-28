@@ -82,7 +82,7 @@ A running example using vertex properties is provided below to demonstrate and e
 ----
 graph = TinkerGraph.open()
 g = graph.traversal()
-v = g.addV('name','marko','name','marko a. rodriguez').next()
+v = g.addV().property('name','marko').property('name','marko a. rodriguez').next()
 g.V(v).properties('name').count() <1>
 v.property(list, 'name', 'm. a. rodriguez') <2>
 g.V(v).properties('name').count()

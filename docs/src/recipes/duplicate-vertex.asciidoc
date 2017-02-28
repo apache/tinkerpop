@@ -26,9 +26,9 @@ Consider the following example with some duplicate vertices added to the "modern
 
 [gremlin-groovy,modern]
 ----
-g.addV(label, 'person', 'name', 'vadas', 'age', 27)
-g.addV(label, 'person', 'name', 'vadas', 'age', 22) // not a duplicate because "age" value
-g.addV(label, 'person', 'name', 'marko', 'age', 29)
+g.addV('person').property('name', 'vadas').property('age', 27)
+g.addV('person').property('name', 'vadas').property('age', 22) // not a duplicate because "age" value
+g.addV('person').property('name', 'marko').property('age', 29)
 g.V().hasLabel("person").
   group().
     by(values("name", "age").fold()).

@@ -493,7 +493,7 @@ graph.createIndex('userId', Vertex.class) <1>
 g = graph.traversal()
 
 getOrCreate = { id ->
-  g.V().has('userId', id).tryNext().orElseGet{ g.addV('userId', id).next() }
+  g.V().has('userId', id).tryNext().orElseGet{ g.addV().property('userId', id).next() }
 }
 
 new File('wiki-Vote.txt').eachLine {

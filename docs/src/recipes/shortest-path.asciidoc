@@ -26,11 +26,11 @@ is a simple example that identifies the shortest path between vertex "1" and ver
 
 [gremlin-groovy]
 ----
-g.addV(id, 1).as('1').
-  addV(id, 2).as('2').
-  addV(id, 3).as('3').
-  addV(id, 4).as('4').
-  addV(id, 5).as('5').
+g.addV().property(id, 1).as('1').
+  addV().property(id, 2).as('2').
+  addV().property(id, 3).as('3').
+  addV().property(id, 4).as('4').
+  addV().property(id, 5).as('5').
   addE('knows').from('1').to('2').
   addE('knows').from('2').to('4').
   addE('knows').from('4').to('5').
@@ -56,11 +56,11 @@ but includes a "weight" on the edges, that will be used to help determine the "c
 
 [gremlin-groovy]
 ----
-g.addV(id, 1).as('1').
-  addV(id, 2).as('2').
-  addV(id, 3).as('3').
-  addV(id, 4).as('4').
-  addV(id, 5).as('5').
+g.addV().property(id, 1).as('1').
+  addV().property(id, 2).as('2').
+  addV().property(id, 3).as('3').
+  addV().property(id, 4).as('4').
+  addV().property(id, 5).as('5').
   addE('knows').from('1').to('2').property('weight', 1.25).
   addE('knows').from('2').to('4').property('weight', 1.5).
   addE('knows').from('4').to('5').property('weight', 0.25).
