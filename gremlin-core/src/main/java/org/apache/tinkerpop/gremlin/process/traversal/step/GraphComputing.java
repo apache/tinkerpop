@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
  * A {@code GraphComputing} step is one that will change its behavior whether its on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} or not.
- * {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
+ * {@link org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
  * This method is only called for global children steps of a {@link TraversalParent}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

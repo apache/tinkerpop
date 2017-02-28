@@ -42,13 +42,11 @@ public final class ComputerFinalizationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.onGraphComputer(traversal))
+        if (!TraversalHelper.onGraphComputer(traversal) || !TraversalHelper.isGlobalChild(traversal))
             return;
 
-        final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
-            // only global children are graph computing
-            if (globalChild && step instanceof GraphComputing)
+            if (step instanceof GraphComputing)
                 ((GraphComputing) step).onGraphComputer();
         }
     }
