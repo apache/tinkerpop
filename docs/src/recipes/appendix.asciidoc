@@ -28,10 +28,10 @@ _For each person in a "follows" graph, determine the number of followers and lis
 
 [gremlin-groovy]
 ----
-g.addV('name','marko').as('marko').
-  addV('name','josh').as('josh').
-  addV('name','daniel').as('daniel').
-  addV('name','matthias').as('matthias').
+g.addV().property('name','marko').as('marko').
+  addV().property('name','josh').as('josh').
+  addV().property('name','daniel').as('daniel').
+  addV().property('name','matthias').as('matthias').
   addE('follows').from('josh').to('marko').
   addE('follows').from('matthias').to('josh').
   addE('follows').from('daniel').to('josh').
@@ -88,14 +88,14 @@ _Assuming a graph of students, classes and times, detect students who have a con
 
 [gremlin-groovy]
 ----
-g.addV(label, "student", "name", "Pete").as("s1").
-  addV(label, "student", "name", "Joe").as("s2").
-  addV(label, "class", "name", "Java's GC").as("c1").
-  addV(label, "class", "name", "FP Principles").as("c2").
-  addV(label, "class", "name", "Memory Management in C").as("c3").
-  addV(label, "class", "name", "Memory Management in C++").as("c4").
-  addV(label, "timeslot", "date", "11/25/2016", "fromTime", "10:00", "toTime", "11:00").as("t1").
-  addV(label, "timeslot", "date", "11/25/2016", "fromTime", "11:00", "toTime", "12:00").as("t2").
+g.addV("student").property("name", "Pete").as("s1").
+  addV("student").property("name", "Joe").as("s2").
+  addV("class").property("name", "Java's GC").as("c1").
+  addV("class").property("name", "FP Principles").as("c2").
+  addV("class").property("name", "Memory Management in C").as("c3").
+  addV("class").property("name", "Memory Management in C++").as("c4").
+  addV("timeslot").property("date", "11/25/2016").property("fromTime", "10:00").property("toTime", "11:00").as("t1").
+  addV("timeslot").property("date", "11/25/2016").property("fromTime", "11:00").property("toTime", "12:00").as("t2").
   addE("attends").from("s1").to("c1").
   addE("attends").from("s1").to("c2").
   addE("attends").from("s1").to("c3").

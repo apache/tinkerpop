@@ -25,10 +25,10 @@ image:graph-cycle.png[width=250]
 
 [gremlin-groovy]
 ----
-g.addV(id,'a').as('a').
-  addV(id,'b').as('b').
-  addV(id,'c').as('c').
-  addV(id,'d').as('d').
+g.addV().property(id,'a').as('a').
+  addV().property(id,'b').as('b').
+  addV().property(id,'c').as('c').
+  addV().property(id,'d').as('d').
   addE('knows').from('a').to('b').
   addE('knows').from('b').to('c').
   addE('knows').from('c').to('a').

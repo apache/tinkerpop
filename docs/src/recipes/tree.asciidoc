@@ -32,13 +32,13 @@ The following code simply sets up the graph depicted above using "hasParent" for
 
 [gremlin-groovy]
 ----
-g.addV(id, 'A').as('a').
-  addV(id, 'B').as('b').
-  addV(id, 'C').as('c').
-  addV(id, 'D').as('d').
-  addV(id, 'E').as('e').
-  addV(id, 'F').as('f').
-  addV(id, 'G').as('g').
+g.addV().property(id, 'A').as('a').
+  addV().property(id, 'B').as('b').
+  addV().property(id, 'C').as('c').
+  addV().property(id, 'D').as('d').
+  addV().property(id, 'E').as('e').
+  addV().property(id, 'F').as('f').
+  addV().property(id, 'G').as('g').
   addE('hasParent').from('a').to('b').
   addE('hasParent').from('b').to('c').
   addE('hasParent').from('d').to('c').
@@ -118,13 +118,13 @@ Finding the maximum depth of a tree starting from a specified root vertex can be
 
 [gremlin-groovy]
 ----
-g.addV('name', 'A').as('a').
-  addV('name', 'B').as('b').
-  addV('name', 'C').as('c').
-  addV('name', 'D').as('d').
-  addV('name', 'E').as('e').
-  addV('name', 'F').as('f').
-  addV('name', 'G').as('g').
+g.addV().property('name', 'A').as('a').
+  addV().property('name', 'B').as('b').
+  addV().property('name', 'C').as('c').
+  addV().property('name', 'D').as('d').
+  addV().property('name', 'E').as('e').
+  addV().property('name', 'F').as('f').
+  addV().property('name', 'G').as('g').
   addE('hasParent').from('a').to('b').
   addE('hasParent').from('b').to('c').
   addE('hasParent').from('d').to('c').
@@ -171,17 +171,17 @@ The Gremlin script below creates the graph depicted in the graph above:
 
 [gremlin-groovy]
 ----
-g.addV(label, 'year', 'name', '2016').as('y2016').
-  addV(label, 'month', 'name', 'may').as('m05').
-  addV(label, 'month', 'name', 'june').as('m06').
-  addV(label, 'day', 'name', '30').as('d30').
-  addV(label, 'day', 'name', '31').as('d31').
-  addV(label, 'day', 'name', '01').as('d01').
-  addV(label, 'event', 'name', 'A').as('eA').
-  addV(label, 'event', 'name', 'B').as('eB').
-  addV(label, 'event', 'name', 'C').as('eC').
-  addV(label, 'event', 'name', 'D').as('eD').
-  addV(label, 'event', 'name', 'E').as('eE').
+g.addV('year').property('name', '2016').as('y2016').
+  addV('month').property('name', 'may').as('m05').
+  addV('month').property('name', 'june').as('m06').
+  addV('day').property('name', '30').as('d30').
+  addV('day').property('name', '31').as('d31').
+  addV('day').property('name', '01').as('d01').
+  addV('event').property('name', 'A').as('eA').
+  addV('event').property('name', 'B').as('eB').
+  addV('event').property('name', 'C').as('eC').
+  addV('event').property('name', 'D').as('eD').
+  addV('event').property('name', 'E').as('eE').
   addE('may').from('y2016').to('m05').
   addE('june').from('y2016').to('m06').
   addE('day30').from('m05').to('d30').
