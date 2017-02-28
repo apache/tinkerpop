@@ -2109,15 +2109,65 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 |visualTraversal |Creates a `TraversalSource` variable in the Console named `vg` which can be used for visualizing traversals. This configuration option takes two parameters.  The first is required and is the name of the `Graph` instance variable that will generate the `TraversalSource`.  The second parameter is the variable name that the `TraversalSource` should have when referenced in the Console.  If left unspecified, this value defaults to `vg`. |vg
 |=========================================================
 
+NOTE: This plugin is typically only useful to the Gremlin Console and is enabled in the there by default.
+
+[[giraph-plugin]]
+Giraph Plugin
+~~~~~~~~~~~~~
+
+image:giraph-logo.png[width=100,float=left]  The Giraph Plugin installs as part of `giraph-gremlin` and provides
+a number of imports and utility functions to the environment within which it is used. Those classes and functions
+provide the basis for supporting <<graphcomputer,OLAP based traversals>> using link:http://giraph.apache.org[Giraph].
+This plugin is defined in greater detail in the <<giraphgraphcomputer,GiraphGraphComputer>> section and is typically
+installed in conjuction with the <<hadoop-plugin,Hadoop-Plugin>>.
+
+[[graph-plugins]]
+Graph Plugins
+~~~~~~~~~~~~~
+
+This section does not refer to a specific Gremlin Plugin, but a class of them. Graph Plugins are typically created by
+graph providers to make it easy to integrate their graph systems into Gremlin Console and Gremlin Server. As TinkerPop
+provides two reference `Graph` implementations in <<tinkergraph-gremlin,TinkerGraph>> and <<neo4j-gremlin,Neo4j>>,
+there is also one Gremlin Plugin for each of them.
+
+The TinkerGraph plugin is installed and activated in the Gremlin Console by default and the sample configurations that
+are supplied with the Gremlin Server distribution include the `TinkerGraphGremlinPlugin` as part of the default setup.
+If using Neo4j, however, the plugin must be installed manually. Instructions for doing so can be found in the
+<<neo4j-gremlin,Neo4j>> section.
+
+[[hadoop-plugin]]
+Hadoop Plugin
+~~~~~~~~~~~~~
+
+image:hadoop-logo-notext.png[width=100,float=left] The Hadoop Plugin installs as part of `hadoop-gremlin` and provides
+a number of imports and utility functions to the environment within which it is used. Those classes and functions
+provide the basis for supporting <<graphcomputer,OLAP based traversals>> with Gremlin. This plugin is defined in
+greater detail in the <<hadoop-gremlin,Hadoop-Gremlin>> section.
+
 [[server-plugin]]
 Server Plugin
 ~~~~~~~~~~~~~
 
 image:gremlin-server.png[width=200,float=left] xref:gremlin-server[Gremlin Server] remotely executes Gremlin scripts
 that are submitted to it.  The Server Plugin provides a way to submit scripts to Gremlin Server for remote
-processing.  Read more about the plugin and how it works in the Gremlin Server section on xref:connecting-via-console[Connecting via Console].
+processing.  Read more about the plugin and how it works in the Gremlin Server section on
+<<connecting-via-console,Connecting via Console>>.
 
-NOTE: The Server Plugin is enabled in the Gremlin Console by default.
+NOTE: This plugin is typically only useful to the Gremlin Console and is enabled in the there by default.
+
+The Server Plugin for remoting with the Gremlin Console should not be confused with a plugin of similar name that is
+used by the server. `GremlinServerGremlinPlugin` is typically only configured in Gremlin Server and provides a number
+of imports that are required for writing <<starting-gremlin-server,initialization scripts>.
+
+[[spark-plugin]]
+Spark Plugin
+~~~~~~~~~~~~
+
+image:spark-logo.png[width=175,float=left] The Spark Plugin installs as part of `spark-gremlin` and provides
+a number of imports and utility functions to the environment within which it is used. Those classes and functions
+provide the basis for supporting <<graphcomputer,OLAP based traversals>> using link:http://spark.apache.org[Spark].
+This plugin is defined in greater detail in the <<sparkgraphcomputer,SparkGraphComputer>> section and is typically
+installed in conjuction with the <<hadoop-plugin,Hadoop-Plugin>>.
 
 [[sugar-plugin]]
 Sugar Plugin
