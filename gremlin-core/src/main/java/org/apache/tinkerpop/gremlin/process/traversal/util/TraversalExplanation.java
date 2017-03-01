@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -106,7 +107,12 @@ public class TraversalExplanation implements Serializable {
         if (maxTraversalColumn < 1)
             throw new IllegalArgumentException("The maximum line length is too small to present the " + TraversalExplanation.class.getSimpleName() + ": " + maxLineLength);
         int largestTraversalColumn = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream())
-                .map(Pair::getValue1)
+                .map(new Function<Pair<? extends Object,? extends Traversal.Admin<?,?>>, Object>() {
+                    @Override
+                    public Object apply(Pair<? extends Object, ? extends Traversal.Admin<?, ?>> objects) {
+                        return objects.getValue1();
+                    }
+                })
                 .map(Object::toString)
                 .map(s -> wordWrap(s, maxTraversalColumn, newLineIndent))
                 .flatMap(s -> Stream.of(s.split("\n")))

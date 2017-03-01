@@ -47,6 +47,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -180,7 +182,7 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
-        assertEquals(4, gremlinExecutor.eval("1+x", "gremlin-groovy", b, r -> (int) r * 2).get());
+        assertEquals(4, gremlinExecutor.eval("1+x", "gremlin-groovy", b, (Function) r -> (int) r * 2).get());
         gremlinExecutor.close();
     }
 
@@ -193,7 +195,7 @@ public class GremlinExecutorTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger result = new AtomicInteger(0);
-        assertEquals(2, gremlinExecutor.eval("1+x", "gremlin-groovy", b, r -> {
+        assertEquals(2, gremlinExecutor.eval("1+x", "gremlin-groovy", b, (Consumer) r -> {
             result.set((int) r * 2);
             latch.countDown();
         }).get());
