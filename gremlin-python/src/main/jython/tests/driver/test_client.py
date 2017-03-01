@@ -72,7 +72,6 @@ def test_client_async(client):
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
     future = client.submitAsync(message)
-    assert not future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
 
