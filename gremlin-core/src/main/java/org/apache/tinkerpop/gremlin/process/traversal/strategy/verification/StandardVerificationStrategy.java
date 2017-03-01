@@ -47,7 +47,8 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!traversal.getStrategies().toList().contains(ComputerFinalizationStrategy.instance())) {
+        if (!traversal.getStrategies().toList().contains(ComputerFinalizationStrategy.instance()) &&
+                !traversal.getStrategies().toList().contains(ComputerVerificationStrategy.instance())) {
             if (!TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal).isEmpty())
                 throw new VerificationException("VertexComputing steps must be executed with a GraphComputer: " + TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal), traversal);
         }
