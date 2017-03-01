@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -138,7 +138,8 @@ public final class GryoSerializers {
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
             final List<Bytecode.Instruction> sourceInstructions = IteratorUtils.list(
                     IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
-                            i -> !i.getOperator().equals("withStrategies") && !i.getOperator().equals("withComputer")));
+                            i -> !i.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                                    !i.getOperator().equals(TraversalSource.Symbols.withComputer)));
             writeInstructions(kryo, output, sourceInstructions);
             final List<Bytecode.Instruction> stepInstructions = IteratorUtils.list(bytecode.getStepInstructions().iterator());
             writeInstructions(kryo, output, stepInstructions);
@@ -150,7 +151,9 @@ public final class GryoSerializers {
             final int sourceInstructionCount = input.readInt();
             for (int ix = 0; ix < sourceInstructionCount; ix++) {
                 final String operator = input.readString();
-                final Object[] args = kryo.readObject(input, Object[].class);
+                final Object[] args = operator.equals(TraversalSource.Symbols.withoutStrategies) ?
+                        kryo.readObject(input, Class[].class) :
+                        kryo.readObject(input, Object[].class);
                 bytecode.addSource(operator, args);
             }
 
@@ -210,7 +213,7 @@ public final class GryoSerializers {
             try {
                 if (predicate.equals("and") || predicate.equals("or"))
                     return predicate.equals("and") ? new AndP((List<P>) value) : new OrP((List<P>) value);
-                else  if (value instanceof Collection) {
+                else if (value instanceof Collection) {
                     if (predicate.equals("between"))
                         return P.between(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("inside"))

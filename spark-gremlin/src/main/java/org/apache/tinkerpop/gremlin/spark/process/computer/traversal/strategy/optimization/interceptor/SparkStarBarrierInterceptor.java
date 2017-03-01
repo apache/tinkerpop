@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.ProgramPhase;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -75,7 +76,7 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         final ReducingBarrierStep endStep = (ReducingBarrierStep) traversal.getEndStep(); // needed for the final traverser generation
         traversal.removeStep(0);                                    // remove GraphStep
         traversal.removeStep(traversal.getSteps().size() - 1);      // remove ReducingBarrierStep
-        traversal.setStrategies(traversal.clone().getStrategies().removeStrategies(ComputerVerificationStrategy.class)); // no longer a computer job, but parallel standard jobs
+        traversal.setStrategies(traversal.clone().getStrategies().removeStrategies(ComputerVerificationStrategy.class, ComputerFinalizationStrategy.class)); // no longer a computer job, but parallel standard jobs
         traversal.applyStrategies();                                // compile
         boolean identityTraversal = traversal.getSteps().isEmpty(); // if the traversal is empty, just return the vertex (fast)
         ///////////////////////////////

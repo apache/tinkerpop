@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.SingleMessenger;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -438,7 +439,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 final Traversal.Admin<?, ?> parentTraversal = new DefaultTraversal<>();
                 traversal.getGraph().ifPresent(parentTraversal::setGraph);
                 final TraversalStrategies strategies = traversal.getStrategies().clone();
-                strategies.addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Computer.compute()));
+                strategies.addStrategies(ComputerFinalizationStrategy.instance(), ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Computer.compute()));
                 parentTraversal.setStrategies(strategies);
                 traversal.setStrategies(strategies);
                 parentTraversal.setSideEffects(memoryTraversalSideEffects);
