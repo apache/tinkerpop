@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -61,8 +60,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (!TraversalHelper.onGraphComputer(traversal))
             return;
 
-        final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
-
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)
                 throw new VerificationException("Mid-traversal V()/E() is currently not supported on GraphComputer", traversal);
@@ -71,10 +68,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-
-            // only global children are graph computing
-            if (globalChild && step instanceof GraphComputing)
-                ((GraphComputing) step).onGraphComputer();
 
             // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {

@@ -206,6 +206,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(BigDecimal.class, 35));
             add(GryoTypeReg.of(Calendar.class, 39));
             add(GryoTypeReg.of(Class.class, 41, new UtilSerializers.ClassSerializer()));
+            add(GryoTypeReg.of(Class[].class, 169, new UtilSerializers.ClassArraySerializer())); // ***LAST ID***
             add(GryoTypeReg.of(Collection.class, 37));
             add(GryoTypeReg.of(Collections.EMPTY_LIST.getClass(), 51));
             add(GryoTypeReg.of(Collections.EMPTY_MAP.getClass(), 52));
@@ -270,7 +271,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(ProjectedTraverser.class, 168)); // ***LAST ID***
+            add(GryoTypeReg.of(ProjectedTraverser.class, 168));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
@@ -378,6 +379,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(BigDecimal.class, 35));
             add(GryoTypeReg.of(Calendar.class, 39));
             add(GryoTypeReg.of(Class.class, 41, new UtilSerializers.ClassSerializer()));
+            add(GryoTypeReg.of(Class[].class, 166, new UtilSerializers.ClassArraySerializer()));
             add(GryoTypeReg.of(Collection.class, 37));
             add(GryoTypeReg.of(Collections.EMPTY_LIST.getClass(), 51));
             add(GryoTypeReg.of(Collections.EMPTY_MAP.getClass(), 52));
@@ -442,7 +444,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(ProjectedTraverser.class, 165));
+            add(GryoTypeReg.of(ProjectedTraverser.class, 164));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
@@ -457,32 +459,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
-            add(GryoTypeReg.of(MultiComparator.class, 166));   // ***LAST ID***
-
-            add(GryoTypeReg.of(ConnectiveStrategy.class, 138));
-            add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
-            add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
-            add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
-            add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
-            add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
-            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
-            add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
-            add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
-            add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
-            add(GryoTypeReg.of(IncidentToAdjacentStrategy.class, 148));
-            add(GryoTypeReg.of(InlineFilterStrategy.class, 149));
-            add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
-            add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
-            add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
-            add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
-            add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
-            add(GryoTypeReg.of(RangeByIsCountStrategy.class, 155));
-            add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
-            add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
-            add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
-            add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
-            add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
-            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
+            add(GryoTypeReg.of(MultiComparator.class, 165));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -522,6 +499,31 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
+
+            add(GryoTypeReg.of(ConnectiveStrategy.class, 138));
+            add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
+            add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
+            add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
+            add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
+            add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
+            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
+            add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
+            add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
+            add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
+            add(GryoTypeReg.of(IncidentToAdjacentStrategy.class, 148));
+            add(GryoTypeReg.of(InlineFilterStrategy.class, 149));
+            add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
+            add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
+            add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
+            add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
+            add(GryoTypeReg.of(RangeByIsCountStrategy.class, 155));
+            add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
+            add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
+            add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
+            add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
+            add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
+            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167)); // ***LAST ID***
         }};
     }
 

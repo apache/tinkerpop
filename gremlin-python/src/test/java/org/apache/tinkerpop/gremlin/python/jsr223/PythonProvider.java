@@ -67,6 +67,7 @@ public class PythonProvider extends AbstractGraphProvider {
             "shouldHidePartitionKeyForValues",
             "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
             "g_injectXg_VX1X_propertiesXnameX_nextX_value",
+            "allShortestPaths",
             //
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),

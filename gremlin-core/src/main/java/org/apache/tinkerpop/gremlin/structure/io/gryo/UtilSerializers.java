@@ -45,7 +45,8 @@ import java.util.UUID;
  */
 final class UtilSerializers {
 
-    private UtilSerializers() {}
+    private UtilSerializers() {
+    }
 
     /**
      * Serializer for {@code List} instances produced by {@code Arrays.asList()}.
@@ -100,6 +101,30 @@ final class UtilSerializers {
         }
     }
 
+    public final static class ClassArraySerializer implements SerializerShim<Class[]> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Class[] object) {
+            output.writeInt(object.length);
+            for (final Class clazz : object) {
+                output.writeString(clazz.getName());
+            }
+        }
+
+        @Override
+        public <I extends InputShim> Class[] read(final KryoShim<I, ?> kryo, final I input, final Class<Class[]> clazz) {
+            final int size = input.readInt();
+            final Class[] clazzes = new Class[size];
+            for (int i = 0; i < size; i++) {
+                try {
+                    clazzes[i] = Class.forName(input.readString());
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            return clazzes;
+        }
+    }
+
     public final static class InetAddressSerializer implements SerializerShim<InetAddress> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final InetAddress addy) {
@@ -137,7 +162,8 @@ final class UtilSerializers {
 
     static final class UUIDSerializer implements SerializerShim<UUID> {
 
-        public UUIDSerializer() { }
+        public UUIDSerializer() {
+        }
 
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final UUID uuid) {
@@ -158,7 +184,8 @@ final class UtilSerializers {
 
     static final class URISerializer implements SerializerShim<URI> {
 
-        public URISerializer() { }
+        public URISerializer() {
+        }
 
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final URI uri) {

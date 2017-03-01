@@ -76,6 +76,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Split `ComputerVerificationStrategy` into two strategies: `ComputerVerificationStrategy` and `ComputerFinalizationStrategy`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.
 * Deprecated `CustomizerProvider` infrastructure.
 * Deprecated `PluginAcceptor` infrastructure.

@@ -28,8 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,9 +42,14 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pop.first;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pop.last;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.group;
@@ -53,6 +60,9 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.projec
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
+import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -109,6 +119,8 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummaryOLTP();
 
+    public abstract Traversal<Vertex, List<Object>> getAllShortestPaths();
+
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     public void classicRecommendation() {
@@ -143,7 +155,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @LoadGraphWith(MODERN)
     public void coworkerSummary() {
         final Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> traversal = getCoworkerSummary();
         printTraversalForm(traversal);
@@ -153,7 +165,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER) // no mid-traversal V() in computer mode + star-graph limitations
     public void coworkerSummaryOLTP() {
         final Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> traversal = getCoworkerSummaryOLTP();
@@ -161,6 +173,53 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         checkCoworkerSummary(traversal.next());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @Ignore
+    @LoadGraphWith(MODERN)
+    public void allShortestPaths() {
+        final Traversal<Vertex, List<Object>> traversal = getAllShortestPaths();
+        printTraversalForm(traversal);
+        final Object marko = convertToVertexId(graph, "marko");
+        final Object vadas = convertToVertexId(graph, "vadas");
+        final Object lop = convertToVertexId(graph, "lop");
+        final Object josh = convertToVertexId(graph, "josh");
+        final Object ripple = convertToVertexId(graph, "ripple");
+        final Object peter = convertToVertexId(graph, "peter");
+        final List<List<Object>> allShortestPaths = Arrays.asList(
+                Arrays.asList(josh, lop),
+                Arrays.asList(josh, marko),
+                Arrays.asList(josh, ripple),
+                Arrays.asList(josh, marko, vadas),
+                Arrays.asList(josh, lop, peter),
+                Arrays.asList(lop, marko),
+                Arrays.asList(lop, peter),
+                Arrays.asList(lop, josh),
+                Arrays.asList(lop, josh, ripple),
+                Arrays.asList(lop, marko, vadas),
+                Arrays.asList(marko, lop),
+                Arrays.asList(marko, josh),
+                Arrays.asList(marko, vadas),
+                Arrays.asList(marko, josh, ripple),
+                Arrays.asList(marko, lop, peter),
+                Arrays.asList(peter, lop),
+                Arrays.asList(peter, lop, marko),
+                Arrays.asList(peter, lop, josh),
+                Arrays.asList(peter, lop, josh, ripple),
+                Arrays.asList(peter, lop, marko, vadas),
+                Arrays.asList(ripple, josh),
+                Arrays.asList(ripple, josh, lop),
+                Arrays.asList(ripple, josh, marko),
+                Arrays.asList(ripple, josh, marko, vadas),
+                Arrays.asList(ripple, josh, lop, peter),
+                Arrays.asList(vadas, marko),
+                Arrays.asList(vadas, marko, josh),
+                Arrays.asList(vadas, marko, lop),
+                Arrays.asList(vadas, marko, josh, ripple),
+                Arrays.asList(vadas, marko, lop, peter)
+        );
+        checkResults(allShortestPaths, traversal);
     }
 
     public static class Traversals extends ComplexTest {
@@ -172,9 +231,9 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                     groupCount().
                     unfold().
                     project("x", "y", "z").
-                    by(select(Column.keys).values("name")).
-                    by(select(Column.keys).values("performances")).
-                    by(select(Column.values)).
+                    by(select(keys).values("name")).
+                    by(select(keys).values("performances")).
+                    by(select(values)).
                     order().
                     by(select("z"), Order.decr).
                     by(select("y"), Order.incr).
@@ -199,6 +258,36 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                     .<String, Map<String, Map<String, Object>>>group().by(select("p1").by("name")).
                             by(group().by(select("p2").by("name")).
                                     by(project("numCoCreated", "coCreated").by(count(local)).by()));
+        }
+
+        @Override
+        public Traversal<Vertex, List<Object>> getAllShortestPaths() {
+            // TODO: remove .withoutStrategies(PathRetractionStrategy.class)
+            return g.withoutStrategies(ComputerVerificationStrategy.class, PathRetractionStrategy.class).
+                    V().as("v").both().as("v").
+                    project("src", "tgt", "p").
+                    by(select(first, "v")).
+                    by(select(last, "v")).
+                    by(select("v")).as("triple").
+                    group("x").
+                    by(select("src", "tgt")).
+                    by(select("p").fold()).select("tgt").barrier().
+                    repeat(both().as("v").
+                            project("src", "tgt", "p").
+                            by(select(first, "v")).
+                            by(select(last, "v")).
+                            by(select("v")).as("t").
+                            filter(select("p").count(local).as("l").
+                                    select(last, "t").select("p").dedup(local).count(local).where(eq("l"))).
+                            select(last, "t").
+                            not(select("p").as("p").count(local).as("l").
+                                    select("x").unfold().filter(select(keys).where(eq("t")).by(select("src", "tgt"))).
+                                    filter(select(values).unfold().or(count(local).where(lt("l")), where(eq("p"))))).
+                            barrier().
+                            group("x").
+                            by(select("src", "tgt")).
+                            by(select("p").fold()).select("tgt").barrier()).
+                    cap("x").select(values).unfold().unfold().map(unfold().id().fold());
         }
     }
 }
