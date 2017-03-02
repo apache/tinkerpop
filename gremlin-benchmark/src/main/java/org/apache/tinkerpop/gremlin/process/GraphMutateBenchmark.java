@@ -168,7 +168,6 @@ public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
         }
 
         final Edge e = (Edge) t.next();
-        System.out.println("****************" + graph);
         return e;
     }
 
