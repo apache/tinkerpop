@@ -56,6 +56,8 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.util.ReferenceBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -93,6 +95,7 @@ import java.util.stream.Collectors;
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         implements DependencyManager, AutoCloseable, GremlinScriptEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(GremlinGroovyScriptEngine.class);
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
      */
@@ -153,6 +156,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * Script to generated Class map.
      */
     private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
+    private ManagedConcurrentValueMap<String, CompilationFailedException> failedClassMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
@@ -529,13 +533,56 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         return makeInterface(thiz, clazz);
     }
 
-    Class getScriptClass(final String script) throws CompilationFailedException {
-        Class clazz = classMap.get(script);
-        if (clazz != null) return clazz;
+    private Class getScriptClassFromMap(String script) throws CompilationFailedException {
+        CompilationFailedException exception = failedClassMap.get(script);
+        if(exception != null) {
+            throw exception;
+        }
+        return classMap.get(script);
 
-        clazz = loader.parseClass(script, generateScriptName());
-        classMap.put(script, clazz);
-        return clazz;
+    }
+
+    Class getScriptClass(final String script) throws CompilationFailedException {
+        Class clazz = getScriptClassFromMap(script);
+        if (clazz != null) {
+            return clazz;
+        }
+        synchronized (this) {
+            clazz = getScriptClassFromMap(script);
+            if (clazz != null) {
+                return clazz;
+            }
+
+            long start = System.currentTimeMillis();
+            try {
+                clazz = loader.parseClass(script, generateScriptName());
+                long time = System.currentTimeMillis() - start;
+                if(time > 5000) {
+                    //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                    //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                    log.warn("Script compilation {} took {}ms", script, time);
+                }
+                else {
+                    log.debug("Script compilation {} took {}ms", script, time);
+                }
+
+
+            }
+            catch(CompilationFailedException t) {
+                long finish = System.currentTimeMillis();
+                log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, t);
+                failedClassMap.put(script, t);
+                throw t;
+            }
+            catch(Throwable t) {
+                long finish = System.currentTimeMillis();
+                log.error("Script compilation FAILED with throwable {} took {}ms {}", script, finish - start, t);
+                throw t;
+            }
+            classMap.put(script, clazz);
+
+            return clazz;
+        }
     }
 
     boolean isCached(final String script) {
