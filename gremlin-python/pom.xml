@@ -359,17 +359,28 @@
                                              specifically). note that the commands to install wheel are largely for
                                              safety in case someone is using an older version of virtualenv (which
                                              doesn't install wheel by default) -->
-                                        <copy todir="${project.build.directory}/python">
+                                        <copy todir="${project.build.directory}/python3">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <copy todir="${project.build.directory}/python2">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
-                                        <exec dir="${project.build.directory}/python" executable="virtualenv"
+                                        <exec dir="${project.build.directory}/python2" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python env"/>
                                         </exec>
-                                        <exec dir="${project.build.directory}/python" executable="env/bin/pip"
+                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python3" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
@@ -388,14 +399,30 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>native-python-build</id>
+                                <id>native-python2-build</id>
                                 <phase>compile</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-python3-build</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
@@ -433,7 +460,7 @@
                             test phase doesn't have a pre/post event like integration-test does.
                             -->
                             <execution>
-                                <id>native-python-test</id>
+                                <id>native-python2-test</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -441,7 +468,24 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py test"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-python3-test</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py test"/>
