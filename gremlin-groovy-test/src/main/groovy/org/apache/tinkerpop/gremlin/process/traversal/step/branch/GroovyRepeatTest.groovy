@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -79,7 +77,7 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both()).times(10).as('a').out().as('b').select('a', 'b')");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both()).times(10).as('a').out().as('b').select('a', 'b')")
         }
 
         @Override
@@ -106,6 +104,26 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('loops','name','loop').repeat(__.in()).times(5).path().by('name')")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_asXvX_emit_repeatXboth_asXvX_dedupX_selectXvX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('v').emit.repeat(both.as('v').dedup).select('v').count")
+        }
+
+        @Override
+        public Traversal<Vertex, List<Vertex>> get_g_V_asXvX_emit_repeatXboth_asXvX_dedupX_selectXall_vX_order_byXcountXlocalXX_byXlimitXlocal_1X_idX_byXtailXlocal_1X_idX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('v').emit.repeat(both.as('v').dedup).select(all, 'v').order.by(count(local)).by(limit(local, 1).id).by(tail(local, 1).id)")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_emit_repeatXboth_dedupX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.emit.repeat(both.dedup).count")
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_emit_repeatXboth_dedupX_order_byXcountXlocalXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.emit.repeat(both.dedup).order.by(count(local))")
         }
     }
 }

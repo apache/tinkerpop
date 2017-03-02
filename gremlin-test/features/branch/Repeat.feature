@@ -244,3 +244,69 @@ Feature: Step - repeat()
       | loop |
       | loop  |
       | loop  |
+
+  Scenario: g_V_asXvX_emit_repeatXboth_asXvX_dedupX_selectXvX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("v").emit().repeat(both().as("v").dedup()).select("v").count()
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[12].l |
+
+  Scenario: g_V_asXvX_emit_repeatXboth_asXvX_dedupX_selectXall_vX_order_byXcountXlocalXX_byXlimitXlocal_1X_idX_byXtailXlocal_1X_idX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("v").emit().repeat(both().as("v").dedup()).select(Pop.all, "v").order().by(count(local)).by(limit(local, 1).id()).by(tail(local, 1).id());
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | l[v[marko]] |
+      | l[v[vadas]] |
+      | l[v[lop]] |
+      | l[v[josh]] |
+      | l[v[ripple]] |
+      | l[v[peter]] |
+      | l[v[marko], v[vadas]] |
+      | l[v[marko], v[lop]] |
+      | l[v[marko], v[josh]] |
+      | l[v[vadas], v[marko]] |
+      | l[v[lop], v[ripple]] |
+      | l[v[josh], v[peter]] |
+
+  Scenario: g_V_emit_repeatXboth_dedupX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(both().dedup()).count()
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[12].l |
+
+  Scenario: g_V_emit_repeatXboth_dedupX_order_byXcountXlocalXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(both().dedup()).order().by(count(local))
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[1] |
+      | v[1] |
+      | v[2] |
+      | v[2] |
+      | v[3] |
+      | v[3] |
+      | v[4] |
+      | v[4] |
+      | v[5] |
+      | v[5] |
+      | v[6] |
+      | v[6] |
