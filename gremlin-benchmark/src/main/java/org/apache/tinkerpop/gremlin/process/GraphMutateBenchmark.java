@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Setup;
 
+import java.util.Random;
+
 /**
  * {@code GraphMutateBenchmark} benchmarks {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal} and
  * {@link org.apache.tinkerpop.gremlin.structure.Graph} mutation methods.
@@ -126,6 +128,48 @@ public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
         }
 
         return t.next();
+    }
+
+    @Benchmark
+    public Edge testAddVAddEWithPropsChained() {
+        // construct a traversal that adds 100 vertices with 32 properties each as well as 300 edges with 8
+        // properties each
+        final Random rand = new Random(584545454L);
+
+        GraphTraversal<Vertex, ?> t = null;
+        for (int ix = 0; ix < 10; ix++) {
+            if (null == t)
+                t = g.addV("person");
+            else
+                t = t.addV("person");
+
+            for (int iy = 0; iy < 32; iy++) {
+                if (iy % 2 == 0)
+                    t = t.property("x" + String.valueOf(iy), iy * ix);
+                else
+                    t = t.property("x" + String.valueOf(iy), String.valueOf(iy + ix));
+            }
+
+            t = t.as("person" + ix);
+
+            if (ix > 0) {
+                int edgeCount = ix == 9 ? 6 : 3;
+                for (int ie = 0; ie < edgeCount; ie++) {
+                    t = t.addE("knows").from("person" + ix).to("person" + rand.nextInt(ix));
+
+                    for (int iy = 0; iy < 8; iy++) {
+                        if (iy % 2 == 0)
+                            t = t.property("x" + String.valueOf(iy), iy * ie);
+                        else
+                            t = t.property("x" + String.valueOf(iy), String.valueOf(iy + ie));
+                    }
+                }
+            }
+        }
+
+        final Edge e = (Edge) t.next();
+        System.out.println("****************" + graph);
+        return e;
     }
 
     @Benchmark
