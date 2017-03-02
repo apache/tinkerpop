@@ -1010,7 +1010,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
-        //((AddVertexStep) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
         return (GraphTraversal<S, Vertex>) this;
     }
 
@@ -2055,11 +2054,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             this.asAdmin().getBytecode().addStep(Symbols.property, key, value, keyValues);
         else
             this.asAdmin().getBytecode().addStep(Symbols.property, cardinality, key, value, keyValues);
+
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
         // the properties into that step to gain an optimization for those graphs that support such capabilities.
-        if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep
-                || this.asAdmin().getEndStep() instanceof AddVertexStartStep) && keyValues.length == 0 && null == cardinality) {
-            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(key, value);
+        final Step endStep = this.asAdmin().getEndStep();
+        if ((endStep instanceof AddVertexStep || endStep instanceof AddEdgeStep || endStep instanceof AddVertexStartStep) &&
+                keyValues.length == 0 && null == cardinality) {
+            ((Mutating) endStep).addPropertyMutations(key, value);
         } else {
             this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value));
             ((AddPropertyStep) this.asAdmin().getEndStep()).addPropertyMutations(keyValues);

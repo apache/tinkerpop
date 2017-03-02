@@ -49,6 +49,11 @@ public final class Parameters implements Cloneable, Serializable {
     private Map<Object, List<Object>> parameters = new HashMap<>();
 
     /**
+     * Determines if there are traversals present in the parameters {@code Map}.
+     */
+    private boolean traversalsPresent = false;
+
+    /**
      * Checks for existence of key in parameter set.
      *
      * @param key the key to check
@@ -138,6 +143,11 @@ public final class Parameters implements Cloneable, Serializable {
         Parameters.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
+                // track whether or not traversals are present so that elsewhere in Parameters there is no need
+                // to iterate all values to not find any.
+                if (!traversalsPresent && keyValues[i + 1] instanceof Traversal.Admin)
+                    traversalsPresent = true;
+
                 List<Object> values = this.parameters.get(keyValues[i]);
                 if (null == values) {
                     values = new ArrayList<>();
@@ -150,18 +160,31 @@ public final class Parameters implements Cloneable, Serializable {
         }
     }
 
+    /**
+     * Calls {@link TraversalParent#integrateChild(Traversal.Admin)} on any traversal objects in the parameter list.
+     * This method requires that {@link #set(Object...)} is called prior to this method as the it will switch the
+     * {@code traversalsPresent} flag field if a {@link Traversal.Admin} object is present and allow this method to
+     * do its work.
+     */
     public void integrateTraversals(final TraversalParent step) {
-        for (final List<Object> values : this.parameters.values()) {
-            for (final Object object : values) {
-                if (object instanceof Traversal.Admin) {
-                    step.integrateChild((Traversal.Admin) object);
+        if (traversalsPresent) {
+            for (final List<Object> values : this.parameters.values()) {
+                for (final Object object : values) {
+                    if (object instanceof Traversal.Admin) {
+                        step.integrateChild((Traversal.Admin) object);
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Gets all the {@link Traversal.Admin} objects in the map of parameters.
+     */
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        List<Traversal.Admin<S, E>> result = new ArrayList<>();
+        if (!traversalsPresent) return Collections.emptyList();
+
+        final List<Traversal.Admin<S, E>> result = new ArrayList<>();
         for (final List<Object> list : this.parameters.values()) {
             for (final Object object : list) {
                 if (object instanceof Traversal.Admin) {
