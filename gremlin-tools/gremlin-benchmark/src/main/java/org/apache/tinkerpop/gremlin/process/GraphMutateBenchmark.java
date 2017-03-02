@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.benchmark.util.AbstractGraphMutateBenchmark;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,6 +33,7 @@ import org.openjdk.jmh.annotations.Setup;
  * {@link org.apache.tinkerpop.gremlin.structure.Graph} mutation methods.
  *
  * @author Ted Wilmes (http://twilmes.org)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
 
@@ -56,6 +58,19 @@ public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
     }
 
     @Benchmark
+    public Vertex testAddVertexWithProps() {
+        final Vertex v = graph.addVertex("test");
+        for (int iy = 0; iy < 32; iy++) {
+            if (iy % 2 == 0)
+                v.property("x" + String.valueOf(iy), iy);
+            else
+                v.property("x" + String.valueOf(iy), String.valueOf(iy));
+        }
+
+        return v;
+    }
+
+    @Benchmark
     public VertexProperty testVertexProperty() {
         return a.property("name", "Susan");
     }
@@ -76,8 +91,41 @@ public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
     }
 
     @Benchmark
+    public Vertex testAddVWithProps() {
+        GraphTraversal<Vertex, Vertex> t = g.addV("test");
+        for (int iy = 0; iy < 32; iy++) {
+            if (iy % 2 == 0)
+                t = t.property("x" + String.valueOf(iy), iy);
+            else
+                t = t.property("x" + String.valueOf(iy), String.valueOf(iy));
+        }
+        return t.next();
+    }
+
+    @Benchmark
     public Vertex testVertexPropertyStep() {
         return g.V(a).property("name", "Susan").next();
+    }
+
+    @Benchmark
+    public Vertex testAddVWithPropsChained() {
+        // construct a traversal that adds 100 vertices with 32 properties each
+        GraphTraversal<Vertex, Vertex> t = null;
+        for (int ix = 0; ix < 100; ix++) {
+            if (null == t)
+                t = g.addV("person");
+            else
+                t = t.addV("person");
+
+            for (int iy = 0; iy < 32; iy++) {
+                if (iy % 2 == 0)
+                    t = t.property("x" + String.valueOf(iy), iy * ix);
+                else
+                    t = t.property("x" + String.valueOf(iy), String.valueOf(iy + ix));
+            }
+        }
+
+        return t.next();
     }
 
     @Benchmark
