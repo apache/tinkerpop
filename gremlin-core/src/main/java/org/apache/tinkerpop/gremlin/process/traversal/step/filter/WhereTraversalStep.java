@@ -46,6 +46,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     protected Traversal.Admin<?, ?> whereTraversal;
     protected final Set<String> scopeKeys = new HashSet<>();
+    private Boolean pathSelectKey = null;
     protected Set<String> keepLabels;
 
     public WhereTraversalStep(final Traversal.Admin traversal, final Traversal<?, ?> whereTraversal) {
@@ -134,9 +135,18 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.getTraversal())).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
-                TYPICAL_GLOBAL_REQUIREMENTS :
-                TYPICAL_LOCAL_REQUIREMENTS;
+        return null == this.pathSelectKey ?
+                TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.getTraversal())).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
+                        TYPICAL_GLOBAL_REQUIREMENTS :
+                        TYPICAL_LOCAL_REQUIREMENTS :
+                this.pathSelectKey ?
+                        TYPICAL_GLOBAL_REQUIREMENTS :
+                        TYPICAL_LOCAL_REQUIREMENTS;
+    }
+
+    @Override
+    public void setPathLabels(final Set<String> labels) {
+        this.pathSelectKey = labels.stream().filter(this.scopeKeys::contains).findAny().isPresent();
     }
 
     @Override

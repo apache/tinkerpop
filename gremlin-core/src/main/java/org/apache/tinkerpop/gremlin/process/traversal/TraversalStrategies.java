@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimiza
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ScopingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -214,6 +215,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     RangeByIsCountStrategy.instance(),
                     PathRetractionStrategy.instance(),
                     LazyBarrierStrategy.instance(),
+                    ScopingStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance());
             GRAPH_CACHE.put(Graph.class, graphStrategies);

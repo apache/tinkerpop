@@ -41,6 +41,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     private final Pop pop;
     private final String selectKey;
+    private Boolean pathSelectKey = null;
     private Traversal.Admin<S, E> selectTraversal = null;
     private Set<String> keepLabels;
 
@@ -103,9 +104,17 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).contains(this.selectKey) ?
-                TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
-                TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+        if (null == this.pathSelectKey)
+            return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).contains(this.selectKey) ?
+                    TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
+                    TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+        else
+            return this.getSelfAndChildRequirements(this.pathSelectKey ? TYPICAL_GLOBAL_REQUIREMENTS_ARRAY : TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+    }
+
+    @Override
+    public void setPathLabels(final Set<String> labels) {
+        this.pathSelectKey = labels.contains(this.selectKey);
     }
 
     @Override
@@ -123,12 +132,14 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public Set<String> getKeepLabels() { return this.keepLabels; }
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 
     @Override
     protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<E> traverser = super.processNextStart();
-        if(!(this.getTraversal().getParent() instanceof MatchStep)) {
+        if (!(this.getTraversal().getParent() instanceof MatchStep)) {
             PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
         }
         return traverser;

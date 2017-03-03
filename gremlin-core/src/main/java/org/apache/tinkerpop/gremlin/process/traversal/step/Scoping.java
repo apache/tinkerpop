@@ -70,4 +70,14 @@ public interface Scoping {
     }
 
     public Set<String> getScopeKeys();
+
+    /**
+     * If a Scoping step can do intelligent optimizations by knowing the step labels being accessed globally, then it should implement this label.
+     * The default implementation does nothing.
+     *
+     * @param labels the step labels of the global traversal
+     */
+    public default void setPathLabels(final Set<String> labels) {
+
+    }
 }
