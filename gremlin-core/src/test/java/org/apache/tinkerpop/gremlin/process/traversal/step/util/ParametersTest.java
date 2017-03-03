@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -31,6 +32,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
@@ -153,6 +155,39 @@ public class ParametersTest {
     }
 
     @Test
+    public void shouldRemoveRefreshTraversalCache() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "c", "cat", "c", mock(Traversal.Admin.class), "t", mock(Traversal.Admin.class));
+
+        final Map<Object,List<Object>> before = parameters.getRaw();
+        assertEquals(4, before.size());
+        assertEquals(2, parameters.getTraversals().size());
+        assertEquals("axe", before.get("a").get(0));
+        assertEquals("bat", before.get("b").get(0));
+        assertEquals("cat", before.get("c").get(0));
+        assertThat(before.get("c").get(1), instanceOf(Traversal.Admin.class));
+        assertThat(before.get("t").get(0), instanceOf(Traversal.Admin.class));
+
+        parameters.remove("t");
+
+        final Map<Object,List<Object>> afterRemoveT = parameters.getRaw();
+        assertEquals(3, afterRemoveT.size());
+        assertEquals(1, parameters.getTraversals().size());
+        assertEquals("axe", afterRemoveT.get("a").get(0));
+        assertEquals("bat", afterRemoveT.get("b").get(0));
+        assertEquals("cat", afterRemoveT.get("c").get(0));
+        assertThat(afterRemoveT.get("c").get(1), instanceOf(Traversal.Admin.class));
+
+        parameters.remove("c");
+
+        final Map<Object,List<Object>> afterRemoveC = parameters.getRaw();
+        assertEquals(2, afterRemoveC.size());
+        assertEquals(0, parameters.getTraversals().size());
+        assertEquals("axe", afterRemoveC.get("a").get(0));
+        assertEquals("bat", afterRemoveC.get("b").get(0));
+    }
+
+    @Test
     public void shouldRename() {
         final Parameters parameters = new Parameters();
         parameters.set("a", "axe", "b", "bat", "c", "cat");
@@ -215,6 +250,21 @@ public class ParametersTest {
         final Parameters parametersClone = parameters.clone();
 
         assertEquals(parameters.getRaw(), parametersClone.getRaw());
+        assertEquals(parameters.getTraversals(), parametersClone.getTraversals());
+    }
+
+    @Test
+    public void shouldCloneWithTraversals() {
+        final Traversal.Admin t = mock(Traversal.Admin.class);
+        when(t.clone()).thenReturn(t);
+
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", t);
+
+        final Parameters parametersClone = parameters.clone();
+
+        assertEquals(parameters.getRaw(), parametersClone.getRaw());
+        assertEquals(parameters.getTraversals().size(), parametersClone.getTraversals().size());
     }
 
     @Test

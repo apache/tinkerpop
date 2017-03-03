@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,9 +50,11 @@ public final class Parameters implements Cloneable, Serializable {
     private Map<Object, List<Object>> parameters = new HashMap<>();
 
     /**
-     * Determines if there are traversals present in the parameters {@code Map}.
+     * A cached list of traversals that server as parameter values. The list is cached on calls to
+     * {@link #set(Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
+     * high number of calls to {@link #getTraversals()} and {@link #integrateTraversals(TraversalParent)} is great.
      */
-    private boolean traversalsPresent = false;
+    private List<Traversal.Admin> traversals = new ArrayList<>();
 
     /**
      * Checks for existence of key in parameter set.
@@ -73,6 +76,10 @@ public final class Parameters implements Cloneable, Serializable {
         this.parameters.put(newKey, this.parameters.remove(oldKey));
     }
 
+    /**
+     * Gets the list of values for a key, while resolving the values of any parameters that are {@link Traversal}
+     * objects.
+     */
     public <S, E> List<E> get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {
         final List<E> values = (List<E>) this.parameters.get(key);
         if (null == values) return Collections.singletonList(defaultValue.get());
@@ -102,9 +109,28 @@ public final class Parameters implements Cloneable, Serializable {
      * @return the value of the removed key
      */
     public Object remove(final Object key) {
-        return parameters.remove(key);
+        final List<Object> o = parameters.remove(key);
+
+        // once a key is removed, it's possible that the traversal cache will need to be regenerated
+        if (IteratorUtils.anyMatch(o.iterator(), p -> p instanceof Traversal.Admin)) {
+            traversals.clear();
+            traversals = new ArrayList<>();
+            for (final List<Object> list : this.parameters.values()) {
+                for (final Object object : list) {
+                    if (object instanceof Traversal.Admin) {
+                        traversals.add((Traversal.Admin) object);
+                    }
+                }
+            }
+        }
+
+        return o;
     }
 
+    /**
+     * Gets the array of keys/values of the parameters while resolving parameter values that contain
+     * {@link Traversal} instances
+     */
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
         final List<Object> keyValues = new ArrayList<>();
@@ -143,10 +169,10 @@ public final class Parameters implements Cloneable, Serializable {
         Parameters.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
-                // track whether or not traversals are present so that elsewhere in Parameters there is no need
+                // track the list of traversals that are present so that elsewhere in Parameters there is no need
                 // to iterate all values to not find any.
-                if (!traversalsPresent && keyValues[i + 1] instanceof Traversal.Admin)
-                    traversalsPresent = true;
+                if (keyValues[i + 1] instanceof Traversal.Admin)
+                    traversals.add((Traversal.Admin) keyValues[i + 1]);
 
                 List<Object> values = this.parameters.get(keyValues[i]);
                 if (null == values) {
@@ -167,14 +193,8 @@ public final class Parameters implements Cloneable, Serializable {
      * do its work.
      */
     public void integrateTraversals(final TraversalParent step) {
-        if (traversalsPresent) {
-            for (final List<Object> values : this.parameters.values()) {
-                for (final Object object : values) {
-                    if (object instanceof Traversal.Admin) {
-                        step.integrateChild((Traversal.Admin) object);
-                    }
-                }
-            }
+        for (Traversal.Admin t : traversals) {
+            step.integrateChild(t);
         }
     }
 
@@ -182,15 +202,10 @@ public final class Parameters implements Cloneable, Serializable {
      * Gets all the {@link Traversal.Admin} objects in the map of parameters.
      */
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        if (!traversalsPresent) return Collections.emptyList();
-
+        // stupid generics - just need to return "traversals"
         final List<Traversal.Admin<S, E>> result = new ArrayList<>();
-        for (final List<Object> list : this.parameters.values()) {
-            for (final Object object : list) {
-                if (object instanceof Traversal.Admin) {
-                    result.add((Traversal.Admin) object);
-                }
-            }
+        for (Traversal.Admin t : traversals) {
+            result.add(t);
         }
         return result;
     }
