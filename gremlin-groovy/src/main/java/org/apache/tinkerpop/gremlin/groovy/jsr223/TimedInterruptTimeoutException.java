@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
-
 import java.util.concurrent.TimeoutException;
 
 /**
- * An exception thrown from the {@link TimedInterruptCustomizerProvider} when the timeout is exceeded. This exception
+ * An exception thrown from the {@link TimedInterruptGroovyCustomizer} when the timeout is exceeded. This exception
  * allows differentiation from other "timeout exceptions" that might occur.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

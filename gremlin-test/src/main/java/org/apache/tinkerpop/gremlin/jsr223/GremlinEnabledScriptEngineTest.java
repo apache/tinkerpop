@@ -57,31 +57,6 @@ public class GremlinEnabledScriptEngineTest {
     }
 
     @Test
-    public void shouldSupportDeprecatedGremlinModules() throws Exception {
-        final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
-        mgr.addModule(new GremlinModule() {
-            @Override
-            public String getName() {
-                return "test.junk";
-            }
-
-            @Override
-            public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
-                return Optional.of(new Customizer[] {DefaultImportCustomizer.build()
-                        .addClassImports(java.awt.Color.class)
-                        .addClassImports(java.sql.CallableStatement.class)
-                        .create() });
-            }
-        });
-
-        final GremlinScriptEngine scriptEngine = mgr.getEngineByName(ENGINE_TO_TEST);
-        final List<Class> classesToCheck = Arrays.asList(java.awt.Color.class, java.sql.CallableStatement.class);
-        for (Class clazz : classesToCheck) {
-            assertEquals(clazz, scriptEngine.eval(clazz.getSimpleName()));
-        }
-    }
-
-    @Test
     public void shouldReturnNoCustomizers() {
         final GremlinScriptEngineManager mgr = new DefaultGremlinScriptEngineManager();
         mgr.addPlugin(ImportGremlinPlugin.build()

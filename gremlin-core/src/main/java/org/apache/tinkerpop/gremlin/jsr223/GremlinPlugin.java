@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import java.util.Optional;
 
 /**
+ * A plugin interface that is used by the {@link GremlinScriptEngineManager} to configure special {@link Customizer}
+ * instances that will alter the features of any {@link GremlinScriptEngine} created by the manager itself.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GremlinPlugin {

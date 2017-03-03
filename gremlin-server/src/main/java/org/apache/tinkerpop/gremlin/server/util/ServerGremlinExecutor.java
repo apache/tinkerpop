@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -121,20 +120,13 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
                 .afterTimeout(b -> this.graphManager.rollbackAll())
-                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(this.graphManager.getAsBindings())
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // use plugins if they are present and the old approach if not
-            if (v.plugins.isEmpty()) {
-                // make sure that server related classes are available at init - ultimately this body of code will be
-                // deleted when deprecation is removed
-                v.imports.add(LifeCycleHook.class.getCanonicalName());
-                v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
-                gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
-            } else {
+            // use plugins if they are present
+            if (!v.plugins.isEmpty()) {
                 // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
                 // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
                 gremlinExecutorBuilder.addPlugins(k, v.plugins);

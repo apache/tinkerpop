@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -34,7 +35,7 @@ public class GephiGremlinPlugin extends AbstractGremlinPlugin {
 
     private static class GephiConsoleCustomizer implements ConsoleCustomizer {
         @Override
-        public org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment gremlinShellEnvironment) {
+        public RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment gremlinShellEnvironment) {
             return new GephiRemoteAcceptor(gremlinShellEnvironment);
         }
     }

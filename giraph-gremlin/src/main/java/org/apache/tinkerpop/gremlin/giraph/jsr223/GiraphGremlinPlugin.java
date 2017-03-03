@@ -38,7 +38,7 @@ public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     private static final String MODULE_NAME = "tinkerpop.giraph";
     private static final GiraphGremlinPlugin instance = new GiraphGremlinPlugin();
 
-    private GiraphGremlinPlugin() {
+    public GiraphGremlinPlugin() {
         super(MODULE_NAME, DefaultImportCustomizer.build().addClassImports(
                 EmptyOutEdges.class,
                 GiraphComputation.class,

@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
@@ -47,8 +47,7 @@ class RemoteCommand extends ComplexCommandSupport {
         def pluggedIn = mediator.availablePlugins.values().find { it.plugin.name == arguments[0] }
         if (!pluggedIn.activated) return "Plugin is available but not activated with ':plugin use ${arguments[0]}'"
 
-        def plugin = pluggedIn.plugin
-        def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
+        def Optional<RemoteAcceptor> remoteAcceptor = pluggedIn.remoteAcceptor()
         if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
         try {

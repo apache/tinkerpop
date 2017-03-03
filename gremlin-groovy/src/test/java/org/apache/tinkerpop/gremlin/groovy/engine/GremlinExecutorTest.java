@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -30,13 +30,10 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.SimpleBindings;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -166,8 +163,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguage() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
         assertEquals(2, gremlinExecutor.eval("1+x", "gremlin-groovy", b).get());
@@ -176,8 +172,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguageThenTransform() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
         assertEquals(4, gremlinExecutor.eval("1+x", "gremlin-groovy", b, r -> (int) r * 2).get());
@@ -186,8 +181,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguageThenConsume() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
 
@@ -453,54 +447,14 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldFailUntilImportExecutes() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
-
-        final Set<String> imports = new HashSet<String>() {{
-            add("import java.awt.Color");
-        }};
-
-        final AtomicInteger successes = new AtomicInteger(0);
-        final AtomicInteger failures = new AtomicInteger(0);
-
-        // issue 1000 scripts in one thread using a class that isn't imported.  this will result in failure.
-        // while that thread is running start a new thread that issues an addImports to include that class.
-        // this should block further evals in the first thread until the import is complete at which point
-        // evals in the first thread will resume and start to succeed
-        final Thread t1 = new Thread(() ->
-                IntStream.range(0, 1000).mapToObj(i -> gremlinExecutor.eval("Color.BLACK"))
-                        .forEach(f -> {
-                            f.exceptionally(t -> failures.incrementAndGet()).join();
-                            if (!f.isCompletedExceptionally())
-                                successes.incrementAndGet();
-                        })
-        );
-
-        final Thread t2 = new Thread(() -> {
-            while (failures.get() < 500) {   }
-            gremlinExecutor.getScriptEngines().addImports(imports);
-        });
-
-        t1.start();
-        t2.start();
-
-        t1.join();
-        t2.join();
-
-        assertTrue(successes.intValue() > 0);
-        assertTrue(failures.intValue() >= 500);
-
-        gremlinExecutor.close();
-    }
-
-    @Test
     public void shouldInitializeWithScript() throws Exception {
+        final Map<String, Map<String,Object>> config = new HashMap<>();
+        final Map<String, Object> scriptPluginConfig = new HashMap<>();
+        scriptPluginConfig.put("files", Collections.singletonList(PATHS.get("GremlinExecutorInit.groovy")));
+        config.put(ScriptFileGremlinPlugin.class.getName(), scriptPluginConfig);
+
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        Collections.emptyMap())
+                .addPlugins("gremlin-groovy", config)
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
@@ -510,12 +464,13 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldInitializeWithScriptAndMakeGlobalBinding() throws Exception {
+        final Map<String, Map<String,Object>> config = new HashMap<>();
+        final Map<String, Object> scriptPluginConfig = new HashMap<>();
+        scriptPluginConfig.put("files", Collections.singletonList(PATHS.get("GremlinExecutorInit.groovy")));
+        config.put(ScriptFileGremlinPlugin.class.getName(), scriptPluginConfig);
+
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        Collections.emptyMap())
+                .addPlugins("gremlin-groovy", config)
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
@@ -529,20 +484,17 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
-        final Map<String,List<Object>> compilerCustomizerConfig = new HashMap<>();
-        final List<Object> args = new ArrayList<>();
-        args.add(250);
-        compilerCustomizerConfig.put(TimedInterruptCustomizerProvider.class.getName(), args);
+        final Map<String, Map<String,Object>> config = new HashMap<>();
+        final Map<String, Object> scriptPluginConfig = new HashMap<>();
+        scriptPluginConfig.put("files", Collections.singletonList(PATHS.get("GremlinExecutorInit.groovy")));
+        config.put(ScriptFileGremlinPlugin.class.getName(), scriptPluginConfig);
 
-        final Map<String, Object> config = new HashMap<>();
-        config.put("compilerCustomizerProviders", compilerCustomizerConfig);
+        final Map<String, Object> groovyPluginConfig = new HashMap<>();
+        groovyPluginConfig.put("timedInterrupt", 250);
+        config.put(GroovyCompilerGremlinPlugin.class.getName(), groovyPluginConfig);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        config)
+                .addPlugins("gremlin-groovy", config)
                 .create();
 
         for (int ix = 0; ix < 5; ix++) {
@@ -563,18 +515,17 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldInterruptWhile() throws Exception {
-        final Map<String,List<Object>> compilerCustomizerConfig = new HashMap<>();
-        compilerCustomizerConfig.put(ThreadInterruptCustomizerProvider.class.getName(), new ArrayList<>());
+        final Map<String, Map<String,Object>> config = new HashMap<>();
+        final Map<String, Object> scriptPluginConfig = new HashMap<>();
+        scriptPluginConfig.put("files", Collections.singletonList(PATHS.get("GremlinExecutorInit.groovy")));
+        config.put(ScriptFileGremlinPlugin.class.getName(), scriptPluginConfig);
 
-        final Map<String, Object> config = new HashMap<>();
-        config.put("compilerCustomizerProviders", compilerCustomizerConfig);
+        final Map<String, Object> groovyPluginConfig = new HashMap<>();
+        groovyPluginConfig.put("enableThreadInterrupt", true);
+        config.put(GroovyCompilerGremlinPlugin.class.getName(), groovyPluginConfig);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        config)
+                .addPlugins("gremlin-groovy", config)
                 .create();
         final AtomicBoolean asserted = new AtomicBoolean(false);
 
@@ -592,25 +543,6 @@ public class GremlinExecutorTest {
         while(t.isAlive()) {}
 
         assertTrue(asserted.get());
-    }
-
-    @Test
-    public void shouldInitializeWithScriptAndWorkAfterReset() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        Collections.emptyMap())
-                .create();
-
-        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
-
-        gremlinExecutor.getScriptEngines().reset();
-
-        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
-
-        gremlinExecutor.close();
     }
 
     @Test

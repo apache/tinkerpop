@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
@@ -30,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -222,20 +220,13 @@ public class Session {
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
-                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // use plugins if they are present and the old approach if not
-            if (v.plugins.isEmpty()) {
-                // make sure that server related classes are available at init - ultimately this body of code will be
-                // deleted when deprecation is removed
-                v.imports.add(LifeCycleHook.class.getCanonicalName());
-                v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
-                gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
-            } else {
+            // use plugins if they are present
+            if (!v.plugins.isEmpty()) {
                 // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
                 // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
                 gremlinExecutorBuilder.addPlugins(k, v.plugins);

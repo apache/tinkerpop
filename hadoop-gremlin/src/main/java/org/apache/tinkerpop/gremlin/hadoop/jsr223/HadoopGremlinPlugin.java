@@ -132,7 +132,7 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
 
-    private HadoopGremlinPlugin() {
+    public HadoopGremlinPlugin() {
         super(NAME, appliesTo, imports, bindings, new HadoopConsoleCustomizer());
     }
 

@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
@@ -30,14 +28,6 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineConfigTest {
-    @Test
-    public void shouldAddBaseScriptClassDeprecated() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new ConfigurationCustomizerProvider("ScriptBaseClass", BaseScriptForTesting.class.getName()),
-                new DefaultImportCustomizerProvider());
-
-        assertEquals("hello, stephen", engine.eval("hello('stephen')"));
-    }
 
     @Test
     public void shouldAddBaseScriptClass() throws Exception {

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -71,7 +72,9 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Override
     public Settings overrideSettings(final Settings settings) {
-        settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-modern.groovy");
+        final Map<String,Object> m = new HashMap<>();
+        m.put("files", Collections.singletonList("scripts/generate-modern.groovy"));
+        settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
         return settings;
     }
 

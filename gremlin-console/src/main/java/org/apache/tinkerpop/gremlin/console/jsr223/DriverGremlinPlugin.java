@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -97,7 +98,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
     private static class DriverConsoleCustomizer implements ConsoleCustomizer {
         @Override
-        public org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment environment) {
+        public RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment environment) {
             return new DriverRemoteAcceptor(environment);
         }
     }

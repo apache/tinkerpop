@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GremlinServerGremlinPlugin extends AbstractGremlinPlugin {
-    private static final String MODULE_NAME = "tinkerpop.server";
+    private static final String MODULE_NAME = "tinkerpop.gremlin-server";
     private static final GremlinServerGremlinPlugin instance = new GremlinServerGremlinPlugin();
 
     private GremlinServerGremlinPlugin() {

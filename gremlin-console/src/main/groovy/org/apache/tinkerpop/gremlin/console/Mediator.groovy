@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -36,7 +36,6 @@ class Mediator {
     public static final String IMPORT_SPACE = "import "
     public static final String IMPORT_STATIC_SPACE = "import static "
     public static final String IMPORT_WILDCARD = ".*"
-    public static final boolean useV3d3 = System.getProperty("plugins", "v3d2") == "v3d3"
 
     public Mediator(final Console console) {
         this.console = console

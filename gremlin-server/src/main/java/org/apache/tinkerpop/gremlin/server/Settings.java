@@ -204,15 +204,6 @@ public class Settings {
     public AuthenticationSettings authentication = new AuthenticationSettings();
 
     /**
-     * The list of plugins to enable for the server.  Plugins may be available on the classpath, but with this
-     * configuration it is possible to explicitly include or omit them.
-     *
-     * @deprecated As of release 3.2.5, replaced by specific {@link GremlinPlugin} settings on {@link #scriptEngines}
-     */
-    @Deprecated
-    public List<String> plugins = new ArrayList<>();
-
-    /**
      * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
      * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
      */

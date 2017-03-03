@@ -42,11 +42,9 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffec
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -67,7 +65,6 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +80,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -205,15 +203,18 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 defaultSettings.port = TestClientFactory.PORT;
                 return settings;
             case "shouldUseSimpleSandbox":
-                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
+                settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForSimpleSandbox());
+                // remove the script because it isn't used in the test but also because it's not CompileStatic ready
+                settings.scriptEngines.get("gremlin-groovy").plugins.remove(ScriptFileGremlinPlugin.class.getName());
                 break;
             case "shouldUseInterpreterMode":
-                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForInterpreterMode();
+                settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForInterpreterMode());
                 break;
             case "shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop":
-                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForTimedInterrupt();
+                settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForTimedInterrupt());
                 break;
             case "shouldUseBaseScript":
+                settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForBaseScript());
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForBaseScript();
                 break;
         }
@@ -235,43 +236,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     private static Map<String, Object> getScriptEngineConfForSimpleSandbox() {
         final Map<String,Object> scriptEngineConf = new HashMap<>();
-        final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
-        final List<String> sandboxes = new ArrayList<>();
-        sandboxes.add(SimpleSandboxExtension.class.getName());
-        compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
-        scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+        scriptEngineConf.put("compilation", COMPILE_STATIC.name());
+        scriptEngineConf.put("extensions", SimpleSandboxExtension.class.getName());
         return scriptEngineConf;
     }
 
     private static Map<String, Object> getScriptEngineConfForTimedInterrupt() {
         final Map<String,Object> scriptEngineConf = new HashMap<>();
-        final Map<String,Object> timedInterruptProviderConf = new HashMap<>();
-        final List<Object> config = new ArrayList<>();
-        config.add(1000);
-        timedInterruptProviderConf.put(TimedInterruptCustomizerProvider.class.getName(), config);
-        scriptEngineConf.put("compilerCustomizerProviders", timedInterruptProviderConf);
+        scriptEngineConf.put("timedInterrupt", 1000);
         return scriptEngineConf;
     }
 
     private static Map<String, Object> getScriptEngineConfForInterpreterMode() {
         final Map<String,Object> scriptEngineConf = new HashMap<>();
-        final Map<String,Object> interpreterProviderConf = new HashMap<>();
-        interpreterProviderConf.put(InterpreterModeCustomizerProvider.class.getName(), Collections.EMPTY_LIST);
-        scriptEngineConf.put("compilerCustomizerProviders", interpreterProviderConf);
+        scriptEngineConf.put("enableInterpreterMode", true);
         return scriptEngineConf;
     }
 
     private static Map<String, Object> getScriptEngineConfForBaseScript() {
         final Map<String,Object> scriptEngineConf = new HashMap<>();
-        final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
-        final List<Object> keyValues = new ArrayList<>();
-
         final Map<String,Object> properties = new HashMap<>();
         properties.put("ScriptBaseClass", BaseScriptForTesting.class.getName());
-        keyValues.add(properties);
-
-        compilerCustomizerProviderConf.put(ConfigurationCustomizerProvider.class.getName(), keyValues);
-        scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+        scriptEngineConf.put("compilerConfigurationOptions", properties);
         return scriptEngineConf;
     }
 

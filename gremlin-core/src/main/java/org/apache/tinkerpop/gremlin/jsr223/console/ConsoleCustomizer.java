@@ -19,8 +19,12 @@
 package org.apache.tinkerpop.gremlin.jsr223.console;
 
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 
 /**
+ * A {@link Customizer} that allows a {@link RemoteAcceptor} to be used with a console implementation. Only one
+ * {@code ConsoleCustomizer} can be added to a particular {@link GremlinPlugin}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ConsoleCustomizer extends Customizer {
