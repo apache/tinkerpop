@@ -50,7 +50,7 @@ public final class Parameters implements Cloneable, Serializable {
     private Map<Object, List<Object>> parameters = new HashMap<>();
 
     /**
-     * A cached list of traversals that server as parameter values. The list is cached on calls to
+     * A cached list of traversals that serve as parameter values. The list is cached on calls to
      * {@link #set(Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
      * high number of calls to {@link #getTraversals()} and {@link #integrateTraversals(TraversalParent)} is great.
      */
@@ -129,10 +129,10 @@ public final class Parameters implements Cloneable, Serializable {
 
     /**
      * Gets the array of keys/values of the parameters while resolving parameter values that contain
-     * {@link Traversal} instances
+     * {@link Traversal} instances.
      */
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
-        if (this.parameters.size() == 0) return EMPTY_ARRAY;
+        if (this.parameters.isEmpty()) return EMPTY_ARRAY;
         final List<Object> keyValues = new ArrayList<>();
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             if (!ArrayUtils.contains(exceptKeys, entry.getKey())) {
