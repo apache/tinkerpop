@@ -69,6 +69,11 @@ public interface Scoping {
         return null;
     }
 
+    /**
+     * Get the labels that this scoping step will access during the traversal
+     *
+     * @return the accessed labels of the scoping step
+     */
     public Set<String> getScopeKeys();
 
     /**
