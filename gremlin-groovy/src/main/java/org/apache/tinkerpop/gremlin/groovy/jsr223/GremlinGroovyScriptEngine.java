@@ -79,6 +79,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -155,8 +157,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     /**
      * Script to generated Class map.
      */
-    private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
-    private ManagedConcurrentValueMap<String, CompilationFailedException> failedClassMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
+    private ManagedConcurrentValueMap<String, Future<Class>> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
@@ -533,56 +534,38 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         return makeInterface(thiz, clazz);
     }
 
-    private Class getScriptClassFromMap(String script) throws CompilationFailedException {
-        CompilationFailedException exception = failedClassMap.get(script);
-        if(exception != null) {
-            throw exception;
-        }
-        return classMap.get(script);
-
-    }
-
     Class getScriptClass(final String script) throws CompilationFailedException {
-        Class clazz = getScriptClassFromMap(script);
-        if (clazz != null) {
-            return clazz;
-        }
-        synchronized (this) {
-            clazz = getScriptClassFromMap(script);
+        Future<Class> clazz = classMap.get(script);
+
+        long start = System.currentTimeMillis();
+        try {
             if (clazz != null) {
-                return clazz;
+                return clazz.get();
             }
 
-            long start = System.currentTimeMillis();
-            try {
-                clazz = loader.parseClass(script, generateScriptName());
-                long time = System.currentTimeMillis() - start;
-                if(time > 5000) {
-                    //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
-                    //Scripts with a large numbers of parameters often trigger this and should be avoided.
-                    log.warn("Script compilation {} took {}ms", script, time);
-                }
-                else {
-                    log.debug("Script compilation {} took {}ms", script, time);
-                }
-
-
-            }
-            catch(CompilationFailedException t) {
-                long finish = System.currentTimeMillis();
-                log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, t);
-                failedClassMap.put(script, t);
-                throw t;
-            }
-            catch(Throwable t) {
-                long finish = System.currentTimeMillis();
-                log.error("Script compilation FAILED with throwable {} took {}ms {}", script, finish - start, t);
-                throw t;
-            }
+            clazz = CompletableFuture.supplyAsync(() -> loader.parseClass(script, generateScriptName()));
             classMap.put(script, clazz);
+            return clazz.get();
 
-            return clazz;
+        } catch (Exception e) {
+            if (e.getCause() instanceof CompilationFailedException) {
+                long finish = System.currentTimeMillis();
+                log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e.getCause());
+                throw (CompilationFailedException) e.getCause();
+            } else {
+                throw new AssertionError("Unexpected exception when compiling script", e);
+            }
+        } finally {
+            long time = System.currentTimeMillis() - start;
+            if (time > 5000) {
+                //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                log.warn("Script compilation {} took {}ms", script, time);
+            } else {
+                log.debug("Script compilation {} took {}ms", script, time);
+            }
         }
+
     }
 
     boolean isCached(final String script) {
