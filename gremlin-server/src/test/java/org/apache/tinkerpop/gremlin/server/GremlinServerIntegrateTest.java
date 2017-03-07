@@ -138,6 +138,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
+            case "shouldProvideBetterExceptionForMethodCodeTooLarge":
+                settings.maxContentLength = 4096000;
+                break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
                 settings.writeBufferLowWaterMark = 32;
@@ -393,7 +396,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldEnableSslAndClientCertificateAuth() {
 		final Cluster cluster = TestClientFactory.build().enableSsl(true)
@@ -407,7 +410,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
@@ -441,7 +444,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
@@ -1082,5 +1085,31 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(traversalCloned.promise(t -> ((Traversal) t).hasNext()).join(), is(false));
 
         assertEquals(3, g.V().promise(Traversal::toList).join().size());
+    }
+
+    @Test
+    public void shouldProvideBetterExceptionForMethodCodeTooLarge() {
+        final int numberOfParameters = 4000;
+        final Map<String,Object> b = new HashMap<>();
+
+        // generate a script with a ton of bindings usage to generate a "code too large" exception
+        String script = "x = 0";
+        for (int ix = 0; ix < numberOfParameters; ix++) {
+            if (ix > 0 && ix % 100 == 0) {
+                script = script + ";" + System.lineSeparator() + "x = x";
+            }
+            script = script + " + x" + ix;
+            b.put("x" + ix, ix);
+        }
+
+        final Cluster cluster = TestClientFactory.build().maxContentLength(4096000).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit(script, b).all().get();
+            fail("Should have tanked out because of number of parameters used and size of the compile script");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM"));
+        }
     }
 }
