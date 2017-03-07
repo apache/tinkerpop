@@ -41,10 +41,13 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
+import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -292,8 +295,21 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     logger.warn(errorMessage, t);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(t.getMessage()).create());
                 } else {
-                    logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(t.getMessage()).create());
+                    // try to trap the specific jvm error of "Method code too large!" to re-write it as something nicer,
+                    // but only re-write if it's the only error because otherwise we might lose some other important
+                    // information related to the failure. at this point, there hasn't been a scenario that has
+                    // presented itself where the "Method code too large!" comes with other compilation errors so
+                    // it seems that this message trumps other compilation errors to some reasonable degree that ends
+                    // up being favorable for this problem
+                    if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method code too large!") &&
+                            ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
+                        final String errorMessage = String.format("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", msg);
+                        logger.warn(errorMessage);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(errorMessage).create());
+                    } else {
+                        logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(t.getMessage()).create());
+                    }
                 }
             }
 
