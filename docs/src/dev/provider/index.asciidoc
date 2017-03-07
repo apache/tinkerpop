@@ -458,20 +458,16 @@ Validating with Gremlin-Test
 image:gremlin-edumacated.png[width=225]
 
 [source,xml]
+----
 <dependency>
   <groupId>org.apache.tinkerpop</groupId>
   <artifactId>gremlin-test</artifactId>
   <version>x.y.z</version>
 </dependency>
-<dependency>
-  <groupId>org.apache.tinkerpop</groupId>
-  <artifactId>gremlin-groovy-test</artifactId>
-  <version>x.y.z</version>
-</dependency>
+----
 
-The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test` and functional
-interoperability with the Groovy environment is ensured by `gremlin-groovy-test`. To implement these tests, provide
-test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g.
+The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. To implement these tests,
+provide test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g.
 TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 
 [source,java]
@@ -489,22 +485,11 @@ public class XXXProcessComputerTest {}
 @RunWith(ProcessStandardSuite.class)
 @GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXProcessStandardTest {}
-
-@RunWith(GroovyEnvironmentSuite.class)
-@GraphProviderClass(provider = XXXProvider.class, graph = TinkerGraph.class)
-public class XXXGroovyEnvironmentTest {}
-
-@RunWith(GroovyProcessStandardSuite.class)
-@GraphProviderClass(provider = XXXGraphProvider.class, graph = TinkerGraph.class)
-public class XXXGroovyProcessStandardTest {}
-
-@RunWith(GroovyProcessComputerSuite.class)
-@GraphProviderClass(provider = XXXGraphComputerProvider.class, graph = TinkerGraph.class)
-public class XXXGroovyProcessComputerTest {}
 ----
 
 The above set of tests represent the minimum test suite set to implement.  There are other "integration" and
-"performance" tests that should be considered optional.  Implementing those tests requires the same pattern as shown above.
+"performance" tests that should be considered optional.  Implementing those tests requires the same pattern as shown
+above.
 
 IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test`
 suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test
@@ -526,9 +511,6 @@ annotation.  See the `TinkerGraph` implementation below as an example:
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 public class TinkerGraph implements Graph {
 ----
 
@@ -567,8 +549,7 @@ public class HadoopGraph implements Graph {
 The above examples show how to ignore individual tests.  It is also possible to:
 
 * Ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".
-* Ignore a "base" test class such that test that extend from those classes will all be ignored.  This style of
-ignoring is useful for Gremlin "process" tests that have bases classes that are extended by various Gremlin flavors (e.g. groovy).
+* Ignore a "base" test class such that test that extend from those classes will all be ignored.
 * Ignore a `GraphComputer` test based on the type of `GraphComputer` being used.  Specify the "computer" attribute on
 the `OptOut` (which is an array specification) which should have a value of the `GraphComputer` implementation class
 that should ignore that test. This attribute should be left empty for "standard" execution and by default all
