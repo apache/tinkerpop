@@ -34,11 +34,6 @@ public interface Scoping {
 
     public static enum Variable {START, END}
 
-    public static final Set<TraverserRequirement> TYPICAL_LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    public static final Set<TraverserRequirement> TYPICAL_GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
-    public static final TraverserRequirement[] TYPICAL_LOCAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS};
-    public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS};
-
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().exists(key))
             return traverser.getSideEffects().<S>get(key);
@@ -75,14 +70,4 @@ public interface Scoping {
      * @return the accessed labels of the scoping step
      */
     public Set<String> getScopeKeys();
-
-    /**
-     * If a Scoping step can do intelligent optimizations by knowing the step labels being accessed globally, then it should implement this label.
-     * The default implementation does nothing.
-     *
-     * @param labels the step labels of the global traversal
-     */
-    public default void setPathLabels(final Set<String> labels) {
-
-    }
 }

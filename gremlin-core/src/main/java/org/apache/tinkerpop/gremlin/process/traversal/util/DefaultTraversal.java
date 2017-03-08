@@ -147,6 +147,8 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             for (final Step<?, ?> step : this.getSteps()) {
                 this.requirements.addAll(step.getRequirements());
             }
+            if (TraversalHelper.hasLabels(this))
+                this.requirements.add(TraverserRequirement.LABELED_PATH);
             if (!this.getSideEffects().keys().isEmpty())
                 this.requirements.add(TraverserRequirement.SIDE_EFFECTS);
             if (null != this.getSideEffects().getSackInitialValue())

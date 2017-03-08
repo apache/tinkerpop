@@ -549,6 +549,24 @@ public final class TraversalHelper {
         return traversal;
     }
 
+    public static boolean hasLabels(final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (!step.getLabels().isEmpty())
+                return true;
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    if (TraversalHelper.hasLabels(local))
+                        return true;
+                }
+                for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                    if (TraversalHelper.hasLabels(global))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.getLabels(new HashSet<>(), traversal);
     }

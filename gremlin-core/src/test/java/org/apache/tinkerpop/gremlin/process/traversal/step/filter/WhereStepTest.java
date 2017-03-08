@@ -56,10 +56,10 @@ public class WhereStepTest extends StepTest {
         Object[][] traversalPaths = new Object[][]{
                 {false, __.where(P.not(P.within("x"))).asAdmin()},
                 {true, __.as("x").where(P.not(P.within("x"))).asAdmin()},
-                {false, __.as("a").where(P.not(P.within("x"))).asAdmin()},
+                {true, __.as("a").where(P.not(P.within("x"))).asAdmin()},
                 {false, __.local(__.where(P.not(P.within("x")))).asAdmin()},
                 {true, __.as("x").local(__.where(P.not(P.within("x")))).asAdmin()},
-                {false, __.as("a").local(__.where(P.not(P.within("x")))).asAdmin()},
+                {false, __.local(__.where(P.not(P.within("x")))).asAdmin()},
         };
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));

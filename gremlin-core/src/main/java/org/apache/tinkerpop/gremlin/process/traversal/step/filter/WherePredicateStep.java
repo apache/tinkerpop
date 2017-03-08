@@ -49,7 +49,6 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     protected String startKey;
     protected List<String> selectKeys;
-    private Boolean pathSelectKey = null;
     protected P<Object> predicate;
     protected final Set<String> scopeKeys = new HashSet<>();
     protected Set<String> keepLabels;
@@ -138,19 +137,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = null == this.pathSelectKey ?
-                TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
-                        TYPICAL_GLOBAL_REQUIREMENTS :
-                        TYPICAL_LOCAL_REQUIREMENTS :
-                this.pathSelectKey ?
-                        TYPICAL_GLOBAL_REQUIREMENTS :
-                        TYPICAL_LOCAL_REQUIREMENTS;
-        return this.getSelfAndChildRequirements(requirements.toArray(new TraverserRequirement[requirements.size()]));
-    }
-
-    @Override
-    public void setPathLabels(final Set<String> labels) {
-        this.pathSelectKey = labels.stream().filter(this.scopeKeys::contains).findAny().isPresent();
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override

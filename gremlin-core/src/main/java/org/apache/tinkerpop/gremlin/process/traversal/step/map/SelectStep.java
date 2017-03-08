@@ -48,7 +48,6 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private final Pop pop;
     private final List<String> selectKeys;
-    private Boolean pathSelectKey = null;
     private final Set<String> selectKeysSet;
     private Set<String> keepLabels;
 
@@ -121,17 +120,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        if (null == this.pathSelectKey)
-            return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.selectKeys::contains).findAny().isPresent() ?
-                    TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
-                    TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
-        else
-            return this.getSelfAndChildRequirements(this.pathSelectKey ? TYPICAL_GLOBAL_REQUIREMENTS_ARRAY : TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
-    }
-
-    @Override
-    public void setPathLabels(final Set<String> labels) {
-        this.pathSelectKey = labels.stream().filter(this.selectKeysSet::contains).findAny().isPresent();
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
