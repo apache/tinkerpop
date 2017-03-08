@@ -174,7 +174,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                     return loader.parseClass(script, generateScriptName());
                 } catch (CompilationFailedException e) {
                     long finish = System.currentTimeMillis();
-                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e.getCause());
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
                     throw e;
                 } finally {
                     long time = System.currentTimeMillis() - start;
