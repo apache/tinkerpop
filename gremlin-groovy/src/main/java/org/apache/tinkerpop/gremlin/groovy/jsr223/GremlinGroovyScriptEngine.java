@@ -168,26 +168,25 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         @Override
         public Future<Class> load(String script) throws Exception {
             long start = System.currentTimeMillis();
-            try {
-                return CompletableFuture.supplyAsync(() -> loader.parseClass(script, generateScriptName()), command -> command.run());
-            } catch (Exception e) {
-                if (e.getCause() instanceof CompilationFailedException) {
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
                     long finish = System.currentTimeMillis();
                     log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e.getCause());
-                    throw (CompilationFailedException) e.getCause();
-                } else {
-                    throw new AssertionError("Unexpected exception when compiling script", e);
+                    throw e;
+                } finally {
+                    long time = System.currentTimeMillis() - start;
+                    if (time > 5000) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
                 }
-            } finally {
-                long time = System.currentTimeMillis() - start;
-                if (time > 5000) {
-                    //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
-                    //Scripts with a large numbers of parameters often trigger this and should be avoided.
-                    log.warn("Script compilation {} took {}ms", script, time);
-                } else {
-                    log.debug("Script compilation {} took {}ms", script, time);
-                }
-            }
+            }, command -> command.run());
         }
 
     });
