@@ -196,7 +196,15 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      */
     private final ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-    private final AtomicLong counter = new AtomicLong(0L);
+    /**
+     * Ensures unique script names across all instances.
+     */
+    private final static AtomicLong scriptNameCounter = new AtomicLong(0L);
+
+    /**
+     * A counter for the instance that tracks the number of warnings issued during script compilations that exceeded
+     * the {@link #expectedCompilationTime}.
+     */
     private final AtomicLong longRunCompilationCount = new AtomicLong(0L);
 
     /**
@@ -799,7 +807,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     private synchronized String generateScriptName() {
-        return SCRIPT + counter.incrementAndGet() + DOT_GROOVY;
+        return SCRIPT + scriptNameCounter.incrementAndGet() + DOT_GROOVY;
     }
 
     @SuppressWarnings("unchecked")
