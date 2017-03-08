@@ -154,7 +154,7 @@ public final class TinkerGraphComputer implements GraphComputer {
 
         // initialize the memory
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
-        return computerService.submit(() -> {
+        final Future<ComputerResult> result = computerService.submit(() -> {
             final long time = System.currentTimeMillis();
             final TinkerGraphComputerView view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, null != this.vertexProgram ? this.vertexProgram.getVertexComputeKeys() : Collections.emptySet());
             final TinkerWorkerPool workers = new TinkerWorkerPool(this.graph, this.memory, this.workers);
@@ -246,6 +246,8 @@ public final class TinkerGraphComputer implements GraphComputer {
                 workers.close();
             }
         });
+        this.computerService.shutdown();
+        return result;
     }
 
     @Override

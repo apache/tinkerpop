@@ -142,7 +142,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     private Future<ComputerResult> submitWithExecutor(Executor exec) {
         // create the completable future
-        return computerService.submit(() -> {
+        final Future<ComputerResult> result = computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
             //////////////////////////////////////////////////
             /////// PROCESS SHIM AND SYSTEM PROPERTIES ///////
@@ -418,6 +418,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     Spark.close();
             }
         });
+        computerService.shutdown();
+        return result;
     }
 
     /////////////////
