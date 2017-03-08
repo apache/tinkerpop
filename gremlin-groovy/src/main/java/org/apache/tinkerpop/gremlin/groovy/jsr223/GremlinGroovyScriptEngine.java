@@ -164,20 +164,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     /**
      * Script to generated Class map.
      */
-    private LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().softValues().build(new CacheLoader<String, Future<Class>>() {
+    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().softValues().build(new CacheLoader<String, Future<Class>>() {
         @Override
-        public Future<Class> load(String script) throws Exception {
-            long start = System.currentTimeMillis();
+        public Future<Class> load(final String script) throws Exception {
+            final long start = System.currentTimeMillis();
 
             return CompletableFuture.supplyAsync(() -> {
                 try {
                     return loader.parseClass(script, generateScriptName());
                 } catch (CompilationFailedException e) {
-                    long finish = System.currentTimeMillis();
+                    final long finish = System.currentTimeMillis();
                     log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
                     throw e;
                 } finally {
-                    long time = System.currentTimeMillis() - start;
+                    final long time = System.currentTimeMillis() - start;
                     if (time > 5000) {
                         //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
                         //Scripts with a large numbers of parameters often trigger this and should be avoided.
@@ -186,7 +186,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                         log.debug("Script compilation {} took {}ms", script, time);
                     }
                 }
-            }, command -> command.run());
+            }, Runnable::run);
         }
 
     });
