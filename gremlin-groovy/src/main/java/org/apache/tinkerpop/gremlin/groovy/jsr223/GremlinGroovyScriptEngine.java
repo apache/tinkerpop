@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompilationOptionsCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
@@ -80,11 +81,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
@@ -124,7 +125,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * A value to the {@link #KEY_REFERENCE_TYPE} that immediately garbage collects the script after evaluation.
      */
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
-
 
     /**
      * A value to the {@link #KEY_REFERENCE_TYPE} that marks the script as one that can be garbage collected
@@ -178,26 +178,26 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                     throw e;
                 } finally {
                     final long time = System.currentTimeMillis() - start;
-                    if (time > 5000) {
+                    if (time > expectedCompilationTime) {
                         //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
                         //Scripts with a large numbers of parameters often trigger this and should be avoided.
                         log.warn("Script compilation {} took {}ms", script, time);
+                        longRunCompilationCount.incrementAndGet();
                     } else {
                         log.debug("Script compilation {} took {}ms", script, time);
                     }
                 }
             }, Runnable::run);
         }
-
     });
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
      */
-    private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
+    private final ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-
-    private AtomicLong counter = new AtomicLong(0L);
+    private final AtomicLong counter = new AtomicLong(0L);
+    private final AtomicLong longRunCompilationCount = new AtomicLong(0L);
 
     /**
      * The list of loaded plugins for the console.
@@ -219,6 +219,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
+    private final int expectedCompilationTime;
 
     /**
      * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
@@ -255,6 +256,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 .map(p -> ((GroovyCustomizer) p))
                 .collect(Collectors.toList());
 
+        final Optional<CompilationOptionsCustomizer> compilationOptionsCustomizerProvider = listOfCustomizers.stream()
+                .filter(p -> p instanceof CompilationOptionsCustomizer)
+                .map(p -> (CompilationOptionsCustomizer) p).findFirst();
+        expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
+                compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
+
         // determine if interpreter mode should be enabled
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
@@ -286,9 +293,15 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         interpreterModeEnabled = providers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
 
+        final Optional<CompilationOptionsCustomizerProvider> compilationOptionsCustomizerProvider = providers.stream()
+                .filter(p -> p instanceof CompilationOptionsCustomizerProvider)
+                .map(p -> (CompilationOptionsCustomizerProvider) p).findFirst();
+        expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
+            compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
+
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
-                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider))
+                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider) && !(p instanceof CompilationOptionsCustomizerProvider))
                 .collect(Collectors.toList());
 
         // groovy customizers are not used here - set to empty list so that the customizerProviders get used
@@ -563,6 +576,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         if (null == thiz) throw new IllegalArgumentException("script object is null");
 
         return makeInterface(thiz, clazz);
+    }
+
+    /**
+     * Gets the number of compilations that extended beyond the {@link #expectedCompilationTime}.
+     */
+    public long getLongRunCompilationCount() {
+        return longRunCompilationCount.longValue();
     }
 
     Class getScriptClass(final String script) throws CompilationFailedException {

@@ -59,8 +59,18 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
         private long timeInMillis = 0;
         private Compilation compilation = Compilation.NONE;
         private String extensions = null;
+        private int expectedCompilationTime = 5000;
 
         private Map<String,Object> keyValues = Collections.emptyMap();
+
+        /**
+         * If the time it takes to compile a script exceeds the specified time then a warning is written to the logs.
+         * Defaults to 5000ms.
+         */
+        public Builder expectedCompilationTime(final int timeInMillis) {
+            this.expectedCompilationTime = timeInMillis;
+            return this;
+        }
 
         public Builder enableInterpreterMode(final boolean interpreterMode) {
             this.interpreterMode = interpreterMode;
@@ -110,6 +120,9 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
 
             if (timeInMillis > 0)
                 list.add(new TimedInterruptGroovyCustomizer(timeInMillis));
+
+            if (expectedCompilationTime > 0)
+                list.add(new CompilationOptionsCustomizer(expectedCompilationTime));
 
             if (compilation == Compilation.COMPILE_STATIC)
                 list.add(new CompileStaticGroovyCustomizer(extensions));
