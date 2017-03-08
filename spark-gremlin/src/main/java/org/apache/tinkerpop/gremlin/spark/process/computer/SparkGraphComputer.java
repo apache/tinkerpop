@@ -131,7 +131,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     private Future<ComputerResult> submitWithExecutor(Executor exec) {
         // create the completable future
-        return computerService.submit(() -> {
+        final Future<ComputerResult> result = computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
             // apache and hadoop configurations that are used throughout the graph computer computation
             final org.apache.commons.configuration.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
@@ -378,6 +378,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     Spark.close();
             }
         });
+        computerService.shutdown();
+        return result;
     }
 
     /////////////////
