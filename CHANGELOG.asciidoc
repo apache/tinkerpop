@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Moved the `caffeine` dependency down to `gremlin-groovy` and out of `gremlin-server`.
 * Script compilation is synchronised.
 * Script compilation times are placed in to logs.
 * Failed scripts will not be recompiled.
