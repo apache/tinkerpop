@@ -269,6 +269,6 @@ public class Session {
         final GremlinScriptEngine engine = null == scriptEngines ?
                 gremlinExecutor.getScriptEngineManager().getEngineByName(engineName) :
                 scriptEngines.getEngineByName(engineName);
-        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, "session", session, "class-cache");
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "session", session, "class-cache");
     }
 }

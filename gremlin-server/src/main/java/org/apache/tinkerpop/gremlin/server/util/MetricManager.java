@@ -36,6 +36,7 @@ import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -429,49 +430,49 @@ public enum MetricManager {
         if (engine instanceof GremlinGroovyScriptEngine) {
             final GremlinGroovyScriptEngine gremlinGroovyScriptEngine = (GremlinGroovyScriptEngine) engine;
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "long-run-compilation-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "long-run-compilation-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLongRunCompilationCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "estimated-size")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "estimated-size")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEstimatedSize);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "average-load-penalty")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "average-load-penalty")),
                     (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheAverageLoadPenalty);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "eviction-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "eviction-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEvictionCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "eviction-weight")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "eviction-weight")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEvictionWeight);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "hit-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "hit-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheHitCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "hit-rate")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "hit-rate")),
                     (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheHitRate);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "load-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-failure-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "load-failure-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadFailureCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-failure-rate")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "load-failure-rate")),
                     (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheLoadFailureRate);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-success-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "load-success-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadSuccessCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "miss-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "miss-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheMissCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "miss-rate")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "miss-rate")),
                     (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheMissRate);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "request-count")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "request-count")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheRequestCount);
             MetricManager.INSTANCE.getRegistry().register(
-                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "total-load-time")),
+                    MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "total-load-time")),
                     (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheTotalLoadTime);
         }
     }

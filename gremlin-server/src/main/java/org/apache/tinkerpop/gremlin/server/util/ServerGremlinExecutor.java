@@ -191,7 +191,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         final GremlinScriptEngine engine = null == scriptEngines ?
                 gremlinExecutor.getScriptEngineManager().getEngineByName(engineName) :
                 scriptEngines.getEngineByName(engineName);
-        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, "sessionless", "class-cache");
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "sessionless", "class-cache");
     }
 
     public void addHostOption(final String key, final Object value) {
