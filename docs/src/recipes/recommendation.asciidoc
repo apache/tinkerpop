@@ -246,3 +246,46 @@ g.V().has("person","name","alice").as("alice").
         by(select(keys).values("name")).
       unfold().select(keys).values("name")
 ----
+
+In considering the practical applications of this recipe, it is worth revisiting the earlier "basic" version of the
+reccomendation algorithm:
+
+[gremlin-groovy,existing]
+----
+g.V().has('person','name','alice').as('her').
+      out('bought').aggregate('self').
+      in('bought').where(neq('her')).
+      out('bought').where(without('self')).
+      groupCount().
+      order(local).
+        by(values, decr)
+----
+
+The above traversal performs a full ranking of items based on all the connected data. That could be a time consuming
+operation depending on the number of paths being traversed. As it turns out, recommendations don't need to have perfect
+knowledge of all data to provide a "pretty good" approximation of a recommendation. It can therefore make sense to
+place additional limits on the traversal to have it better return more quickly at the expense of examining less data.
+
+
+Gremlin provides a number of steps that can help with these limits like:
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#coin-step[coin()],
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sample-step[sample()], and
+link:http://tinkerpop.apache.org/docs/current/reference/#timelimit-step[timeLimit()]. For example, to have the
+traversal sample the data for no longer than one second, the previous "basic" recommendation could be changed to:
+
+[gremlin-groovy,existing]
+----
+g.V().has('person','name','alice').as('her').
+      out('bought').aggregate('self').
+      in('bought').where(neq('her')).
+      out('bought').where(without('self')).timeLimit(1000).
+      groupCount().
+      order(local).
+        by(values, decr)
+----
+
+In using sampling methods, it is important to consider that the natural ordering of edges in the graph may not produce
+an ideal sample for the recommendation. For example, if the edges end up being returned oldest first, then the
+recommendation will be based on the oldest data, which would not be ideal. As with any traversal, it is important to
+understand the nature of the graph being traversed and the behavior of the underlying graph database to properly
+achieve the desired outcome.
