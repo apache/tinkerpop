@@ -47,11 +47,11 @@ public class GremlinGroovyScriptEngineCompilationOptionsTest {
             b.put("x" + ix, ix);
         }
 
-        assertEquals(0, engine.getLongRunCompilationCount());
+        assertEquals(0, engine.getClassCacheLongRunCompilationCount());
 
         engine.eval(script, b);
 
-        assertEquals(1, engine.getLongRunCompilationCount());
+        assertEquals(1, engine.getClassCacheLongRunCompilationCount());
     }
 
     @Test
@@ -71,10 +71,10 @@ public class GremlinGroovyScriptEngineCompilationOptionsTest {
             b.put("x" + ix, ix);
         }
 
-        assertEquals(0, engine.getLongRunCompilationCount());
+        assertEquals(0, engine.getClassCacheLongRunCompilationCount());
 
         engine.eval(script, b);
 
-        assertEquals(1, engine.getLongRunCompilationCount());
+        assertEquals(1, engine.getClassCacheLongRunCompilationCount());
     }
 }

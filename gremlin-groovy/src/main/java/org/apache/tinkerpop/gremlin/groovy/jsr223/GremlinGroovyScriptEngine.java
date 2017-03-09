@@ -164,7 +164,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     /**
      * Script to generated Class map.
      */
-    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().softValues().build(new CacheLoader<String, Future<Class>>() {
+    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().
+            softValues().
+            recordStats().
+            build(new CacheLoader<String, Future<Class>>() {
         @Override
         public Future<Class> load(final String script) throws Exception {
             final long start = System.currentTimeMillis();
@@ -175,6 +178,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 } catch (CompilationFailedException e) {
                     final long finish = System.currentTimeMillis();
                     log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    failedCompilationCount.incrementAndGet();
                     throw e;
                 } finally {
                     final long time = System.currentTimeMillis() - start;
@@ -206,6 +210,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * the {@link #expectedCompilationTime}.
      */
     private final AtomicLong longRunCompilationCount = new AtomicLong(0L);
+
+    /**
+     * A counter for the instance that tracks the number of failed compilations. Note that the failures need to be
+     * tracked outside of cache failure load stats because the loading mechanism will always successfully return
+     * a future and won't trigger a failure.
+     */
+    private final AtomicLong failedCompilationCount = new AtomicLong(0L);
 
     /**
      * The list of loaded plugins for the console.
@@ -589,8 +600,115 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     /**
      * Gets the number of compilations that extended beyond the {@link #expectedCompilationTime}.
      */
-    public long getLongRunCompilationCount() {
+    public long getClassCacheLongRunCompilationCount() {
         return longRunCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the estimated size of the class cache for compiled scripts.
+     */
+    public long getClassCacheEstimatedSize() {
+        return classMap.estimatedSize();
+    }
+
+    /**
+     * Gets the average time spent compiling new scripts.
+     */
+    public double getClassCacheAverageLoadPenalty() {
+        return classMap.stats().averageLoadPenalty();
+    }
+
+    /**
+     * Gets the number of times a script compiled to a class has been evicted from the cache.
+     */
+    public long getClassCacheEvictionCount() {
+        return classMap.stats().evictionCount();
+    }
+
+    /**
+     * Gets the sum of the weights of evicted entries from the class cache.
+     */
+    public long getClassCacheEvictionWeight() {
+        return classMap.stats().evictionWeight();
+    }
+
+    /**
+     * Gets the number of times cache look up for a compiled script returned a cached value.
+     */
+    public long getClassCacheHitCount() {
+        return classMap.stats().hitCount();
+    }
+
+    /**
+     * Gets the hit rate of the class cache.
+     */
+    public double getClassCacheHitRate() {
+        return classMap.stats().hitRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method attempted to compile new scripts.
+     */
+    public long getClassCacheLoadCount() {
+        return classMap.stats().loadCount();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method failed to compile a new script.
+     */
+    public long getClassCacheLoadFailureCount() {
+        // don't use classMap.stats().loadFailureCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that failed.
+     */
+    public double getClassCacheLoadFailureRate() {
+        // don't use classMap.stats().loadFailureRate() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        long totalLoadCount = classMap.stats().loadCount();
+        return (totalLoadCount == 0)
+                ? 0.0
+                : (double) failedCompilationCount.longValue() / totalLoadCount;
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method succeeded to compile a new script.
+     */
+    public long getClassCacheLoadSuccessCount() {
+        // don't use classMap.stats().loadSuccessCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return classMap.stats().loadCount() - failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a newly compiled script.
+     */
+    public long getClassCacheMissCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that were misses.
+     */
+    public double getClassCacheMissRate() {
+        return classMap.stats().missRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a cached or uncached value.
+     */
+    public long getClassCacheRequestCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the total number of nanoseconds that the cache spent compiling scripts.
+     */
+    public long getClassCacheTotalLoadTime() {
+        return classMap.stats().totalLoadTime();
     }
 
     Class getScriptClass(final String script) throws CompilationFailedException {
