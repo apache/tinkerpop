@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -40,7 +39,7 @@ public class GroovyCompilerGremlinPluginTest {
     @Test
     public void shouldConfigureForGroovyOnly() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                compilation(Compilation.COMPILE_STATIC).create();
+                compilation(GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-not-real");
         assertThat(customizers.isPresent(), is(false));
     }
@@ -49,7 +48,7 @@ public class GroovyCompilerGremlinPluginTest {
     public void shouldConfigureWithCompileStatic() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
                 expectedCompilationTime(0).
-                compilation(Compilation.COMPILE_STATIC).create();
+                compilation(GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
         assertEquals(1, customizers.get().length);
@@ -60,7 +59,7 @@ public class GroovyCompilerGremlinPluginTest {
     public void shouldConfigureWithTypeChecked() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
                 expectedCompilationTime(0).
-                compilation(Compilation.TYPE_CHECKED).create();
+                compilation(GroovyCompilerGremlinPlugin.Compilation.TYPE_CHECKED).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
         assertEquals(1, customizers.get().length);
