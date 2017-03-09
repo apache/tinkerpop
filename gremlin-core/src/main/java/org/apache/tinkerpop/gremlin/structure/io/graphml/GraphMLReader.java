@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
@@ -72,7 +72,7 @@ public final class GraphMLReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream graphInputStream, final Graph graphToWriteTo) throws IOException {
-        final Map<Object,Vertex> cache = new HashMap<>();
+        final Map<Object, Vertex> cache = new HashMap<>();
         final AtomicLong counter = new AtomicLong(0);
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
         final Graph.Features.EdgeFeatures edgeFeatures = graphToWriteTo.features().edge();
@@ -186,9 +186,9 @@ public final class GraphMLReader implements GraphReader {
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
                         final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
-                        final Object[] propsReady = edgeFeatures.willAllowId(edgeId) ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
-                        
-			edgeOutVertex.addEdge(null == edgeLabel ? Edge.DEFAULT_LABEL : edgeLabel, edgeInVertex, propsReady);
+                        final Object[] propsReady = null != edgeId && edgeFeatures.willAllowId(edgeId) ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
+
+                        edgeOutVertex.addEdge(null == edgeLabel ? Edge.DEFAULT_LABEL : edgeLabel, edgeInVertex, propsReady);
 
                         if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                             graphToWriteTo.tx().commit();
@@ -292,7 +292,7 @@ public final class GraphMLReader implements GraphReader {
 
     private static Vertex findOrCreate(final Object id, final Graph graphToWriteTo,
                                        final Graph.Features.VertexFeatures features,
-                                       final Map<Object,Vertex> cache, final boolean asVertex, final Object... args) {
+                                       final Map<Object, Vertex> cache, final boolean asVertex, final Object... args) {
         if (cache.containsKey(id)) {
             // if the request to findOrCreate come from a vertex then AND the vertex was already created, that means
             // that the vertex was created by an edge that arrived first in the stream (allowable via GraphML
@@ -306,7 +306,7 @@ public final class GraphMLReader implements GraphReader {
                 return cache.get(id);
             }
         } else {
-            final Object [] argsReady = features.willAllowId(id) ? ElementHelper.upsert(args, T.id, id) : args;
+            final Object[] argsReady = features.willAllowId(id) ? ElementHelper.upsert(args, T.id, id) : args;
             final Vertex v = graphToWriteTo.addVertex(argsReady);
             cache.put(id, v);
             return v;
@@ -344,7 +344,8 @@ public final class GraphMLReader implements GraphReader {
         private boolean strict = true;
         private long batchSize = 10000;
 
-        private Builder() { }
+        private Builder() {
+        }
 
         /**
          * When set to true, exceptions will be thrown if a property value cannot be coerced to the expected data
