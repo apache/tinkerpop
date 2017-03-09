@@ -33,6 +33,9 @@ import com.codahale.metrics.ganglia.GangliaReporter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import info.ganglia.gmetric4j.gmetric.GMetric;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,17 +69,16 @@ public enum MetricManager {
     private GraphiteReporter graphiteReporter = null;
 
     /**
-     * Return the Titan Metrics registry.
+     * Return the {@code MetricsRegistry}.
      *
-     * @return the single {@code MetricRegistry} used for all of Titan's Metrics
-     * monitoring
+     * @return the single {@code MetricRegistry} used for all of monitoring
      */
     public MetricRegistry getRegistry() {
         return registry;
     }
 
     /**
-     * Create a {@link ConsoleReporter} attached to the Titan Metrics registry.
+     * Create a {@link ConsoleReporter} attached to the {@code MetricsRegistry}.
      *
      * @param reportIntervalInMS milliseconds to wait between dumping metrics to the console
      */
@@ -106,7 +108,7 @@ public enum MetricManager {
     }
 
     /**
-     * Create a {@link CsvReporter} attached to the Titan Metrics registry.
+     * Create a {@link CsvReporter} attached to the {@code MetricsRegistry}.
      * <p/>
      * The {@code output} argument must be non-null but need not exist. If it
      * doesn't already exist, this method attempts to create it by calling
@@ -153,7 +155,7 @@ public enum MetricManager {
     }
 
     /**
-     * Create a {@link JmxReporter} attached to the Titan Metrics registry.
+     * Create a {@link JmxReporter} attached to the {@code MetricsRegistry}.
      * <p/>
      * If {@code domain} or {@code agentId} is null, then Metrics's uses its own
      * internal default value(s).
@@ -210,7 +212,7 @@ public enum MetricManager {
     }
 
     /**
-     * Create a {@link Slf4jReporter} attached to the Titan Metrics registry.
+     * Create a {@link Slf4jReporter} attached to the {@code MetricsRegistry}.
      * <p/>
      * If {@code loggerName} is null, or if it is non-null but
      * LoggerFactory.getLogger(loggerName) returns null, then Metrics's
@@ -257,7 +259,7 @@ public enum MetricManager {
     }
 
     /**
-     * Create a {@link GangliaReporter} attached to the Titan Metrics registry.
+     * Create a {@link GangliaReporter} attached to the {@code MetricsRegistry}.
      * <p/>
      * {@code groupOrHost} and {@code addressingMode} must be non-null. The
      * remaining non-primitive arguments may be null. If {@code protocol31} is
@@ -321,7 +323,7 @@ public enum MetricManager {
     }
 
     /**
-     * Create a {@link GraphiteReporter} attached to the Titan Metrics registry.
+     * Create a {@link GraphiteReporter} attached to the {@code MetricsRegistry}.
      * <p/>
      * If {@code prefix} is null, then Metrics's internal default prefix is used
      * (empty string at the time this comment was written).
@@ -367,8 +369,7 @@ public enum MetricManager {
     }
 
     /**
-     * Remove all Titan Metrics reporters previously configured through the
-     * {@code add*} methods on this class.
+     * Remove all reporters previously configured through the {@code add*} methods on this class.
      */
     public synchronized void removeAllReporters() {
         removeConsoleReporter();
@@ -417,5 +418,61 @@ public enum MetricManager {
 
     public Histogram getHistogram(final String prefix, final String... names) {
         return getRegistry().histogram(MetricRegistry.name(prefix, names));
+    }
+
+    /**
+     * Registers metrics from a {@link GremlinScriptEngine}. At this point, this only works for the
+     * {@link GremlinGroovyScriptEngine} as it is the only one that collects metrics at this point. As the
+     * {@link GremlinScriptEngine} implementations achieve greater parity these metrics will get expanded.
+     */
+    public void registerGremlinScriptEngineMetrics(final GremlinScriptEngine engine, final String... prefix) {
+        if (engine instanceof GremlinGroovyScriptEngine) {
+            final GremlinGroovyScriptEngine gremlinGroovyScriptEngine = (GremlinGroovyScriptEngine) engine;
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "long-run-compilation-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLongRunCompilationCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "estimated-size")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEstimatedSize);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "average-load-penalty")),
+                    (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheAverageLoadPenalty);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "eviction-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEvictionCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "eviction-weight")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheEvictionWeight);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "hit-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheHitCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "hit-rate")),
+                    (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheHitRate);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-failure-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadFailureCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-failure-rate")),
+                    (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheLoadFailureRate);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "load-success-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheLoadSuccessCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "miss-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheMissCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "miss-rate")),
+                    (Gauge<Double>) gremlinGroovyScriptEngine::getClassCacheMissRate);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "request-count")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheRequestCount);
+            MetricManager.INSTANCE.getRegistry().register(
+                    MetricRegistry.name(GremlinGroovyScriptEngine.class, ArrayUtils.add(prefix, "total-load-time")),
+                    (Gauge<Long>) gremlinGroovyScriptEngine::getClassCacheTotalLoadTime);
+        }
     }
 }

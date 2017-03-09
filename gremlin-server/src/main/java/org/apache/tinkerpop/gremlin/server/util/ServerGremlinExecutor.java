@@ -18,7 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
+import com.codahale.metrics.Gauge;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -38,6 +42,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * The core of script execution in Gremlin Server.  Given {@link Settings} and optionally other arguments, this
@@ -152,6 +158,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         settings.scriptEngines.keySet().forEach(engineName -> {
             try {
                 gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+                registerMetrics(engineName);
             } catch (Exception ex) {
                 logger.warn(String.format("Could not initialize {} ScriptEngine as script could not be evaluated - %s", engineName), ex);
             }
@@ -177,6 +184,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());
+    }
+
+    private void registerMetrics(final String engineName) {
+        final ScriptEngines scriptEngines = gremlinExecutor.getScriptEngines();
+        final GremlinScriptEngine engine = null == scriptEngines ?
+                gremlinExecutor.getScriptEngineManager().getEngineByName(engineName) :
+                scriptEngines.getEngineByName(engineName);
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, "sessionless", "class-cache");
     }
 
     public void addHostOption(final String key, final Object value) {

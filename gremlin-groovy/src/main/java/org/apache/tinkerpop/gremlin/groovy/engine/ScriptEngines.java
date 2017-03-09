@@ -311,6 +311,13 @@ public class ScriptEngines implements AutoCloseable {
     }
 
     /**
+     * Gets an {@link GremlinScriptEngine} by its name.
+     */
+    public GremlinScriptEngine getEngineByName(final String engineName) {
+        return scriptEngines.get(engineName);
+    }
+
+    /**
      * Get the set of {@code ScriptEngine} that implement {@link DependencyManager} interface.
      */
     private Set<DependencyManager> getDependencyManagers() {

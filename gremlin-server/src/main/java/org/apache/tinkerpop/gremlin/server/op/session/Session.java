@@ -18,11 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.session;
 
+import com.codahale.metrics.Metric;
+import com.codahale.metrics.MetricFilter;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
@@ -30,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -92,6 +98,15 @@ public class Session {
                 SessionOpProcessor.CONFIG_PER_GRAPH_CLOSE_TIMEOUT, SessionOpProcessor.DEFAULT_PER_GRAPH_CLOSE_TIMEOUT).toString());
 
         this.gremlinExecutor = initializeGremlinExecutor().create();
+
+        settings.scriptEngines.keySet().forEach(engineName -> {
+            try {
+                gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+                registerMetrics(engineName);
+            } catch (Exception ex) {
+                logger.warn(String.format("Could not initialize {} ScriptEngine as script could not be evaluated - %s", engineName), ex);
+            }
+        });
     }
 
     public GremlinExecutor getGremlinExecutor() {
@@ -207,6 +222,10 @@ public class Session {
         executor.shutdownNow();
 
         sessions.remove(session);
+
+        // once a session is dead release the gauges in the registry for it
+        MetricManager.INSTANCE.getRegistry().removeMatching((s, metric) -> s.contains(session));
+
         logger.info("Session {} closed", session);
     }
 
@@ -243,5 +262,13 @@ public class Session {
         });
 
         return gremlinExecutorBuilder;
+    }
+
+    private void registerMetrics(final String engineName) {
+        final ScriptEngines scriptEngines = gremlinExecutor.getScriptEngines();
+        final GremlinScriptEngine engine = null == scriptEngines ?
+                gremlinExecutor.getScriptEngineManager().getEngineByName(engineName) :
+                scriptEngines.getEngineByName(engineName);
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, "session", session, "class-cache");
     }
 }
