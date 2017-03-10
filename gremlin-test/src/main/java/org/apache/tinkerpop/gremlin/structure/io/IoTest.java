@@ -81,7 +81,12 @@ import java.util.UUID;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_DOUBLE_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_LONG_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -184,6 +189,19 @@ public class IoTest {
             assertFalse(v.values("l").hasNext());
             assertEquals("junk", v.<String>value("n"));
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReadGraphMLWithoutEdgeIds() throws IOException {
+            final GraphReader reader = GraphMLReader.build().strict(false).create();
+            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-no-edge-ids.xml")) {
+                reader.readGraph(stream, graph);
+            }
+            assertEquals(1, IteratorUtils.count(graph.edges()));
+            assertEquals(2, IteratorUtils.count(graph.vertices()));
+        }
+
 
         @Test(expected = NumberFormatException.class)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -320,7 +338,8 @@ public class IoTest {
             v1.addEdge("SELFLOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
-            final Graph target = graphProvider.openTestGraph(targetConf);;
+            final Graph target = graphProvider.openTestGraph(targetConf);
+            ;
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 source.io(IoCore.gryo()).writer().create().writeGraph(os, source);
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
@@ -1016,7 +1035,7 @@ public class IoTest {
         final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
         assertEquals(1, v1Edges.size());
         v1Edges.forEach(e -> {
-        	if (e.inVertex().value("name").equals("vadas")) {
+            if (e.inVertex().value("name").equals("vadas")) {
                 assertEquals(Edge.DEFAULT_LABEL, e.label());
                 if (assertDouble)
                     assertWeightLoosely(0.5d, e);
