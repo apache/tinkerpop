@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -56,6 +59,8 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.util.ReferenceBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -77,6 +82,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,6 +102,7 @@ import java.util.stream.Collectors;
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         implements DependencyManager, AutoCloseable, GremlinScriptEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(GremlinGroovyScriptEngine.class);
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
      */
@@ -149,17 +159,43 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         }
     };
 
+    private GremlinGroovyClassLoader loader;
+
     /**
      * Script to generated Class map.
      */
-    private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
+    private LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().softValues().build(new CacheLoader<String, Future<Class>>() {
+        @Override
+        public Future<Class> load(String script) throws Exception {
+            long start = System.currentTimeMillis();
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
+                    long finish = System.currentTimeMillis();
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    throw e;
+                } finally {
+                    long time = System.currentTimeMillis() - start;
+                    if (time > 5000) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
+                }
+            }, command -> command.run());
+        }
+
+    });
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
      */
     private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-    private GremlinGroovyClassLoader loader;
 
     private AtomicLong counter = new AtomicLong(0L);
 
@@ -415,7 +451,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
         // must clear the local cache here because the classloader has been reset.  therefore, classes previously
         // referenced before that might not have evaluated might cleanly evaluate now.
-        classMap.clear();
+        classMap.invalidateAll();
         globalClosures.clear();
 
         final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
@@ -530,16 +566,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     Class getScriptClass(final String script) throws CompilationFailedException {
-        Class clazz = classMap.get(script);
-        if (clazz != null) return clazz;
+        try {
+            return classMap.get(script).get();
+        } catch (ExecutionException e) {
+            throw ((CompilationFailedException)e.getCause());
+        } catch (InterruptedException e) {
+            //This should never happen as the future should completed before it is returned to the us.
+            throw new AssertionError();
+        }
 
-        clazz = loader.parseClass(script, generateScriptName());
-        classMap.put(script, clazz);
-        return clazz;
+
     }
 
     boolean isCached(final String script) {
-        return classMap.get(script) != null;
+        return classMap.getIfPresent(script) != null;
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
