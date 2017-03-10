@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -33,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -48,6 +51,7 @@ public final class Parameters implements Cloneable, Serializable {
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private Map<Object, List<Object>> parameters = new HashMap<>();
+    private Set<String> referencedLabels = new HashSet<>();
 
     /**
      * A cached list of traversals that serve as parameter values. The list is cached on calls to
@@ -111,14 +115,15 @@ public final class Parameters implements Cloneable, Serializable {
     public Object remove(final Object key) {
         final List<Object> o = parameters.remove(key);
 
-        // once a key is removed, it's possible that the traversal cache will need to be regenerated
+        // once a key is removed, it's possible that the traversal/label cache will need to be regenerated
         if (IteratorUtils.anyMatch(o.iterator(), p -> p instanceof Traversal.Admin)) {
             traversals.clear();
             traversals = new ArrayList<>();
             for (final List<Object> list : this.parameters.values()) {
                 for (final Object object : list) {
                     if (object instanceof Traversal.Admin) {
-                        traversals.add((Traversal.Admin) object);
+                        final Traversal.Admin t = (Traversal.Admin) object;
+                        addTraversal(t);
                     }
                 }
             }
@@ -170,9 +175,11 @@ public final class Parameters implements Cloneable, Serializable {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
                 // track the list of traversals that are present so that elsewhere in Parameters there is no need
-                // to iterate all values to not find any.
-                if (keyValues[i + 1] instanceof Traversal.Admin)
-                    traversals.add((Traversal.Admin) keyValues[i + 1]);
+                // to iterate all values to not find any. also grab available labels in traversal values
+                if (keyValues[i + 1] instanceof Traversal.Admin) {
+                    final Traversal.Admin t = (Traversal.Admin) keyValues[i + 1];
+                    addTraversal(t);
+                }
 
                 List<Object> values = this.parameters.get(keyValues[i]);
                 if (null == values) {
@@ -206,6 +213,13 @@ public final class Parameters implements Cloneable, Serializable {
         return (List<Traversal.Admin<S, E>>) (Object) traversals;
     }
 
+    /**
+     * Gets a list of all labels held in parameters that have a traversal as a value.
+     */
+    public Set<String> getReferencedLabels() {
+        return referencedLabels;
+    }
+
     public Parameters clone() {
         try {
             final Parameters clone = (Parameters) super.clone();
@@ -217,6 +231,8 @@ public final class Parameters implements Cloneable, Serializable {
                 }
                 clone.parameters.put(entry.getKey() instanceof Traversal.Admin ? ((Traversal.Admin) entry.getKey()).clone() : entry.getKey(), values);
             }
+
+            clone.referencedLabels = new HashSet<>(this.referencedLabels);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -244,6 +260,17 @@ public final class Parameters implements Cloneable, Serializable {
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T) && !(propertyKeyValues[i] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
+        }
+    }
+
+    private void addTraversal(final Traversal.Admin t) {
+        traversals.add(t);
+        for (final Object ss : t.getSteps()) {
+            if (ss instanceof Scoping) {
+                for (String label : ((Scoping) ss).getScopeKeys()) {
+                    referencedLabels.add(label);
+                }
+            }
         }
     }
 }

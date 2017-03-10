@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -36,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +46,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing, FromToModulating {
+public final class AddEdgeStep<S> extends MapStep<S, Edge>
+        implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -64,6 +68,11 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
     }
 
     @Override
