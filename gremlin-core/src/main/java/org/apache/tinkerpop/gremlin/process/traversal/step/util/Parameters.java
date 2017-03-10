@@ -54,7 +54,7 @@ public final class Parameters implements Cloneable, Serializable {
      * {@link #set(Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
      * high number of calls to {@link #getTraversals()} and {@link #integrateTraversals(TraversalParent)} is great.
      */
-    private List<Traversal.Admin> traversals = new ArrayList<>();
+    private List<Traversal.Admin<?,?>> traversals = new ArrayList<>();
 
     /**
      * Checks for existence of key in parameter set.
@@ -203,11 +203,7 @@ public final class Parameters implements Cloneable, Serializable {
      */
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
         // stupid generics - just need to return "traversals"
-        final List<Traversal.Admin<S, E>> result = new ArrayList<>();
-        for (Traversal.Admin t : traversals) {
-            result.add(t);
-        }
-        return result;
+        return (List<Traversal.Admin<S, E>>) (Object) traversals;
     }
 
     public Parameters clone() {
