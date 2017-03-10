@@ -80,6 +80,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed an `NullPointerException` in `GraphMLReader` that occurred when an `<edge>` didn't have an ID field and the base graph supported ID assignment.
 * Split `ComputerVerificationStrategy` into two strategies: `ComputerVerificationStrategy` and `ComputerFinalizationStrategy`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.
 * Deprecated `CustomizerProvider` infrastructure.
