@@ -55,8 +55,8 @@ public final class Parameters implements Cloneable, Serializable {
 
     /**
      * A cached list of traversals that serve as parameter values. The list is cached on calls to
-     * {@link #set(Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
-     * high number of calls to {@link #getTraversals()} and {@link #integrateTraversals(TraversalParent)} is great.
+     * {@link #set(TraversalParent, Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
+     * high number of calls to {@link #getTraversals()} is great.
      */
     private List<Traversal.Admin<?,?>> traversals = new ArrayList<>();
 
@@ -170,7 +170,7 @@ public final class Parameters implements Cloneable, Serializable {
     /**
      * Set parameters given key/value pairs.
      */
-    public void set(final Object... keyValues) {
+    public void set(final TraversalParent parent, final Object... keyValues) {
         Parameters.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
@@ -179,6 +179,7 @@ public final class Parameters implements Cloneable, Serializable {
                 if (keyValues[i + 1] instanceof Traversal.Admin) {
                     final Traversal.Admin t = (Traversal.Admin) keyValues[i + 1];
                     addTraversal(t);
+                    if (parent != null) parent.integrateChild(t);
                 }
 
                 List<Object> values = this.parameters.get(keyValues[i]);
@@ -190,18 +191,6 @@ public final class Parameters implements Cloneable, Serializable {
                     values.add(keyValues[i + 1]);
                 }
             }
-        }
-    }
-
-    /**
-     * Calls {@link TraversalParent#integrateChild(Traversal.Admin)} on any traversal objects in the parameter list.
-     * This method requires that {@link #set(Object...)} is called prior to this method as the it will switch the
-     * {@code traversalsPresent} flag field if a {@link Traversal.Admin} object is present and allow this method to
-     * do its work.
-     */
-    public void integrateTraversals(final TraversalParent step) {
-        for (Traversal.Admin t : traversals) {
-            step.integrateChild(t);
         }
     }
 

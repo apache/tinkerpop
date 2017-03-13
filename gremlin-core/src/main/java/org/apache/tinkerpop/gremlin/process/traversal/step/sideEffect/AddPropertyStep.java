@@ -55,10 +55,8 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);
-        this.parameters.set(T.key, keyObject);
-        this.parameters.set(T.value, valueObject);
+        this.parameters.set(this, T.key, keyObject, T.value, valueObject);
         this.cardinality = cardinality;
-        this.parameters.integrateTraversals(this);
     }
 
     @Override
@@ -78,8 +76,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override

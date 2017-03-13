@@ -52,7 +52,7 @@ public class ParametersTest {
     @Test
     public void shouldGetKeyValues() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class));
         assertEquals(6, params.length);
@@ -62,7 +62,7 @@ public class ParametersTest {
     @Test
     public void shouldGetKeyValuesIgnoringSomeKeys() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class), "b");
         assertEquals(4, params.length);
@@ -72,7 +72,7 @@ public class ParametersTest {
     @Test
     public void shouldGetUsingTraverserOverload() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         assertEquals(Collections.singletonList("axe"), parameters.get(mock(Traverser.Admin.class), "a", () -> "x"));
         assertEquals(Collections.singletonList("bat"), parameters.get(mock(Traverser.Admin.class), "b", () -> "x"));
@@ -83,7 +83,7 @@ public class ParametersTest {
     @Test
     public void shouldGetMultipleUsingTraverserOverload() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
 
         final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(3, params.size());
@@ -96,7 +96,7 @@ public class ParametersTest {
     @Test
     public void shouldGetRaw() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(3, params.size());
@@ -108,7 +108,7 @@ public class ParametersTest {
     @Test
     public void shouldGetRawWithMulti() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "a", "ant", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "a", "ant", "c", "cat");
 
         final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(3, params.size());
@@ -127,7 +127,7 @@ public class ParametersTest {
     @Test
     public void shouldGetRawExcept() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         final Map<Object,List<Object>> params = parameters.getRaw("b");
         assertEquals(2, params.size());
@@ -138,7 +138,7 @@ public class ParametersTest {
     @Test
     public void shouldRemove() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         final Map<Object,List<Object>> before = parameters.getRaw();
         assertEquals(3, before.size());
@@ -157,7 +157,7 @@ public class ParametersTest {
     @Test
     public void shouldRemoveRefreshTraversalCache() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat", "c", mock(Traversal.Admin.class), "t", mock(Traversal.Admin.class));
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat", "c", mock(Traversal.Admin.class), "t", mock(Traversal.Admin.class));
 
         final Map<Object,List<Object>> before = parameters.getRaw();
         assertEquals(4, before.size());
@@ -190,7 +190,7 @@ public class ParametersTest {
     @Test
     public void shouldRename() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         parameters.rename("a", "z");
 
@@ -204,7 +204,7 @@ public class ParametersTest {
     @Test
     public void shouldContainKey() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         assertThat(parameters.contains("b"), is(true));
     }
@@ -212,7 +212,7 @@ public class ParametersTest {
     @Test
     public void shouldNotContainKey() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         assertThat(parameters.contains("z"), is(false));
     }
@@ -220,7 +220,7 @@ public class ParametersTest {
     @Test
     public void shouldGetSetMultiple() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
 
         final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(3, params.size());
@@ -234,7 +234,7 @@ public class ParametersTest {
     @Test
     public void shouldGetDefault() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "b", "bat", "c", "cat");
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         assertEquals(Collections.singletonList("axe"), parameters.get("a", () -> "x"));
         assertEquals(Collections.singletonList("bat"), parameters.get("b", () -> "x"));
@@ -245,7 +245,7 @@ public class ParametersTest {
     @Test
     public void shouldClone() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
 
         final Parameters parametersClone = parameters.clone();
 
@@ -259,7 +259,7 @@ public class ParametersTest {
         when(t.clone()).thenReturn(t);
 
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", t);
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", t);
 
         final Parameters parametersClone = parameters.clone();
 
@@ -270,10 +270,10 @@ public class ParametersTest {
     @Test
     public void shouldBeDifferent() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
 
         final Parameters parametersDifferent = new Parameters();
-        parametersDifferent.set("a", "ant", "a", "axe", "b", "bat", "b", "ball", "c", "cat");
+        parametersDifferent.set(null, "a", "ant", "a", "axe", "b", "bat", "b", "ball", "c", "cat");
 
         assertNotEquals(parameters.getRaw(), parametersDifferent.getRaw());
     }
@@ -281,29 +281,27 @@ public class ParametersTest {
     @Test
     public void shouldGetNoTraversals() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
         assertEquals(Collections.emptyList(), parameters.getTraversals());
     }
 
     @Test
     public void shouldGetTraversals() {
         final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", __.outE("knows"));
+        parameters.set(null, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", __.outE("knows"));
         assertEquals(Collections.singletonList(__.outE("knows")), parameters.getTraversals());
     }
 
     @Test
     public void shouldIntegrateTraversals() {
-        final Parameters parameters = new Parameters();
-        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", __.outE("knows"));
-
         final TraversalParent mock = mock(TraversalParent.class);
+        final Parameters parameters = new Parameters();
 
         // the mock can return nothing of consequence as the return isn't used in this case. we just need to
         // validate that the method gets called as a result of calls to set/integrateTraversals()
         when(mock.integrateChild(__.outE("knows").asAdmin())).thenReturn(null);
 
-        parameters.integrateTraversals(mock);
+        parameters.set(mock, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", __.outE("knows"));
 
         verify(mock).integrateChild(__.outE("knows").asAdmin());
     }

@@ -57,7 +57,7 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(T.label, edgeLabel);
+        this.parameters.set(this, T.label, edgeLabel);
     }
 
     @Override
@@ -77,20 +77,17 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override
-    public void addTo(final Traversal.Admin<?, ?> toObject) {
-        this.parameters.set(TO, toObject);
-        this.parameters.integrateTraversals(this);
+    public void addTo(final Traversal.Admin<?,?> toObject) {
+        this.parameters.set(this, TO, toObject);
     }
 
     @Override
-    public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        this.parameters.set(FROM, fromObject);
-        this.parameters.integrateTraversals(this);
+    public void addFrom(final Traversal.Admin<?,?> fromObject) {
+        this.parameters.set(this, FROM, fromObject);
     }
 
     @Override

@@ -49,8 +49,7 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex>
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.parameters.set(T.label, label);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, T.label, label);
     }
 
     @Override
@@ -70,8 +69,7 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex>
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override
