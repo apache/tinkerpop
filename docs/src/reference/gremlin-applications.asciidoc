@@ -1336,6 +1336,7 @@ There are a number of pre-packaged `CustomizerProvider` implementations:
 |=========================================================
 |Customizer |Description
 |`CompileStaticCustomizerProvider` |Applies `CompileStatic` annotations to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[Groovy Documentation].  It is possible to configure this `CustomizerProvider` by specifying a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
+|`CompilationOptionsCustomizerProvider` |The amount of time a script is allowed to compile before a warning message is sent to the logs.
 |`ConfigurationCustomizerProvider` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`ThreadInterruptCustomizerProvider` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
 |`TimedInterruptCustomizerProvider` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
@@ -1354,6 +1355,7 @@ scriptEngines: {
       compilerCustomizerProviders: {
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider":[],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000],
+        "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompilationOptionsCustomizerProvider":[8000],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider":["org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension"]}}}}
 
 NOTE: The above configuration could also use the `TypeCheckedCustomizerProvider` in place of the
