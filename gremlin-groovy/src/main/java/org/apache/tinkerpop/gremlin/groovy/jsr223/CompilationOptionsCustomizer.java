@@ -27,13 +27,13 @@ import org.apache.tinkerpop.gremlin.jsr223.Customizer;
  */
 class CompilationOptionsCustomizer implements Customizer {
 
-    private final int expectedCompilationTime;
+    private final long expectedCompilationTime;
 
-    public CompilationOptionsCustomizer(final int expectedCompilationTime) {
+    public CompilationOptionsCustomizer(final long expectedCompilationTime) {
         this.expectedCompilationTime = expectedCompilationTime;
     }
 
-    public int getExpectedCompilationTime() {
+    public long getExpectedCompilationTime() {
         return expectedCompilationTime;
     }
 }

@@ -238,7 +238,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
-    private final int expectedCompilationTime;
+    private final long expectedCompilationTime;
 
     /**
      * Creates a new instance using the {@link DefaultImportCustomizerProvider}.

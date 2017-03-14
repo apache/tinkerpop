@@ -31,13 +31,17 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 @Deprecated
 public class CompilationOptionsCustomizerProvider implements CompilerCustomizerProvider {
 
-    private final int expectedCompilationTime;
+    private final long expectedCompilationTime;
 
-    public CompilationOptionsCustomizerProvider(final int expectedCompilationTime) {
-        this.expectedCompilationTime = expectedCompilationTime;
+    public CompilationOptionsCustomizerProvider(final Integer expectedCompilationTime) {
+        this.expectedCompilationTime = expectedCompilationTime.longValue();
     }
 
-    public int getExpectedCompilationTime() {
+    public CompilationOptionsCustomizerProvider(final Long expectedCompilationTime) {
+        this.expectedCompilationTime = expectedCompilationTime.intValue();
+    }
+
+    public long getExpectedCompilationTime() {
         return expectedCompilationTime;
     }
 
