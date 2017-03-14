@@ -81,6 +81,11 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(CountGlobalStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final TraversalParent parent = traversal.getParent();
         int size = traversal.getSteps().size();

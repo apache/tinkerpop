@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
@@ -76,6 +77,11 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
             PathStep.class, SimplePathStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
+    }
+
+    @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.anyStepRecursively(step -> step instanceof VertexStep || step instanceof PropertiesStep, rootTraversal);
     }
 
     /**

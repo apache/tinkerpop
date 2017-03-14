@@ -83,6 +83,11 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.anyStepRecursively(step -> step instanceof FilterStep || step instanceof MatchStep, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         boolean changed = true; // recursively walk child traversals trying to inline them into the current traversal line.
         while (changed) {

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -111,6 +112,17 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void applyStrategies() throws IllegalStateException {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
+        if (this.getParent() instanceof EmptyStep) {
+            final List<Class<? extends TraversalStrategy>> toRemove = new ArrayList<>();
+            for (final TraversalStrategy strategy : this.strategies.toList()) {
+                if (!strategy.isApplicable(this))
+                    toRemove.add(strategy.getClass());
+            }
+            if (!toRemove.isEmpty()) {
+                this.strategies = this.strategies.clone();
+                this.strategies.removeStrategies(toRemove.toArray(new Class[toRemove.size()]));
+            }
+        }
         this.strategies.applyStrategies(this);
         boolean hasGraph = null != this.graph;
         for (int i = 0, j = this.steps.size(); i < j; i++) { // "foreach" can lead to ConcurrentModificationExceptions

@@ -57,6 +57,11 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?,?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(ConnectiveStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.hasStepOfAssignableClass(ConnectiveStep.class, traversal)) {
             processConnectiveMarker(traversal);

@@ -79,6 +79,18 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
     }
 
     /**
+     * This is run once at the root traversal prior to any strategies being applied to the traversal.
+     * The purpose is to globally identify whether the strategy should be applied or not.
+     * The default implementation returns true and for those strategies that can be ruled out via a recursive root analysis should implement this method.
+     *
+     * @param rootTraversal the root traversal
+     * @return whether the strategy should be applied or not to the traversal.
+     */
+    public default boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return true;
+    }
+
+    /**
      * Get the configuration representation of this strategy.
      * This is useful for converting a strategy into a serialized form.
      *

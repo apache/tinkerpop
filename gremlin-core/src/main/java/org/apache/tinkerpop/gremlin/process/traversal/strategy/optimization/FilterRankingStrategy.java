@@ -86,6 +86,11 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(FilterStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         boolean modified = true;
         while (modified) {

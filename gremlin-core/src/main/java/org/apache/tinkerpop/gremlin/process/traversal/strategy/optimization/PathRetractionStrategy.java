@@ -69,6 +69,11 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.anyStepRecursively(step -> step.getLabels().isEmpty(), rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // do not apply this strategy if there are lambdas as you can't introspect to know what path information the lambdas are using
         // do not apply this strategy if a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)

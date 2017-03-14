@@ -39,14 +39,12 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal).asAdmin())) {
-            prepTraversalForProfiling(traversal);
-        }
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, rootTraversal);
     }
 
-    // Iterate the traversal steps and inject the .profile()-steps.
-    private void prepTraversalForProfiling(Traversal.Admin<?, ?> traversal) {
+    @Override
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         // Add .profile() step after every pre-existing step.
         final List<Step> steps = traversal.getSteps();
         final int numSteps = steps.size();

@@ -43,6 +43,11 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(RepeatStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal))
             return;

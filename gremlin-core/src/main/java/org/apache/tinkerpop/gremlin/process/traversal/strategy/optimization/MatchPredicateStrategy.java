@@ -33,9 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -58,6 +56,11 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = Collections.singleton(FilterRankingStrategy.class);
 
     private MatchPredicateStrategy() {
+    }
+
+    @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(MatchStep.class, rootTraversal);
     }
 
     @Override

@@ -67,6 +67,11 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.anyStepRecursively(step -> step instanceof VertexStep || step instanceof PropertiesStep, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final List<Step> steps = traversal.getSteps();
         final int size = steps.size() - 1;

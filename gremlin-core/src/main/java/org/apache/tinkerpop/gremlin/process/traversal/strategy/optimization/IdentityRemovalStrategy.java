@@ -46,6 +46,11 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(IdentityStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getSteps().size() <= 1)
             return;
