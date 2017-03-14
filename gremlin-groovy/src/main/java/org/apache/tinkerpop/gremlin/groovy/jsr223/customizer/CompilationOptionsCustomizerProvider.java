@@ -38,7 +38,7 @@ public class CompilationOptionsCustomizerProvider implements CompilerCustomizerP
     }
 
     public CompilationOptionsCustomizerProvider(final Long expectedCompilationTime) {
-        this.expectedCompilationTime = expectedCompilationTime.intValue();
+        this.expectedCompilationTime = expectedCompilationTime;
     }
 
     public long getExpectedCompilationTime() {
