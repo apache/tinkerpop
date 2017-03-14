@@ -1560,10 +1560,10 @@ and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th a
 * `op.traversal` - the number of `Traveral` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
 mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
 times.
-* `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instanc configured for
+* `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instances configured for
 session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
 "session-id" will be the identifier for the session itself.
-* `engine-name.sessionless.*` - metrics related to different `GremlinScriptEngine` instanc configured for sessionless
+* `engine-name.sessionless.*` - metrics related to different `GremlinScriptEngine` instances configured for sessionless
 requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy".
 
 Best Practices
