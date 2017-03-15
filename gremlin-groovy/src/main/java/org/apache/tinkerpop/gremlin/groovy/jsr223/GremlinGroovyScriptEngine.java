@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.DelegatingMetaClass;
@@ -45,6 +48,8 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.util.ReferenceBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -64,8 +69,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,6 +91,7 @@ import java.util.stream.Collectors;
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         implements AutoCloseable, GremlinScriptEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(GremlinGroovyScriptEngine.class);
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
      */
@@ -103,7 +113,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * A value to the {@link #KEY_REFERENCE_TYPE} that immediately garbage collects the script after evaluation.
      */
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
-
 
     /**
      * A value to the {@link #KEY_REFERENCE_TYPE} that marks the script as one that can be garbage collected
@@ -138,19 +147,64 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         }
     };
 
+    private GremlinGroovyClassLoader loader;
+
     /**
      * Script to generated Class map.
      */
-    private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
+    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().
+            softValues().
+            recordStats().
+            build(new CacheLoader<String, Future<Class>>() {
+        @Override
+        public Future<Class> load(final String script) throws Exception {
+            final long start = System.currentTimeMillis();
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
+                    final long finish = System.currentTimeMillis();
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    failedCompilationCount.incrementAndGet();
+                    throw e;
+                } finally {
+                    final long time = System.currentTimeMillis() - start;
+                    if (time > expectedCompilationTime) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                        longRunCompilationCount.incrementAndGet();
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
+                }
+            }, Runnable::run);
+        }
+    });
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
      */
-    private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
+    private final ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-    private GremlinGroovyClassLoader loader;
+    /**
+     * Ensures unique script names across all instances.
+     */
+    private final static AtomicLong scriptNameCounter = new AtomicLong(0L);
 
-    private AtomicLong counter = new AtomicLong(0L);
+    /**
+     * A counter for the instance that tracks the number of warnings issued during script compilations that exceeded
+     * the {@link #expectedCompilationTime}.
+     */
+    private final AtomicLong longRunCompilationCount = new AtomicLong(0L);
+
+    /**
+     * A counter for the instance that tracks the number of failed compilations. Note that the failures need to be
+     * tracked outside of cache failure load stats because the loading mechanism will always successfully return
+     * a future and won't trigger a failure.
+     */
+    private final AtomicLong failedCompilationCount = new AtomicLong(0L);
 
     /**
      * The list of loaded plugins for the console.
@@ -168,6 +222,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private final List<GroovyCustomizer> groovyCustomizers;
 
     private final boolean interpreterModeEnabled;
+    private final long expectedCompilationTime;
 
     /**
      * Creates a new instance using no {@link Customizer}.
@@ -195,6 +250,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 .filter(p -> p instanceof GroovyCustomizer)
                 .map(p -> ((GroovyCustomizer) p))
                 .collect(Collectors.toList());
+
+        final Optional<CompilationOptionsCustomizer> compilationOptionsCustomizerProvider = listOfCustomizers.stream()
+                .filter(p -> p instanceof CompilationOptionsCustomizer)
+                .map(p -> (CompilationOptionsCustomizer) p).findFirst();
+        expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
+                compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
 
         // determine if interpreter mode should be enabled
         interpreterModeEnabled = groovyCustomizers.stream()
@@ -249,7 +310,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
         // must clear the local cache here because the classloader has been reset.  therefore, classes previously
         // referenced before that might not have evaluated might cleanly evaluate now.
-        classMap.clear();
+        classMap.invalidateAll();
         globalClosures.clear();
     }
 
@@ -360,17 +421,135 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         return makeInterface(thiz, clazz);
     }
 
-    Class getScriptClass(final String script) throws CompilationFailedException {
-        Class clazz = classMap.get(script);
-        if (clazz != null) return clazz;
+    /**
+     * Gets the number of compilations that extended beyond the {@link #expectedCompilationTime}.
+     */
+    public long getClassCacheLongRunCompilationCount() {
+        return longRunCompilationCount.longValue();
+    }
 
-        clazz = loader.parseClass(script, generateScriptName());
-        classMap.put(script, clazz);
-        return clazz;
+    /**
+     * Gets the estimated size of the class cache for compiled scripts.
+     */
+    public long getClassCacheEstimatedSize() {
+        return classMap.estimatedSize();
+    }
+
+    /**
+     * Gets the average time spent compiling new scripts.
+     */
+    public double getClassCacheAverageLoadPenalty() {
+        return classMap.stats().averageLoadPenalty();
+    }
+
+    /**
+     * Gets the number of times a script compiled to a class has been evicted from the cache.
+     */
+    public long getClassCacheEvictionCount() {
+        return classMap.stats().evictionCount();
+    }
+
+    /**
+     * Gets the sum of the weights of evicted entries from the class cache.
+     */
+    public long getClassCacheEvictionWeight() {
+        return classMap.stats().evictionWeight();
+    }
+
+    /**
+     * Gets the number of times cache look up for a compiled script returned a cached value.
+     */
+    public long getClassCacheHitCount() {
+        return classMap.stats().hitCount();
+    }
+
+    /**
+     * Gets the hit rate of the class cache.
+     */
+    public double getClassCacheHitRate() {
+        return classMap.stats().hitRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method attempted to compile new scripts.
+     */
+    public long getClassCacheLoadCount() {
+        return classMap.stats().loadCount();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method failed to compile a new script.
+     */
+    public long getClassCacheLoadFailureCount() {
+        // don't use classMap.stats().loadFailureCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that failed.
+     */
+    public double getClassCacheLoadFailureRate() {
+        // don't use classMap.stats().loadFailureRate() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        long totalLoadCount = classMap.stats().loadCount();
+        return (totalLoadCount == 0)
+                ? 0.0
+                : (double) failedCompilationCount.longValue() / totalLoadCount;
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method succeeded to compile a new script.
+     */
+    public long getClassCacheLoadSuccessCount() {
+        // don't use classMap.stats().loadSuccessCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return classMap.stats().loadCount() - failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a newly compiled script.
+     */
+    public long getClassCacheMissCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that were misses.
+     */
+    public double getClassCacheMissRate() {
+        return classMap.stats().missRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a cached or uncached value.
+     */
+    public long getClassCacheRequestCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the total number of nanoseconds that the cache spent compiling scripts.
+     */
+    public long getClassCacheTotalLoadTime() {
+        return classMap.stats().totalLoadTime();
+    }
+
+    Class getScriptClass(final String script) throws CompilationFailedException {
+        try {
+            return classMap.get(script).get();
+        } catch (ExecutionException e) {
+            throw ((CompilationFailedException)e.getCause());
+        } catch (InterruptedException e) {
+            //This should never happen as the future should completed before it is returned to the us.
+            throw new AssertionError();
+        }
+
+
     }
 
     boolean isCached(final String script) {
-        return classMap.get(script) != null;
+        return classMap.getIfPresent(script) != null;
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
@@ -551,7 +730,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     private synchronized String generateScriptName() {
-        return SCRIPT + counter.incrementAndGet() + DOT_GROOVY;
+        return SCRIPT + scriptNameCounter.incrementAndGet() + DOT_GROOVY;
     }
 
     @SuppressWarnings("unchecked")

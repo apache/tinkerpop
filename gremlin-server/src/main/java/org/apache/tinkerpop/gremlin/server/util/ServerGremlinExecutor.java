@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -144,6 +145,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         settings.scriptEngines.keySet().forEach(engineName -> {
             try {
                 gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+                registerMetrics(engineName);
             } catch (Exception ex) {
                 logger.warn(String.format("Could not initialize {} ScriptEngine as script could not be evaluated - %s", engineName), ex);
             }
@@ -169,6 +171,11 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());
+    }
+
+    private void registerMetrics(final String engineName) {
+        final GremlinScriptEngine engine = gremlinExecutor.getScriptEngineManager().getEngineByName(engineName);
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "sessionless", "class-cache");
     }
 
     public void addHostOption(final String key, final Object value) {

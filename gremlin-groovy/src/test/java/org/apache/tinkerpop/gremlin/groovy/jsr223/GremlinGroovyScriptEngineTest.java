@@ -282,7 +282,7 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void testInvokeFunctionRedirectsOutputToContextOut() throws Exception {
+    public void shouldInvokeFunctionRedirectsOutputToContextOut() throws Exception {
         final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
         StringWriter writer = new StringWriter();
         final StringWriter unusedWriter = new StringWriter();
@@ -305,7 +305,7 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void testEngineContextAccessibleToScript() throws Exception {
+    public void shouldEnableEngineContextAccessibleToScript() throws Exception {
         final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
         final ScriptContext engineContext = engine.getContext();
         engine.put("theEngineContext", engineContext);
@@ -314,7 +314,7 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void testContextBindingOverridesEngineContext() throws Exception {
+    public void shouldEnableContextBindingOverridesEngineContext() throws Exception {
         final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
         final ScriptContext engineContext = engine.getContext();
         final Map<String,Object> otherContext = new HashMap<>();
@@ -323,5 +323,69 @@ public class GremlinGroovyScriptEngineTest {
         engine.put("theEngineContext", engineContext);
         final String code = "[answer: context.is(theEngineContext) ? \"wrong\" : context.foo]";
         assertEquals("bar", ((Map) engine.eval(code)).get("answer"));
+    }
+
+    @Test
+    public void shouldGetClassMapCacheBasicStats() throws Exception {
+        final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
+        assertEquals(0, engine.getClassCacheEstimatedSize());
+        assertEquals(0, engine.getClassCacheHitCount());
+        assertEquals(0, engine.getClassCacheLoadCount());
+        assertEquals(0, engine.getClassCacheLoadFailureCount());
+        assertEquals(0, engine.getClassCacheLoadSuccessCount());
+
+        engine.eval("1+1");
+
+        assertEquals(1, engine.getClassCacheEstimatedSize());
+        assertEquals(0, engine.getClassCacheHitCount());
+        assertEquals(1, engine.getClassCacheLoadCount());
+        assertEquals(0, engine.getClassCacheLoadFailureCount());
+        assertEquals(1, engine.getClassCacheLoadSuccessCount());
+
+        for (int ix = 0; ix < 100; ix++) {
+            engine.eval("1+1");
+        }
+
+        assertEquals(1, engine.getClassCacheEstimatedSize());
+        assertEquals(100, engine.getClassCacheHitCount());
+        assertEquals(1, engine.getClassCacheLoadCount());
+        assertEquals(0, engine.getClassCacheLoadFailureCount());
+        assertEquals(1, engine.getClassCacheLoadSuccessCount());
+
+        for (int ix = 0; ix < 100; ix++) {
+            engine.eval("1+" + ix);
+        }
+
+        assertEquals(100, engine.getClassCacheEstimatedSize());
+        assertEquals(101, engine.getClassCacheHitCount());
+        assertEquals(100, engine.getClassCacheLoadCount());
+        assertEquals(0, engine.getClassCacheLoadFailureCount());
+        assertEquals(100, engine.getClassCacheLoadSuccessCount());
+
+        try {
+            engine.eval("(me broken");
+            fail("Should have tanked with compilation error");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(ScriptException.class));
+        }
+
+        assertEquals(101, engine.getClassCacheEstimatedSize());
+        assertEquals(101, engine.getClassCacheHitCount());
+        assertEquals(101, engine.getClassCacheLoadCount());
+        assertEquals(1, engine.getClassCacheLoadFailureCount());
+        assertEquals(100, engine.getClassCacheLoadSuccessCount());
+
+        try {
+            engine.eval("(me broken");
+            fail("Should have tanked with compilation error");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(ScriptException.class));
+        }
+
+        assertEquals(101, engine.getClassCacheEstimatedSize());
+        assertEquals(102, engine.getClassCacheHitCount());
+        assertEquals(101, engine.getClassCacheLoadCount());
+        assertEquals(1, engine.getClassCacheLoadFailureCount());
+        assertEquals(100, engine.getClassCacheLoadSuccessCount());
     }
 }

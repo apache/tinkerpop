@@ -1456,6 +1456,7 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |`compilation` |Allows for three configurations: `COMPILE_STATIC`, `TYPE_CHECKED` or `NONE` (default). When configured with `COMPILE_STATIC` or `TYPE_CHECKED` it applies `CompileStatic` or `TypeChecked` annotations (respectively) to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[here] and additional information on `TypeChecked` usage can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[here].
 |`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
+|`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
 |`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
 |`timedInterrupt` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |=========================================================
@@ -1671,6 +1672,11 @@ and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th a
 * `op.traversal` - the number of `Traveral` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
 mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
 times.
+* `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instances configured for
+session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
+"session-id" will be the identifier for the session itself.
+* `engine-name.sessionless.*` - metrics related to different `GremlinScriptEngine` instances configured for sessionless
+requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy".
 
 As A Service
 ^^^^^^^^^^^^

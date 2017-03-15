@@ -55,11 +55,6 @@ limitations under the License.
             <artifactId>log4j</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>2.3.1</version>
-        </dependency>
         <!-- METRICS -->
         <dependency>
             <groupId>com.codahale.metrics</groupId>
