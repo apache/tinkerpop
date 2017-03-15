@@ -22,6 +22,333 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.5
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asciidoc#release-3-2-5[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+GremlinScriptEngine Metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `GremlinScriptEngine` has a number of new metrics about its cache size and script compilation times which should
+be helpful in understanding usage problems. As `GremlinScriptEngine` instances are used in Gremlin Server these metrics
+are naturally exposed as part of the standard link:http://tinkerpop.apache.org/docs/current/reference/#_metrics[metrics]
+set. Note that metrics are captured for both sessionless requests as well as for each individual session that is opened.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
+
+GraphManager versus DefaultGraphManager
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Gremlin-Server previously implemented its own final GraphManager class. Now, the GraphManager has been 
+updated to an interface, and users can supply their own GraphManager implementations in their YAML. The
+previous GraphManager class was traditionally only to be used by internal Gremlin-Server classes; however,
+if you previously used the GraphManager, then this changeset will be `breaking` for you. To fix the break,
+you can upgrade your code to use the new DefaultGraphManager.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1438[TINKERPOP-1438]
+
+Gremlin-Python Driver
+^^^^^^^^^^^^^^^^^^^^^
+Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
+the Python `concurrent.futures` module to provide asynchronous I/0 using threading. The default underlying
+websocket client implementation is still provided by Tornado, but it is trivial to plug in another client by
+defining the `Transport` interface.
+
+Using the `DriverRemoteConnection` class is the exact same as in previous versions; however,
+`DriverRemoteConnection` now uses the new `Client` class to submit messages to the server.
+
+The `Client` class implementation/interface is based on the Java Driver, with some restrictions.
+Most notably, Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is
+instantiated directly. Usage is as follows:
+
+[source,python]
+----
+from gremlin_python.driver import client
+
+client = client.Client('ws://localhost:8182/gremlin', 'g')
+result_set = client.submit('1 + 1')
+future_results = result_set.all()  # returns a concurrent.futures.Future
+results = future_results.result()  # returns a list
+assert results == [2]
+client.close()  # don't forget to close underlying connections
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+LazyBarrierStrategy No Longer End Appends Barriers
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+`LazyBarrierStrategy` was trying to do to much by considering `Traverser` effects on network I/O by appending an
+`NoOpBarrierStrategy` to the end of the root traversal. This should not be accomplished by `LazyBarrierStrategy`,
+but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoninig logic in
+some `ProviderStrategies`. Most likely not, but just be aware.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1627[TINKERPOP-1627]
+
+TinkerPop 3.2.4
+---------------
+
+*Release Date: February 8, 2017*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+TinkerGraph Deserialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A TinkerGraph deserialized from Gryo or GraphSON is now configured with multi-properties enabled. This change allows
+TinkerGraphs returned from Gremlin Server to properly return multi-properties, which was a problem seen when
+subgraphing a graph that contained properties with a setting other than `Cardinality.single`.
+
+This change could be considered breaking in the odd chance that a TinkerGraph returned from Gremlin Server was later
+mutated, because calls to `property(k,v)` would default to `Cardinality.list` instead of `Cardinality.single`. In the
+event that this is a problem, simple change calls to `property(k,v)` to `property(Cardinality.single,k,v)` and
+explicitly set the `Cardinality`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1587[TINKERPOP-1587]
+
+Traversal Promises
+^^^^^^^^^^^^^^^^^^
+
+The `Traversal` API now has a new `promise()` method. These methods return a promise in the form of a
+`CompleteableFuture`. Usage is as follows:
+
+[source,groovy]
+----
+gremlin> promise = g.V().out().promise{it.next()}
+==>java.util.concurrent.CompletableFuture@4aa3d36[Completed normally]
+gremlin> promise.join()
+==>v[3]
+gremlin> promise.isDone()
+==>true
+gremlin> g.V().out().promise{it.toList()}.thenApply{it.size()}.get()
+==>6
+----
+
+At this time, this method is only used for traversals that are configured using `withRemote()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1490[TINKERPOP-1490]
+
+If/Then-Semantics with Choose Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Gremlin's `choose()`-step supports if/then/else-semantics. Thus, to effect if/then-semantics, `identity()` was required.
+Thus, the following two traversals below are equivalent with the later being possible in this release.
+
+[source,groovy]
+----
+g.V().choose(hasLabel('person'),out('created'),identity())
+g.V().choose(hasLabel('person'),out('created'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1508[TINKERPOP-1508]
+
+FastNoSuchElementException converted to regular NoSuchElementException
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, a call to `Traversal.next()` that did not have a result would throw a `FastNoSuchElementException`.
+This has been changed to a regular `NoSuchElementException` that includes the stack trace. Code that explicitly catches
+`FastNoSuchElementException` should be converted to check for the more general class of `NoSuchElementException`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
+ScriptEngine support in gremlin-core
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`ScriptEngine` and `GremlinPlugin` infrastructure has been moved from gremlin-groovy to gremlin-core to allow for
+better re-use across different Gremlin Language Variants. At this point, this change is non-breaking as it was
+implemented through deprecation.
+
+The basic concept of a `ScriptEngine` has been replaced by the notion of a `GremlinScriptEngine` (i.e. a
+"ScriptEngine" that is specifically tuned for executing Gremlin-related scripts). "ScriptEngine" infrastructure has
+been developed to help support this new interface, specifically `GremlinScriptEngineFactory` and
+`GremlinScriptEngineManager`. Prefer use of this infrastructure when instantiating a `GremlinScriptEngine` rather
+than trying to instantiate directly.
+
+For example, rather than instantiate a `GremlinGroovyScriptEngine` with the constructor:
+
+[source,java]
+----
+GremlinScriptEngine engine = new GremlinGroovyScriptEngine();
+----
+
+prefer to instantiate it as follows:
+
+[source,java]
+----
+GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
+GremlinScriptEngine engine = manager.getEngineByName("gremlin-groovy");
+----
+
+Related to the addition of `GremlinScriptEngine`, `org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` in
+gremlin-groovy has been deprecated and then replaced by `org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin`. The new
+version of `GremlinPlugin` is similar but does carry some new methods to implement that involves the new `Customizer`
+interface. The `Customizer` interface is the way in which `GremlinScriptEngine` instance can be configured with
+imports, initialization scripts, compiler options, etc.
+
+Note that a `GremlinPlugin` can be applied to a `GremlinScriptEngine` by adding it to the `GremlinScriptEngineManager`
+that creates it.
+
+[source,java]
+----
+GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
+manager.addPlugin(ImportGremlinPlugin.build().classImports(java.awt.Color.class).create());
+GremlinScriptEngine engine = manager.getEngineByName("gremlin-groovy");
+----
+
+All of this new infrastructure is currently optional on the 3.2.x line of code. More detailed documentation will for
+these changes will be supplied as part of 3.3.0 when these features become mandatory and the deprecated code is
+removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1562[TINKERPOP-1562]
+
+
+SSL Client Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added new server configuration option `ssl.needClientAuth`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1602[TINKERPOP-1602]
+
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+CloseableIterator
++++++++++++++++++
+
+Prior to TinkerPop 3.x, Blueprints had the notion of a `CloseableIterable` which exposed a way for Graph Providers
+to offer a way to release resources that might have been opened when returning vertices and edges. That interface was
+never exposed in TinkerPop 3.x, but has now been made available via the new `CloseableIterator`. Providers may choose
+to use this interface or not when returning values from `Graph.vertices()` and `Graph.edges()`.
+
+It will be up to users to know whether or not they need to call `close()`. Of course, users should typically not be
+operating with the Graph Structure API, so it's unlikely that they would be calling these methods directly in the
+first place. It is more likely that users will be calling `Traversal.close()`. This method will essentially iterate
+the steps of the `Traversal` and simply call `close()` on any steps that implement `AutoCloseable`. By default,
+`GraphStep` now implements `AutoCloseable` which most Graph Providers will extend upon (as was done with TinkerGraph's
+`TinkerGraphStep`), so the integration should largely come for free if the provider simply returns a
+`CloseableIterator` from `Graph.vertices()` and `Graph.edges()`.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1589[TINKERPOP-1589]
+
+HasContainer AndP Splitting
++++++++++++++++++++++++++++
+
+Previously, `GraphTraversal` made it easy for providers to analyze `P`-predicates in `HasContainers`, but always
+splitting `AndP` predicates into their component parts. This helper behavior is no longer provided because,
+1.) `AndP` can be inserted into a `XXXStep` in other ways, 2.) the providers `XXXStep` should process `AndP`
+regardless of `GraphTraversal` helper, and 3.) the `GraphTraversal` helper did not recursively split.
+A simple way to split `AndP` in any custom `XXXStep` that implements `HasContainerHolder` is to use the following method:
+
+[source,java]
+----
+@Override
+public void addHasContainer(final HasContainer hasContainer) {
+  if (hasContainer.getPredicate() instanceof AndP) {
+    for (final P<?> predicate : ((AndP<?>) hasContainer.getPredicate()).getPredicates()) {
+      this.addHasContainer(new HasContainer(hasContainer.getKey(), predicate));
+    }
+  } else
+    this.hasContainers.add(hasContainer);
+}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1482[TINKERPOP-1482],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1502[TINKERPOP-1502]
+
+
+Duplicate Multi-Properties
+++++++++++++++++++++++++++
+
+Added `supportsDuplicateMultiProperties` to `VertexFeatures` so that graph provider who only support unique values as
+multi-properties have more flexibility in describing their graph capabilities.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-919[TINKERPOP-919]
+
+Deprecated OptIn
+++++++++++++++++
+
+In 3.2.1, all `junit-benchmark` performance tests were deprecated. At that time, the `OptIn` representations of these
+tests should have been deprecated as well, but they were not. That omission has been remedied now. Specifically, the
+following fields were deprecated:
+
+* `OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE`
+* `OptIn.SUITE_PROCESS_PERFORMANCE`
+* `OptIn.SUITE_STRUCTURE_PERFORMANCE`
+
+As of 3.2.4, the following test suites were also deprecated:
+
+* `OptIn.SUITE_GROOVY_PROCESS_STANDARD`
+* `OptIn.SUITE_GROOVY_PROCESS_COMPUTER`
+* `OptIn.SUITE_GROOVY_ENVIRONMENT`
+* `OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
+
+Future testing of `gremlin-groovy` (and language variants in general) will be handled differently and will not require
+a Graph Provider to validate its operations with it. Graph Providers may now choose to remove these tests from their
+test suites, which should reduce the testing burden.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1610[TINKERPOP-1610]
+
+Deprecated getInstance()
+++++++++++++++++++++++++
+
+TinkerPop has generally preferred static `instance()` methods over `getInstance()`, but `getInstance()` was used in
+some cases nonetheless. As of this release, `getInstance()` methods have been deprecated in favor of `instance()`.
+Of specific note, custom `IoRegistry` (as related to IO in general) and `Supplier<ClassResolver>` (as related to
+Gryo serialization in general) now both prefer `instance()` over `getInstance()` given this deprecation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1530[TINKERPOP-1530]
+
+Drivers Providers
+^^^^^^^^^^^^^^^^^
+
+Force Close
++++++++++++
+
+Closing a session will first attempt a proper close of any open transactions. A problem can occur, however, if there is
+a long run job (e.g. an OLAP-based traversal) executing, as that job will block the calls to close the transactions.
+By exercising the option to a do a "forced close" the session will skip trying to close the transactions and just
+attempt to interrupt the long run job. By not closing transactions, the session leaves it up to the underlying graph
+database to sort out how it will deal with those orphaned transactions. On the positive side though (for those graphs
+which do that well) , long run jobs have the opporunity to be cancelled without waiting for a timeout of the job itself
+which will allow resources to be released earlier.
+
+The "force" argument is passed on the "close" message and is a boolean value. This is an optional argument to "close"
+and defaults to `false`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
+link:http://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+
+SASL Authentication
++++++++++++++++++++
+
+Gremlin Supports SASL based authentication. The server accepts either a byte array or Base64 encoded String as the in
+the `sasl` argument on the `RequestMessage`, however it sends back a byte array only. Some serializers or serializer
+configurations don't work well with that approach (specifically the "toString" configuration on the Gryo serializer) as
+the byte array is returned in the `ResponseMessage` result. In the case of the "toString" serializer the byte array
+gets "toString'd" and the can't be read by the client.
+
+In 3.2.4, the byte array is still returned in the `ResponseMessage` result, but is also returned in the status
+attributes under a `sasl` key as a Base64 encoded string. In this way, the client has options on how it chooses to
+process the authentication response and the change remains backward compatible. Drivers should upgrade to using the
+Base64 encoded string however as the old approach will likely be removed in the future.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1600[TINKERPOP-1600]
+
 TinkerPop 3.2.3
 ---------------
 
