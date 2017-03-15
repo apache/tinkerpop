@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import javax.script.Bindings;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public interface GraphManager {
     /**
@@ -93,4 +94,14 @@ public interface GraphManager {
      * Selectively commit transactions on the specified graphs or the graphs of traversal sources.
      */
     public void commit(final Set<String> graphSourceNamesToCloseTxOn);
+
+    /**
+     * Implementation that allows for custom graph-opening implementations.
+     */
+    public Graph openGraph(String graphName, Supplier<Graph> supplier);
+
+    /**
+     * Implementation that allows for custom graph-closing implementations.
+     */
+    public void closeGraph(Graph graph);
 }
