@@ -544,8 +544,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
             //This should never happen as the future should completed before it is returned to the us.
             throw new AssertionError();
         }
-
-
     }
 
     boolean isCached(final String script) {

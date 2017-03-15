@@ -136,7 +136,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         gremlinExecutor = gremlinExecutorBuilder.create();
 
-        logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+        logger.info("Initialized GremlinExecutor and preparing GremlinScriptEngines instances.");
 
         // force each scriptengine to process something so that the init scripts will fire (this is necessary if
         // the GremlinExecutor is using the GremlinScriptEngineManager. this is a bit of hack, but it at least allows
@@ -146,8 +146,9 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
             try {
                 gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
                 registerMetrics(engineName);
+                logger.info("Initialized {} GremlinScriptEngine and registered metrics", engineName);
             } catch (Exception ex) {
-                logger.warn(String.format("Could not initialize {} ScriptEngine as script could not be evaluated - %s", engineName), ex);
+                logger.warn(String.format("Could not initialize %s GremlinScriptEngine as init script could not be evaluated", engineName), ex);
             }
         });
 
