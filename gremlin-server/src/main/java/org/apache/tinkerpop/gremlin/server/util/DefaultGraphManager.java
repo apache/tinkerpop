@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Holder for {@link Graph} and {@link TraversalSource} instances configured for the server to be passed to script
@@ -43,7 +44,7 @@ import java.util.function.Predicate;
  * the configuration file. The {@link TraversalSource} instances are rebound to the {@code GraphManager} once
  * initialization scripts construct them.
  */
-public final class BasicGraphManager implements GraphManager {
+public final class DefaultGraphManager implements GraphManager {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     private final Map<String, Graph> graphs = new ConcurrentHashMap<>();
@@ -52,7 +53,7 @@ public final class BasicGraphManager implements GraphManager {
     /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
-    public BasicGraphManager(final Settings settings) {
+    public DefaultGraphManager(final Settings settings) {
         settings.graphs.entrySet().forEach(e -> {
             try {
                 final Graph newGraph = GraphFactory.open(e.getValue());
@@ -147,6 +148,28 @@ public final class BasicGraphManager implements GraphManager {
      */
     public void commit(final Set<String> graphSourceNamesToCloseTxOn) {
         closeTx(graphSourceNamesToCloseTxOn, Transaction.Status.COMMIT);
+    }
+
+    /**
+     * Basic graphManager has basic openGraph function.
+     */
+    public Graph openGraph(String graphName, Supplier<Graph> supplier) {
+        final Graph graph = graphs.get(graphName);
+        if (null != graph) {
+            return graph;
+        }
+        return supplier.get();
+    }
+
+    /**
+     *  Close graph
+     */
+    public void closeGraph(Graph graph) {
+        try {
+            graph.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

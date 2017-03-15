@@ -66,6 +66,16 @@ is determined by projections of the path data. This extension is fully backwards
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1387[TINKERPOP-1387]
 
+GraphManager versus DefaultGraphManager
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Gremlin-Server previously implemented its own final GraphManager class. Now, the GraphManager has been 
+updated to an interface, and users can supply their own GraphManager implementations in their YAML. The
+previous GraphManager class was traditionally only to be used by internal Gremlin-Server classes; however,
+if you previously used the GraphManager, then this changeset will be `breaking` for you. To fix the break,
+you can upgrade your code to use the new DefaultGraphManager.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1438[TINKERPOP-1438]
+
 Gremlin-Python Driver
 ^^^^^^^^^^^^^^^^^^^^^
 Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
