@@ -949,6 +949,17 @@ The two traversals above look nearly identical save the inclusion of `local()` w
 in a object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the
 stream as a whole.
 
+Local Step is quite similar in functionality to <<general-steps,Flat Map Step>> where it can often be confused.
+`local()` propagates the traverser through the internal traversal as is without splitting/cloning it. Thus, its
+a “global traversal” with local processing. Its use is subtle and primarily finds application in compilation
+optimizations (i.e. when writing `TraversalStrategy` implementations. As another example consider:
+
+[gremlin-groovy,modern]
+----
+g.V().both().barrier().flatMap(groupCount().by("name"))
+g.V().both().barrier().local(groupCount().by("name"))
+----
+
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
