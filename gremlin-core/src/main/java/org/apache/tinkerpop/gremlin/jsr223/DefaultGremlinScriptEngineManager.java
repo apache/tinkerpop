@@ -474,7 +474,12 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         scriptCustomizers.stream().flatMap(sc -> sc.getScripts().stream()).
                 map(l -> String.join(System.lineSeparator(), l)).forEach(initScript -> {
             try {
-                final Object initializedBindings = engine.eval(initScript);
+                // need to apply global bindings here as part of the engine or else they don't get their binding types
+                // registered by certain GremlinScriptEngine instances (pretty much talking about gremlin-groovy here)
+                // where type checking is made important. this may not be a good generic way to handled this in the
+                // long run, but for now we only have two GremlinScriptEngines to be concerned about so thus far it
+                // presents no real pains
+                final Object initializedBindings = engine.eval(initScript, getBindings());
                 if (initializedBindings != null && initializedBindings instanceof Map)
                     ((Map<String,Object>) initializedBindings).forEach((k,v) -> put(k,v));
             } catch (Exception ex) {
