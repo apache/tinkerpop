@@ -53,10 +53,12 @@ public class TraversalExplanation implements Serializable {
         TraversalStrategies mutatingStrategies = new DefaultTraversalStrategies();
         for (final TraversalStrategy strategy : this.traversal.getStrategies().toList()) {
             final Traversal.Admin<?, ?> mutatingTraversal = this.traversal.clone();
-            mutatingStrategies.addStrategies(strategy);
-            mutatingTraversal.setStrategies(mutatingStrategies);
-            mutatingTraversal.applyStrategies();
-            this.strategyTraversals.add(Pair.with(strategy, mutatingTraversal));
+            if(strategy.isApplicable(traversal)) {
+                mutatingStrategies.addStrategies(strategy);
+                mutatingTraversal.setStrategies(mutatingStrategies);
+                mutatingTraversal.applyStrategies();
+                this.strategyTraversals.add(Pair.with(strategy, mutatingTraversal));
+            }
         }
     }
 

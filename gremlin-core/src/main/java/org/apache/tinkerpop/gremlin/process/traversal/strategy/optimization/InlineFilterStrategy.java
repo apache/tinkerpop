@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -84,7 +85,8 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
 
     @Override
     public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
-        return TraversalHelper.anyStepRecursively(step -> step instanceof FilterStep || step instanceof MatchStep, rootTraversal);
+        return rootTraversal.getStrategies().getStrategy(SubgraphStrategy.class).isPresent() ||
+                TraversalHelper.anyStepRecursively(step -> step instanceof FilterStep || step instanceof MatchStep, rootTraversal);
     }
 
     @Override

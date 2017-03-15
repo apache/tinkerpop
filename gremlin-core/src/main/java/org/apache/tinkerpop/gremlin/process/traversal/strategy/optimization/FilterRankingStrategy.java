@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicate
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
@@ -87,7 +88,8 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
-        return TraversalHelper.hasStepOfAssignableClassRecursively(FilterStep.class, rootTraversal);
+        return rootTraversal.getStrategies().getStrategy(SubgraphStrategy.class).isPresent() ||
+                TraversalHelper.hasStepOfAssignableClassRecursively(FilterStep.class, rootTraversal);
     }
 
     @Override

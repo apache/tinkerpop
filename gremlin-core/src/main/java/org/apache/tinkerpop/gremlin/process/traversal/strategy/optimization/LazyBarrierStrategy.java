@@ -62,6 +62,11 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     }
 
     @Override
+    public boolean isApplicable(final Traversal.Admin<?, ?> rootTraversal) {
+        return TraversalHelper.hasStepOfAssignableClassRecursively(VertexStep.class, rootTraversal);
+    }
+
+    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal) ||
                 traversal.getTraverserRequirements().contains(TraverserRequirement.PATH) ||
