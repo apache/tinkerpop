@@ -85,4 +85,24 @@ public class DefaultGraphManagerTest {
         assertThat(m.containsKey("newGraph"), is(true));
         assertThat(m.get("newGraph"), instanceOf(TinkerGraph.class));
     }
+
+    @Test
+    public void shouldNotGetClosedGraph() {
+        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new DefaultGraphManager(settings);
+        final Graph graph = graphManager.getGraph("graph"); //fake out a graph instance
+        graphManager.addGraph("newGraph", graph);
+        final Map<String, Graph> m = graphManager.getGraphs();
+        assertNotNull(m);
+        assertEquals(2, m.size());
+        assertThat(m.containsKey("newGraph"), is(true));
+        assertThat(m.get("newGraph"), instanceOf(TinkerGraph.class));
+        
+        graphManager.removeGraph("newGraph");
+        
+        final Map<String, Graph> m2 = graphManager.getGraphs();
+        assertEquals(1, m.size());
+        assertThat(m.containsKey("newGraph"), is(false));
+       
+    }
 }

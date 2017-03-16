@@ -73,15 +73,15 @@ public final class DefaultGraphManager implements GraphManager {
      *
      * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
      */
-    public Map<String, Graph> getGraphs() {
+    public final Map<String, Graph> getGraphs() {
         return graphs;
     }
 
-    public Graph getGraph(String gName) {
+    public final Graph getGraph(final String gName) {
         return graphs.get(gName);
     }
 
-    public void addGraph(String gName, Graph g) {
+    public final void addGraph(final String gName, final Graph g) {
         graphs.put(gName, g);
     }
 
@@ -92,22 +92,22 @@ public final class DefaultGraphManager implements GraphManager {
      * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
      *         {@link TraversalSource} itself
      */
-    public Map<String, TraversalSource> getTraversalSources() {
+    public final Map<String, TraversalSource> getTraversalSources() {
         return traversalSources;
     }
 
-    public TraversalSource getTraversalSource(String tsName) {
+    public final TraversalSource getTraversalSource(final String tsName) {
         return traversalSources.get(tsName);
     }
 
-    public void addTraversalSource(String tsName, TraversalSource ts) {
+    public final void addTraversalSource(final String tsName, final TraversalSource ts) {
         traversalSources.put(tsName, ts);
     }
 
     /**
      * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
      */
-    public Bindings getAsBindings() {
+    public final Bindings getAsBindings() {
         final Bindings bindings = new SimpleBindings();
         graphs.forEach(bindings::put);
         traversalSources.forEach(bindings::put);
@@ -117,7 +117,7 @@ public final class DefaultGraphManager implements GraphManager {
     /**
      * Rollback transactions across all {@link Graph} objects.
      */
-    public void rollbackAll() {
+    public final void rollbackAll() {
         graphs.entrySet().forEach(e -> {
             final Graph graph = e.getValue();
             if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
@@ -128,14 +128,14 @@ public final class DefaultGraphManager implements GraphManager {
     /**
      * Selectively rollback transactions on the specified graphs or the graphs of traversal sources.
      */
-    public void rollback(final Set<String> graphSourceNamesToCloseTxOn) {
+    public final void rollback(final Set<String> graphSourceNamesToCloseTxOn) {
         closeTx(graphSourceNamesToCloseTxOn, Transaction.Status.ROLLBACK);
     }
 
     /**
      * Commit transactions across all {@link Graph} objects.
      */
-    public void commitAll() {
+    public final void commitAll() {
         graphs.entrySet().forEach(e -> {
             final Graph graph = e.getValue();
             if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
@@ -146,36 +146,45 @@ public final class DefaultGraphManager implements GraphManager {
     /**
      * Selectively commit transactions on the specified graphs or the graphs of traversal sources.
      */
-    public void commit(final Set<String> graphSourceNamesToCloseTxOn) {
+    public final void commit(final Set<String> graphSourceNamesToCloseTxOn) {
         closeTx(graphSourceNamesToCloseTxOn, Transaction.Status.COMMIT);
     }
 
     /**
-     * Basic graphManager has basic openGraph function.
+     * If {@link Map} containing {@link Graph} references contains one corresponding to
+     * {@link String} graphName, then we return that {@link Graph}; otherwise, instantiate a
+     * new {@link Graph} using the {@link Supplier}, add it to the {@link Map} tracking {@link Graph}
+     * references, and return that {@link Graph}. 
      */
-    public Graph openGraph(String graphName, Supplier<Graph> supplier) {
+    public final Graph openGraph(final String graphName, final Supplier<Graph> supplier) {
         final Graph graph = graphs.get(graphName);
         if (null != graph) {
             return graph;
         }
-        return supplier.get();
+        final Graph newGraph = supplier.get();
+        addGraph(graphName, newGraph);
+        return newGraph;
     }
 
     /**
-     *  Close graph
+     * Remove {@link Graph} corresponding to {@link String} graphName from {@link Map}
+     * tracking graph references.
      */
-    public void closeGraph(Graph graph) {
-        try {
-            graph.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public final void removeGraph(final String graphName) {
+        graphs.remove(graphName);
+    }
+
+    /**
+     * Close {@link Graph} object.
+     */
+    public final void closeGraph(final Graph graph) throws Exception {
+        graph.close();
     }
 
     /**
      * Selectively close transactions on the specified graphs or the graphs of traversal sources.
      */
-    private void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
+    private final void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
         final Set<Graph> graphsToCloseTxOn = new HashSet<>();
 
         // by the time this method has been called, it should be validated that the source/graph is present.

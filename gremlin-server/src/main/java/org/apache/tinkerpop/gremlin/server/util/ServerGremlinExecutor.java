@@ -99,22 +99,22 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         this.settings = settings;
 
         if (null == graphManager) {
-          try {
-            final Class<?> clazz = Class.forName(settings.graphManager);
-            final Constructor c = clazz.getConstructor(Settings.class);
-            graphManager = (GraphManager) c.newInstance(settings);
-          } catch (ClassNotFoundException e) {
-            logger.error("Could not find GraphManager implementation "
-                         + "defined by the 'graphManager' setting as: {}",
-                         settings.graphManager);
-            throw new RuntimeException(e);
-          } catch (Exception e) {
-            logger.error("Could not invoke constructor on class {} (defined by "
-                         + "the 'graphManager' setting) with one argument of "
-                         + "class Settings",
-                         settings.graphManager);
-            throw new RuntimeException(e);
-          }
+            try {
+                final Class<?> clazz = Class.forName(settings.graphManager);
+                final Constructor c = clazz.getConstructor(Settings.class);
+                graphManager = (GraphManager) c.newInstance(settings);
+            } catch (ClassNotFoundException e) {
+                logger.error("Could not find GraphManager implementation "
+                             + "defined by the 'graphManager' setting as: {}",
+                             settings.graphManager);
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                logger.error("Could not invoke constructor on class {} (defined by "
+                             + "the 'graphManager' setting) with one argument of "
+                             + "class Settings",
+                             settings.graphManager);
+                throw new RuntimeException(e);
+            }
         }
 
         if (null == gremlinExecutorService) {
