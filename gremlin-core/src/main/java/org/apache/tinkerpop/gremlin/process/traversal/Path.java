@@ -247,7 +247,7 @@ public interface Path extends Cloneable, Iterable<Object> {
      * @param toLabel   The label to end recording the sub-path to.
      * @return the isolated sub-path.
      */
-    public default Path getSubPath(final String fromLabel, final String toLabel) {
+    public default Path subPath(final String fromLabel, final String toLabel) {
         if (null == fromLabel && null == toLabel)
             return this;
         else {

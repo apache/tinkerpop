@@ -51,7 +51,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     protected Path map(final Traverser.Admin<S> traverser) {
-        final Path path = traverser.path().getSubPath(this.fromLabel, this.toLabel);
+        final Path path = traverser.path().subPath(this.fromLabel, this.toLabel);
         if (this.traversalRing.isEmpty())
             return path;
         else {

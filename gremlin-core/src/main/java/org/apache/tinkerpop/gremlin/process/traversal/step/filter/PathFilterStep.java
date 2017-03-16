@@ -55,7 +55,7 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        final Path path = traverser.path().getSubPath(this.fromLabel, this.toLabel);
+        final Path path = traverser.path().subPath(this.fromLabel, this.toLabel);
         if (this.traversalRing.isEmpty())
             return path.isSimple() == this.isSimple;
         else {

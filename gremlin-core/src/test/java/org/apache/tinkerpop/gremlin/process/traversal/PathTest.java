@@ -392,7 +392,7 @@ public class PathTest {
             assertEquals(4, path.objects().size());
             assertEquals(4, path.labels().size());
             ///
-            Path subPath = path.getSubPath("b", "c");
+            Path subPath = path.subPath("b", "c");
             assertEquals(2, subPath.size());
             assertEquals(2, subPath.objects().size());
             assertEquals(2, subPath.labels().size());
@@ -404,19 +404,19 @@ public class PathTest {
             assertTrue(subPath.labels().get(1).contains("x"));
             assertEquals(2, subPath.labels().get(1).size());
             ///
-            subPath = path.getSubPath("b", "b");
+            subPath = path.subPath("b", "b");
             assertEquals(1, subPath.size());
             assertEquals(1, subPath.objects().size());
             assertEquals(1, subPath.labels().size());
             assertEquals("stephen", subPath.objects().get(0));
             ///
-            subPath = path.getSubPath("b", "b");
+            subPath = path.subPath("b", "b");
             assertEquals(1, subPath.size());
             assertEquals(1, subPath.objects().size());
             assertEquals(1, subPath.labels().size());
             assertEquals("stephen", subPath.objects().get(0));
             ///
-            subPath = path.getSubPath("c", "d");
+            subPath = path.subPath("c", "d");
             assertEquals(2, subPath.size());
             assertEquals(2, subPath.objects().size());
             assertEquals(2, subPath.labels().size());
@@ -428,27 +428,27 @@ public class PathTest {
             assertTrue(subPath.labels().get(1).contains("d"));
             assertEquals(1, subPath.labels().get(1).size());
             ///
-            subPath = path.getSubPath("a","d");
+            subPath = path.subPath("a","d");
             assertEquals(4, subPath.size());
             assertEquals(4, subPath.objects().size());
             assertEquals(4, subPath.labels().size());
             ///
             try {
-                subPath = path.getSubPath("d", "a");
+                subPath = path.subPath("d", "a");
                 fail("Path labels must be ordered along path");
             } catch (final IllegalArgumentException e) {
                 assertTrue(true);
             }
             ///
             try {
-                subPath = path.getSubPath("a", "e");
+                subPath = path.subPath("a", "e");
                 fail("End path label was not found");
             } catch (final IllegalArgumentException e) {
                 assertEquals(Path.Exceptions.couldNotLocalPathToLabel("e").getMessage(), e.getMessage());
             }
             ///
             try {
-                subPath = path.getSubPath("e", "b");
+                subPath = path.subPath("e", "b");
                 fail("Start path label was not found");
             } catch (final IllegalArgumentException e) {
                 assertEquals(Path.Exceptions.couldNotLocalPathFromLabel("e").getMessage(), e.getMessage());
