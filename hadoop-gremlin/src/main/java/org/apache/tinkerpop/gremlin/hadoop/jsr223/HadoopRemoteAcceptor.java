@@ -44,6 +44,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     private static final String USE_SUGAR = "useSugar";
     private static final String USE_TRAVERSAL_SOURCE = "useTraversalSource";
+    private static final String HELP = "help";
     private static final String SPACE = " ";
 
     private HadoopGraph hadoopGraph;
@@ -74,6 +75,9 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object configure(final List<String> args) throws RemoteException {
+        if (args.size() == 1 && args.get(0).equals(HELP))
+            return ":remote config [useSugar [true|false]|useTraversalSource <traversalSourceName>|help]";
+
         for (int i = 0; i < args.size(); i = i + 2) {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugar = Boolean.valueOf(args.get(i + 1));
