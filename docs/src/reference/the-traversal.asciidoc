@@ -584,6 +584,14 @@ traversal computation. If non-cyclic behavior is desired, see <<simplepath-step,
 g.V(1).both().both()
 g.V(1).both().both().cyclicPath()
 g.V(1).both().both().cyclicPath().path()
+g.V(1).as('a').out('created').as('b').
+  in('created').as('c').
+  cyclicPath().
+  path()
+g.V(1).as('a').out('created').as('b').
+  in('created').as('c').
+  cyclicPath().from('a').to('b').
+  path()
 ----
 
 [[dedup-step]]
