@@ -252,18 +252,19 @@ public interface Path extends Cloneable, Iterable<Object> {
             return this;
         else {
             Path subPath = MutablePath.make();
-            boolean record = false;
             int size = this.size();
+            boolean record = false;
             for (int i = 0; i < size; i++) {
                 final Set<String> labels = this.labels().get(i);
-                if (labels.contains(fromLabel) || null == fromLabel)
+                if (!record && (labels.contains(fromLabel) || null == fromLabel))
                     record = true;
                 if (record)
                     subPath = subPath.extend(this.get(i), labels);
                 if (labels.contains(toLabel)) {
                     if (!record)
                         throw Path.Exceptions.couldNotLocalPathFromLabel(fromLabel);
-                    return subPath;
+                    else
+                        return subPath;
                 }
             }
             if (null == toLabel)

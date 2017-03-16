@@ -416,6 +416,23 @@ public class PathTest {
             assertEquals(1, subPath.labels().size());
             assertEquals("stephen", subPath.objects().get(0));
             ///
+            subPath = path.getSubPath("c", "d");
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("matthias", subPath.objects().get(0));
+            assertEquals("bob", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("c"));
+            assertTrue(subPath.labels().get(0).contains("x"));
+            assertEquals(2, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("d"));
+            assertEquals(1, subPath.labels().get(1).size());
+            ///
+            subPath = path.getSubPath("a","d");
+            assertEquals(4, subPath.size());
+            assertEquals(4, subPath.objects().size());
+            assertEquals(4, subPath.labels().size());
+            ///
             try {
                 subPath = path.getSubPath("d", "a");
                 fail("Path labels must be ordered along path");

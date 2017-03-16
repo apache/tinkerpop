@@ -52,10 +52,10 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     @Override
     protected Path map(final Traverser.Admin<S> traverser) {
         final Path path = traverser.path().getSubPath(this.fromLabel, this.toLabel);
-        this.traversalRing.reset();
         if (this.traversalRing.isEmpty())
             return path;
         else {
+            this.traversalRing.reset();
             final Path byPath = MutablePath.make();
             path.forEach((object, labels) -> byPath.extend(TraversalUtil.applyNullable(object, this.traversalRing.next()), labels));
             return byPath;

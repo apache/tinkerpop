@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -48,26 +47,6 @@ import java.util.Set;
  * FilterRankingStrategy reorders filter- and order-steps according to their rank. It will also do its best to push
  * step labels as far "right" as possible in order to keep traversers as small and bulkable as possible prior to the
  * absolute need for path-labeling.
- * <p/>
- * <table>
- * <thead>
- * <tr><th>Step</th><th>Rank</th></tr>
- * </thead>
- * <tbody>
- * <tr><td>is(predicate)</td><td>1</td></tr>
- * <tr><td>has(predicate)</td><td>2</td></tr>
- * <tr><td>where(predicate)</td><td>3</td></tr>
- * <tr><td>simplePath()</td><td>4</td></tr>
- * <tr><td>cyclicPath()</td><td>4</td></tr>
- * <tr><td>filter(traversal)</td><td>5</td></tr>
- * <tr><td>not(traversal)</td>td>5</td></tr>
- * <tr><td>where(traversal)</td><td>6</td></tr>
- * <tr><td>or(...)</td><td>7</td></tr>
- * <tr><td>and(...)</td><td>8</td></tr>
- * <tr><td>dedup()</td><td>9</td></tr>
- * <tr><td>order()</td><td>10</td></tr>
- * </tbody>
- * </table>
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -128,22 +107,20 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             rank = 2;
         else if (step instanceof WherePredicateStep && ((WherePredicateStep) step).getLocalChildren().isEmpty())
             rank = 3;
-        else if (step instanceof PathFilterStep)
-            rank = 4;
         else if (step instanceof TraversalFilterStep || step instanceof NotStep)
-            rank = 5;
+            rank = 4;
         else if (step instanceof WhereTraversalStep)
-            rank = 6;
+            rank = 5;
         else if (step instanceof OrStep)
-            rank = 7;
+            rank = 6;
         else if (step instanceof AndStep)
-            rank = 8;
+            rank = 7;
         else if (step instanceof WherePredicateStep) // has by()-modulation
-            rank = 9;
+            rank = 8;
         else if (step instanceof DedupGlobalStep)
-            rank = 10;
+            rank = 9;
         else if (step instanceof OrderGlobalStep)
-            rank = 11;
+            rank = 10;
         else
             return 0;
         ////////////

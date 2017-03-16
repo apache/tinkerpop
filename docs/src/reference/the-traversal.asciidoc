@@ -2032,6 +2032,16 @@ objects in it, the traverser is filtered. If cyclic behavior is desired, see <<c
 g.V(1).both().both()
 g.V(1).both().both().simplePath()
 g.V(1).both().both().simplePath().path()
+g.V().out().as('a').out().as('b').out().as('c').
+  simplePath().by(label).
+  path()
+g.V().out().as('a').out().as('b').out().as('c').
+  simplePath().
+    by(label).
+    from('b').
+    to('c').
+  path().
+    by('name')
 ----
 
 [[store-step]]

@@ -39,5 +39,10 @@ public abstract class GroovySimplePathTest {
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.both.simplePath).times(3).path()");
         }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_simplePath_byXlabelX_fromXbX_toXcX_path_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').out.as('c').simplePath.by(label).from('b').to('c').path.by('name')")
+        }
     }
 }
