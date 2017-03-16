@@ -36,8 +36,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
@@ -1034,7 +1034,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param toStepLabel the step label of the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> to(final String toStepLabel) {
@@ -1049,7 +1048,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param fromStepLabel the step label of the outgoing vertex
      * @return the traversal with the modified {@link AddEdgeStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> from(final String fromStepLabel) {
@@ -1064,7 +1062,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param toVertex the traversal for selecting the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
@@ -1079,7 +1076,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param fromVertex the traversal for selecting the outgoing vertex
      * @return the traversal with the modified {@link AddEdgeStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {

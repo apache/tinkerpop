@@ -19,14 +19,13 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
-
-import java.util.Set;
 
 /**
+ * FromToModulating are for {@link org.apache.tinkerpop.gremlin.process.traversal.Step}s that support from()- and to()-modulation.
+ * This step is similar to {@link ByModulating}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface FromToModulating {

@@ -239,6 +239,14 @@ public interface Path extends Cloneable, Iterable<Object> {
                 isPresent();
     }
 
+    /**
+     * Isolate a sub-path from the path object. The isolation is based solely on the path labels.
+     * The to-label is inclusive. Thus, from "b" to "c" would isolate the example path as follows {@code a,[b,c],d}.
+     *
+     * @param fromLabel The label to start recording the sub-path from.
+     * @param toLabel   The label to end recording the sub-path to.
+     * @return the isolated sub-path.
+     */
     public default Path getSubPath(final String fromLabel, final String toLabel) {
         if (null == fromLabel && null == toLabel)
             return this;
@@ -272,11 +280,11 @@ public interface Path extends Cloneable, Iterable<Object> {
         }
 
         public static IllegalArgumentException couldNotLocalPathFromLabel(final String fromLabel) {
-            return new IllegalArgumentException("Could not local path from-label: " + fromLabel);
+            return new IllegalArgumentException("Could not locate path from-label: " + fromLabel);
         }
 
         public static IllegalArgumentException couldNotLocalPathToLabel(final String toLabel) {
-            return new IllegalArgumentException("Could not local path to-label: " + toLabel);
+            return new IllegalArgumentException("Could not locate path to-label: " + toLabel);
         }
     }
 }
