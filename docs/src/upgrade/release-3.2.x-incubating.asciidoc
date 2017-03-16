@@ -63,6 +63,13 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+SimplePathStep and CyclicPathStep now PathFilterStep
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The Gremlin traversal machine use to support two step instructions: `SimplePathStep` and `CyclicPathStep`. These have
+been replaced by a high-level instruction called `PathFilterStep` which is boolean configured for simple or cyclic paths.
+Furthermore, `PathFilterStep` also support `from()`-, `to()`-, and `by()`-modulation.
+
 LazyBarrierStrategy No Longer End Appends Barriers
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 

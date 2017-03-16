@@ -26,14 +26,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -129,7 +128,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             rank = 2;
         else if (step instanceof WherePredicateStep && ((WherePredicateStep) step).getLocalChildren().isEmpty())
             rank = 3;
-        else if (step instanceof SimplePathStep || step instanceof CyclicPathStep)
+        else if (step instanceof PathFilterStep)
             rank = 4;
         else if (step instanceof TraversalFilterStep || step instanceof NotStep)
             rank = 5;

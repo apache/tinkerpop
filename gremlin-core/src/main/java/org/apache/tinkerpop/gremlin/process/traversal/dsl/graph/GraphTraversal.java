@@ -48,7 +48,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
@@ -56,9 +55,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
@@ -1783,25 +1782,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Filter the <code>E</code> object if its {@link Traverser#path} is not {@link Path#isSimple}.
      *
-     * @return the traversal with an appended {@link SimplePathStep}.
+     * @return the traversal with an appended {@link PathFilterStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#simplepath-step" target="_blank">Reference Documentation - SimplePath Step</a>
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> simplePath() {
         this.asAdmin().getBytecode().addStep(Symbols.simplePath);
-        return this.asAdmin().addStep(new SimplePathStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), true));
     }
 
     /**
      * Filter the <code>E</code> object if its {@link Traverser#path} is {@link Path#isSimple}.
      *
-     * @return the traversal with an appended {@link CyclicPathStep}.
+     * @return the traversal with an appended {@link PathFilterStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#cyclicpath-step" target="_blank">Reference Documentation - CyclicPath Step</a>
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> cyclicPath() {
         this.asAdmin().getBytecode().addStep(Symbols.cyclicPath);
-        return this.asAdmin().addStep(new CyclicPathStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), false));
     }
 
     /**
