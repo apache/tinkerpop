@@ -252,7 +252,7 @@ public interface Path extends Cloneable, Iterable<Object> {
             return this;
         else {
             Path subPath = MutablePath.make();
-            int size = this.size();
+            final int size = this.size();
             boolean record = false;
             for (int i = 0; i < size; i++) {
                 final Set<String> labels = this.labels().get(i);

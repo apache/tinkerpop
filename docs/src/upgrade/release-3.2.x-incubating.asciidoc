@@ -32,6 +32,13 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+simplePath(), cyclicPath(), and path() support by()-, from()-, to()-modulation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+It is now possible to extract analyze sub-paths using `from()` and `to()` modulations with respective, path-based steps.
+Likewise, `simplePath()` and `cyclicPath()` now support, along with `from()` and `to()`, `by()`-modulation so the cyclicity
+is determined by projections of the path data. This extension is fully backwards compatible.
+
 Gremlin-Python Driver
 ^^^^^^^^^^^^^^^^^^^^^
 Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
