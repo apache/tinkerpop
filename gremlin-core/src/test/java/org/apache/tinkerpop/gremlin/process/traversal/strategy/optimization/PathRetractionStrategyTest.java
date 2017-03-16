@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -27,13 +28,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.internal.util.collections.Sets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,6 +57,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Ted Wilmes (http://twilmes.org)
@@ -74,6 +81,8 @@ public class PathRetractionStrategyTest {
 
     @Parameterized.Parameter(value = 2)
     public Traversal.Admin optimized;
+
+    private static final String PATH_RETRACTION_STRATEGY_DISABLED = "[]";
 
     @Test
     public void doTest() {
@@ -114,6 +123,14 @@ public class PathRetractionStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
 
+        final VertexProgram labeledPathVertexProgram = mock(VertexProgram.class);
+        final VertexProgram pathVertexProgram = mock(VertexProgram.class);
+        final VertexProgram emptyRequirementsVertexProgram = mock(VertexProgram.class);
+
+        when(labeledPathVertexProgram.getTraverserRequirements()).thenReturn(Sets.newSet(TraverserRequirement.LABELED_PATH));
+        when(pathVertexProgram.getTraverserRequirements()).thenReturn(Sets.newSet(TraverserRequirement.PATH));
+        when(emptyRequirementsVertexProgram.getTraverserRequirements()).thenReturn(Collections.EMPTY_SET);
+
         return Arrays.asList(new Object[][]{
                 {out(), "[]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out(), "[[]]", null},
@@ -126,14 +143,14 @@ public class PathRetractionStrategyTest {
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
                         "[[a, c], [a], []]", null},
-                {__.V().as("a").out().select("a").path(), "[]", null},
-                {__.V().as("a").out().select("a").map(t -> t.path().get("a")), "[]", null}, // lambda introspection is not possible
+                {__.V().as("a").out().select("a").path(), PATH_RETRACTION_STRATEGY_DISABLED, null},
+                {__.V().as("a").out().select("a").map(t -> t.path().get("a")), PATH_RETRACTION_STRATEGY_DISABLED, null}, // lambda introspection is not possible
                 {__.V().as("a").out().select("a").subgraph("b"), "[[]]", null},
                 {__.V().as("a").out().select("a").subgraph("b").select("a"), "[[a], []]", null},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name").path(),
-                        "[]", null},
+                        PATH_RETRACTION_STRATEGY_DISABLED, null},
                 {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), "[[a], []]", null},
                 {__.V().out().as("a").where(out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), "[[[a]], []]", null},
                 {__.V().as("a").out().as("b").where(out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
@@ -191,6 +208,9 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").optional(bothE().dedup().as("b")).
                         choose(select("b"), select("a","b"), project("a").by(select("a"))),
                         "[[[a, b]], [[a, b]], [[a, b]], [[[a, b]]], [[a, b]]]", null},
+                {__.V().as("a").out().where(neq("a")).program(labeledPathVertexProgram), PATH_RETRACTION_STRATEGY_DISABLED, null},
+                {__.V().as("a").out().where(neq("a")).program(pathVertexProgram).select("a"), PATH_RETRACTION_STRATEGY_DISABLED, null},
+                {__.V().as("a").out().program(emptyRequirementsVertexProgram).select("a"), "[[]]", null}
         });
     }
 }

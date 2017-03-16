@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -72,7 +73,11 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // do not apply this strategy if there are lambdas as you can't introspect to know what path information the lambdas are using
         // do not apply this strategy if a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)
-        if (TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder || step.getRequirements().contains(TraverserRequirement.PATH), TraversalHelper.getRootTraversal(traversal)))
+        // do not apply this strategy if a VertexProgramStep is present with LABELED_PATH requirements
+        if (TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
+                        step.getRequirements().contains(TraverserRequirement.PATH) ||
+                        (step instanceof VertexProgramStep && step.getRequirements().contains(TraverserRequirement.LABELED_PATH)),
+                TraversalHelper.getRootTraversal(traversal)))
             return;
 
         final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
