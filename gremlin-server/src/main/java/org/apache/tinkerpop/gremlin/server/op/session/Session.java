@@ -194,20 +194,20 @@ public class Session {
 
         if (!force) {
             // when the session is killed open transaction should be rolled back
-            graphManager.getGraphs().entrySet().forEach(kv -> {
-                final Graph g = kv.getValue();
+            graphManager.getGraphNames().stream().forEach(gName -> {
+                final Graph g = graphManager.getGraph(gName);
                 if (g.features().graph().supportsTransactions()) {
                     // have to execute the rollback in the executor because the transaction is associated with
                     // that thread of execution from this session
                     try {
                         executor.submit(() -> {
                             if (g.tx().isOpen()) {
-                                logger.info("Rolling back open transactions on {} before killing session: {}", kv.getKey(), session);
+                                logger.info("Rolling back open transactions on {} before killing session: {}", gName, session);
                                 g.tx().rollback();
                             }
                         }).get(configuredPerGraphCloseTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception ex) {
-                        logger.warn(String.format("An error occurred while attempting rollback on %s when closing session: %s", kv.getKey(), session), ex);
+                        logger.warn(String.format("An error occurred while attempting rollback on %s when closing session: %s", gName, session), ex);
                     }
                 }
             });

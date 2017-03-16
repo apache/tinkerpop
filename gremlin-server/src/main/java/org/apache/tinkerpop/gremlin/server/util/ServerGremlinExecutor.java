@@ -105,22 +105,22 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         this.settings = settings;
 
         if (null == graphManager) {
-          try {
-            final Class<?> clazz = Class.forName(settings.graphManager);
-            final Constructor c = clazz.getConstructor(Settings.class);
-            graphManager = (GraphManager) c.newInstance(settings);
-          } catch (ClassNotFoundException e) {
-            logger.error("Could not find GraphManager implementation "
-                         + "defined by the 'graphManager' setting as: {}",
-                         settings.graphManager);
-            throw new RuntimeException(e);
-          } catch (Exception e) {
-            logger.error("Could not invoke constructor on class {} (defined by "
-                         + "the 'graphManager' setting) with one argument of "
-                         + "class Settings",
-                         settings.graphManager);
-            throw new RuntimeException(e);
-          }
+            try {
+                final Class<?> clazz = Class.forName(settings.graphManager);
+                final Constructor c = clazz.getConstructor(Settings.class);
+                graphManager = (GraphManager) c.newInstance(settings);
+            } catch (ClassNotFoundException e) {
+                logger.error("Could not find GraphManager implementation "
+                             + "defined by the 'graphManager' setting as: {}",
+                             settings.graphManager);
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                logger.error("Could not invoke constructor on class {} (defined by "
+                             + "the 'graphManager' setting) with one argument of "
+                             + "class Settings",
+                             settings.graphManager);
+                throw new RuntimeException(e);
+            }
         }
 
         if (null == gremlinExecutorService) {
@@ -189,14 +189,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         // re-apply those references back
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> this.graphManager.addGraph(kv.getKey(), (Graph) kv.getValue()));
+                .forEach(kv -> this.graphManager.putGraph(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    this.graphManager.addTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
+                    this.graphManager.putTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
                 });
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them

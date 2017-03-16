@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import javax.script.Bindings;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,12 +43,13 @@ public class DefaultGraphManagerTest {
     public void shouldReturnGraphs() {
         final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
         final GraphManager graphManager = new DefaultGraphManager(settings);
-        final Map<String, Graph> m = graphManager.getGraphs();
+        final Set<String> graphNames = graphManager.getGraphNames();
 
-        assertNotNull(m);
-        assertEquals(1, m.size());
-        assertThat(m.containsKey("graph"), is(true));
-        assertThat(m.get("graph"), instanceOf(TinkerGraph.class));
+        assertNotNull(graphNames);
+        assertEquals(1, graphNames.size());
+
+        assertEquals(graphNames.toArray()[0], "graph");
+        assertThat(graphManager.getGraph("graph"), instanceOf(TinkerGraph.class));
     }
 
     @Test
@@ -61,7 +63,7 @@ public class DefaultGraphManagerTest {
         assertThat(bindings.get("graph"), instanceOf(TinkerGraph.class));
         assertThat(bindings.containsKey("graph"), is(true));
     }
-    
+
     @Test
     public void shouldGetGraph() {
         final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
@@ -71,18 +73,62 @@ public class DefaultGraphManagerTest {
         assertNotNull(graph);
         assertThat(graph, instanceOf(TinkerGraph.class));
     }
-    
+
     @Test
     public void shouldGetDynamicallyAddedGraph() {
         final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Graph graph = graphManager.getGraph("graph"); //fake out a graph instance
-        graphManager.addGraph("newGraph", graph);
-        
-        final Map<String, Graph> m = graphManager.getGraphs();
-        assertNotNull(m);
-        assertEquals(2, m.size());
-        assertThat(m.containsKey("newGraph"), is(true));
-        assertThat(m.get("newGraph"), instanceOf(TinkerGraph.class));
+        graphManager.putGraph("newGraph", graph);
+
+        final Set<String> graphNames = graphManager.getGraphNames();
+        assertNotNull(graphNames);
+        assertEquals(2, graphNames.size());
+        assertThat(graphNames.contains("newGraph"), is(true));
+        assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
+    }
+
+    @Test
+    public void shouldNotGetRemovedGraph() throws Exception {
+        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new DefaultGraphManager(settings);
+        final Graph graph = graphManager.getGraph("graph"); //fake out a graph instance
+        graphManager.putGraph("newGraph", graph);
+        final Set<String> graphNames = graphManager.getGraphNames();
+        assertNotNull(graphNames);
+        assertEquals(2, graphNames.size());
+        assertThat(graphNames.contains("newGraph"), is(true));
+        assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
+
+        graphManager.removeGraph("newGraph");
+
+        final Set<String> graphNames2 = graphManager.getGraphNames();
+        assertEquals(1, graphNames2.size());
+        assertThat(graphNames2.contains("newGraph"), is(false));
+    }
+
+    @Test
+    public void openGraphShouldReturnExistingGraph() {
+        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new DefaultGraphManager(settings);
+
+        Graph graph = graphManager.openGraph("graph", null);
+        assertNotNull(graph);
+        assertThat(graph, instanceOf(TinkerGraph.class));
+    }
+
+    @Test
+    public void openGraphShouldReturnNewGraphUsingThunk() {
+        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new DefaultGraphManager(settings);
+
+        Graph graph = graphManager.getGraph("graph"); //fake out graph instance
+
+        Graph newGraph = graphManager.openGraph("newGraph", (String gName) -> {
+            return graph;
+        });
+
+        assertNotNull(graph);
+        assertThat(graph, instanceOf(TinkerGraph.class));
     }
 }
