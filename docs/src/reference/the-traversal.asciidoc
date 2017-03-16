@@ -716,6 +716,14 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 <1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold `HasContainer`'s into a `GraphStep` to allow index lookups.
 <2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
 
+[[from-step]]
+From Step
+~~~~~~~~~
+
+The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
+<<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
+means by which they are added. The general pattern is `step().from()`. See <<to-step,`to()`>>-step.
+
 [[group-step]]
 Group Step
 ~~~~~~~~~~
@@ -2193,6 +2201,15 @@ benefit being that the calculation is guaranteed to complete at the specified ti
 note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is
 reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will
 yield `false`.
+
+[[to-step]]
+To Step
+~~~~~~~
+
+The `to()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
+<<by-step,`by()`>>. If a step is able to accept traversals or strings then `to()` is the
+means by which they are added. The general pattern is `step().to()`. See <<from-step,`from()`>>-step.
+
 
 [[tree-step]]
 Tree Step
