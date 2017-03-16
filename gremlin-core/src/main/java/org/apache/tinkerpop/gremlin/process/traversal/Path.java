@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
@@ -238,10 +239,44 @@ public interface Path extends Cloneable, Iterable<Object> {
                 isPresent();
     }
 
+    public default Path getSubPath(final String fromLabel, final String toLabel) {
+        if (null == fromLabel && null == toLabel)
+            return this;
+        else {
+            Path subPath = MutablePath.make();
+            boolean record = false;
+            int size = this.size();
+            for (int i = 0; i < size; i++) {
+                final Set<String> labels = this.labels().get(i);
+                if (labels.contains(fromLabel) || null == fromLabel)
+                    record = true;
+                if (record)
+                    subPath = subPath.extend(this.get(i), labels);
+                if (labels.contains(toLabel)) {
+                    if (!record)
+                        throw Path.Exceptions.couldNotLocalPathFromLabel(fromLabel);
+                    return subPath;
+                }
+            }
+            if (null == toLabel)
+                return subPath;
+            else
+                throw Path.Exceptions.couldNotLocalPathToLabel(toLabel);
+        }
+    }
+
     public static class Exceptions {
 
         public static IllegalArgumentException stepWithProvidedLabelDoesNotExist(final String label) {
             return new IllegalArgumentException("The step with label " + label + " does not exist");
+        }
+
+        public static IllegalArgumentException couldNotLocalPathFromLabel(final String fromLabel) {
+            return new IllegalArgumentException("Could not local path from-label: " + fromLabel);
+        }
+
+        public static IllegalArgumentException couldNotLocalPathToLabel(final String toLabel) {
+            return new IllegalArgumentException("Could not local path to-label: " + toLabel);
         }
     }
 }

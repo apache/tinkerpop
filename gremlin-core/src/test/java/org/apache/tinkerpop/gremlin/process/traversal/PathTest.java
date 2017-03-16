@@ -33,7 +33,11 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -374,5 +378,64 @@ public class PathTest {
                 assertEquals(pathA.hashCode(), pathB.hashCode());
             }
         }
+    }
+
+    @Test
+    public void shouldHaveSubPathSupport() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("b"));
+            path = path.extend("matthias", new HashSet<>(Arrays.asList("c", "x")));
+            path = path.extend("bob", Collections.singleton("d"));
+            assertEquals(4, path.size());
+            assertEquals(4, path.objects().size());
+            assertEquals(4, path.labels().size());
+            ///
+            Path subPath = path.getSubPath("b", "c");
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            assertEquals("matthias", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("b"));
+            assertEquals(1, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("c"));
+            assertTrue(subPath.labels().get(1).contains("x"));
+            assertEquals(2, subPath.labels().get(1).size());
+            ///
+            subPath = path.getSubPath("b", "b");
+            assertEquals(1, subPath.size());
+            assertEquals(1, subPath.objects().size());
+            assertEquals(1, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            ///
+            subPath = path.getSubPath("b", "b");
+            assertEquals(1, subPath.size());
+            assertEquals(1, subPath.objects().size());
+            assertEquals(1, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            ///
+            try {
+                subPath = path.getSubPath("d", "a");
+                fail("Path labels must be ordered along path");
+            } catch (final IllegalArgumentException e) {
+                assertTrue(true);
+            }
+            ///
+            try {
+                subPath = path.getSubPath("a", "e");
+                fail("End path label was not found");
+            } catch (final IllegalArgumentException e) {
+                assertEquals(Path.Exceptions.couldNotLocalPathToLabel("e").getMessage(), e.getMessage());
+            }
+            ///
+            try {
+                subPath = path.getSubPath("e", "b");
+                fail("Start path label was not found");
+            } catch (final IllegalArgumentException e) {
+                assertEquals(Path.Exceptions.couldNotLocalPathFromLabel("e").getMessage(), e.getMessage());
+            }
+        });
     }
 }
