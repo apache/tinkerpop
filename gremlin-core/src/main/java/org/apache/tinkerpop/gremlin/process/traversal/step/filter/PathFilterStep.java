@@ -19,32 +19,52 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathFilterStep<S> extends FilterStep<S> implements FromToModulating {
+public final class PathFilterStep<S> extends FilterStep<S> implements FromToModulating, ByModulating, TraversalParent, PathProcessor {
 
     protected String fromLabel;
     protected String toLabel;
     private boolean isSimple;
+    private TraversalRing<Object, Object> traversalRing;
+    private Set<String> keepLabels;
 
     public PathFilterStep(final Traversal.Admin traversal, final boolean isSimple) {
         super(traversal);
+        this.traversalRing = new TraversalRing<>();
         this.isSimple = isSimple;
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return traverser.path().getSubPath(this.fromLabel, this.toLabel).isSimple() == this.isSimple;
+        final Path path = traverser.path().getSubPath(this.fromLabel, this.toLabel);
+        this.traversalRing.reset();
+        if (this.traversalRing.isEmpty())
+            return path.isSimple() == this.isSimple;
+        else {
+            final Path byPath = MutablePath.make();
+            path.forEach((object, labels) -> byPath.extend(TraversalUtil.applyNullable(object, this.traversalRing.next()), labels));
+            return byPath.isSimple() == this.isSimple;
+
+        }
     }
 
     @Override
@@ -62,14 +82,59 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.isSimple ? "simple" : "cyclic", this.fromLabel, this.toLabel);
+        return StringFactory.stepString(this, this.isSimple ? "simple" : "cyclic", this.fromLabel, this.toLabel, this.traversalRing);
+    }
+
+    @Override
+    public PathFilterStep<S> clone() {
+        final PathFilterStep<S> clone = (PathFilterStep<S>) super.clone();
+        clone.traversalRing = this.traversalRing.clone();
+        return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
+    }
+
+    @Override
+    public List<Traversal.Admin<Object, Object>> getLocalChildren() {
+        return this.traversalRing.getTraversals();
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> pathTraversal) {
+        this.traversalRing.addTraversal(this.integrateChild(pathTraversal));
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.traversalRing.reset();
     }
 
     @Override
     public int hashCode() {
         return super.hashCode() ^
+                this.traversalRing.hashCode() ^
                 Boolean.hashCode(this.isSimple) ^
                 (null == this.fromLabel ? "null".hashCode() : this.fromLabel.hashCode()) ^
                 (null == this.toLabel ? "null".hashCode() : this.toLabel.hashCode());
+    }
+
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
     }
 }

@@ -38,10 +38,16 @@ public class PathFilterStepTest extends StepTest {
                 __.simplePath().from("a").to("b"),
                 __.simplePath().from("a"),
                 __.simplePath().to("b"),
+                __.simplePath().from("a").by("name").by("age"),
+                __.simplePath().from("a").to("b").by("name").by("age"),
+                __.simplePath().by("name").by("age"),
                 __.cyclicPath().from("a"),
                 __.cyclicPath().to("b"),
                 __.cyclicPath().from("a").to("b"),
-                __.cyclicPath()
+                __.cyclicPath(),
+                __.cyclicPath().from("a").by("name").by("age"),
+                __.cyclicPath().from("a").to("b").by("name").by("age"),
+                __.cyclicPath().by("name").by("age")
         );
     }
 }
