@@ -303,6 +303,16 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
+It is also possible to pass multiple scripts by specifying multiple `-e` options. The scripts will execute in the order
+that they are specified. Note that only the arguments from the last script executed will be preserved in the console.
+Finally, if the arguments conflict with the reserved flags that `gremlin.sh` responds double quotes can be used to
+wrap all the arugments to the option:
+
+[source,bash]
+----
+$ bin/gremlin.sh -e "gremlin.groovy -e -i --color"
+----
+
 [[interactive-mode]]
 Interactive Mode
 ~~~~~~~~~~~~~~~~
@@ -346,6 +356,9 @@ gremlin> g.V()
 
 Note that the user can now reference `g` (and `graph` for that matter) at startup without having to directly type that
 variable initialization code into the console.
+
+Like, execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
+<<execution-mode, Execution Mode Section>> for more information on the specfics of that capability.
 
 [[gremlin-server]]
 Gremlin Server
