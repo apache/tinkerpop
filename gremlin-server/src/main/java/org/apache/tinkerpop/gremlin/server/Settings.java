@@ -384,7 +384,23 @@ public class Settings {
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
          */
+        public String authenticator = AllowAllAuthenticator.class.getName();
+
+        /**
+         * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
+         * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
+         * not specified.
+         * @deprecated As of release 3.2.5, replaced by {@link authenticator}.
+         */
+        @Deprecated
         public String className = AllowAllAuthenticator.class.getName();
+
+        /**
+         * The fully qualified class name of the {@link HttpAuthenticationHandler} implementation.
+         * This class name will be used to load the implementation from the classpath.
+         * Defaults to null when not specified.
+         */
+        public String authenticationHandler = null;
 
         /**
          * A {@link Map} containing {@link Authenticator} specific configurations. Consult the
@@ -424,7 +440,7 @@ public class Settings {
          * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
          */
         public String trustCertChainFile = null;
-        
+
         /**
          * Require client certificate authentication
          */

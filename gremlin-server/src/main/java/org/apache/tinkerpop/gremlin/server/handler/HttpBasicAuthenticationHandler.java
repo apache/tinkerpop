@@ -42,13 +42,12 @@ import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.Credenti
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter {
-    private final Authenticator authenticator;
+public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandler {
 
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
 
     public HttpBasicAuthenticationHandler(final Authenticator authenticator) {
-        this.authenticator = authenticator;
+        super(authenticator);
     }
 
     @Override

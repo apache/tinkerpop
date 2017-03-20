@@ -21,7 +21,10 @@ package org.apache.tinkerpop.gremlin.server.channel;
 import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
@@ -42,7 +45,7 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
-    private HttpBasicAuthenticationHandler authenticationHandler;
+    private AbstractAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
@@ -68,12 +71,30 @@ public class HttpChannelizer extends AbstractChannelizer {
             // not occur. It may not be a safe assumption that the handler
             // is sharable so create a new handler each time.
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new HttpBasicAuthenticationHandler(authenticator);
+                    null : createAuthenticationHandler(settings);
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }
 
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
+    }
+
+    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {
+        final String authHandlerClass = authSettings.authenticationHandler;
+        if (authHandlerClass == null) {
+            //Keep things backwards compatible
+            return new HttpBasicAuthenticationHandler(authenticator);
+        } else {
+            try {
+                final Class<?> clazz = Class.forName(handlerClassName);
+                final Class[] constructorArgs = new Class[1];
+                constructorArgs[0] = Authenticator.class;
+                return (HttpAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator);
+            } catch (Exception ex) {
+                logger.warn(ex.getMessage());
+                throw new IllegalStateException(String.format("Could not create/configure HttpAuthenticationHandler %s", handlerClassName), ex);
+            }
+        }
     }
 
     @Override
