@@ -22,12 +22,15 @@ import org.apache.tinkerpop.benchmark.util.AbstractGraphMutateBenchmark;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Setup;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -61,15 +64,18 @@ public class GraphMutateBenchmark extends AbstractGraphMutateBenchmark {
 
     @Benchmark
     public Vertex testAddVertexWithProps() {
-        final Vertex v = graph.addVertex("test");
+        final List<Object> l = new ArrayList<>();
+        l.add(T.label);
+        l.add("test");
         for (int iy = 0; iy < 32; iy++) {
+            l.add("x" + String.valueOf(iy));
             if (iy % 2 == 0)
-                v.property("x" + String.valueOf(iy), iy);
+                l.add(iy);
             else
-                v.property("x" + String.valueOf(iy), String.valueOf(iy));
+                l.add(String.valueOf(iy));
         }
 
-        return v;
+        return graph.addVertex(l.toArray());
     }
 
     @Benchmark
