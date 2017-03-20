@@ -48,7 +48,7 @@ cd target/svn
 
 find ../site/home -mindepth 1 -maxdepth 1 -type d | xargs -n1 basename | xargs -r ${SVN_CMD} update
 
-diff -rq ./ ../site/home/ | awk -f ../../bin/publish-docs.awk | sed 's/^\(.\) \//\1 /g' > ../publish-home.files
+diff -rq ./ ../site/home/ | awk -f ../../bin/publish-home.awk | sed 's/^\(.\) \//\1 /g' > ../publish-home.files
 
 for file in $(cat ../publish-home.files | awk '/^[AU]/ {print $2}')
 do
