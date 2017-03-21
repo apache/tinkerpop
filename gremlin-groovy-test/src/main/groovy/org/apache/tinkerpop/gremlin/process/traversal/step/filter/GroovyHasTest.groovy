@@ -136,31 +136,6 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X(final Object v1Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id)", "v1Id", v1Id)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasIdX1X(final Object v1Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(v1Id)", "v1Id", v1Id)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1_2X(final Object v1Id, final Object v2Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id)", "v1Id", v1Id, "v2Id", v2Id)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(v1Id, v2Id)", "v1Id", v1Id, "v2Id", v2Id)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasIdXwithinX1_2XX(final Object v1Id, final Object v2Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(within(v1Id, v2Id))", "v1Id", v1Id, "v2Id", v2Id)
-        }
-
-        @Override
         public Traversal<Vertex, Vertex> get_g_V_in_hasIdXneqX1XX(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.in.hasId(neq(v1Id))", "v1Id", v1Id)
         }
@@ -168,6 +143,21 @@ public abstract class GroovyHasTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').has('age', P.not(lte(10).and(P.not(between(11,20)))).and(lt(29).or(eq(35)))).name")
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_value() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.properties().dedup.hasKey('age').value")
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.properties().dedup.hasKey('age').hasValue(gt(30)).value")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasNotXageX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasNot('age').name");
         }
     }
 }
