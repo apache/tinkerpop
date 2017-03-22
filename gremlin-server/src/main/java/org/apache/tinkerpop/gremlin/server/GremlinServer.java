@@ -218,10 +218,10 @@ public class GremlinServer {
             final Class clazz = Class.forName(settings.channelizer);
             final Object o = clazz.newInstance();
             return (Channelizer) o;
-        } catch (ClassNotFoundException fnfe) {
+        } catch (ClassNotFoundException cnfe) {
             logger.error("Could not find {} implementation defined by the 'channelizer' setting as: {}",
                     Channelizer.class.getName(), settings.channelizer);
-            throw new RuntimeException(fnfe);
+            throw new RuntimeException(cnfe);
         } catch (Exception ex) {
             logger.error("Class defined by the 'channelizer' setting as: {} could not be properly instantiated as a {}",
                     settings.channelizer, Channelizer.class.getName());
