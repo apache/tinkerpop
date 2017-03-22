@@ -77,6 +77,14 @@ which enables the "glv-python" Maven profile or in a more automated fashion simp
 `gremlin-python` module which will signify to Maven that the environment is Python-ready. The `.glv` file need not have
 any contents and is ignored by Git. A standard `mvn clean install` will then build `gremlin-python` in full.
 
+As of TinkerPop 3.2.5, the build also requires Python to execute `gremlin-console` integration tests. The integration
+test is configured by a "console-integration-tests" Maven profile. This profile can be activated manually or can more
+simply piggy-back on the `.glv` file in `gremlin-python`. Note that unlike `gremlin-python` the tests are actually
+integration tests and therefore must be actively switched on with `-DskipIntegrationTests=false`:
+
+[source,text
+mvn clean install -pl gremlin-console -DskipIntegrationTests=false
+
 [[release-environment]]
 Release Environment
 ~~~~~~~~~~~~~~~~~~~
