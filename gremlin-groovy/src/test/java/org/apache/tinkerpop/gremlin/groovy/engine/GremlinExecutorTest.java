@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -69,6 +71,22 @@ import static org.junit.Assert.fail;
 public class GremlinExecutorTest {
     public static Map<String, String> PATHS = new HashMap<>();
     private final BasicThreadFactory testingThreadFactory = new BasicThreadFactory.Builder().namingPattern("test-gremlin-executor-%d").build();
+
+    /**
+     * Temporary "useless" plugin definition to force GremlinExecutor to use GremlinScriptEngineManager - will be
+     * removed when the old functionality of ScriptEngines is removed.
+     */
+    private final Map<String, Map<String,Object>> triggerPlugin = new HashMap<String, Map<String,Object>>() {{
+        put(ImportGremlinPlugin.class.getName(), new HashMap<String,Object>() {{
+            put("classImports", Collections.singletonList("java.lang.Math"));
+        }});
+    }};
+
+    private final Map<String, Map<String,Object>> scriptFilePlugin = new HashMap<String, Map<String,Object>>() {{
+        put(ScriptFileGremlinPlugin.class.getName(), new HashMap<String,Object>() {{
+            put("files", Collections.singletonList(PATHS.get("GremlinExecutorInit.groovy")));
+        }});
+    }};
 
     static {
         try {
@@ -213,12 +231,24 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldGetGlobalBindings() throws Exception {
+    public void shouldGetGlobalBindingsDeprecated() throws Exception {
         final Bindings b = new SimpleBindings();
         final Object bound = new Object();
         b.put("x", bound);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(b).create();
         assertEquals(bound, gremlinExecutor.getGlobalBindings().get("x"));
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldGetGlobalBindings() throws Exception {
+        final Bindings b = new SimpleBindings();
+        final Object bound = new Object();
+        b.put("x", bound);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().
+                addPlugins("gremlin-groovy", triggerPlugin).
+                globalBindings(b).create();
+        assertEquals(bound, gremlinExecutor.getScriptEngineManager().getBindings().get("x"));
         gremlinExecutor.close();
     }
 
@@ -509,7 +539,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldInitializeWithScriptAndMakeGlobalBinding() throws Exception {
+    public void shouldInitializeWithScriptAndMakeGlobalBindingDeprecated() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
@@ -523,6 +553,21 @@ public class GremlinExecutorTest {
         assertThat(gremlinExecutor.getGlobalBindings().keySet(), not(hasItem("someSet")));
 
         assertEquals("stephen", gremlinExecutor.getGlobalBindings().get("name"));
+
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldInitializeWithScriptAndMakeGlobalBinding() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addPlugins("gremlin-groovy", scriptFilePlugin)
+                .create();
+
+        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
+        assertThat(gremlinExecutor.getScriptEngineManager().getBindings().keySet(), contains("name"));
+        assertThat(gremlinExecutor.getScriptEngineManager().getBindings().keySet(), not(hasItem("someSet")));
+
+        assertEquals("stephen", gremlinExecutor.getScriptEngineManager().getBindings().get("name"));
 
         gremlinExecutor.close();
     }
@@ -694,7 +739,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldAllowConcurrentModificationOfGlobals() throws Exception {
+    public void shouldAllowConcurrentModificationOfGlobalsDeprecated() throws Exception {
         // this test simulates a scenario that likely shouldn't happen - where globals are modified by multiple
         // threads.  globals are created in a synchronized fashion typically but it's possible that someone
         // could do something like this and this test validate that concurrency exceptions don't occur as a
@@ -722,6 +767,64 @@ public class GremlinExecutorTest {
                         gremlinExecutor.getGlobalBindings().put("g", i);
                         gremlinExecutor.getGlobalBindings().put(Integer.toString(i), i);
                         gremlinExecutor.getGlobalBindings().keySet().stream().filter(s -> i % 2 == 0 && !s.equals("g")).findFirst().ifPresent(globals::remove);
+                        final List<Integer> result = (List<Integer>) gremlinExecutor.eval(script, b).get();
+                        futures.add(Pair.with(i, result));
+                    } catch (Exception ex) {
+                        failed.set(true);
+                    }
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        service.shutdown();
+        assertThat(service.awaitTermination(60000, TimeUnit.MILLISECONDS), is(true));
+
+        // likely a concurrency exception if it occurs - and if it does then we've messed up because that's what this
+        // test is partially designed to protected against.
+        assertThat(failed.get(), is(false));
+
+        assertEquals(max, futures.size());
+        futures.forEach(t -> {
+            assertEquals(t.getValue0(), t.getValue1().get(0));
+            assertEquals(t.getValue0() * 2, t.getValue1().get(1).intValue());
+            assertEquals(t.getValue0() * -1, t.getValue1().get(2).intValue());
+            assertThat(t.getValue1().get(3).intValue(), greaterThan(-1));
+        });
+    }
+
+    @Test
+    public void shouldAllowConcurrentModificationOfGlobals() throws Exception {
+        // this test simulates a scenario that likely shouldn't happen - where globals are modified by multiple
+        // threads.  globals are created in a synchronized fashion typically but it's possible that someone
+        // could do something like this and this test validate that concurrency exceptions don't occur as a
+        // result
+        final ExecutorService service = Executors.newFixedThreadPool(8, testingThreadFactory);
+        final Bindings globals = new SimpleBindings();
+        globals.put("g", -1);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addPlugins("gremlin-groovy", triggerPlugin)
+                .globalBindings(globals).create();
+
+        final AtomicBoolean failed = new AtomicBoolean(false);
+        final int max = 512;
+        final List<Pair<Integer, List<Integer>>> futures = Collections.synchronizedList(new ArrayList<>(max));
+        IntStream.range(0, max).forEach(i -> {
+            final int yValue = i * 2;
+            final Bindings b = new SimpleBindings();
+            b.put("x", i);
+            b.put("y", yValue);
+            final int zValue = i * -1;
+
+            final String script = "z=" + zValue + ";[x,y,z,g]";
+            try {
+                service.submit(() -> {
+                    try {
+                        // modify the global in a separate thread
+                        gremlinExecutor.getScriptEngineManager().put("g", i);
+                        gremlinExecutor.getScriptEngineManager().put(Integer.toString(i), i);
+                        gremlinExecutor.getScriptEngineManager().getBindings().keySet().stream().filter(s -> i % 2 == 0 && !s.equals("g")).findFirst().ifPresent(globals::remove);
                         final List<Integer> result = (List<Integer>) gremlinExecutor.eval(script, b).get();
                         futures.add(Pair.with(i, result));
                     } catch (Exception ex) {

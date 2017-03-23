@@ -388,6 +388,11 @@ public class GremlinExecutor implements AutoCloseable {
         return scheduledExecutorService;
     }
 
+    /**
+     * @deprecated As of release 3.2.5, replaced by {@link #getScriptEngineManager()} to add global scoped bindings
+     * directly to that object.
+     */
+    @Deprecated
     public Bindings getGlobalBindings() {
         return globalBindings;
     }

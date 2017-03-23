@@ -478,8 +478,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 // registered by certain GremlinScriptEngine instances (pretty much talking about gremlin-groovy here)
                 // where type checking is made important. this may not be a good generic way to handled this in the
                 // long run, but for now we only have two GremlinScriptEngines to be concerned about so thus far it
-                // presents no real pains
-                final Object initializedBindings = engine.eval(initScript, getBindings());
+                // presents no real pains. global bindings are applied automatically to the context via
+                // AbstractScriptEngine.getScriptContext() - passing them again here to eval() will just make the
+                // global bindings behave as engine bindings and then you get weird things happening (like local vars
+                // becoming global).
+                final Object initializedBindings = engine.eval(initScript);
                 if (initializedBindings != null && initializedBindings instanceof Map)
                     ((Map<String,Object>) initializedBindings).forEach((k,v) -> put(k,v));
             } catch (Exception ex) {
