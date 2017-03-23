@@ -428,6 +428,18 @@ public class PathTest {
             assertTrue(subPath.labels().get(1).contains("d"));
             assertEquals(1, subPath.labels().get(1).size());
             ///
+            subPath = path.subPath("c",null);
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("matthias", subPath.objects().get(0));
+            assertEquals("bob", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("c"));
+            assertTrue(subPath.labels().get(0).contains("x"));
+            assertEquals(2, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("d"));
+            assertEquals(1, subPath.labels().get(1).size());
+            ///
             subPath = path.subPath("a","d");
             assertEquals(4, subPath.size());
             assertEquals(4, subPath.objects().size());
@@ -437,21 +449,21 @@ public class PathTest {
                 subPath = path.subPath("d", "a");
                 fail("Path labels must be ordered along path");
             } catch (final IllegalArgumentException e) {
-                assertTrue(true);
+                assertEquals(Path.Exceptions.couldNotIsolatedSubPath("d","a").getMessage(), e.getMessage());
             }
             ///
             try {
                 subPath = path.subPath("a", "e");
                 fail("End path label was not found");
             } catch (final IllegalArgumentException e) {
-                assertEquals(Path.Exceptions.couldNotLocalPathToLabel("e").getMessage(), e.getMessage());
+                assertEquals(Path.Exceptions.couldNotLocatePathToLabel("e").getMessage(), e.getMessage());
             }
             ///
             try {
                 subPath = path.subPath("e", "b");
                 fail("Start path label was not found");
             } catch (final IllegalArgumentException e) {
-                assertEquals(Path.Exceptions.couldNotLocalPathFromLabel("e").getMessage(), e.getMessage());
+                assertEquals(Path.Exceptions.couldNotLocatePathFromLabel("e").getMessage(), e.getMessage());
             }
         });
     }

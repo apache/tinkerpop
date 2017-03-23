@@ -242,6 +242,8 @@ public interface Path extends Cloneable, Iterable<Object> {
     /**
      * Isolate a sub-path from the path object. The isolation is based solely on the path labels.
      * The to-label is inclusive. Thus, from "b" to "c" would isolate the example path as follows {@code a,[b,c],d}.
+     * Note that if there are multiple path segments with the same label, then its the last occurrence that is isolated.
+     * For instance, from "b" to "c" would be {@code a,b,[b,c,d,c]}.
      *
      * @param fromLabel The label to start recording the sub-path from.
      * @param toLabel   The label to end recording the sub-path to.
@@ -253,24 +255,31 @@ public interface Path extends Cloneable, Iterable<Object> {
         else {
             Path subPath = MutablePath.make();
             final int size = this.size();
-            boolean record = false;
-            for (int i = 0; i < size; i++) {
+            int fromIndex = -1;
+            int toIndex = -1;
+            for (int i = size - 1; i >= 0; i--) {
                 final Set<String> labels = this.labels().get(i);
-                if (!record && (labels.contains(fromLabel) || null == fromLabel))
-                    record = true;
-                if (record)
-                    subPath = subPath.extend(this.get(i), labels);
-                if (labels.contains(toLabel)) {
-                    if (!record)
-                        throw Path.Exceptions.couldNotLocalPathFromLabel(fromLabel);
-                    else
-                        return subPath;
-                }
+                if (-1 == fromIndex && labels.contains(fromLabel))
+                    fromIndex = i;
+                if (-1 == toIndex && labels.contains(toLabel))
+                    toIndex = i;
             }
-            if (null == toLabel)
-                return subPath;
-            else
-                throw Path.Exceptions.couldNotLocalPathToLabel(toLabel);
+            if (null != fromLabel && -1 == fromIndex)
+                throw Path.Exceptions.couldNotLocatePathFromLabel(fromLabel);
+            if (null != toLabel && -1 == toIndex)
+                throw Path.Exceptions.couldNotLocatePathToLabel(toLabel);
+
+            if (fromIndex == -1)
+                fromIndex = 0;
+            if (toIndex == -1)
+                toIndex = size-1;
+            if (fromIndex > toIndex)
+                throw Path.Exceptions.couldNotIsolatedSubPath(fromLabel, toLabel);
+            for (int i = fromIndex; i <= toIndex; i++) {
+                final Set<String> labels = this.labels().get(i);
+                subPath.extend(this.get(i), labels);
+            }
+            return subPath;
         }
     }
 
@@ -280,12 +289,16 @@ public interface Path extends Cloneable, Iterable<Object> {
             return new IllegalArgumentException("The step with label " + label + " does not exist");
         }
 
-        public static IllegalArgumentException couldNotLocalPathFromLabel(final String fromLabel) {
+        public static IllegalArgumentException couldNotLocatePathFromLabel(final String fromLabel) {
             return new IllegalArgumentException("Could not locate path from-label: " + fromLabel);
         }
 
-        public static IllegalArgumentException couldNotLocalPathToLabel(final String toLabel) {
+        public static IllegalArgumentException couldNotLocatePathToLabel(final String toLabel) {
             return new IllegalArgumentException("Could not locate path to-label: " + toLabel);
+        }
+
+        public static IllegalArgumentException couldNotIsolatedSubPath(final String fromLabel, final String toLabel) {
+            return new IllegalArgumentException("Could not isolate path because from comes after to: " + fromLabel + "->" + toLabel);
         }
     }
 }
