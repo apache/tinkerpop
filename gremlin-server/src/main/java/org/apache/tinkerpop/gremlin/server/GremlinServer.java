@@ -317,6 +317,11 @@ public class GremlinServer {
             // removing them all will silent them up and release the appropriate resources.
             MetricManager.INSTANCE.removeAllReporters();
 
+            // removing all the metrics should allow Gremlin Server to clean up the metrics instance so that it can be
+            // started again in the same JVM without those metrics initialized which generates a warning and won't
+            // reset to start values
+            MetricManager.INSTANCE.removeAllMetrics();
+
             logger.info("Gremlin Server - shutdown complete");
             serverStopped.complete(null);
         }, SERVER_THREAD_PREFIX + "stop").start();
