@@ -42,6 +42,21 @@ set. Note that metrics are captured for both sessionless requests as well as for
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
 
+Gremlin Console Scripting
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `gremlin.sh` command has two flags, `-i` and `-e`, which are used to pass a script and arguments into the Gremlin
+Console for execution. Those flags now allow for passing multiple scripts and related arguments to be supplied which
+can yield greater flexibilty in automation tasks.
+
+[source,bash]
+----
+$ bin/gremlin.sh -i y.groovy 1 2 3 -i x.groovy
+$ bin/gremlin.sh -e y.groovy 1 2 3 -e x.groovy
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1653[TINKERPOP-1653]
+
 Gremlin-Python Driver
 ^^^^^^^^^^^^^^^^^^^^^
 Gremlin-Python now offers a more complete driver implementation that uses connection pooling and

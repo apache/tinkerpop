@@ -64,7 +64,7 @@ class Console {
     private final Groovysh groovy
     private final boolean interactive
 
-    public Console(final IO io, final List<String> scriptAndArgs, final boolean interactive) {
+    public Console(final IO io, final List<List<String>> scriptsAndArgs, final boolean interactive) {
         this.io = io
         this.interactive = interactive
 
@@ -135,7 +135,7 @@ class Console {
         try {
             // if the init script contains :x command it will throw an ExitNotification so init script execution
             // needs to appear in the try/catch
-            if (scriptAndArgs != null && scriptAndArgs.size() > 0) executeInShell(scriptAndArgs)
+            if (scriptsAndArgs != null && !scriptsAndArgs.isEmpty()) executeInShell(scriptsAndArgs)
 
             // start iterating results to show as output
             showShellEvaluationOutput(true)
@@ -341,49 +341,51 @@ class Console {
         return Preferences.resultPrompt
     }
 
-    private void executeInShell(final List<String> scriptAndArgs) {
-        final String scriptFile = scriptAndArgs[0]
-        try {
-            // check if this script comes with arguments. if so then set them up in an "args" bundle
-            if (scriptAndArgs.size() > 1) {
-                List<String> args = scriptAndArgs.subList(1, scriptAndArgs.size())
-                groovy.execute("args = [\"" + args.join('\",\"') + "\"]")
-            } else {
-                groovy.execute("args = []")
-            }
-
-            File file = new File(scriptFile)
-            if (!file.exists() && !file.isAbsolute()) {
-                final String userWorkingDir = System.getProperty("user.working_dir");
-                if (userWorkingDir != null) {
-                    file = new File(userWorkingDir, scriptFile);
+    private void executeInShell(final List<List<String>> scriptsAndArgs) {
+        scriptsAndArgs.each { scriptAndArgs ->
+            final String scriptFile = scriptAndArgs[0]
+            try {
+                // check if this script comes with arguments. if so then set them up in an "args" bundle
+                if (scriptAndArgs.size() > 1) {
+                    List<String> args = scriptAndArgs.subList(1, scriptAndArgs.size())
+                    groovy.execute("args = [\"" + args.join('\",\"') + "\"]")
+                } else {
+                    groovy.execute("args = []")
                 }
-            }
-            int lineNumber = 0
-            def lines = file.readLines()
-            for (String line : lines) {
-                try {
-                    lineNumber++
-                    groovy.execute(line)
-                } catch (Exception ex) {
-                    io.err.println(Colorizer.render(Preferences.errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
-                    if (interactive)
-                        break
-                    else {
-                        ex.printStackTrace(io.err)
-                        System.exit(1)
+
+                File file = new File(scriptFile)
+                if (!file.exists() && !file.isAbsolute()) {
+                    final String userWorkingDir = System.getProperty("user.working_dir");
+                    if (userWorkingDir != null) {
+                        file = new File(userWorkingDir, scriptFile);
                     }
-
                 }
-            }
+                int lineNumber = 0
+                def lines = file.readLines()
+                for (String line : lines) {
+                    try {
+                        lineNumber++
+                        groovy.execute(line)
+                    } catch (Exception ex) {
+                        io.err.println(Colorizer.render(Preferences.errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
+                        if (interactive)
+                            break
+                        else {
+                            ex.printStackTrace(io.err)
+                            System.exit(1)
+                        }
 
-            if (!interactive) System.exit(0)
-        } catch (FileNotFoundException ignored) {
-            io.err.println(Colorizer.render(Preferences.errorColor, "Gremlin file not found at [$scriptFile]."))
-            if (!interactive) System.exit(1)
-        } catch (Exception ex) {
-            io.err.println(Colorizer.render(Preferences.errorColor, "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
-            if (!interactive) System.exit(1)
+                    }
+                }
+
+                if (!interactive) System.exit(0)
+            } catch (FileNotFoundException ignored) {
+                io.err.println(Colorizer.render(Preferences.errorColor, "Gremlin file not found at [$scriptFile]."))
+                if (!interactive) System.exit(1)
+            } catch (Exception ex) {
+                io.err.println(Colorizer.render(Preferences.errorColor, "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
+                if (!interactive) System.exit(1)
+            }
         }
     }
 
@@ -391,8 +393,6 @@ class Console {
 
         Preferences.expandoMagic()
 
-        // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
-        // feature can be removed. ultimately this should be removed when a breaking change can go in
         IO io = new IO(System.in, System.out, System.err)
 
         final CliBuilder cli = new CliBuilder(usage: 'gremlin.sh [options] [...]', formatter: new HelpFormatter(), stopAtNonOption: false)
@@ -427,6 +427,8 @@ class Console {
         }
 
         if (options.v) {
+        if (args.length == 1 && !args[0].startsWith("-"))
+            new Console(io, [args[0]], true)
             println("gremlin " + Gremlin.version())
             System.exit(0)
         }
@@ -444,9 +446,50 @@ class Console {
             System.exit(0)
         }
 
-        List<String> scriptAndArgs = options.e ?
-                (options.es != null && options.es ? options.es : null) :
-                (options.is != null && options.is ? options.is : null)
-        new Console(io, scriptAndArgs, !options.e)
+        // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
+        // feature can be removed. ultimately this should be removed when a breaking change can go in
+        if (args.length == 1 && !args[0].startsWith("-")) {
+            new Console(io, [[args[0]]], true)
+        } else {
+            def scriptAndArgs = parseArgs(options.e ? "-e" : "-i", args, cli)
+            new Console(io, scriptAndArgs, !options.e)
+        }
+    }
+
+    /**
+     * Provides a bit of a hack around the limitations of the {@code CliBuilder}. This method directly parses the
+     * argument list to allow for multiple {@code -e} and {@code -i} values and parses such parameters into a list
+     * of lists where the inner list is a script file and its arguments.
+     */
+    private static List<List<String>> parseArgs(final String option, final String[] args, final CliBuilder cli) {
+        def parsed = []
+        for (int ix = 0; ix < args.length; ix++) {
+            if (args[ix] == option) {
+                // increment the counter to move past the option that was found. should now be positioned on the
+                // first argument to that option
+                ix++
+
+                def parsedSet = []
+                for (ix; ix < args.length; ix++) {
+                    // this is a do nothing as there's no arguments to the option or it's the start of a new option
+                    if (cli.options.options.any { "-" + it.opt == args[ix] || "--" + it.longOpt == args[ix] }) {
+                        // rollback the counter now that we hit the next option
+                        ix--
+                        break;
+                    }
+                    parsedSet << args[ix]
+                }
+
+                if (!parsedSet.isEmpty()) {
+                    // check if the params were passed in with double quotes such that they arrive as a single arg
+                    if (parsedSet.size() == 1)
+                        parsed << parsedSet[0].toString().split(" ").toList()
+                    else
+                        parsed << parsedSet
+                }
+            }
+        }
+
+        return parsed
     }
 }
