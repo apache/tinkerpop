@@ -154,12 +154,12 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         // script engine init may have altered the graph bindings or maybe even created new ones - need to
         // re-apply those references back
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
+        gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
                 .forEach(kv -> this.graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
+        gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
@@ -168,7 +168,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
         // up for execution
-        hooks = gremlinExecutor.getGlobalBindings().entrySet().stream()
+        hooks = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());

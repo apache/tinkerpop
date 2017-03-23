@@ -206,6 +206,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#build(String,List,List,List,Map)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getScriptEngines()`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getGlobalBindings()`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#enabledPlugins(Set)
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#addEngineSettings(String,List,List,List,Map)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#engineSettings(Map)`

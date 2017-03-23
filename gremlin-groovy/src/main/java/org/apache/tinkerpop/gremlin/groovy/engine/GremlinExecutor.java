@@ -351,10 +351,6 @@ public class GremlinExecutor implements AutoCloseable {
         return scheduledExecutorService;
     }
 
-    public Bindings getGlobalBindings() {
-        return globalBindings;
-    }
-
     /**
      * {@inheritDoc}
      * <p/>
