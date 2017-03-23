@@ -75,7 +75,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private static final String TOKEN_ALIAS = "alias";
     private static final String TOKEN_SESSION = "session";
     private static final String TOKEN_SESSION_MANAGED = "session-managed";
-    private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS);
+    private static final String TOKEN_HELP = "help";
+    private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS, TOKEN_HELP);
 
     private final Groovysh shell;
 
@@ -117,7 +118,9 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
         final List<String> arguments = args.subList(1, args.size());
 
-        if (option.equals(TOKEN_TIMEOUT)) {
+        if (option.equals(TOKEN_HELP)) {
+            return ":remote config [timeout [<ms>|none]|alias [reset|show|<alias> <actual>]|help]";
+        } else if (option.equals(TOKEN_TIMEOUT)) {
             final String errorMessage = "The timeout option expects a positive integer representing milliseconds or 'none' as an argument";
             if (arguments.size() != 1) throw new RemoteException(errorMessage);
             try {
