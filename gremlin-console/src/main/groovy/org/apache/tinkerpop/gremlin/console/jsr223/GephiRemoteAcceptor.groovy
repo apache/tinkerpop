@@ -99,8 +99,11 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     Object configure(final List<String> args) throws RemoteException {
-        if (args.size() < 2)
+        if (args.size() < 2 && args[0] != "help")
             throw new RemoteException("Invalid config arguments - check syntax")
+
+        if (args[0] == "help")
+            return ":remote config [host <host>|port <port>|workspace <name>|stepDelay <ms>|startRGBColor <0.0,0.0,0.0>|colorToFade [r|g|b]|colorFadeRate <0.0>|sizeDecrementRate <0.0>|startSize <0.0>|visualTraversal <graph>|help]"
 
         if (args[0] == "host")
             host = args[1]
