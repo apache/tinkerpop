@@ -39,5 +39,11 @@ public abstract class GroovyCyclicPathTest {
         Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out('created').in('created').cyclicPath().path()", "v1Id", v1Id);
         }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path(
+                final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').out('created').as('b').in('created').as('c').cyclicPath.from('a').to('b').path", "v1Id", v1Id)
+        }
     }
 }

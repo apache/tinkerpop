@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -74,6 +75,16 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class ComplexTest extends AbstractGremlinProcessTest {
 
+    public abstract Traversal<Vertex, String> getClassicRecommendation();
+
+    public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummary();
+
+    public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummaryOLTP();
+
+    public abstract Traversal<Vertex, List<Object>> getAllShortestPaths();
+
+    public abstract Traversal<Vertex, Map<String, List<String>>> getPlaylistPaths();
+
     /**
      * Checks the result of both coworkerSummary tests, which is expected to look as follows:
      * <p>
@@ -112,13 +123,6 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public abstract Traversal<Vertex, String> getClassicRecommendation();
-
-    public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummary();
-
-    public abstract Traversal<Vertex, Map<String, Map<String, Map<String, Object>>>> getCoworkerSummaryOLTP();
-
-    public abstract Traversal<Vertex, List<Object>> getAllShortestPaths();
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
@@ -220,6 +224,24 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         checkResults(allShortestPaths, traversal);
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    public void playlistPaths() {
+        final Traversal<Vertex, Map<String, List<String>>> traversal = getPlaylistPaths();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        Map<String, List<String>> map = traversal.next();
+        assertTrue(map.get("artists").contains("Bob_Dylan"));
+        boolean hasJohnnyCash = false;
+        while (traversal.hasNext()) {
+            map = traversal.next();
+            if (map.get("artists").contains("Johnny_Cash"))
+                hasJohnnyCash = true;
+        }
+        assertTrue(hasJohnnyCash);
+        assertTrue(map.get("artists").contains("Grateful_Dead"));
+    }
+
     public static class Traversals extends ComplexTest {
 
         @Override
@@ -286,6 +308,19 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                             by(select("src", "tgt")).
                             by(select("p").fold()).select("tgt").barrier()).
                     cap("x").select(values).unfold().unfold().map(unfold().id().fold());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<String>>> getPlaylistPaths() {
+            return g.V().has("name", "Bob_Dylan").in("sungBy").as("a").
+                    repeat(out().order().by(Order.shuffle).simplePath().from("a")).
+                    until(out("writtenBy").has("name", "Johnny_Cash")).limit(1).as("b").
+                    repeat(out().order().by(Order.shuffle).as("c").simplePath().from("b").to("c")).
+                    until(out("sungBy").has("name", "Grateful_Dead")).limit(1).
+                    path().from("a").unfold().
+                    <List<String>>project("song", "artists").
+                    by("name").
+                    by(__.coalesce(out("sungBy", "writtenBy").dedup().values("name"), constant("Unknown")).fold());
         }
     }
 }
