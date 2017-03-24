@@ -54,7 +54,7 @@ Implementing Gremlin-Core
 The classes that a graph system provider should focus on implementing are itemized below. It is a good idea to study
 the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph] (in-memory OLTP and OLAP
 in `tinkergraph-gremlin`), link:http://tinkerpop.apache.org/docs/x.y.z/reference/#neo4j-gremlin[Neo4jGraph]
-(OTLP w/ transactions in `neo4j-gremlin`) and/or
+(OLTP w/ transactions in `neo4j-gremlin`) and/or
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[HadoopGraph] (OLAP in `hadoop-gremlin`)
 implementations for ideas and patterns.
 
@@ -62,7 +62,7 @@ implementations for ideas and patterns.
  .. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
  .. Process API: `TraversalStrategy` instances for optimizing Gremlin traversals to the provider's graph system (i.e. `TinkerGraphStepStrategy`).
 . Online Analytics Processing Graph Systems (*OLAP*)
- .. Everything required of OTLP is required of OLAP (but not vice versa).
+ .. Everything required of OLTP is required of OLAP (but not vice versa).
  .. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
 
 Please consider the following implementation notes:
