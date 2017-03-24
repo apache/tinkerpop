@@ -23,8 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
@@ -72,8 +71,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
     private static final String MARKER = Graph.Hidden.hide("gremlin.incidentToAdjacent");
-    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(CyclicPathStep.class,
-            PathStep.class, SimplePathStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(
+            PathStep.class, PathFilterStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
     }

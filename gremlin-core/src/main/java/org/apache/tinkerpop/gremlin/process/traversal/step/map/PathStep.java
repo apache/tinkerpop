@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
@@ -36,10 +37,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating {
+public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating, FromToModulating {
 
     private TraversalRing<Object, Object> traversalRing;
     private Set<String> keepLabels;
+    private String fromLabel;
+    private String toLabel;
 
     public PathStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -48,16 +51,17 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     protected Path map(final Traverser.Admin<S> traverser) {
-        final Path path;
+        final Path path = traverser.path().subPath(this.fromLabel, this.toLabel);
         if (this.traversalRing.isEmpty())
-            path = traverser.path();
+            return path;
         else {
-            path = MutablePath.make();
-            traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.applyNullable(object, this.traversalRing.next()), labels));
+            this.traversalRing.reset();
+            final Path byPath = MutablePath.make();
+            path.forEach((object, labels) -> byPath.extend(TraversalUtil.applyNullable(object, this.traversalRing.next()), labels));
+            return byPath;
         }
-        this.traversalRing.reset();
-        return path;
     }
+
 
     @Override
     public PathStep<S> clone() {
@@ -116,5 +120,16 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     @Override
     public Set<String> getKeepLabels() {
         return this.keepLabels;
+    }
+
+
+    @Override
+    public void addFrom(final String fromLabel) {
+        this.fromLabel = fromLabel;
+    }
+
+    @Override
+    public void addTo(final String toLabel) {
+        this.toLabel = toLabel;
     }
 }

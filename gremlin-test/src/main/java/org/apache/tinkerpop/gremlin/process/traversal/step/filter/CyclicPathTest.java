@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +40,8 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1);
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1);
+
+    public abstract Traversal<Vertex, Path> get_g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -72,6 +73,14 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends CyclicPathTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
@@ -81,6 +90,11 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath().path();
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").as("b").in("created").as("c").cyclicPath().from("a").to("b").path();
         }
     }
 }

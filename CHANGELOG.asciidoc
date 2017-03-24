@@ -90,6 +90,11 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Script compilation times are placed in to logs.
 * Failed scripts will not be recompiled.
 * Scripts that take over 5 seconds to compile are logged as a warning.
+* Added `cyclicPath().from().to().by()` support to `GraphTraversal`.
+* Added `simplePath().from().to().by()` support to `GraphTraversal`.
+* Added `path().from().to()` support to `GraphTraversal` so sub-paths can be isolated from the current path.
+* Added `FromToModulating` interface for use with `to()`- and `from()`-based step modulators.
+* Added `Path.subPath()` which supports isolating a sub-path from `Path` via to/from-labels.
 * Fixed an `NullPointerException` in `GraphMLReader` that occurred when an `<edge>` didn't have an ID field and the base graph supported ID assignment.
 * Split `ComputerVerificationStrategy` into two strategies: `ComputerVerificationStrategy` and `ComputerFinalizationStrategy`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.

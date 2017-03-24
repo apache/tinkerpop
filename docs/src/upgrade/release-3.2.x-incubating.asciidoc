@@ -57,6 +57,15 @@ $ bin/gremlin.sh -e y.groovy 1 2 3 -e x.groovy
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1653[TINKERPOP-1653]
 
+simplePath(), cyclicPath(), and path() support by()-, from()-, to()-modulation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+It is now possible to extract analyze sub-paths using `from()` and `to()` modulations with respective, path-based steps.
+Likewise, `simplePath()` and `cyclicPath()` now support, along with `from()` and `to()`, `by()`-modulation so the cyclicity
+is determined by projections of the path data. This extension is fully backwards compatible.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1387[TINKERPOP-1387]
+
 Gremlin-Python Driver
 ^^^^^^^^^^^^^^^^^^^^^
 Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
@@ -87,6 +96,13 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+SimplePathStep and CyclicPathStep now PathFilterStep
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The Gremlin traversal machine use to support two step instructions: `SimplePathStep` and `CyclicPathStep`. These have
+been replaced by a high-level instruction called `PathFilterStep` which is boolean configured for simple or cyclic paths.
+Furthermore, `PathFilterStep` also support `from()`-, `to()`-, and `by()`-modulation.
 
 LazyBarrierStrategy No Longer End Appends Barriers
 ++++++++++++++++++++++++++++++++++++++++++++++++++
