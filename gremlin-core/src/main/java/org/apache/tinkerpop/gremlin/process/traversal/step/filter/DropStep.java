@@ -47,7 +47,7 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<Event> 
     protected boolean filter(Traverser.Admin<S> traverser) {
         final S s = traverser.get();
         if (s instanceof Element) {
-            final Element toRemove = ((Element) s);
+            final Element toRemove = (Element) s;
             if (callbackRegistry != null) {
                 final Event removeEvent;
                 if (s instanceof Vertex)
@@ -64,7 +64,7 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<Event> 
 
             toRemove.remove();
         } else if (s instanceof Property) {
-            final Property toRemove = ((Property) s);
+            final Property toRemove = (Property) s;
             if (callbackRegistry != null) {
                 final Event.ElementPropertyEvent removeEvent;
                 if (toRemove.element() instanceof Edge)

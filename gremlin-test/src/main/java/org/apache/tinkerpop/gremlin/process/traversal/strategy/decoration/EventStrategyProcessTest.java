@@ -291,7 +291,6 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(0, listener2.edgePropertyChangedEventRecorded());
         assertEquals(0, listener1.edgePropertyChangedEventRecorded());
-
     }
 
     @Test
@@ -537,16 +536,18 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
         final Property p = vp.property("to-drop", "dah");
         vp.property("not-dropped", "yay!");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyRemoved(final VertexProperty element, final Property property) {
-                assertEquals(vp.label(), element.label());
-                assertEquals(vp.value(), element.value());
-                assertEquals(p.value(), property.value());
-                assertEquals(p.key(), property.key());
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
                 triggered.set(true);
             }
         };
@@ -558,7 +559,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).properties("xxx").properties("to-drop").drop().iterate());
+        gts.V(v).properties("xxx").properties("to-drop").drop().iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(v.properties()));
         assertEquals(1, IteratorUtils.count(v.properties().next().properties()));
@@ -573,15 +575,17 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property("xxx","blah");
-        final Property p = vp.property("to-change", "dah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
-                assertEquals(vp.label(), element.label());
-                assertEquals(vp.value(), element.value());
-                assertEquals(p.value(), oldValue.value());
-                assertEquals(p.key(), oldValue.key());
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals("dah", oldValue.value());
+                assertEquals("to-change", oldValue.key());
                 assertEquals("bah", setValue);
                 triggered.set(true);
             }
@@ -594,7 +598,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).properties("xxx").property("to-change","bah").iterate());
+        gts.V(v).properties("xxx").property("to-change","bah").iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(v.properties()));
         assertEquals(1, IteratorUtils.count(v.properties().next().properties()));
@@ -608,13 +613,15 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property("xxx","blah");
-        final Property p = vp.property("to-change", "dah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
-                assertEquals(vp.label(), element.label());
-                assertEquals(vp.value(), element.value());
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
                 assertEquals(null, oldValue.value());
                 assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
@@ -629,7 +636,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).properties("xxx").property("new","yay!").iterate());
+        gts.V(v).properties("xxx").property("new","yay!").iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(v.properties()));
         assertEquals(2, IteratorUtils.count(v.properties().next().properties()));
@@ -642,16 +650,19 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("self", v, "not-dropped", "yay!");
-        final Property p = e.property("to-drop", "dah");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-drop", "dah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyRemoved(final Edge element, final Property property) {
-                assertEquals(e.label(), element.label());
-                assertEquals(e.inVertex().id(), element.inVertex().id());
-                assertEquals(e.outVertex().id(), element.outVertex().id());
-                assertEquals(p.value(), property.value());
-                assertEquals(p.key(), property.key());
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
                 triggered.set(true);
             }
         };
@@ -663,7 +674,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.E(e).properties("to-drop").drop().iterate());
+        gts.E(e).properties("to-drop").drop().iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(e.properties()));
         assertEquals("yay!", e.value("not-dropped"));
@@ -676,16 +688,19 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("self", v);
-        final Property p = e.property("to-change", "no!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
-                assertEquals(e.label(), element.label());
-                assertEquals(e.inVertex().id(), element.inVertex().id());
-                assertEquals(e.outVertex().id(), element.outVertex().id());
-                assertEquals(p.value(), oldValue.value());
-                assertEquals(p.key(), oldValue.key());
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("no!", oldValue.value());
+                assertEquals("to-change", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -698,7 +713,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.E(e).property("to-change","yay!").iterate());
+        gts.E(e).property("to-change","yay!").iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(e.properties()));
         assertThat(triggered.get(), is(true));
@@ -710,14 +726,17 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("self", v);
-        final Property p = e.property("to-change", "no!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
-                assertEquals(e.label(), element.label());
-                assertEquals(e.inVertex().id(), element.inVertex().id());
-                assertEquals(e.outVertex().id(), element.outVertex().id());
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
                 assertEquals(null, oldValue.value());
                 assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
@@ -732,7 +751,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.E(e).property("new","yay!").iterate());
+        gts.E(e).property("new","yay!").iterate();
+        tryCommit(graph);
 
         assertEquals(2, IteratorUtils.count(e.properties()));
         assertThat(triggered.get(), is(true));
@@ -745,13 +765,16 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("self", v, "dropped", "yay!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgeRemoved(final Edge element) {
-                assertEquals(e.label(), element.label());
-                assertEquals(e.inVertex().id(), element.inVertex().id());
-                assertEquals(e.outVertex().id(), element.outVertex().id());
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
                 triggered.set(true);
             }
         };
@@ -763,7 +786,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.E(e).drop().iterate());
+        gts.E(e).drop().iterate();
+        tryCommit(graph);
 
         assertVertexEdgeCounts(graph, 1, 0);
         assertThat(triggered.get(), is(true));
@@ -774,13 +798,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldDetachEdgeWhenAdded() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
+        final Object id = v.id();
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgeAdded(final Edge element) {
                 assertEquals("self", element.label());
-                assertEquals(v.id(), element.inVertex().id());
-                assertEquals(v.id(), element.outVertex().id());
+                assertEquals(id, element.inVertex().id());
+                assertEquals(id, element.outVertex().id());
                 assertEquals("there", element.value("here"));
                 triggered.set(true);
             }
@@ -793,7 +818,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).as("a").addE("self").property("here", "there").from("a").to("a").iterate());
+        gts.V(v).as("a").addE("self").property("here", "there").from("a").to("a").iterate();
+        tryCommit(graph);
 
         assertVertexEdgeCounts(graph, 1, 1);
         assertThat(triggered.get(), is(true));
@@ -805,13 +831,15 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property("to-remove","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
         final VertexProperty vpToKeep = v.property("to-keep","dah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyRemoved(final VertexProperty element) {
-                assertEquals(vp.label(), element.label());
-                assertEquals(vp.value(), element.value());
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
                 triggered.set(true);
             }
         };
@@ -823,7 +851,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).properties("to-remove").drop().iterate());
+        gts.V(v).properties("to-remove").drop().iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(v.properties()));
         assertEquals(vpToKeep.value(), v.value("to-keep"));
@@ -835,13 +864,15 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldDetachVertexPropertyWhenChanged() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
         v.property("to-change", "blah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-                assertEquals(v.label(), element.label());
-                assertEquals(v.id(), element.id());
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
                 assertEquals("to-change", oldValue.key());
                 assertEquals("blah", oldValue.value());
                 assertEquals("dah", setValue);
@@ -856,7 +887,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate());
+        gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate();
+        tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(v.properties()));
         assertThat(triggered.get(), is(true));
@@ -867,13 +899,15 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldDetachVertexPropertyWhenNew() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
         v.property("old","blah");
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-                assertEquals(v.label(), element.label());
-                assertEquals(v.id(), element.id());
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
                 assertEquals("new", oldValue.key());
                 assertEquals(null, oldValue.value());
                 assertEquals("dah", setValue);
@@ -888,7 +922,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate());
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
 
         assertEquals(2, IteratorUtils.count(v.properties()));
         assertThat(triggered.get(), is(true));
@@ -899,12 +934,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldDetachVertexWhenRemoved() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
 
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexRemoved(final Vertex element) {
-                assertEquals(v.id(), element.id());
-                assertEquals(v.label(), element.label());
+                assertEquals(id, element.id());
+                assertEquals(label, element.label());
                 triggered.set(true);
             }
         };
@@ -916,7 +953,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.V(v).drop().iterate());
+        gts.V(v).drop().iterate();
+        tryCommit(graph);
 
         assertVertexEdgeCounts(graph, 0, 0);
         assertThat(triggered.get(), is(true));
@@ -943,7 +981,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final EventStrategy eventStrategy = builder.create();
         final GraphTraversalSource gts = create(eventStrategy);
 
-        tryCommit(graph, g -> gts.addV("thing").property("here", "there").iterate());
+        gts.addV("thing").property("here", "there").iterate();
+        tryCommit(graph);
 
         assertVertexEdgeCounts(graph, 1, 0);
         assertThat(triggered.get(), is(true));
