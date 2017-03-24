@@ -2063,7 +2063,7 @@ g.V().out().as('a').out().as('b').out().as('c').
 
 By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are are acyclic.
 
-[gremlin-grovvy]
+[gremlin-groovy]
 ----
 g.addV().property(id, 'A').as('a').
   addV().property(id, 'B').as('b').
