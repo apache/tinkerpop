@@ -29,9 +29,10 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * De-registered metrics on Gremlin Server shutdown.
 * Added "help" command option on `:remote config` for plugins that support that feature in the Gremlin Console.
 * Allowed for multiple scripts and related arguments to be passed to `gremlin.sh` via `-i` and `-e`.
+* Updated `PathRetractionStrategy` to not run if the provided traversal contains a `VertexProgramStep` that has a `LABELED_PATH` requirement.
 * Added various metrics to the `GremlinGroovyScriptEngine` around script compilation and exposed them in Gremlin Server.
 * Moved the `caffeine` dependency down to `gremlin-groovy` and out of `gremlin-server`.
-* Improved script compilation in `GremlinGroovyScriptEngine to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
+* Improved script compilation in `GremlinGroovyScriptEngine` to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
 * Script compilation is synchronised.
 * Script compilation times are placed in to logs.
 * Failed scripts will not be recompiled.
