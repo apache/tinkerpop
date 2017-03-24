@@ -2065,20 +2065,20 @@ g.V().out().as('a').out().as('b').out().as('c').
 
 By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are are acyclic.
 
-[gremlin-grovvy]
+[gremlin-groovy]
 ----
-g.addV().property(id, "A").as("a").
-  addV().property(id, "B").as("b").
-  addV().property(id, "C").as("c").
-  addV().property(id, "D").as("d").
-  addE("link").from("a").to("b").
-  addE("link").from("b").to("c").
-  addE("link").from("c").to("d").iterate()
-g.V("A").repeat(both().simplePath()).times(3).path()  <1>
-g.V("D").repeat(both().simplePath()).times(3).path()  <2>
-g.V("A").as("a").
-  repeat(both().simplePath().from("a")).times(3).as("b").
-  repeat(both().simplePath().from("b")).times(3).path()  <3>
+g.addV().property(id, 'A').as('a').
+  addV().property(id, 'B').as('b').
+  addV().property(id, 'C').as('c').
+  addV().property(id, 'D').as('d').
+  addE('link').from('a').to('b').
+  addE('link').from('b').to('c').
+  addE('link').from('c').to('d').iterate()
+g.V('A').repeat(both().simplePath()).times(3).path()  <1>
+g.V('D').repeat(both().simplePath()).times(3).path()  <2>
+g.V('A').as('a').
+  repeat(both().simplePath().from('a')).times(3).as('b').
+  repeat(both().simplePath().from('b')).times(3).path()  <3>
 ----
 
 <1> Traverse all acyclic 3-hop paths starting from vertex `A`
