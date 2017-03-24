@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
@@ -471,6 +472,27 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         loadedPlugins.clear();
 
         getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+    }
+
+    /**
+     * Creates the {@code ScriptContext} using a {@link GremlinScriptContext} which avoids a significant amount of
+     * additional object creation on script evaluation.
+     */
+    @Override
+    protected ScriptContext getScriptContext(final Bindings nn) {
+        final GremlinScriptContext ctxt = new GremlinScriptContext(context.getReader(), context.getWriter(), context.getErrorWriter());
+        final Bindings gs = getBindings(ScriptContext.GLOBAL_SCOPE);
+
+        if (gs != null) ctxt.setBindings(gs, ScriptContext.GLOBAL_SCOPE);
+
+        if (nn != null) {
+            ctxt.setBindings(nn,
+                    ScriptContext.ENGINE_SCOPE);
+        } else {
+            throw new NullPointerException("Engine scope Bindings may not be null.");
+        }
+
+        return ctxt;
     }
 
     /**
