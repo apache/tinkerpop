@@ -92,11 +92,6 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     }
 
     @Override
-    public JavaType typeFromId(final String s) {
-        return typeFromId(null, s);
-    }
-
-    @Override
     public JavaType typeFromId(final DatabindContext databindContext, final String s) {
         // Get the type from the string from the stored Map. If not found, default to deserialize as a String.
         return getIdToType().containsKey(s)
