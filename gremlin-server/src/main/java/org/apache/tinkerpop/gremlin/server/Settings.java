@@ -384,7 +384,7 @@ public class Settings {
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
          */
-        public String authenticator = AllowAllAuthenticator.class.getName();
+        public String authenticator = null;
 
         /**
          * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
@@ -396,7 +396,7 @@ public class Settings {
         public String className = AllowAllAuthenticator.class.getName();
 
         /**
-         * The fully qualified class name of the {@link HttpAuthenticationHandler} implementation.
+         * The fully qualified class name of the {@link AbstractAuthenticationHandler} implementation.
          * This class name will be used to load the implementation from the classpath.
          * Defaults to null when not specified.
          */

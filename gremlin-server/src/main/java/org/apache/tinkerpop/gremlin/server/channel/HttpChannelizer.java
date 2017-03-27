@@ -71,7 +71,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             // not occur. It may not be a safe assumption that the handler
             // is sharable so create a new handler each time.
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : createAuthenticationHandler(settings);
+                    null : instantiateAuthenticationHandler(settings.authentication);
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }
@@ -85,15 +85,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             //Keep things backwards compatible
             return new HttpBasicAuthenticationHandler(authenticator);
         } else {
-            try {
-                final Class<?> clazz = Class.forName(handlerClassName);
-                final Class[] constructorArgs = new Class[1];
-                constructorArgs[0] = Authenticator.class;
-                return (HttpAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator);
-            } catch (Exception ex) {
-                logger.warn(ex.getMessage());
-                throw new IllegalStateException(String.format("Could not create/configure HttpAuthenticationHandler %s", handlerClassName), ex);
-            }
+            return createAuthenticationHandler(authSettings);
         }
     }
 
