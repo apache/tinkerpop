@@ -78,12 +78,17 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         // do not apply this strategy if a VertexProgramStep is present with LABELED_PATH requirements
         if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
                 TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
-                                                   step.getRequirements().contains(TraverserRequirement.PATH) ||
-                                                   (step instanceof VertexProgramStep && step.getRequirements().contains(TraverserRequirement.LABELED_PATH)),traversal))
+                                                   step.getRequirements().contains(TraverserRequirement.PATH),traversal)) {
             TraversalHelper.applyTraversalRecursively(t -> t.getEndStep().addLabel(MARKER), traversal);
+        }
 
         if (traversal.getEndStep().getLabels().contains(MARKER)) {
             traversal.getEndStep().removeLabel(MARKER);
+            return;
+        }
+
+        if (TraversalHelper.anyStepRecursively(step -> step instanceof VertexProgramStep && step.getRequirements().contains(TraverserRequirement.LABELED_PATH),
+                TraversalHelper.getRootTraversal(traversal))) {
             return;
         }
 
