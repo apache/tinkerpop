@@ -1880,20 +1880,25 @@ merge, their respective sacks are added together.
 
 [gremlin-groovy,modern]
 ----
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()) <1>
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).sack() <2>
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows') <3>
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').sack() <4>
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <5>
-g.withBulk(false).withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <6>
+g.withSack(1.0d).V(1).out('knows').in('knows') <1>
+g.withSack(1.0d).V(1).out('knows').in('knows').sack() <2>
+g.withSack(1.0d, sum).V(1).out('knows').in('knows').sack() <3>
+g.withSack(1.0d).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier() <4>
+g.withSack(1.0d).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <5>
+g.withSack(1.0d,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <6>
+g.withBulk(false).withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <7>
+g.withBulk(false).withSack(1.0f).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack()<8>
+
 ----
 
-<1> The knows-adjacent vertices of vertex 1 are vertices 2 and 4.
-<2> The `local(...barrier(normSack)...)` ensures that all traversers leaving vertex 1 have an evenly distributed amount of the initial 1.0 "energy" (50-50).
-<3> Going from vertices 2 and 4 yield two traversers at vertex 1.
-<4> Those two traversers each have a sack of 0.5.
-<5> The `barrier()` merges the two traversers at vertex 1 into a single traverser whose sack is 1.0.
-<6> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting `withBulk(false)` yields the expected 1.0.
+<1> We find vertex 1 twice because he knows two other people
+<2> Without a merge operation the sack values are 1.0.
+<3> When specifying `sum` as the merge operation, the sack values are 2.0 because of bulking
+<4> Like 1, but using barrier internally
+<5> The `local(...barrier(normSack)...)` ensures that all traversers leaving vertex 1 have an evenly distributed amount of the initial 1.0 "energy" (50-50), i.e. the sack is 0.5 on each result
+<6> Like 3, but using `sum` as merge operator leads to the expected 1.0
+<7> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting withBulk(false) yields the expected 1.0
+<8> Like 7, but without the sum operator
 
 
 [[sample-step]]
