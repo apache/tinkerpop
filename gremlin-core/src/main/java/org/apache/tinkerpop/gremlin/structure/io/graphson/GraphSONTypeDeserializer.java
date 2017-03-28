@@ -154,7 +154,7 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
 
                 if (typeName != null && valueDetected) {
                     // Type has been detected pattern detected.
-                    final JavaType typeFromId = idRes.typeFromId(null, typeName);
+                    final JavaType typeFromId = idRes.typeFromId(deserializationContext, typeName);
 
                     if (!baseType.isJavaLangObject() && !baseType.equals(typeFromId)) {
                         throw new InstantiationException(

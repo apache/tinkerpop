@@ -97,7 +97,7 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         return getIdToType().containsKey(s)
                 ? getIdToType().get(s)
                 // TODO: shouldn't we fail instead, if the type is not found? Or log something?
-                : TypeFactory.defaultInstance().constructType(String.class);
+                : databindContext.constructType(String.class);
     }
 
     @Override
