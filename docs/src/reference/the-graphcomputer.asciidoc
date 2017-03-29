@@ -20,7 +20,7 @@ The GraphComputer
 
 image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a
 graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and
-link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based
+link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OLTP-based
 graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only
 possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set
 of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP
@@ -394,7 +394,7 @@ TraversalVertexProgram
 
 image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in
 that it can be executed via a `GraphTraversal` with a `ComputerTraversalEngine`. In Gremlin, it is possible to have
-the same traversal executed using either the standard OTLP-engine or the `GraphComputer` OLAP-engine. The difference
+the same traversal executed using either the standard OLTP-engine or the `GraphComputer` OLAP-engine. The difference
 being where the traversal is submitted.
 
 NOTE: This model of graph traversal in a BSP system was first implemented by the
