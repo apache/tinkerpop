@@ -58,7 +58,7 @@ public final class Parameters implements Cloneable, Serializable {
      * {@link #set(TraversalParent, Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
      * high number of calls to {@link #getTraversals()} is great.
      */
-    private List<Traversal.Admin<?,?>> traversals = new ArrayList<>();
+    private List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
 
     /**
      * Checks for existence of key in parameter set.
@@ -199,7 +199,7 @@ public final class Parameters implements Cloneable, Serializable {
      */
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
         // stupid generics - just need to return "traversals"
-        return (List<Traversal.Admin<S, E>>) (Object) traversals;
+        return (List<Traversal.Admin<S, E>>) (Object) this.traversals;
     }
 
     /**
@@ -213,14 +213,24 @@ public final class Parameters implements Cloneable, Serializable {
         try {
             final Parameters clone = (Parameters) super.clone();
             clone.parameters = new HashMap<>();
+            clone.traversals = new ArrayList<>();
             for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
                 final List<Object> values = new ArrayList<>();
                 for (final Object value : entry.getValue()) {
-                    values.add(value instanceof Traversal.Admin ? ((Traversal.Admin) value).clone() : value);
+                    if (value instanceof Traversal.Admin) {
+                        final Traversal.Admin<?, ?> traversalClone = ((Traversal.Admin) value).clone();
+                        clone.traversals.add(traversalClone);
+                        values.add(traversalClone);
+                    } else
+                        values.add(value);
                 }
-                clone.parameters.put(entry.getKey() instanceof Traversal.Admin ? ((Traversal.Admin) entry.getKey()).clone() : entry.getKey(), values);
+                if (entry.getKey() instanceof Traversal.Admin) {
+                    final Traversal.Admin<?, ?> traversalClone = ((Traversal.Admin) entry.getKey()).clone();
+                    clone.traversals.add(traversalClone);
+                    clone.parameters.put(traversalClone, values);
+                } else
+                    clone.parameters.put(entry.getKey(), values);
             }
-
             clone.referencedLabels = new HashSet<>(this.referencedLabels);
             return clone;
         } catch (final CloneNotSupportedException e) {
@@ -253,11 +263,11 @@ public final class Parameters implements Cloneable, Serializable {
     }
 
     private void addTraversal(final Traversal.Admin t) {
-        traversals.add(t);
+        this.traversals.add(t);
         for (final Object ss : t.getSteps()) {
             if (ss instanceof Scoping) {
                 for (String label : ((Scoping) ss).getScopeKeys()) {
-                    referencedLabels.add(label);
+                    this.referencedLabels.add(label);
                 }
             }
         }
