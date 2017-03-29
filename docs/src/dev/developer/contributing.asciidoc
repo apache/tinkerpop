@@ -188,14 +188,14 @@ in doubt, please ask on dev@tinkerpop.apache.org.
 `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`. Note that Hadoop must be running for the integration
 tests to execute.
 .. Docker can help simplify building and testing: `docker/build.sh -t -i -n`
-.. Please see the <<building-test,Building and Testing>> section for more building and testing options.
+.. Please see the <<building-testing,Building and Testing>> section for more building and testing options.
 . Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.
 .. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one more entries to
 help summarize the change.
 .. Some changes will require updates to the "upgrade documentation" - usually reserved for major new features and
 breaking changes.
 .. Docker can help simplify documentation generation: `docker/build.sh -d`
-.. Please see the <<building-test,Building and Testing>> section for more documentation generation options.
+.. Please see the <<building-testing,Building and Testing>> section for more documentation generation options.
 . Open the link:https://help.github.com/articles/using-pull-requests/[pull request] against the appropriate branch
 on the Apache TinkerPop repository.
 .. Target the pull request at the appropriate branch in TinkerPop's repository
