@@ -87,11 +87,12 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Updated `PathRetractionStrategy` to not run if the provided traversal contains a `VertexProgramStep` that has a `LABELED_PATH` requirement.
 * Added various metrics to the `GremlinGroovyScriptEngine` around script compilation and exposed them in Gremlin Server.
 * Moved the `caffeine` dependency down to `gremlin-groovy` and out of `gremlin-server`.
-* Improved script compilation in `GremlinGroovyScriptEngine` to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
-* Script compilation is synchronised.
-* Script compilation times are placed in to logs.
-* Failed scripts will not be recompiled.
-* Scripts that take over 5 seconds to compile are logged as a warning.
+* Improved script compilation in `GremlinGroovyScriptEngine to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
+* Synchronized script compilation.
+* Logged Script compilation times.
+* Prevented failed scripts from recompiling.
+* Logged warnings for scripts that take "too long" to compile.
+* Improved memory usage of the `GremlinGroovyScriptEngine`.
 * Added `cyclicPath().from().to().by()` support to `GraphTraversal`.
 * Added `simplePath().from().to().by()` support to `GraphTraversal`.
 * Added `path().from().to()` support to `GraphTraversal` so sub-paths can be isolated from the current path.
