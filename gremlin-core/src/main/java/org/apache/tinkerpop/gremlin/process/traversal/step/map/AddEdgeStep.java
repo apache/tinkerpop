@@ -73,13 +73,13 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     }
 
     @Override
-    public void addTo(final Traversal.Admin<?,?> toObject) {
+    public void addTo(final Traversal.Admin<?, ?> toObject) {
         this.parameters.set(TO, toObject);
         this.parameters.integrateTraversals(this);
     }
 
     @Override
-    public void addFrom(final Traversal.Admin<?,?> fromObject) {
+    public void addFrom(final Traversal.Admin<?, ?> fromObject) {
         this.parameters.set(FROM, fromObject);
         this.parameters.integrateTraversals(this);
     }
@@ -117,6 +117,12 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters.toString());
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override

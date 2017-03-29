@@ -43,17 +43,17 @@ public abstract class GroovyAddEdgeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.aggregate('x').as('a').select('x').unfold.addE('existsWith').to('a').property('time', 'now')");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.aggregate('x').as('a').select('x').unfold.addE('existsWith').to('a').property('time', 'now')")
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').in('created').where(neq('a')).as('b').addE('codeveloper').from('a').to('b').property('year', 2009)");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').in('created').where(neq('a')).as('b').addE('codeveloper').from('a').to('b').property('year', 2009)")
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_inXcreatedX_addEXcreatedByX_fromXaX_propertyXyear_2009X_propertyXacl_publicX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').in('created').addE('createdBy').from('a').property('year', 2009).property('acl', 'public')");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').in('created').addE('createdBy').from('a').property('year', 2009).property('acl', 'public')")
         }
 
         @Override
@@ -74,12 +74,17 @@ public abstract class GroovyAddEdgeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').in('created').where(neq('a')).as('b').select('a','b').addInE('a', 'codeveloper', 'b', 'year', 2009)");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').in('created').where(neq('a')).as('b').select('a','b').addInE('a', 'codeveloper', 'b', 'year', 2009)")
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_inXcreatedX_addInEXcreatedBy_a_year_2009_acl_publicX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').in('created').addInE('createdBy', 'a', 'year', 2009, 'acl', 'public')");
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').in('created').addInE('createdBy', 'a', 'year', 2009, 'acl', 'public')")
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV().as('first').repeat(addE('next').to(addV()).inV).times(5).addE('next').to(select('first'))")
         }
     }
 }

@@ -99,6 +99,12 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
+    }
+
+    @Override
     public AddVertexStep<S> clone() {
         final AddVertexStep<S> clone = (AddVertexStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
