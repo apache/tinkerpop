@@ -89,7 +89,7 @@ g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's
 link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine.
 In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph],
-link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the
+link:https://hama.apache.org/[Hama]. TinkerPop3 extends the
 popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
 [[mapreduce]]
@@ -398,7 +398,7 @@ the same traversal executed using either the standard OTLP-engine or the `GraphC
 being where the traversal is submitted.
 
 NOTE: This model of graph traversal in a BSP system was first implemented by the
-link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in
+link:https://github.com/thinkaurelius/faunus/wiki[Faunus] graph analytics engine and originally described in
 link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
 [gremlin-groovy,modern]
@@ -475,7 +475,7 @@ sideEffect.
 computational limits can easily be reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion]
 of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to being
 counted/merged. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more
-information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].
+information on this concept, please see link:https://thinkaurelius.wordpress.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].
 . When traversals of the form `x.as('a').y.someSideEffectStep('a').z` are evaluated, the `a` object is stored in the
 path information of the traverser and thus, such traversals (may) turn on path calculations when executed on a
 `GraphComputer`
