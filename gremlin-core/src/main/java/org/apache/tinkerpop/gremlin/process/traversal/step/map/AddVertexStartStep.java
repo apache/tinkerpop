@@ -114,6 +114,12 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
+    }
+
+    @Override
     public AddVertexStartStep clone() {
         final AddVertexStartStep clone = (AddVertexStartStep) super.clone();
         clone.parameters = this.parameters.clone();

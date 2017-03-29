@@ -80,6 +80,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a step id compilation bug in `AddVertexStartStep`, `AddVertexStep`, `AddEdgeStep`, and `AddPropertyStep`.
 * De-registered metrics on Gremlin Server shutdown.
 * Added "help" command option on `:remote config` for plugins that support that feature in the Gremlin Console.
 * Allowed for multiple scripts and related arguments to be passed to `gremlin.sh` via `-i` and `-e`.

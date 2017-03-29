@@ -105,7 +105,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
             else if (element instanceof VertexProperty)
                 evt = new Event.VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) element, true),
                         newProperty ?
-                                new DetachedProperty(key, null):
+                                new DetachedProperty(key, null) :
                                 DetachedFactory.detach(currentProperty), value);
             else
                 throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), element));
@@ -136,6 +136,12 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
     public int hashCode() {
         final int hash = super.hashCode() ^ this.parameters.hashCode();
         return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
