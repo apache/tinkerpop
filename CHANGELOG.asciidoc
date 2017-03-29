@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `NullPointerException` bug in `B_LP_O_S_SE_SL_Traverser`.
 * `PathRetractionStrategy` now uses the marker-model to reduce recursive lookups of invalidating steps.
 * `ProfileStrategy` now uses the marker-model to reduce recursive lookups of `ProfileSideEffectStep`.
 * `Mutating` steps now implement `Scoping` interface.

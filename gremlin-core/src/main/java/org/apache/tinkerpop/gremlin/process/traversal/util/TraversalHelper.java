@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -435,7 +436,7 @@ public final class TraversalHelper {
      * Determine if any child step of a {@link TraversalParent} match the step given the provided {@link Predicate}.
      *
      * @param predicate the match function
-     * @param step the step to perform the action on
+     * @param step      the step to perform the action on
      * @return {@code true} if there is a match and {@code false} otherwise
      */
     public static boolean anyStepRecursively(final Predicate<Step> predicate, final TraversalParent step) {
@@ -552,8 +553,10 @@ public final class TraversalHelper {
 
     public static boolean hasLabels(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (!step.getLabels().isEmpty())
-                return true;
+            for (final String label : step.getLabels()) {
+                if (!Graph.Hidden.isHidden(label))
+                    return true;
+            }
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
                     if (TraversalHelper.hasLabels(local))

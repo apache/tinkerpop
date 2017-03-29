@@ -121,7 +121,7 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
                 && ((B_LP_O_S_SE_SL_Traverser) object).t.equals(this.t)
                 && ((B_LP_O_S_SE_SL_Traverser) object).future.equals(this.future)
                 && ((B_LP_O_S_SE_SL_Traverser) object).loops == this.loops
-                && (null == this.sack || null != this.sideEffects.getSackMerger())
+                && (null == this.sack || (null != this.sideEffects && null != this.sideEffects.getSackMerger())) // hmmm... serialization in OLAP destroys the transient sideEffects
                 && ((B_LP_O_S_SE_SL_Traverser) object).path.popEquals(Pop.last, this.path); // this should be Pop.all?
     }
 
