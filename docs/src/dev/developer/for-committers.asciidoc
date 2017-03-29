@@ -344,10 +344,10 @@ To get started, TinkerPop has both "source" and "binary" LICENSE/NOTICE files:
 * Source LICENSE/NOTICE relate to files packaged with the released source code distribution:
 link:https://github.com/apache/tinkerpop/blob/master/LICENSE[LICENSE] / link:https://github.com/apache/tinkerpop/blob/master/NOTICE[NOTICE]
 * Binary LICENSE/NOTICE relate to files packaged with the released binary distributions:
-** Gremlin Console link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/NOTICE[NOTICE]
-** Gremlin Server link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/NOTICE[NOTICE]
+** Gremlin Console link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/static/LICENSE[LICENSE]
+/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/static/NOTICE[NOTICE]
+** Gremlin Server link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/LICENSE[LICENSE]
+/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/NOTICE[NOTICE]
 
 Source LICENSE and NOTICE
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -373,7 +373,7 @@ distributions, either:
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
 license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
-added to the `<project>/static/licenses` directory of the code repository.
+added to the `<project>/src/main/static/licenses` directory of the code repository.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
 found in `/META-INF` directory of the jar).
