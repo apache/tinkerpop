@@ -69,6 +69,13 @@ fi
 
 touch gremlin-python/.glv
 
+# use a custom maven settings.xml
+if [ -r "settings.xml" ]; then
+  echo "Copying settings.xml"
+  mkdir -p ~/.m2
+  cp settings.xml ~/.m2/
+fi
+
 mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
