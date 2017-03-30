@@ -315,6 +315,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {  <1>
     public String toString() {
         return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations);
     }
+}
 ----
 
 <1> `PageRankVertexProgram` implements `VertexProgram<Double>` because the messages it sends are Java doubles.
