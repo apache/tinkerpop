@@ -137,11 +137,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements =
-                TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
-                        TYPICAL_GLOBAL_REQUIREMENTS :
-                        TYPICAL_LOCAL_REQUIREMENTS;
-        return this.getSelfAndChildRequirements(requirements.toArray(new TraverserRequirement[requirements.size()]));
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override

@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.List;
 
@@ -34,34 +37,28 @@ import java.util.List;
 public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
+    private static final String MARKER = Graph.Hidden.hide("gremlin.profile");
 
     private ProfileStrategy() {
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal).asAdmin())) {
-            prepTraversalForProfiling(traversal);
-        }
-    }
-
-    // Iterate the traversal steps and inject the .profile()-steps.
-    private void prepTraversalForProfiling(Traversal.Admin<?, ?> traversal) {
-        // Add .profile() step after every pre-existing step.
-        final List<Step> steps = traversal.getSteps();
-        final int numSteps = steps.size();
-        for (int ii = 0; ii < numSteps; ii++) {
-            // Get the original step
-            final Step step = steps.get(ii * 2);
-
-            // Do not inject profiling after ProfileSideEffectStep as this will be the last step on the root traversal.
-            if (step instanceof ProfileSideEffectStep) {
-                break;
+        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+                TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, traversal))
+            TraversalHelper.applyTraversalRecursively(t -> t.getEndStep().addLabel(MARKER), traversal);
+        if (traversal.getEndStep().getLabels().contains(MARKER)) {
+            traversal.getEndStep().removeLabel(MARKER);
+            // Add .profile() step after every pre-existing step.
+            final List<Step> steps = traversal.getSteps();
+            final int numSteps = steps.size();
+            for (int i = 0; i < numSteps; i++) {
+                // Do not inject profiling after ProfileSideEffectStep as this will be the last step on the root traversal.
+                if (steps.get(i * 2) instanceof ProfileSideEffectStep)
+                    break;
+                // Create and inject ProfileStep
+                traversal.addStep((i * 2) + 1, new ProfileStep(traversal));
             }
-
-            // Create and inject ProfileStep
-            ProfileStep profileStep = new ProfileStep(traversal);
-            traversal.addStep((ii * 2) + 1, profileStep);
         }
     }
 

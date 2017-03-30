@@ -103,9 +103,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).contains(this.selectKey) ?
-                TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
-                TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
@@ -123,12 +121,14 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public Set<String> getKeepLabels() { return this.keepLabels; }
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 
     @Override
     protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<E> traverser = super.processNextStart();
-        if(!(this.getTraversal().getParent() instanceof MatchStep)) {
+        if (!(this.getTraversal().getParent() instanceof MatchStep)) {
             PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
         }
         return traverser;

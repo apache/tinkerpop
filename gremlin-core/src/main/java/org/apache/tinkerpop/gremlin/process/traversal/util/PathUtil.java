@@ -18,19 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author Ted Wilmes (http://twilmes.org)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PathUtil {
 
@@ -49,19 +47,6 @@ public class PathUtil {
 
     public static Set<String> getReferencedLabels(final Step step) {
         final Set<String> referencedLabels = new HashSet<>();
-
-        if (step instanceof Parameterizing) { // TODO: we should really make the mutation steps Scoping :|
-            final Parameters parameters = ((Parameterizing) step).getParameters();
-            for (final Traversal.Admin trav : parameters.getTraversals()) {
-                for (final Object ss : trav.getSteps()) {
-                    if (ss instanceof Scoping) {
-                        for (String label : ((Scoping) ss).getScopeKeys()) {
-                            referencedLabels.add(label);
-                        }
-                    }
-                }
-            }
-        }
 
         if (step instanceof Scoping) {
             final Set<String> labels = new HashSet<>(((Scoping) step).getScopeKeys());

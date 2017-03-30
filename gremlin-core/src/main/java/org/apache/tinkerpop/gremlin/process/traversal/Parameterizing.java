@@ -21,9 +21,17 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 /**
+ * An interface for {@link Step} implementations that hold a {@link Parameters} object, which fold in arguments from
+ * other steps. It is typically used on mutating steps, such as {@code addV()}, where calls to {@code property(k,v)}
+ * are folded in as parameters to that add vertex step.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Parameterizing {
 
+    /**
+     * Gets the parameters on the step.
+     */
     public Parameters getParameters();
 }
