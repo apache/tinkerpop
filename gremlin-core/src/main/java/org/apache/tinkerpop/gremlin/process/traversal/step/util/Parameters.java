@@ -22,18 +22,22 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -47,6 +51,14 @@ public final class Parameters implements Cloneable, Serializable {
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private Map<Object, List<Object>> parameters = new HashMap<>();
+    private Set<String> referencedLabels = new HashSet<>();
+
+    /**
+     * A cached list of traversals that serve as parameter values. The list is cached on calls to
+     * {@link #set(TraversalParent, Object...)} because when the parameter map is large the cost of iterating it repeatedly on the
+     * high number of calls to {@link #getTraversals()} is great.
+     */
+    private List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
 
     /**
      * Checks for existence of key in parameter set.
@@ -68,6 +80,10 @@ public final class Parameters implements Cloneable, Serializable {
         this.parameters.put(newKey, this.parameters.remove(oldKey));
     }
 
+    /**
+     * Gets the list of values for a key, while resolving the values of any parameters that are {@link Traversal}
+     * objects.
+     */
     public <S, E> List<E> get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {
         final List<E> values = (List<E>) this.parameters.get(key);
         if (null == values) return Collections.singletonList(defaultValue.get());
@@ -97,11 +113,31 @@ public final class Parameters implements Cloneable, Serializable {
      * @return the value of the removed key
      */
     public Object remove(final Object key) {
-        return parameters.remove(key);
+        final List<Object> o = parameters.remove(key);
+
+        // once a key is removed, it's possible that the traversal/label cache will need to be regenerated
+        if (IteratorUtils.anyMatch(o.iterator(), p -> p instanceof Traversal.Admin)) {
+            traversals.clear();
+            traversals = new ArrayList<>();
+            for (final List<Object> list : this.parameters.values()) {
+                for (final Object object : list) {
+                    if (object instanceof Traversal.Admin) {
+                        final Traversal.Admin t = (Traversal.Admin) object;
+                        addTraversal(t);
+                    }
+                }
+            }
+        }
+
+        return o;
     }
 
+    /**
+     * Gets the array of keys/values of the parameters while resolving parameter values that contain
+     * {@link Traversal} instances.
+     */
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
-        if (this.parameters.size() == 0) return EMPTY_ARRAY;
+        if (this.parameters.isEmpty()) return EMPTY_ARRAY;
         final List<Object> keyValues = new ArrayList<>();
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             if (!ArrayUtils.contains(exceptKeys, entry.getKey())) {
@@ -134,10 +170,18 @@ public final class Parameters implements Cloneable, Serializable {
     /**
      * Set parameters given key/value pairs.
      */
-    public void set(final Object... keyValues) {
+    public void set(final TraversalParent parent, final Object... keyValues) {
         Parameters.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
+                // track the list of traversals that are present so that elsewhere in Parameters there is no need
+                // to iterate all values to not find any. also grab available labels in traversal values
+                if (keyValues[i + 1] instanceof Traversal.Admin) {
+                    final Traversal.Admin t = (Traversal.Admin) keyValues[i + 1];
+                    addTraversal(t);
+                    if (parent != null) parent.integrateChild(t);
+                }
+
                 List<Object> values = this.parameters.get(keyValues[i]);
                 if (null == values) {
                     values = new ArrayList<>();
@@ -150,39 +194,44 @@ public final class Parameters implements Cloneable, Serializable {
         }
     }
 
-    public void integrateTraversals(final TraversalParent step) {
-        for (final List<Object> values : this.parameters.values()) {
-            for (final Object object : values) {
-                if (object instanceof Traversal.Admin) {
-                    step.integrateChild((Traversal.Admin) object);
-                }
-            }
-        }
+    /**
+     * Gets all the {@link Traversal.Admin} objects in the map of parameters.
+     */
+    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
+        // stupid generics - just need to return "traversals"
+        return (List<Traversal.Admin<S, E>>) (Object) this.traversals;
     }
 
-    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        List<Traversal.Admin<S, E>> result = new ArrayList<>();
-        for (final List<Object> list : this.parameters.values()) {
-            for (final Object object : list) {
-                if (object instanceof Traversal.Admin) {
-                    result.add((Traversal.Admin) object);
-                }
-            }
-        }
-        return result;
+    /**
+     * Gets a list of all labels held in parameters that have a traversal as a value.
+     */
+    public Set<String> getReferencedLabels() {
+        return referencedLabels;
     }
 
     public Parameters clone() {
         try {
             final Parameters clone = (Parameters) super.clone();
             clone.parameters = new HashMap<>();
+            clone.traversals = new ArrayList<>();
             for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
                 final List<Object> values = new ArrayList<>();
                 for (final Object value : entry.getValue()) {
-                    values.add(value instanceof Traversal.Admin ? ((Traversal.Admin) value).clone() : value);
+                    if (value instanceof Traversal.Admin) {
+                        final Traversal.Admin<?, ?> traversalClone = ((Traversal.Admin) value).clone();
+                        clone.traversals.add(traversalClone);
+                        values.add(traversalClone);
+                    } else
+                        values.add(value);
                 }
-                clone.parameters.put(entry.getKey() instanceof Traversal.Admin ? ((Traversal.Admin) entry.getKey()).clone() : entry.getKey(), values);
+                if (entry.getKey() instanceof Traversal.Admin) {
+                    final Traversal.Admin<?, ?> traversalClone = ((Traversal.Admin) entry.getKey()).clone();
+                    clone.traversals.add(traversalClone);
+                    clone.parameters.put(traversalClone, values);
+                } else
+                    clone.parameters.put(entry.getKey(), values);
             }
+            clone.referencedLabels = new HashSet<>(this.referencedLabels);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -210,6 +259,17 @@ public final class Parameters implements Cloneable, Serializable {
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T) && !(propertyKeyValues[i] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
+        }
+    }
+
+    private void addTraversal(final Traversal.Admin t) {
+        this.traversals.add(t);
+        for (final Object ss : t.getSteps()) {
+            if (ss instanceof Scoping) {
+                for (String label : ((Scoping) ss).getScopeKeys()) {
+                    this.referencedLabels.add(label);
+                }
+            }
         }
     }
 }

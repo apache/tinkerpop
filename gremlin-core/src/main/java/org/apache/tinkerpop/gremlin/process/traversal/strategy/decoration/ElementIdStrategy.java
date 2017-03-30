@@ -111,7 +111,7 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
                 if (parameterizing.getParameters().contains(T.id))
                     parameterizing.getParameters().rename(T.id, this.idPropertyKey);
                 else if (!parameterizing.getParameters().contains(this.idPropertyKey))
-                    parameterizing.getParameters().set(this.idPropertyKey, idMaker.get());
+                    parameterizing.getParameters().set(null, this.idPropertyKey, idMaker.get());
             }
         });
     }

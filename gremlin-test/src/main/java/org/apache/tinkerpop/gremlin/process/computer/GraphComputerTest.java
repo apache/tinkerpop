@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -47,6 +48,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.AbstractMap;
@@ -57,6 +60,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,9 +110,6 @@ import static org.junit.Assume.assumeNoException;
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
-})
-@ExceptionCoverage(exceptionClass = Path.Exceptions.class, methods = {
-        "shouldFailWithImproperTraverserRequirements"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class GraphComputerTest extends AbstractGremlinProcessTest {
@@ -2350,30 +2351,26 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldSucceedWithProperTraverserRequirements() throws Exception {
 
-        final AtomicInteger counter = new AtomicInteger(0);
-        final Map<String, Object> idsByName = new HashMap<>();
-        final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").create();
-
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map map) ->
-                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
+        final VertexProgramQ vp = VertexProgramQ.build().property("pl").create();
+        final Map<String, List<Integer>> expected = new HashMap<>();
+        expected.put("vadas", Collections.singletonList(2));
+        expected.put("lop", Arrays.asList(2, 2, 2, 3));
+        expected.put("josh", Collections.singletonList(2));
+        expected.put("ripple", Arrays.asList(2, 3));
 
         try {
-            g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
+            g.V().repeat(__.out()).emit().program(vp).dedup()
+                    .valueMap("name", "pl").forEachRemaining((Map<String, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
-                final Map<Object, Long> coworkers = (Map<Object, Long>) ((List) map.get("coworkers")).get(0);
-                assertTrue(idsByName.containsKey(name));
-                assertEquals(2, coworkers.size());
-                idsByName.keySet().stream().filter(cn -> !cn.equals(name)).forEach(cn -> {
-                    final Object cid = idsByName.get(cn);
-                    assertTrue(coworkers.containsKey(cid));
-                    assertEquals(1L, coworkers.get(cid).longValue());
-                });
-                counter.incrementAndGet();
+                final List<Integer> pathLengths = (List<Integer>) map.get("pl");
+                assertTrue(expected.containsKey(name));
+                final List<Integer> expectedPathLengths = expected.remove(name);
+                assertTrue(expectedPathLengths.containsAll(pathLengths));
+                assertTrue(pathLengths.containsAll(expectedPathLengths));
             });
 
-            assertEquals(3, counter.intValue());
+            assertTrue(expected.isEmpty());
         } catch (VerificationException ex) {
             assumeNoException(ex);
         }
@@ -2382,27 +2379,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldFailWithImproperTraverserRequirements() throws Exception {
-
-        final AtomicInteger counter = new AtomicInteger(0);
-        final Map<String, Object> idsByName = new HashMap<>();
-        final VertexProgramQ vp = VertexProgramQ.build().from("a").property("coworkers").
-                useTraverserRequirements(false).create();
-
-        g.V().hasLabel("person").filter(outE("created")).valueMap(true, "name").forEachRemaining((Map map) ->
-                idsByName.put((String) ((List) map.get("name")).get(0), map.get(id)));
-
+        final VertexProgramQ vp = VertexProgramQ.build().property("pl").useTraverserRequirements(false).create();
         try {
-            g.V().as("a").out("created").in("created").program(vp).dedup()
-                    .valueMap("name", "coworkers").forEachRemaining((Map<String, Object> map) -> {
-
-                final String name = (String) ((List) map.get("name")).get(0);
-                final Map coworkers = (Map) ((List) map.get("coworkers")).get(0);
-                assertTrue(idsByName.containsKey(name));
-                assertTrue(coworkers.isEmpty());
-                counter.incrementAndGet();
-            });
-
-            assertEquals(3, counter.intValue());
+            g.V().repeat(__.out()).emit().program(vp).dedup()
+                    .forEachRemaining((Vertex v) -> assertFalse(v.property("pl").isPresent()));
         } catch (VerificationException ex) {
             assumeNoException(ex);
         }
@@ -2411,18 +2391,58 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     private static class VertexProgramQ implements VertexProgram<Object> {
 
         private static final String VERTEX_PROGRAM_Q_CFG_PREFIX = "gremlin.vertexProgramQ";
-        private static final String MAP_KEY_CFG_KEY = VERTEX_PROGRAM_Q_CFG_PREFIX + ".source";
         private static final String PROPERTY_CFG_KEY = VERTEX_PROGRAM_Q_CFG_PREFIX + ".property";
+        private static final String LENGTHS_KEY = VERTEX_PROGRAM_Q_CFG_PREFIX + ".lengths";
         private static final String USE_TRAVERSER_REQUIREMENTS_CFG_KEY = VERTEX_PROGRAM_Q_CFG_PREFIX + ".useTraverserRequirements";
+
+        private final static Set<MemoryComputeKey> MEMORY_COMPUTE_KEYS = Collections.singleton(
+                MemoryComputeKey.of(LENGTHS_KEY, Operator.addAll, true, true)
+        );
 
         private final Set<VertexComputeKey> elementComputeKeys;
         private Configuration configuration;
-        private String sourceKey;
         private String propertyKey;
         private Set<TraverserRequirement> traverserRequirements;
 
         private VertexProgramQ() {
             elementComputeKeys = new HashSet<>();
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        static class Builder extends AbstractVertexProgramBuilder<Builder> {
+
+            private Builder() {
+                super(VertexProgramQ.class);
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public VertexProgramQ create(final Graph graph) {
+                if (graph != null) {
+                    ConfigurationUtils.append(graph.configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
+                }
+                return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
+            }
+
+            public VertexProgramQ create() {
+                return create(null);
+            }
+
+            public Builder property(final String name) {
+                configuration.setProperty(PROPERTY_CFG_KEY, name);
+                return this;
+            }
+
+            /**
+             * This is only configurable for the purpose of testing. In a real-world VP this would be a bad pattern.
+             */
+            public Builder useTraverserRequirements(final boolean value) {
+                configuration.setProperty(USE_TRAVERSER_REQUIREMENTS_CFG_KEY, value);
+                return this;
+            }
         }
 
         @Override
@@ -2433,16 +2453,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             }
         }
 
+
         @Override
         public void loadState(final Graph graph, final Configuration config) {
             configuration = new BaseConfiguration();
             if (config != null) {
                 ConfigurationUtils.copy(config, configuration);
             }
-            sourceKey = configuration.getString(MAP_KEY_CFG_KEY);
             propertyKey = configuration.getString(PROPERTY_CFG_KEY);
             traverserRequirements = configuration.getBoolean(USE_TRAVERSER_REQUIREMENTS_CFG_KEY, true)
-                    ? Collections.singleton(TraverserRequirement.LABELED_PATH) : Collections.emptySet();
+                    ? Collections.singleton(TraverserRequirement.PATH) : Collections.emptySet();
             elementComputeKeys.add(VertexComputeKey.of(propertyKey, false));
         }
 
@@ -2452,34 +2472,36 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
-            final Property<TraverserSet> haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS);
-            if (!haltedTraversers.isPresent()) return;
-            final Iterator iterator = haltedTraversers.value().iterator();
-            if (iterator.hasNext()) {
-                List<Map.Entry<Object, Long>> list = new ArrayList<>();
-                while (iterator.hasNext()) {
-                    final Traverser t = (Traverser) iterator.next();
-                    try {
-                        final Vertex source = (Vertex) t.path(sourceKey);
-                        if (!source.id().equals(vertex.id())) {
-                            final Map.Entry<Object, Long> entry = new AbstractMap.SimpleEntry<>(source.id(), t.bulk());
-                            list.add(entry);
+            if (memory.isInitialIteration()) {
+                final Property<TraverserSet> haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS);
+                if (!haltedTraversers.isPresent()) return;
+                final Iterator iterator = haltedTraversers.value().iterator();
+                if (iterator.hasNext()) {
+                    while (iterator.hasNext()) {
+                        final Traverser t = (Traverser) iterator.next();
+                        if (!(t.path() instanceof EmptyPath)) {
+                            final int pathLength = t.path().size();
+                            final List<Pair<Vertex, Integer>> memoryValue = new LinkedList<>();
+                            memoryValue.add(Pair.with(vertex, pathLength));
+                            memory.add(LENGTHS_KEY, memoryValue);
                         }
-                        assertFalse(traverserRequirements.isEmpty());
-                    } catch (Exception ex) {
-                        assertTrue(traverserRequirements.isEmpty());
-                        validateException(Path.Exceptions.stepWithProvidedLabelDoesNotExist(sourceKey), ex);
                     }
                 }
-                final Map<Object, Number> map = new HashMap<>(list.size(), 1f);
-                for (Map.Entry<Object, Long> entry : list) map.put(entry.getKey(), entry.getValue());
-                vertex.property(propertyKey, map);
+            } else {
+                if (memory.exists(LENGTHS_KEY)) {
+                    final List<Pair<Vertex, Integer>> lengths = memory.get(LENGTHS_KEY);
+                    for (final Pair<Vertex, Integer> pair : lengths) {
+                        if (pair.getValue0().equals(vertex)) {
+                            vertex.property(VertexProperty.Cardinality.list, propertyKey, pair.getValue1());
+                        }
+                    }
+                }
             }
         }
 
         @Override
         public boolean terminate(final Memory memory) {
-            return memory.isInitialIteration();
+            return !memory.isInitialIteration();
         }
 
         @Override
@@ -2490,6 +2512,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<VertexComputeKey> getVertexComputeKeys() {
             return elementComputeKeys;
+        }
+
+        @Override
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return MEMORY_COMPUTE_KEYS;
         }
 
         @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
@@ -2523,46 +2550,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             };
         }
 
-        public static Builder build() {
-            return new Builder();
-        }
 
-        static class Builder extends AbstractVertexProgramBuilder<Builder> {
-
-            private Builder() {
-                super(VertexProgramQ.class);
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public VertexProgramQ create(final Graph graph) {
-                if (graph != null) {
-                    ConfigurationUtils.append(graph.configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
-                }
-                return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramQ create() {
-                return create(null);
-            }
-
-            public Builder from(final String label) {
-                configuration.setProperty(MAP_KEY_CFG_KEY, label);
-                return this;
-            }
-
-            public Builder property(final String name) {
-                configuration.setProperty(PROPERTY_CFG_KEY, name);
-                return this;
-            }
-
-            /**
-             * This is only configurable for the purpose of testing. In a real-world VP this would be a bad pattern.
-             */
-            public Builder useTraverserRequirements(final boolean value) {
-                configuration.setProperty(USE_TRAVERSER_REQUIREMENTS_CFG_KEY, value);
-                return this;
-            }
-        }
     }
 }

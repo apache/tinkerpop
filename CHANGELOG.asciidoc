@@ -26,10 +26,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `NullPointerException` bug in `B_LP_O_S_SE_SL_Traverser`.
+* `PathRetractionStrategy` now uses the marker-model to reduce recursive lookups of invalidating steps.
+* `ProfileStrategy` now uses the marker-model to reduce recursive lookups of `ProfileSideEffectStep`.
+* `Mutating` steps now implement `Scoping` interface.
 * Fixed a step id compilation bug in `AddVertexStartStep`, `AddVertexStep`, `AddEdgeStep`, and `AddPropertyStep`.
 * De-registered metrics on Gremlin Server shutdown.
 * Added "help" command option on `:remote config` for plugins that support that feature in the Gremlin Console.
 * Allowed for multiple scripts and related arguments to be passed to `gremlin.sh` via `-i` and `-e`.
+* `LABELED_PATH` requirement is now set if any step in the traversal is labeled.
 * Updated `PathRetractionStrategy` to not run if the provided traversal contains a `VertexProgramStep` that has a `LABELED_PATH` requirement.
 * Added various metrics to the `GremlinGroovyScriptEngine` around script compilation and exposed them in Gremlin Server.
 * Moved the `caffeine` dependency down to `gremlin-groovy` and out of `gremlin-server`.
@@ -45,6 +50,7 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `FromToModulating` interface for use with `to()`- and `from()`-based step modulators.
 * Added `Path.subPath()` which supports isolating a sub-path from `Path` via to/from-labels.
 * Fixed an `NullPointerException` in `GraphMLReader` that occurred when an `<edge>` didn't have an ID field and the base graph supported ID assignment.
+* Added `ScopingStrategy` which will computer and provide all `Scoping` steps with the path labels of the global `Traversal`.
 * Split `ComputerVerificationStrategy` into two strategies: `ComputerVerificationStrategy` and `ComputerFinalizationStrategy`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.
 * Deprecated `CustomizerProvider` infrastructure.

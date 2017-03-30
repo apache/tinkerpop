@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -44,7 +45,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
+        implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing, Scoping {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -52,13 +54,17 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.parameters.set(T.label, label);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, T.label, label);
     }
 
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
     }
 
     @Override
@@ -68,8 +74,7 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override

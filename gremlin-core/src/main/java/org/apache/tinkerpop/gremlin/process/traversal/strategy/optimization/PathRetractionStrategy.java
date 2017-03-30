@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -57,7 +58,10 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     private static final PathRetractionStrategy INSTANCE = new PathRetractionStrategy(MAX_BARRIER_SIZE);
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PathRetractionStrategy
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
-            RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
+            RepeatUnrollStrategy.class,
+            MatchPredicateStrategy.class,
+            PathProcessorStrategy.class));
+    private static final String MARKER = Graph.Hidden.hide("gremlin.pathRetraction");
 
     private final int standardBarrierSize;
 
@@ -74,11 +78,18 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         // do not apply this strategy if there are lambdas as you can't introspect to know what path information the lambdas are using
         // do not apply this strategy if a PATH requirement step is being used (in the future, we can do PATH requirement lookhead to be more intelligent about its usage)
         // do not apply this strategy if a VertexProgramStep is present with LABELED_PATH requirements
-        if (TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
+        if (traversal.getParent() instanceof EmptyStep &&
+                TraversalHelper.anyStepRecursively(step -> step instanceof LambdaHolder ||
                         step.getRequirements().contains(TraverserRequirement.PATH) ||
-                        (step instanceof VertexProgramStep && step.getRequirements().contains(TraverserRequirement.LABELED_PATH)),
-                TraversalHelper.getRootTraversal(traversal)))
+                        (step instanceof VertexProgramStep &&
+                                step.getRequirements().contains(TraverserRequirement.LABELED_PATH)), traversal)) {
+            TraversalHelper.applyTraversalRecursively(t -> t.getEndStep().addLabel(MARKER), traversal);
+        }
+
+        if (traversal.getEndStep().getLabels().contains(MARKER)) {
+            traversal.getEndStep().removeLabel(MARKER);
             return;
+        }
 
         final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
         final Set<String> foundLabels = new HashSet<>();
@@ -211,9 +222,8 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
             // if there is one more RepeatSteps in this traversal's lineage, preserve keep labels
             if (currentStep instanceof PathProcessor) {
                 ((PathProcessor) currentStep).getKeepLabels().addAll(keeperTrail);
-                if (hasRepeat) {
+                if (hasRepeat)
                     ((PathProcessor) currentStep).getKeepLabels().addAll(keepLabels);
-                }
             }
         }
     }
@@ -226,18 +236,16 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
 
     private void addLabels(final Traversal.Admin traversal, final Set<String> keepLabels) {
         for (final Object s : traversal.getSteps()) {
-            if (s instanceof PathProcessor) {
+            if (s instanceof PathProcessor)
                 addLabels((PathProcessor) s, keepLabels);
-            }
         }
     }
 
     private void addLabels(final PathProcessor s, final Set<String> keepLabels) {
-        if (s.getKeepLabels() == null) {
+        if (null == s.getKeepLabels())
             s.setKeepLabels(new HashSet<>(keepLabels));
-        } else {
+        else
             s.getKeepLabels().addAll(new HashSet<>(keepLabels));
-        }
     }
 
     @Override

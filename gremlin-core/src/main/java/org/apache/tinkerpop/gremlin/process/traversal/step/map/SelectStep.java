@@ -120,9 +120,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.selectKeys::contains).findAny().isPresent() ?
-                TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
-                TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override

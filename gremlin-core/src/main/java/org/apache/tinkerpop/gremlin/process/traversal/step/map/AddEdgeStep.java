@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -36,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +46,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing, FromToModulating {
+public final class AddEdgeStep<S> extends MapStep<S, Edge>
+        implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -53,7 +57,7 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(T.label, edgeLabel);
+        this.parameters.set(this, T.label, edgeLabel);
     }
 
     @Override
@@ -67,21 +71,23 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     }
 
     @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
+    }
+
+    @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override
-    public void addTo(final Traversal.Admin<?, ?> toObject) {
-        this.parameters.set(TO, toObject);
-        this.parameters.integrateTraversals(this);
+    public void addTo(final Traversal.Admin<?,?> toObject) {
+        this.parameters.set(this, TO, toObject);
     }
 
     @Override
-    public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        this.parameters.set(FROM, fromObject);
-        this.parameters.integrateTraversals(this);
+    public void addFrom(final Traversal.Admin<?,?> fromObject) {
+        this.parameters.set(this, FROM, fromObject);
     }
 
     @Override

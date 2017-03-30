@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -417,7 +418,7 @@ public final class TraversalHelper {
      * Determine if any step in {@link Traversal} or its children match the step given the provided {@link Predicate}.
      *
      * @param predicate the match function
-     * @param traversal th traversal to perform the action on
+     * @param traversal the traversal to perform the action on
      * @return {@code true} if there is a match and {@code false} otherwise
      */
     public static boolean anyStepRecursively(final Predicate<Step> predicate, final Traversal.Admin<?, ?> traversal) {
@@ -425,18 +426,19 @@ public final class TraversalHelper {
             if (predicate.test(step)) {
                 return true;
             }
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    if (anyStepRecursively(predicate, localChild)) return true;
-                }
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (anyStepRecursively(predicate, globalChild)) return true;
-                }
-            }
+
+            if (step instanceof TraversalParent) anyStepRecursively(predicate, ((TraversalParent) step));
         }
         return false;
     }
 
+    /**
+     * Determine if any child step of a {@link TraversalParent} match the step given the provided {@link Predicate}.
+     *
+     * @param predicate the match function
+     * @param step      the step to perform the action on
+     * @return {@code true} if there is a match and {@code false} otherwise
+     */
     public static boolean anyStepRecursively(final Predicate<Step> predicate, final TraversalParent step) {
         for (final Traversal.Admin<?, ?> localChild : step.getLocalChildren()) {
             if (anyStepRecursively(predicate, localChild)) return true;
@@ -547,6 +549,26 @@ public final class TraversalHelper {
             traversal = traversal.getParent().asStep().getTraversal();
         }
         return traversal;
+    }
+
+    public static boolean hasLabels(final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            for (final String label : step.getLabels()) {
+                if (!Graph.Hidden.isHidden(label))
+                    return true;
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    if (TraversalHelper.hasLabels(local))
+                        return true;
+                }
+                for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                    if (TraversalHelper.hasLabels(global))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
