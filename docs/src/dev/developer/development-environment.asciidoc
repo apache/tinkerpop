@@ -196,6 +196,9 @@ TINKERPOP_DOCKER_OPTS="--tmpfs /usr/src/tinkermem:exec,mode=0755,rw,noatime,size
 TINKERPOP_DOCKER_OPTS="--sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1"
 ----
 
+A custom maven settings.xml can be supplied, for example, to point to a local proxy. Copy the `settings.xml` to the
+`PROJECT_HOME/` directory. The Docker script will detect and copy it to the running container.
+
 If the container is used to generate the user docs, it will start a web server and show the URL that
 is used to host the HTML docs.
 
