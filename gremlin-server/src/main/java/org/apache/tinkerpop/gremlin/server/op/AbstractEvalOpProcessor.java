@@ -41,13 +41,11 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
-import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -71,6 +69,18 @@ import static com.codahale.metrics.MetricRegistry.name;
 public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+
+    /**
+     * The maximum number of parameters that can be passed on a script evaluation request.
+     */
+    public static final String CONFIG_MAX_PARAMETERS = "maxParameters";
+
+    /**
+     * Default number of parameters allowed on a script evaluation request.
+     */
+    public static final int DEFAULT_MAX_PARAMETERS = 16;
+
+    protected int maxParameters = DEFAULT_MAX_PARAMETERS;
 
     /**
      * Captures the "error" count as a reportable metric for Gremlin Server.
@@ -178,7 +188,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
         if (message.optionalArgs(Tokens.ARGS_BINDINGS).isPresent()) {
             final Map bindings = (Map) message.getArgs().get(Tokens.ARGS_BINDINGS);
-            if (bindings.keySet().stream().anyMatch(k -> null == k || !(k instanceof String))) {
+            if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
                 final String msg = String.format("The [%s] message is using one or more invalid binding keys - they must be of type String and cannot be null", Tokens.OPS_EVAL);
                 throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
@@ -186,6 +196,13 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
             final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
             if (!badBindings.isEmpty()) {
                 final String msg = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.", Tokens.OPS_EVAL, badBindings);
+                throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            }
+
+            // ignore control bindings that get passed in with the "#jsr223" prefix - those aren't used in compilation
+            if (IteratorUtils.count(IteratorUtils.filter(bindings.keySet().iterator(), k -> !k.toString().startsWith("#jsr223"))) > maxParameters) {
+                final String msg = String.format("The [%s] message contains %s bindings which is more than is allowed by the server %s configuration",
+                        Tokens.OPS_EVAL, bindings.size(), maxParameters);
                 throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }

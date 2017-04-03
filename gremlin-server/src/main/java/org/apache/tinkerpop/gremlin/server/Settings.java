@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -217,6 +218,16 @@ public class Settings {
      * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
+
+    /**
+     * Find the {@link ProcessorSettings} related to the specified class. If there are multiple entries then only the
+     * first is returned.
+     */
+    public Optional<ProcessorSettings> optionalProcessor(final Class<? extends OpProcessor> clazz) {
+        return processors.stream()
+                .filter(p -> p.className.equals(clazz.getCanonicalName()))
+                .findFirst();
+    }
 
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);

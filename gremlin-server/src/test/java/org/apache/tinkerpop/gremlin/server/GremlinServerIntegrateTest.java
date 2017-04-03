@@ -52,6 +52,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
@@ -142,6 +144,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         switch (nameOfTest) {
             case "shouldProvideBetterExceptionForMethodCodeTooLarge":
                 settings.maxContentLength = 4096000;
+                final Settings.ProcessorSettings processorSettingsBig = new Settings.ProcessorSettings();
+                processorSettingsBig.className = StandardOpProcessor.class.getName();
+                processorSettingsBig.config = new HashMap<String,Object>() {{
+                    put(AbstractEvalOpProcessor.CONFIG_MAX_PARAMETERS, Integer.MAX_VALUE);
+                }};
+                settings.processors.clear();
+                settings.processors.add(processorSettingsBig);
                 break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
@@ -218,6 +227,15 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldUseBaseScript":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForBaseScript();
+                break;
+            case "shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable":
+                final Settings.ProcessorSettings processorSettingsSmall = new Settings.ProcessorSettings();
+                processorSettingsSmall.className = StandardOpProcessor.class.getName();
+                processorSettingsSmall.config = new HashMap<String,Object>() {{
+                    put(AbstractEvalOpProcessor.CONFIG_MAX_PARAMETERS, 1);
+                }};
+                settings.processors.clear();
+                settings.processors.add(processorSettingsSmall);
                 break;
         }
 
@@ -576,6 +594,50 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit(request, result -> {
                 if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
                     pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertThat(pass.get(), is(true));
+        }
+    }
+
+    @Test
+    public void shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable() throws Exception {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
+            final Map<Object, Object> bindings = new HashMap<>();
+            bindings.put("x", 123);
+            bindings.put("y", 123);
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "x+y")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertThat(pass.get(), is(true));
+        }
+
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
+            final Map<Object, Object> bindings = new HashMap<>();
+            bindings.put("x", 123);
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "x+123")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() && (((int) ((List) result.getResult().getData()).get(0) == 246)));
                     latch.countDown();
                 }
             });

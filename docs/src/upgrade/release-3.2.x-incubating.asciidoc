@@ -32,6 +32,28 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Default Maximum Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It was learned that compilation for scripts with large numbers of parameters is more expensive than those with less
+parameters. It therefore becomes possible to make some mistakes with how Gremlin Server is used. A new setting on
+the `StandardOpProcessor` and `SessionOpProcessor` called `maxParameters` controls the number of parameters that can
+be passed in on a request. This setting is defaulted to sixteen.
+
+Users upgrading to this version may notice errors in their applications if they use more than sixteen parameters. To
+fix this problem simply reconfigure Gremlin Server with a configuration as follows:
+
+[source,yaml]
+----
+processors:
+  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { maxParameters: 64 }}
+  - { className: org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor, config: { maxParameters: 64 }}
+----
+
+The above configuration allows sixty-four parameters to be passed on each request.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1663[TINKERPOP-1663]
+
 GremlinScriptEngine Metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
