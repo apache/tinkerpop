@@ -48,10 +48,7 @@ public abstract class AbstractBenchmarkBase {
     protected static final int DEFAULT_MEASURE_ITERATIONS = 10;
     protected static final int DEFAULT_FORKS = 2;
     protected static final String DEFAULT_BENCHMARK_DIRECTORY = "./benchmarks/";
-
-    protected static final String[] JVM_ARGS = {
-            "-server", "-Xms2g", "-Xmx2g"
-    };
+    protected static final String DEFAULT_JVM_ARGS = "-server -Xms2g -Xmx2g";
 
     @Test
     public void run() throws Exception {
@@ -59,7 +56,7 @@ public abstract class AbstractBenchmarkBase {
 
         final ChainedOptionsBuilder runnerOptions = new OptionsBuilder()
                 .include(".*" + className + ".*")
-                .jvmArgs(JVM_ARGS);
+                .jvmArgs(getJvmArgs());
 
         if (getWarmupIterations() > 0) {
             runnerOptions.warmupIterations(getWarmupIterations());
@@ -105,6 +102,10 @@ public abstract class AbstractBenchmarkBase {
 
     protected String getReportDir() {
         return System.getProperty("benchmarkReportDir", DEFAULT_BENCHMARK_DIRECTORY);
+    }
+
+    protected String[] getJvmArgs() {
+        return System.getProperty("jvmArgs", DEFAULT_JVM_ARGS).split(" ");
     }
 
     private int getIntProperty(final String propertyName, final int defaultValue) {

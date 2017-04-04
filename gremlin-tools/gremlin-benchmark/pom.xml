@@ -95,6 +95,10 @@ limitations under the License.
                     </excludes>
                     <systemPropertyVariables>
                         <benchmarkReportDir>${project.build.directory}/reports/benchmark/</benchmarkReportDir>
+                        <jvmArgs>-server -Xms2g -Xmx2g</jvmArgs>
+                        <warmupIterations>10</warmupIterations>
+                        <measureIterations>10</measureIterations>
+                        <forks>2</forks>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
