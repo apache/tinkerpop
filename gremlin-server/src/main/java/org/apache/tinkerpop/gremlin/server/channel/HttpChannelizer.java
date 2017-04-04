@@ -79,7 +79,6 @@ public class HttpChannelizer extends AbstractChannelizer {
     @Override
     public void finalize(final ChannelPipeline pipeline) {
         pipeline.remove(PIPELINE_OP_SELECTOR);
-        pipeline.remove(PIPELINE_RESULT_ITERATOR_HANDLER);
         pipeline.remove(PIPELINE_OP_EXECUTOR);
     }
 }

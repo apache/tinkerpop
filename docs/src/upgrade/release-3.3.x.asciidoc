@@ -227,7 +227,19 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#copyDependenciesToPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.Settings#plugins`
+** `org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.Authenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.handler.IteratorHandler`
+** `org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder`
+** `org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder`
+** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler.errorMeter`
 ** `org.apache.tinkerpop.gremlin.server.op.control.*`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.errorMeter`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.validBindingName`
+** `org.apache.tinkerpop.gremlin.server.op.session.Session.kill()`
+** `org.apache.tinkerpop.gremlin.server.op.session.Session.manualkill()`
 * `spark-gremlin`
 ** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
 * `tinkergraph-gremlin`
@@ -236,10 +248,12 @@ The following deprecated classes, methods or fields have been removed in this ve
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283], link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1421[TINKERPOP-1421], link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1010[TINKERPOP-1010],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040], link:https://issues.apache.org/jira/browse/TINKERPOP-1046[TINKERPOP-1046],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1049[TINKERPOP-1049], link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420], link:https://issues.apache.org/jira/browse/TINKERPOP-1421[TINKERPOP-1421],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1465[TINKERPOP-1465], link:https://issues.apache.org/jira/browse/TINKERPOP-1526[TINKERPOP-1526],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612], link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~

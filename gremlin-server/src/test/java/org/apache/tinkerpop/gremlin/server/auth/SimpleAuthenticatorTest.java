@@ -47,8 +47,8 @@ public class SimpleAuthenticatorTest {
 
     @Test
     public void shouldCreateNewPlainTextSaslNegotiator() {
-        final Authenticator.SaslNegotiator negotiator1 = authenticator.newSaslNegotiator();
-        final Authenticator.SaslNegotiator negotiator2 = authenticator.newSaslNegotiator();
+        final Authenticator.SaslNegotiator negotiator1 = authenticator.newSaslNegotiator(null);
+        final Authenticator.SaslNegotiator negotiator2 = authenticator.newSaslNegotiator(null);
 
         assertNotEquals(negotiator1, negotiator2);
         assertNotEquals(negotiator2, negotiator1);
@@ -62,11 +62,10 @@ public class SimpleAuthenticatorTest {
     @Test
     public void shouldUseTinkerGraphForCredentialsStoreAndSucceed() throws Exception {
         final Map<String,Object> config = new HashMap<>();
-        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
-        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
+        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
         authenticator.setup(config);
 
-        final Authenticator.SaslNegotiator negotiator = authenticator.newSaslNegotiator();
+        final Authenticator.SaslNegotiator negotiator = authenticator.newSaslNegotiator(null);
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         final byte[] nul = new byte[] {0};
         stream.write(nul);
@@ -82,11 +81,10 @@ public class SimpleAuthenticatorTest {
     @Test(expected = AuthenticationException.class)
     public void shouldUseTinkerGraphForCredentialsStoreAndFail() throws Exception {
         final Map<String,Object> config = new HashMap<>();
-        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
-        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
+        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
         authenticator.setup(config);
 
-        final Authenticator.SaslNegotiator negotiator = authenticator.newSaslNegotiator();
+        final Authenticator.SaslNegotiator negotiator = authenticator.newSaslNegotiator(null);
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         final byte[] nul = new byte[] {0};
         stream.write(nul);

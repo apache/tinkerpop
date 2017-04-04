@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
-import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -41,15 +39,12 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
-import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -73,26 +68,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
-
-    /**
-     * Captures the "error" count as a reportable metric for Gremlin Server.
-     *
-     * @deprecated As of release 3.1.1-incubating, not replaced. Direct usage is discouraged with sub-classes as
-     * error counts are captured more globally for error messages written down the pipeline to
-     * {@link GremlinResponseFrameEncoder}.
-     */
-    @Deprecated
-    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
-
-    /**
-     * Regex for validating that binding variables.
-     *
-     * @deprecated As of release 3.1.2-incubating, not replaced. This {@code Pattern} is not used internally.
-     * Deprecated rather than just removing as it's possible that someone else might be using it when developing
-     * custom {@link OpProcessor} implementations.
-     */
-    @Deprecated
-    protected static final Pattern validBindingName = Pattern.compile("[a-zA-Z$_][a-zA-Z0-9$_]*");
 
     /**
      * This may or may not be the full set of invalid binding keys.  It is dependent on the static imports made to

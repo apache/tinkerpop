@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import io.netty.channel.ChannelInitializer;
@@ -83,7 +82,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected static final String PIPELINE_SSL = "ssl";
     protected static final String PIPELINE_OP_SELECTOR = "op-selector";
-    protected static final String PIPELINE_RESULT_ITERATOR_HANDLER = "result-iterator-handler";
     protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
     protected static final String PIPELINE_AUTHENTICATOR = "authenticator";
 
@@ -91,7 +89,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
-    private IteratorHandler iteratorHandler;
 
     protected Authenticator authenticator;
 
@@ -131,7 +128,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // these handlers don't share any state and can thus be initialized once per pipeline
         opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
         opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
-        iteratorHandler = new IteratorHandler(settings);
     }
 
     @Override
@@ -146,7 +142,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         configure(pipeline);
 
         pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
-        pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);
         pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);

@@ -18,14 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.session;
 
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricFilter;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,6 +42,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * Defines a "session" for the {@link SessionOpProcessor} which preserves state between requests made to Gremlin
+ * Server. Since transactions are bound to a single thread the "session" maintains its own thread to process Gremlin
+ * statements so that each request can be executed within it to preserve the transaction state from one request to
+ * the next.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Session {
@@ -130,7 +130,7 @@ public class Session {
                 return this.scheduledExecutorService.schedule(() -> {
                         logger.info("Session {} has been idle for more than {} milliseconds - preparing to close",
                                 this.session, this.configuredSessionTimeout);
-                        kill();
+                        kill(false);
                     }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS);
             }
 
@@ -139,35 +139,13 @@ public class Session {
     }
 
     /**
-     * Stops the session with call to {@link #kill()} but also stops the session expiration call which ensures that
-     * the session is only killed once. Calls {@link #manualKill(boolean)} with {@code false}.
-     *
-     * @deprecated As of release 3.2.4, replaced by {@link #manualKill(boolean)}.
-     */
-    @Deprecated
-    public void manualKill() {
-        manualKill(false);
-    }
-
-    /**
-     * Stops the session with call to {@link #kill()} but also stops the session expiration call which ensures that
-     * the session is only killed once. See {@link #kill(boolean)} for information on how what "forcing" the session
-     * kill will mean.
+     * Stops the session with call to {@link #kill(boolean)} but also stops the session expiration call which ensures
+     * that the session is only killed once. See {@link #kill(boolean)} for information on how what "forcing" the
+     * session kill will mean.
      */
     public void manualKill(final boolean force) {
         kill.get().cancel(true);
         kill(force);
-    }
-
-    /**
-     * Kills the session and rollback any uncommitted changes on transactional graphs. Same as calling
-     * {@link #kill(boolean)} with {@code false}.
-     *
-     * @deprecated As of release 3.2.4, replaced by {@link #kill(boolean)}.
-     */
-    @Deprecated
-    public synchronized void kill() {
-        kill(false);
     }
 
     /**

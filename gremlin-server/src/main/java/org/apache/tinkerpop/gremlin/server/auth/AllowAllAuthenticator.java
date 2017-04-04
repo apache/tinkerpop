@@ -42,15 +42,8 @@ public final class AllowAllAuthenticator implements Authenticator {
         return AuthenticatedUser.ANONYMOUS_USER;
     }
 
-    /**
-     * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-995">TINKERPOP-995</a>
-     */
     @Override
-    @Deprecated
-    public SaslNegotiator newSaslNegotiator() {
-        // While this method is deprecated, it remains here to ensure backward compatibility with the old method. In
-        // this way the integration tests can continue to execute here
+    public SaslNegotiator newSaslNegotiator(final InetAddress remoteAddress) {
         return AUTHENTICATOR_INSTANCE;
     }
 
