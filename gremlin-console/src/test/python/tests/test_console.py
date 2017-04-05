@@ -17,11 +17,10 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-import unittest
-from unittest import TestCase
 import pexpect
 
-class TestConsole(TestCase):
+
+class TestConsole(object):
 
     # the base command must pass -C because if colors are enabled pexpect gets garbled input and tests won't pass
     gremlinsh = "bash gremlin-console/bin/gremlin.sh -C "
@@ -90,6 +89,3 @@ class TestConsole(TestCase):
     @staticmethod
     def _close(child):
         child.sendline(":x")
-
-
-
