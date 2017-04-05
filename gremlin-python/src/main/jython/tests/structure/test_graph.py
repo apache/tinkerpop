@@ -19,9 +19,6 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import unittest
-from unittest import TestCase
-
 import six
 
 from gremlin_python.statics import long
@@ -32,7 +29,7 @@ from gremlin_python.structure.graph import VertexProperty
 from gremlin_python.structure.graph import Path
 
 
-class TestGraph(TestCase):
+class TestGraph(object):
     def test_graph_objects(self):
         vertex = Vertex(1)
         assert "v[1]" == str(vertex)
@@ -114,7 +111,3 @@ class TestGraph(TestCase):
         assert hash(path) == hash(path2)
         assert path != Path([set(["a"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
         assert path != Path([set(["a", "b"]), set(["c", "b"]), set([])], [3, Vertex(1), "hello"])
-
-
-if __name__ == '__main__':
-    unittest.main()
