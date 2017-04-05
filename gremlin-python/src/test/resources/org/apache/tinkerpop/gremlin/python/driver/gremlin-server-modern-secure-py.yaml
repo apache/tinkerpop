@@ -58,7 +58,7 @@ maxContentLength: 65536
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
   config: {
     credentialsDb: src/test/resources/org/apache/tinkerpop/gremlin/python/driver/tinkergraph-credentials.properties}}
 

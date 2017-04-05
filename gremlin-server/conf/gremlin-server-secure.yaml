@@ -68,7 +68,7 @@ resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768
 writeBufferHighWaterMark: 65536
 authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
   config: {
     credentialsDb: conf/tinkergraph-credentials.properties}}
 ssl: {
