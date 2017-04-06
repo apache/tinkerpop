@@ -119,6 +119,8 @@ limitations under the License.
         <module>gremlin-groovy</module>
         <module>tinkergraph-gremlin</module>
         <module>gremlin-python</module>
+        <module>gremlin-csharp-generator</module>
+        <module>gremlin-dotnet</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>giraph-gremlin</module>
@@ -320,6 +322,13 @@ limitations under the License.
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>**/Debug/**</exclude>
+                        <exclude>**/Release/**</exclude>
+                        <exclude>**/obj/**</exclude>
+                        <exclude>**/*.sln</exclude>
+                        <exclude>**/*.user</exclude>
+                        <exclude>**/*.csproj</exclude>
+                        <exclude>**/.vs/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -20,11 +20,13 @@ FROM ubuntu:trusty
 MAINTAINER Daniel Kuppitz <me@gremlin.guru>
 
 RUN apt-get update \
-    && apt-get -y install software-properties-common python-software-properties \
+    && apt-get -y install software-properties-common python-software-properties apt-transport-https \
     && echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections \
     && add-apt-repository -y ppa:webupd8team/java \
+    && sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list' \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
     && apt-get update \
-    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server subversion \
+    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server dotnet-dev-1.0.1 subversion \
     && apt-get install -y python python-dev python-pip build-essential \
     && pip install virtualenv virtualenvwrapper \
     && pip install --upgrade pip \
