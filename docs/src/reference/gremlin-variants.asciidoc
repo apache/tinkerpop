@@ -355,3 +355,199 @@ connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
                                      graphson_reader=graphson_reader,
                                      graphson_writer=graphson_writer)
 ----
+
+[[gremlin-csharp]]
+Gremlin-CSharp
+--------------
+Apache TinkerPop's Gremlin-CSharp implements Gremlin within the C# language. It targets .NET Standard and can
+therefore be used on different operating systems and with different .NET frameworks, such as .NET Framework
+and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very similar to that of Java, it should be very easy to switch between
+Gremlin-Java and Gremlin-CSharp. The only major syntactical difference is that all method names in Gremlin-CSharp
+use PascalCase as opposed to camelCase in Gremlin-Java in order to comply with .NET conventions.
+
+[source,powershell]
+nuget install Gremlin.CSharp
+
+In Gremlin-CSharp there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
+in Gremlin-Java. The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
+RemoteConnection-enabled server).
+
+Gremlin-CSharp and Gremlin-DotNet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin-CSharp is the C# language variant of Gremlin, but it needs a driver to communicate with a remote
+Gremlin Server. Such a driver is provided as part of Apache TinkerPop’s Gremlin-DotNet that also includes other
+useful functionality to work with Gremlin in .NET.
+Gremlin-DotNet is currently distributed in two NuGet packages:
+
+* `Gremlin.Net.Process` contains core functionality for Gremlin language variants and defines interfaces for drivers.
+Gremlin-CSharp depends on this package. So it will be installed automatically when you install Gremlin-CSharp.
+* `Gremlin.Net` contains a driver that allows Gremlin-CSharp to be used with a remote server and GraphSON serializers and deserializers.
+
+IMPORTANT: For developers wishing to provide another driver implementation, be sure to implement `IRemoteConnection` in
+`Gremlin.Net.Process.Remote` so it can then be used by Gremlin-CSharp’s `GraphTraversal`.
+
+When Gremlin Server is running, Gremlin-CSharp can communicate with Gremlin Server by sending traversals serialized as `Bytecode`.
+
+IMPORTANT: Gremlin-CSharp is compatible with GraphSON 2.0 only, so this serializer must be configured in Gremlin Server.
+
+A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+
+[source,csharp]
+----
+var graph = new Graph();
+var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+----
+
+When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
+`IRemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
+Since Gremlin-CSharp currently doesn't support lambda expressions, all traversals can be translated to Gremlin-Java on the remote
+location (e.g. Gremlin Server).
+
+IMPORTANT: Gremlin-DotNet’s `ITraversal` interface supports the standard Gremlin methods such as `Next()`, `NextTraverser()`, `ToSet()`,
+`ToList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
+
+RemoteConnection Submission
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a `IRemoteConnection` using
+terminal/action methods off of `ITraversal`.
+
+* `ITraversal.Next()`
+* `ITraversal.NextTraverser()`
+* `ITraversal.ToList()`
+* `ITraversal.ToSet()`
+* `ITraversal.Iterate()`
+
+Static Enums and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-CSharp as Enums.
+
+These can be used analogously to how they are used in Gremlin-Java.
+
+[source,csharp]
+g.V().HasLabel("person").Has("age",P.Gt(30)).Order().By("age",Order.decr).ToList()
+
+Moreover, the class prefixes can be ommitted with a `using static`.
+
+[source,csharp]
+----
+using static Gremlin.CSharp.Process.P;
+using static Gremlin.CSharp.Process.Order;
+----
+
+Then it is possible to represent the above traversal as below.
+
+[source,csharp]
+g.V().HasLabel("person").Has("age",Gt(30)).Order().By("age",decr).ToList()
+
+Finally, with using static `__`, anonymous traversals like `__.Out()` can be expressed as below. That is, without the `__.`-prefix.
+
+[source,csharp]
+g.V().Repeat(Out()).Times(2).Values("name").Fold().ToList()
+
+Bindings
+~~~~~~~~
+
+When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, 
+and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously 
+compiled version should be cached. Many traversals are unique up to some parameterization. For instance,
+`g.V(1).Out("created").Values("name")` is considered different from `g.V(4).Out('created').Values("Name")`
+as they have different script "string" representations. However, `g.V(x).Out("created").Values("name")` with bindings of 
+`{x : 1}` and `{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different 
+parameters, then bindings should be used. In Gremlin-CSharp, bindings are objects that can be created as follows.
+
+[source,csharp]
+----
+var b = new Bindings();
+g.V(b.Of("id", 1)).Out("created").Values("name").toList()
+g.V(b.Of("id", 4)).Out("created").Values("name").toList()
+----
+
+Traversal Strategies
+~~~~~~~~~~~~~~~~~~~~
+
+In order to add and remove traversal strategies from a traversal source, Gremlin-DotNet has an `AbstractTraversalStrategy`
+class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+
+[source,csharp]
+----
+g = g.WithStrategies(new SubgraphStrategy(vertexCriterion: HasLabel("person"),
+    edgeCriterion: Has("weight", Gt(0.5))));
+var names = g.V().Values("name").ToList();  // names: [marko, vadas, josh, peter]
+
+g = g.WithoutStrategies(new SubgraphStrategy());
+names = g.V().Values("name").ToList(); // names: [marko, vadas, lop, josh, ripple, peter]
+
+var edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
+// edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0], 
+//     [label:created, id:10, weight:1.0], [label:created, id:11, weight:0.4], [label:created, id:12, weight:0.2]]
+
+g = g.WithComputer(workers: 2, vertices: Has("name", "marko"));
+names = g.V().Values("name").ToList();  // names: [marko]
+
+edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
+// edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0]]
+----
+
+NOTE: Many of the TraversalStrategy classes in Gremlin-DotNet are proxies to the respective strategy on Apache TinkerPop’s
+JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
+encoded in the Gremlin-DotNet bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
+
+Custom Serialization
+~~~~~~~~~~~~~~~~~~~~
+
+Gremlin-DotNet provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
+(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add new
+types by creating serializers and deserializers in C# (or any other .NET language) and registering them with the `GremlinClient`.
+
+[source,csharp]
+----
+internal class MyType
+{
+    public static string GraphsonPrefix = "providerx";
+    public static string GraphsonBaseType = "MyType";
+    public static string GraphsonType = GraphSONUtil.FormatTypeName(GraphsonPrefix, GraphsonBaseType);
+
+    public MyType(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+
+    public int X { get; }
+    public int Y { get; }
+}
+
+internal class MyClassWriter : IGraphSONSerializer
+{
+    public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+    {
+        MyType myType = objectData;
+        var valueDict = new Dictionary<string, object>
+        {
+            {"x", myType.X},
+            {"y", myType.Y}
+        };
+        return GraphSONUtil.ToTypedValue(nameof(TestClass), valueDict, MyType.GraphsonPrefix);
+    }
+}
+
+internal class MyTypeReader : IGraphSONDeserializer
+{
+    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+    {
+        var x = reader.ToObject(graphsonObject["x"]);
+        var y = reader.ToObject(graphsonObject["y"]);
+        return new MyType(x, y);
+    }
+}
+
+var graphsonReader = new GraphSONReader(
+    new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
+var graphsonWriter = new GraphSONWriter(
+    new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
+
+var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
+----
