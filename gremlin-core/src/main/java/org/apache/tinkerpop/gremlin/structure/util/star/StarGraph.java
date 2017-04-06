@@ -480,6 +480,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <U> Property<U> property(final String key, final U value) {
+            ElementHelper.validateProperty(key, value);
             if (null == metaProperties)
                 metaProperties = new HashMap<>();
             Map<String, Object> properties = metaProperties.get(this.id);

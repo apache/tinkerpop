@@ -116,6 +116,10 @@ public final class ElementHelper {
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
+
+            if (propertyKeyValues[i + 1] == null) {
+                throw Property.Exceptions.propertyValueCanNotBeNull();
+            }
         }
     }
 
