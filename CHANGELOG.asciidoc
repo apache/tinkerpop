@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added XSLT transform option to convert TinkerPop 2.x GraphML to 3.x GraphML.
 * Added validation to `StarVertexProperty`.
 * Bumped to Jackson 2.8.7.
 * Fixed `EventStrategy` so that newly added properties trigger events with the name of the key that was added.

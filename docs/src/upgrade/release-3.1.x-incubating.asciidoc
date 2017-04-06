@@ -25,9 +25,22 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.7
 ---------------
 
-*Release Date: TBD*
+*Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#tinkerpop-xyz-release-date-MM-DD-YYYY[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+GraphML XSLT
+^^^^^^^^^^^^
+
+There were some inconsistencies in the GraphML format supported in TinkerPop 2.x. These issues were corrected on the
+initial release of TinkerPop 3.0.0, but as a result, attempting to read GraphML from 2.x will end with an error. A
+newly added XSLT file in `gremlin-core`, called `tp2-to-tp3-graphml.xslt`, transforms 2.x GraphML into 3.x GraphML,
+making it possible easily read in legacy GraphML through a 3.x `GraphMLReader`.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1608[TINKERPOP-1608]
 
 TinkerPop 3.1.6
 ---------------
@@ -52,7 +65,6 @@ a bit easier to ensure from the client perspective that the close did what it wa
 to proceed only when the server was fully complete with its work.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1544[TINKERPOP-1544]
-
 
 TinkerPop 3.1.5
 ---------------
