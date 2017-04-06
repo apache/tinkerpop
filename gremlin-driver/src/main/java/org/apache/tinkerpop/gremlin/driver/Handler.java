@@ -235,8 +235,15 @@ final class Handler {
                     }
                 } else {
                     // this is a "success" but represents no results otherwise it is an error
-                    if (statusCode != ResponseStatusCode.NO_CONTENT)
-                        queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
+                    if (statusCode != ResponseStatusCode.NO_CONTENT) {
+                        final Map<String,Object> attributes = response.getStatus().getAttributes();
+                        final String stackTrace = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) ?
+                                (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
+                        final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
+                                (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
+                        queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
+                                exceptions, stackTrace));
+                    }
                 }
 
                 // as this is a non-PARTIAL_CONTENT code - the stream is done

@@ -20,18 +20,38 @@ package org.apache.tinkerpop.gremlin.driver.exception;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseException extends Exception {
     private ResponseStatusCode responseStatusCode;
+    private String remoteStackTrace = null;
+    private List<String> remoteExceptionHierarchy = null;
 
     public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage) {
         super(serverMessage);
         this.responseStatusCode = responseStatusCode;
     }
 
+    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage,
+                             final List<String> remoteExceptionHierarchy, final String remoteStackTrace) {
+        this(responseStatusCode, serverMessage);
+        this.remoteExceptionHierarchy = remoteExceptionHierarchy;
+        this.remoteStackTrace = remoteStackTrace;
+    }
+
     public ResponseStatusCode getResponseStatusCode() {
         return responseStatusCode;
+    }
+
+    public Optional<String> getRemoteStackTrace() {
+        return Optional.ofNullable(remoteStackTrace);
+    }
+
+    public Optional<List<String>> getRemoteExceptionHierarchy() {
+        return Optional.ofNullable(remoteExceptionHierarchy);
     }
 }
