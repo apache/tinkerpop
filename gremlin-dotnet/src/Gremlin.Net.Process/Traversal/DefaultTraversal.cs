@@ -1,0 +1,195 @@
+#region License
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Gremlin.Net.Process.Traversal
+{
+    /// <summary>
+    ///     A traversal represents a directed walk over a graph.
+    /// </summary>
+    public abstract class DefaultTraversal : ITraversal
+    {
+        private IEnumerator<Traverser> _traverserEnumerator;
+
+        /// <summary>
+        ///     Gets the <see cref="Bytecode" /> representation of this traversal.
+        /// </summary>
+        public Bytecode Bytecode { get; protected set; }
+
+        /// <summary>
+        ///     Gets or sets the <see cref="ITraversalSideEffects" /> of this traversal.
+        /// </summary>
+        public ITraversalSideEffects SideEffects { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
+        /// </summary>
+        public IEnumerable<Traverser> Traversers { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the <see cref="ITraversalStrategy" /> strategies of this traversal.
+        /// </summary>
+        protected ICollection<ITraversalStrategy> TraversalStrategies { get; set; } = new List<ITraversalStrategy>();
+
+        private IEnumerator<Traverser> TraverserEnumerator
+            => _traverserEnumerator ?? (_traverserEnumerator = GetTraverserEnumerator());
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            var currentTraverser = TraverserEnumerator.Current;
+            if (currentTraverser?.Bulk > 1)
+            {
+                currentTraverser.Bulk--;
+                return true;
+            }
+            return TraverserEnumerator.MoveNext();
+        }
+
+        /// <summary>
+        ///     Reset is not supported.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Thrown always as this operation is not supported.</exception>
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <inheritdoc />
+        public object Current => TraverserEnumerator.Current?.Object;
+
+        private IEnumerator<Traverser> GetTraverserEnumerator()
+        {
+            if (Traversers == null)
+                ApplyStrategies();
+            return Traversers.GetEnumerator();
+        }
+
+        private void ApplyStrategies()
+        {
+            foreach (var strategy in TraversalStrategies)
+                strategy.Apply(this);
+        }
+
+        private async Task ApplyStrategiesAsync()
+        {
+            foreach (var strategy in TraversalStrategies)
+                await strategy.ApplyAsync(this).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        ///     Gets the next result from the traversal.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public object Next()
+        {
+            MoveNext();
+            return Current;
+        }
+
+        /// <summary>
+        ///     Gets the next n-number of results from the traversal.
+        /// </summary>
+        /// <param name="amount">The number of results to get.</param>
+        /// <returns>The n-results.</returns>
+        public IEnumerable<object> Next(int amount)
+        {
+            for (var i = 0; i < amount; i++)
+                yield return Next();
+        }
+
+        /// <summary>
+        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
+        /// </summary>
+        /// <returns>The fully drained traversal.</returns>
+        public ITraversal Iterate()
+        {
+            while (MoveNext())
+            {
+            }
+            return this;
+        }
+
+        /// <summary>
+        ///     Gets the next <see cref="Traverser" />.
+        /// </summary>
+        /// <returns>The next <see cref="Traverser" />.</returns>
+        public Traverser NextTraverser()
+        {
+            TraverserEnumerator.MoveNext();
+            return TraverserEnumerator.Current;
+        }
+
+        /// <summary>
+        ///     Puts all the results into a <see cref="List{T}" />.
+        /// </summary>
+        /// <returns>The results in a list.</returns>
+        public List<object> ToList()
+        {
+            var objs = new List<object>();
+            while (MoveNext())
+                objs.Add(Current);
+            return objs;
+        }
+
+        /// <summary>
+        ///     Puts all the results into a <see cref="HashSet{T}" />.
+        /// </summary>
+        /// <returns>The results in a set.</returns>
+        public HashSet<object> ToSet()
+        {
+            var objs = new HashSet<object>();
+            while (MoveNext())
+                objs.Add(Current);
+            return objs;
+        }
+
+        /// <inheritdoc />
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+                SideEffects?.Dispose();
+        }
+
+        /// <summary>
+        ///     Starts a promise to execute a function on the current traversal that will be completed in the future.
+        /// </summary>
+        /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
+        /// <param name="callback">The function to execute on the current traversal.</param>
+        /// <returns>The result of the executed <paramref name="callback" />.</returns>
+        public async Task<TReturn> Promise<TReturn>(Func<ITraversal, TReturn> callback)
+        {
+            await ApplyStrategiesAsync().ConfigureAwait(false);
+            return callback(this);
+        }
+    }
+}
