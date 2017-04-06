@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.tinkerpop</groupId>
+        <artifactId>gremlin-dotnet</artifactId>
+        <version>3.2.5-SNAPSHOT</version>
+    </parent>
+    <artifactId>Gremlin-DotNet-Source</artifactId>
+    <packaging>${packaging.type}</packaging>
+    <profiles>
+        <profile>
+            <id>gremlin-dotnet-standard</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <packaging.type>pom</packaging.type>
+            </properties>
+        </profile>
+        <!-- activates the building of .NET components and requires that the .NET Core SDK be installed on the system -->
+        <profile>
+            <id>gremlin-dotnet</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.glv</exists>
+                </file>
+            </activation>
+            <properties>
+                <packaging.type>dotnet-library</packaging.type>
+            </properties>
+            <build>
+                <directory>${basedir}/target</directory>
+                <finalName>${project.artifactId}-${project.version}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eobjects.build</groupId>
+                        <artifactId>dotnet-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <packOutput>${project.parent.basedir}/target/nuget</packOutput>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
