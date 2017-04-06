@@ -73,6 +73,7 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Implemented `DefaultGraphManager` to include previous `GraphManager` functionality and adhere to updated interface.
 * Deprecated `GraphManager.getGraphs()` and added `GraphManager.getGraphNames()`.
 * Deprecated `GraphManager.getTraversalSources()` and added `GraphManager.getTraversalSourceNames()`.
+* Fixed a bug so now users can supply a YAML with an empty `staticVariableTypes` to be used by the `FileSandboxExtension`
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)

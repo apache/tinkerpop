@@ -63,12 +63,16 @@ class FileSandboxExtension extends AbstractSandboxExtension {
 
         autoTypeUnknown = settings.autoTypeUnknown
         methodWhiteList = settings.methodWhiteList
-        staticVariableTypes = settings.staticVariableTypes.collectEntries { kv ->
-            try {
-                return [(kv.key): Class.forName(kv.value)]
-            } catch (Exception ex) {
-                logger.error("Could not convert ${kv.value} to a Class for variable ${kv.key}", ex)
-                throw ex
+        if (null == settings.staticVariableTypes) {
+            staticVariableTypes = null
+        } else {
+            staticVariableTypes = settings.staticVariableTypes.collectEntries { kv ->
+                try {
+                    return [(kv.key): Class.forName(kv.value)]
+                } catch (Exception ex) {
+                    logger.error("Could not convert ${kv.value} to a Class for variable ${kv.key}", ex)
+                    throw ex
+                }
             }
         }
     }
