@@ -451,23 +451,23 @@ specification that were corrected for 3.x. As a result, attempting to read a Gra
 
 [source,java]
 ----
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.stream.StreamResult
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
 
 InputStream stylesheet = Thread.currentThread().getContextClassLoader().getResourceAsStream("tp2-to-tp3-graphml.xslt");
-File datafile = new File('/tmp/tp2-graphml.xml')
-File outfile = new File('/tmp/tp3-graphml.xml')
+File datafile = new File('/tmp/tp2-graphml.xml');
+File outfile = new File('/tmp/tp3-graphml.xml');
 
-TransformerFactory tFactory = TransformerFactory.newInstance()
-StreamSource stylesource = new StreamSource(stylesheet)
-Transformer transformer = tFactory.newTransformer(stylesource)
+TransformerFactory tFactory = TransformerFactory.newInstance();
+StreamSource stylesource = new StreamSource(stylesheet);
+Transformer transformer = tFactory.newTransformer(stylesource);
 
-StreamSource source = new StreamSource(datafile)
-StreamResult result = new StreamResult(new FileWriter(outfile))
-transformer.transform(source, result)
+StreamSource source = new StreamSource(datafile);
+StreamResult result = new StreamResult(new FileWriter(outfile));
+transformer.transform(source, result);
 ----
 
 [[graphson-reader-writer]]
