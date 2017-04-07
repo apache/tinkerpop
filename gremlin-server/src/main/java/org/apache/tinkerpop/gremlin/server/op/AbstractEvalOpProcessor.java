@@ -261,20 +261,25 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                         // and by default disabled. we can remove this handling once we drop that setting all together
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage(errorMessage)
+                                .statusAttributeException(ex).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     } catch (InterruptedException ex) {
                         // interruption occurs if there is a forced timeout during result iteration. this timeout
                         // is driven by the script evaluation timeout so for consistency the message should be the same
                         final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
                         logger.warn(errorMessage, ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(ex.getMessage()).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage(ex.getMessage())
+                                .statusAttributeException(ex).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
                         final String err = ex.getMessage();
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                .statusMessage(null == err || err.isEmpty() ? ex.getClass().getSimpleName() : err).create());
+                                .statusMessage(null == err || err.isEmpty() ? ex.getClass().getSimpleName() : err)
+                                .statusAttributeException(ex).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     }
                 }).create();
@@ -291,11 +296,15 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider").create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                            .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
+                            .statusAttributeException(t).create());
                 } else if (t instanceof TimeoutException) {
                     final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s] - %s", msg, t.getMessage());
                     logger.warn(errorMessage, t);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(t.getMessage()).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                            .statusMessage(t.getMessage())
+                            .statusAttributeException(t).create());
                 } else {
                     // try to trap the specific jvm error of "Method code too large!" to re-write it as something nicer,
                     // but only re-write if it's the only error because otherwise we might lose some other important
@@ -307,10 +316,14 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                             ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
                         final String errorMessage = String.format("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", msg);
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                                .statusMessage(errorMessage)
+                                .statusAttributeException(t).create());
                     } else {
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(t.getMessage()).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                                .statusMessage(t.getMessage())
+                                .statusAttributeException(t).create());
                     }
                 }
             }

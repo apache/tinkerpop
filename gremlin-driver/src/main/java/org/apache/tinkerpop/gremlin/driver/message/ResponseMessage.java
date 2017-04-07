@@ -18,7 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -99,6 +104,20 @@ public final class ResponseMessage {
 
         public Builder statusAttributes(final Map<String, Object> attributes) {
             this.attributes = attributes;
+            return this;
+        }
+
+        public Builder statusAttributeException(final Throwable ex) {
+            statusAttribute(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS, IteratorUtils.asList(
+                    IteratorUtils.map(ExceptionUtils.getThrowableList(ex), t -> t.getClass().getName())));
+            statusAttribute(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(ex));
+            return this;
+        }
+
+        public Builder statusAttribute(final String key, final Object value) {
+            if (this.attributes == Collections.EMPTY_MAP)
+                attributes = new HashMap<>();
+            attributes.put(key, value);
             return this;
         }
 

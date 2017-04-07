@@ -110,7 +110,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                     if (!f.isSuccess()) {
                         final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(requestMessage)
+                                .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusAttributeException(f.cause())
+                                .statusMessage(errorMessage).create());
                     }
                 });
             } finally {

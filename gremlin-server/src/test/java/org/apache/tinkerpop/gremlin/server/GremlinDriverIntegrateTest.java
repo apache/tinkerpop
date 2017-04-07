@@ -366,6 +366,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof ResponseException);
             assertThat(inner.getMessage(), endsWith("Division by zero"));
+
+            final ResponseException rex = (ResponseException) inner;
+            assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
+            assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
+            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java:1742)\n\tat org.codehaus.groovy.runtime.typehandling.BigDecimalMath.divideImpl(BigDecimalMath.java:68)\n\tat org.codehaus.groovy.runtime.typehandling.IntegerMath.divideImpl(IntegerMath.java:49)\n\tat org.codehaus.groovy.runtime.dgmimpl.NumberNumberDiv$NumberNumber.invoke(NumberNumberDiv.java:323)\n\tat org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite.call(PojoMetaMethodSite.java:56)\n\tat org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)\n"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens

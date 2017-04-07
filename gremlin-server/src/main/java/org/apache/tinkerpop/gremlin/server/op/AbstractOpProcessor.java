@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
+import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -277,10 +278,10 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             }
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
-            final String errorMessage = String.format("Error during serialization: %s",
-                    ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+            final String errorMessage = String.format("Error during serialization: %s", ExceptionHelper.getMessageFromExceptionOrCause(ex));
             final ResponseMessage error = ResponseMessage.build(msg.getRequestId())
                     .statusMessage(errorMessage)
+                    .statusAttributeException(ex)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             ctx.writeAndFlush(error);
             throw ex;
