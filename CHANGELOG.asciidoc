@@ -26,13 +26,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added validation to `StarVertexProperty`.
 * Bumped to Jackson 2.8.7.
 * Fixed `EventStrategy` so that newly added properties trigger events with the name of the key that was added.
 * Drop use of jitpack for the jbcrypt artifact - using the official one in Maven Central.
-
-Bugs
-^^^^
-* TINKERPOP-1664 StarVertexProperty properties were not validated.
 
 [[release-3-1-6]]
 TinkerPop 3.1.6 (Release Date: February 3, 2017)
