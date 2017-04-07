@@ -117,7 +117,7 @@ public final class ElementHelper {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
 
-            if (propertyKeyValues[i + 1] == null) {
+            if (null == propertyKeyValues[i + 1]) {
                 throw Property.Exceptions.propertyValueCanNotBeNull();
             }
         }
