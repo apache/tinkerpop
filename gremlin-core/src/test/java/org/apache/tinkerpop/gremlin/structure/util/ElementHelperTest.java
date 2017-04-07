@@ -119,6 +119,15 @@ public class ElementHelperTest {
     }
 
     @Test
+    public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidValues() {
+        try {
+            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", null);
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
     public void shouldFindTheIdValueAlone() {
         assertEquals(123l, ElementHelper.getIdValue(T.id, 123l).get());
     }
