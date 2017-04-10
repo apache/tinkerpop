@@ -19,16 +19,13 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import unittest
-from unittest import TestCase
-
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.graph_traversal import __
 
 
-class TestTraversal(TestCase):
+class TestTraversal(object):
     def test_bytecode(self):
         g = Graph().traversal()
         bytecode = g.V().out("created").bytecode
@@ -85,7 +82,3 @@ class TestTraversal(TestCase):
         assert 0 == len(bytecode.bindings.keys())
         assert 0 == len(bytecode.source_instructions)
         assert 0 == len(bytecode.step_instructions)
-
-
-if __name__ == '__main__':
-    unittest.main()

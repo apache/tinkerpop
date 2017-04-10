@@ -21,8 +21,6 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 import json
 from mock import Mock
-import unittest
-from unittest import TestCase
 
 import six
 
@@ -36,7 +34,7 @@ from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
 
-class TestGraphSONReader(TestCase):
+class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
 
     def test_number_input(self):
@@ -124,7 +122,7 @@ class TestGraphSONReader(TestCase):
         assert o is serdes.objectify()
 
 
-class TestGraphSONWriter(TestCase):
+class TestGraphSONWriter(object):
 
     graphson_writer = GraphSONWriter()
 
@@ -205,7 +203,3 @@ class TestGraphSONWriter(TestCase):
         mapping = self.graphson_writer.toDict(long(1))
         assert mapping['@type'] == 'g:Int64'
         assert mapping['@value'] == 1
-
-
-if __name__ == '__main__':
-    unittest.main()
