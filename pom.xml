@@ -181,6 +181,9 @@ limitations under the License.
                                 <requireJavaVersion>
                                     <version>[1.8.0-40,)</version>
                                 </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.2.5,)</version>
+                                </requireMavenVersion>
                             </rules>
                         </configuration>
                     </execution>
