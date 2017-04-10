@@ -370,7 +370,7 @@
                                         </copy>
                                         <exec dir="${project.build.directory}/python2" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python env"/>
+                                            <arg line="--python=python2 env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
@@ -378,7 +378,7 @@
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python env"/>
+                                            <arg line="--python=python3 env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
