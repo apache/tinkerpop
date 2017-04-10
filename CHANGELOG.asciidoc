@@ -26,7 +26,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 * Deprecated `authentication.className` setting in favor of using `authentication.authenticator`
 * Added `authentication.authenticationHandler` setting
 * Added abstraction to authorization to allow users to plug in their own `AbstractAuthorizationHandler` implementations

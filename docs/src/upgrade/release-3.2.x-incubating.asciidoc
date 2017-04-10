@@ -976,7 +976,6 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.0-incubating/CH
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-
 Hadoop FileSystem Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
