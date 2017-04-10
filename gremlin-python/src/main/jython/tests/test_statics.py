@@ -19,16 +19,13 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import unittest
-from unittest import TestCase
-
 from gremlin_python import statics
 from gremlin_python.process.traversal import Cardinality
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Pop
 
 
-class TestStatics(TestCase):
+class TestStatics(object):
     def test_enums(self):
         statics.load_statics(globals())
         assert isinstance(list_, Cardinality)
@@ -40,7 +37,3 @@ class TestStatics(TestCase):
         assert isinstance(first, Pop)
         assert first == Pop.first
         statics.unload_statics(globals())
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -19,15 +19,12 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import unittest
-from unittest import TestCase
-
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.strategies import *
 from gremlin_python.process.graph_traversal import __
 
 
-class TestTraversalStrategies(TestCase):
+class TestTraversalStrategies(object):
     def test_singletons(self):
         g = Graph().traversal()
         bytecode = g.withStrategies(ReadOnlyStrategy()).bytecode
@@ -101,6 +98,3 @@ class TestTraversalStrategies(TestCase):
         strategy = bytecode.source_instructions[0][1]
         assert 1 == len(strategy.configuration)
         assert __.has("name","marko") == strategy.configuration["vertices"]
-
-if __name__ == '__main__':
-    unittest.main()
