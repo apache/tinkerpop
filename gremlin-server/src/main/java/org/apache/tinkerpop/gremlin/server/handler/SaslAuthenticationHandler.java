@@ -54,17 +54,16 @@ import org.slf4j.LoggerFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
+public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    private final Authenticator authenticator;
     private final Settings.AuthenticationSettings authenticationSettings;
 
     public SaslAuthenticationHandler(final Authenticator authenticator, final Settings.AuthenticationSettings authenticationSettings) {
-        this.authenticator = authenticator;
+        super(authenticator);
         this.authenticationSettings = authenticationSettings;
     }
 

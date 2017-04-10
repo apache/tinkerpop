@@ -32,6 +32,16 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Authentication Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The server settings previously used `authentication.className` to set an authenticator for the the two provided
+authentication handler and channelizer classes to use. This has been deprecated in favor of `authentication.authenticator`.
+A class that extends `AbstractAuthenticationHandler` may also now be provided as `authentication.authenticationHandler`
+to be used in either of the provided channelizer classes to handle the provided authenticator
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1657[TINKERPOP-1657]
+
 GremlinScriptEngine Metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
