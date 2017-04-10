@@ -88,15 +88,6 @@ public class Krb5Authenticator implements Authenticator {
         );
     }
 
-    /**
-     * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     */
-    @Override
-    @Deprecated
-    public SaslNegotiator newSaslNegotiator() {
-        return null;
-    }
-
     public AuthenticatedUser authenticate(final Map<String, String> credentials) throws AuthenticationException {
         logger.error("Authenticate() should not be called. Use getAuthenticatedUser() when isComplete() is true.");
         return null;

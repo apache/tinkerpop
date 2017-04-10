@@ -160,7 +160,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
     @Override
     public void close() throws Exception {
-       sessions.values().forEach(Session::manualKill);
+       sessions.values().forEach(session -> session.manualKill(false));
     }
 
     protected void evalOp(final Context context) throws OpProcessorException {

@@ -46,31 +46,13 @@ public interface Authenticator {
     public void setup(final Map<String,Object> config);
 
     /**
-     * Provide a SASL handler to perform authentication for an single connection. SASL is a stateful protocol, so a
-     * new instance must be used for each authentication attempt.)
-     *
-     * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-995">TINKERPOP-995</a>
-     */
-    @Deprecated
-    public SaslNegotiator newSaslNegotiator();
-
-    /**
      * Provide a SASL handler to perform authentication for an single connection. SASL is a stateful protocol, so
      * a new instance must be used for each authentication attempt.
-     *
-     * As of 3.1.1, this method by default calls the {@link #newSaslNegotiator()} method so as not to introduce a
-     * breaking change. Implementers should move their code from {@link #newSaslNegotiator()} to this method as
-     * this is the method now called by Gremlin Server during authentication. For full backwards compatibility,
-     * it makes sense to call this method from {@link #newSaslNegotiator()} passing {@code null} for the
-     * {@code remoteAddress} parameter.
      *
      * @param remoteAddress the IP address of the client to authenticate to authenticate or null if an internal
      *                      client (one not connected over the remote transport).
      */
-    public default SaslNegotiator newSaslNegotiator(final InetAddress remoteAddress) {
-        return newSaslNegotiator();
-    }
+    public SaslNegotiator newSaslNegotiator(final InetAddress remoteAddress);
 
     /**
      * A "standard" authentication implementation that can be used more generically without SASL support.  This

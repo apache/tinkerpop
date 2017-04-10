@@ -116,17 +116,13 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithAuthorizationHeader":
                 configureForAuthentication(settings);
                 break;
-            case "should401OnPOSTWithInvalidPasswordAuthorizationHeaderOld":
-            case "should200OnPOSTWithAuthorizationHeaderOld":
-                configureForAuthenticationOld(settings);
-                break;
         }
         return settings;
     }
 
     private void configureForAuthentication(final Settings settings) {
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
-        authSettings.className = SimpleAuthenticator.class.getName();
+        authSettings.authenticator = SimpleAuthenticator.class.getName();
 
         // use a credentials graph with one user in it: stephen/password
         final Map<String,Object> authConfig = new HashMap<>();
@@ -138,7 +134,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     private void configureForAuthenticationWithHandlerClass(final Settings settings) {
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
-        authSettings.className = SimpleAuthenticator.class.getName();
+        authSettings.authenticator = SimpleAuthenticator.class.getName();
 
         //Add basic auth handler to make sure the reflection code path works.
         authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
@@ -158,8 +154,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         // use a credentials graph with one user in it: stephen/password
         final Map<String,Object> authConfig = new HashMap<>();
-        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
-        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 
         authSettings.config = authConfig;
         settings.authentication = authSettings;
@@ -248,20 +243,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should401OnPOSTWithInvalidPasswordAuthorizationHeader() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader("Content-Type", "application/json");
-        httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(401, response.getStatusLine().getStatusCode());
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void should401OnPOSTWithInvalidPasswordAuthorizationHeaderOld() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
