@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
@@ -153,15 +154,33 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         finalize(pipeline);
     }
 
-    private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
+    protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings.AuthenticationSettings config) {
         try {
-            final Class<?> clazz = Class.forName(config.className);
+            final Class<?> clazz = Class.forName(config.authenticationHandler);
+            final Class[] constructorArgs = new Class[1];
+            constructorArgs[0] = Authenticator.class;
+            return (AbstractAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator);
+        } catch (Exception ex) {
+            logger.warn(ex.getMessage());
+            throw new IllegalStateException(String.format("Could not create/configure AuthenticationHandler %s", config.authenticationHandler), ex);
+        }
+    }
+
+    private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
+        String authenticatorClass = null;
+        if (config.authenticator == null) {
+            authenticatorClass = config.className;
+        } else {
+            authenticatorClass = config.authenticator;
+        }
+        try {
+            final Class<?> clazz = Class.forName(authenticatorClass);
             final Authenticator authenticator = (Authenticator) clazz.newInstance();
             authenticator.setup(config.config);
             return authenticator;
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
-            throw new IllegalStateException(String.format("Could not create/configure Authenticator %s", config.className), ex);
+            throw new IllegalStateException(String.format("Could not create/configure Authenticator %s", authenticator), ex);
         }
     }
 
