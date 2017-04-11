@@ -61,9 +61,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -73,6 +74,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
@@ -409,19 +411,28 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final CompletableFuture<List<Result>> futureFive = rsFive.all();
         final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final AtomicBoolean hit = new AtomicBoolean(false);
-        while (!futureFive.isDone()) {
-            // futureZero can't finish before futureFive - racy business here?
-            assertThat(futureZero.isDone(), is(false));
-            hit.set(true);
-        }
+        final CountDownLatch latch = new CountDownLatch(2);
+        final List<String> order = new ArrayList<>();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        // should have entered the loop at least once and thus proven that futureZero didn't return ahead of
-        // futureFive
-        assertThat(hit.get(), is(true));
+        futureFive.thenAcceptAsync(r -> {
+            order.add(r.get(0).getString());
+            latch.countDown();
+        }, executor);
 
-        assertEquals("zero", futureZero.get().get(0).getString());
-        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+        futureZero.thenAcceptAsync(r -> {
+            order.add(r.get(0).getString());
+            latch.countDown();
+        }, executor);
+
+        // wait for both results
+        latch.await(30000, TimeUnit.MILLISECONDS);
+
+        // should be two results
+        assertEquals(2, order.size());
+
+        // ensure that "five" is first then "zero"
+        assertThat(order, contains("five", "zero"));
     }
 
     @Test
