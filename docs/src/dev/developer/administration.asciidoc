@@ -129,7 +129,7 @@ The vote result is available here:
 If the candidate does not (yet) have an Apache account, then please note that fact in the notification email. Provide
 the board 72 hours to respond with objection before extending the invite to the new PMC member. Once that time has
 elapsed, the invite may be sent to the new PMC member. If they accept, then the PMC chair should refer to the
-link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for ho to
+link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for how to
 complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
 
 Board Reports
