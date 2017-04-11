@@ -1189,6 +1189,7 @@ run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar 
 link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory
 before starting the server.
 
+[[opprocessor-configurations]]
 OpProcessor Configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1214,7 +1215,21 @@ The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Name |Description |Default
+|maxParameters |Maximum number of parameters that can be passed on the request. |16
+|perGraphCloseTimeout |Time in milliseconds to wait for each configured graph to close any open transactions when the session is killed. |10000
 |sessionTimeout |Time in milliseconds before a session will time out. |28800000
+|=========================================================
+
+StandardOpProcessor
+++++++++++++++++++
+
+The `StandardOpProcessor` provides a way to interact with Gremlin Server without use of sessions and is the default
+method for processing script evaluation requests.
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Name |Description |Default
+|maxParameters |Maximum number of parameters that can be passed on the request. |16
 |=========================================================
 
 [[traversalopprocessor]]
@@ -1802,6 +1817,12 @@ Map<String,Object> params = new HashMap<>();
 params.put("x",4);
 client.submit("[1,2,3,x]", params);
 ----
+
+The more parameters that are used in a script the more expensive the compilation step becomes. Gremlin Server has a
+`OpProcessor` setting called `maxParameters`, which is mentioned in the <<opprocess-configuration,OpProcessor Configuration>>
+section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
+Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
+the server, but taken as a group under high concurrency would be considered detrimental.
 
 Cache Management
 ^^^^^^^^^^^^^^^^

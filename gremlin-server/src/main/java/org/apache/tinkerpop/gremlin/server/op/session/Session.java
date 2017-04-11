@@ -88,9 +88,8 @@ public class Session {
         this.scheduledExecutorService = context.getScheduledExecutorService();
         this.sessions = sessions;
 
-        final Settings.ProcessorSettings processorSettings = this.settings.processors.stream()
-                .filter(p -> p.className.equals(SessionOpProcessor.class.getCanonicalName()))
-                .findAny().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
+        final Settings.ProcessorSettings processorSettings = this.settings.optionalProcessor(SessionOpProcessor.class).
+                orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.getOrDefault(
                 SessionOpProcessor.CONFIG_SESSION_TIMEOUT, SessionOpProcessor.DEFAULT_SESSION_TIMEOUT).toString());
         this.configuredPerGraphCloseTimeout = Long.parseLong(processorSettings.config.getOrDefault(

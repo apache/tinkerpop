@@ -53,12 +53,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-
 /**
- * @author Marc de Lignie
+ * Test audit logs  and like other descendants of AbstractGremlinServerIntegrationTest this test suite assumes that
+ * tests are run sequentially and thus the server and kdcServer variables can be reused.
  *
- * Note: like other descendents of AbstractGremlinServerIntegrationTest this test suite assumes that tests are
- *       run sequentially and thus the server and kdcServer variables can be reused.
+ * @author Marc de Lignie
  */
 public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuditLogIntegrateTest.class);
@@ -120,10 +119,10 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldAuditLogWithAllowAllAuthenticator":
-                authSettings.className = AllowAllAuthenticator.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
                 break;
             case "shouldAuditLogWithSimpleAuthenticator":
-                authSettings.className = SimpleAuthenticator.class.getName();
+                authSettings.authenticator = SimpleAuthenticator.class.getName();
                 authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
                 break;
             case "shouldNotAuditLogWhenDisabled":
@@ -141,7 +140,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             case "shouldAuditLogWithHttpTransport":
                 settings.host = "localhost";
                 settings.channelizer = HttpChannelizer.class.getName();
-                authSettings.className = SimpleAuthenticator.class.getName();
+                authSettings.authenticator = SimpleAuthenticator.class.getName();
                 authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
                 break;
         }
@@ -182,13 +181,14 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
             assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            assertEquals(5, client.submit("1+4").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
 
         final String simpleAuthenticatorName = SimpleAuthenticator.class.getSimpleName();
         final String authMsg = recordingAppender.getMessages().stream()
-                .filter( msg -> msg.toString().contains("by " + simpleAuthenticatorName) ).iterator().next();
+                .filter(msg -> msg.contains("by " + simpleAuthenticatorName)).iterator().next();
         final Matcher m = Pattern.compile(".*?([\\d.:]+).*?").matcher(authMsg);
         m.find();
         final String address = m.group(1);
