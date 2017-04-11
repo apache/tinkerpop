@@ -52,7 +52,7 @@ limitations under the License.
             <data key="labelE">
                 <xsl:value-of select="@label"/>
             </data>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates select="node()"/>
         </edge>
     </xsl:template>
 
