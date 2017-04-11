@@ -94,6 +94,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
             put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
             put(CONFIG_PER_GRAPH_CLOSE_TIMEOUT, DEFAULT_PER_GRAPH_CLOSE_TIMEOUT);
+            put(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
         }};
     }
 
@@ -104,6 +105,12 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     @Override
     public String getName() {
         return OP_PROCESSOR_NAME;
+    }
+
+    @Override
+    public void init(final Settings settings) {
+        this.maxParameters = (int) settings.optionalProcessor(SessionOpProcessor.class).orElse(DEFAULT_SETTINGS).config.
+                getOrDefault(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
     }
 
     /**

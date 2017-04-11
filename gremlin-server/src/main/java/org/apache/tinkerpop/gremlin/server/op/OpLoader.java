@@ -78,4 +78,12 @@ public final class OpLoader {
     public static Map<String, OpProcessor> getProcessors() {
         return Collections.unmodifiableMap(processors);
     }
+
+    /**
+     * Reset the processors so that they can be re-initialized with different settings which is useful in testing
+     * scenarios.
+     */
+    public synchronized static void reset() {
+        initialized = false;
+    }
 }
