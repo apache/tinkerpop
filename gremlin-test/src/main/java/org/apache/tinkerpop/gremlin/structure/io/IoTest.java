@@ -55,6 +55,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -308,6 +311,30 @@ public class IoTest {
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
             assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldTransformGraphMLV2ToV3ViaXSLT() throws Exception {
+            final InputStream stylesheet = Thread.currentThread().getContextClassLoader().getResourceAsStream("tp2-to-tp3-graphml.xslt");
+            final InputStream datafile = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-tp2.xml");
+            final ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+            final TransformerFactory tFactory = TransformerFactory.newInstance();
+            final StreamSource stylesource = new StreamSource(stylesheet);
+            final Transformer transformer = tFactory.newTransformer(stylesource);
+
+            final StreamSource source = new StreamSource(datafile);
+            final StreamResult result = new StreamResult(output);
+            transformer.transform(source, result);
+
+            final GraphReader reader = GraphMLReader.build().create();
+            reader.readGraph(new ByteArrayInputStream(output.toByteArray()), graph);
+            assertClassicGraph(graph, false, true);
         }
 
         private boolean isGraphMLXSDPresent() {
