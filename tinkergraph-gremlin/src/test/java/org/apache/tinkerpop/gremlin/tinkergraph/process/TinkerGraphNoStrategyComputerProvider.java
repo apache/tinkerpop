@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerProvider {
 
     private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(
-            RangeByIsCountStrategy.class,
+            CountStrategy.class,
             ComputerVerificationStrategy.class,
             ProfileStrategy.class,
             FilterRankingStrategy.class,

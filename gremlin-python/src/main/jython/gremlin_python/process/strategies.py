@@ -154,7 +154,7 @@ class PathRetractionStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self)
 
 
-class RangeByIsCountStrategy(TraversalStrategy):
+class CountStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 

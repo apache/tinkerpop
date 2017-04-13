@@ -80,7 +80,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Lazy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -228,7 +228,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(MatchPredicateStrategy.class);
         CLASS_IMPORTS.add(OrderLimitStrategy.class);
         CLASS_IMPORTS.add(PathProcessorStrategy.class);
-        CLASS_IMPORTS.add(RangeByIsCountStrategy.class);
+        CLASS_IMPORTS.add(CountStrategy.class);
         CLASS_IMPORTS.add(ComputerVerificationStrategy.class);
         CLASS_IMPORTS.add(LambdaRestrictionStrategy.class);
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);

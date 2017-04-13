@@ -117,7 +117,7 @@ public class TraversalExplanationTest {
                 found++;
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(BOTH,edge)"))
                 found++;
-            if (line.contains("RangeByIsCountStrategy") && line.contains("RangeGlobalStep(0,3)"))
+            if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;
         }
         assertEquals(4, found);
@@ -130,7 +130,7 @@ public class TraversalExplanationTest {
                 found++;
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(BOTH,edge)"))
                 found++;
-            if (line.contains("RangeByIsCountStrategy") && line.contains("RangeGlobalStep(0,3)"))
+            if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;
         }
         assertEquals(4, found);
