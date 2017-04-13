@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -31,10 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
