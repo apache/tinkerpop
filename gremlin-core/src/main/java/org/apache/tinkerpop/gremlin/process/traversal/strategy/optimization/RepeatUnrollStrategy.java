@@ -20,15 +20,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,7 +42,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final RepeatUnrollStrategy INSTANCE = new RepeatUnrollStrategy();
-
     protected static final int MAX_BARRIER_SIZE = 2500;
 
     private RepeatUnrollStrategy() {
@@ -52,7 +57,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                 final RepeatStep<?> repeatStep = (RepeatStep) traversal.getSteps().get(i);
                 if (null == repeatStep.getEmitTraversal() &&
                         repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 &&
-                        !TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, DedupGlobalStep.class, repeatStep.getRepeatTraversal())) {
+                        !TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, DedupGlobalStep.class, repeatStep.getRepeatTraversal()) &&
+                        !TraversalHelper.hasStepOfAssignableClassRecursively(LoopsStep.class, repeatStep.getRepeatTraversal())) {
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
                     repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
                     TraversalHelper.applySingleLevelStrategies(traversal, repeatTraversal, RepeatUnrollStrategy.class);
