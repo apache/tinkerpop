@@ -36,8 +36,17 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.groupCount;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.loops;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,6 +78,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     // SIDE-EFFECTS
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX();
+
+    public abstract Traversal<Vertex, Map<Integer, Long>> get_g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX(final Object v1Id);
 
     //
 
@@ -234,6 +245,20 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("lop", "lop", "ripple", "vadas"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_capXmX() {
+        final Traversal<Vertex, Map<Integer, Long>> traversal = get_g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final Map<Integer, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(3, map.size());
+        // {0=1, 1=3, 2=2}
+        assertEquals(1L, map.get(0).longValue());
+        assertEquals(3L, map.get(1).longValue());
+        assertEquals(2L, map.get(2).longValue());
+    }
+
     public static class Traversals extends RepeatTest {
 
         @Override
@@ -289,6 +314,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name(final Object v1Id) {
             return g.V(v1Id).repeat(out()).until(outE().count().is(0)).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Integer, Long>> get_g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX(final Object v1Id) {
+            return g.V(v1Id).repeat(groupCount("m").by(loops()).out()).times(3).cap("m");
         }
     }
 }

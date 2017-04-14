@@ -86,9 +86,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Deprecated `authentication.className` setting in favor of using `authentication.authenticator`
-* Added `authentication.authenticationHandler` setting
-* Added abstraction to authorization to allow users to plug in their own `AbstractAuthorizationHandler` implementations
+* Fixed a bug in `RepeatUnrollStrategy` where `LoopsStep` and `LambdaHolder` should invalidate the strategy's application.
+* Deprecated `authentication.className` setting in favor of using `authentication.authenticator`.
+* Added `authentication.authenticationHandler` setting.
+* Added abstraction to authorization to allow users to plug in their own `AbstractAuthorizationHandler` implementations.
 * Fixed a `NullPointerException` bug in `B_LP_O_S_SE_SL_Traverser`.
 * `PathRetractionStrategy` now uses the marker-model to reduce recursive lookups of invalidating steps.
 * `ProfileStrategy` now uses the marker-model to reduce recursive lookups of `ProfileSideEffectStep`.
