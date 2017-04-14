@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -41,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -90,6 +92,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile();
 
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile();
+
+    @Before
+    public void adjustStrategies() {
+        g = g.withoutStrategies(LazyBarrierStrategy.class);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
