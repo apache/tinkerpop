@@ -69,7 +69,7 @@ public final class DefaultGraphManager implements GraphManager {
      * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
      * configuration file.
      *
-     * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
      * @deprecated As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
      * {@link #getGraph(String)}
      */
@@ -91,12 +91,10 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * @Deprecated
-     *
      * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
      * initialization scripts.
      *
-     * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
+     * @return a {@code Map} where the key is the name of the {@link TraversalSource} and the value is the
      * {@link TraversalSource} itself
      * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
      * {@link #getTraversalSource(String)} (String)}
@@ -169,10 +167,7 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * If {@link Map} containing {@link Graph} references contains one corresponding to
-     * {@link String} graphName, then we return that {@link Graph}; otherwise, instantiate a
-     * new {@link Graph} using the {@link Supplier}, add it to the {@link Map} tracking {@link Graph}
-     * references, and return that {@link Graph}.
+     * {@inheritDoc}
      */
     public final Graph openGraph(final String graphName, final Function<String, Graph> supplier) {
         final Graph graph = graphs.get(graphName);
@@ -185,8 +180,7 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * Remove {@link Graph} corresponding to {@link String} graphName from {@link Map}
-     * tracking graph references and close the {@link Graph}.
+     * {@inheritDoc}
      */
     public final Graph removeGraph(final String graphName) throws Exception {
         Graph graph = graphs.remove(graphName);
@@ -197,7 +191,7 @@ public final class DefaultGraphManager implements GraphManager {
     /**
      * Selectively close transactions on the specified graphs or the graphs of traversal sources.
      */
-    private final void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
+    private void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
         final Set<Graph> graphsToCloseTxOn = new HashSet<>();
 
         // by the time this method has been called, it should be validated that the source/graph is present.
