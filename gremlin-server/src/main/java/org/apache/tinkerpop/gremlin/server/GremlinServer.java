@@ -301,7 +301,7 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            serverGremlinExecutor.getGraphManager().getGraphNames().stream().forEach(gName -> {
+            serverGremlinExecutor.getGraphManager().getGraphNames().forEach(gName -> {
                 logger.debug("Closing Graph instance [{}]", gName);
                 try {
                     serverGremlinExecutor.getGraphManager().getGraph(gName).close();
