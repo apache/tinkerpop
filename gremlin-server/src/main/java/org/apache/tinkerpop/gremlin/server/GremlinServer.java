@@ -302,14 +302,14 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            serverGremlinExecutor.getGraphManager().getGraphs().forEach((k, v) -> {
-                logger.debug("Closing Graph instance [{}]", k);
+            serverGremlinExecutor.getGraphManager().getGraphNames().stream().forEach(gName -> {
+                logger.debug("Closing Graph instance [{}]", gName);
                 try {
-                    v.close();
+                    serverGremlinExecutor.getGraphManager().getGraph(gName).close();
                 } catch (Exception ex) {
-                    logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
+                    logger.warn(String.format("Exception while closing Graph instance [%s]", gName), ex);
                 } finally {
-                    logger.info("Closed Graph instance [{}]", k);
+                    logger.info("Closed Graph instance [{}]", gName);
                 }
             });
 

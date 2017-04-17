@@ -222,7 +222,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     private static void validateTraversalSourceAlias(final Context ctx, final RequestMessage message, final Map<String, String> aliases) throws OpProcessorException {
         final String traversalSourceBindingForAlias = aliases.values().iterator().next();
-        if (!ctx.getGraphManager().getTraversalSources().containsKey(traversalSourceBindingForAlias)) {
+        if (null == ctx.getGraphManager().getTraversalSource(traversalSourceBindingForAlias)) {
             final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
@@ -264,7 +264,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
-        final TraversalSource g = graphManager.getTraversalSources().get(traversalSourceName);
+        final TraversalSource g = graphManager.getTraversalSource(traversalSourceName);
 
         final Timer.Context timerContext = traversalOpTimer.time();
         try {
@@ -340,7 +340,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
-        final TraversalSource g = graphManager.getTraversalSources().get(traversalSourceName);
+        final TraversalSource g = graphManager.getTraversalSource(traversalSourceName);
 
         final Traversal.Admin<?, ?> traversal;
         try {
