@@ -1,0 +1,22 @@
+{
+  "revapi": {
+    "java": {
+      "filter": {
+        "packages": {
+          "regex": true,
+          //gremlin-shaded includes a lot of stuff from 3rd party libraries that break their API between
+          //versions. Let's just not consider them part of Tinkerpop API. -->
+          "exclude": ["org\\.apache\\.tinkerpop\\.shaded(\\..+)?"],
+          "include": [
+            //Be aware that the definitions below do NOT include the subpackages...
+            "org\\.apache\\.tinkerpop\\.gremlin\\.structure",
+            "org\\.apache\\.tinkerpop\\.gremlin\\.structure\\.io",
+            "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.computer",
+            "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.traversal",
+            "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.traversal.dsl.graph"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -20,3 +20,7 @@ FROM tinkerpop:hadoop-HADOOP_VERSION
 RUN mkdir -p /usr/src/tinkerpop
 WORKDIR /usr/src/tinkerpop
 COPY . /usr/src/tinkerpop
+RUN chmod 744 ./.travis.install-maven.sh
+ENV M2_HOME /root/mvn-home
+ENV PATH ${M2_HOME}/bin:${PATH}
+RUN ./.travis.install-maven.sh 3.3.9 ${M2_HOME}
