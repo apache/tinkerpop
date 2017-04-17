@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.function.Function;
 
 /**
@@ -68,13 +66,12 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * @Deprecated The {@link Map} returned should be immutable. Please refer to
-     * getGraphNames().
-     *
      * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
      * configuration file.
      *
      * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
+     * {@link #getGraph(String)}
      */
     @Deprecated
     public final Map<String, Graph> getGraphs() {
@@ -85,12 +82,12 @@ public final class DefaultGraphManager implements GraphManager {
         return graphs.keySet();
     }
 
-    public final Graph getGraph(final String gName) {
-        return graphs.get(gName);
+    public final Graph getGraph(final String graphName) {
+        return graphs.get(graphName);
     }
 
-    public final void putGraph(final String gName, final Graph g) {
-        graphs.put(gName, g);
+    public final void putGraph(final String graphName, final Graph g) {
+        graphs.put(graphName, g);
     }
 
     /**
@@ -100,7 +97,9 @@ public final class DefaultGraphManager implements GraphManager {
      * initialization scripts.
      *
      * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
-     *         {@link TraversalSource} itself
+     * {@link TraversalSource} itself
+     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
+     * {@link #getTraversalSource(String)} (String)}
      */
     @Deprecated
     public final Map<String, TraversalSource> getTraversalSources() {
@@ -111,8 +110,8 @@ public final class DefaultGraphManager implements GraphManager {
         return traversalSources.keySet();
     }
 
-    public final TraversalSource getTraversalSource(final String tsName) {
-        return traversalSources.get(tsName);
+    public final TraversalSource getTraversalSource(final String traversalSourceName) {
+        return traversalSources.get(traversalSourceName);
     }
 
     public final void putTraversalSource(final String tsName, final TraversalSource ts) {

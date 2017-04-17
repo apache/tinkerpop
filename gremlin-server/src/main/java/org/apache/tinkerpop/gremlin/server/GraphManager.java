@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import javax.script.Bindings;
 import java.util.Map;
@@ -29,7 +28,7 @@ import java.util.function.Function;
 
 /**
  * The {@link GraphManager} interface allows for reference tracking of Graph references through
- * a {@link Map<String, Graph>}; the interface plugs into the lifeline of gremlin script
+ * a {@code Map<String, Graph>}; the interface plugs into the lifeline of gremlin script
  * executions, meaning that commit() and rollback() will be called on all graphs stored in the
  * graph reference tracker at the end of the script executions; you may want to implement
  * this interface if you want to define a custom graph instantiation/closing mechanism; note that
@@ -37,12 +36,12 @@ import java.util.function.Function;
  */
 public interface GraphManager {
     /**
-     * @Deprecated This returns a {@link Map} that should be immutable. Please refer to
-     * getGraphNames() for replacement.
+     * Get a list of the {@link Graph} instances and their binding names.
      *
-     * Get a list of the {@link Graph} instances and their binding names
-     *
-     * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
+     * {@link #getGraph(String)} - note that the expectation is this method return an immutable {@code Map} which was
+     * not the expectation prior to 3.2.5.
      */
     @Deprecated
     public Map<String, Graph> getGraphs();
@@ -52,58 +51,56 @@ public interface GraphManager {
      * reference tracker.
      */
     public Set<String> getGraphNames();
+
     /**
-     * Get {@link Graph} instance whose name matches {@link gName}
+     * Get {@link Graph} instance whose name matches {@code graphName}.
      *
      * @return {@link Graph} if exists, else null
      */
-    public Graph getGraph(final String gName);
+    public Graph getGraph(final String graphName);
 
     /**
-     * Add or update {@link Graph} g with name {@link String} gName to
-     * {@link Map<String, Graph>}
+     * Add or update the specified {@link Graph} with the specified name to {@code Map<String, Graph>} .
      */
-    public void putGraph(final String gName, final Graph g);
+    public void putGraph(final String graphName, final Graph g);
 
     /**
-     * @Deprecated Please treat as immutable {@link Map} and refer to getTraversalSourceNames()
-     *
      * Get a list of the {@link TraversalSource} instances and their binding names
      *
      * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
      *         {@link TraversalSource} itself
+     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
+     * {@link #getTraversalSource(String)} (String)} - note that the expectation is this method return an immutable
+     * {@code Map} which was not the expectation prior to 3.2.5.
      */
     @Deprecated
     public Map<String, TraversalSource> getTraversalSources();
 
     /**
-     * Get {@link TraversalSource} instance whose name matches {@link tsName}
-     *
-     * @return {@link TraversalSource} if exists, else null
-     */
-
-    /**
-     * Get a {@link Set} of {@link String} traversalSourceNames to names stored in the
-     * traversalSources's reference tracker.
+     * Get a {@code Set} of the names of the the stored {@link TraversalSource} instances.
      */
     public Set<String> getTraversalSourceNames();
 
-    public TraversalSource getTraversalSource(final String tsName);
     /**
-     * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
+     * Get {@link TraversalSource} instance whose name matches {@code traversalSourceName}
+     *
+     * @return {@link TraversalSource} if exists, else null
      */
+    public TraversalSource getTraversalSource(final String traversalSourceName);
 
     /**
-     * Add or update {@link TraversalSource} ts with name {@link String} tsName to
-     * {@link Map<String, TraversalSource>} returned by call to getTraversalSources()
+     * Add or update the specified {@link TraversalSource} with the specified name.
      */
     public void putTraversalSource(final String tsName, final TraversalSource ts);
 
     /**
-     * Remove {@link TraversalSource} with tsName from {@link Map<String, TraversalSource}.
+     * Remove {@link TraversalSource} by name.
      */
     public TraversalSource removeTraversalSource(final String tsName);
 
+    /**
+     * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
+     */
     public Bindings getAsBindings();
 
     /**
@@ -127,17 +124,16 @@ public interface GraphManager {
     public void commit(final Set<String> graphSourceNamesToCloseTxOn);
 
     /**
-     * Implementation that allows for custom graph-opening implementations; if the {@link Map}
-     * tracking graph references has a {@link Graph} object corresponding to the {@link String} graphName,
-     * then we return that {@link Graph}-- otherwise, we use the custom {@link Supplier} to instantiate a
-     * a new {@link Graph}, add it to the {@link Map} tracking graph references, and return said {@link Graph}.
+     * Implementation that allows for custom graph-opening implementations; if the {@code Map}
+     * tracking graph references has a {@link Graph} object corresponding to the graph name, then we return that
+     * {@link Graph}-- otherwise, we use the custom {@code Function} to instantiate a new {@link Graph}, add it to
+     * the {@link Map} tracking graph references, and return said {@link Graph}.
      */
     public Graph openGraph(final String graphName, final Function<String, Graph> supplier);
 
     /**
-     * Implementation that allows for custom graph-closing implementations;
-     * this method should remove the {@link Graph} graph from the {@link Object}
-     * tracking {@link Graph} references.
+     * Implementation that allows for custom graph closing implementations; this method should remove the {@link Graph}
+     * from the {@code GraphManager}.
      */
     public Graph removeGraph(final String graphName) throws Exception;
 }
