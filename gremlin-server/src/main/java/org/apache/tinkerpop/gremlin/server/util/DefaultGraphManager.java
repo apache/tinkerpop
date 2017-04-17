@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.function.Function;
 
 /**
@@ -68,13 +66,12 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * @Deprecated The {@link Map} returned should be immutable. Please refer to
-     * getGraphNames().
-     *
      * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
      * configuration file.
      *
-     * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
+     * {@link #getGraph(String)}
      */
     @Deprecated
     public final Map<String, Graph> getGraphs() {
@@ -85,22 +82,22 @@ public final class DefaultGraphManager implements GraphManager {
         return graphs.keySet();
     }
 
-    public final Graph getGraph(final String gName) {
-        return graphs.get(gName);
+    public final Graph getGraph(final String graphName) {
+        return graphs.get(graphName);
     }
 
-    public final void putGraph(final String gName, final Graph g) {
-        graphs.put(gName, g);
+    public final void putGraph(final String graphName, final Graph g) {
+        graphs.put(graphName, g);
     }
 
     /**
-     * @Deprecated
-     *
      * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
      * initialization scripts.
      *
-     * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
-     *         {@link TraversalSource} itself
+     * @return a {@code Map} where the key is the name of the {@link TraversalSource} and the value is the
+     * {@link TraversalSource} itself
+     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
+     * {@link #getTraversalSource(String)} (String)}
      */
     @Deprecated
     public final Map<String, TraversalSource> getTraversalSources() {
@@ -111,8 +108,8 @@ public final class DefaultGraphManager implements GraphManager {
         return traversalSources.keySet();
     }
 
-    public final TraversalSource getTraversalSource(final String tsName) {
-        return traversalSources.get(tsName);
+    public final TraversalSource getTraversalSource(final String traversalSourceName) {
+        return traversalSources.get(traversalSourceName);
     }
 
     public final void putTraversalSource(final String tsName, final TraversalSource ts) {
@@ -170,10 +167,7 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * If {@link Map} containing {@link Graph} references contains one corresponding to
-     * {@link String} graphName, then we return that {@link Graph}; otherwise, instantiate a
-     * new {@link Graph} using the {@link Supplier}, add it to the {@link Map} tracking {@link Graph}
-     * references, and return that {@link Graph}.
+     * {@inheritDoc}
      */
     public final Graph openGraph(final String graphName, final Function<String, Graph> supplier) {
         final Graph graph = graphs.get(graphName);
@@ -186,8 +180,7 @@ public final class DefaultGraphManager implements GraphManager {
     }
 
     /**
-     * Remove {@link Graph} corresponding to {@link String} graphName from {@link Map}
-     * tracking graph references and close the {@link Graph}.
+     * {@inheritDoc}
      */
     public final Graph removeGraph(final String graphName) throws Exception {
         Graph graph = graphs.remove(graphName);
@@ -198,7 +191,7 @@ public final class DefaultGraphManager implements GraphManager {
     /**
      * Selectively close transactions on the specified graphs or the graphs of traversal sources.
      */
-    private final void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
+    private void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
         final Set<Graph> graphsToCloseTxOn = new HashSet<>();
 
         // by the time this method has been called, it should be validated that the source/graph is present.

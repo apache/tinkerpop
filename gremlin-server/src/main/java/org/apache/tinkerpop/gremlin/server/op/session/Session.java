@@ -163,7 +163,7 @@ public class Session {
 
         if (!force) {
             // when the session is killed open transaction should be rolled back
-            graphManager.getGraphNames().stream().forEach(gName -> {
+            graphManager.getGraphNames().forEach(gName -> {
                 final Graph g = graphManager.getGraph(gName);
                 if (g.features().graph().supportsTransactions()) {
                     // have to execute the rollback in the executor because the transaction is associated with

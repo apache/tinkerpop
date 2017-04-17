@@ -33,6 +33,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -112,7 +113,7 @@ public class DefaultGraphManagerTest {
         final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
         final GraphManager graphManager = new DefaultGraphManager(settings);
 
-        Graph graph = graphManager.openGraph("graph", null);
+        final Graph graph = graphManager.openGraph("graph", null);
         assertNotNull(graph);
         assertThat(graph, instanceOf(TinkerGraph.class));
     }
@@ -122,13 +123,14 @@ public class DefaultGraphManagerTest {
         final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
         final GraphManager graphManager = new DefaultGraphManager(settings);
 
-        Graph graph = graphManager.getGraph("graph"); //fake out graph instance
+        final Graph graph = graphManager.getGraph("graph"); //fake out graph instance
 
-        Graph newGraph = graphManager.openGraph("newGraph", (String gName) -> {
+        final Graph newGraph = graphManager.openGraph("newGraph", (String gName) -> {
             return graph;
         });
 
         assertNotNull(graph);
         assertThat(graph, instanceOf(TinkerGraph.class));
+        assertSame(graph, newGraph);
     }
 }

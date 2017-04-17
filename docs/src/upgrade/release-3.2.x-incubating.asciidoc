@@ -100,14 +100,17 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1387[TINKERPOP-1387]
 
 GraphManager versus DefaultGraphManager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The Gremlin-Server previously implemented its own final `GraphManager` class. Now, the `GraphManager` has been 
-updated to an interface, and users can supply their own `GraphManager` implementations in their YAML. The
-previous `GraphManager` class was traditionally only to be used by internal Gremlin-Server classes; however,
-if you previously used the `GraphManager`, then this changeset will be `breaking` for you. To fix the break,
-you can upgrade your code to use the new `DefaultGraphManager`.
+Gremlin Server previously implemented its own final `GraphManager` class. Now, the `GraphManager` has been changed to
+an interface, and users can supply their own `GraphManager` implementations in their YAML. The previous `GraphManager`
+class was meant be used by classes internal to Gremlin Server, but it was public so if it was used for some reason by
+usrs then then a compile error can be expected. To correct this problem, which will likely manifest as a compile error
+when trying to create a `new GraphManager()` instance, simply change the code to `new DefaultGraphManager(Settings)`.
 
-The `GraphManager` also deprecated the usage of `getGraphs()` so please use `getGraphNames()` instead.
-The `GraphManager` also deprecated the usage of `getTraversalSources()` so please use `getTraversalSourceNames()` instead.
+In addition to the change mentioned above, several methods on `GraphManager` were deprecated:
+
+* `getGraphs()` should be replaced by the combination of `getGraphNames()` and then `getGraph(String)`
+* `getTraversalSources()` is similarly replaced and should instead use a combinatio of `getTraversalSourceNames()` and
+`getTraversalSource(String)`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1438[TINKERPOP-1438]
 

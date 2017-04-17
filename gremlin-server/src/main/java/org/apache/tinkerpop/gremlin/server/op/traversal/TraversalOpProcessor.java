@@ -222,7 +222,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     private static void validateTraversalSourceAlias(final Context ctx, final RequestMessage message, final Map<String, String> aliases) throws OpProcessorException {
         final String traversalSourceBindingForAlias = aliases.values().iterator().next();
-        if (null == ctx.getGraphManager().getTraversalSource(traversalSourceBindingForAlias)) {
+        if (!ctx.getGraphManager().getTraversalSourceNames().contains(traversalSourceBindingForAlias)) {
             final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
