@@ -68,6 +68,11 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Improved error handling of compilation failures for very large or highly parameterized script sent to Gremlin Server.
 * Fixed a bug in `RangeByIsCountStrategy` that changed the meaning of inner traversals.
 * Improved Gremlin-Python Driver implementation by adding a threaded client with basic connection pooling and support for pluggable websocket clients.
+* Changed `GraphManager` from a final class implementation to an interface.
+* Updated `GraphManager` interface to include methods for opening/instantiating a graph and closing a graph.
+* Implemented `DefaultGraphManager` to include previous `GraphManager` functionality and adhere to updated interface.
+* Deprecated `GraphManager.getGraphs()` and added `GraphManager.getGraphNames()`.
+* Deprecated `GraphManager.getTraversalSources()` and added `GraphManager.getTraversalSourceNames()`.
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)

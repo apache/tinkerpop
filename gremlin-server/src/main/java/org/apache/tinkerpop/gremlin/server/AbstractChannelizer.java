@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler
 import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -54,6 +55,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
+import java.util.Iterator;
 
 /**
  * A base implementation for the {@code Channelizer} which does a basic configuration of the pipeline, one that
@@ -198,8 +200,12 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 }
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<String, Graph>();
+                for (String graphName : settings.graphs.keySet()) {
+                    graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
+                }
                 if (config.config != null)
-                    serializer.configure(config.config, graphManager.getGraphs());
+                    serializer.configure(config.config, graphsDefinedAtStartup);
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {

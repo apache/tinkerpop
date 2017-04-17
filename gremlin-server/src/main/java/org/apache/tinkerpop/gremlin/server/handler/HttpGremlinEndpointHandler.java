@@ -290,16 +290,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (!rebindingMap.isEmpty()) {
             for (Map.Entry<String, String> kv : rebindingMap.entrySet()) {
                 boolean found = false;
-                final Map<String, Graph> graphs = this.graphManager.getGraphs();
-                if (graphs.containsKey(kv.getValue())) {
-                    bindings.put(kv.getKey(), graphs.get(kv.getValue()));
+                final Graph g = this.graphManager.getGraph(kv.getValue());
+                if (null != g) {
+                    bindings.put(kv.getKey(), g);
                     found = true;
                 }
 
                 if (!found) {
-                    final Map<String, TraversalSource> traversalSources = this.graphManager.getTraversalSources();
-                    if (traversalSources.containsKey(kv.getValue())) {
-                        bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
+                    final TraversalSource ts = this.graphManager.getTraversalSource(kv.getValue());
+                    if (null != ts) {
+                        bindings.put(kv.getKey(), ts);
                         found = true;
                     }
                 }

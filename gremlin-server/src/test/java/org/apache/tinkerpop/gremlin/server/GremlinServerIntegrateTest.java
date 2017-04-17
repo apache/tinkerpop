@@ -112,7 +112,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     private static final String CLIENT_CRT = "src/test/resources/client.crt";
 
     private Log4jRecordingAppender recordingAppender = null;
-    private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
+    private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph("graph");
     private final Configuration conf = new BaseConfiguration() {{
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
         setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());

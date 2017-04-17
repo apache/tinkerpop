@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
@@ -174,6 +175,11 @@ public class Settings {
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
     public String channelizer = WebSocketChannelizer.class.getName();
+
+    /**
+     * The full class name of the {@link GraphManager} to use in Gremlin Server.
+     */
+    public String graphManager = DefaultGraphManager.class.getName();
 
     /**
      * Configured metrics for Gremlin Server.

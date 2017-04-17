@@ -83,7 +83,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
                                                     final LoadGraphWith.GraphData loadGraphWith) {
         final String serverGraphName = getServerGraphName(loadGraphWith);
 
-        final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get(serverGraphName);
+        final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph(serverGraphName);
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, RemoteGraph.class.getName());
             put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
