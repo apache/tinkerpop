@@ -74,6 +74,41 @@ set. Note that metrics are captured for both sessionless requests as well as for
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
 
+Additional Error Information
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Additional information on error responses from Gremlin Server should help make debugging errors easier. Error responses
+now have both the exception hierarchy and the stack trace that was generated on the server. In this way, receiving an
+error on a client doesn't mean having to rifle through Gremlin Server logs to try to find the associated error.
+
+This change has been applied to all Gremlin Server protocols. For the binary protocol and the Java driver this change
+means that the `ResponseException` thrown from calls to `submit()` requests to the server now have the following
+methods:
+
+[source,java]
+----
+public Optional<String> getRemoteStackTrace()
+
+public Optional<List<String>> getRemoteExceptionHierarchy()
+----
+
+The HTTP protocol has also been updated and returns both `exceptions` and `stackTrace` fields in the response:
+
+[source,js]
+----
+{
+	"message": "Division by zero",
+	"Exception-Class": "java.lang.ArithmeticException",
+	"exceptions": ["java.lang.ArithmeticException"],
+	"stackTrace": "java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java:1742)\n\tat org.codehaus.groovy.runtime.typehandling.BigDecimalMath.divideImpl(BigDecimalMath.java:68)\n\tat org.codehaus.groovy.runtime.typehandling.IntegerMath.divideImpl(IntegerMath.java:49)\n\tat org.codehaus.groovy.runtime.dgmimpl.NumberNumberDiv$NumberNumber.invoke(NumberNumberDiv.java:323)\n\tat org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite.call(PojoMetaMethodSite.java:56)\n\tat org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)\n\tat Script4.run(Script4.groovy:1)\n\tat org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.eval(GremlinGroovyScriptEngine.java:834)\n\tat org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.eval(GremlinGroovyScriptEngine.java:547)\n\tat javax.script.AbstractScriptEngine.eval(AbstractScriptEngine.java:233)\n\tat org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines.eval(ScriptEngines.java:120)\n\tat org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.lambda$eval$2(GremlinExecutor.java:314)\n\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)\n\tat java.lang.Thread.run(Thread.java:745)\n"
+}
+----
+
+Note that the `Exception-Class` which was added in a previous version has been deprecated and replaced by these new
+fields.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1044[TINKERPOP-1044]
+
 Gremlin Console Scripting
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

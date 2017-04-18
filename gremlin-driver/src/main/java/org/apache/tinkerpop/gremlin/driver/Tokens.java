@@ -155,4 +155,7 @@ public final class Tokens {
     public static final String VAL_AGGREGATE_TO_SET = "set";
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
+
+    public static final String STATUS_ATTRIBUTE_EXCEPTIONS = "exceptions";
+    public static final String STATUS_ATTRIBUTE_STACK_TRACE = "stackTrace";
 }

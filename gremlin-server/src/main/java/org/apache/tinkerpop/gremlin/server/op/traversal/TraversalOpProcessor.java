@@ -299,12 +299,16 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage(errorMessage)
+                                .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a side-effect on iteration for request [%s].", msg.getRequestId()), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                .statusMessage(ex.getMessage())
+                                .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     }
@@ -312,7 +316,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     onSideEffectSuccess(graph, context);
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a side-effect on request [%s].", msg.getRequestId()), ex);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
                     onError(graph, context);
                 } finally {
                     timerContext.stop();
@@ -322,7 +328,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         } catch (Exception ex) {
             timerContext.stop();
             throw new OpProcessorException("Could not iterate the side-effect instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
         }
     }
 
@@ -357,7 +365,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             logger.error("Could not deserialize the Traversal instance", context);
             throw new OpProcessorException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                            .statusMessage(ex.getMessage()).create());
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
         }
 
         final Timer.Context timerContext = traversalOpTimer.time();
@@ -376,18 +385,24 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                .statusMessage(errorMessage)
+                                .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                .statusMessage(ex.getMessage())
+                                .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     }
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
                     onError(graph, context);
                 } finally {
                     timerContext.stop();
@@ -397,7 +412,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         } catch (Exception ex) {
             timerContext.stop();
             throw new OpProcessorException("Could not iterate the Traversal instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
         }
     }
 
