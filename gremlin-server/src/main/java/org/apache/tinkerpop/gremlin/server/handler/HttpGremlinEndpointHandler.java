@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -49,7 +50,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
@@ -463,8 +463,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         errorMeter.mark();
         final ObjectNode node = mapper.createObjectNode();
         node.put("message", message);
-		if (t.isPresent()){
+		if (t.isPresent()) {
+            // "Exception-Class" needs to go away - didn't realize it was named that way during review for some reason.
+            // replaced with the same method for exception reporting as is used with websocket/nio protocol
 			node.put("Exception-Class", t.get().getClass().getName());
+            final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
+            ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
+            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(t.get()));
 		}
 		
         final FullHttpResponse response = new DefaultFullHttpResponse(

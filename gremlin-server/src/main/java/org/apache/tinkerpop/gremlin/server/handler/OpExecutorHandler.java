@@ -77,6 +77,7 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
             logger.warn(ex.getMessage(), ex);
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.SERVER_ERROR)
+                    .statusAttributeException(ex)
                     .statusMessage(ex.getMessage()).create());
         } finally {
             ReferenceCountUtil.release(objects);

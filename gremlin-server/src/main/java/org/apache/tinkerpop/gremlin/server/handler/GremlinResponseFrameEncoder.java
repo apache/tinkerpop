@@ -20,11 +20,13 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
+import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -91,10 +93,10 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
         } catch (Exception ex) {
             errorMeter.mark();
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getResult(), o.getRequestId(), ex);
-            final String errorMessage = String.format("Error during serialization: %s",
-                    ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+            final String errorMessage = String.format("Error during serialization: %s", ExceptionHelper.getMessageFromExceptionOrCause(ex));
             final ResponseMessage error = ResponseMessage.build(o.getRequestId())
                     .statusMessage(errorMessage)
+                    .statusAttributeException(ex)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
                 objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
