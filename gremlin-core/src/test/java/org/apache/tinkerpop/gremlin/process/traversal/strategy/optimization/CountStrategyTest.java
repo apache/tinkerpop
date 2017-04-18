@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class RangeByIsCountStrategyTest {
+public class CountStrategyTest {
 
     @Parameterized.Parameter(value = 0)
     public Traversal original;
@@ -98,16 +98,16 @@ public class RangeByIsCountStrategyTest {
         });
     }
 
-    void applyRangeByIsCountStrategy(final Traversal traversal) {
+    void applyCountStrategy(final Traversal traversal) {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(RangeByIsCountStrategy.instance());
+        strategies.addStrategies(CountStrategy.instance());
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
     }
 
     @Test
     public void doTest() {
-        applyRangeByIsCountStrategy(original);
+        applyCountStrategy(original);
         assertEquals(optimized, original);
     }
 }

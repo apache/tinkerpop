@@ -61,7 +61,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Matc
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -305,7 +305,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
-            add(GryoTypeReg.of(RangeByIsCountStrategy.class, 155));
+            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
@@ -517,7 +517,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
-            add(GryoTypeReg.of(RangeByIsCountStrategy.class, 155));
+            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));

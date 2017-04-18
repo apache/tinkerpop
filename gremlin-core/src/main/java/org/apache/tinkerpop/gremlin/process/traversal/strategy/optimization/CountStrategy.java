@@ -62,7 +62,7 @@ import java.util.function.BiPredicate;
  * __.outE().count().is(gt(3))  // is replaced by __.outE().limit(4).count().is(gt(3))
  * </pre>
  */
-public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class CountStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final Map<BiPredicate, Long> RANGE_PREDICATES = new HashMap<BiPredicate, Long>() {{
         put(Contains.within, 1L);
@@ -71,12 +71,12 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
     private static final Set<Compare> INCREASED_OFFSET_SCALAR_PREDICATES =
             EnumSet.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt);
 
-    private static final RangeByIsCountStrategy INSTANCE = new RangeByIsCountStrategy();
+    private static final CountStrategy INSTANCE = new CountStrategy();
 
-    private RangeByIsCountStrategy() {
+    private CountStrategy() {
     }
 
-    public static RangeByIsCountStrategy instance() {
+    public static CountStrategy instance() {
         return INSTANCE;
     }
 

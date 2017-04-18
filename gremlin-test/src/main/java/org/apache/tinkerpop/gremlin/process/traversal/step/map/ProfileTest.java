@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
@@ -299,7 +299,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(1, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertEquals(1, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
 
-        if (traversal.asAdmin().getStrategies().toList().stream().anyMatch(s -> s instanceof RangeByIsCountStrategy)) {
+        if (traversal.asAdmin().getStrategies().toList().stream().anyMatch(s -> s instanceof CountStrategy)) {
             assertEquals("Metrics 1 should have 4 nested metrics.", 4, metrics.getNested().size());
         } else {
             assertEquals("Metrics 1 should have 3 nested metrics.", 3, metrics.getNested().size());

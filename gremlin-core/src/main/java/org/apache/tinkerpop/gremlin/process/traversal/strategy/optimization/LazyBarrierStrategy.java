@@ -47,7 +47,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private static final LazyBarrierStrategy INSTANCE = new LazyBarrierStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
-            RangeByIsCountStrategy.class,
+            CountStrategy.class,
             PathRetractionStrategy.class,
             IncidentToAdjacentStrategy.class,
             AdjacentToIncidentStrategy.class,

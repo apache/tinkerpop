@@ -2797,7 +2797,7 @@ g.V().hasLabel('person'). <1>
 <4> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
 <5> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
 <6> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
-<7> `RangeByIsCountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
+<7> `CountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
 <8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
 <9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 

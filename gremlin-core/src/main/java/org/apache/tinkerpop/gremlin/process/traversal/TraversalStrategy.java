@@ -22,7 +22,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 
 import java.io.Serializable;
@@ -122,7 +122,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
     /**
      * Implemented by strategies that rewrite the traversal to be more efficient, but with the same semantics
-     * (e.g. {@link RangeByIsCountStrategy}). During a re-write ONLY TinkerPop steps should be used.
+     * (e.g. {@link CountStrategy}). During a re-write ONLY TinkerPop steps should be used.
      * For strategies that utilize provider specific steps, use {@link ProviderOptimizationStrategy}.
      */
     public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
