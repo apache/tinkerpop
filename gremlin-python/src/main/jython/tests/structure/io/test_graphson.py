@@ -211,7 +211,7 @@ class TestGraphSONWriter(object):
 
     def test_graph(self):
         # TODO: this assert is not compatible with python 3 and now that we test with both 2 and 3 it fails
-        # assert {"@type": "g:Vertex", "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(self.graphson_writer.writeObject(Vertex(12L, "person")))
+        assert {"@type": "g:Vertex", "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(self.graphson_writer.writeObject(Vertex(long(12), "person")))
 
         assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
                                               "outV": {"@type": "g:Int32", "@value": 0},
