@@ -27,7 +27,7 @@ TinkerPop 3.3.0
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asciidoc#release-3-3-0[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.0/CHANGELOG.asciidoc#release-3-3-0[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
