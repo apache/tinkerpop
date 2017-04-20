@@ -363,14 +363,14 @@ are presented below.
 g.V().out('knows').values('name') <1>
 g.V().out('knows').map{it.get().value('name') + ' is the friend name'} <2>
 g.V().out('knows').sideEffect(System.out.&println) <3>
-g.V().as('person').out('knows').as('friend').select().by{it.value('name').length()} <4>
+g.V().as('person').out('knows').as('friend').select('person','friend').by{it.value('name').length()} <4>
 
 [source,java]
 // Gremlin-Java
 g.V().out("knows").values("name") <1>
 g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <2>
 g.V().out("knows").sideEffect(System.out::println) <3>
-g.V().as("person").out("knows").as("friend").select().by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <4>
+g.V().as("person").out("knows").as("friend").select("person","friend").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <4>
 
 <1> All the non-lambda step chaining is identical in Gremlin-Groovy and Gremlin-Java. However, note that Groovy
 supports `'` strings as well as `"` strings.
