@@ -21,9 +21,6 @@ package org.apache.tinkerpop.gremlin.spark;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
@@ -43,12 +40,6 @@ public abstract class AbstractSparkTest {
     @After
     @Before
     public void setupTest() {
-        SparkConf sparkConfiguration = new SparkConf();
-        sparkConfiguration.setAppName(this.getClass().getCanonicalName() + "-setupTest");
-        sparkConfiguration.set("spark.master", "local[4]");
-        JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        sparkContext.close();
-        Spark.create(sparkContext.sc());
         Spark.close();
         logger.info("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
     }
