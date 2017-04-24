@@ -297,7 +297,7 @@ NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Re
 NOTE: Please see the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
 on how to develop a driver for Gremlin Server.
 
-By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and
+By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSocket] and
 exposes a custom sub-protocol for interacting with the server.
 
 [[starting-gremlin-server]]
@@ -691,7 +691,7 @@ Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
 
 image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a
-WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].
+WebSocket-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].
 The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
 programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
 with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
@@ -767,7 +767,7 @@ string argument with by setting the `language` key.
 WARNING: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
 that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
-WebSockets configuration, which supports streaming, if that type of use case is required.
+WebSocket configuration, which supports streaming, if that type of use case is required.
 
 Configuring
 ~~~~~~~~~~~
@@ -802,7 +802,7 @@ The following table describes the various configuration options that Gremlin Ser
 |Key |Description |Default
 |authentication.className |The fully qualified classname of an `Authenticator` implementation to use.  If this setting is not present, then authentication is effectively disabled. |`AllowAllAuthenticator`
 |authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
-|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |`WebSocketChannelizer`
+|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket, Java NIO, etc.). |`WebSocketChannelizer`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
 |host |The name of the host to bind the server to. |localhost
