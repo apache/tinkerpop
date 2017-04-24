@@ -671,7 +671,7 @@ which should provide enough information to develop a driver for a specific langu
 
 image::gremlin-server-flow.png[width=300,float=right]
 
-Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSockets]
+Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSocket]
 with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script,
 evaluates that script and then streams back the results.  The notion of "streaming" is depicted in the diagram to the
 right.
@@ -719,7 +719,7 @@ A `RequestMessage` to evaluate a script with variable bindings looks like this i
 ----
 
 The above JSON represents the "body" of the request to send to Gremlin Server. When sending this "body" over
-websockets Gremlin Server can accept a packet frame using a "text" (1) or a "binary" (2) opcode. Using "text"
+WebSocket, Gremlin Server can accept a packet frame using a "text" (1) or a "binary" (2) opcode. Using "text"
 is a bit more limited in that Gremlin Server will always process the body of that request as JSON.  Generally speaking
 "text" is just for testing purposes.
 
@@ -734,7 +734,7 @@ The first byte represents the length of the "mime type" string value that follow
 Gremlin Server, this value should be set to `application/json`.  The "payload" represents the JSON message above
 encoded as bytes.
 
-NOTE: Gremlin Server will only accept masked packets as it pertains to websocket packet header construction.
+NOTE: Gremlin Server will only accept masked packets as it pertains to a WebSocket packet header construction.
 
 When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested
 `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script
@@ -761,7 +761,7 @@ In this case the `ResponseMessage` returned to the client would look something l
  "status":{"code":206,"attributes":{},"message":""}}
 ----
 
-Gremlin Server is capable of streaming results such that additional responses will arrive over the websocket until
+Gremlin Server is capable of streaming results such that additional responses will arrive over the WebSocket connection until
 the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode`
 of `206`. Termination of the stream will be marked by a final `200` status code.  Note that all messages without a
 `206` represent terminating conditions for a request.  The following table details the various status codes that
