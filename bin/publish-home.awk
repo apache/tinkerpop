@@ -26,6 +26,11 @@
   print "D " gensub(/:$/, "", "g", gensub("^[^/]*/", "", "g", $3)) "/" $4
 }
 
+/^Only in \.\.\/site\/home/ {
+  print "A " gensub(/:$/, "", "g", gensub("^../site/home/", "", "g", $3)) "/" $4
+  next
+}
+
 /^Only in \.\./ {
   print "A " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/", "", "g", $3)) "/" $4
 }
