@@ -69,7 +69,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
     public void shouldSuccessfullyInstantiateGroovyScriptEngineWithEmptyStaticVariableTyping() throws Exception {
         final File f = TestHelper.generateTempFileFromResource(graph.getClass(), GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox-empty-static-variable-types.yaml", ".yaml");
         System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
-        final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
+        final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
             assertThat(engine.eval("new Boolean(true)"), is(true));
