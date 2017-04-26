@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -1150,9 +1151,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
 
-        final Traversal traversal = g.V().hasLabel("person").has("age", 20).values("age");
-        assertEquals(20, traversal.promise(t -> ((Traversal) t).next(1).get(0)).join());
-        assertEquals(20, traversal.next());
+        final Traversal<Vertex,Integer> traversal = g.V().hasLabel("person").has("age", 20).values("age");
+        int age = traversal.promise(t -> t.next(1).get(0)).join();
+        assertEquals(20, age);
+        assertEquals(20, (int)traversal.next());
         assertThat(traversal.hasNext(), is(false));
 
         final Traversal traversalCloned = g.V().hasLabel("person").has("age", 20).values("age");
