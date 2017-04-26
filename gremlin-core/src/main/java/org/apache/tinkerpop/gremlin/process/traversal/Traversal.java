@@ -149,7 +149,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * {@link TraversalSource#withRemote(Configuration)}. Calling this method otherwise will yield an
      * {@code IllegalStateException}.
      */
-    public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction) {
+    public default <T> CompletableFuture<T> promise(final Function<Traversal<S,E>, T> traversalFunction) {
         // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
         if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
 
