@@ -56,6 +56,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -88,33 +89,11 @@ public class GremlinDslProcessor extends AbstractProcessor {
         try {
             for (Element dslElement : roundEnv.getElementsAnnotatedWith(GremlinDsl.class)) {
                 validateDSL(dslElement);
-                final TypeElement annotatedDslType = (TypeElement) dslElement;
-                final Context ctx = new Context(annotatedDslType);
+                final Context ctx = new Context((TypeElement) dslElement);
 
-                // START write "Traversal" class
-                final TypeSpec.Builder traversalInterface = TypeSpec.interfaceBuilder(ctx.traversalClazz)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
-                        .addSuperinterface(TypeName.get(dslElement.asType()));
-
-                // process the methods of the GremlinDsl annotated class
-                for (Element elementOfDsl : annotatedDslType.getEnclosedElements()) {
-                    tryConstructMethod(elementOfDsl, ctx.traversalClassName, ctx.dslName, null,
-                            Modifier.PUBLIC, Modifier.DEFAULT).ifPresent(traversalInterface::addMethod);
-                }
-
-                // process the methods of GraphTraversal
-                final TypeElement graphTraversalElement = elementUtils.getTypeElement(GraphTraversal.class.getCanonicalName());
-                for (Element elementOfGraphTraversal : graphTraversalElement.getEnclosedElements()) {
-                    tryConstructMethod(elementOfGraphTraversal, ctx.traversalClassName, ctx.dslName,
-                            e -> e.getSimpleName().contentEquals("asAdmin") || e.getSimpleName().contentEquals("iterate"),
-                            Modifier.PUBLIC, Modifier.DEFAULT)
-                            .ifPresent(traversalInterface::addMethod);
-                }
-
-                final JavaFile traversalJavaFile = JavaFile.builder(ctx.packageName, traversalInterface.build()).build();
-                traversalJavaFile.writeTo(filer);
-                // END write "Traversal" class
+                // creates the "Traversal" interface using an extension of the GraphTraversal class that has the
+                // GremlinDsl annotation on it
+                generateTraversalInterface(ctx);
 
                 // START write of the "DefaultTraversal" class
                 final TypeSpec.Builder defaultTraversalClass = TypeSpec.classBuilder(ctx.defaultTraversalClazz)
@@ -246,6 +225,41 @@ public class GremlinDslProcessor extends AbstractProcessor {
         return true;
     }
 
+    private void generateTraversalInterface(final Context ctx) throws IOException {
+        final TypeSpec.Builder traversalInterface = TypeSpec.interfaceBuilder(ctx.traversalClazz)
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .addSuperinterface(TypeName.get(ctx.annotatedDslType.asType()));
+
+        // process the methods of the GremlinDsl annotated class
+        for (Element elementOfDsl : ctx.annotatedDslType.getEnclosedElements()) {
+            tryConstructMethod(elementOfDsl, ctx.traversalClassName, ctx.dslName, null,
+                    Modifier.PUBLIC, Modifier.DEFAULT).ifPresent(traversalInterface::addMethod);
+        }
+
+        // process the methods of GraphTraversal
+        final TypeElement graphTraversalElement = elementUtils.getTypeElement(GraphTraversal.class.getCanonicalName());
+        for (Element elementOfGraphTraversal : graphTraversalElement.getEnclosedElements()) {
+            tryConstructMethod(elementOfGraphTraversal, ctx.traversalClassName, ctx.dslName,
+                    e -> e.getSimpleName().contentEquals("asAdmin") || e.getSimpleName().contentEquals("iterate"),
+                    Modifier.PUBLIC, Modifier.DEFAULT)
+                    .ifPresent(traversalInterface::addMethod);
+        }
+
+        // there are weird things with generics that require this method to be implemented if it isn't already present
+        // in the GremlinDsl annotated class extending from GraphTraversal
+        traversalInterface.addMethod(MethodSpec.methodBuilder("iterate")
+                .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
+                .addAnnotation(Override.class)
+                .addStatement("$T.super.iterate()", ClassName.get(ctx.annotatedDslType))
+                .addStatement("return this")
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .build());
+
+        final JavaFile traversalJavaFile = JavaFile.builder(ctx.packageName, traversalInterface.build()).build();
+        traversalJavaFile.writeTo(filer);
+    }
+
     private Optional<MethodSpec> tryConstructMethod(final Element element, final ClassName returnClazz, final String parent,
                                                     final Predicate<ExecutableElement> ignore, final Modifier... modifiers) {
         if (element.getKind() != ElementKind.METHOD) return Optional.empty();
@@ -303,6 +317,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
     }
 
     private class Context {
+        private final TypeElement annotatedDslType;
         private final String packageName;
         private final String dslName;
         private final String traversalClazz;
@@ -314,6 +329,8 @@ public class GremlinDslProcessor extends AbstractProcessor {
         private final ClassName graphTraversalAdminClassName;
 
         public Context(final TypeElement dslElement) {
+            annotatedDslType = dslElement;
+
             // gets the annotation on the dsl class/interface
             GremlinDsl gremlinDslAnnotation = dslElement.getAnnotation(GremlinDsl.class);
 

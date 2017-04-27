@@ -34,10 +34,4 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
     public default <E2 extends Number> GraphTraversal<S, E2> meanAgeOfFriends() {
         return out("knows").hasLabel("person").properties("age").mean();
     }
-
-    @Override
-    public default GraphTraversal<S, E> iterate() {
-        GraphTraversal.Admin.super.iterate();
-        return this;
-    }
 }
