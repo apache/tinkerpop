@@ -95,52 +95,9 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 // GremlinDsl annotation on it
                 generateTraversalInterface(ctx);
 
-                // START write of the "DefaultTraversal" class
-                final TypeSpec.Builder defaultTraversalClass = TypeSpec.classBuilder(ctx.defaultTraversalClazz)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
-                        .superclass(TypeName.get(elementUtils.getTypeElement(DefaultTraversal.class.getCanonicalName()).asType()))
-                        .addSuperinterface(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")));
-
-                // add the required constructors for instantiation
-                defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement("super()")
-                        .build());
-                defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(Graph.class, "graph")
-                        .addStatement("super($N)", "graph")
-                        .build());
-                defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(ctx.traversalSourceClassName, "traversalSource")
-                        .addStatement("super($N)", "traversalSource")
-                        .build());
-
-                // add the override
-                defaultTraversalClass.addMethod(MethodSpec.methodBuilder("iterate")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addStatement("return ($T) super.iterate()", ctx.traversalClassName)
-                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
-                        .build());
-                defaultTraversalClass.addMethod(MethodSpec.methodBuilder("asAdmin")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addStatement("return ($T) super.asAdmin()", GraphTraversal.Admin.class)
-                        .returns(ParameterizedTypeName.get(ctx.graphTraversalAdminClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
-                        .build());
-                defaultTraversalClass.addMethod(MethodSpec.methodBuilder("clone")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addStatement("return ($T) super.clone()", ctx.defaultTraversalClassName)
-                        .returns(ParameterizedTypeName.get(ctx.defaultTraversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
-                        .build());
-
-                final JavaFile defaultTraversalJavaFile = JavaFile.builder(ctx.packageName, defaultTraversalClass.build()).build();
-                defaultTraversalJavaFile.writeTo(filer);
-                // END write of the "DefaultTraversal" class
+                // create the "DefaultTraversal" class which implements the above generated "Traversal" and can then
+                // be used by the "TraversalSource" generated below to spawn new traversal instances
+                generateDefaultTraversal(ctx);
 
                 // START write "TraversalSource" class
                 final TypeElement graphTraversalSourceElement = elementUtils.getTypeElement(GraphTraversalSource.class.getCanonicalName());
@@ -223,6 +180,53 @@ public class GremlinDslProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    private void generateDefaultTraversal(final Context ctx) throws IOException {
+        final TypeSpec.Builder defaultTraversalClass = TypeSpec.classBuilder(ctx.defaultTraversalClazz)
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .superclass(TypeName.get(elementUtils.getTypeElement(DefaultTraversal.class.getCanonicalName()).asType()))
+                .addSuperinterface(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")));
+
+        // add the required constructors for instantiation
+        defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement("super()")
+                .build());
+        defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(Graph.class, "graph")
+                .addStatement("super($N)", "graph")
+                .build());
+        defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(ctx.traversalSourceClassName, "traversalSource")
+                .addStatement("super($N)", "traversalSource")
+                .build());
+
+        // add the override
+        defaultTraversalClass.addMethod(MethodSpec.methodBuilder("iterate")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addStatement("return ($T) super.iterate()", ctx.traversalClassName)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .build());
+        defaultTraversalClass.addMethod(MethodSpec.methodBuilder("asAdmin")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addStatement("return ($T) super.asAdmin()", GraphTraversal.Admin.class)
+                .returns(ParameterizedTypeName.get(ctx.graphTraversalAdminClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .build());
+        defaultTraversalClass.addMethod(MethodSpec.methodBuilder("clone")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addStatement("return ($T) super.clone()", ctx.defaultTraversalClassName)
+                .returns(ParameterizedTypeName.get(ctx.defaultTraversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                .build());
+
+        final JavaFile defaultTraversalJavaFile = JavaFile.builder(ctx.packageName, defaultTraversalClass.build()).build();
+        defaultTraversalJavaFile.writeTo(filer);
     }
 
     private void generateTraversalInterface(final Context ctx) throws IOException {
