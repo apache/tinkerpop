@@ -26,7 +26,6 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
-import jdk.nashorn.internal.codegen.types.Type;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -50,7 +49,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -90,55 +88,40 @@ public class GremlinDslProcessor extends AbstractProcessor {
         try {
             for (Element dslElement : roundEnv.getElementsAnnotatedWith(GremlinDsl.class)) {
                 validateDSL(dslElement);
-
-                // gets the annotation on the dsl class/interface
-                GremlinDsl gremlinDslAnnotation = dslElement.getAnnotation(GremlinDsl.class);
-
                 final TypeElement annotatedDslType = (TypeElement) dslElement;
-                final String packageName = getPackageName(dslElement, gremlinDslAnnotation);
-
-                // create the Traversal implementation interface
-                final String dslName = dslElement.getSimpleName().toString();
-                final String dslPrefix = dslName.substring(0, dslName.length() - "TraversalDSL".length()); // chop off "TraversalDSL"
-                final String traversalClazz = dslPrefix + "Traversal";
-                final ClassName traversalClassName = ClassName.get(packageName, traversalClazz);
-                final String traversalSourceClazz = dslPrefix + "TraversalSource";
-                final ClassName traversalSourceClassName = ClassName.get(packageName, traversalSourceClazz);
-                final String defaultTraversalClazz = "Default" + traversalClazz;
-                final ClassName defaultTraversalClassName = ClassName.get(packageName, defaultTraversalClazz);
-                final ClassName graphTraversalAdminClassName = ClassName.get(GraphTraversal.Admin.class);
+                final Context ctx = new Context(annotatedDslType);
 
                 // START write "Traversal" class
-                final TypeSpec.Builder traversalInterface = TypeSpec.interfaceBuilder(traversalClazz)
+                final TypeSpec.Builder traversalInterface = TypeSpec.interfaceBuilder(ctx.traversalClazz)
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
                         .addSuperinterface(TypeName.get(dslElement.asType()));
 
                 // process the methods of the GremlinDsl annotated class
                 for (Element elementOfDsl : annotatedDslType.getEnclosedElements()) {
-                    tryConstructMethod(elementOfDsl, traversalClassName, dslName, null,
+                    tryConstructMethod(elementOfDsl, ctx.traversalClassName, ctx.dslName, null,
                             Modifier.PUBLIC, Modifier.DEFAULT).ifPresent(traversalInterface::addMethod);
                 }
 
                 // process the methods of GraphTraversal
                 final TypeElement graphTraversalElement = elementUtils.getTypeElement(GraphTraversal.class.getCanonicalName());
                 for (Element elementOfGraphTraversal : graphTraversalElement.getEnclosedElements()) {
-                    tryConstructMethod(elementOfGraphTraversal, traversalClassName, dslName,
+                    tryConstructMethod(elementOfGraphTraversal, ctx.traversalClassName, ctx.dslName,
                             e -> e.getSimpleName().contentEquals("asAdmin") || e.getSimpleName().contentEquals("iterate"),
                             Modifier.PUBLIC, Modifier.DEFAULT)
                             .ifPresent(traversalInterface::addMethod);
                 }
 
-                final JavaFile traversalJavaFile = JavaFile.builder(packageName, traversalInterface.build()).build();
+                final JavaFile traversalJavaFile = JavaFile.builder(ctx.packageName, traversalInterface.build()).build();
                 traversalJavaFile.writeTo(filer);
                 // END write "Traversal" class
 
                 // START write of the "DefaultTraversal" class
-                final TypeSpec.Builder defaultTraversalClass = TypeSpec.classBuilder(defaultTraversalClazz)
+                final TypeSpec.Builder defaultTraversalClass = TypeSpec.classBuilder(ctx.defaultTraversalClazz)
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariables(Arrays.asList(TypeVariableName.get("S"), TypeVariableName.get("E")))
                         .superclass(TypeName.get(elementUtils.getTypeElement(DefaultTraversal.class.getCanonicalName()).asType()))
-                        .addSuperinterface(ParameterizedTypeName.get(traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")));
+                        .addSuperinterface(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")));
 
                 // add the required constructors for instantiation
                 defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
@@ -152,7 +135,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                         .build());
                 defaultTraversalClass.addMethod(MethodSpec.constructorBuilder()
                         .addModifiers(Modifier.PUBLIC)
-                        .addParameter(traversalSourceClassName, "traversalSource")
+                        .addParameter(ctx.traversalSourceClassName, "traversalSource")
                         .addStatement("super($N)", "traversalSource")
                         .build());
 
@@ -160,29 +143,29 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 defaultTraversalClass.addMethod(MethodSpec.methodBuilder("iterate")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
-                        .addStatement("return ($T) super.iterate()", traversalClassName)
-                        .returns(ParameterizedTypeName.get(traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                        .addStatement("return ($T) super.iterate()", ctx.traversalClassName)
+                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
                         .build());
                 defaultTraversalClass.addMethod(MethodSpec.methodBuilder("asAdmin")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addStatement("return ($T) super.asAdmin()", GraphTraversal.Admin.class)
-                        .returns(ParameterizedTypeName.get(graphTraversalAdminClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                        .returns(ParameterizedTypeName.get(ctx.graphTraversalAdminClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
                         .build());
                 defaultTraversalClass.addMethod(MethodSpec.methodBuilder("clone")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
-                        .addStatement("return ($T) super.clone()", defaultTraversalClassName)
-                        .returns(ParameterizedTypeName.get(defaultTraversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
+                        .addStatement("return ($T) super.clone()", ctx.defaultTraversalClassName)
+                        .returns(ParameterizedTypeName.get(ctx.defaultTraversalClassName, TypeVariableName.get("S"), TypeVariableName.get("E")))
                         .build());
 
-                final JavaFile defaultTraversalJavaFile = JavaFile.builder(packageName, defaultTraversalClass.build()).build();
+                final JavaFile defaultTraversalJavaFile = JavaFile.builder(ctx.packageName, defaultTraversalClass.build()).build();
                 defaultTraversalJavaFile.writeTo(filer);
                 // END write of the "DefaultTraversal" class
 
                 // START write "TraversalSource" class
                 final TypeElement graphTraversalSourceElement = elementUtils.getTypeElement(GraphTraversalSource.class.getCanonicalName());
-                final TypeSpec.Builder traversalSourceClass = TypeSpec.classBuilder(traversalSourceClazz)
+                final TypeSpec.Builder traversalSourceClass = TypeSpec.classBuilder(ctx.traversalSourceClazz)
                         .addModifiers(Modifier.PUBLIC)
                         .superclass(TypeName.get(graphTraversalSourceElement.asType()));
 
@@ -203,7 +186,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 for (Element elementOfGraphTraversal : graphTraversalSourceElement.getEnclosedElements()) {
                     // first copy/override methods that return a GraphTraversalSource so that we can instead return
                     // the DSL TraversalSource class.
-                    tryConstructMethod(elementOfGraphTraversal, traversalSourceClassName, "",
+                    tryConstructMethod(elementOfGraphTraversal, ctx.traversalSourceClassName, "",
                             e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())),
                             Modifier.PUBLIC)
                             .ifPresent(traversalSourceClass::addMethod);
@@ -213,46 +196,46 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
-                        .addStatement("$N clone = this.clone()", traversalSourceClazz)
+                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
                         .addStatement("clone.bytecode.addStep($T.addV)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", defaultTraversalClazz, defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, null))", traversalClassName, AddVertexStartStep.class)
-                        .returns(ParameterizedTypeName.get(traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, null))", ctx.traversalClassName, AddVertexStartStep.class)
+                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                         .build());
                 traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(String.class, "label")
-                        .addStatement("$N clone = this.clone()", traversalSourceClazz)
+                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
                         .addStatement("clone.bytecode.addStep($T.addV, label)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", defaultTraversalClazz, defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", traversalClassName, AddVertexStartStep.class)
-                        .returns(ParameterizedTypeName.get(traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddVertexStartStep.class)
+                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                         .build());
                 traversalSourceClass.addMethod(MethodSpec.methodBuilder("V")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(Object[].class, "vertexIds")
                         .varargs(true)
-                        .addStatement("$N clone = this.clone()", traversalSourceClazz)
+                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
                         .addStatement("clone.bytecode.addStep($T.V, vertexIds)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", defaultTraversalClazz, defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, vertexIds))", traversalClassName, GraphStep.class, Vertex.class)
-                        .returns(ParameterizedTypeName.get(traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, vertexIds))", ctx.traversalClassName, GraphStep.class, Vertex.class)
+                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                         .build());
                 traversalSourceClass.addMethod(MethodSpec.methodBuilder("E")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(Object[].class, "edgeIds")
                         .varargs(true)
-                        .addStatement("$N clone = this.clone()", traversalSourceClazz)
+                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
                         .addStatement("clone.bytecode.addStep($T.E, edgeIds)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", defaultTraversalClazz, defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", traversalClassName, GraphStep.class, Edge.class)
-                        .returns(ParameterizedTypeName.get(traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
+                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", ctx.traversalClassName, GraphStep.class, Edge.class)
+                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
                         .build());
 
-                final JavaFile traversalSourceJavaFile = JavaFile.builder(packageName, traversalSourceClass.build()).build();
+                final JavaFile traversalSourceJavaFile = JavaFile.builder(ctx.packageName, traversalSourceClass.build()).build();
                 traversalSourceJavaFile.writeTo(filer);
                 // END write "TraversalSource" class
             }
@@ -261,12 +244,6 @@ public class GremlinDslProcessor extends AbstractProcessor {
         }
 
         return true;
-    }
-
-    private String getPackageName(final Element dslElement, final GremlinDsl gremlinDslAnnotation) {
-        return gremlinDslAnnotation.packageName().isEmpty() ?
-                elementUtils.getPackageOf(dslElement).getQualifiedName().toString() :
-                gremlinDslAnnotation.packageName();
     }
 
     private Optional<MethodSpec> tryConstructMethod(final Element element, final ClassName returnClazz, final String parent,
@@ -323,5 +300,41 @@ public class GremlinDslProcessor extends AbstractProcessor {
         final TypeElement typeElement = (TypeElement) dslElement;
         if (!typeElement.getModifiers().contains(Modifier.PUBLIC))
             throw new ProcessorException(dslElement, "The interface %s is not public.", typeElement.getQualifiedName());
+    }
+
+    private class Context {
+        private final String packageName;
+        private final String dslName;
+        private final String traversalClazz;
+        private final ClassName traversalClassName;
+        private final String traversalSourceClazz;
+        private final ClassName traversalSourceClassName;
+        private final String defaultTraversalClazz;
+        private final ClassName defaultTraversalClassName;
+        private final ClassName graphTraversalAdminClassName;
+
+        public Context(final TypeElement dslElement) {
+            // gets the annotation on the dsl class/interface
+            GremlinDsl gremlinDslAnnotation = dslElement.getAnnotation(GremlinDsl.class);
+
+            packageName = getPackageName(dslElement, gremlinDslAnnotation);
+
+            // create the Traversal implementation interface
+            dslName = dslElement.getSimpleName().toString();
+            final String dslPrefix = dslName.substring(0, dslName.length() - "TraversalDSL".length()); // chop off "TraversalDSL"
+            traversalClazz = dslPrefix + "Traversal";
+            traversalClassName = ClassName.get(packageName, traversalClazz);
+            traversalSourceClazz = dslPrefix + "TraversalSource";
+            traversalSourceClassName = ClassName.get(packageName, traversalSourceClazz);
+            defaultTraversalClazz = "Default" + traversalClazz;
+            defaultTraversalClassName = ClassName.get(packageName, defaultTraversalClazz);
+            graphTraversalAdminClassName = ClassName.get(GraphTraversal.Admin.class);
+        }
+
+        private String getPackageName(final Element dslElement, final GremlinDsl gremlinDslAnnotation) {
+            return gremlinDslAnnotation.packageName().isEmpty() ?
+                    elementUtils.getPackageOf(dslElement).getQualifiedName().toString() :
+                    gremlinDslAnnotation.packageName();
+        }
     }
 }
