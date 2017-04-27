@@ -11,4 +11,11 @@ addons:
       - oracle-java8-installer
 script: 
   - "mvn clean install -Dci"
-
+notifications:
+  email:
+    recipients:
+      - spmallette@gmail.com
+      - me@gremlin.guru
+      - robdale@gmail.com
+    on_success: change # default: change
+    on_failure: always # default: always
