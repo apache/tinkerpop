@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
 
+import javax.tools.StandardLocation;
+
 import static com.google.common.truth.Truth.ASSERT;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 
@@ -30,10 +32,20 @@ import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 public class GremlinDslProcessorTest {
 
     @Test
-    public void shouldCompile() {
+    public void shouldCompileToDefaultPackage() {
         ASSERT.about(javaSource())
                 .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")))
                 .processedWith(new GremlinDslProcessor())
                 .compilesWithoutError();
+    }
+
+    @Test
+    public void shouldCompileAndMovePackage() {
+        ASSERT.about(javaSource())
+                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialMoveTraversalDsl.java")))
+                .processedWith(new GremlinDslProcessor())
+                .compilesWithoutError()
+                .and()
+                .generatesFileNamed(StandardLocation.SOURCE_OUTPUT, "org.apache.tinkerpop.gremlin.process.traversal.dsl.social", "SocialMoveTraversal.java");
     }
 }

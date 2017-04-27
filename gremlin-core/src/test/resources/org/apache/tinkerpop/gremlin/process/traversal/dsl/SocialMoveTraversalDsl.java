@@ -16,27 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.dsl;
+package org.apache.tinkerpop.gremlin.util.dsl;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
- * An annotation that specifies that an interface is meant to be used a DSL extension to a {@link GraphTraversal}.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.CLASS)
-public @interface GremlinDsl {
+@GremlinDsl(packageName = "org.apache.tinkerpop.gremlin.process.traversal.dsl.social")
+public interface SocialMoveTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
+    public default GraphTraversal<S, Vertex> knows(final String personName) {
+        return out("knows").hasLabel("person").has("name", personName);
+    }
 
-    /**
-     * The default package name in which to generate the DSL. If this value is left unset or set to an empty string,
-     * it will default to the same package as the class or interface the annotation is on.
-     */
-    public String packageName() default "";
+    public default <E2 extends Number> GraphTraversal<S, E2> meanAgeOfFriends() {
+        return out("knows").hasLabel("person").properties("age").mean();
+    }
+
+    @Override
+    public default GraphTraversal<S, E> iterate() {
+        GraphTraversal.Admin.super.iterate();
+        return this;
+    }
 }

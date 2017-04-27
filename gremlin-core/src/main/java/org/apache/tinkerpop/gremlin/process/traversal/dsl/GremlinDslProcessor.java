@@ -91,8 +91,11 @@ public class GremlinDslProcessor extends AbstractProcessor {
             for (Element dslElement : roundEnv.getElementsAnnotatedWith(GremlinDsl.class)) {
                 validateDSL(dslElement);
 
+                // gets the annotation on the dsl class/interface
+                GremlinDsl gremlinDslAnnotation = dslElement.getAnnotation(GremlinDsl.class);
+
                 final TypeElement annotatedDslType = (TypeElement) dslElement;
-                final String packageName = elementUtils.getPackageOf(dslElement).getQualifiedName().toString();
+                final String packageName = getPackageName(dslElement, gremlinDslAnnotation);
 
                 // create the Traversal implementation interface
                 final String dslName = dslElement.getSimpleName().toString();
@@ -258,6 +261,12 @@ public class GremlinDslProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    private String getPackageName(final Element dslElement, final GremlinDsl gremlinDslAnnotation) {
+        return gremlinDslAnnotation.packageName().isEmpty() ?
+                elementUtils.getPackageOf(dslElement).getQualifiedName().toString() :
+                gremlinDslAnnotation.packageName();
     }
 
     private Optional<MethodSpec> tryConstructMethod(final Element element, final ClassName returnClazz, final String parent,
