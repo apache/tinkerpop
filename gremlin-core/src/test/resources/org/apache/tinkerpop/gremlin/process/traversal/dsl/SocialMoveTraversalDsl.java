@@ -32,6 +32,6 @@ public interface SocialMoveTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> meanAgeOfFriends() {
-        return out("knows").hasLabel("person").properties("age").mean();
+        return out("knows").hasLabel("person").values("age").mean();
     }
 }
