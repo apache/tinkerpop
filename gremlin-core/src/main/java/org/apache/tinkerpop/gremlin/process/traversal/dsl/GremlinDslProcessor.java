@@ -96,90 +96,94 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 generateTraversalInterface(ctx);
 
                 // create the "DefaultTraversal" class which implements the above generated "Traversal" and can then
-                // be used by the "TraversalSource" generated below to spawn new traversal instances
+                // be used by the "TraversalSource" generated below to spawn new traversal instances.
                 generateDefaultTraversal(ctx);
 
-                // START write "TraversalSource" class
-                final TypeElement graphTraversalSourceElement = elementUtils.getTypeElement(GraphTraversalSource.class.getCanonicalName());
-                final TypeSpec.Builder traversalSourceClass = TypeSpec.classBuilder(ctx.traversalSourceClazz)
-                        .addModifiers(Modifier.PUBLIC)
-                        .superclass(TypeName.get(graphTraversalSourceElement.asType()));
-
-                // add the required constructors for instantiation
-                traversalSourceClass.addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(Graph.class, "graph")
-                        .addStatement("super($N)", "graph")
-                        .build());
-                traversalSourceClass.addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(Graph.class, "graph")
-                        .addParameter(TraversalStrategies.class, "strategies")
-                        .addStatement("super($N, $N)", "graph", "strategies")
-                        .build());
-
-                // override methods to return a the DSL TraversalSource
-                for (Element elementOfGraphTraversal : graphTraversalSourceElement.getEnclosedElements()) {
-                    // first copy/override methods that return a GraphTraversalSource so that we can instead return
-                    // the DSL TraversalSource class.
-                    tryConstructMethod(elementOfGraphTraversal, ctx.traversalSourceClassName, "",
-                            e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())),
-                            Modifier.PUBLIC)
-                            .ifPresent(traversalSourceClass::addMethod);
-                }
-
-                // override methods that return GraphTraversal
-                traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                        .addStatement("clone.bytecode.addStep($T.addV)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, null))", ctx.traversalClassName, AddVertexStartStep.class)
-                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
-                        .build());
-                traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addParameter(String.class, "label")
-                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                        .addStatement("clone.bytecode.addStep($T.addV, label)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddVertexStartStep.class)
-                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
-                        .build());
-                traversalSourceClass.addMethod(MethodSpec.methodBuilder("V")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addParameter(Object[].class, "vertexIds")
-                        .varargs(true)
-                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                        .addStatement("clone.bytecode.addStep($T.V, vertexIds)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, vertexIds))", ctx.traversalClassName, GraphStep.class, Vertex.class)
-                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
-                        .build());
-                traversalSourceClass.addMethod(MethodSpec.methodBuilder("E")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(Override.class)
-                        .addParameter(Object[].class, "edgeIds")
-                        .varargs(true)
-                        .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                        .addStatement("clone.bytecode.addStep($T.E, edgeIds)", GraphTraversal.Symbols.class)
-                        .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                        .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", ctx.traversalClassName, GraphStep.class, Edge.class)
-                        .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
-                        .build());
-
-                final JavaFile traversalSourceJavaFile = JavaFile.builder(ctx.packageName, traversalSourceClass.build()).build();
-                traversalSourceJavaFile.writeTo(filer);
-                // END write "TraversalSource" class
+                // create the "TraversalSource" class which is used to spawn traversals from a Graph instance. It will
+                // spawn instances of the "DefaultTraversal" generated above.
+                generateTraversalSource(ctx);
             }
         } catch (Exception ex) {
             messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
         }
 
         return true;
+    }
+
+    private void generateTraversalSource(final Context ctx) throws IOException {
+        final TypeElement graphTraversalSourceElement = elementUtils.getTypeElement(GraphTraversalSource.class.getCanonicalName());
+        final TypeSpec.Builder traversalSourceClass = TypeSpec.classBuilder(ctx.traversalSourceClazz)
+                .addModifiers(Modifier.PUBLIC)
+                .superclass(TypeName.get(graphTraversalSourceElement.asType()));
+
+        // add the required constructors for instantiation
+        traversalSourceClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(Graph.class, "graph")
+                .addStatement("super($N)", "graph")
+                .build());
+        traversalSourceClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(Graph.class, "graph")
+                .addParameter(TraversalStrategies.class, "strategies")
+                .addStatement("super($N, $N)", "graph", "strategies")
+                .build());
+
+        // override methods to return a the DSL TraversalSource
+        for (Element elementOfGraphTraversal : graphTraversalSourceElement.getEnclosedElements()) {
+            // first copy/override methods that return a GraphTraversalSource so that we can instead return
+            // the DSL TraversalSource class.
+            tryConstructMethod(elementOfGraphTraversal, ctx.traversalSourceClassName, "",
+                    e -> !(e.getReturnType().getKind() == TypeKind.DECLARED && ((DeclaredType) e.getReturnType()).asElement().getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())),
+                    Modifier.PUBLIC)
+                    .ifPresent(traversalSourceClass::addMethod);
+        }
+
+        // override methods that return GraphTraversal
+        traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                .addStatement("clone.bytecode.addStep($T.addV)", GraphTraversal.Symbols.class)
+                .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, null))", ctx.traversalClassName, AddVertexStartStep.class)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                .build());
+        traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addParameter(String.class, "label")
+                .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                .addStatement("clone.bytecode.addStep($T.addV, label)", GraphTraversal.Symbols.class)
+                .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddVertexStartStep.class)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                .build());
+        traversalSourceClass.addMethod(MethodSpec.methodBuilder("V")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addParameter(Object[].class, "vertexIds")
+                .varargs(true)
+                .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                .addStatement("clone.bytecode.addStep($T.V, vertexIds)", GraphTraversal.Symbols.class)
+                .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, vertexIds))", ctx.traversalClassName, GraphStep.class, Vertex.class)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                .build());
+        traversalSourceClass.addMethod(MethodSpec.methodBuilder("E")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addParameter(Object[].class, "edgeIds")
+                .varargs(true)
+                .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                .addStatement("clone.bytecode.addStep($T.E, edgeIds)", GraphTraversal.Symbols.class)
+                .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", ctx.traversalClassName, GraphStep.class, Edge.class)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
+                .build());
+
+        final JavaFile traversalSourceJavaFile = JavaFile.builder(ctx.packageName, traversalSourceClass.build()).build();
+        traversalSourceJavaFile.writeTo(filer);
     }
 
     private void generateDefaultTraversal(final Context ctx) throws IOException {
