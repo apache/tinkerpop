@@ -14,7 +14,6 @@ script:
 notifications:
   email:
     recipients:
-      - spmallette@gmail.com
       - me@gremlin.guru
       - robdale@gmail.com
     on_success: change # default: change
