@@ -48,4 +48,12 @@ public class GremlinDslProcessorTest {
                 .and()
                 .generatesFileNamed(StandardLocation.SOURCE_OUTPUT, "org.apache.tinkerpop.gremlin.process.traversal.dsl.social", "SocialMoveTraversal.java");
     }
+
+    @Test
+    public void shouldCompileTraversalAndTraversalSourceToDefaultPackage() {
+        ASSERT.about(javaSource())
+                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialPackageTraversalDsl.java")))
+                .processedWith(new GremlinDslProcessor())
+                .compilesWithoutError();
+    }
 }

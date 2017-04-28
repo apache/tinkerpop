@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@GremlinDsl
-public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
+@GremlinDsl(traversalSource = "org.apache.tinkerpop.gremlin.process.traversal.dsl.SocialPackageTraversalSourceDsl")
+public interface SocialPackageTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
     public default GraphTraversal<S, Vertex> knows(final String personName) {
         return out("knows").hasLabel("person").has("name", personName);
     }

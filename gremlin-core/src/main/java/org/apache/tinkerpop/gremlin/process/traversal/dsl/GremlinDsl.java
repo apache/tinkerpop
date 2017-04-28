@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,4 +40,9 @@ public @interface GremlinDsl {
      * it will default to the same package as the class or interface the annotation is on.
      */
     public String packageName() default "";
+
+    /**
+     * Defines the optional canonical name of the {@link GraphTraversalSource} that this DSL should extend from.
+     */
+    public String traversalSource() default "org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource";
 }

@@ -43,4 +43,10 @@ public class SocialDslTest {
         SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(27, social.V().has("name","marko").youngestFriendsAge().next().intValue());
     }
+
+    @Test
+    public void shouldFindAllPersons() {
+        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
+        assertEquals(4, social.persons().count().next().intValue());
+    }
 }
