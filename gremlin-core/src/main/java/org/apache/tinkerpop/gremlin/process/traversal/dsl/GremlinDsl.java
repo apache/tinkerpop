@@ -27,7 +27,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation that specifies that an interface is meant to be used a DSL extension to a {@link GraphTraversal}.
+ * An annotation that specifies that an interface is meant to be used to produce Gremlin DSL. This annotation should
+ * be applied to an interface that extends {@link GraphTraversal}. This interface should be suffixed with
+ * {@code TraversalDsl}. The DSL classes will be generated to the package of the annotated class or the to the value
+ * specified in the {@link #packageName()} and will use the part of the interface name up to the suffix to generate
+ * the classes. Therefore, assuming an interface, annotated with {@code GremlinDsl}, called {@code SocialTraversalDsl},
+ * there will be three classes generated:
+ *
+ * <ul>
+ *     <li>{@code SocialTraversal} - an interface that is an extension to {@code SocialTraversalDsl}</li>
+ *     <li>{@code DefaultSocialTraversal} - an implementation of the {@code SocialTraversal}</li>
+ *     <li>{@code SocialTraversalSource} - an extension of {@link GraphTraversalSource} which spawns {@code DefaultSocialTraversal} instances</li>
+ * </ul>
+ *
+ * Together these generated classes provide all the infrastructure required to properly Gremlin traversals enhanced
+ * with domain specific steps.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -42,7 +56,8 @@ public @interface GremlinDsl {
     public String packageName() default "";
 
     /**
-     * Defines the optional canonical name of the {@link GraphTraversalSource} that this DSL should extend from.
+     * Defines the optional canonical name of the {@link GraphTraversalSource} that this DSL should extend from. If
+     * this value is not supplied the generated "source" will simply extend from {@link GraphTraversalSource}.
      */
     public String traversalSource() default "org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource";
 }

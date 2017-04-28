@@ -65,6 +65,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * A custom Java annotation processor for the {@link GremlinDsl} annotation that helps to generate DSLs classes.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @SupportedAnnotationTypes("org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl")

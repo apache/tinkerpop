@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 import javax.lang.model.element.Element;
 
 /**
+ * Exception thrown by the {@link GremlinDslProcessor}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessorException extends Exception {
