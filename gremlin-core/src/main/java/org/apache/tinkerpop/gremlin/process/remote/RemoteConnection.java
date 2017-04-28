@@ -67,7 +67,11 @@ public interface RemoteConnection extends AutoCloseable {
         // default implementation for backward compatibility to 3.2.4 - this method will probably just become
         // the new submit() in 3.3.x when the deprecation is removed
         final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
-        promise.complete(submit(bytecode));
+        try {
+            promise.complete(submit(bytecode));
+        } catch (Exception t) {
+            promise.completeExceptionally(t);
+        }
         return promise;
     }
 }
