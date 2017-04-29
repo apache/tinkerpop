@@ -18,13 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 
+import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
 
 import javax.tools.StandardLocation;
 
-import static com.google.common.truth.Truth.ASSERT;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
+import static com.google.testing.compile.CompilationSubject.assertThat;
+import static com.google.testing.compile.Compiler.javac;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -33,35 +34,35 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileToDefaultPackage() {
-        ASSERT.about(javaSource())
-                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")))
-                .processedWith(new GremlinDslProcessor())
-                .compilesWithoutError();
+        Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")));
+        assertThat(compilation).succeededWithoutWarnings();
     }
 
     @Test
     public void shouldCompileAndMovePackage() {
-        ASSERT.about(javaSource())
-                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialMoveTraversalDsl.java")))
-                .processedWith(new GremlinDslProcessor())
-                .compilesWithoutError()
-                .and()
-                .generatesFileNamed(StandardLocation.SOURCE_OUTPUT, "org.apache.tinkerpop.gremlin.process.traversal.dsl.social", "SocialMoveTraversal.java");
+        Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialMoveTraversalDsl.java")));
+        assertThat(compilation).succeededWithoutWarnings();
+        assertThat(compilation)
+                .generatedFile(StandardLocation.SOURCE_OUTPUT, "org.apache.tinkerpop.gremlin.process.traversal.dsl.social", "SocialMoveTraversal.java");
     }
 
     @Test
     public void shouldCompileTraversalAndTraversalSourceToDefaultPackage() {
-        ASSERT.about(javaSource())
-                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialPackageTraversalDsl.java")))
-                .processedWith(new GremlinDslProcessor())
-                .compilesWithoutError();
+        Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialPackageTraversalDsl.java")));
+        assertThat(compilation).succeededWithoutWarnings();
     }
 
     @Test
     public void shouldCompileWithNoDefaultMethods() {
-        ASSERT.about(javaSource())
-                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")))
-                .processedWith(new GremlinDslProcessor())
-                .compilesWithoutError();
+        Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")));
+        assertThat(compilation).succeededWithoutWarnings();
     }
 }
