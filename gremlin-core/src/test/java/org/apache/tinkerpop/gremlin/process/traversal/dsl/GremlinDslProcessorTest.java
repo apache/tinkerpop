@@ -56,4 +56,12 @@ public class GremlinDslProcessorTest {
                 .processedWith(new GremlinDslProcessor())
                 .compilesWithoutError();
     }
+
+    @Test
+    public void shouldCompileWithNoDefaultMethods() {
+        ASSERT.about(javaSource())
+                .that(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")))
+                .processedWith(new GremlinDslProcessor())
+                .compilesWithoutError();
+    }
 }

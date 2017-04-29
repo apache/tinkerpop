@@ -60,4 +60,17 @@ public @interface GremlinDsl {
      * this value is not supplied the generated "source" will simply extend from {@link GraphTraversalSource}.
      */
     public String traversalSource() default "org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource";
+
+    /**
+     * When set to {@code true}, which is the default, the following methods will be generated to the DSL
+     * implementation of the {@link GraphTraversalSource}:
+     *
+     * <ul>
+     *   <li>{@link GraphTraversalSource#addV()}</li>
+     *   <li>{@link GraphTraversalSource#addV(String)}</li>
+     *   <li>{@link GraphTraversalSource#V(Object...)}</li>
+     *   <li>{@link GraphTraversalSource#E(Object...)}</li>
+     * </ul>
+     */
+    public boolean generateDefaultMethods() default true;
 }
