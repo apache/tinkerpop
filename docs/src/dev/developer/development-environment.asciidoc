@@ -102,7 +102,9 @@ contains shaded dependencies for some libraries that are widely used and tend to
 that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
 
 . Build `gremlin-shaded` from the command line with `mvn clean install`.
-. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
+. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module". If this menu
+option is not available (as is the case in newer versions of Intellij - first noticed in 13.1.5), then open the "Maven
+Projects" side panel, right click the `gremlin-shaded` module and select "Ignore Project".
 . In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to
 `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
 . At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use
