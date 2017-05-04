@@ -154,7 +154,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
                 boolean added = false;
                 final List<? extends VariableElement> parameters = templateMethod.getParameters();
-                String body = "return new " + ctx.defaultTraversalClassName + "(clone, super." + elementOfGraphTraversalSource.getSimpleName().toString() + "(";
+                String body = "return new $T (clone, super.$L(";
                 for (VariableElement param : parameters) {
                     methodToAdd.addParameter(ParameterSpec.get(param));
 
@@ -170,7 +170,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
                 body = body + ").asAdmin())";
                 methodToAdd.addStatement("$T clone = this.clone()", ctx.traversalSourceClassName)
-                        .addStatement(body)
+                        .addStatement(body, ctx.defaultTraversalClassName, elementOfGraphTraversalSource.getSimpleName())
                         .returns(getReturnTypeDefinition(ctx.traversalClassName, templateMethod));
 
                 traversalSourceClass.addMethod(methodToAdd.build());
@@ -344,7 +344,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
         boolean added = false;
         final List<? extends VariableElement> parameters = templateMethod.getParameters();
         final String parentCall = parent.isEmpty() ? "" : parent + ".";
-        String body = "return (" + returnClazz.simpleName() + ") " + parentCall + "super." + methodName + "(";
+        String body = "return ($T) " + parentCall + "super.$L(";
         for (VariableElement param : parameters) {
             methodToAdd.addParameter(ParameterSpec.get(param));
 
@@ -359,7 +359,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
         if (added) body = body.substring(0, body.length() - 1);
 
         body = body + ")";
-        methodToAdd.addStatement(body);
+        methodToAdd.addStatement(body, returnClazz, methodName);
 
         return Optional.of(methodToAdd.build());
     }
