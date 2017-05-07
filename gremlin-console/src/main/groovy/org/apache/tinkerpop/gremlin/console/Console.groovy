@@ -124,15 +124,15 @@ class Console {
 
         // check for available plugins.  if they are in the "active" plugins strategies then "activate" them
         def activePlugins = Mediator.readPluginState()
-        ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
-            if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
+        activePlugins.each { className ->
+            try {
+                def plugin = Class.forName(className).asSubclass(GremlinPlugin.class).newInstance();
                 def pluggedIn = new PluggedIn(plugin, groovy, io, false)
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
-
-                if (activePlugins.contains(plugin.class.name)) {
-                    pluggedIn.activate()
-                    io.out.println("plugin activated: " + plugin.getName())
-                }
+                pluggedIn.activate()
+                io.out.println("plugin activated: " + plugin.getName())
+            } catch (ClassCastException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                io.err.println(String.format("Configured plugin '%s' doesn't exist, or doesn't extend GremlinPlugin", className))
             }
         }
 
