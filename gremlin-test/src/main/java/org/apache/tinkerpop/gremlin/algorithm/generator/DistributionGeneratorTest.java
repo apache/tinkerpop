@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -99,7 +100,8 @@ public class DistributionGeneratorTest {
                     graphProvider.clear(g2, configuration2);
                     executions++;
                 }
-            } while (same || executions < 5);
+            } while (same && executions < 5);
+            if(same) Assert.fail();
         }
 
         private DistributionGenerator.Builder makeGenerator(final Graph g) {
