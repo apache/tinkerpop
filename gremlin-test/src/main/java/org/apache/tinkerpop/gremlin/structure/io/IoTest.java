@@ -313,6 +313,8 @@ public class IoTest {
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
             assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+
+            graphProvider.clear(target, targetConf);
         }
 
         @Test
@@ -357,7 +359,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        public void shouldReadWriteSelfLoopingEdges() {
+        public void shouldReadWriteSelfLoopingEdges() throws Exception {
             final Graph source = graph;
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
@@ -378,6 +380,8 @@ public class IoTest {
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
             assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+
+            graphProvider.clear(target, targetConf);
         }
     }
 
@@ -773,6 +777,8 @@ public class IoTest {
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
             assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+
+            graphProvider.clear(target, targetConf);
         }
     }
 
