@@ -181,7 +181,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[1.8.0-40,)</version>
+                                    <version>[1.8.0,)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
