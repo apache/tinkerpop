@@ -27,6 +27,7 @@ limitations under the License.
             <outputDirectory>lib</outputDirectory>
             <excludes>
                 <exclude>${groupId}:${artifactId}</exclude>
+                <exclude>com.google.code.findbugs:jsr305</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>

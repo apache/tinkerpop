@@ -38,6 +38,9 @@ limitations under the License.
             <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
             <scope>compile</scope>
+            <excludes>
+               <exclude>com.google.code.findbugs:jsr305</exclude>
+            </excludes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
