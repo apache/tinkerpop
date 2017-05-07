@@ -35,7 +35,12 @@ public class HostTest {
         final InetSocketAddress addy = new InetSocketAddress("localhost", 8182);
         final Host host = new Host(addy, Cluster.open());
         final URI webSocketUri = host.getHostUri();
-        assertEquals("ws://localhost:8182/gremlin", webSocketUri.toString());
+        assertEquals("ws://127.0.0.1:8182/gremlin", webSocketUri.toString());
+
+        final InetSocketAddress addyByIP = new InetSocketAddress("127.0.0.1", 8182);
+        final Host hostByIP = new Host(addyByIP, Cluster.open());
+        final URI webSocketUriByIP = hostByIP.getHostUri();
+        assertEquals("ws://127.0.0.1:8182/gremlin", webSocketUriByIP.toString());
     }
 
 }
