@@ -5,6 +5,18 @@ jdk:
   - oraclejdk8
 sudo: required
 dist: trusty
+cache:
+  directories:
+    - $HOME/mvn-home
+
+install:
+  # install maven 3.3.9 if it is not in cache already
+  - bash .travis.install-maven.sh "3.3.9" "${HOME}/mvn-home"
+  - export M2_HOME=${HOME}/mvn-home
+  - export PATH=${HOME}/mvn-home/bin:${PATH}
+  # visual check that we have the correct maven version installed
+  - mvn -version
+
 addons:
   apt:
     packages:
