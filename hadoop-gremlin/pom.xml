@@ -91,6 +91,10 @@ limitations under the License.
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
             </exclusions>
             <!--<scope>provided</scope>-->
         </dependency>
