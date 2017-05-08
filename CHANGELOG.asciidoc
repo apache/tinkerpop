@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Maintained type information on `Traversal.promise()`.
+* Propagated exception to `Future` instead of calling thread in `RemoteConnection`.
 * Fixed a bug in `RepeatUnrollStrategy` where `LoopsStep` and `LambdaHolder` should invalidate the strategy's application.
 * Deprecated `authentication.className` setting in favor of using `authentication.authenticator`.
 * Added `authentication.authenticationHandler` setting.
