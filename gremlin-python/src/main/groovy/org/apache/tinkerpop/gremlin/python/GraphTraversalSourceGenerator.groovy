@@ -75,8 +75,13 @@ under the License.
     if bytecode is None:
       bytecode = Bytecode()
     self.bytecode = bytecode
+    self.graph_traversal = GraphTraversal
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
+  def get_graph_traversal_source(self):
+    return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+  def get_graph_traversal(self):
+    return self.graph_traversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
 """)
         GraphTraversalSource.getMethods(). // SOURCE STEPS
                 findAll { GraphTraversalSource.class.equals(it.returnType) }.
@@ -92,14 +97,14 @@ under the License.
                 forEach { method ->
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("${SymbolHelper.toJava(method)}", *args)
     return source
 """)
                 }
         pythonClass.append(
                 """  def withRemote(self, remote_connection):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
@@ -113,7 +118,7 @@ under the License.
                 forEach { method ->
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = self.get_graph_traversal()
     traversal.bytecode.add_step("${SymbolHelper.toJava(method)}", *args)
     return traversal
 """)
@@ -126,7 +131,7 @@ under the License.
         pythonClass.append(
                 """class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
-    Traversal.__init__(self, graph, traversal_strategies, bytecode)
+    super(GraphTraversal, self).__init__(graph, traversal_strategies, bytecode)
   def __getitem__(self, index):
     if isinstance(index, int):
         return self.range(long(index), long(index + 1))
