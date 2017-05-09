@@ -17,7 +17,10 @@ limitations under the License.
 Gremlin DSL
 ===========
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+This is a starter project that demonstrates how a basic
+link:http://tinkerpop.apache.org/docs/${project.version}/reference/#dsl[Domain Specific Language] (DSL) project is
+structured with Java and Maven. The DSL is built to work with the TinkerPop "modern" toy graph. Please see the unit
+tests in `SocialDslTest` for actual DSL usage.
 
 Prerequisites
 -------------
@@ -29,5 +32,4 @@ Building and Running
 --------------------
 
 [source,text]
-mvn clean package
-mvn exec:java -Dexec.mainClass="${package}.App"
+mvn clean install
