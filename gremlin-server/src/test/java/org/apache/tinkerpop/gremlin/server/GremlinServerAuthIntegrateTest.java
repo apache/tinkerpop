@@ -131,7 +131,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertTrue(root instanceof ResponseException || root instanceof GSSException);
+            assertEquals(GSSException.class, root.getClass());
         } finally {
             cluster.close();
         }
