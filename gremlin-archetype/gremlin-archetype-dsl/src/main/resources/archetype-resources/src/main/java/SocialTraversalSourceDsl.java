@@ -41,11 +41,20 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
         super(graph);
     }
 
-    public GraphTraversal<Vertex, Vertex> persons() {
-        final GraphTraversalSource clone = this.clone();
+    public GraphTraversal<Vertex, Vertex> persons(String... names) {
+        GraphTraversalSource clone = this.clone();
         clone.getBytecode().addStep(GraphTraversal.Symbols.V);
         clone.getBytecode().addStep(GraphTraversal.Symbols.hasLabel, "person");
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return TraversalHelper.addHasContainer(traversal.addStep(new GraphStep<>(traversal, Vertex.class, true)), new HasContainer(T.label.getAccessor(), P.eq("person")));
+
+        GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        traversal.addStep(new GraphStep<>(traversal, Vertex.class, true));
+        TraversalHelper.addHasContainer(traversal, new HasContainer(T.label.getAccessor(), P.eq("person")));
+
+        if (names.length > 0) {
+            clone.getBytecode().addStep(GraphTraversal.Symbols.has, P.within(names));
+            TraversalHelper.addHasContainer(traversal, new HasContainer("name", P.within(names)));
+        }
+
+        return traversal;
     }
 }

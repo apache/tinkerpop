@@ -36,12 +36,14 @@ public class SocialDslTest {
     public void shouldValidateThatMarkoKnowsJosh() {
         SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertTrue(social.V().has("name","marko").knows("josh").hasNext());
+        assertTrue(social.persons("marko").knows("josh").hasNext());
     }
 
     @Test
     public void shouldGetAgeOfYoungestFriendOfMarko() {
         SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(27, social.V().has("name","marko").youngestFriendsAge().next().intValue());
+        assertEquals(27, social.persons("marko").youngestFriendsAge().next().intValue());
     }
 
     @Test
