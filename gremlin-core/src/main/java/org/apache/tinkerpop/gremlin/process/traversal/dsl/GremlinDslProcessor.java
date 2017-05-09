@@ -29,6 +29,7 @@ import com.squareup.javapoet.TypeVariableName;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -53,6 +54,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -104,12 +106,135 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 // create the "TraversalSource" class which is used to spawn traversals from a Graph instance. It will
                 // spawn instances of the "DefaultTraversal" generated above.
                 generateTraversalSource(ctx);
+
+                // create anonymous traversal for DSL
+                generateAnonymousTraversal(ctx);
             }
         } catch (Exception ex) {
             messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
         }
 
         return true;
+    }
+
+    private void generateAnonymousTraversal(final Context ctx) throws IOException {
+        final TypeSpec.Builder anonymousClass = TypeSpec.classBuilder("__")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+
+        // this class is just static methods - it should not be instantiated
+        anonymousClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
+                .build());
+
+        // add start() method
+        anonymousClass.addMethod(MethodSpec.methodBuilder("start")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addTypeVariable(TypeVariableName.get("A"))
+                .addStatement("return new $N<>()", ctx.defaultTraversalClazz)
+                .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("A"), TypeVariableName.get("A")))
+                .build());
+
+        // process the methods of the GremlinDsl annotated class
+        for (Element element : ctx.annotatedDslType.getEnclosedElements()) {
+            if (element.getKind() != ElementKind.METHOD) continue;
+
+            final ExecutableElement templateMethod = (ExecutableElement) element;
+            final String methodName = templateMethod.getSimpleName().toString();
+
+            final TypeName returnType = getReturnTypeDefinition(ctx.traversalClassName, templateMethod);
+            final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                    .addExceptions(templateMethod.getThrownTypes().stream().map(TypeName::get).collect(Collectors.toList()))
+                    .returns(returnType);
+
+            templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
+
+            // might have to deal with an "S" (in __ it's usually an "A") - how to make this less bound to that convention?
+            final DeclaredType returnTypeMirror = (DeclaredType) templateMethod.getReturnType();
+            final List<? extends TypeMirror> returnTypeArguments = returnTypeMirror.getTypeArguments();
+            returnTypeArguments.stream().filter(rtm -> rtm instanceof TypeVariable).forEach(rtm -> {
+                if (((TypeVariable) rtm).asElement().getSimpleName().contentEquals("S"))
+                    methodToAdd.addTypeVariable(TypeVariableName.get(((TypeVariable) rtm).asElement().getSimpleName().toString()));
+            });
+
+            boolean added = false;
+            final List<? extends VariableElement> parameters = templateMethod.getParameters();
+            String body = "return __.<S>start().$L(";
+            for (VariableElement param : parameters) {
+                methodToAdd.addParameter(ParameterSpec.get(param));
+
+                body = body + param.getSimpleName() + ",";
+                added = true;
+            }
+
+            // treat a final array as a varargs param
+            if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
+                methodToAdd.varargs(true);
+
+            if (added) body = body.substring(0, body.length() - 1);
+
+            body = body + ")";
+
+            methodToAdd.addStatement(body, methodName);
+
+            anonymousClass.addMethod(methodToAdd.build());
+        }
+
+        // use methods from __ to template them into the DSL __
+        final Element anonymousTraversal = elementUtils.getTypeElement(__.class.getCanonicalName());
+        for (Element element : anonymousTraversal.getEnclosedElements()) {
+            if (element.getKind() != ElementKind.METHOD) continue;
+
+            final ExecutableElement templateMethod = (ExecutableElement) element;
+            final String methodName = templateMethod.getSimpleName().toString();
+
+            // ignore start() from __ - that's not proxied
+            if (methodName.equals("start")) continue;
+
+            final TypeName returnType = getReturnTypeDefinition(ctx.traversalClassName, templateMethod);
+            final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                    .addExceptions(templateMethod.getThrownTypes().stream().map(TypeName::get).collect(Collectors.toList()))
+                    .returns(returnType);
+
+            templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
+
+            boolean added = false;
+            final List<? extends VariableElement> parameters = templateMethod.getParameters();
+            String body;
+            if (methodName.equals("__")) {
+                for (VariableElement param : parameters) {
+                    methodToAdd.addParameter(ParameterSpec.get(param));
+                }
+
+                methodToAdd.varargs(true);
+
+                body = "return inject(starts)";
+            } else {
+                body = "return __.<A>start().$L(";
+                for (VariableElement param : parameters) {
+                    methodToAdd.addParameter(ParameterSpec.get(param));
+
+                    body = body + param.getSimpleName() + ",";
+                    added = true;
+                }
+
+                // treat a final array as a varargs param
+                if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
+                    methodToAdd.varargs(true);
+
+                if (added) body = body.substring(0, body.length() - 1);
+
+                body = body + ")";
+            }
+
+            methodToAdd.addStatement(body, methodName);
+
+            anonymousClass.addMethod(methodToAdd.build());
+        }
+
+        final JavaFile traversalSourceJavaFile = JavaFile.builder(ctx.packageName, anonymousClass.build()).build();
+        traversalSourceJavaFile.writeTo(filer);
     }
 
     private void generateTraversalSource(final Context ctx) throws IOException {
@@ -132,7 +257,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 .build());
 
         // override methods to return a the DSL TraversalSource. find GraphTraversalSource class somewhere in the hierarchy
-        final Element tinkerPopsGraphTraversalSource = findTinkerPopsGraphTraversalSource(graphTraversalSourceElement);
+        final Element tinkerPopsGraphTraversalSource = findClassAsElement(graphTraversalSourceElement, GraphTraversalSource.class);
         for (Element elementOfGraphTraversalSource : tinkerPopsGraphTraversalSource.getEnclosedElements()) {
             // first copy/override methods that return a GraphTraversalSource so that we can instead return
             // the DSL TraversalSource class.
@@ -226,13 +351,13 @@ public class GremlinDslProcessor extends AbstractProcessor {
         traversalSourceJavaFile.writeTo(filer);
     }
 
-    private Element findTinkerPopsGraphTraversalSource(final Element element) {
-        if (element.getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())) {
+    private Element findClassAsElement(final Element element, final Class<?> clazz) {
+        if (element.getSimpleName().contentEquals(clazz.getSimpleName())) {
             return element;
         }
 
         final List<? extends TypeMirror> supertypes = typeUtils.directSupertypes(element.asType());
-        return findTinkerPopsGraphTraversalSource(typeUtils.asElement(supertypes.get(0)));
+        return findClassAsElement(typeUtils.asElement(supertypes.get(0)), clazz);
     }
 
     private void generateDefaultTraversal(final Context ctx) throws IOException {

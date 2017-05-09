@@ -51,4 +51,10 @@ public class SocialDslTest {
         SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(4, social.persons().count().next().intValue());
     }
+
+    @Test
+    public void shouldFindAllPersonsWithTwoOrMoreProjects() {
+        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
+        assertEquals(1, social.persons().filter(__.createdAtLeast(2)).count().next().intValue());
+    }
 }

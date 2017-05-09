@@ -38,6 +38,7 @@ import java.lang.annotation.Target;
  *     <li>{@code SocialTraversal} - an interface that is an extension to {@code SocialTraversalDsl}</li>
  *     <li>{@code DefaultSocialTraversal} - an implementation of the {@code SocialTraversal}</li>
  *     <li>{@code SocialTraversalSource} - an extension of {@link GraphTraversalSource} which spawns {@code DefaultSocialTraversal} instances</li>
+ *     <li>{@code __} - which spawns anonymous {@code DefaultSocialTraversal} instances</li>
  * </ul>
  *
  * Together these generated classes provide all the infrastructure required to properly Gremlin traversals enhanced

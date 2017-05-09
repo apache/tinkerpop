@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 /**
  * This Social DSL is meant to be used with the TinkerPop "modern" toy graph.
@@ -53,5 +54,14 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
      */
     public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
         return out("knows").hasLabel("person").values("age").min();
+    }
+
+    /**
+     * Designed to be used as a filter for "person" vertices based on the number of "created" edges encountered.
+     *
+     * @param number the minimum number of projects a person created
+     */
+    public default GraphTraversal<S,Long> createdAtLeast(int number) {
+        return outE("created").count().is(P.gte(number));
     }
 }
