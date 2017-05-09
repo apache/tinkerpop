@@ -52,17 +52,15 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
      */
     public GraphTraversal<Vertex, Vertex> persons(String... names) {
         GraphTraversalSource clone = this.clone();
+
+        // Manually add a "start" step for the traversal in this case the equivalent of V(). GraphStep is marked
+        // as a "start" step by passing "true" in the constructor.
         clone.getBytecode().addStep(GraphTraversal.Symbols.V);
-        clone.getBytecode().addStep(GraphTraversal.Symbols.hasLabel, "person");
+        GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        traversal.asAdmin().addStep(new GraphStep<>(traversal.asAdmin(), Vertex.class, true));
 
-        GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        traversal.addStep(new GraphStep<>(traversal, Vertex.class, true));
-        TraversalHelper.addHasContainer(traversal, new HasContainer(T.label.getAccessor(), P.eq("person")));
-
-        if (names.length > 0) {
-            clone.getBytecode().addStep(GraphTraversal.Symbols.has, P.within(names));
-            TraversalHelper.addHasContainer(traversal, new HasContainer("name", P.within(names)));
-        }
+        traversal = traversal.hasLabel("person");
+        if (names.length > 0) traversal = traversal.has("name", P.within(names));
 
         return traversal;
     }
