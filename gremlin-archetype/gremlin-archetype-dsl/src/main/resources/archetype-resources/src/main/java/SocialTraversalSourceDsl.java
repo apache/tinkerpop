@@ -31,6 +31,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+/**
+ * See {@code SocialTraversalDsl} for more information about this DSL.
+ */
 public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialTraversalSourceDsl(final Graph graph, final TraversalStrategies traversalStrategies) {
@@ -41,6 +44,12 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
         super(graph);
     }
 
+    /**
+     * Starts a traversal that finds all vertices with a "person" label and optionally allows filtering of those
+     * vertices on the "name" property.
+     *
+     * @param names list of person names to filter on
+     */
     public GraphTraversal<Vertex, Vertex> persons(String... names) {
         GraphTraversalSource clone = this.clone();
         clone.getBytecode().addStep(GraphTraversal.Symbols.V);
