@@ -18,14 +18,15 @@ under the License.
 '''
 import pytest
 
+from gremlin_python.process.traversal import (Bytecode, P)
 from gremlin_python.process.graph_traversal import (
-    GraphTraversalSource, GraphTraversal)
+    GraphTraversalSource, GraphTraversal, __)
 from gremlin_python.structure.graph import Graph
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
-class SocialTraversalDsl(GraphTraversal):
+class SocialTraversal(GraphTraversal):
 
     def knows(self, person_name):
         return self.out("knows").hasLabel("person").has("name", person_name)
@@ -33,12 +34,28 @@ class SocialTraversalDsl(GraphTraversal):
     def youngestFriendsAge(self):
         return self.out("knows").hasLabel("person").values("age").min()
 
+    def createdAtLeast(self, number):
+        return self.outE("created").count().is_(P.gte(number))
 
-class SocialTraversalSourceDsl(GraphTraversalSource):
+class ___(__):
+    @staticmethod
+    def knows(*args):
+        return SocialTraversal(None, None, Bytecode()).knows(*args)
+
+    @staticmethod
+    def youngestFriendsAge(*args):
+        return SocialTraversal(None, None, Bytecode()).youngestFriendsAge(*args)
+
+    @staticmethod
+    def createdAtLeast(*args):
+        return SocialTraversal(None, None, Bytecode()).createdAtLeast(*args)
+
+
+class SocialTraversalSource(GraphTraversalSource):
 
     def __init__(self, *args, **kwargs):
-        super(SocialTraversalSourceDsl, self).__init__(*args, **kwargs)
-        self.graph_traversal = SocialTraversalDsl
+        super(SocialTraversalSource, self).__init__(*args, **kwargs)
+        self.graph_traversal = SocialTraversal
 
     def persons(self):
         traversal = self.get_graph_traversal()
@@ -48,7 +65,8 @@ class SocialTraversalSourceDsl(GraphTraversalSource):
 
 
 def test_dsl(remote_connection):
-    social = Graph().traversal(SocialTraversalSourceDsl).withRemote(remote_connection)
+    social = Graph().traversal(SocialTraversalSource).withRemote(remote_connection)
     assert social.V().has("name", "marko").knows("josh").next()
     assert social.V().has("name", "marko").youngestFriendsAge().next() == 27
     assert social.persons().count().next() == 4
+    assert social.persons().filter(___.createdAtLeast(2)).count().next() == 1
