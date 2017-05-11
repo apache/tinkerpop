@@ -643,11 +643,11 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} can have a user defined identifier.  Implementation that do not support
+             * Determines if an {@link Element} can have a user defined identifier.  Implementations that do not support
              * this feature will be expected to auto-generate unique identifiers.  In other words, if the {@link Graph}
              * allows {@code graph.addVertex(id,x)} to work and thus set the identifier of the newly added
              * {@link Vertex} to the value of {@code x} then this feature should return true.  In this case, {@code x}
-             * is assumed to be an identifier datat ype that the {@link Graph} will accept.
+             * is assumed to be an identifier data type that the {@link Graph} will accept.
              */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
