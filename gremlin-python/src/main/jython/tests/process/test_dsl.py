@@ -20,7 +20,8 @@ import pytest
 
 from gremlin_python.process.traversal import (Bytecode, P)
 from gremlin_python.process.graph_traversal import (
-    GraphTraversalSource, GraphTraversal, __)
+    GraphTraversalSource, GraphTraversal)
+from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
 from gremlin_python.structure.graph import Graph
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
@@ -37,7 +38,7 @@ class SocialTraversal(GraphTraversal):
     def createdAtLeast(self, number):
         return self.outE("created").count().is_(P.gte(number))
 
-class ___(__):
+class __(AnonymousTraversal):
     @staticmethod
     def knows(*args):
         return SocialTraversal(None, None, Bytecode()).knows(*args)
@@ -74,4 +75,4 @@ def test_dsl(remote_connection):
     assert social.persons("marko").youngestFriendsAge().next() == 27
     assert social.persons().count().next() == 4
     assert social.persons("marko", "josh").count().next() == 2
-    assert social.persons().filter(___.createdAtLeast(2)).count().next() == 1
+    assert social.persons().filter(__.createdAtLeast(2)).count().next() == 1
