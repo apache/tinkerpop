@@ -18,7 +18,7 @@ under the License.
 '''
 import pytest
 
-from gremlin_python.process.traversal import (Bytecode, P)
+from gremlin_python.process.traversal import Bytecode, P
 from gremlin_python.process.graph_traversal import (
     GraphTraversalSource, GraphTraversal)
 from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
@@ -39,17 +39,20 @@ class SocialTraversal(GraphTraversal):
         return self.outE("created").count().is_(P.gte(number))
 
 class __(AnonymousTraversal):
-    @staticmethod
-    def knows(*args):
-        return SocialTraversal(None, None, Bytecode()).knows(*args)
 
-    @staticmethod
-    def youngestFriendsAge(*args):
-        return SocialTraversal(None, None, Bytecode()).youngestFriendsAge(*args)
+    graph_traversal = SocialTraversal
 
-    @staticmethod
-    def createdAtLeast(*args):
-        return SocialTraversal(None, None, Bytecode()).createdAtLeast(*args)
+    @classmethod
+    def knows(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).knows(*args)
+
+    @classmethod
+    def youngestFriendsAge(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).youngestFriendsAge(*args)
+
+    @classmethod
+    def createdAtLeast(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).createdAtLeast(*args)
 
 
 class SocialTraversalSource(GraphTraversalSource):
