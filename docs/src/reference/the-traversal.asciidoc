@@ -2946,17 +2946,17 @@ Domain Specific Languages
 
 Gremlin is a link:http://en.wikipedia.org/wiki/Domain-specific_language[domain specific language] (DSL) for traversing
 graphs. It operates in the language of vertices, edges and properties. Typically, applications built with Gremlin are
-not of the graph domain, but instead model their domain within a graph. For example, the "modern" toy graph models
+not of the graph domain, but instead model their domain within a graph. For example, the
+link:http://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph] models
 software and person domain objects with the relationships between them (i.e. a person "knows" another person and a
 person "created" software).
 
-image::tinkerpop-modern.png[width=350]
-
-An analyst who wanted to find all the people who "marko" knows could write the following Gremlin:
+An analyst who wanted to find out if "marko" knows "josh" could write the following Gremlin:
 
 [source,java]
 ----
-g.V().hasLabel('person').has('name','marko').out('knows')
+g.V().hasLabel('person').has('name','marko').
+  out('knows').hasLabel('person').has('name','josh').hasNext()
 ----
 
 While this method achieves the desired answer, it requires the analyst to traverse the graph in the domain language
@@ -2965,15 +2965,35 @@ traversal might be:
 
 [source,java]
 ----
-g.persons('marko').knows()
+g.persons('marko').knows('josh').hasNext()
 ----
 
 In the statement above, the traversal is written in the language of the domain, abstracting away the underlying
-graph structure from the query. The two traversal results are equivalent and, indeed, the "Social Network DSL" produces
+graph structure from the query. The two traversal results are equivalent and, indeed, the "Social DSL" produces
 the same set of traversal steps as the "Graph DSL" thus producing equivalent strategy application and performance
 runtimes.
 
-The following sections explain how to develop application specific DSLs for different <<gremlin-variants,Gremlin Language Variants>>.
+To further the example of the Social DSL consider the following:
+
+[source,java]
+----
+// Graph DSL - find the number of persons who created at least 2 projects
+g.V().hasLabel('person').
+  where(outE("created").count().is(P.gte(2))).count()
+
+// Social DSL - find the number of persons who created at least 2 projects
+social.persons().where(createdAtLeast(2)).count()
+
+// Graph DSL - determine the age of the youngest friend "marko" has
+g.V().hasLabel('person').has('name','marko').
+  out("knows").hasLabel("person").values("age").min()
+
+// Social DSL - determine the age of the youngest friend "marko" has
+social.persons("marko").youngestFriendsAge()
+----
+
+The following sections explain how to develop application specific DSLs for different <<gremlin-variants,Gremlin Language Variants>>
+using the examples above of the Social DSL as the API for the implementation.
 
 [[gremlin-java-dsl]
 Gremlin-Java
@@ -3004,6 +3024,10 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
 
     public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
         return out("knows").hasLabel("person").values("age").min();
+    }
+
+    public default GraphTraversal<S, Long> createdAtLeast(int number) {
+        return outE("created").count().is(P.gte(number));
     }
 }
 ----
@@ -3089,7 +3113,7 @@ It is then possible to use the `persons()` method to start traversals:
 [source,java]
 ----
 SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
-social.persons().count();
+social.persons("marko").knows("josh");
 ----
 
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
@@ -3097,3 +3121,71 @@ straightforward in that it sets up appropriate paths to the generated code autom
 
 Gremlin-Python
 ~~~~~~~~~~~~~~
+
+Writing a Gremlin DSL in Python simply requires direct extension of several classes:
+
+* `GraphTraversal` - which exposes the various steps used in traversal writing
+* `__` - which spawns anonymous traversals from steps
+* `GraphTraversalSource` - which spawns `GraphTraversal` instances
+
+The Social DSL based on the link:http://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
+might look like this:
+
+[source,python]
+----
+class SocialTraversal(GraphTraversal):
+
+    def knows(self, person_name):
+        return self.out("knows").hasLabel("person").has("name", person_name)
+
+    def youngestFriendsAge(self):
+        return self.out("knows").hasLabel("person").values("age").min()
+
+    def createdAtLeast(self, number):
+        return self.outE("created").count().is_(P.gte(number))
+
+class __(AnonymousTraversal):
+    @staticmethod
+    def knows(*args):
+        return SocialTraversal(None, None, Bytecode()).knows(*args)
+
+    @staticmethod
+    def youngestFriendsAge(*args):
+        return SocialTraversal(None, None, Bytecode()).youngestFriendsAge(*args)
+
+    @staticmethod
+    def createdAtLeast(*args):
+        return SocialTraversal(None, None, Bytecode()).createdAtLeast(*args)
+
+
+class SocialTraversalSource(GraphTraversalSource):
+
+    def __init__(self, *args, **kwargs):
+        super(SocialTraversalSource, self).__init__(*args, **kwargs)
+        self.graph_traversal = SocialTraversal
+
+    def persons(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("V")
+        traversal.bytecode.add_step("hasLabel", "person")
+
+        if len(args) > 0:
+            traversal.bytecode.add_step("has", "name", P.within(args))
+
+        return traversal
+----
+
+NOTE: The `AnonymousTraversal` class above is just an alias for `__` as in
+`from gremlin_python.process.graph_traversal import __ as AnonymousTraversal`
+
+Using the DSL is straightforward and just requires that the graph instance know the `SocialTraversalSource` should
+be used:
+
+[source,python]
+----
+social = Graph().traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+social.persons("marko").knows("josh")
+social.persons("marko").youngestFriendsAge()
+social.persons().filter(__.createdAtLeast(2)).count()
+----
+

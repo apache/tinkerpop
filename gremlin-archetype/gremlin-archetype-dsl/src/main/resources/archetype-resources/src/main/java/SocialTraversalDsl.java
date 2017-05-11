@@ -61,7 +61,7 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
      *
      * @param number the minimum number of projects a person created
      */
-    public default GraphTraversal<S,Long> createdAtLeast(int number) {
+    public default GraphTraversal<S, Long> createdAtLeast(int number) {
         return outE("created").count().is(P.gte(number));
     }
 }
