@@ -57,16 +57,21 @@ class SocialTraversalSource(GraphTraversalSource):
         super(SocialTraversalSource, self).__init__(*args, **kwargs)
         self.graph_traversal = SocialTraversal
 
-    def persons(self):
+    def persons(self, *args):
         traversal = self.get_graph_traversal()
         traversal.bytecode.add_step("V")
         traversal.bytecode.add_step("hasLabel", "person")
+
+        if len(args) > 0:
+            traversal.bytecode.add_step("has", "name", P.within(args))
+
         return traversal
 
 
 def test_dsl(remote_connection):
     social = Graph().traversal(SocialTraversalSource).withRemote(remote_connection)
-    assert social.V().has("name", "marko").knows("josh").next()
-    assert social.V().has("name", "marko").youngestFriendsAge().next() == 27
+    assert social.persons("marko").knows("josh").next()
+    assert social.persons("marko").youngestFriendsAge().next() == 27
     assert social.persons().count().next() == 4
+    assert social.persons("marko", "josh").count().next() == 2
     assert social.persons().filter(___.createdAtLeast(2)).count().next() == 1
