@@ -388,7 +388,7 @@ public class FeatureSupportTest {
             try {
                 final Vertex v = graph.addVertex();
                 v.addEdge("friend", v);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.edgeAdditionsNotSupported(), e);
             }
@@ -402,7 +402,7 @@ public class FeatureSupportTest {
             try {
                 final Vertex v = graph.addVertex();
                 v.addEdge("friend", v, T.id, graphProvider.convertId(99999943835l, Edge.class));
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), e);
             }
@@ -712,7 +712,7 @@ public class FeatureSupportTest {
             try {
                 final Vertex v = graph.addVertex();
                 v.property(VertexProperty.Cardinality.single, "name", "me", T.id, graphProvider.convertId(99999943835l, VertexProperty.class));
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsNotSupported(), ex);
             }
