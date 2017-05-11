@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -38,8 +37,9 @@ import org.junit.Test;
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -114,6 +114,17 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
         assertEquals(7, sacks.get(5).intValue());
         //
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldHandleMaps() {
+        GraphTraversalSource g = graph.traversal();
+        String script = GroovyTranslator.of("g").translate(g.V().id().is(new LinkedHashMap() {{
+            put(3, "32");
+            put(Arrays.asList(1, 2, 3.1d), 4);
+        }}).asAdmin().getBytecode());
+        assertEquals(script, "g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])");
     }
 
     @Test
