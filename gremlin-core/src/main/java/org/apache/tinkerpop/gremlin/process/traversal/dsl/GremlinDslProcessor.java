@@ -135,10 +135,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 .build());
 
         // process the methods of the GremlinDsl annotated class
-        for (Element element : ctx.annotatedDslType.getEnclosedElements()) {
-            if (element.getKind() != ElementKind.METHOD) continue;
-
-            final ExecutableElement templateMethod = (ExecutableElement) element;
+        for (ExecutableElement templateMethod : findMethodsOfElement(ctx.annotatedDslType)) {
             final String methodName = templateMethod.getSimpleName().toString();
 
             final TypeName returnType = getReturnTypeDefinition(ctx.traversalClassName, templateMethod);
@@ -150,8 +147,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
             templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
 
             // might have to deal with an "S" (in __ it's usually an "A") - how to make this less bound to that convention?
-            final DeclaredType returnTypeMirror = (DeclaredType) templateMethod.getReturnType();
-            final List<? extends TypeMirror> returnTypeArguments = returnTypeMirror.getTypeArguments();
+            final List<? extends TypeMirror> returnTypeArguments = getTypeArguments(templateMethod);
             returnTypeArguments.stream().filter(rtm -> rtm instanceof TypeVariable).forEach(rtm -> {
                 if (((TypeVariable) rtm).asElement().getSimpleName().contentEquals("S"))
                     methodToAdd.addTypeVariable(TypeVariableName.get(((TypeVariable) rtm).asElement().getSimpleName().toString()));
@@ -182,10 +178,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         // use methods from __ to template them into the DSL __
         final Element anonymousTraversal = elementUtils.getTypeElement(__.class.getCanonicalName());
-        for (Element element : anonymousTraversal.getEnclosedElements()) {
-            if (element.getKind() != ElementKind.METHOD) continue;
-
-            final ExecutableElement templateMethod = (ExecutableElement) element;
+        for (ExecutableElement templateMethod : findMethodsOfElement(anonymousTraversal)) {
             final String methodName = templateMethod.getSimpleName().toString();
 
             // ignore start() from __ - that's not proxied
@@ -258,7 +251,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         // override methods to return a the DSL TraversalSource. find GraphTraversalSource class somewhere in the hierarchy
         final Element tinkerPopsGraphTraversalSource = findClassAsElement(graphTraversalSourceElement, GraphTraversalSource.class);
-        for (Element elementOfGraphTraversalSource : tinkerPopsGraphTraversalSource.getEnclosedElements()) {
+        for (ExecutableElement elementOfGraphTraversalSource : findMethodsOfElement(tinkerPopsGraphTraversalSource)) {
             // first copy/override methods that return a GraphTraversalSource so that we can instead return
             // the DSL TraversalSource class.
             tryConstructMethod(elementOfGraphTraversalSource, ctx.traversalSourceClassName, "",
@@ -269,11 +262,8 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         // override methods that return GraphTraversal that come from the user defined extension of GraphTraversal
         if (!graphTraversalSourceElement.getSimpleName().contentEquals(GraphTraversalSource.class.getSimpleName())) {
-            for (Element elementOfGraphTraversalSource : graphTraversalSourceElement.getEnclosedElements()) {
-                if (elementOfGraphTraversalSource.getKind() != ElementKind.METHOD) continue;
-
-                final ExecutableElement templateMethod = (ExecutableElement) elementOfGraphTraversalSource;
-                final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(elementOfGraphTraversalSource.getSimpleName().toString())
+            for (ExecutableElement templateMethod : findMethodsOfElement(graphTraversalSourceElement)) {
+                final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(templateMethod.getSimpleName().toString())
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class);
 
@@ -295,7 +285,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
                 body = body + ").asAdmin())";
                 methodToAdd.addStatement("$T clone = this.clone()", ctx.traversalSourceClassName)
-                        .addStatement(body, ctx.defaultTraversalClassName, elementOfGraphTraversalSource.getSimpleName())
+                        .addStatement(body, ctx.defaultTraversalClassName, templateMethod.getSimpleName())
                         .returns(getReturnTypeDefinition(ctx.traversalClassName, templateMethod));
 
                 traversalSourceClass.addMethod(methodToAdd.build());
@@ -420,15 +410,15 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 .addSuperinterface(TypeName.get(ctx.annotatedDslType.asType()));
 
         // process the methods of the GremlinDsl annotated class
-        for (Element elementOfDsl : ctx.annotatedDslType.getEnclosedElements()) {
-            tryConstructMethod(elementOfDsl, ctx.traversalClassName, ctx.dslName, null,
+        for (ExecutableElement templateMethod : findMethodsOfElement(ctx.annotatedDslType)) {
+            tryConstructMethod(templateMethod, ctx.traversalClassName, ctx.dslName, null,
                     Modifier.PUBLIC, Modifier.DEFAULT).ifPresent(traversalInterface::addMethod);
         }
 
         // process the methods of GraphTraversal
         final TypeElement graphTraversalElement = elementUtils.getTypeElement(GraphTraversal.class.getCanonicalName());
-        for (Element elementOfGraphTraversal : graphTraversalElement.getEnclosedElements()) {
-            tryConstructMethod(elementOfGraphTraversal, ctx.traversalClassName, ctx.dslName,
+        for (ExecutableElement templateMethod : findMethodsOfElement(graphTraversalElement)) {
+            tryConstructMethod(templateMethod, ctx.traversalClassName, ctx.dslName,
                     e -> e.getSimpleName().contentEquals("asAdmin") || e.getSimpleName().contentEquals("iterate"),
                     Modifier.PUBLIC, Modifier.DEFAULT)
                     .ifPresent(traversalInterface::addMethod);
@@ -450,8 +440,6 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
     private Optional<MethodSpec> tryConstructMethod(final Element element, final ClassName returnClazz, final String parent,
                                                     final Predicate<ExecutableElement> ignore, final Modifier... modifiers) {
-        if (element.getKind() != ElementKind.METHOD) return Optional.empty();
-
         final ExecutableElement templateMethod = (ExecutableElement) element;
         final String methodName = templateMethod.getSimpleName().toString();
 
@@ -490,8 +478,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
     }
 
     private TypeName getReturnTypeDefinition(final ClassName returnClazz, final ExecutableElement templateMethod) {
-        final DeclaredType returnTypeMirror = (DeclaredType) templateMethod.getReturnType();
-        final List<? extends TypeMirror> returnTypeArguments = returnTypeMirror.getTypeArguments();
+        final List<? extends TypeMirror> returnTypeArguments = getTypeArguments(templateMethod);
 
         // build a return type with appropriate generic declarations (if such declarations are present)
         return returnTypeArguments.isEmpty() ?
@@ -506,6 +493,17 @@ public class GremlinDslProcessor extends AbstractProcessor {
         final TypeElement typeElement = (TypeElement) dslElement;
         if (!typeElement.getModifiers().contains(Modifier.PUBLIC))
             throw new ProcessorException(dslElement, "The interface %s is not public.", typeElement.getQualifiedName());
+    }
+
+    private List<ExecutableElement> findMethodsOfElement(final Element element) {
+        return element.getEnclosedElements().stream()
+                .filter(ee -> ee.getKind() == ElementKind.METHOD)
+                .map(ee -> (ExecutableElement) ee).collect(Collectors.toList());
+    }
+
+    private List<? extends TypeMirror> getTypeArguments(final ExecutableElement templateMethod) {
+        final DeclaredType returnTypeMirror = (DeclaredType) templateMethod.getReturnType();
+        return returnTypeMirror.getTypeArguments();
     }
 
     private class Context {
