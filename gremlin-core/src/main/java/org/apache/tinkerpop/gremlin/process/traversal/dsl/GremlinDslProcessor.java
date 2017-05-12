@@ -152,26 +152,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     methodToAdd.addTypeVariable(TypeVariableName.get(((TypeVariable) rtm).asElement().getSimpleName().toString()));
             });
 
-            boolean added = false;
-            final List<? extends VariableElement> parameters = templateMethod.getParameters();
-            String body = "return __.<S>start().$L(";
-            for (VariableElement param : parameters) {
-                methodToAdd.addParameter(ParameterSpec.get(param));
-
-                body = body + param.getSimpleName() + ",";
-                added = true;
-            }
-
-            // treat a final array as a varargs param
-            if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
-                methodToAdd.varargs(true);
-
-            if (added) body = body.substring(0, body.length() - 1);
-
-            body = body + ")";
-
-            methodToAdd.addStatement(body, methodName);
-
+            addMethodBody(methodToAdd, templateMethod, "return __.<S>start().$L(", ")", methodName);
             anonymousClass.addMethod(methodToAdd.build());
         }
 
@@ -189,36 +170,16 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
             templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
 
-            boolean added = false;
-            final List<? extends VariableElement> parameters = templateMethod.getParameters();
-            String body;
             if (methodName.equals("__")) {
-                for (VariableElement param : parameters) {
+                for (VariableElement param : templateMethod.getParameters()) {
                     methodToAdd.addParameter(ParameterSpec.get(param));
                 }
 
                 methodToAdd.varargs(true);
-
-                body = "return inject(starts)";
+                methodToAdd.addStatement("return inject(starts)", methodName);
             } else {
-                body = "return __.<A>start().$L(";
-                for (VariableElement param : parameters) {
-                    methodToAdd.addParameter(ParameterSpec.get(param));
-
-                    body = body + param.getSimpleName() + ",";
-                    added = true;
-                }
-
-                // treat a final array as a varargs param
-                if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
-                    methodToAdd.varargs(true);
-
-                if (added) body = body.substring(0, body.length() - 1);
-
-                body = body + ")";
+                addMethodBody(methodToAdd, templateMethod, "return __.<A>start().$L(", ")", methodName);
             }
-
-            methodToAdd.addStatement(body, methodName);
 
             anonymousClass.addMethod(methodToAdd.build());
         }
@@ -262,26 +223,10 @@ public class GremlinDslProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class);
 
-                boolean added = false;
-                final List<? extends VariableElement> parameters = templateMethod.getParameters();
-                String body = "return new $T (clone, super.$L(";
-                for (VariableElement param : parameters) {
-                    methodToAdd.addParameter(ParameterSpec.get(param));
-
-                    body = body + param.getSimpleName() + ",";
-                    added = true;
-                }
-
-                // treat a final array as a varargs param
-                if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
-                    methodToAdd.varargs(true);
-
-                if (added) body = body.substring(0, body.length() - 1);
-
-                body = body + ").asAdmin())";
-                methodToAdd.addStatement("$T clone = this.clone()", ctx.traversalSourceClassName)
-                        .addStatement(body, ctx.defaultTraversalClassName, templateMethod.getSimpleName())
-                        .returns(getReturnTypeDefinition(ctx.traversalClassName, templateMethod));
+                methodToAdd.addStatement("$T clone = this.clone()", ctx.traversalSourceClassName);
+                addMethodBody(methodToAdd, templateMethod, "return new $T (clone, super.$L(", ").asAdmin())",
+                        ctx.defaultTraversalClassName, templateMethod.getSimpleName());
+                methodToAdd.returns(getReturnTypeDefinition(ctx.traversalClassName, templateMethod));
 
                 traversalSourceClass.addMethod(methodToAdd.build());
             }
@@ -446,27 +391,33 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
 
-        boolean added = false;
-        final List<? extends VariableElement> parameters = templateMethod.getParameters();
         final String parentCall = parent.isEmpty() ? "" : parent + ".";
-        String body = "return ($T) " + parentCall + "super.$L(";
-        for (VariableElement param : parameters) {
-            methodToAdd.addParameter(ParameterSpec.get(param));
+        final String body = "return ($T) " + parentCall + "super.$L(";
+        addMethodBody(methodToAdd, templateMethod, body, ")", returnClazz, methodName);
 
-            body = body + param.getSimpleName() + ",";
-            added = true;
+        return methodToAdd.build();
+    }
+
+    private void addMethodBody(final MethodSpec.Builder methodToAdd, final ExecutableElement templateMethod,
+                               final String startBody, final String endBody, final Object... statementArgs) {
+        final List<? extends VariableElement> parameters = templateMethod.getParameters();
+        String body = startBody;
+
+        final int numberOfParams = parameters.size();
+        for (int ix = 0; ix < numberOfParams; ix++) {
+            final VariableElement param = parameters.get(ix);
+            methodToAdd.addParameter(ParameterSpec.get(param));
+            body = body + param.getSimpleName();
+            if (ix < numberOfParams - 1) body = body + ",";
         }
+
+        body = body + endBody;
 
         // treat a final array as a varargs param
         if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
             methodToAdd.varargs(true);
 
-        if (added) body = body.substring(0, body.length() - 1);
-
-        body = body + ")";
-        methodToAdd.addStatement(body, returnClazz, methodName);
-
-        return methodToAdd.build();
+        methodToAdd.addStatement(body, statementArgs);
     }
 
     private TypeName getReturnTypeDefinition(final ClassName returnClazz, final ExecutableElement templateMethod) {
