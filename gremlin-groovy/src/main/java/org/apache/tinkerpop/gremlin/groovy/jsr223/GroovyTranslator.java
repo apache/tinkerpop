@@ -123,15 +123,16 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             }
             return list.toString();
         } else if (object instanceof Map) {
-            final StringBuilder map = new StringBuilder("new LinkedHashMap(){{");
+            final StringBuilder map = new StringBuilder("[");
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
-                map.append("put(").
+                map.append("(").
                         append(convertToString(entry.getKey())).
-                        append(",").
+                        append("):(").
                         append(convertToString(entry.getValue())).
-                        append(");");
+                        append("),");
             }
-            return map.append("}}").toString();
+            map.deleteCharAt(map.length()-1);
+            return map.append("]").toString();
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof Double)
