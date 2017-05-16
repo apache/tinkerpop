@@ -34,6 +34,8 @@ import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -131,7 +133,9 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
             fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(GSSException.class, root.getClass());
+
+            // depending on the configuration of the system environment you might get either of these
+            assertThat(root, anyOf(instanceOf(GSSException.class), instanceOf(ResponseException.class)));
         } finally {
             cluster.close();
         }
