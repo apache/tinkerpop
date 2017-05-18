@@ -377,6 +377,7 @@
     direction: toEnum('Direction', 'BOTH IN OUT'),
     operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
     order: toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr'),
+    pick: toEnum('Pick', 'any none'),
     pop: toEnum('Pop', 'all first last'),
     scope: toEnum('Scope', 'global local'),
     t: toEnum('T', 'id key label value')
