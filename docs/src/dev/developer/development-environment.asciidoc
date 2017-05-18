@@ -90,7 +90,7 @@ mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 ~~~~~~~~~~~~~~~~
 
 The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=1.1.0) to work with the
-gremlin-dotnet module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
+`gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
 `gremlin-dotnet` which also includes Gremlin-Csharp can be build and tested from the command line with:
@@ -98,7 +98,7 @@ will be skipped.
 [source,text]
 mvn clean install -Pgremlin-dotnet
 
-which enables the „gremlin-dotnet“ Maven profile or in a more automated fashion simply add a `.glv` file to the `src`
+which enables the "gremlin-dotnet" Maven profile or in a more automated fashion simply add a `.glv` file to the `src`
 and `test` directories of the `gremlin-dotnet` module  which will signify to Maven that the environment is .NET-ready.
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
 `gremlin-dotnet` in full. 
