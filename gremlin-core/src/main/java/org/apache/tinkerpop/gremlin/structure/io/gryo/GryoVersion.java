@@ -206,7 +206,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(BigDecimal.class, 35));
             add(GryoTypeReg.of(Calendar.class, 39));
             add(GryoTypeReg.of(Class.class, 41, new UtilSerializers.ClassSerializer()));
-            add(GryoTypeReg.of(Class[].class, 169, new UtilSerializers.ClassArraySerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(Class[].class, 166, new UtilSerializers.ClassArraySerializer()));
             add(GryoTypeReg.of(Collection.class, 37));
             add(GryoTypeReg.of(Collections.EMPTY_LIST.getClass(), 51));
             add(GryoTypeReg.of(Collections.EMPTY_MAP.getClass(), 52));
@@ -286,7 +286,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
-            add(GryoTypeReg.of(MultiComparator.class, 167));
+            add(GryoTypeReg.of(MultiComparator.class, 165));
 
             add(GryoTypeReg.of(ConnectiveStrategy.class, 138));
             add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
@@ -356,9 +356,9 @@ public enum GryoVersion {
             // present  or ignored if the class isn't available. either way the registration numbers are held as
             // placeholders so that the format stays stable
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.RequestMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 165);
+                    "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 166);
+                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);  // ***LAST ID***
         }};
     }
 
