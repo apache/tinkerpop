@@ -440,7 +440,7 @@ try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
-    newGraph.io(IoCore.graphml()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.graphml()).reader().create().readGraph(stream, newGraph);
 }
 ----
 
@@ -507,7 +507,7 @@ try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
-    newGraph.io(IoCore.graphson()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.graphson()).reader().create().readGraph(stream, newGraph);
 }
 ----
 
@@ -853,7 +853,7 @@ try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
-    newGraph.io(IoCore.gryo()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.gryo()).reader().create().readGraph(stream, newGraph);
 }
 ----
 
