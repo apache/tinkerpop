@@ -87,6 +87,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Reduced memory usage for TinkerGraph deserialization in GraphSON by streaming vertices and edges.
 * Now using Groovy `[...]` map notation in `GroovyTranslator` instead of `new LinkedHashMap(){{ }}`.
 * Maintained type information on `Traversal.promise()`.
 * Propagated exception to `Future` instead of calling thread in `RemoteConnection`.
