@@ -48,7 +48,6 @@ import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import org.javatuples.Pair;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -262,8 +261,8 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
             for (Map<String, Object> edgeData : edges) {
                 final DetachedEdge detached = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
                         edgeData.get(GraphSONTokens.LABEL).toString(), (Map<String,Object>) edgeData.get(GraphSONTokens.PROPERTIES),
-                        Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                        Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+                        edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString(),
+                        edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString());
                 detached.attach(Attachable.Method.getOrCreate(graph));
             }
 

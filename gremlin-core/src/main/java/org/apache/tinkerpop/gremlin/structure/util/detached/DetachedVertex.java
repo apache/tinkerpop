@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,12 +79,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         super(id, label);
         if (properties != null && !properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().stream().forEach(
-                    entry -> this.properties.put(entry.getKey(), (List<VertexProperty>) ((List) entry.getValue()).stream()
-                                .map(m -> VertexProperty.class.isAssignableFrom(m.getClass())
-                                                ? m
-                                                : new DetachedVertexProperty<>(((Map) m).get(ID), entry.getKey(), ((Map) m).get(VALUE), (Map<String, Object>) ((Map) m).getOrDefault(PROPERTIES, new HashMap<>()), this))
-                                .collect(Collectors.toList())));
+            properties.entrySet().iterator().forEachRemaining(entry ->
+                this.properties.put(entry.getKey(), IteratorUtils.<VertexProperty>list(IteratorUtils.map(((List<Object>) entry.getValue()).iterator(),
+                        m -> VertexProperty.class.isAssignableFrom(m.getClass())
+                                ? (VertexProperty) m
+                                : new DetachedVertexProperty<>(((Map) m).get(ID), entry.getKey(), ((Map) m).get(VALUE), (Map<String, Object>) ((Map) m).getOrDefault(PROPERTIES, new HashMap<>()), this)))));
         }
     }
 
