@@ -47,5 +47,10 @@ public abstract class AbstractObjectDeserializer<T> extends StdDeserializer<T> {
         return createObject(mapData);
     }
 
+    @Override
+    public boolean isCachable() {
+        return true;
+    }
+
     public abstract T createObject(final Map<String, Object> data);
 }
