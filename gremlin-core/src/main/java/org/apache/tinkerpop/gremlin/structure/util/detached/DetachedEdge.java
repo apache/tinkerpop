@@ -51,9 +51,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedVertex outVertex;
     private DetachedVertex inVertex;
 
-    private DetachedEdge() {
-
-    }
+    DetachedEdge() {}
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
@@ -149,5 +147,19 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
+    }
+
+    @Override
+    void internalAddProperty(final Property p) {
+        if (null == properties) properties = new HashMap<>();
+        this.properties.put(p.key(), Collections.singletonList(p));
+    }
+
+    void internalSetOutV(final DetachedVertex v) {
+        outVertex = v;
+    }
+
+    void internalSetInV(final DetachedVertex v) {
+        inVertex = v;
     }
 }

@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -53,8 +55,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
-    private DetachedVertex() {
-    }
+    DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
@@ -67,7 +68,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
             if (propertyIterator.hasNext()) {
                 this.properties = new HashMap<>();
                 propertyIterator.forEachRemaining(property -> {
-                    final List<VertexProperty<?>> list = (List<VertexProperty<?>>) this.properties.getOrDefault(property.key(), new ArrayList<>());
+                    final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
                     list.add(DetachedFactory.detach(property, true));
                     this.properties.put(property.key(), list);
                 });
@@ -80,7 +81,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         if (properties != null && !properties.isEmpty()) {
             this.properties = new HashMap<>();
             properties.entrySet().iterator().forEachRemaining(entry ->
-                this.properties.put(entry.getKey(), IteratorUtils.<VertexProperty>list(IteratorUtils.map(((List<Object>) entry.getValue()).iterator(),
+                this.properties.put(entry.getKey(), IteratorUtils.<Property>list(IteratorUtils.map(((List<Object>) entry.getValue()).iterator(),
                         m -> VertexProperty.class.isAssignableFrom(m.getClass())
                                 ? (VertexProperty) m
                                 : new DetachedVertexProperty<>(((Map) m).get(ID), entry.getKey(), ((Map) m).get(VALUE), (Map<String, Object>) ((Map) m).getOrDefault(PROPERTIES, new HashMap<>()), this)))));
@@ -142,5 +143,15 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     @Override
     public void remove() {
         throw Vertex.Exceptions.vertexRemovalNotSupported();
+    }
+
+    @Override
+    void internalAddProperty(final Property p) {
+        if (null == properties) properties = new HashMap<>();
+
+        if (!properties.containsKey(p.key()))
+            properties.put(p.key(), new ArrayList<>());
+
+        this.properties.get(p.key()).add(p);
     }
 }

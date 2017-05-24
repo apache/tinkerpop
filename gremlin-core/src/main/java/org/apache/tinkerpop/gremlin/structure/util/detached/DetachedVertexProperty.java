@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -40,8 +39,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
     protected V value;
     protected transient DetachedVertex vertex;
 
-    private DetachedVertexProperty() {
-    }
+    DetachedVertexProperty() {}
 
     protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean withProperties) {
         super(vertexProperty);
@@ -126,5 +124,15 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
+    }
+
+    @Override
+    void internalAddProperty(final Property p) {
+        if (null == properties) properties = new HashMap<>();
+        this.properties.put(p.key(), Collections.singletonList(p));
+    }
+
+    void internalSetValue(final V value) {
+        this.value = value;
     }
 }
