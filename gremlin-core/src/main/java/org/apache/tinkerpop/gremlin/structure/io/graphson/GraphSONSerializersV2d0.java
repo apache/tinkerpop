@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedUtil;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -47,9 +48,11 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
@@ -241,8 +244,6 @@ class GraphSONSerializersV2d0 {
 
             jsonGenerator.writeEndObject();
         }
-
-
     }
 
     final static class PathJacksonSerializer extends StdScalarSerializer<Path> {
@@ -256,8 +257,10 @@ class GraphSONSerializersV2d0 {
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
 
-            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, path.labels());
-            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, path.objects());
+            // paths shouldn't serialize with properties if the path contains graph elements
+            final Path p = DetachedFactory.detach(path, false);
+            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, p.labels());
+            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, p.objects());
 
             jsonGenerator.writeEndObject();
         }
@@ -534,23 +537,35 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class PathJacksonDeserializer extends AbstractObjectDeserializer<Path> {
+    static class PathJacksonDeserializer extends StdDeserializer<Path> {
 
         public PathJacksonDeserializer() {
             super(Path.class);
         }
 
         @Override
-        public Path createObject(final Map<String, Object> pathData) {
+        public Path deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final JsonNode n = jsonParser.readValueAsTree();
             final Path p = MutablePath.make();
+            final JavaType setType = deserializationContext.getConfig().getTypeFactory().constructCollectionType(HashSet.class, String.class);
 
-            final List labels = (List) pathData.get(GraphSONTokens.LABELS);
-            final List objects = (List) pathData.get(GraphSONTokens.OBJECTS);
+            final ArrayNode labels = (ArrayNode) n.get(GraphSONTokens.LABELS);
+            final ArrayNode objects = (ArrayNode) n.get(GraphSONTokens.OBJECTS);
 
             for (int i = 0; i < objects.size(); i++) {
-                p.extend(objects.get(i), new HashSet((List) labels.get(i)));
+                final JsonParser po = objects.get(i).traverse();
+                po.nextToken();
+                final JsonParser pl = labels.get(i).traverse();
+                pl.nextToken();
+                p.extend(deserializationContext.readValue(po, Object.class), deserializationContext.readValue(pl, setType));
             }
+
             return p;
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
