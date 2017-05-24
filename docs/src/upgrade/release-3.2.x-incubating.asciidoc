@@ -32,6 +32,27 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+DSL Support
+^^^^^^^^^^^
+
+It has always been possible to construct Domain Specific Languages (DSLs) with Gremlin, but the approach has required
+a somewhat deep understanding of the TinkerPop code base and it is not something that has had a recommeded method
+for implementation. With this release, TinkerPop simplifies DSL development and provides the best practices for their
+implementation.
+
+[source,java]
+----
+// standard Gremlin
+g.V().hasLabel('person').
+  where(outE("created").count().is(P.gte(2))).count()
+
+// the same traversal as above written as a DSL
+social.persons().where(createdAtLeast(2)).count()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-786[TINKERPOP-786],
+link:http://tinkerpop.apache.org/docs/3.2.5/dev/reference/#dsl[Reference Documentation]
+
 Authentication Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -40,7 +61,7 @@ authentication handler and channelizer classes to use. This has been deprecated 
 A class that extends `AbstractAuthenticationHandler` may also now be provided as `authentication.authenticationHandler`
 to be used in either of the provided channelizer classes to handle the provided authenticator
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1657[TINKERPOP-1657]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1657[TINKERPOP-1657]
 
 Default Maximum Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,7 +93,7 @@ be helpful in understanding usage problems. As `GremlinScriptEngine` instances a
 are naturally exposed as part of the standard link:http://tinkerpop.apache.org/docs/current/reference/#_metrics[metrics]
 set. Note that metrics are captured for both sessionless requests as well as for each individual session that is opened.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
 
 Additional Error Information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
