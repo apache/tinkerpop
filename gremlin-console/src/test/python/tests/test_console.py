@@ -34,7 +34,7 @@ class TestConsole(object):
         TestConsole._close(child)
 
     def test_just_dash_i(self):
-        child = pexpect.spawn(TestConsole.gremlinsh + "-i x.groovy")
+        child = pexpect.spawn(TestConsole.gremlinsh + "-i x.script")
         TestConsole._expect_gremlin_header(child)
         TestConsole._send(child, "x")
         child.expect("==>2\r\n")
@@ -42,7 +42,7 @@ class TestConsole(object):
         TestConsole._close(child)
 
     def test_dash_i_with_args(self):
-        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.groovy 1 2 3")
+        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.script 1 2 3")
         TestConsole._expect_gremlin_header(child)
         TestConsole._send(child, "y")
         child.expect("==>6\r\n")
@@ -50,7 +50,7 @@ class TestConsole(object):
         TestConsole._close(child)
 
     def test_dash_i_multiple_scripts(self):
-        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.groovy 1 2 3 -i x.groovy -i \"z.groovy x -i --color -D\"")
+        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.script 1 2 3 -i x.script -i \"z.script x -i --color -D\"")
         TestConsole._expect_gremlin_header(child)
         TestConsole._send(child, "y")
         child.expect("==>6\r\n")
@@ -63,8 +63,25 @@ class TestConsole(object):
         TestConsole._expect_prompt(child)
         TestConsole._close(child)
 
+    def test_just_dash_e(self):
+        child = pexpect.spawn(TestConsole.gremlinsh + "-e x-printed.script")
+        child.expect("2\r\n")
+        TestConsole._close(child)
+
+    def test_dash_e_with_args(self):
+        child = pexpect.spawn(TestConsole.gremlinsh + "-e y-printed.script 1 2 3")
+        child.expect("6\r\n")
+        TestConsole._close(child)
+
+    def test_dash_e_multiple_scripts(self):
+        child = pexpect.spawn(TestConsole.gremlinsh + "-e y-printed.script 1 2 3 -e x-printed.script -e \"z-printed.script x -e --color -D\"")
+        child.expect("6\r\n")
+        child.expect("2\r\n")
+        child.expect("argument=\[x, -e, --color, -D\]\r\n")
+        TestConsole._close(child)
+
     def test_no_mix_dash_i_and_dash_e(self):
-        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.groovy 1 2 3 -i x.groovy -e \"z.groovy x -i --color -D\"")
+        child = pexpect.spawn(TestConsole.gremlinsh + "-i y.script 1 2 3 -i x.script -e \"z.script x -i --color -D\"")
         child.expect("-i and -e options are mutually exclusive - provide one or the other")
         child.expect(pexpect.EOF)
 
