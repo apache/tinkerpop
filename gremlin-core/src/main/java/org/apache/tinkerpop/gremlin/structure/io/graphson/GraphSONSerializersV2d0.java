@@ -56,6 +56,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 import org.javatuples.Pair;
 
 import java.io.IOException;
@@ -538,6 +539,7 @@ class GraphSONSerializersV2d0 {
     }
 
     static class PathJacksonDeserializer extends StdDeserializer<Path> {
+        private static final JavaType setType = TypeFactory.defaultInstance().constructCollectionType(HashSet.class, String.class);
 
         public PathJacksonDeserializer() {
             super(Path.class);
@@ -547,7 +549,6 @@ class GraphSONSerializersV2d0 {
         public Path deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final JsonNode n = jsonParser.readValueAsTree();
             final Path p = MutablePath.make();
-            final JavaType setType = deserializationContext.getConfig().getTypeFactory().constructCollectionType(HashSet.class, String.class);
 
             final ArrayNode labels = (ArrayNode) n.get(GraphSONTokens.LABELS);
             final ArrayNode objects = (ArrayNode) n.get(GraphSONTokens.OBJECTS);
@@ -570,6 +571,7 @@ class GraphSONSerializersV2d0 {
     }
 
     static class VertexPropertyJacksonDeserializer extends StdDeserializer<VertexProperty> {
+        private static final JavaType propertiesType = TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
 
         protected VertexPropertyJacksonDeserializer() {
             super(VertexProperty.class);
@@ -578,7 +580,6 @@ class GraphSONSerializersV2d0 {
         @Override
         public VertexProperty deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final DetachedVertexProperty vp = DetachedUtil.newDetachedVertexProperty();
-            final JavaType propertiesType = deserializationContext.getConfig().getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
 
             Map<String, Object> properties;
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
