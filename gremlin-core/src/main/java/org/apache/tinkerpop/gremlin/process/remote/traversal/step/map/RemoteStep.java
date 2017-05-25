@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -59,7 +60,23 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
-        if (null == this.remoteTraversal) promise().join();
+        if (null == this.remoteTraversal) {
+            try {
+                promise().join();
+            } catch (CompletionException e) {
+                Throwable cause = e.getCause();
+                // If the underlying future failed, join() will throw a CompletionException, for consistency
+                // with previous behavior:
+                // - Throw underlying exception if it was unchecked (RuntimeException or Error).
+                // - Wrap in IllegalStateException otherwise.
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                } else if (cause instanceof Error) {
+                    throw (Error) cause;
+                }
+                throw new IllegalStateException(cause);
+            }
+        }
         return this.remoteTraversal.nextTraverser();
     }
 
