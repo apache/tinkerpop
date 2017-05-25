@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -263,16 +264,15 @@ public class GraphTraversalSource implements TraversalSource {
      */
     @Deprecated
     public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (keyValues.length != 0 && keyValues[0].equals(T.label)) {
             final GraphTraversal<Vertex, Vertex> traversal = this.addV(keyValues[1].toString());
-            this.addV(keyValues[1].toString());
             for (int i = 2; i < keyValues.length; i = i + 2) {
                 traversal.property(keyValues[i], keyValues[i + 1]);
             }
             return traversal;
         } else {
             final GraphTraversal<Vertex, Vertex> traversal = this.addV();
-            this.addV(keyValues[1].toString());
             for (int i = 0; i < keyValues.length; i = i + 2) {
                 traversal.property(keyValues[i], keyValues[i + 1]);
             }
