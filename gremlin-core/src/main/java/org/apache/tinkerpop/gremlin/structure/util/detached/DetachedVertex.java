@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -35,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Represents a {@link Vertex} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -55,7 +53,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
-    DetachedVertex() {}
+    private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
@@ -153,5 +151,39 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
             properties.put(p.key(), new ArrayList<>());
 
         this.properties.get(p.key()).add(p);
+    }
+
+    /**
+     * Provides a way to construct an immutable {@link DetachedVertex}.
+     */
+    public static DetachedVertex.Builder build() {
+        return new Builder(new DetachedVertex());
+    }
+
+    public static class Builder {
+        private DetachedVertex v;
+
+        private Builder(final DetachedVertex v) {
+            this.v = v;
+        }
+
+        public Builder addProperty(final DetachedVertexProperty vp) {
+            v.internalAddProperty(vp);
+            return this;
+        }
+
+        public Builder setId(final Object id) {
+            v.id = id;
+            return this;
+        }
+
+        public Builder setLabel(final String label) {
+            v.label = label;
+            return this;
+        }
+
+        public DetachedVertex create() {
+            return v;
+        }
     }
 }

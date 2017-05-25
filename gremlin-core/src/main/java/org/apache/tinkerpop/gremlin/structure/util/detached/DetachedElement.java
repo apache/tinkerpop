@@ -25,12 +25,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -111,12 +108,4 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     }
 
     abstract void internalAddProperty(final Property p);
-
-    void internalSetId(final Object id) {
-        this.id = id;
-    }
-
-    void inernalSetLabel(final String label) {
-        this.label = label;
-    }
 }

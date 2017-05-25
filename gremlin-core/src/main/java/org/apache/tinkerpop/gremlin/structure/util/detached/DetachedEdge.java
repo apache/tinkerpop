@@ -51,7 +51,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedVertex outVertex;
     private DetachedVertex inVertex;
 
-    DetachedEdge() {}
+    private DetachedEdge() {}
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
@@ -155,11 +155,45 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         this.properties.put(p.key(), Collections.singletonList(p));
     }
 
-    void internalSetOutV(final DetachedVertex v) {
-        outVertex = v;
+    /**
+     * Provides a way to construct an immutable {@link DetachedEdge}.
+     */
+    public static DetachedEdge.Builder build() {
+        return new Builder(new DetachedEdge());
     }
 
-    void internalSetInV(final DetachedVertex v) {
-        inVertex = v;
+    public static class Builder {
+        private DetachedEdge e;
+
+        private Builder(final DetachedEdge e) {
+            this.e = e;
+        }
+
+        public Builder addProperty(final Property p) {
+            e.internalAddProperty(p);
+            return this;
+        }
+
+        public Builder setId(final Object id) {
+            e.id = id;
+            return this;
+        }
+
+        public Builder setLabel(final String label) {
+            e.label = label;
+            return this;
+        }
+
+        public void setOutV(final DetachedVertex v) {
+            e.outVertex = v;
+        }
+
+        public void setInV(final DetachedVertex v) {
+            e.inVertex = v;
+        }
+
+        public DetachedEdge create() {
+            return e;
+        }
     }
 }

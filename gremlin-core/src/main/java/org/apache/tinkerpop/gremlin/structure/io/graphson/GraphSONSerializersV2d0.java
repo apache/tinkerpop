@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedUtil;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -430,26 +429,26 @@ class GraphSONSerializersV2d0 {
         }
 
         public Vertex deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final DetachedVertex v = DetachedUtil.newDetachedVertex();
+            final DetachedVertex.Builder v = DetachedVertex.build();
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setId(v, deserializationContext.readValue(jsonParser, Object.class));
+                    v.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setLabel(v, jsonParser.getText());
+                    v.setLabel(jsonParser.getText());
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                         jsonParser.nextToken();
                         while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                            DetachedUtil.addProperty(v, (DetachedVertexProperty) deserializationContext.readValue(jsonParser, VertexProperty.class));
+                            v.addProperty((DetachedVertexProperty) deserializationContext.readValue(jsonParser, VertexProperty.class));
                         }
                     }
                 }
             }
 
-            return v;
+            return v.create();
         }
 
         @Override
@@ -466,41 +465,41 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Edge deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final DetachedEdge e = DetachedUtil.newDetachedEdge();
-            final DetachedVertex inV = DetachedUtil.newDetachedVertex();
-            final DetachedVertex outV = DetachedUtil.newDetachedVertex();
+            final DetachedEdge.Builder e = DetachedEdge.build();
+            final DetachedVertex.Builder inV = DetachedVertex.build();
+            final DetachedVertex.Builder outV = DetachedVertex.build();
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setId(e, deserializationContext.readValue(jsonParser, Object.class));
+                    e.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setLabel(e, jsonParser.getText());
+                    e.setLabel(jsonParser.getText());
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setId(outV, deserializationContext.readValue(jsonParser, Object.class));
+                    outV.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT_LABEL)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setLabel(outV, jsonParser.getText());
+                    outV.setLabel(jsonParser.getText());
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setId(inV, deserializationContext.readValue(jsonParser, Object.class));
+                    inV.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN_LABEL)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setLabel(inV,jsonParser.getText());
+                    inV.setLabel(jsonParser.getText());
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                         jsonParser.nextToken();
-                        DetachedUtil.addProperty(e, (DetachedProperty) deserializationContext.readValue(jsonParser, Property.class));
+                        e.addProperty(deserializationContext.readValue(jsonParser, Property.class));
                     }
                 }
             }
 
-            DetachedUtil.setInV(e, inV);
-            DetachedUtil.setOutV(e, outV);
+            e.setInV(inV.create());
+            e.setOutV(outV.create());
 
-            return e;
+            return e.create();
         }
 
         @Override
@@ -579,27 +578,27 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public VertexProperty deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final DetachedVertexProperty vp = DetachedUtil.newDetachedVertexProperty();
+            final DetachedVertexProperty.Builder vp = DetachedVertexProperty.build();
 
             Map<String, Object> properties;
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setId(vp, deserializationContext.readValue(jsonParser, Object.class));
+                    vp.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setLabel(vp, jsonParser.getText());
+                    vp.setLabel(jsonParser.getText());
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
                     jsonParser.nextToken();
-                    DetachedUtil.setValue(vp, deserializationContext.readValue(jsonParser, Object.class));
+                    vp.setValue(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     properties = deserializationContext.readValue(jsonParser, propertiesType);
-                    properties.entrySet().iterator().forEachRemaining(kv -> DetachedUtil.addProperty(vp, new DetachedProperty(kv.getKey(), kv.getValue())));
+                    properties.entrySet().iterator().forEachRemaining(kv -> vp.addProperty(new DetachedProperty(kv.getKey(), kv.getValue())));
                 }
             }
 
-            return vp;
+            return vp.create();
         }
 
         @Override

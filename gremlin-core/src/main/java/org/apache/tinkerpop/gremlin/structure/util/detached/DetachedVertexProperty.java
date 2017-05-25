@@ -39,7 +39,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
     protected V value;
     protected transient DetachedVertex vertex;
 
-    DetachedVertexProperty() {}
+    private DetachedVertexProperty() {}
 
     protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean withProperties) {
         super(vertexProperty);
@@ -132,7 +132,42 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         this.properties.put(p.key(), Collections.singletonList(p));
     }
 
-    void internalSetValue(final V value) {
-        this.value = value;
+    /**
+     * Provides a way to construct an immutable {@link DetachedEdge}.
+     */
+    public static DetachedVertexProperty.Builder build() {
+        return new Builder(new DetachedVertexProperty());
+    }
+
+    public static class Builder {
+        private DetachedVertexProperty vp;
+
+        private Builder(final DetachedVertexProperty e) {
+            this.vp = e;
+        }
+
+        public Builder addProperty(final Property p) {
+            vp.internalAddProperty(p);
+            return this;
+        }
+
+        public Builder setId(final Object id) {
+            vp.id = id;
+            return this;
+        }
+
+        public Builder setLabel(final String label) {
+            vp.label = label;
+            return this;
+        }
+
+        public Builder setValue(final Object value) {
+            vp.value = value;
+            return this;
+        }
+
+        public DetachedVertexProperty create() {
+            return vp;
+        }
     }
 }
