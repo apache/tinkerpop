@@ -87,6 +87,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed inconsistency in GraphSON serialization of `Path` where properties of graph elements were being included when serialized.
+* Improved performance and memory usage of GraphSON when serializing `TinkerGraph` and graph elements.
+* Removed use of `stream()` in `DetachedEdge` and `DetachedVertex`.
+* Deprecated a constructor in `DetachedEdge` that made use of `Pair` in favor of a new one that just uses the objects that were in the `Pair`.
 * Improved error messaging on the `g.addV(Object...)` when passing an invalid arguments.
 * Reduced memory usage for TinkerGraph deserialization in GraphSON by streaming vertices and edges.
 * Now using Groovy `[...]` map notation in `GroovyTranslator` instead of `new LinkedHashMap(){{ }}`.

@@ -35,14 +35,19 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
+import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -242,28 +247,39 @@ final class TraversalSerializersV2d0 {
     // DESERIALIZERS //
     //////////////////
 
-    final static class BytecodeJacksonDeserializer extends AbstractObjectDeserializer<Bytecode> {
+    final static class BytecodeJacksonDeserializer extends StdDeserializer<Bytecode> {
+        private static final JavaType listJavaType = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, Object.class);
+        private static final JavaType listListJavaType = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, listJavaType);
 
         public BytecodeJacksonDeserializer() {
             super(Bytecode.class);
         }
 
         @Override
-        public Bytecode createObject(final Map<String, Object> data) {
+        public Bytecode deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final Bytecode bytecode = new Bytecode();
-            if (data.containsKey(GraphSONTokens.SOURCE)) {
-                final List<List<Object>> instructions = (List) data.get(GraphSONTokens.SOURCE);
-                for (final List<Object> instruction : instructions) {
-                    bytecode.addSource((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
-                }
-            }
-            if (data.containsKey(GraphSONTokens.STEP)) {
-                final List<List<Object>> instructions = (List) data.get(GraphSONTokens.STEP);
-                for (final List<Object> instruction : instructions) {
-                    bytecode.addStep((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.SOURCE)) {
+                    jsonParser.nextToken();
+                    final List<List<Object>> instructions = deserializationContext.readValue(jsonParser, listListJavaType);
+                    for (final List<Object> instruction : instructions) {
+                        bytecode.addSource((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
+                    }
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.STEP)) {
+                    jsonParser.nextToken();
+                    final List<List<Object>> instructions = deserializationContext.readValue(jsonParser, listListJavaType);
+                    for (final List<Object> instruction : instructions) {
+                        bytecode.addStep((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
+                    }
                 }
             }
             return bytecode;
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
@@ -283,18 +299,34 @@ final class TraversalSerializersV2d0 {
             }
             throw new IOException("Unknown enum type: " + enumClass);
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
-    final static class PJacksonDeserializer extends AbstractObjectDeserializer<P> {
+    final static class PJacksonDeserializer extends StdDeserializer<P> {
 
         public PJacksonDeserializer() {
             super(P.class);
         }
 
         @Override
-        public P createObject(final Map<String, Object> data) {
-            final String predicate = (String) data.get(GraphSONTokens.PREDICATE);
-            final Object value = data.get(GraphSONTokens.VALUE);
+        public P deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String predicate = null;
+            Object value = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.PREDICATE)) {
+                    jsonParser.nextToken();
+                    predicate = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    value = deserializationContext.readValue(jsonParser, Object.class);
+                }
+            }
+
             if (predicate.equals(GraphSONTokens.AND) || predicate.equals(GraphSONTokens.OR)) {
                 return predicate.equals(GraphSONTokens.AND) ? new AndP((List<P>) value) : new OrP((List<P>) value);
             } else {
@@ -324,20 +356,38 @@ final class TraversalSerializersV2d0 {
                 }
             }
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
-    final static class LambdaJacksonDeserializer extends AbstractObjectDeserializer<Lambda> {
+    final static class LambdaJacksonDeserializer extends StdDeserializer<Lambda> {
 
         public LambdaJacksonDeserializer() {
             super(Lambda.class);
         }
 
         @Override
-        public Lambda createObject(final Map<String, Object> data) {
-            final String script = (String) data.get(GraphSONTokens.SCRIPT);
-            final String language = (String) data.get(GraphSONTokens.LANGUAGE);
-            final int arguments = ((Number) data.getOrDefault(GraphSONTokens.ARGUMENTS, -1)).intValue();
-            //
+        public Lambda deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String script = null;
+            String language = null;
+            int arguments = -1;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.SCRIPT)) {
+                    jsonParser.nextToken();
+                    script = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LANGUAGE)) {
+                    jsonParser.nextToken();
+                    language = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.ARGUMENTS)) {
+                    jsonParser.nextToken();
+                    arguments = jsonParser.getIntValue();
+                }
+            }
+
             if (-1 == arguments || arguments > 2)
                 return new Lambda.UnknownArgLambda(script, language, arguments);
             else if (0 == arguments)
@@ -347,29 +397,69 @@ final class TraversalSerializersV2d0 {
             else
                 return new Lambda.TwoArgLambda<>(script, language);
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
-    final static class BindingJacksonDeserializer extends AbstractObjectDeserializer<Bytecode.Binding> {
+    final static class BindingJacksonDeserializer extends StdDeserializer<Bytecode.Binding> {
 
         public BindingJacksonDeserializer() {
             super(Bytecode.Binding.class);
         }
 
         @Override
-        public Bytecode.Binding createObject(final Map<String, Object> data) {
-            return new Bytecode.Binding<>((String) data.get(GraphSONTokens.KEY), data.get(GraphSONTokens.VALUE));
+        public Bytecode.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String k = null;
+            Object v = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.KEY)) {
+                    jsonParser.nextToken();
+                    k = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    v = deserializationContext.readValue(jsonParser, Object.class);
+                }
+            }
+            return new Bytecode.Binding<>(k, v);
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
-    static class TraverserJacksonDeserializer extends AbstractObjectDeserializer<Traverser> {
+    static class TraverserJacksonDeserializer extends StdDeserializer<Traverser> {
 
         public TraverserJacksonDeserializer() {
             super(Traverser.class);
         }
 
         @Override
-        public Traverser createObject(final Map<String, Object> data) {
-            return new DefaultRemoteTraverser<>(data.get(GraphSONTokens.VALUE), (Long) data.get(GraphSONTokens.BULK));
+        public Traverser deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            long bulk = 1;
+            Object v = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.BULK)) {
+                    jsonParser.nextToken();
+                    bulk = deserializationContext.readValue(jsonParser, Long.class);
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    v = deserializationContext.readValue(jsonParser, Object.class);
+                }
+            }
+
+            return new DefaultRemoteTraverser<>(v, bulk);
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 

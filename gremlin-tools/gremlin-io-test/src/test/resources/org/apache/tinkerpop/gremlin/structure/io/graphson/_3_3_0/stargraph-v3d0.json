@@ -9,70 +9,90 @@
       "label" : "person",
       "properties" : {
         "name" : [ {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 0
-          },
-          "value" : "marko"
+          "@type" : "g:VertexProperty",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 0
+            },
+            "value" : "marko",
+            "label" : "name"
+          }
         } ],
         "location" : [ {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 6
-          },
-          "value" : "san diego",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 1997
+          "@type" : "g:VertexProperty",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 6
             },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2001
+            "value" : "san diego",
+            "label" : "location",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 1997
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              }
             }
           }
         }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          },
-          "value" : "santa cruz",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2001
+          "@type" : "g:VertexProperty",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 7
             },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2004
+            "value" : "santa cruz",
+            "label" : "location",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2001
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              }
             }
           }
         }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 8
-          },
-          "value" : "brussels",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2004
+          "@type" : "g:VertexProperty",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 8
             },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2005
+            "value" : "brussels",
+            "label" : "location",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2004
+              },
+              "endTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
             }
           }
         }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 9
-          },
-          "value" : "santa fe",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2005
+          "@type" : "g:VertexProperty",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int64",
+              "@value" : 9
+            },
+            "value" : "santa fe",
+            "label" : "location",
+            "properties" : {
+              "startTime" : {
+                "@type" : "g:Int32",
+                "@value" : 2005
+              }
             }
           }
         } ]
