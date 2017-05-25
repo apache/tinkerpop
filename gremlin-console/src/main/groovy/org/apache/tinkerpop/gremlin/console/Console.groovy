@@ -342,7 +342,7 @@ class Console {
     }
 
     private void executeInShell(final List<List<String>> scriptsAndArgs) {
-        scriptsAndArgs.each { scriptAndArgs ->
+        scriptsAndArgs.eachWithIndex { scriptAndArgs, idx ->
             final String scriptFile = scriptAndArgs[0]
             try {
                 // check if this script comes with arguments. if so then set them up in an "args" bundle
@@ -377,8 +377,6 @@ class Console {
 
                     }
                 }
-
-                if (!interactive) System.exit(0)
             } catch (FileNotFoundException ignored) {
                 io.err.println(Colorizer.render(Preferences.errorColor, "Gremlin file not found at [$scriptFile]."))
                 if (!interactive) System.exit(1)
@@ -387,6 +385,8 @@ class Console {
                 if (!interactive) System.exit(1)
             }
         }
+
+        if (!interactive) System.exit(0)
     }
 
     public static void main(final String[] args) {
