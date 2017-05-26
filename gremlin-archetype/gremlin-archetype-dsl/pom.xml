@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>gremlin-archetype-dsl</artifactId>
-    <name>Apache TinkerPop :: Archetype - TinkerGraph</name>
+    <name>Apache TinkerPop :: Archetype - DSL</name>
     <packaging>jar</packaging>
 
     <build>
