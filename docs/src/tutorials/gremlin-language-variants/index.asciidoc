@@ -454,8 +454,12 @@ class GraphTraversalSourceGenerator {
 
 When the above Groovy script is evaluated (e.g. in GremlinConsole), **Gremlin-Python** is born. The generated Python
 file is available at link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-python/src/main/jython/gremlin_python/process/graph_traversal.py[graph_traversal.py].
-It is important to note that here is a bit more to Gremlin-Python in that there also exists Python implementations of `TraversalStrategies`, `Traversal`, `Bytecode`, etc.
+It is important to note that there is a bit more to Gremlin-Python in that there also exists Python implementations of `TraversalStrategies`, `Traversal`, `Bytecode`, etc.
 Please review the full implementation of Gremlin-Python link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-python/src/main/jython/gremlin_python[here].
+
+NOTE: In practice, TinkerPop uses the Groovy's `GStringTemplateEngine` to help with the code generation task described
+above and automates that generation as part of the standard build with Maven using the `gmavenplus-plugin`. See the
+`gremlin-python` link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-python/pom.xml[pom.xml] for more details.
 
 Of particular importance is Gremlin-Python's implementation of `Bytecode`.
 

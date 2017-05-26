@@ -1,0 +1,102 @@
+'''
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+'''
+
+import sys
+from .traversal import Traversal
+from .traversal import TraversalStrategies
+from .strategies import VertexProgramStrategy
+from .traversal import Bytecode
+from ..driver.remote_connection import RemoteStrategy
+from .. import statics
+from ..statics import long
+
+class GraphTraversalSource(object):
+    def __init__(self, graph, traversal_strategies, bytecode=None):
+        self.graph = graph
+        self.traversal_strategies = traversal_strategies
+        if bytecode is None:
+          bytecode = Bytecode()
+        self.bytecode = bytecode
+        self.graph_traversal = GraphTraversal
+    def __repr__(self):
+        return "graphtraversalsource[" + str(self.graph) + "]"
+    def get_graph_traversal_source(self):
+        return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    def get_graph_traversal(self):
+        return self.graph_traversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+
+<% sourceStepMethods.each{ method -> %>
+    def <%= method %>(self, *args):
+        source = self.get_graph_traversal_source()
+        source.bytecode.add_source("<%= toJava.call(method) %>", *args)
+        return source
+<% } %>
+
+    def withRemote(self, remote_connection):
+        source = self.get_graph_traversal_source()
+        source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+        return source
+    def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
+        return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
+
+<% sourceSpawnMethods.each { method -> %>
+    def <%= method %>(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("<%= toJava.call(method) %>", *args)
+        return traversal
+<% } %>
+
+class GraphTraversal(Traversal):
+    def __init__(self, graph, traversal_strategies, bytecode):
+        super(GraphTraversal, self).__init__(graph, traversal_strategies, bytecode)
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self.range(long(index), long(index + 1))
+        elif isinstance(index, slice):
+            return self.range(long(0) if index.start is None else long(index.start), long(sys.maxsize) if index.stop is None else long(index.stop))
+        else:
+            raise TypeError("Index must be int or slice")
+    def __getattr__(self, key):
+        return self.values(key)
+<% graphStepMethods.each { method -> %>
+    def <%= method %>(self, *args):
+        self.bytecode.add_step("<%= toJava.call(method) %>", *args)
+        return self
+<% } %>
+
+class __(object):
+    graph_traversal = GraphTraversal
+    @classmethod
+    def start(cls):
+        return GraphTraversal(None, None, Bytecode())
+    @classmethod
+    def __(cls, *args):
+        return __.inject(*args)
+
+<% anonStepMethods.each{ method -> %>
+    @classmethod
+    def <%= method %>(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).<%= method %>(*args)
+<% } %>
+
+<% anonStepMethods.each{ method -> %>
+def <%= method %>(*args):
+    return __.<%= method %>(*args)
+statics.add_static('<%= method %>', <%= method %>)
+<% } %>
