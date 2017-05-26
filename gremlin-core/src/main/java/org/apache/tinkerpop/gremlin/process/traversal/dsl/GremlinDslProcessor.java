@@ -178,7 +178,12 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 methodToAdd.varargs(true);
                 methodToAdd.addStatement("return inject(starts)", methodName);
             } else {
-                addMethodBody(methodToAdd, templateMethod, "return __.<A>start().$L(", ")", methodName);
+                if (templateMethod.getTypeParameters().isEmpty()) {
+                    final List<? extends TypeMirror> types = getTypeArguments(templateMethod);
+                    addMethodBody(methodToAdd, templateMethod, "return __.<$T>start().$L(", ")", types.get(0), methodName);
+                } else {
+                    addMethodBody(methodToAdd, templateMethod, "return __.<A>start().$L(", ")", methodName);
+                }
             }
 
             anonymousClass.addMethod(methodToAdd.build());
