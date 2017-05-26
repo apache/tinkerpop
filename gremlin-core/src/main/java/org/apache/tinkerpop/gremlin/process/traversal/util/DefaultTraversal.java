@@ -79,6 +79,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
     }
 
+    public DefaultTraversal(final TraversalSource traversalSource, final DefaultTraversal.Admin<S,E> traversal) {
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getBytecode());
+        steps.addAll(traversal.getSteps());
+    }
+
     // TODO: clean up unused or redundant constructors
 
     public DefaultTraversal() {

@@ -89,6 +89,8 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Improved error messaging on the `g.addV(Object...)` when passing an invalid arguments.
 * Reduced memory usage for TinkerGraph deserialization in GraphSON by streaming vertices and edges.
+* Added the `gremlin-archetype-dsl` to demonstrate how to structure a Maven project for a DSL.
+* Developed and documented patterns for Domain Specific Language implementations.
 * Now using Groovy `[...]` map notation in `GroovyTranslator` instead of `new LinkedHashMap(){{ }}`.
 * Maintained type information on `Traversal.promise()`.
 * Propagated exception to `Future` instead of calling thread in `RemoteConnection`.

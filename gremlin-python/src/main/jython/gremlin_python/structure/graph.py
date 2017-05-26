@@ -28,8 +28,10 @@ class Graph(object):
         if self.__class__ not in TraversalStrategies.global_cache:
             TraversalStrategies.global_cache[self.__class__] = TraversalStrategies()
 
-    def traversal(self):
-        return GraphTraversalSource(self, TraversalStrategies.global_cache[self.__class__])
+    def traversal(self, traversal_source_class=None):
+        if not traversal_source_class:
+            traversal_source_class = GraphTraversalSource
+        return traversal_source_class(self, TraversalStrategies.global_cache[self.__class__])
 
     def __repr__(self):
         return "graph[empty]"

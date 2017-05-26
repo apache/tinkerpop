@@ -30,6 +30,7 @@ limitations under the License.
     <modules>
         <module>gremlin-archetype-tinkergraph</module>
         <module>gremlin-archetype-server</module>
+        <module>gremlin-archetype-dsl</module>
     </modules>
 
     <build>
