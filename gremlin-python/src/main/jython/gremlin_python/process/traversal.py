@@ -16,10 +16,10 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+
 from aenum import Enum
 from .. import statics
 from ..statics import long
-
 
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -102,33 +102,40 @@ class Traversal(object):
         return future
 
 
-Barrier = Enum('Barrier', 'normSack')
+Barrier = Enum('Barrier', ' normSack')
+
 statics.add_static('normSack', Barrier.normSack)
 
-Cardinality = Enum('Cardinality', 'list_ set_ single')
+Cardinality = Enum('Cardinality', ' list_ set_ single')
+
 statics.add_static('single', Cardinality.single)
 statics.add_static('list_', Cardinality.list_)
 statics.add_static('set_', Cardinality.set_)
 
-Column = Enum('Column', 'keys values')
+Column = Enum('Column', ' keys values')
+
 statics.add_static('keys', Column.keys)
 statics.add_static('values', Column.values)
 
-Direction = Enum('Direction', 'BOTH IN OUT')
+Direction = Enum('Direction', ' BOTH IN OUT')
+
 statics.add_static('OUT', Direction.OUT)
 statics.add_static('IN', Direction.IN)
 statics.add_static('BOTH', Direction.BOTH)
 
-GraphSONVersion = Enum('GraphSONVersion', 'V1_0 V2_0 V3_0')
+GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
+
 statics.add_static('V1_0', GraphSONVersion.V1_0)
 statics.add_static('V2_0', GraphSONVersion.V2_0)
 statics.add_static('V3_0', GraphSONVersion.V3_0)
 
-GryoVersion = Enum('GryoVersion', 'V1_0 V3_0')
+GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
+
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
 
-Operator = Enum('Operator', 'addAll and_ assign div max min minus mult or_ sum sumLong')
+Operator = Enum('Operator', ' addAll and_ assign div max min minus mult or_ sum sumLong')
+
 statics.add_static('sum', Operator.sum)
 statics.add_static('minus', Operator.minus)
 statics.add_static('mult', Operator.mult)
@@ -141,7 +148,8 @@ statics.add_static('or_', Operator.or_)
 statics.add_static('addAll', Operator.addAll)
 statics.add_static('sumLong', Operator.sumLong)
 
-Order = Enum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
+Order = Enum('Order', ' decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
+
 statics.add_static('incr', Order.incr)
 statics.add_static('decr', Order.decr)
 statics.add_static('keyIncr', Order.keyIncr)
@@ -150,131 +158,158 @@ statics.add_static('keyDecr', Order.keyDecr)
 statics.add_static('valueDecr', Order.valueDecr)
 statics.add_static('shuffle', Order.shuffle)
 
-Pick = Enum('Pick', 'any none')
+Pick = Enum('Pick', ' any none')
+
 statics.add_static('any', Pick.any)
 statics.add_static('none', Pick.none)
 
-Pop = Enum('Pop', 'all_ first last mixed')
+Pop = Enum('Pop', ' all_ first last mixed')
+
 statics.add_static('first', Pop.first)
 statics.add_static('last', Pop.last)
 statics.add_static('all_', Pop.all_)
 statics.add_static('mixed', Pop.mixed)
 
-Scope = Enum('Scope', 'global_ local')
+Scope = Enum('Scope', ' global_ local')
+
 statics.add_static('global_', Scope.global_)
 statics.add_static('local', Scope.local)
 
-T = Enum('T', 'id key label value')
+T = Enum('T', ' id key label value')
+
 statics.add_static('label', T.label)
 statics.add_static('id', T.id)
 statics.add_static('key', T.key)
 statics.add_static('value', T.value)
 
+
 class P(object):
-   def __init__(self, operator, value, other=None):
-      self.operator = operator
-      self.value = value
-      self.other = other
-   @staticmethod
-   def between(*args):
-      return P("between", *args)
-   @staticmethod
-   def eq(*args):
-      return P("eq", *args)
-   @staticmethod
-   def gt(*args):
-      return P("gt", *args)
-   @staticmethod
-   def gte(*args):
-      return P("gte", *args)
-   @staticmethod
-   def inside(*args):
-      return P("inside", *args)
-   @staticmethod
-   def lt(*args):
-      return P("lt", *args)
-   @staticmethod
-   def lte(*args):
-      return P("lte", *args)
-   @staticmethod
-   def neq(*args):
-      return P("neq", *args)
-   @staticmethod
-   def not_(*args):
-      return P("not", *args)
-   @staticmethod
-   def outside(*args):
-      return P("outside", *args)
-   @staticmethod
-   def test(*args):
-      return P("test", *args)
-   @staticmethod
-   def within(*args):
-      return P("within", *args)
-   @staticmethod
-   def without(*args):
-      return P("without", *args)
-   def and_(self, arg):
-      return P("and", self, arg)
-   def or_(self, arg):
-      return P("or", self, arg)
-   def __eq__(self, other):
+    def __init__(self, operator, value, other=None):
+        self.operator = operator
+        self.value = value
+        self.other = other
+
+
+    @staticmethod
+    def between(*args):
+        return P("between", *args)
+
+    @staticmethod
+    def eq(*args):
+        return P("eq", *args)
+
+    @staticmethod
+    def gt(*args):
+        return P("gt", *args)
+
+    @staticmethod
+    def gte(*args):
+        return P("gte", *args)
+
+    @staticmethod
+    def inside(*args):
+        return P("inside", *args)
+
+    @staticmethod
+    def lt(*args):
+        return P("lt", *args)
+
+    @staticmethod
+    def lte(*args):
+        return P("lte", *args)
+
+    @staticmethod
+    def neq(*args):
+        return P("neq", *args)
+
+    @staticmethod
+    def not_(*args):
+        return P("not_", *args)
+
+    @staticmethod
+    def outside(*args):
+        return P("outside", *args)
+
+    @staticmethod
+    def test(*args):
+        return P("test", *args)
+
+    @staticmethod
+    def within(*args):
+        return P("within", *args)
+
+    @staticmethod
+    def without(*args):
+        return P("without", *args)
+
+    def and_(self, arg):
+        return P("and", self, arg)
+    def or_(self, arg):
+        return P("or", self, arg)
+    def __eq__(self, other):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
-   def __repr__(self):
-      return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+    def __repr__(self):
+        return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+    def and_(self, arg):
+        return P("and", self, arg)
+    def or_(self, arg):
+        return P("or", self, arg)
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
+    def __repr__(self):
+        return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 
 def between(*args):
-      return P.between(*args)
+    return P.between(*args)
 statics.add_static('between',between)
 
 def eq(*args):
-      return P.eq(*args)
+    return P.eq(*args)
 statics.add_static('eq',eq)
 
 def gt(*args):
-      return P.gt(*args)
+    return P.gt(*args)
 statics.add_static('gt',gt)
 
 def gte(*args):
-      return P.gte(*args)
+    return P.gte(*args)
 statics.add_static('gte',gte)
 
 def inside(*args):
-      return P.inside(*args)
+    return P.inside(*args)
 statics.add_static('inside',inside)
 
 def lt(*args):
-      return P.lt(*args)
+    return P.lt(*args)
 statics.add_static('lt',lt)
 
 def lte(*args):
-      return P.lte(*args)
+    return P.lte(*args)
 statics.add_static('lte',lte)
 
 def neq(*args):
-      return P.neq(*args)
+    return P.neq(*args)
 statics.add_static('neq',neq)
 
 def not_(*args):
-      return P.not_(*args)
+    return P.not_(*args)
 statics.add_static('not_',not_)
 
 def outside(*args):
-      return P.outside(*args)
+    return P.outside(*args)
 statics.add_static('outside',outside)
 
 def test(*args):
-      return P.test(*args)
+    return P.test(*args)
 statics.add_static('test',test)
 
 def within(*args):
-      return P.within(*args)
+    return P.within(*args)
 statics.add_static('within',within)
 
 def without(*args):
-      return P.without(*args)
+    return P.without(*args)
 statics.add_static('without',without)
-
 
 
 '''
@@ -417,4 +452,3 @@ class Binding(object):
         return hash(self.key) + hash(self.value)
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
-
