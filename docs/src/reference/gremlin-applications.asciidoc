@@ -2129,6 +2129,7 @@ Gremlin Archetypes
 TinkerPop has a number of link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes],
 which provide example project templates to quickly get started with TinkerPop. The available archetypes are as follows:
 
+* `gremlin-archetype-dsl` - An example project that demonstrates how to build Domain Specific Languages with Gremlin in Java.
 * `gremlin-archetype-server` - An example project that demonstrates the basic structure of a
 <<gremlin-server,Gremlin Server>> project, how to connect with the Gremlin Driver, and how to embed Gremlin Server in
 a testing framework.

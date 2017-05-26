@@ -32,59 +32,64 @@ class GraphTraversalSource(object):
     if bytecode is None:
       bytecode = Bytecode()
     self.bytecode = bytecode
+    self.graph_traversal = GraphTraversal
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
+  def get_graph_traversal_source(self):
+    return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+  def get_graph_traversal(self):
+    return self.graph_traversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
   def withBulk(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withBulk", *args)
     return source
   def withPath(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withPath", *args)
     return source
   def withSack(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withSack", *args)
     return source
   def withSideEffect(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withSideEffect", *args)
     return source
   def withStrategies(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withStrategies", *args)
     return source
   def withoutStrategies(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.bytecode.add_source("withoutStrategies", *args)
     return source
   def withRemote(self, remote_connection):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source = self.get_graph_traversal_source()
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
   def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
     return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = self.get_graph_traversal()
     traversal.bytecode.add_step("E", *args)
     return traversal
   def V(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = self.get_graph_traversal()
     traversal.bytecode.add_step("V", *args)
     return traversal
   def addV(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = self.get_graph_traversal()
     traversal.bytecode.add_step("addV", *args)
     return traversal
   def inject(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = self.get_graph_traversal()
     traversal.bytecode.add_step("inject", *args)
     return traversal
 
 
 class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
-    Traversal.__init__(self, graph, traversal_strategies, bytecode)
+    super(GraphTraversal, self).__init__(graph, traversal_strategies, bytecode)
   def __getitem__(self, index):
     if isinstance(index, int):
         return self.range(long(index), long(index + 1))
@@ -391,285 +396,286 @@ class GraphTraversal(Traversal):
 
 
 class __(object):
-  @staticmethod
-  def start():
+  graph_traversal = GraphTraversal
+  @classmethod
+  def start(cls):
     return GraphTraversal(None, None, Bytecode())
-  @staticmethod
-  def __(*args):
+  @classmethod
+  def __(cls, *args):
     return __.inject(*args)
-  @staticmethod
-  def V(*args):
-    return GraphTraversal(None, None, Bytecode()).V(*args)
-  @staticmethod
-  def addE(*args):
-    return GraphTraversal(None, None, Bytecode()).addE(*args)
-  @staticmethod
-  def addInE(*args):
-    return GraphTraversal(None, None, Bytecode()).addInE(*args)
-  @staticmethod
-  def addOutE(*args):
-    return GraphTraversal(None, None, Bytecode()).addOutE(*args)
-  @staticmethod
-  def addV(*args):
-    return GraphTraversal(None, None, Bytecode()).addV(*args)
-  @staticmethod
-  def aggregate(*args):
-    return GraphTraversal(None, None, Bytecode()).aggregate(*args)
-  @staticmethod
-  def and_(*args):
-    return GraphTraversal(None, None, Bytecode()).and_(*args)
-  @staticmethod
-  def as_(*args):
-    return GraphTraversal(None, None, Bytecode()).as_(*args)
-  @staticmethod
-  def barrier(*args):
-    return GraphTraversal(None, None, Bytecode()).barrier(*args)
-  @staticmethod
-  def both(*args):
-    return GraphTraversal(None, None, Bytecode()).both(*args)
-  @staticmethod
-  def bothE(*args):
-    return GraphTraversal(None, None, Bytecode()).bothE(*args)
-  @staticmethod
-  def bothV(*args):
-    return GraphTraversal(None, None, Bytecode()).bothV(*args)
-  @staticmethod
-  def branch(*args):
-    return GraphTraversal(None, None, Bytecode()).branch(*args)
-  @staticmethod
-  def cap(*args):
-    return GraphTraversal(None, None, Bytecode()).cap(*args)
-  @staticmethod
-  def choose(*args):
-    return GraphTraversal(None, None, Bytecode()).choose(*args)
-  @staticmethod
-  def coalesce(*args):
-    return GraphTraversal(None, None, Bytecode()).coalesce(*args)
-  @staticmethod
-  def coin(*args):
-    return GraphTraversal(None, None, Bytecode()).coin(*args)
-  @staticmethod
-  def constant(*args):
-    return GraphTraversal(None, None, Bytecode()).constant(*args)
-  @staticmethod
-  def count(*args):
-    return GraphTraversal(None, None, Bytecode()).count(*args)
-  @staticmethod
-  def cyclicPath(*args):
-    return GraphTraversal(None, None, Bytecode()).cyclicPath(*args)
-  @staticmethod
-  def dedup(*args):
-    return GraphTraversal(None, None, Bytecode()).dedup(*args)
-  @staticmethod
-  def drop(*args):
-    return GraphTraversal(None, None, Bytecode()).drop(*args)
-  @staticmethod
-  def emit(*args):
-    return GraphTraversal(None, None, Bytecode()).emit(*args)
-  @staticmethod
-  def filter(*args):
-    return GraphTraversal(None, None, Bytecode()).filter(*args)
-  @staticmethod
-  def flatMap(*args):
-    return GraphTraversal(None, None, Bytecode()).flatMap(*args)
-  @staticmethod
-  def fold(*args):
-    return GraphTraversal(None, None, Bytecode()).fold(*args)
-  @staticmethod
-  def group(*args):
-    return GraphTraversal(None, None, Bytecode()).group(*args)
-  @staticmethod
-  def groupCount(*args):
-    return GraphTraversal(None, None, Bytecode()).groupCount(*args)
-  @staticmethod
-  def groupV3d0(*args):
-    return GraphTraversal(None, None, Bytecode()).groupV3d0(*args)
-  @staticmethod
-  def has(*args):
-    return GraphTraversal(None, None, Bytecode()).has(*args)
-  @staticmethod
-  def hasId(*args):
-    return GraphTraversal(None, None, Bytecode()).hasId(*args)
-  @staticmethod
-  def hasKey(*args):
-    return GraphTraversal(None, None, Bytecode()).hasKey(*args)
-  @staticmethod
-  def hasLabel(*args):
-    return GraphTraversal(None, None, Bytecode()).hasLabel(*args)
-  @staticmethod
-  def hasNot(*args):
-    return GraphTraversal(None, None, Bytecode()).hasNot(*args)
-  @staticmethod
-  def hasValue(*args):
-    return GraphTraversal(None, None, Bytecode()).hasValue(*args)
-  @staticmethod
-  def id(*args):
-    return GraphTraversal(None, None, Bytecode()).id(*args)
-  @staticmethod
-  def identity(*args):
-    return GraphTraversal(None, None, Bytecode()).identity(*args)
-  @staticmethod
-  def inE(*args):
-    return GraphTraversal(None, None, Bytecode()).inE(*args)
-  @staticmethod
-  def inV(*args):
-    return GraphTraversal(None, None, Bytecode()).inV(*args)
-  @staticmethod
-  def in_(*args):
-    return GraphTraversal(None, None, Bytecode()).in_(*args)
-  @staticmethod
-  def inject(*args):
-    return GraphTraversal(None, None, Bytecode()).inject(*args)
-  @staticmethod
-  def is_(*args):
-    return GraphTraversal(None, None, Bytecode()).is_(*args)
-  @staticmethod
-  def key(*args):
-    return GraphTraversal(None, None, Bytecode()).key(*args)
-  @staticmethod
-  def label(*args):
-    return GraphTraversal(None, None, Bytecode()).label(*args)
-  @staticmethod
-  def limit(*args):
-    return GraphTraversal(None, None, Bytecode()).limit(*args)
-  @staticmethod
-  def local(*args):
-    return GraphTraversal(None, None, Bytecode()).local(*args)
-  @staticmethod
-  def loops(*args):
-    return GraphTraversal(None, None, Bytecode()).loops(*args)
-  @staticmethod
-  def map(*args):
-    return GraphTraversal(None, None, Bytecode()).map(*args)
-  @staticmethod
-  def mapKeys(*args):
-    return GraphTraversal(None, None, Bytecode()).mapKeys(*args)
-  @staticmethod
-  def mapValues(*args):
-    return GraphTraversal(None, None, Bytecode()).mapValues(*args)
-  @staticmethod
-  def match(*args):
-    return GraphTraversal(None, None, Bytecode()).match(*args)
-  @staticmethod
-  def max(*args):
-    return GraphTraversal(None, None, Bytecode()).max(*args)
-  @staticmethod
-  def mean(*args):
-    return GraphTraversal(None, None, Bytecode()).mean(*args)
-  @staticmethod
-  def min(*args):
-    return GraphTraversal(None, None, Bytecode()).min(*args)
-  @staticmethod
-  def not_(*args):
-    return GraphTraversal(None, None, Bytecode()).not_(*args)
-  @staticmethod
-  def optional(*args):
-    return GraphTraversal(None, None, Bytecode()).optional(*args)
-  @staticmethod
-  def or_(*args):
-    return GraphTraversal(None, None, Bytecode()).or_(*args)
-  @staticmethod
-  def order(*args):
-    return GraphTraversal(None, None, Bytecode()).order(*args)
-  @staticmethod
-  def otherV(*args):
-    return GraphTraversal(None, None, Bytecode()).otherV(*args)
-  @staticmethod
-  def out(*args):
-    return GraphTraversal(None, None, Bytecode()).out(*args)
-  @staticmethod
-  def outE(*args):
-    return GraphTraversal(None, None, Bytecode()).outE(*args)
-  @staticmethod
-  def outV(*args):
-    return GraphTraversal(None, None, Bytecode()).outV(*args)
-  @staticmethod
-  def path(*args):
-    return GraphTraversal(None, None, Bytecode()).path(*args)
-  @staticmethod
-  def project(*args):
-    return GraphTraversal(None, None, Bytecode()).project(*args)
-  @staticmethod
-  def properties(*args):
-    return GraphTraversal(None, None, Bytecode()).properties(*args)
-  @staticmethod
-  def property(*args):
-    return GraphTraversal(None, None, Bytecode()).property(*args)
-  @staticmethod
-  def propertyMap(*args):
-    return GraphTraversal(None, None, Bytecode()).propertyMap(*args)
-  @staticmethod
-  def range(*args):
-    return GraphTraversal(None, None, Bytecode()).range(*args)
-  @staticmethod
-  def repeat(*args):
-    return GraphTraversal(None, None, Bytecode()).repeat(*args)
-  @staticmethod
-  def sack(*args):
-    return GraphTraversal(None, None, Bytecode()).sack(*args)
-  @staticmethod
-  def sample(*args):
-    return GraphTraversal(None, None, Bytecode()).sample(*args)
-  @staticmethod
-  def select(*args):
-    return GraphTraversal(None, None, Bytecode()).select(*args)
-  @staticmethod
-  def sideEffect(*args):
-    return GraphTraversal(None, None, Bytecode()).sideEffect(*args)
-  @staticmethod
-  def simplePath(*args):
-    return GraphTraversal(None, None, Bytecode()).simplePath(*args)
-  @staticmethod
-  def store(*args):
-    return GraphTraversal(None, None, Bytecode()).store(*args)
-  @staticmethod
-  def subgraph(*args):
-    return GraphTraversal(None, None, Bytecode()).subgraph(*args)
-  @staticmethod
-  def sum(*args):
-    return GraphTraversal(None, None, Bytecode()).sum(*args)
-  @staticmethod
-  def tail(*args):
-    return GraphTraversal(None, None, Bytecode()).tail(*args)
-  @staticmethod
-  def timeLimit(*args):
-    return GraphTraversal(None, None, Bytecode()).timeLimit(*args)
-  @staticmethod
-  def times(*args):
-    return GraphTraversal(None, None, Bytecode()).times(*args)
-  @staticmethod
-  def to(*args):
-    return GraphTraversal(None, None, Bytecode()).to(*args)
-  @staticmethod
-  def toE(*args):
-    return GraphTraversal(None, None, Bytecode()).toE(*args)
-  @staticmethod
-  def toV(*args):
-    return GraphTraversal(None, None, Bytecode()).toV(*args)
-  @staticmethod
-  def tree(*args):
-    return GraphTraversal(None, None, Bytecode()).tree(*args)
-  @staticmethod
-  def unfold(*args):
-    return GraphTraversal(None, None, Bytecode()).unfold(*args)
-  @staticmethod
-  def union(*args):
-    return GraphTraversal(None, None, Bytecode()).union(*args)
-  @staticmethod
-  def until(*args):
-    return GraphTraversal(None, None, Bytecode()).until(*args)
-  @staticmethod
-  def value(*args):
-    return GraphTraversal(None, None, Bytecode()).value(*args)
-  @staticmethod
-  def valueMap(*args):
-    return GraphTraversal(None, None, Bytecode()).valueMap(*args)
-  @staticmethod
-  def values(*args):
-    return GraphTraversal(None, None, Bytecode()).values(*args)
-  @staticmethod
-  def where(*args):
-    return GraphTraversal(None, None, Bytecode()).where(*args)
+  @classmethod
+  def V(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).V(*args)
+  @classmethod
+  def addE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).addE(*args)
+  @classmethod
+  def addInE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).addInE(*args)
+  @classmethod
+  def addOutE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).addOutE(*args)
+  @classmethod
+  def addV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).addV(*args)
+  @classmethod
+  def aggregate(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).aggregate(*args)
+  @classmethod
+  def and_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).and_(*args)
+  @classmethod
+  def as_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).as_(*args)
+  @classmethod
+  def barrier(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).barrier(*args)
+  @classmethod
+  def both(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).both(*args)
+  @classmethod
+  def bothE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).bothE(*args)
+  @classmethod
+  def bothV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).bothV(*args)
+  @classmethod
+  def branch(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).branch(*args)
+  @classmethod
+  def cap(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).cap(*args)
+  @classmethod
+  def choose(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).choose(*args)
+  @classmethod
+  def coalesce(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).coalesce(*args)
+  @classmethod
+  def coin(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).coin(*args)
+  @classmethod
+  def constant(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).constant(*args)
+  @classmethod
+  def count(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).count(*args)
+  @classmethod
+  def cyclicPath(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).cyclicPath(*args)
+  @classmethod
+  def dedup(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).dedup(*args)
+  @classmethod
+  def drop(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).drop(*args)
+  @classmethod
+  def emit(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).emit(*args)
+  @classmethod
+  def filter(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).filter(*args)
+  @classmethod
+  def flatMap(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).flatMap(*args)
+  @classmethod
+  def fold(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).fold(*args)
+  @classmethod
+  def group(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).group(*args)
+  @classmethod
+  def groupCount(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).groupCount(*args)
+  @classmethod
+  def groupV3d0(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).groupV3d0(*args)
+  @classmethod
+  def has(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).has(*args)
+  @classmethod
+  def hasId(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).hasId(*args)
+  @classmethod
+  def hasKey(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).hasKey(*args)
+  @classmethod
+  def hasLabel(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).hasLabel(*args)
+  @classmethod
+  def hasNot(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).hasNot(*args)
+  @classmethod
+  def hasValue(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).hasValue(*args)
+  @classmethod
+  def id(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).id(*args)
+  @classmethod
+  def identity(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).identity(*args)
+  @classmethod
+  def inE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).inE(*args)
+  @classmethod
+  def inV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).inV(*args)
+  @classmethod
+  def in_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).in_(*args)
+  @classmethod
+  def inject(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).inject(*args)
+  @classmethod
+  def is_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).is_(*args)
+  @classmethod
+  def key(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).key(*args)
+  @classmethod
+  def label(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).label(*args)
+  @classmethod
+  def limit(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).limit(*args)
+  @classmethod
+  def local(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).local(*args)
+  @classmethod
+  def loops(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).loops(*args)
+  @classmethod
+  def map(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).map(*args)
+  @classmethod
+  def mapKeys(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).mapKeys(*args)
+  @classmethod
+  def mapValues(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).mapValues(*args)
+  @classmethod
+  def match(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).match(*args)
+  @classmethod
+  def max(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).max(*args)
+  @classmethod
+  def mean(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).mean(*args)
+  @classmethod
+  def min(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).min(*args)
+  @classmethod
+  def not_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).not_(*args)
+  @classmethod
+  def optional(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).optional(*args)
+  @classmethod
+  def or_(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).or_(*args)
+  @classmethod
+  def order(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).order(*args)
+  @classmethod
+  def otherV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).otherV(*args)
+  @classmethod
+  def out(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).out(*args)
+  @classmethod
+  def outE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).outE(*args)
+  @classmethod
+  def outV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).outV(*args)
+  @classmethod
+  def path(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).path(*args)
+  @classmethod
+  def project(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).project(*args)
+  @classmethod
+  def properties(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).properties(*args)
+  @classmethod
+  def property(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).property(*args)
+  @classmethod
+  def propertyMap(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).propertyMap(*args)
+  @classmethod
+  def range(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).range(*args)
+  @classmethod
+  def repeat(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).repeat(*args)
+  @classmethod
+  def sack(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).sack(*args)
+  @classmethod
+  def sample(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).sample(*args)
+  @classmethod
+  def select(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).select(*args)
+  @classmethod
+  def sideEffect(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).sideEffect(*args)
+  @classmethod
+  def simplePath(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).simplePath(*args)
+  @classmethod
+  def store(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).store(*args)
+  @classmethod
+  def subgraph(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
+  @classmethod
+  def sum(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).sum(*args)
+  @classmethod
+  def tail(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).tail(*args)
+  @classmethod
+  def timeLimit(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).timeLimit(*args)
+  @classmethod
+  def times(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).times(*args)
+  @classmethod
+  def to(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).to(*args)
+  @classmethod
+  def toE(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).toE(*args)
+  @classmethod
+  def toV(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).toV(*args)
+  @classmethod
+  def tree(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).tree(*args)
+  @classmethod
+  def unfold(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).unfold(*args)
+  @classmethod
+  def union(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).union(*args)
+  @classmethod
+  def until(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).until(*args)
+  @classmethod
+  def value(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).value(*args)
+  @classmethod
+  def valueMap(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).valueMap(*args)
+  @classmethod
+  def values(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).values(*args)
+  @classmethod
+  def where(cls, *args):
+    return cls.graph_traversal(None, None, Bytecode()).where(*args)
 
 
 def V(*args):
