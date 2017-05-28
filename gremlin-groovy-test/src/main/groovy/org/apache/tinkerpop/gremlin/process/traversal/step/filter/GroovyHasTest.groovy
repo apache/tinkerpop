@@ -159,5 +159,15 @@ public abstract class GroovyHasTest {
         public Traversal<Vertex, String> get_g_V_hasNotXageX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasNot('age').name");
         }
+
+        @Override
+        public Traversal<Vertex, Vertex>  get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(v1Id).hasId(v2Id)", "v1Id", v1Id, "v2Id", v2Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').hasId('software')")
+        }
     }
 }
