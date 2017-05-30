@@ -56,7 +56,6 @@ import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -169,9 +168,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldBatchResultsByTwos":
                 settings.resultIterationBatchSize = 2;
                 break;
-            case "shouldWorkOverNioTransport":
-                settings.channelizer = NioChannelizer.class.getName();
-                break;
             case "shouldEnableSsl":
             case "shouldEnableSslButFailIfClientConnectsWithoutIt":
                 settings.ssl = new Settings.SslSettings();
@@ -212,11 +208,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 // Trust ONLY the server cert
                 settings.ssl.trustCertChainFile = SERVER_CRT;
             	break;
-            case "shouldStartWithDefaultSettings":
-                // test with defaults exception for port because we want to keep testing off of 8182
-                final Settings defaultSettings = new Settings();
-                defaultSettings.port = TestClientFactory.PORT;
-                return settings;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
                 break;
@@ -367,20 +358,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
-    }
-
-    @Test
-    public void shouldStartWithDefaultSettings() {
-        // just quickly validate that results are returning given defaults. no graphs are config'd with defaults
-        // so just eval a groovy script.
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        final AtomicInteger counter = new AtomicInteger(0);
-        results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
-
-        cluster.close();
     }
 
     @Test
@@ -705,20 +682,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> msgs = client.submit(request);
             assertEquals(10, msgs.size());
             IntStream.rangeClosed(0, 9).forEach(i -> assertEquals(i, ((List<Integer>) msgs.get(i).getResult().getData()).get(0).intValue()));
-        }
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void shouldWorkOverNioTransport() throws Exception {
-        try (SimpleClient client = TestClientFactory.createNioClient()) {
-            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9,]").create();
-
-            final List<ResponseMessage> msg = client.submit(request);
-            assertEquals(1, msg.size());
-            final List<Integer> integers = (List<Integer>) msg.get(0).getResult().getData();
-            IntStream.rangeClosed(0, 9).forEach(i -> assertEquals(i, integers.get(i).intValue()));
         }
     }
 

@@ -96,12 +96,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should401OnGETWithInvalidPasswordAuthorizationHeader":
             case "should401OnPOSTWithInvalidPasswordAuthorizationHeader":
             case "should200OnGETWithAuthorizationHeader":
-            case "should200OnPOSTWithAuthorizationHeaderExplicitHandlerSetting":
-                configureForAuthenticationWithHandlerClass(settings);
-                break;
-            case "should200OnPOSTWithAuthorizationHeader":
-                configureForAuthentication(settings);
-                break;
             case "should401OnPOSTWithInvalidPasswordAuthorizationHeaderOld":
             case "should200OnPOSTWithAuthorizationHeaderOld":
                 configureForAuthenticationOld(settings);

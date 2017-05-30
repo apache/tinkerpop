@@ -62,6 +62,28 @@ public abstract class AbstractGremlinServerIntegrationTest {
         startServer();
     }
 
+    public void setUp(final Settings settings) throws Exception {
+        logger.info("* Testing: " + name.getMethodName());
+        logger.info("* Epoll option enabled:" + GREMLIN_SERVER_EPOLL);
+
+        startServer(settings);
+    }
+
+    public void startServer(final Settings settings) throws Exception {
+        if (null == settings) {
+            startServer();
+        } else {
+            final Settings overridenSettings = overrideSettings(settings);
+            ServerTestHelper.rewritePathsInGremlinServerSettings(overridenSettings);
+            if (GREMLIN_SERVER_EPOLL) {
+                overridenSettings.useEpollEventLoop = true;
+            }
+            this.server = new GremlinServer(overridenSettings);
+            server.start().join();
+
+        }
+    }
+
     public void startServer() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
@@ -83,7 +105,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     public void stopServer() throws Exception {
         server.stop().join();
-
         // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
         // between tests
         OpLoader.reset();

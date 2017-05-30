@@ -85,11 +85,18 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected ExecutorService gremlinExecutorService;
     protected ScheduledExecutorService scheduledExecutorService;
 
+
+    public static final String PIPELINE_AUTHENTICATOR = "authenticator";
+    public static final String PIPELINE_REQUEST_HANDLER = "request-handler";
+    public static final String PIPELINE_HTTP_RESPONSE_ENCODER = "http-response-encoder";
+
     protected static final String PIPELINE_SSL = "ssl";
     protected static final String PIPELINE_OP_SELECTOR = "op-selector";
     protected static final String PIPELINE_RESULT_ITERATOR_HANDLER = "result-iterator-handler";
     protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
-    protected static final String PIPELINE_AUTHENTICATOR = "authenticator";
+    protected static final String PIPELINE_HTTP_REQUEST_DECODER = "http-request-decoder";
+
+    protected static final String GREMLIN_ENDPOINT = "/gremlin";
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
@@ -272,8 +279,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword)
                     .trustManager(trustCertChainFile);
         }
-        
-        
 
         builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
 
