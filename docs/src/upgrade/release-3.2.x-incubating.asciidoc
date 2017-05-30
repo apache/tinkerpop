@@ -39,6 +39,15 @@ it has not been promoted as the primary way to add `IoRegistry` instances to ser
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694]
 
+WsAndHttpChannelizer
+^^^^^^^^^^^^^^^^^^^^
+
+The `WsAndHttpChannelizer` has been added to allow for processing both WebSocket and Http requests on the same
+port and gremlin server. The `SaslAndHttpBasicAuthenticationHandler` has also been added to service
+authentication for both protocols in conjunction with the `SimpleAuthenticator`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-915[TINKERPOP-915]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
