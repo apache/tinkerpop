@@ -783,6 +783,7 @@ TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Bumped to Jackson 2.8.7.
 * Fixed `EventStrategy` so that newly added properties trigger events with the name of the key that was added.
 * Drop use of jitpack for the jbcrypt artifact - using the official one in Maven Central.
+* Bumped to Groovy 2.4.11.
 
 [[release-3-1-6]]
 TinkerPop 3.1.6 (Release Date: February 3, 2017)
