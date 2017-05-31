@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -143,7 +143,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
     }
 
-    internal class TestTraversal : DefaultTraversal
+    internal class TestTraversal : DefaultTraversal<object, object>
     {
         public TestTraversal(Bytecode bytecode)
         {

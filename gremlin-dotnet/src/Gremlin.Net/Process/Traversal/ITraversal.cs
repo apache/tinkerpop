@@ -29,9 +29,10 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    ///     A traversal represents a directed walk over a graph.
+    /// Represents the basic information for a walk over a graph.
     /// </summary>
-    public interface ITraversal : IDisposable, IEnumerator
+    /// <seealso cref="ITraversal{SType, EType}"/>
+    public interface ITraversal
     {
         /// <summary>
         ///     Gets the <see cref="Bytecode" /> representation of this traversal.
@@ -47,25 +48,31 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
         IEnumerable<Traverser> Traversers { get; set; }
+    }
 
+    /// <summary>
+    ///     A traversal represents a directed walk over a graph.
+    /// </summary>
+    public interface ITraversal<S, E> : ITraversal, IEnumerator<E>
+    {
         /// <summary>
         ///     Gets the next result from the traversal.
         /// </summary>
         /// <returns>The result.</returns>
-        object Next();
+        E Next();
 
         /// <summary>
         ///     Gets the next n-number of results from the traversal.
         /// </summary>
         /// <param name="amount">The number of results to get.</param>
         /// <returns>The n-results.</returns>
-        IEnumerable<object> Next(int amount);
+        IEnumerable<E> Next(int amount);
 
         /// <summary>
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
         /// </summary>
         /// <returns>The fully drained traversal.</returns>
-        ITraversal Iterate();
+        ITraversal<S, E> Iterate();
 
         /// <summary>
         ///     Gets the next <see cref="Traverser" />.
@@ -74,16 +81,16 @@ namespace Gremlin.Net.Process.Traversal
         Traverser NextTraverser();
 
         /// <summary>
-        ///     Puts all the results into a <see cref="List{T}" />.
+        ///     Puts all the results into a <see cref="IList{T}" />.
         /// </summary>
         /// <returns>The results in a list.</returns>
-        List<object> ToList();
+        IList<E> ToList();
 
         /// <summary>
-        ///     Puts all the results into a <see cref="HashSet{T}" />.
+        ///     Puts all the results into a <see cref="ISet{T}" />.
         /// </summary>
         /// <returns>The results in a set.</returns>
-        HashSet<object> ToSet();
+        ISet<E> ToSet();
 
         /// <summary>
         ///     Starts a promise to execute a function on the current traversal that will be completed in the future.
@@ -91,6 +98,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
         /// <param name="callback">The function to execute on the current traversal.</param>
         /// <returns>The result of the executed <paramref name="callback" />.</returns>
-        Task<TReturn> Promise<TReturn>(Func<ITraversal, TReturn> callback);
+        Task<TReturn> Promise<TReturn>(Func<ITraversal<S, E>, TReturn> callback);
     }
 }

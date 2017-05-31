@@ -25,7 +25,7 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Column
     {
-        keys,
-        values
+        Keys,
+        Values
     }
 }

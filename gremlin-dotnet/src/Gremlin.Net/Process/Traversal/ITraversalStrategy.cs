@@ -35,12 +35,12 @@ namespace Gremlin.Net.Process.Traversal
         ///     Applies the strategy to the given <see cref="ITraversal" />.
         /// </summary>
         /// <param name="traversal">The <see cref="ITraversal" /> the strategy should be applied to.</param>
-        void Apply(ITraversal traversal);
+        void Apply<S, E>(ITraversal<S, E> traversal);
 
         /// <summary>
         ///     Applies the strategy to the given <see cref="ITraversal" /> asynchronously.
         /// </summary>
         /// <param name="traversal">The <see cref="ITraversal" /> the strategy should be applied to.</param>
-        Task ApplyAsync(ITraversal traversal);
+        Task ApplyAsync<S, E>(ITraversal<S, E> traversal);
     }
 }

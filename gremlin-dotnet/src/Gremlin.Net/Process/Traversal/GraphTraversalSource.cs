@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
 {
@@ -111,32 +112,25 @@ namespace Gremlin.Net.Process.Traversal
             return WithStrategies(new VertexProgramStrategy(graphComputer, workers, persist, result, vertices, edges, configuration));
         }
 
-        public GraphTraversal E(params object[] args)
+        public GraphTraversal<Edge, Edge> E(params object[] args)
         {
-            var traversal = new GraphTraversal(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("E", args);
             return traversal;
         }
 
-        public GraphTraversal V(params object[] args)
+        public GraphTraversal<Vertex, Vertex> V(params object[] args)
         {
-            var traversal = new GraphTraversal(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("V", args);
             return traversal;
         }
 
-        public GraphTraversal AddV(params object[] args)
+        public GraphTraversal<Vertex, Vertex> AddV(params object[] args)
         {
-            var traversal = new GraphTraversal(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("addV", args);
             return traversal;
         }
-
-        public GraphTraversal Inject(params object[] args)
-        {
-            var traversal = new GraphTraversal(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("inject", args);
-            return traversal;
-        }
-	}
+    }
 }

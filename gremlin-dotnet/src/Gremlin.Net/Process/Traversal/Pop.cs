@@ -25,8 +25,8 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Pop
     {
-        all,
-        first,
-        last
+        All,
+        First,
+        Last
     }
 }

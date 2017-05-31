@@ -19,7 +19,28 @@
 
 package org.apache.tinkerpop.gremlin.dotnet
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+
 public final class SymbolHelper {
+
+    private static final Map<String, String> TO_CSHARP_TYPE_MAP = new HashMap<>();
+
+    static {
+        TO_CSHARP_TYPE_MAP.put("Long", "long");
+        TO_CSHARP_TYPE_MAP.put("Integer", "int");
+        TO_CSHARP_TYPE_MAP.put("String", "string");
+        TO_CSHARP_TYPE_MAP.put("Object", "object");
+        TO_CSHARP_TYPE_MAP.put("java.util.Map<java.lang.String, E2>", "IDictionary<string, E2>");
+        TO_CSHARP_TYPE_MAP.put("java.util.Map<java.lang.String, B>", "IDictionary<string, E2>")
+        TO_CSHARP_TYPE_MAP.put("java.util.List<E>", "IList<E>");
+        TO_CSHARP_TYPE_MAP.put("java.util.List<A>", "IList<object>");
+        TO_CSHARP_TYPE_MAP.put("java.util.Map<K, V>", "IDictionary<K, V>");
+        TO_CSHARP_TYPE_MAP.put("java.util.Collection<E2>", "ICollection<E2>");
+        TO_CSHARP_TYPE_MAP.put("java.util.Collection<B>", "ICollection<E2>")
+        TO_CSHARP_TYPE_MAP.put("java.util.Map<K, java.lang.Long>", "IDictionary<K, long>");
+        TO_CSHARP_TYPE_MAP.put("TraversalMetrics", "E2");
+    }
 
     public static String toCSharp(final String symbol) {
         return (String) Character.toUpperCase(symbol.charAt(0)) + symbol.substring(1)
@@ -27,5 +48,42 @@ public final class SymbolHelper {
 
     public static String toJava(final String symbol) {
         return (String) Character.toLowerCase(symbol.charAt(0)) + symbol.substring(1)
+    }
+
+    public static String toCSharpType(final String name) {
+        String typeName = TO_CSHARP_TYPE_MAP.getOrDefault(name, name);
+        if (typeName.equals(name) && (typeName.contains("? extends") || typeName.equals("Tree"))) {
+            typeName = "E2";
+        }
+        return typeName;
+    }
+
+    public static String[] getJavaParameterTypeNames(final Method method) {
+        def typeArguments = ((ParameterizedType)method.genericReturnType).actualTypeArguments;
+        return typeArguments.
+                collect { (it instanceof Class) ? ((Class)it).simpleName : it.typeName }.
+                collect { name ->
+                    if (name.equals("A")) {
+                        name = "object";
+                    }
+                    else if (name.equals("B")) {
+                        name = "E2";
+                    }
+                    name;
+                };
+    }
+
+    public static String getCSharpGenericTypeParam(String typeName) {
+        def tParam = "";
+        if (typeName.contains("E2")) {
+            tParam = "<E2>";
+        }
+        else if (typeName.contains("<K, V>")) {
+            tParam = "<K, V>";
+        }
+        else if (typeName.contains("<K, ")) {
+            tParam = "<K>";
+        }
+        return tParam;
     }
 }

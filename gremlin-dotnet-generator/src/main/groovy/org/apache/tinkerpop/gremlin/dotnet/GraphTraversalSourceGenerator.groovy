@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.dotnet
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-
+import java.lang.reflect.*
 
 class GraphTraversalSourceGenerator {
 
@@ -36,6 +36,7 @@ class GraphTraversalSourceGenerator {
 using System.Collections.Generic;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
 {
@@ -56,9 +57,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 """
         )
-
-        // Hold the list of methods with their overloads, so we do not create duplicates
-        HashMap<String, ArrayList<String>> sharpMethods = new HashMap<String, ArrayList<String>>()
 
         GraphTraversalSource.getMethods(). // SOURCE STEPS
                 findAll { GraphTraversalSource.class.equals(it.returnType) }.
@@ -110,27 +108,32 @@ namespace Gremlin.Net.Process.Traversal
         }
 """)
 
-        GraphTraversalSource.getMethods(). // SPAWN STEPS
+        GraphTraversalSource.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
-                collect { it.name }.
-                unique().
-                sort { a, b -> a <=> b }.
-                forEach { javaMethodName ->
-                    String sharpMethodName = SymbolHelper.toCSharp(javaMethodName)
+                unique{ a -> a.name }.
+                sort { a, b -> a.name <=> b.name }.
+                forEach { javaMethod ->
+                    String sharpMethodName = SymbolHelper.toCSharp(javaMethod.name);
+                    Type[] typeArguments = ((ParameterizedType)javaMethod.getGenericReturnType()).actualTypeArguments;
+                    if (typeArguments.length != 2 || !(typeArguments[0] instanceof Class)) {
+                        return;
+                    }
+                    def returnType = """GraphTraversal<${
+                        ((Class)typeArguments[0]).getSimpleName()}, ${((Class)typeArguments[1]).getSimpleName()}>""";
+
 
                     csharpClass.append(
                             """
-        public GraphTraversal ${sharpMethodName}(params object[] args)
+        public ${returnType} ${sharpMethodName}(params object[] args)
         {
-            var traversal = new GraphTraversal(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("${javaMethodName}\", args);
+            var traversal = new ${returnType}(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("${javaMethod.name}\", args);
             return traversal;
         }
 """)
                 }
 
-        csharpClass.append("\t}\n")
-        csharpClass.append("}")
+        csharpClass.append("    }\n}")
 
         final File file = new File(graphTraversalSourceFile);
         file.delete()

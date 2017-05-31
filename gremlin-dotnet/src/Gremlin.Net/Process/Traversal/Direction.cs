@@ -25,8 +25,8 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Direction
     {
-        BOTH,
-        IN,
-        OUT
+        Both,
+        In,
+        Out
     }
 }

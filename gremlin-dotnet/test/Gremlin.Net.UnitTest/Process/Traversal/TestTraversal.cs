@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,7 +27,7 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.UnitTest.Process.Traversal
 {
-    public class TestTraversal : DefaultTraversal
+    public class TestTraversal : DefaultTraversal<object, object>
     {
         public TestTraversal(List<object> traverserObjs)
         {
