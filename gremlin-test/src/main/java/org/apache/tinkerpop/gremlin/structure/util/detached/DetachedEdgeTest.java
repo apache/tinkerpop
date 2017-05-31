@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -160,7 +159,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         properties.put("x", "a");
         properties.put("y", "b");
 
-        final DetachedEdge de = new DetachedEdge(10, "bought", properties, Pair.with(1, "person"), Pair.with(2, "product"));
+        final DetachedEdge de = new DetachedEdge(10, "bought", properties, 1, "person", 2, "product");
 
         assertEquals(10, de.id());
         assertEquals("bought", de.label());

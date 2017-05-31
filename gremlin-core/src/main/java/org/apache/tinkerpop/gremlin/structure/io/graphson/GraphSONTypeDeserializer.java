@@ -32,8 +32,8 @@ import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 import org.apache.tinkerpop.shaded.jackson.databind.util.TokenBuffer;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * Contains main logic for the whole JSON to Java deserialization. Handles types embedded with the version 2.0 of GraphSON.
@@ -47,9 +47,8 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
     private final JavaType baseType;
     private final TypeInfo typeInfo;
 
-    private static final JavaType mapJavaType = TypeFactory.defaultInstance().constructType(Map.class);
-    private static final JavaType arrayJavaType = TypeFactory.defaultInstance().constructType(List.class);
-
+    private static final JavaType mapJavaType = TypeFactory.defaultInstance().constructType(LinkedHashMap.class);
+    private static final JavaType arrayJavaType = TypeFactory.defaultInstance().constructType(ArrayList.class);
 
     GraphSONTypeDeserializer(final JavaType baseType, final TypeIdResolver idRes, final String typePropertyName,
                              final TypeInfo typeInfo, final String valuePropertyName){

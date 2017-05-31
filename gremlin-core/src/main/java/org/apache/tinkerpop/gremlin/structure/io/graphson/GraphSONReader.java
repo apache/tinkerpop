@@ -42,7 +42,6 @@ import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeType;
-import org.javatuples.Pair;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -205,8 +204,8 @@ public final class GraphSONReader implements GraphReader {
             final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
                     edgeData.get(GraphSONTokens.LABEL).toString(),
                     edgeProperties,
-                    Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                    Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+                    edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString(),
+                    edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString());
 
             return edgeAttachMethod.apply(edge);
         } else {

@@ -40,7 +40,7 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     protected Object id;
     protected String label;
-    protected Map<String, List<? extends Property>> properties = null;
+    protected Map<String, List<Property>> properties = null;
 
     protected DetachedElement() {
 
@@ -106,4 +106,6 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     public E get() {
         return (E) this;
     }
+
+    abstract void internalAddProperty(final Property p);
 }

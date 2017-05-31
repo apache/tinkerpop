@@ -32,6 +32,18 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+GraphSON Path Serialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Serialization of `Path` with GraphSON was inconsistent with Gryo in that all the properties on any elements of
+the `Path` were being included. With Gryo that, correctly, was not happening as that could be extraordinarily
+expensive. GraphSON serialization has now been modified to properly not include properties. That change can cause
+breaks in application code if that application code tries to access properties on elements in a `Path` as they
+will no longer be there. Applications that require the properties will need to alter their Gremlin to better
+restrict the data they want to retrieve.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1676[TINKERPOP-1676]
+
 DSL Support
 ^^^^^^^^^^^
 
