@@ -2388,7 +2388,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
         this.asAdmin().getBytecode().addStep(Symbols.until, untilPredicate);
-        return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(untilPredicate));
+        return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) __.filter(untilPredicate));
     }
 
     /**

@@ -87,6 +87,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `until(predicate)` where it was actually calling `emit(predicate)`.
 * Improved error messaging on the `g.addV(Object...)` when passing an invalid arguments.
 * Reduced memory usage for TinkerGraph deserialization in GraphSON by streaming vertices and edges.
 * Added the `gremlin-archetype-dsl` to demonstrate how to structure a Maven project for a DSL.
