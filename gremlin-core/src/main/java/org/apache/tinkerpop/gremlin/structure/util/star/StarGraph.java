@@ -69,8 +69,16 @@ public final class StarGraph implements Graph, Serializable {
     protected StarVertex starVertex = null;
     protected Map<Object, Map<String, Object>> edgeProperties = null;
     protected Map<Object, Map<String, Object>> metaProperties = null;
+    protected final boolean internStrings;
+    protected final boolean compareIdsUsingStrings;
 
     private StarGraph() {
+        this(true, true);
+    }
+
+    private StarGraph(boolean internStrings, boolean compareIdsUsingStrings) {
+        this.internStrings = internStrings;
+        this.compareIdsUsingStrings = compareIdsUsingStrings;
     }
 
     /**
@@ -111,7 +119,7 @@ public final class StarGraph implements Graph, Serializable {
             return Collections.emptyIterator();
         else if (vertexIds.length > 0 && vertexIds[0] instanceof StarVertex)
             return Stream.of(vertexIds).map(v -> (Vertex) v).iterator();  // todo: maybe do this better - not sure of star semantics here
-        else if (ElementHelper.idExists(this.starVertex.id(), vertexIds))
+        else if (idExists(this.starVertex.id(), vertexIds))
             return IteratorUtils.of(this.starVertex);
         else
             return Collections.emptyIterator();
@@ -144,9 +152,9 @@ public final class StarGraph implements Graph, Serializable {
                         .filter(edge -> {
                             // todo: kinda fishy - need to better nail down how stuff should work here - none of these feel consistent right now.
                             if (edgeIds.length > 0 && edgeIds[0] instanceof Edge)
-                                return ElementHelper.idExists(edge.id(), Stream.of(edgeIds).map(e -> ((Edge) e).id()).toArray());
+                                return idExists(edge.id(), Stream.of(edgeIds).map(e -> ((Edge) e).id()).toArray());
                             else
-                                return ElementHelper.idExists(edge.id(), edgeIds);
+                                return idExists(edge.id(), edgeIds);
                         })
                         .iterator();
     }
@@ -216,11 +224,83 @@ public final class StarGraph implements Graph, Serializable {
         return starGraph;
     }
 
+    public static StarGraph.Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * StarGraph builder with options to customize its internals
+     */
+    public static class Builder {
+        private boolean internStrings = true;
+        private boolean compareIdsUsingStrings = true;
+
+        /**
+         * Call {@link #builder()} to instantiate
+         */
+        private Builder() { }
+
+        /**
+         * Tell StarGraph whether to invoke {@link String#intern()} on label and property key strings.
+         * The default value is deliberately undefined, so that StarGraph's internals may freely change.
+         * However, if this builder method is never invoked, then the builder is guaranteed to use
+         * whatever default value StarGraph's other public constructors or factory methods would use.
+         * This option exists solely for performance tuning in specialized use-cases.
+         *
+         * @param b true to allow interning, false otherwise
+         * @return this builder
+         */
+        public Builder internStrings(boolean b) {
+            this.internStrings = b;
+            return this;
+        }
+
+        /**
+         * Tell StarGraph whether to invoke {@link Object#toString()} on vertex and edge IDs during
+         * comparisons (including "does an element with this ID already exist" checks).
+         * The default value is deliberately undefined, so that StarGraph's internals may freely change.
+         * However, if this builder method is never invoked, then the builder is guaranteed to use
+         * whatever default value StarGraph's other public constructors or factory methods would use.
+         * This option exists solely for performance tuning in specialized use-cases.
+         *
+         * @param b
+         * @return
+         */
+        public Builder compareIdsUsingStrings(boolean b) {
+            this.compareIdsUsingStrings = b;
+            return this;
+        }
+
+        /**
+         * @return a new StarGraph
+         */
+        public StarGraph build() {
+            return new StarGraph(internStrings, compareIdsUsingStrings);
+        }
+    }
+
     public Optional<StarGraph> applyGraphFilter(final GraphFilter graphFilter) {
         if (null == this.starVertex)
             return Optional.empty();
         final Optional<StarGraph.StarVertex> filtered = this.starVertex.applyGraphFilter(graphFilter);
         return filtered.isPresent() ? Optional.of((StarGraph) filtered.get().graph()) : Optional.empty();
+    }
+
+    private boolean idExists(final Object id, final Object... providedIds) {
+        if (compareIdsUsingStrings) {
+            return ElementHelper.idExists(id, providedIds);
+        } else {
+            // Almost identical to ElementHelper#idExists, but without toString() calls
+            if (0 == providedIds.length) return true;
+            if (1 == providedIds.length) return id.equals(providedIds[0]);
+            else {
+                for (final Object temp : providedIds) {
+                    if (temp.equals(id))
+                        return true;
+                }
+                return false;
+            }
+        }
     }
 
     ///////////////////////
@@ -234,7 +314,7 @@ public final class StarGraph implements Graph, Serializable {
 
         protected StarElement(final Object id, final String label) {
             this.id = id;
-            this.label = label.intern();
+            this.label = internStrings ? label.intern() : label;
         }
 
         @Override
@@ -783,7 +863,7 @@ public final class StarGraph implements Graph, Serializable {
         private final Element element;
 
         private StarProperty(final String key, final V value, final Element element) {
-            this.key = key.intern();
+            this.key = internStrings ? key.intern() : key;
             this.value = value;
             this.element = element;
         }

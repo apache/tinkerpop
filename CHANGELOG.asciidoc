@@ -87,6 +87,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added string performance options to `StarGraph`.
 * Fixed a bug in `until(predicate)` where it was actually calling `emit(predicate)`.
 * Fixed inconsistency in GraphSON serialization of `Path` where properties of graph elements were being included when serialized.
 * Improved performance and memory usage of GraphSON when serializing `TinkerGraph` and graph elements.
