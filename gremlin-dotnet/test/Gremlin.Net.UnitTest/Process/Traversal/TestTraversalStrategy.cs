@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -36,12 +36,12 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             _traversers = traversersToAddOnApplication;
         }
 
-        public void Apply(ITraversal traversal)
+        public void Apply<S, E>(ITraversal<S, E> traversal)
         {
             traversal.Traversers = _traversers;
         }
 
-        public Task ApplyAsync(ITraversal traversal)
+        public Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
         {
             traversal.Traversers = _traversers;
             return Task.CompletedTask;

@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     A traversal represents a directed walk over a graph.
     /// </summary>
-    public abstract class DefaultTraversal : ITraversal
+    public abstract class DefaultTraversal<S, E> : ITraversal<S, E>
     {
         private IEnumerator<Traverser> _traverserEnumerator;
 
@@ -85,7 +86,9 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <inheritdoc />
-        public object Current => TraverserEnumerator.Current?.Object;
+        public E Current => (E)TraverserEnumerator.Current?.Object;
+
+        object IEnumerator.Current => Current;
 
         private IEnumerator<Traverser> GetTraverserEnumerator()
         {
@@ -110,7 +113,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets the next result from the traversal.
         /// </summary>
         /// <returns>The result.</returns>
-        public object Next()
+        public E Next()
         {
             MoveNext();
             return Current;
@@ -121,7 +124,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="amount">The number of results to get.</param>
         /// <returns>The n-results.</returns>
-        public IEnumerable<object> Next(int amount)
+        public IEnumerable<E> Next(int amount)
         {
             for (var i = 0; i < amount; i++)
                 yield return Next();
@@ -131,7 +134,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
         /// </summary>
         /// <returns>The fully drained traversal.</returns>
-        public ITraversal Iterate()
+        public ITraversal<S, E> Iterate()
         {
             while (MoveNext())
             {
@@ -153,9 +156,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Puts all the results into a <see cref="List{T}" />.
         /// </summary>
         /// <returns>The results in a list.</returns>
-        public List<object> ToList()
+        public IList<E> ToList()
         {
-            var objs = new List<object>();
+            var objs = new List<E>();
             while (MoveNext())
                 objs.Add(Current);
             return objs;
@@ -165,9 +168,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Puts all the results into a <see cref="HashSet{T}" />.
         /// </summary>
         /// <returns>The results in a set.</returns>
-        public HashSet<object> ToSet()
+        public ISet<E> ToSet()
         {
-            var objs = new HashSet<object>();
+            var objs = new HashSet<E>();
             while (MoveNext())
                 objs.Add(Current);
             return objs;
@@ -186,7 +189,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
         /// <param name="callback">The function to execute on the current traversal.</param>
         /// <returns>The result of the executed <paramref name="callback" />.</returns>
-        public async Task<TReturn> Promise<TReturn>(Func<ITraversal, TReturn> callback)
+        public async Task<TReturn> Promise<TReturn>(Func<ITraversal<S, E>, TReturn> callback)
         {
             await ApplyStrategiesAsync().ConfigureAwait(false);
             return callback(this);

@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -161,8 +161,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Equal(new SubgraphStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
             SubgraphStrategy strategy = bytecode.SourceInstructions[0].Arguments[0];
             Assert.Equal(1, strategy.Configuration.Count);
-            Assert.Equal(typeof(GraphTraversal), strategy.Configuration["vertices"].GetType());
-            GraphTraversal traversal = strategy.Configuration["vertices"];
+            Assert.Equal(typeof(GraphTraversal<object, object>), strategy.Configuration["vertices"].GetType());
+            ITraversal traversal = strategy.Configuration["vertices"];
             Assert.Equal("has", traversal.Bytecode.StepInstructions[0].OperatorName);
             Assert.Equal(new List<string> {"name", "marko"}, traversal.Bytecode.StepInstructions[0].Arguments);
         }

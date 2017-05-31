@@ -25,7 +25,7 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Pick
     {
-        any,
-        none
+        Any,
+        None
     }
 }

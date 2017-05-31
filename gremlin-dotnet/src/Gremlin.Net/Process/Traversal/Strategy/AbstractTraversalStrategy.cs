@@ -52,12 +52,12 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         }
 
         /// <inheritdoc />
-        public virtual void Apply(ITraversal traversal)
+        public virtual void Apply<S, E>(ITraversal<S, E> traversal)
         {
         }
 
         /// <inheritdoc />
-        public virtual Task ApplyAsync(ITraversal traversal)
+        public virtual Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
         {
             return Task.CompletedTask;
         }

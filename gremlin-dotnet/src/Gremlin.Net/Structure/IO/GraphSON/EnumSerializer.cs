@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -30,8 +31,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             var enumName = objectData.GetType().Name;
-            var enumValue = objectData.ToString();
-            return GraphSONUtil.ToTypedValue(enumName, enumValue);
+            var valueJavaName = NamingConversions.GetEnumJavaName(enumName, objectData.ToString());
+            return GraphSONUtil.ToTypedValue(enumName, valueJavaName);
         }
     }
 }

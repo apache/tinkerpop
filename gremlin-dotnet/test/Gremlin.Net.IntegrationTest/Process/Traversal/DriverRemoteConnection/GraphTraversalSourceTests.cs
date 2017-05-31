@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
                 .V(1)
                 .Out("created")
                 .In("created")
-                .Values("name")
+                .Values<string>("name")
                 .Where(P.Within("a"))
                 .ToList();
 

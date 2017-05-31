@@ -44,16 +44,16 @@ namespace Gremlin.Net.Process.Remote
         }
 
         /// <inheritdoc />
-        public void Apply(ITraversal traversal)
+        public void Apply<S, E>(ITraversal<S, E> traversal)
         {
             ApplyAsync(traversal).Wait();
         }
 
         /// <inheritdoc />
-        public async Task ApplyAsync(ITraversal traversal)
+        public async Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
         {
             if (traversal.Traversers != null) return;
-            var remoteTraversal = await _remoteConnection.SubmitAsync(traversal.Bytecode).ConfigureAwait(false);
+            var remoteTraversal = await _remoteConnection.SubmitAsync<S, E>(traversal.Bytecode).ConfigureAwait(false);
             traversal.SideEffects = remoteTraversal.SideEffects;
             traversal.Traversers = remoteTraversal.Traversers;
         }

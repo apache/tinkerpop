@@ -25,7 +25,7 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Scope
     {
-        global,
-        local
+        Global,
+        Local
     }
 }

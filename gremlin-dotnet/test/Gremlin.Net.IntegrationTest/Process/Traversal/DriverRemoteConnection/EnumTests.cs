@@ -39,9 +39,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var orderedAges = g.V().Values("age").Order().By(Order.decr).ToList();
+            var orderedAges = g.V().Values<int>("age").Order().By(Order.Decr).ToList();
 
-            Assert.Equal(new List<object> {35, 32, 29, 27}, orderedAges);
+            Assert.Equal(new List<int> {35, 32, 29, 27}, orderedAges);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var personsCount = g.V().Has(T.label, "person").Count().Next();
+            var personsCount = g.V().Has(T.Label, "person").Count().Next();
 
             Assert.Equal((long) 4, personsCount);
         }

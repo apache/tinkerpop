@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -119,7 +119,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(edgeCriterion: __.Limit(0)));
+                    .WithStrategies(new SubgraphStrategy(edgeCriterion: __.Limit<object>(0)));
 
             var count = g.E().Count().Next();
 
@@ -151,7 +151,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
                     .WithRemote(connection)
                     .WithStrategies(new SubgraphStrategy(vertexCriterion: __.Has("name", "marko")));
 
-            var name = g.V().Values("name").Next();
+            var name = g.V().Values<string>("name").Next();
 
             Assert.Equal("marko", name);
         }

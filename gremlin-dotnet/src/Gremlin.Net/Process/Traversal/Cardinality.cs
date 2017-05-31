@@ -25,8 +25,8 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Cardinality
     {
-        list,
-        set,
-        single
+        List,
+        Set,
+        Single
     }
 }

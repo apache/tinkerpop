@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -123,7 +123,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var t = g.V().Out("created").GroupCount("m").By("name").Values("name").Aggregate("n").Iterate();
+            var t = g.V().Out("created").GroupCount("m").By("name").Values<string>("name").Aggregate("n").Iterate();
 
             var keys = t.SideEffects.Keys().ToList();
             Assert.Equal(2, keys.Count);

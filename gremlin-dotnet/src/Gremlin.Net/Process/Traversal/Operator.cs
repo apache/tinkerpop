@@ -25,16 +25,16 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Operator
     {
-        addAll,
-        and,
-        assign,
-        div,
-        max,
-        min,
-        minus,
-        mult,
-        or,
-        sum,
-        sumLong
+        AddAll,
+        And,
+        Assign,
+        Div,
+        Max,
+        Min,
+        Minus,
+        Mult,
+        Or,
+        Sum,
+        SumLong
     }
 }
