@@ -218,5 +218,10 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
             return graph;
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 }

@@ -22,9 +22,11 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Represents a {@link Vertex} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -52,8 +53,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
-    private DetachedVertex() {
-    }
+    private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
@@ -66,7 +66,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
             if (propertyIterator.hasNext()) {
                 this.properties = new HashMap<>();
                 propertyIterator.forEachRemaining(property -> {
-                    final List<VertexProperty<?>> list = (List<VertexProperty<?>>) this.properties.getOrDefault(property.key(), new ArrayList<>());
+                    final List<Property> list = this.properties.getOrDefault(property.key(), new ArrayList<>());
                     list.add(DetachedFactory.detach(property, true));
                     this.properties.put(property.key(), list);
                 });
@@ -78,12 +78,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         super(id, label);
         if (properties != null && !properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().stream().forEach(
-                    entry -> this.properties.put(entry.getKey(), (List<VertexProperty>) ((List) entry.getValue()).stream()
-                                .map(m -> VertexProperty.class.isAssignableFrom(m.getClass())
-                                                ? m
-                                                : new DetachedVertexProperty<>(((Map) m).get(ID), entry.getKey(), ((Map) m).get(VALUE), (Map<String, Object>) ((Map) m).getOrDefault(PROPERTIES, new HashMap<>()), this))
-                                .collect(Collectors.toList())));
+            properties.entrySet().iterator().forEachRemaining(entry ->
+                this.properties.put(entry.getKey(), IteratorUtils.<Property>list(IteratorUtils.map(((List<Object>) entry.getValue()).iterator(),
+                        m -> VertexProperty.class.isAssignableFrom(m.getClass())
+                                ? (VertexProperty) m
+                                : new DetachedVertexProperty<>(((Map) m).get(ID), entry.getKey(), ((Map) m).get(VALUE), (Map<String, Object>) ((Map) m).getOrDefault(PROPERTIES, new HashMap<>()), this)))));
         }
     }
 
@@ -142,5 +141,49 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     @Override
     public void remove() {
         throw Vertex.Exceptions.vertexRemovalNotSupported();
+    }
+
+    @Override
+    void internalAddProperty(final Property p) {
+        if (null == properties) properties = new HashMap<>();
+
+        if (!properties.containsKey(p.key()))
+            properties.put(p.key(), new ArrayList<>());
+
+        this.properties.get(p.key()).add(p);
+    }
+
+    /**
+     * Provides a way to construct an immutable {@link DetachedVertex}.
+     */
+    public static DetachedVertex.Builder build() {
+        return new Builder(new DetachedVertex());
+    }
+
+    public static class Builder {
+        private DetachedVertex v;
+
+        private Builder(final DetachedVertex v) {
+            this.v = v;
+        }
+
+        public Builder addProperty(final DetachedVertexProperty vp) {
+            v.internalAddProperty(vp);
+            return this;
+        }
+
+        public Builder setId(final Object id) {
+            v.id = id;
+            return this;
+        }
+
+        public Builder setLabel(final String label) {
+            v.label = label;
+            return this;
+        }
+
+        public DetachedVertex create() {
+            return v;
+        }
     }
 }
