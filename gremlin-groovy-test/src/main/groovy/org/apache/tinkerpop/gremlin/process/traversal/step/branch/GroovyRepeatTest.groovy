@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -89,6 +91,11 @@ public abstract class GroovyRepeatTest {
         public Traversal<Vertex, Map<Integer, Long>> get_g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX(
                 final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(groupCount('m').by(loops()).out()).times(3).cap('m')", "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both()).until{it.get().value('name').equals('lop') || it.loops() > 1}.groupCount.by('name')")
         }
     }
 }
