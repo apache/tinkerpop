@@ -21,468 +21,471 @@
 
 #endregion
 
+using System.Collections.Generic;
+using Gremlin.Net.Structure;
+
 namespace Gremlin.Net.Process.Traversal
 {
     public static class __
     {
-        public static GraphTraversal Start()
+        public static GraphTraversal<object, object> Start()
         {
-            return new GraphTraversal();
+            return new GraphTraversal<object, object>();
         }
 
-        public static GraphTraversal V(params object[] args)
+        public static GraphTraversal<object, Vertex> V(params object[] args)
         {
-            return new GraphTraversal().V(args);
+            return new GraphTraversal<object, object>().V(args);
         }
 
-        public static GraphTraversal AddE(params object[] args)
+        public static GraphTraversal<object, Edge> AddE(params object[] args)
         {
-            return new GraphTraversal().AddE(args);
+            return new GraphTraversal<object, object>().AddE(args);
         }
 
-        public static GraphTraversal AddInE(params object[] args)
+        public static GraphTraversal<object, Edge> AddInE(params object[] args)
         {
-            return new GraphTraversal().AddInE(args);
+            return new GraphTraversal<object, object>().AddInE(args);
         }
 
-        public static GraphTraversal AddOutE(params object[] args)
+        public static GraphTraversal<object, Edge> AddOutE(params object[] args)
         {
-            return new GraphTraversal().AddOutE(args);
+            return new GraphTraversal<object, object>().AddOutE(args);
         }
 
-        public static GraphTraversal AddV(params object[] args)
+        public static GraphTraversal<object, Vertex> AddV(params object[] args)
         {
-            return new GraphTraversal().AddV(args);
+            return new GraphTraversal<object, object>().AddV(args);
         }
 
-        public static GraphTraversal Aggregate(params object[] args)
+        public static GraphTraversal<object, object> Aggregate(params object[] args)
         {
-            return new GraphTraversal().Aggregate(args);
+            return new GraphTraversal<object, object>().Aggregate(args);
         }
 
-        public static GraphTraversal And(params object[] args)
+        public static GraphTraversal<object, object> And(params object[] args)
         {
-            return new GraphTraversal().And(args);
+            return new GraphTraversal<object, object>().And(args);
         }
 
-        public static GraphTraversal As(params object[] args)
+        public static GraphTraversal<object, object> As(params object[] args)
         {
-            return new GraphTraversal().As(args);
+            return new GraphTraversal<object, object>().As(args);
         }
 
-        public static GraphTraversal Barrier(params object[] args)
+        public static GraphTraversal<object, object> Barrier(params object[] args)
         {
-            return new GraphTraversal().Barrier(args);
+            return new GraphTraversal<object, object>().Barrier(args);
         }
 
-        public static GraphTraversal Both(params object[] args)
+        public static GraphTraversal<object, Vertex> Both(params object[] args)
         {
-            return new GraphTraversal().Both(args);
+            return new GraphTraversal<object, object>().Both(args);
         }
 
-        public static GraphTraversal BothE(params object[] args)
+        public static GraphTraversal<object, Edge> BothE(params object[] args)
         {
-            return new GraphTraversal().BothE(args);
+            return new GraphTraversal<object, object>().BothE(args);
         }
 
-        public static GraphTraversal BothV(params object[] args)
+        public static GraphTraversal<object, Vertex> BothV(params object[] args)
         {
-            return new GraphTraversal().BothV(args);
+            return new GraphTraversal<object, object>().BothV(args);
         }
 
-        public static GraphTraversal Branch(params object[] args)
+        public static GraphTraversal<object, E2> Branch<E2>(params object[] args)
         {
-            return new GraphTraversal().Branch(args);
+            return new GraphTraversal<object, object>().Branch<E2>(args);
         }
 
-        public static GraphTraversal Cap(params object[] args)
+        public static GraphTraversal<object, E2> Cap<E2>(params object[] args)
         {
-            return new GraphTraversal().Cap(args);
+            return new GraphTraversal<object, object>().Cap<E2>(args);
         }
 
-        public static GraphTraversal Choose(params object[] args)
+        public static GraphTraversal<object, E2> Choose<E2>(params object[] args)
         {
-            return new GraphTraversal().Choose(args);
+            return new GraphTraversal<object, object>().Choose<E2>(args);
         }
 
-        public static GraphTraversal Coalesce(params object[] args)
+        public static GraphTraversal<object, E2> Coalesce<E2>(params object[] args)
         {
-            return new GraphTraversal().Coalesce(args);
+            return new GraphTraversal<object, object>().Coalesce<E2>(args);
         }
 
-        public static GraphTraversal Coin(params object[] args)
+        public static GraphTraversal<object, object> Coin(params object[] args)
         {
-            return new GraphTraversal().Coin(args);
+            return new GraphTraversal<object, object>().Coin(args);
         }
 
-        public static GraphTraversal Constant(params object[] args)
+        public static GraphTraversal<object, E2> Constant<E2>(params object[] args)
         {
-            return new GraphTraversal().Constant(args);
+            return new GraphTraversal<object, object>().Constant<E2>(args);
         }
 
-        public static GraphTraversal Count(params object[] args)
+        public static GraphTraversal<object, long> Count(params object[] args)
         {
-            return new GraphTraversal().Count(args);
+            return new GraphTraversal<object, object>().Count(args);
         }
 
-        public static GraphTraversal CyclicPath(params object[] args)
+        public static GraphTraversal<object, object> CyclicPath(params object[] args)
         {
-            return new GraphTraversal().CyclicPath(args);
+            return new GraphTraversal<object, object>().CyclicPath(args);
         }
 
-        public static GraphTraversal Dedup(params object[] args)
+        public static GraphTraversal<object, object> Dedup(params object[] args)
         {
-            return new GraphTraversal().Dedup(args);
+            return new GraphTraversal<object, object>().Dedup(args);
         }
 
-        public static GraphTraversal Drop(params object[] args)
+        public static GraphTraversal<object, object> Drop(params object[] args)
         {
-            return new GraphTraversal().Drop(args);
+            return new GraphTraversal<object, object>().Drop(args);
         }
 
-        public static GraphTraversal Emit(params object[] args)
+        public static GraphTraversal<object, object> Emit(params object[] args)
         {
-            return new GraphTraversal().Emit(args);
+            return new GraphTraversal<object, object>().Emit(args);
         }
 
-        public static GraphTraversal Filter(params object[] args)
+        public static GraphTraversal<object, object> Filter(params object[] args)
         {
-            return new GraphTraversal().Filter(args);
+            return new GraphTraversal<object, object>().Filter(args);
         }
 
-        public static GraphTraversal FlatMap(params object[] args)
+        public static GraphTraversal<object, E2> FlatMap<E2>(params object[] args)
         {
-            return new GraphTraversal().FlatMap(args);
+            return new GraphTraversal<object, object>().FlatMap<E2>(args);
         }
 
-        public static GraphTraversal Fold(params object[] args)
+        public static GraphTraversal<object, E2> Fold<E2>(params object[] args)
         {
-            return new GraphTraversal().Fold(args);
+            return new GraphTraversal<object, object>().Fold<E2>(args);
         }
 
-        public static GraphTraversal Group(params object[] args)
+        public static GraphTraversal<object, object> Group(params object[] args)
         {
-            return new GraphTraversal().Group(args);
+            return new GraphTraversal<object, object>().Group(args);
         }
 
-        public static GraphTraversal GroupCount(params object[] args)
+        public static GraphTraversal<object, object> GroupCount(params object[] args)
         {
-            return new GraphTraversal().GroupCount(args);
+            return new GraphTraversal<object, object>().GroupCount(args);
         }
 
-        public static GraphTraversal GroupV3d0(params object[] args)
+        public static GraphTraversal<object, object> GroupV3d0(params object[] args)
         {
-            return new GraphTraversal().GroupV3d0(args);
+            return new GraphTraversal<object, object>().GroupV3d0(args);
         }
 
-        public static GraphTraversal Has(params object[] args)
+        public static GraphTraversal<object, object> Has(params object[] args)
         {
-            return new GraphTraversal().Has(args);
+            return new GraphTraversal<object, object>().Has(args);
         }
 
-        public static GraphTraversal HasId(params object[] args)
+        public static GraphTraversal<object, object> HasId(params object[] args)
         {
-            return new GraphTraversal().HasId(args);
+            return new GraphTraversal<object, object>().HasId(args);
         }
 
-        public static GraphTraversal HasKey(params object[] args)
+        public static GraphTraversal<object, object> HasKey(params object[] args)
         {
-            return new GraphTraversal().HasKey(args);
+            return new GraphTraversal<object, object>().HasKey(args);
         }
 
-        public static GraphTraversal HasLabel(params object[] args)
+        public static GraphTraversal<object, object> HasLabel(params object[] args)
         {
-            return new GraphTraversal().HasLabel(args);
+            return new GraphTraversal<object, object>().HasLabel(args);
         }
 
-        public static GraphTraversal HasNot(params object[] args)
+        public static GraphTraversal<object, object> HasNot(params object[] args)
         {
-            return new GraphTraversal().HasNot(args);
+            return new GraphTraversal<object, object>().HasNot(args);
         }
 
-        public static GraphTraversal HasValue(params object[] args)
+        public static GraphTraversal<object, object> HasValue(params object[] args)
         {
-            return new GraphTraversal().HasValue(args);
+            return new GraphTraversal<object, object>().HasValue(args);
         }
 
-        public static GraphTraversal Id(params object[] args)
+        public static GraphTraversal<object, object> Id(params object[] args)
         {
-            return new GraphTraversal().Id(args);
+            return new GraphTraversal<object, object>().Id(args);
         }
 
-        public static GraphTraversal Identity(params object[] args)
+        public static GraphTraversal<object, object> Identity(params object[] args)
         {
-            return new GraphTraversal().Identity(args);
+            return new GraphTraversal<object, object>().Identity(args);
         }
 
-        public static GraphTraversal In(params object[] args)
+        public static GraphTraversal<object, Vertex> In(params object[] args)
         {
-            return new GraphTraversal().In(args);
+            return new GraphTraversal<object, object>().In(args);
         }
 
-        public static GraphTraversal InE(params object[] args)
+        public static GraphTraversal<object, Edge> InE(params object[] args)
         {
-            return new GraphTraversal().InE(args);
+            return new GraphTraversal<object, object>().InE(args);
         }
 
-        public static GraphTraversal InV(params object[] args)
+        public static GraphTraversal<object, Vertex> InV(params object[] args)
         {
-            return new GraphTraversal().InV(args);
+            return new GraphTraversal<object, object>().InV(args);
         }
 
-        public static GraphTraversal Inject(params object[] args)
+        public static GraphTraversal<object, object> Inject(params object[] args)
         {
-            return new GraphTraversal().Inject(args);
+            return new GraphTraversal<object, object>().Inject(args);
         }
 
-        public static GraphTraversal Is(params object[] args)
+        public static GraphTraversal<object, object> Is(params object[] args)
         {
-            return new GraphTraversal().Is(args);
+            return new GraphTraversal<object, object>().Is(args);
         }
 
-        public static GraphTraversal Key(params object[] args)
+        public static GraphTraversal<object, string> Key(params object[] args)
         {
-            return new GraphTraversal().Key(args);
+            return new GraphTraversal<object, object>().Key(args);
         }
 
-        public static GraphTraversal Label(params object[] args)
+        public static GraphTraversal<object, string> Label(params object[] args)
         {
-            return new GraphTraversal().Label(args);
+            return new GraphTraversal<object, object>().Label(args);
         }
 
-        public static GraphTraversal Limit(params object[] args)
+        public static GraphTraversal<object, E2> Limit<E2>(params object[] args)
         {
-            return new GraphTraversal().Limit(args);
+            return new GraphTraversal<object, object>().Limit<E2>(args);
         }
 
-        public static GraphTraversal Local(params object[] args)
+        public static GraphTraversal<object, E2> Local<E2>(params object[] args)
         {
-            return new GraphTraversal().Local(args);
+            return new GraphTraversal<object, object>().Local<E2>(args);
         }
 
-        public static GraphTraversal Loops(params object[] args)
+        public static GraphTraversal<object, int> Loops(params object[] args)
         {
-            return new GraphTraversal().Loops(args);
+            return new GraphTraversal<object, object>().Loops(args);
         }
 
-        public static GraphTraversal Map(params object[] args)
+        public static GraphTraversal<object, E2> Map<E2>(params object[] args)
         {
-            return new GraphTraversal().Map(args);
+            return new GraphTraversal<object, object>().Map<E2>(args);
         }
 
-        public static GraphTraversal MapKeys(params object[] args)
+        public static GraphTraversal<object, E2> MapKeys<E2>(params object[] args)
         {
-            return new GraphTraversal().MapKeys(args);
+            return new GraphTraversal<object, object>().MapKeys<E2>(args);
         }
 
-        public static GraphTraversal MapValues(params object[] args)
+        public static GraphTraversal<object, E2> MapValues<E2>(params object[] args)
         {
-            return new GraphTraversal().MapValues(args);
+            return new GraphTraversal<object, object>().MapValues<E2>(args);
         }
 
-        public static GraphTraversal Match(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> Match<E2>(params object[] args)
         {
-            return new GraphTraversal().Match(args);
+            return new GraphTraversal<object, object>().Match<E2>(args);
         }
 
-        public static GraphTraversal Max(params object[] args)
+        public static GraphTraversal<object, E2> Max<E2>(params object[] args)
         {
-            return new GraphTraversal().Max(args);
+            return new GraphTraversal<object, object>().Max<E2>(args);
         }
 
-        public static GraphTraversal Mean(params object[] args)
+        public static GraphTraversal<object, E2> Mean<E2>(params object[] args)
         {
-            return new GraphTraversal().Mean(args);
+            return new GraphTraversal<object, object>().Mean<E2>(args);
         }
 
-        public static GraphTraversal Min(params object[] args)
+        public static GraphTraversal<object, E2> Min<E2>(params object[] args)
         {
-            return new GraphTraversal().Min(args);
+            return new GraphTraversal<object, object>().Min<E2>(args);
         }
 
-        public static GraphTraversal Not(params object[] args)
+        public static GraphTraversal<object, object> Not(params object[] args)
         {
-            return new GraphTraversal().Not(args);
+            return new GraphTraversal<object, object>().Not(args);
         }
 
-        public static GraphTraversal Optional(params object[] args)
+        public static GraphTraversal<object, E2> Optional<E2>(params object[] args)
         {
-            return new GraphTraversal().Optional(args);
+            return new GraphTraversal<object, object>().Optional<E2>(args);
         }
 
-        public static GraphTraversal Or(params object[] args)
+        public static GraphTraversal<object, object> Or(params object[] args)
         {
-            return new GraphTraversal().Or(args);
+            return new GraphTraversal<object, object>().Or(args);
         }
 
-        public static GraphTraversal Order(params object[] args)
+        public static GraphTraversal<object, object> Order(params object[] args)
         {
-            return new GraphTraversal().Order(args);
+            return new GraphTraversal<object, object>().Order(args);
         }
 
-        public static GraphTraversal OtherV(params object[] args)
+        public static GraphTraversal<object, Vertex> OtherV(params object[] args)
         {
-            return new GraphTraversal().OtherV(args);
+            return new GraphTraversal<object, object>().OtherV(args);
         }
 
-        public static GraphTraversal Out(params object[] args)
+        public static GraphTraversal<object, Vertex> Out(params object[] args)
         {
-            return new GraphTraversal().Out(args);
+            return new GraphTraversal<object, object>().Out(args);
         }
 
-        public static GraphTraversal OutE(params object[] args)
+        public static GraphTraversal<object, Edge> OutE(params object[] args)
         {
-            return new GraphTraversal().OutE(args);
+            return new GraphTraversal<object, object>().OutE(args);
         }
 
-        public static GraphTraversal OutV(params object[] args)
+        public static GraphTraversal<object, Vertex> OutV(params object[] args)
         {
-            return new GraphTraversal().OutV(args);
+            return new GraphTraversal<object, object>().OutV(args);
         }
 
-        public static GraphTraversal Path(params object[] args)
+        public static GraphTraversal<object, Path> Path(params object[] args)
         {
-            return new GraphTraversal().Path(args);
+            return new GraphTraversal<object, object>().Path(args);
         }
 
-        public static GraphTraversal Project(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> Project<E2>(params object[] args)
         {
-            return new GraphTraversal().Project(args);
+            return new GraphTraversal<object, object>().Project<E2>(args);
         }
 
-        public static GraphTraversal Properties(params object[] args)
+        public static GraphTraversal<object, E2> Properties<E2>(params object[] args)
         {
-            return new GraphTraversal().Properties(args);
+            return new GraphTraversal<object, object>().Properties<E2>(args);
         }
 
-        public static GraphTraversal Property(params object[] args)
+        public static GraphTraversal<object, object> Property(params object[] args)
         {
-            return new GraphTraversal().Property(args);
+            return new GraphTraversal<object, object>().Property(args);
         }
 
-        public static GraphTraversal PropertyMap(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> PropertyMap<E2>(params object[] args)
         {
-            return new GraphTraversal().PropertyMap(args);
+            return new GraphTraversal<object, object>().PropertyMap<E2>(args);
         }
 
-        public static GraphTraversal Range(params object[] args)
+        public static GraphTraversal<object, E2> Range<E2>(params object[] args)
         {
-            return new GraphTraversal().Range(args);
+            return new GraphTraversal<object, object>().Range<E2>(args);
         }
 
-        public static GraphTraversal Repeat(params object[] args)
+        public static GraphTraversal<object, object> Repeat(params object[] args)
         {
-            return new GraphTraversal().Repeat(args);
+            return new GraphTraversal<object, object>().Repeat(args);
         }
 
-        public static GraphTraversal Sack(params object[] args)
+        public static GraphTraversal<object, object> Sack(params object[] args)
         {
-            return new GraphTraversal().Sack(args);
+            return new GraphTraversal<object, object>().Sack(args);
         }
 
-        public static GraphTraversal Sample(params object[] args)
+        public static GraphTraversal<object, object> Sample(params object[] args)
         {
-            return new GraphTraversal().Sample(args);
+            return new GraphTraversal<object, object>().Sample(args);
         }
 
-        public static GraphTraversal Select(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> Select<E2>(params object[] args)
         {
-            return new GraphTraversal().Select(args);
+            return new GraphTraversal<object, object>().Select<E2>(args);
         }
 
-        public static GraphTraversal SideEffect(params object[] args)
+        public static GraphTraversal<object, object> SideEffect(params object[] args)
         {
-            return new GraphTraversal().SideEffect(args);
+            return new GraphTraversal<object, object>().SideEffect(args);
         }
 
-        public static GraphTraversal SimplePath(params object[] args)
+        public static GraphTraversal<object, object> SimplePath(params object[] args)
         {
-            return new GraphTraversal().SimplePath(args);
+            return new GraphTraversal<object, object>().SimplePath(args);
         }
 
-        public static GraphTraversal Store(params object[] args)
+        public static GraphTraversal<object, object> Store(params object[] args)
         {
-            return new GraphTraversal().Store(args);
+            return new GraphTraversal<object, object>().Store(args);
         }
 
-        public static GraphTraversal Subgraph(params object[] args)
+        public static GraphTraversal<object, Edge> Subgraph(params object[] args)
         {
-            return new GraphTraversal().Subgraph(args);
+            return new GraphTraversal<object, object>().Subgraph(args);
         }
 
-        public static GraphTraversal Sum(params object[] args)
+        public static GraphTraversal<object, E2> Sum<E2>(params object[] args)
         {
-            return new GraphTraversal().Sum(args);
+            return new GraphTraversal<object, object>().Sum<E2>(args);
         }
 
-        public static GraphTraversal Tail(params object[] args)
+        public static GraphTraversal<object, E2> Tail<E2>(params object[] args)
         {
-            return new GraphTraversal().Tail(args);
+            return new GraphTraversal<object, object>().Tail<E2>(args);
         }
 
-        public static GraphTraversal TimeLimit(params object[] args)
+        public static GraphTraversal<object, object> TimeLimit(params object[] args)
         {
-            return new GraphTraversal().TimeLimit(args);
+            return new GraphTraversal<object, object>().TimeLimit(args);
         }
 
-        public static GraphTraversal Times(params object[] args)
+        public static GraphTraversal<object, object> Times(params object[] args)
         {
-            return new GraphTraversal().Times(args);
+            return new GraphTraversal<object, object>().Times(args);
         }
 
-        public static GraphTraversal To(params object[] args)
+        public static GraphTraversal<object, Vertex> To(params object[] args)
         {
-            return new GraphTraversal().To(args);
+            return new GraphTraversal<object, object>().To(args);
         }
 
-        public static GraphTraversal ToE(params object[] args)
+        public static GraphTraversal<object, Edge> ToE(params object[] args)
         {
-            return new GraphTraversal().ToE(args);
+            return new GraphTraversal<object, object>().ToE(args);
         }
 
-        public static GraphTraversal ToV(params object[] args)
+        public static GraphTraversal<object, Vertex> ToV(params object[] args)
         {
-            return new GraphTraversal().ToV(args);
+            return new GraphTraversal<object, object>().ToV(args);
         }
 
-        public static GraphTraversal Tree(params object[] args)
+        public static GraphTraversal<object, object> Tree(params object[] args)
         {
-            return new GraphTraversal().Tree(args);
+            return new GraphTraversal<object, object>().Tree(args);
         }
 
-        public static GraphTraversal Unfold(params object[] args)
+        public static GraphTraversal<object, E2> Unfold<E2>(params object[] args)
         {
-            return new GraphTraversal().Unfold(args);
+            return new GraphTraversal<object, object>().Unfold<E2>(args);
         }
 
-        public static GraphTraversal Union(params object[] args)
+        public static GraphTraversal<object, E2> Union<E2>(params object[] args)
         {
-            return new GraphTraversal().Union(args);
+            return new GraphTraversal<object, object>().Union<E2>(args);
         }
 
-        public static GraphTraversal Until(params object[] args)
+        public static GraphTraversal<object, object> Until(params object[] args)
         {
-            return new GraphTraversal().Until(args);
+            return new GraphTraversal<object, object>().Until(args);
         }
 
-        public static GraphTraversal Value(params object[] args)
+        public static GraphTraversal<object, E2> Value<E2>(params object[] args)
         {
-            return new GraphTraversal().Value(args);
+            return new GraphTraversal<object, object>().Value<E2>(args);
         }
 
-        public static GraphTraversal ValueMap(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> ValueMap<E2>(params object[] args)
         {
-            return new GraphTraversal().ValueMap(args);
+            return new GraphTraversal<object, object>().ValueMap<E2>(args);
         }
 
-        public static GraphTraversal Values(params object[] args)
+        public static GraphTraversal<object, E2> Values<E2>(params object[] args)
         {
-            return new GraphTraversal().Values(args);
+            return new GraphTraversal<object, object>().Values<E2>(args);
         }
 
-        public static GraphTraversal Where(params object[] args)
+        public static GraphTraversal<object, object> Where(params object[] args)
         {
-            return new GraphTraversal().Where(args);
+            return new GraphTraversal<object, object>().Where(args);
         }
-	}
+    }
 }

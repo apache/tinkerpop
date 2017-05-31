@@ -32,10 +32,11 @@ class GraphTraversalGenerator {
         csharpClass.append(
 """
 using System.Collections.Generic;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
 {
-    public class GraphTraversal : DefaultTraversal
+    public class GraphTraversal<S, E> : DefaultTraversal<S, E>
     {
         public GraphTraversal()
             : this(new List<ITraversalStrategy>(), new Bytecode())
@@ -47,27 +48,40 @@ namespace Gremlin.Net.Process.Traversal
             TraversalStrategies = traversalStrategies;
             Bytecode = bytecode;
         }
+
+        private static GraphTraversal<S2, E2> Wrap<S2, E2>(GraphTraversal<S, E> traversal)
+        {
+            if (typeof(S2) == typeof(S) && typeof(E2) == typeof(E))
+            {
+                return traversal as GraphTraversal<S2, E2>;
+            }
+            // New wrapper
+            return new GraphTraversal<S2, E2>(traversal.TraversalStrategies, traversal.Bytecode);
+        }
+
 """)
         GraphTraversal.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
-                collect { it.name }.
-                unique().
-                sort { a, b -> a <=> b }.
-                forEach { javaMethodName ->
-                    String sharpMethodName = SymbolHelper.toCSharp(javaMethodName)
-
+                groupBy { it.name }.
+                // Select unique by name, with the most amount of parameters
+                collect { it.value.sort { a, b -> b.parameterCount <=> a.parameterCount }.first() }.
+                sort { it.name }.
+                forEach { javaMethod ->
+                    String[] typeNames = SymbolHelper.getJavaParameterTypeNames(javaMethod);
+                    def t1 = SymbolHelper.toCSharpType(typeNames[0]);
+                    def t2 = SymbolHelper.toCSharpType(typeNames[1]);
+                    def tParam = SymbolHelper.getCSharpGenericTypeParam(t2);
                     csharpClass.append(
-                            """
-        public GraphTraversal ${sharpMethodName}(params object[] args)
+"""
+        public GraphTraversal<$t1, $t2> ${SymbolHelper.toCSharp(javaMethod.name)}$tParam(params object[] args)
         {
-            Bytecode.AddStep("${javaMethodName}", args);
-            return this;
+            Bytecode.AddStep("$javaMethod.name", args);
+            return Wrap<$t1, $t2>(this);
         }
 """)
                 }
-        csharpClass.append("\t}\n")
-        csharpClass.append("}")
+        csharpClass.append("    }\n}")
 
         final File file = new File(graphTraversalFile);
         file.delete()

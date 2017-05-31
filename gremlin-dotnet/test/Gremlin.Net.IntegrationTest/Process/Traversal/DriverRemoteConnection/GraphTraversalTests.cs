@@ -98,13 +98,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void g_V_HasXname_markoX_ValueMap_Next()
         {
+            //Unable to cast object of type 
+            //'System.Collections.Generic.Dictionary`2[System.String,System.Object]' to type 
+            //'System.Collections.Generic.IDictionary`2[System.String,System.Collections.Generic.IList`1[System.Object]]'.
+
+
             var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var receivedValueMap = g.V().Has("name", "marko").ValueMap().Next();
+            var receivedValueMap = g.V().Has("name", "marko").ValueMap<object>().Next();
 
-            var expectedValueMap = new Dictionary<string, dynamic>
+            var expectedValueMap = new Dictionary<string, object>
             {
                 {"age", new List<object> {29}},
                 {"name", new List<object> {"marko"}}
@@ -119,7 +124,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var t = g.V().Repeat(__.Out()).Times(2).Values("name");
+            var t = g.V().Repeat(__.Out()).Times(2).Values<string>("name");
             var names = t.ToList();
 
             Assert.Equal((long) 2, names.Count);
@@ -135,7 +140,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
 
             var shortestPath =
-                (Path) g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit(1).Path().Next();
+                (Path)g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<object>(1).Path().Next();
 
             Assert.Equal((long) 4, shortestPath.Count);
             Assert.Equal(new Vertex((long) 6), shortestPath[3]);

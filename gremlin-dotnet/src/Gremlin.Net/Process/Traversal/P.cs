@@ -103,5 +103,5 @@ namespace Gremlin.Net.Process.Traversal
             var value = args.Length == 1 ? args[0] : args;
             return new TraversalPredicate("without", value);
         }
-	}
+    }
 }

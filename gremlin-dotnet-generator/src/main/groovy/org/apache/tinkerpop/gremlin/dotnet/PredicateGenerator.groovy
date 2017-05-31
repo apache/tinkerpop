@@ -55,8 +55,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 """)
                 }
-        csharpClass.append("\t}\n")
-        csharpClass.append("}")
+        csharpClass.append("    }\n}")
 
         final File file = new File(predicateFile)
         file.delete()

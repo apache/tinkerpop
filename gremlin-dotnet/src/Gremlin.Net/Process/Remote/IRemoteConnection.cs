@@ -37,6 +37,6 @@ namespace Gremlin.Net.Process.Remote
         /// </summary>
         /// <param name="bytecode">The <see cref="Bytecode" /> to send.</param>
         /// <returns>The <see cref="ITraversal" /> with the results and optional side-effects.</returns>
-        Task<ITraversal> SubmitAsync(Bytecode bytecode);
+        Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode);
     }
 }

@@ -1,4 +1,4 @@
-﻿#region License
+﻿﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -66,7 +66,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
             Assert.Equal(expectedResult, actualResult);
         }
 
-        private DefaultTraversal CreateTraversalWithRemoteStrategy(Bytecode bytecode)
+        private DefaultTraversal<object, object> CreateTraversalWithRemoteStrategy(Bytecode bytecode)
         {
             var remoteStrategy =
                 new RemoteStrategy(new DriverRemoteConnection(new GremlinClient(new GremlinServer(TestHost, TestPort))));
@@ -74,7 +74,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
         }
     }
 
-    internal class TestTraversal : DefaultTraversal
+    internal class TestTraversal : DefaultTraversal<object, object>
     {
         public TestTraversal(ITraversalStrategy traversalStrategy, Bytecode bytecode)
         {

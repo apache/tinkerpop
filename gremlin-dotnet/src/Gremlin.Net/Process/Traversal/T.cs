@@ -25,9 +25,9 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum T
     {
-        id,
-        key,
-        label,
-        value
+        Id,
+        Key,
+        Label,
+        Value
     }
 }

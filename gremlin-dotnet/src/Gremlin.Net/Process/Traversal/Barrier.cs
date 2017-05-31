@@ -25,6 +25,6 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Barrier
     {
-        normSack
+        NormSack
     }
 }

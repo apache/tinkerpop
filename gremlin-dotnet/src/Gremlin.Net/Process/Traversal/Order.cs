@@ -25,12 +25,12 @@ namespace Gremlin.Net.Process.Traversal
 {
     public enum Order
     {
-        decr,
-        incr,
-        keyDecr,
-        keyIncr,
-        shuffle,
-        valueDecr,
-        valueIncr
+        Decr,
+        Incr,
+        KeyDecr,
+        KeyIncr,
+        Shuffle,
+        ValueDecr,
+        ValueIncr
     }
 }

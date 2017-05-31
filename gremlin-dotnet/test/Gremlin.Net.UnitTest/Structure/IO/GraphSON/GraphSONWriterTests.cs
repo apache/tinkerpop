@@ -189,9 +189,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         {
             var writer = CreateStandardGraphSONWriter();
 
-            var serializedEnum = writer.WriteObject(T.label);
+            var serializedEnum = writer.WriteObject(Direction.Both);
 
-            var expectedGraphSON = "{\"@type\":\"g:T\",\"@value\":\"label\"}";
+            var expectedGraphSON = "{\"@type\":\"g:Direction\",\"@value\":\"BOTH\"}";
             Assert.Equal(expectedGraphSON, serializedEnum);
         }
 
@@ -310,11 +310,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                 "{\"@type\":\"g:Vertex\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":123},\"label\":\"project\"}}";
             Assert.Equal(expected, graphSON);
         }
-    }
-
-    internal enum T
-    {
-        label
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer

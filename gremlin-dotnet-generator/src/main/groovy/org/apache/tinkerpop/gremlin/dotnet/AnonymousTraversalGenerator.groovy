@@ -26,7 +26,24 @@ import java.lang.reflect.Modifier
 
 class AnonymousTraversalGenerator {
 
+    private static final Map<String, String[]> METHODS_WITH_SPECIFIC_TYPES = new HashMap<>();
+
+    static {
+        String[] useE2 = ["E2", "E2"];
+        METHODS_WITH_SPECIFIC_TYPES.put("constant", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("limit", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("mean", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("optional", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("range", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("select", ["IDictionary<string, E2>", "E2"] as String[]);
+        METHODS_WITH_SPECIFIC_TYPES.put("sum", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("tail", useE2);
+        METHODS_WITH_SPECIFIC_TYPES.put("tree", ["object"] as String[]);
+        METHODS_WITH_SPECIFIC_TYPES.put("unfold", useE2);
+    }
+
     public static void create(final String anonymousTraversalFile) {
+
 
         final StringBuilder csharpClass = new StringBuilder()
 
@@ -34,35 +51,45 @@ class AnonymousTraversalGenerator {
 
         csharpClass.append(
 """
+using System.Collections.Generic;
+using Gremlin.Net.Structure;
+
 namespace Gremlin.Net.Process.Traversal
 {
     public static class __
     {
-        public static GraphTraversal Start()
+        public static GraphTraversal<object, object> Start()
         {
-            return new GraphTraversal();
+            return new GraphTraversal<object, object>();
         }
 """)
         __.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
-                collect { it.name }.
-                findAll { !it.equals("__") && !it.equals("start") }.
-                unique().
-                sort { a, b -> a <=> b }.
-                forEach { javaMethodName ->
-                    String sharpMethodName = SymbolHelper.toCSharp(javaMethodName)
-
+                findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                groupBy { it.name }.
+                // Select unique by name, with the most amount of parameters
+                collect { it.value.sort { a, b -> b.parameterCount <=> a.parameterCount }.first() }.
+                sort { it.name }.
+                forEach { javaMethod ->
+                    String sharpMethodName = SymbolHelper.toCSharp(javaMethod.name);
+                    String[] typeNames = SymbolHelper.getJavaParameterTypeNames(javaMethod);
+                    def t2 = SymbolHelper.toCSharpType(typeNames[1]);
+                    def tParam = SymbolHelper.getCSharpGenericTypeParam(t2);
+                    def specificTypes = METHODS_WITH_SPECIFIC_TYPES.get(javaMethod.name);
+                    if (specificTypes) {
+                        t2 = specificTypes[0];
+                        tParam = specificTypes.length > 1 ? "<" + specificTypes[1] + ">" : "";
+                    }
                     csharpClass.append(
 """
-        public static GraphTraversal ${sharpMethodName}(params object[] args)
+        public static GraphTraversal<object, $t2> $sharpMethodName$tParam(params object[] args)
         {
-            return new GraphTraversal().${sharpMethodName}(args);
+            return new GraphTraversal<object, object>().$sharpMethodName$tParam(args);
         }
 """)
                 }
-        csharpClass.append("\t}\n")
-        csharpClass.append("}")
+        csharpClass.append("    }\n}")
 
         final File file = new File(anonymousTraversalFile);
         file.delete()
