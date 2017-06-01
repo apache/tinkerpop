@@ -104,6 +104,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasNotXageX_name();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
@@ -427,6 +431,23 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("lop", "ripple"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasIdX1X_hasIdX2X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasIdX1X_hasIdX2X(
+                convertToVertexId("marko"), convertToVertexId("vadas")
+        );
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXpersonX_hasLabelXsoftwareX();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
 
     public static class Traversals extends HasTest {
         @Override
@@ -557,6 +578,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasNotXageX_name() {
             return g.V().hasNot("age").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex>  get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id) {
+            return g.V().hasId(v1Id).hasId(v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
+            return g.V().hasLabel("person").hasLabel("software");
         }
     }
 }
