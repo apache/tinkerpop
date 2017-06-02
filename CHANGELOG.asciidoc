@@ -723,6 +723,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Configured Modern graph to work with a integer `IdManager` when `TinkerFactory.createModern()` is called.
 * Added XSLT transform option to convert TinkerPop 2.x GraphML to 3.x GraphML.
 * Added validation to `StarVertexProperty`.
 * Bumped to Jackson 2.8.7.
