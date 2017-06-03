@@ -110,12 +110,16 @@ import org.apache.tinkerpop.gremlin.driver.message.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.tinkerpop.gremlin.structure.io.Model
+import org.apache.commons.configuration.BaseConfiguration
 
 new File("${project.build.directory}/dev-docs/").mkdirs()
 new File("${project.build.directory}/test-case-data/io/graphson/").mkdirs()
 new File("${project.build.directory}/test-case-data/io/gryo/").mkdirs()
 
-graph = TinkerFactory.createTheCrew()
+conf = new BaseConfiguration()
+conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
+graph = TinkerGraph.open(conf)
+TinkerFactory.generateTheCrew(graph)
 g = graph.traversal()
 
 model = Model.instance()
@@ -301,11 +305,15 @@ import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 import org.apache.tinkerpop.gremlin.structure.io.*
 import org.apache.tinkerpop.gremlin.process.traversal.*
+import org.apache.commons.configuration.BaseConfiguration
 
 new File("${project.build.directory}/dev-docs/").mkdirs()
 new File("${project.build.directory}/test-case-data/io/gryo").mkdirs()
 
-graph = TinkerFactory.createTheCrew()
+conf = new BaseConfiguration()
+conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
+graph = TinkerGraph.open(conf)
+TinkerFactory.generateTheCrew(graph)
 g = graph.traversal()
 
 model = Model.instance()

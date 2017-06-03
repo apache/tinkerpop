@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -41,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -94,7 +97,10 @@ public class Model {
     private final Map<String, List<Entry>> entries = new HashMap<>();
     
     private Model() {
-        final Graph graph = TinkerFactory.createTheCrew();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateTheCrew(graph);
         final GraphTraversalSource g = graph.traversal();
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();

@@ -18,6 +18,7 @@
  */
 
 
+import org.apache.commons.configuration.BaseConfiguration
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics
@@ -40,7 +41,10 @@ import java.util.concurrent.TimeUnit
 new File("dev-docs/").mkdirs()
 new File("test-case-data/io/gryo").mkdirs()
 
-graph = TinkerFactory.createTheCrew()
+conf = new BaseConfiguration()
+conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
+graph = TinkerGraph.open(conf)
+TinkerFactory.generateTheCrew(graph)
 g = graph.traversal()
 
 createStaticTraversalMetrics = {

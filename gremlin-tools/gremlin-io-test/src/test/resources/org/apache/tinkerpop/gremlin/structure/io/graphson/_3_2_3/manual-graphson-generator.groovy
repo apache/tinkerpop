@@ -32,13 +32,17 @@ import org.apache.tinkerpop.gremlin.driver.message.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.*
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
+import org.apache.commons.configuration.BaseConfiguration
 
 import java.util.concurrent.TimeUnit
 
 new File("dev-docs/").mkdirs()
 new File("test-case-data/io/graphson").mkdirs()
 
-graph = TinkerFactory.createTheCrew()
+conf = new BaseConfiguration()
+conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
+graph = TinkerGraph.open(conf)
+TinkerFactory.generateTheCrew(graph)
 g = graph.traversal()
 
 toJson = { o, type, mapper, comment = "", suffix = "" ->
