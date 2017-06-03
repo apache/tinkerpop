@@ -21,13 +21,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -40,7 +33,7 @@ public final class TinkerFactory {
     private TinkerFactory() {}
 
     public static TinkerGraph createClassic() {
-        final TinkerGraph g = getTinkerGraphWithIntegerManager();
+        final TinkerGraph g = getTinkerGraphWithIntManager();
         generateClassic(g);
         return g;
     }
@@ -61,7 +54,7 @@ public final class TinkerFactory {
     }
 
     public static TinkerGraph createModern() {
-        final TinkerGraph g = getTinkerGraphWithIntegerManager();
+        final TinkerGraph g = getTinkerGraphWithIntManager();
         generateModern(g);
         return g;
     }
@@ -82,7 +75,7 @@ public final class TinkerFactory {
     }
 
     public static TinkerGraph createTheCrew() {
-        final Configuration conf = new BaseConfiguration();
+        final Configuration conf = getIntIdManagerConfiguration();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         final TinkerGraph g = TinkerGraph.open(conf);
         generateTheCrew(g);
@@ -139,12 +132,16 @@ public final class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    private static TinkerGraph getTinkerGraphWithIntegerManager() {
+    private static TinkerGraph getTinkerGraphWithIntManager() {
+        final Configuration conf = getIntIdManagerConfiguration();
+        return TinkerGraph.open(conf);
+    }
+
+    private static Configuration getIntIdManagerConfiguration() {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-
-        return TinkerGraph.open(conf);
+        return conf;
     }
 }
