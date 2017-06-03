@@ -40,12 +40,7 @@ public final class TinkerFactory {
     private TinkerFactory() {}
 
     public static TinkerGraph createClassic() {
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
-
-        final TinkerGraph g = TinkerGraph.open(conf);
+        final TinkerGraph g = getTinkerGraphWithIntegerManager();
         generateClassic(g);
         return g;
     }
@@ -66,7 +61,7 @@ public final class TinkerFactory {
     }
 
     public static TinkerGraph createModern() {
-        final TinkerGraph g = TinkerGraph.open();
+        final TinkerGraph g = getTinkerGraphWithIntegerManager();
         generateModern(g);
         return g;
     }
@@ -144,38 +139,12 @@ public final class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    /*public interface SocialTraversal<S, E> extends Traversal.Admin<S, E> {
+    private static TinkerGraph getTinkerGraphWithIntegerManager() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
 
-        public SocialTraversal<S, Vertex> people(final String name);
-
-        public default SocialTraversal<S, Vertex> knows() {
-            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT, "knows")));
-        }
-
-        public default SocialTraversal<S, Vertex> created() {
-            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT, "created")));
-        }
-
-        public default SocialTraversal<S, String> name() {
-            return (SocialTraversal) this.addStep(new LambdaMapStep<Vertex, String>(this, v -> v.get().<String>value("name")));
-        }
-
-        public static <S> SocialTraversal<S, S> of(final Graph graph) {
-            return new DefaultSocialTraversal<>(graph);
-        }
-
-        public class DefaultSocialTraversal<S, E> extends DefaultTraversal<S, E> implements SocialTraversal<S, E> {
-            private final Graph graph;
-
-            public DefaultSocialTraversal(final Graph graph) {
-                super(graph); // should be SocialGraph.class, SocialVertex.class, etc. Perhaps...
-                this.graph = graph;
-            }
-
-            public SocialTraversal<S, Vertex> people(final String name) {
-                return (SocialTraversal) this.addStep(new StartStep<>(this, this.graph.traversal().V().has("name", name)));
-            }
-
-        }
-    }*/
+        return TinkerGraph.open(conf);
+    }
 }

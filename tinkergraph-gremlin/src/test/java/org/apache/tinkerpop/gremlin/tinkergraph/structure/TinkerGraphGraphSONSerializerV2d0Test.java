@@ -138,10 +138,11 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
      * Asserts the approximateGraphsChecks function fails when expected. Vertex ids.
      */
     @Test
-    public void shouldLooseTypesWithGraphSONNoTypesForVertexIds() throws IOException {
+    public void shouldLoseTypesWithGraphSONNoTypesForVertexIds() throws IOException {
         final GraphWriter writer = getWriter(noTypesMapperV2d0);
         final GraphReader reader = getReader(noTypesMapperV2d0);
-        final Graph sampleGraph1 = TinkerFactory.createModern();
+        final TinkerGraph sampleGraph1 = TinkerGraph.open();
+        TinkerFactory.generateModern(sampleGraph1);
         sampleGraph1.addVertex(T.id, 100L, "name", "kevin");
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             writer.writeGraph(out, sampleGraph1);
@@ -157,10 +158,11 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
      * Asserts the approximateGraphsChecks function fails when expected. Vertex props.
      */
     @Test
-    public void shouldLooseTypesWithGraphSONNoTypesForVertexProps() throws IOException {
+    public void shouldLoseTypesWithGraphSONNoTypesForVertexProps() throws IOException {
         final GraphWriter writer = getWriter(noTypesMapperV2d0);
         final GraphReader reader = getReader(noTypesMapperV2d0);
-        final Graph sampleGraph1 = TinkerFactory.createModern();
+        final TinkerGraph sampleGraph1 = TinkerGraph.open();
+        TinkerFactory.generateModern(sampleGraph1);
 
         sampleGraph1.addVertex(T.id, 100, "name", "kevin", "uuid", UUID.randomUUID());
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -177,10 +179,11 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
      * Asserts the approximateGraphsChecks function fails when expected. Edge ids.
      */
     @Test
-    public void shouldLooseTypesWithGraphSONNoTypesForEdgeIds() throws IOException {
+    public void shouldLoseTypesWithGraphSONNoTypesForEdgeIds() throws IOException {
         final GraphWriter writer = getWriter(noTypesMapperV2d0);
-        final  GraphReader reader = getReader(noTypesMapperV2d0);
-        final Graph sampleGraph1 = TinkerFactory.createModern();
+        final GraphReader reader = getReader(noTypesMapperV2d0);
+        final TinkerGraph sampleGraph1 = TinkerGraph.open();
+        TinkerFactory.generateModern(sampleGraph1);
         final  Vertex v1 = sampleGraph1.addVertex(T.id, 100, "name", "kevin");
         v1.addEdge("hello", sampleGraph1.traversal().V().has("name", "marko").next(), T.id, 101L);
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -197,7 +200,7 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
      * Asserts the approximateGraphsChecks function fails when expected. Edge props.
      */
     @Test
-    public void shouldLooseTypesWithGraphSONNoTypesForEdgeProps() throws IOException {
+    public void shouldLoseTypesWithGraphSONNoTypesForEdgeProps() throws IOException {
         final GraphWriter writer = getWriter(noTypesMapperV2d0);
         final GraphReader reader = getReader(noTypesMapperV2d0);
         final Graph sampleGraph1 = TinkerFactory.createModern();
