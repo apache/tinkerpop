@@ -170,8 +170,8 @@ g.V().match(
         __.as('a').out('created').as('c'),
         __.as('b').out('created').as('c')).
       addE('friendlyCollaborator').from('a').to('b').
-        property(id,13).property('project',select('c').values('name')) <5>
-g.E(13).valueMap()
+        property(id,23).property('project',select('c').values('name')) <5>
+g.E(23).valueMap()
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
