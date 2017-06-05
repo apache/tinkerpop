@@ -58,6 +58,22 @@ to set the `CLASSPATH` to point at the directory containing the Hadoop configura
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
 
+Documentation can be generated locally with:
+
+[source,text]
+bin/process-docs.sh
+
+Documentation is generated to the `target/docs` directory. It is also possible to generate documentation locally with
+Docker. `docker/build.sh -d`.
+
+To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
+shell script:
+
+[source,text]
+bin/generate-home.sh
+
+The site will be generated to the `target/site/home` directory.
+
 [[python-environment]]
 Python Environment
 ~~~~~~~~~~~~~~~~~~
@@ -82,7 +98,7 @@ test is configured by a "console-integration-tests" Maven profile. This profile 
 simply piggy-back on the `.glv` file in `gremlin-python`. Note that unlike `gremlin-python` the tests are actually
 integration tests and therefore must be actively switched on with `-DskipIntegrationTests=false`:
 
-[source,text
+[source,text]
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
 [[release-environment]]
