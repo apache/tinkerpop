@@ -32,7 +32,7 @@ namespace Gremlin.Net.Process.Traversal
     public interface ITraversalSideEffects : IDisposable
     {
         /// <summary>
-        ///     Retrieves the keys of the side-effect that can be supplied to <see cref="Get(string)" />.
+        ///     Retrieves the keys of the side-effect that can be supplied to <see cref="Get" />.
         /// </summary>
         /// <returns>The keys of the side-effect.</returns>
         IReadOnlyCollection<string> Keys();
