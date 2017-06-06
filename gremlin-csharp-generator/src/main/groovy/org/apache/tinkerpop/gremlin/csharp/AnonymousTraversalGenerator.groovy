@@ -34,7 +34,7 @@ class AnonymousTraversalGenerator {
 
         csharpClass.append(
 """
-namespace Gremlin.CSharp.Process
+namespace Gremlin.Net.Process.Traversal
 {
     public static class __
     {
