@@ -17,16 +17,15 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.csharp
+package org.apache.tinkerpop.gremlin.dotnet
 
-public class GenerateGremlinCSharp {
+public final class SymbolHelper {
 
-    public static void main(String[] args) {
-        final String csharpDirectory = args[0]
-        GraphTraversalSourceGenerator.create(csharpDirectory + "/Process/Traversal/" + "GraphTraversalSource.cs")
-        GraphTraversalGenerator.create(csharpDirectory + "/Process/Traversal/" + "GraphTraversal.cs")
-        AnonymousTraversalGenerator.create(csharpDirectory + "/Process/Traversal/" + "__.cs")
-        EnumGenerator.create(csharpDirectory + "/Process/Traversal/")
-        PredicateGenerator.create(csharpDirectory + "/Process/Traversal/" + "P.cs")
+    public static String toCSharp(final String symbol) {
+        return (String) Character.toUpperCase(symbol.charAt(0)) + symbol.substring(1)
+    }
+
+    public static String toJava(final String symbol) {
+        return (String) Character.toLowerCase(symbol.charAt(0)) + symbol.substring(1)
     }
 }

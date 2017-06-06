@@ -17,16 +17,13 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.csharp
+package org.apache.tinkerpop.gremlin.dotnet
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 
-import java.lang.reflect.Modifier
+class GraphTraversalGenerator {
 
-class AnonymousTraversalGenerator {
-
-    public static void create(final String anonymousTraversalFile) {
+    public static void create(final String graphTraversalFile) {
 
         final StringBuilder csharpClass = new StringBuilder()
 
@@ -34,37 +31,45 @@ class AnonymousTraversalGenerator {
 
         csharpClass.append(
 """
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
-    public static class __
+    public class GraphTraversal : DefaultTraversal
     {
-        public static GraphTraversal Start()
+        public GraphTraversal()
+            : this(new List<ITraversalStrategy>(), new Bytecode())
         {
-            return new GraphTraversal();
+        }
+
+        public GraphTraversal(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode)
+        {
+            TraversalStrategies = traversalStrategies;
+            Bytecode = bytecode;
         }
 """)
-        __.getMethods().
+        GraphTraversal.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
-                findAll { Modifier.isStatic(it.getModifiers()) }.
+                findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
                 collect { it.name }.
-                findAll { !it.equals("__") && !it.equals("start") }.
                 unique().
                 sort { a, b -> a <=> b }.
                 forEach { javaMethodName ->
                     String sharpMethodName = SymbolHelper.toCSharp(javaMethodName)
 
                     csharpClass.append(
-"""
-        public static GraphTraversal ${sharpMethodName}(params object[] args)
+                            """
+        public GraphTraversal ${sharpMethodName}(params object[] args)
         {
-            return new GraphTraversal().${sharpMethodName}(args);
+            Bytecode.AddStep("${javaMethodName}", args);
+            return this;
         }
 """)
                 }
         csharpClass.append("\t}\n")
         csharpClass.append("}")
 
-        final File file = new File(anonymousTraversalFile);
+        final File file = new File(graphTraversalFile);
         file.delete()
         csharpClass.eachLine { file.append(it + "\n") }
     }
