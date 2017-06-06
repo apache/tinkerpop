@@ -355,3 +355,74 @@ connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
                                      graphson_reader=graphson_reader,
                                      graphson_writer=graphson_writer)
 ----
+
+[[gremlin-javascript]]
+Gremlin-JavaScript
+------------------
+
+Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the JavaScript language. It targets Node.js runtime
+and can be used on different operating systems on any Node.js 4 or above. Since the JavaScript naming conventions are
+very similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin-JavaScript.
+
+[source,bash]
+npm install gremlin-javascript
+
+In Gremlin-JavaScript there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
+in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implementation in order to communicate with
+<<gremlin-server,GremlinServer>>.
+
+A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+
+[source,javascript]
+----
+const graph = new Graph();
+const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+----
+
+When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via
+the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote
+traversal source.
+
+Since Gremlin-JavaScript currently doesn't support lambda expressions, all traversals can be translated to
+Gremlin-Java on the remote location (e.g. Gremlin Server).
+
+IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard Gremlin methods such as `next()` and
+`toList()` Such "terminal" methods trigger the evaluation of the traversal.
+
+RemoteConnection Submission
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a
+`RemoteConnection` using terminal/action methods off of `Traversal`.
+
+* `Traversal.next()`
+* `Traversal.toList()`
+
+Static Enums and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin has various tokens (e.g. `t`, `P`, `order`, `direction`, etc.) that are represented in Gremlin-JavaScript as
+objects.
+
+These can be used analogously to how they are used in Gremlin-Java.
+
+[source,javascript]
+g.V().hasLabel("person").has("age",P.gt(30)).Order().By("age", order.decr).toList()
+
+These objects must be required manually from the `process` namespace:
+
+[source,javascript]
+----
+const gremlin = require('gremlin-javascript');
+const P = gremlin.process.P;
+----
+
+Finally, using static `__` anonymous traversals like `__.out()` can be expressed as below:
+
+[source,javascript]
+----
+const gremlin = require('gremlin-javascript');
+const __ = gremlin.process.statics;
+
+g.V().repeat(__.out()).times(2).values("name").fold().toList();
+----

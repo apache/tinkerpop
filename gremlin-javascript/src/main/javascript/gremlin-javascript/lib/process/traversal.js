@@ -17,42 +17,6 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.javascript
-
-import org.apache.tinkerpop.gremlin.process.traversal.P
-import org.apache.tinkerpop.gremlin.util.CoreImports
-
-import java.lang.reflect.Modifier
-
-/**
- * @author Jorge Bay Gondra
- */
-class TraversalSourceGenerator {
-
-    public static void create(final String traversalSourceFile) {
-
-        final StringBuilder moduleOutput = new StringBuilder()
-
-        moduleOutput.append("""/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- */
-""")
-        moduleOutput.append("""
 /**
  * @author Jorge Bay Gondra
  */
@@ -127,9 +91,7 @@ Traversal.prototype._applyStrategies = function () {
 Traversal.prototype.toString = function () {
   return this.bytecode.toString();
 };
-  """);
-
-        moduleOutput.append("""
+  
 /**
  * Represents an operation.
  * @constructor
@@ -155,23 +117,72 @@ function createP(operator, args) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(P, args));
 }
-""")
-        P.class.getMethods().
-                findAll { Modifier.isStatic(it.getModifiers()) }.
-                findAll { P.class.isAssignableFrom(it.returnType) }.
-                collect { it.name }.
-                unique().
-                sort { a, b -> a <=> b }.
-                each { methodName ->
-                    moduleOutput.append(
-                            """
+
 /** @param {...Object} args */
-P.${SymbolHelper.toJs(methodName)} = function (args) {
-  return createP('$methodName', parseArgs.apply(null, arguments));
+P.between = function (args) {
+  return createP('between', parseArgs.apply(null, arguments));
 };
-""")
-                };
-        moduleOutput.append("""
+
+/** @param {...Object} args */
+P.eq = function (args) {
+  return createP('eq', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.gt = function (args) {
+  return createP('gt', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.gte = function (args) {
+  return createP('gte', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.inside = function (args) {
+  return createP('inside', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.lt = function (args) {
+  return createP('lt', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.lte = function (args) {
+  return createP('lte', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.neq = function (args) {
+  return createP('neq', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.not = function (args) {
+  return createP('not', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.outside = function (args) {
+  return createP('outside', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.test = function (args) {
+  return createP('test', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.within = function (args) {
+  return createP('within', parseArgs.apply(null, arguments));
+};
+
+/** @param {...Object} args */
+P.without = function (args) {
+  return createP('without', parseArgs.apply(null, arguments));
+};
+
 P.prototype.and = function (arg) {
   return new P('and', this, arg);
 };
@@ -179,9 +190,7 @@ P.prototype.and = function (arg) {
 P.prototype.or = function (arg) {
   return new P('or', this, arg);
 };
-""")
 
-        moduleOutput.append("""
 function Traverser(object, bulk) {
   this.object = object;
   this.bulk = bulk == undefined ? 1 : bulk;
@@ -213,25 +222,15 @@ module.exports = {
   P: P,
   Traversal: Traversal,
   TraversalSideEffects: TraversalSideEffects,
-  Traverser: Traverser""")
-        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports().
-                findAll { Enum.class.isAssignableFrom(it) }.
-                sort { a, b -> a.simpleName <=> b.simpleName }) {
-            moduleOutput.append(",\n  ${SymbolHelper.decapitalize(enumClass.simpleName)}: " +
-                    "toEnum('${SymbolHelper.toJs(enumClass.simpleName)}', '");
-            moduleOutput.append(
-                enumClass.getEnumConstants().
-                        sort { a, b -> a.name() <=> b.name() }.
-                        collect { SymbolHelper.toJs(it.name()) }.
-                        join(' '));
-            moduleOutput.append("\')");
-        }
-
-        moduleOutput.append("""\n};""");
-
-        // save to a file
-        final File file = new File(traversalSourceFile);
-        file.delete()
-        moduleOutput.eachLine { file.append(it + "\n") }
-    }
-}
+  Traverser: Traverser,
+  barrier: toEnum('Barrier', 'normSack'),
+  cardinality: toEnum('Cardinality', 'list set single'),
+  column: toEnum('Column', 'keys values'),
+  direction: toEnum('Direction', 'BOTH IN OUT'),
+  operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
+  order: toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr'),
+  pick: toEnum('Pick', 'any none'),
+  pop: toEnum('Pop', 'all first last'),
+  scope: toEnum('Scope', 'global local'),
+  t: toEnum('T', 'id key label value')
+};

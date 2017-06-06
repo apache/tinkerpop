@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.javascript.jsr223.SymbolHelper
+import org.apache.tinkerpop.gremlin.javascript.SymbolHelper
 
 import java.lang.reflect.Modifier
 
@@ -63,45 +63,46 @@ class GraphTraversalSourceGenerator {
 /**
  * @author Jorge Bay Gondra
  */
-(function defineGraphTraversalModule() {
-  "use strict";
+'use strict';
 
-  var t = loadModule.call(this, './traversal.js');
-  var remote = loadModule.call(this, '../driver/remote-connection.js');
-  var Bytecode = t.Bytecode;
-  var inherits = t.inherits;
-  var parseArgs = t.parseArgs;
+var t = require('./traversal.js');
+var remote = require('../driver/remote-connection');
+var utils = require('../utils');
+var Bytecode = require('./bytecode');
+var TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
+var inherits = utils.inherits;
+var parseArgs = utils.parseArgs;
 
-  /**
-   *
-   * @param {Graph} graph
-   * @param {TraversalStrategies} traversalStrategies
-   * @param {Bytecode} [bytecode]
-   * @constructor
-   */
-  function GraphTraversalSource(graph, traversalStrategies, bytecode) {
-    this.graph = graph;
-    this.traversalStrategies = traversalStrategies;
-    this.bytecode = bytecode || new Bytecode();
-  }
+/**
+ *
+ * @param {Graph} graph
+ * @param {TraversalStrategies} traversalStrategies
+ * @param {Bytecode} [bytecode]
+ * @constructor
+ */
+function GraphTraversalSource(graph, traversalStrategies, bytecode) {
+  this.graph = graph;
+  this.traversalStrategies = traversalStrategies;
+  this.bytecode = bytecode || new Bytecode();
+}
 
-  /**
-   * @param remoteConnection
-   * @returns {GraphTraversalSource}
-   */
-  GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
-    var traversalStrategy = new t.TraversalStrategies(this.traversalStrategies);
-    traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
-  };
+/**
+ * @param remoteConnection
+ * @returns {GraphTraversalSource}
+ */
+GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
+  var traversalStrategy = new TraversalStrategies(this.traversalStrategies);
+  traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
+  return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
+};
 
-  /**
-   * Returns the string representation of the GraphTraversalSource.
-   * @returns {string}
-   */
-  GraphTraversalSource.prototype.toString = function () {
-    return 'graphtraversalsource[' + this.graph.toString() + ']';
-  };
+/**
+ * Returns the string representation of the GraphTraversalSource.
+ * @returns {string}
+ */
+GraphTraversalSource.prototype.toString = function () {
+  return 'graphtraversalsource[' + this.graph.toString() + ']';
+};
 """)
         GraphTraversalSource.getMethods(). // SOURCE STEPS
                 findAll { GraphTraversalSource.class.equals(it.returnType) }.
@@ -110,40 +111,40 @@ class GraphTraversalSourceGenerator {
                             !it.name.equals(TraversalSource.Symbols.withBindings) &&
                             !it.name.equals(TraversalSource.Symbols.withRemote)
                 }.
-                collect { SymbolHelper.toJs(it.name) }.
+                collect { it.name }.
                 unique().
                 sort { a, b -> a <=> b }.
-                forEach { method ->
+                forEach { methodName ->
                     moduleOutput.append(
                             """
-  /**
-   * ${method} GraphTraversalSource method.
-   * @param {...Object} args
-   * @returns {GraphTraversalSource}
-   */
-  GraphTraversalSource.prototype.${method} = function (args) {
-    var b = new Bytecode(this.bytecode).addSource('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
-  };
+/**
+ * Graph Traversal Source ${methodName} method.
+ * @param {...Object} args
+ * @returns {GraphTraversalSource}
+ */
+GraphTraversalSource.prototype.${SymbolHelper.toJs(methodName)} = function (args) {
+  var b = new Bytecode(this.bytecode).addSource('$methodName', parseArgs.apply(null, arguments));
+  return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+};
 """)
                 }
-        GraphTraversalSource.getMethods(). // SPAWN STEPS
+        GraphTraversalSource.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
-                collect { SymbolHelper.toJs(it.name) }.
+                collect { it.name }.
                 unique().
                 sort { a, b -> a <=> b }.
-                forEach { method ->
+                forEach { methodName ->
                     moduleOutput.append(
                             """
-  /**
-   * ${method} GraphTraversalSource step method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  GraphTraversalSource.prototype.${method} = function (args) {
-    var b = new Bytecode(this.bytecode).addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
-  };
+/**
+ * $methodName GraphTraversalSource step method.
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+GraphTraversalSource.prototype.${SymbolHelper.toJs(methodName)} = function (args) {
+  var b = new Bytecode(this.bytecode).addStep('$methodName', parseArgs.apply(null, arguments));
+  return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+};
 """)
                 }
 ////////////////////
@@ -151,34 +152,35 @@ class GraphTraversalSourceGenerator {
 ////////////////////
         moduleOutput.append(
                 """
-  /**
-   * Represents a graph traversal.
-   * @extends Traversal
-   * @constructor
-   */
-  function GraphTraversal(graph, traversalStrategies, bytecode) {
-    t.Traversal.call(this, graph, traversalStrategies, bytecode);
-  }
+/**
+ * Represents a graph traversal.
+ * @extends Traversal
+ * @constructor
+ */
+function GraphTraversal(graph, traversalStrategies, bytecode) {
+  t.Traversal.call(this, graph, traversalStrategies, bytecode);
+}
 
-  inherits(GraphTraversal, t.Traversal);
+inherits(GraphTraversal, t.Traversal);
 """)
         GraphTraversal.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
-                collect { SymbolHelper.toJs(it.name) }.
+                collect { it.name }.
                 unique().
                 sort { a, b -> a <=> b }.
-                forEach { method ->
+                forEach { methodName ->
                     moduleOutput.append(
                             """
-  /**
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  GraphTraversal.prototype.${method} = function (args) {
-    this.bytecode.addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
-    return this;
-  };
+/**
+ * Graph traversal $methodName method.
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+GraphTraversal.prototype.${SymbolHelper.toJs(methodName)} = function (args) {
+  this.bytecode.addStep('$methodName', parseArgs.apply(null, arguments));
+  return this;
+};
 """)
                 };
 
@@ -186,11 +188,11 @@ class GraphTraversalSourceGenerator {
 // AnonymousTraversal //
 ////////////////////////
         moduleOutput.append("""
-  /**
-   * Contains the static method definitions
-   * @type {Object}
-   */
-  var statics = {};
+/**
+ * Contains the static method definitions
+ * @type {Object}
+ */
+var statics = {};
 """);
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -202,44 +204,24 @@ class GraphTraversalSourceGenerator {
                 forEach { method ->
                     moduleOutput.append(
                             """
-  /**
-   * ${method}() static method
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  statics.${method} = function (args) {
-    var g = new GraphTraversal(null, null, new Bytecode());
-    return g.${method}.apply(g, arguments);
-  };
+/**
+ * ${method}() static method
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+statics.${method} = function (args) {
+  var g = new GraphTraversal(null, null, new Bytecode());
+  return g.${method}.apply(g, arguments);
+};
 """)
                 };
 
         moduleOutput.append("""
-  function loadModule(moduleName) {
-    if (typeof require !== 'undefined') {
-      return require(moduleName);
-    }
-    if (typeof load !== 'undefined') {
-      var path = new java.io.File(__DIR__ + moduleName).getCanonicalPath();
-      this.__dependencies = this.__dependencies || {};
-      return this.__dependencies[path] = (this.__dependencies[path] || load(path));
-    }
-    throw new Error('No module loader was found');
-  }
-
-  var toExport = {
-    GraphTraversal: GraphTraversal,
-    GraphTraversalSource: GraphTraversalSource,
-    statics: statics
-  };
-  if (typeof module !== 'undefined') {
-    // CommonJS
-    module.exports = toExport;
-    return;
-  }
-  // Nashorn and rest
-  return toExport;
-}).call(this);""")
+module.exports = {
+  GraphTraversal: GraphTraversal,
+  GraphTraversalSource: GraphTraversalSource,
+  statics: statics
+};""");
 
         // save to file
         final File file = new File(graphTraversalSourceFile);

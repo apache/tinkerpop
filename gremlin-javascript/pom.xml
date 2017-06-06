@@ -37,6 +37,7 @@ limitations under the License.
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
         </dependency>
+        <!-- TESTING -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
@@ -58,12 +59,10 @@ limitations under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <properties>
-        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
@@ -86,23 +85,8 @@ limitations under the License.
                         <configuration>
                             <mainClass>org.apache.tinkerpop.gremlin.javascript.GenerateGremlinJavascript</mainClass>
                             <arguments>
-                                <argument>${basedir}/src/main/javascript/gremlin-javascript/process/traversal.js</argument>
-                                <argument>${basedir}/src/main/javascript/gremlin-javascript/process/graph-traversal.js</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>js-tests</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jjs</executable>
-                            <arguments>
-                                <argument>${basedir}/src/test/javascript/gremlin-javascript/test-exports.js</argument>
-                                <argument>${basedir}/src/test/javascript/gremlin-javascript/test-graphson.js</argument>
-                                <argument>${basedir}/src/test/javascript/gremlin-javascript/test-traversal.js</argument>
+                                <argument>${project.version}</argument>
+                                <argument>${basedir}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -111,6 +95,80 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                        <version>1.2.17</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-server</artifactId>
+                        <version>${project.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-ant</artifactId>
+                        <version>${groovy.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>gremlin-server-start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+                                    <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.Settings
+import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+import org.apache.tinkerpop.gremlin.server.op.session.Session
+
+if (${skipIntegrationTests}) return
+log.info("Starting Gremlin Server instances for native testing of gremlin-javascript")
+def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
+settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settings.port = 45950
+def server = new GremlinServer(settings)
+server.start().join()
+project.setContextValue("gremlin.javascript.server", server)
+log.info("Gremlin Server started on port 45950")
+]]>
+                                </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gremlin-server-stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+                                    <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.op.session.Session
+
+if (${skipIntegrationTests}) return
+log.info("Tests for native gremlin-javascript complete")
+def server = project.getContextValue("gremlin.javascript.server")
+log.info("Shutting down $server")
+server.stop().join()
+]]>
+                                </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -124,6 +182,85 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>install node and npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>generate-test-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>npm install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>generate-test-resources</phase>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm test</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                        <configuration>
+                            <arguments>test</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>${skipIntegrationTests}</skip>
+                    <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
+                    <nodeVersion>v4.8.3</nodeVersion>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <!--
+        Provides a way to deploy the gremlin-javascript GLV to npm. This cannot be part of the standard maven execution
+        because npm does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
+        -->
+        <profile>
+            <id>glv-javascript-deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>npm publish</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>publish</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>${skipIntegrationTests}</skip>
+                            <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
+                            <nodeVersion>v4.8.3</nodeVersion>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

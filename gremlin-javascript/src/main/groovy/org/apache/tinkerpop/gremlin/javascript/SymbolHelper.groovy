@@ -17,10 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.javascript.jsr223;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.apache.tinkerpop.gremlin.javascript
 
 /**
  * @author Jorge Bay Gondra
@@ -28,12 +25,10 @@ import java.util.Map;
 public final class SymbolHelper {
 
     private final static Map<String, String> TO_JS_MAP = new HashMap<>();
-    private final static Map<String, String> FROM_JS_MAP = new HashMap<>();
 
     static {
         TO_JS_MAP.put("in", "in_");
         TO_JS_MAP.put("from", "from_");
-        TO_JS_MAP.forEach((k, v) -> FROM_JS_MAP.put(v, k));
     }
 
     private SymbolHelper() {
@@ -44,15 +39,11 @@ public final class SymbolHelper {
         return TO_JS_MAP.getOrDefault(symbol, symbol);
     }
 
-    public static String toJava(final String symbol) {
-        return FROM_JS_MAP.getOrDefault(symbol, symbol);
-    }
-
     public static String decapitalize(String string) {
         if (string == null || string.length() == 0) {
             return string;
         }
-        char c[] = string.toCharArray();
+        def c = string.toCharArray();
         c[0] = Character.toLowerCase(c[0]);
         return new String(c);
     }
