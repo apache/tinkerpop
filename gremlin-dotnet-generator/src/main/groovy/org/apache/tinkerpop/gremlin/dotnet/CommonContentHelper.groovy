@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.csharp
+package org.apache.tinkerpop.gremlin.dotnet
 
 public final class CommonContentHelper {
 

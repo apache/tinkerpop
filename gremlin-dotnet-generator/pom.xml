@@ -23,8 +23,8 @@ limitations under the License.
         <artifactId>tinkerpop</artifactId>
         <version>3.2.5-SNAPSHOT</version>
     </parent>
-    <artifactId>gremlin-csharp-generator</artifactId>
-    <name>Apache TinkerPop :: Gremlin-CSharp Generator</name>
+    <artifactId>gremlin-dotnet-generator</artifactId>
+    <name>Apache TinkerPop :: Gremlin-DotNet Generator</name>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -48,13 +48,13 @@ limitations under the License.
                 <version>1.2.1</version>
                 <executions>
                     <execution>
-                        <id>generate-csharp</id>
+                        <id>generate-dotnet</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.apache.tinkerpop.gremlin.csharp.GenerateGremlinCSharp</mainClass>
+                            <mainClass>org.apache.tinkerpop.gremlin.dotnet.GenerateGremlinDotNet</mainClass>
                             <arguments>
                                 <argument>${project.parent.basedir}/gremlin-dotnet/src/Gremlin.Net</argument>
                             </arguments>
