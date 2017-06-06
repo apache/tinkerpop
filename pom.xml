@@ -322,6 +322,10 @@ limitations under the License.
                         <exclude>**/*.csproj</exclude>
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
+                        <exclude>**/gremlin-javascript/node_modules/**</exclude>
+                        <exclude>**/node/node_modules/**</exclude>
+                        <exclude>**/node/node</exclude>
+                        <exclude>**/npm-debug.log</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -392,8 +392,8 @@ g.V().Repeat(Out()).Times(2).Values("name").Fold().ToList()
 
 === Bindings
 
-When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, 
-and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously 
+When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Server), it will be translated, compiled,
+and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously
 compiled version should be cached. Many traversals are unique up to some parameterization. For instance,
 `g.V(1).Out("created").Values("name")` is considered different from `g.V(4).Out("created").Values("Name")`
 as they have different script "string" representations. However, `g.V(x).Out("created").Values("name")` with bindings of 
@@ -422,7 +422,7 @@ g = g.WithoutStrategies(typeof(SubgraphStrategy));
 names = g.V().Values("name").ToList(); // names: [marko, vadas, lop, josh, ripple, peter]
 
 var edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
-// edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0], 
+// edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0],
 //     [label:created, id:10, weight:1.0], [label:created, id:11, weight:0.4], [label:created, id:12, weight:0.2]]
 
 g = g.WithComputer(workers: 2, vertices: Has("name", "marko"));
@@ -435,3 +435,72 @@ edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
 NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the respective strategy on Apache TinkerPop’s
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
+
+[[gremlin-javascript]]
+== Gremlin-JavaScript
+
+
+Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the JavaScript language. It targets Node.js runtime
+and can be used on different operating systems on any Node.js 4 or above. Since the JavaScript naming conventions are
+very similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin-JavaScript.
+
+[source,bash]
+npm install gremlin-javascript
+
+In Gremlin-JavaScript there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
+in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implementation in order to communicate with
+<<gremlin-server,GremlinServer>>.
+
+A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+
+[source,javascript]
+----
+const graph = new Graph();
+const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+----
+
+When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via
+the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote
+traversal source.
+
+Since Gremlin-JavaScript currently doesn't support lambda expressions, all traversals can be translated to
+Gremlin-Java on the remote location (e.g. Gremlin Server).
+
+IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard Gremlin methods such as `next()` and
+`toList()` Such "terminal" methods trigger the evaluation of the traversal.
+
+=== RemoteConnection Submission
+
+Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a
+`RemoteConnection` using terminal/action methods off of `Traversal`.
+
+* `Traversal.next()`
+* `Traversal.toList()`
+
+=== Static Enums and Methods
+
+Gremlin has various tokens (e.g. `t`, `P`, `order`, `direction`, etc.) that are represented in Gremlin-JavaScript as
+objects.
+
+These can be used analogously to how they are used in Gremlin-Java.
+
+[source,javascript]
+g.V().hasLabel("person").has("age",P.gt(30)).Order().By("age", order.decr).toList()
+
+These objects must be required manually from the `process` namespace:
+
+[source,javascript]
+----
+const gremlin = require('gremlin-javascript');
+const P = gremlin.process.P;
+----
+
+Finally, using static `__` anonymous traversals like `__.out()` can be expressed as below:
+
+[source,javascript]
+----
+const gremlin = require('gremlin-javascript');
+const __ = gremlin.process.statics;
+
+g.V().repeat(__.out()).times(2).values("name").fold().toList();
+----

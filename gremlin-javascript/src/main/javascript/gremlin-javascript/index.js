@@ -20,73 +20,54 @@
 /**
  * @author Jorge Bay Gondra
  */
-(function exportModule() {
-  "use strict";
+'use strict';
 
-  function loadModule(moduleName) {
-    if (typeof require !== 'undefined') {
-      return require(moduleName);
-    }
-    if (typeof load !== 'undefined') {
-      var path = new java.io.File(__DIR__ + moduleName).getCanonicalPath();
-      this.__dependencies = this.__dependencies || {};
-      return this.__dependencies[path] = (this.__dependencies[path] || load(path));
-    }
-    throw new Error('No module loader was found');
-  }
+var t = require('./lib/process/traversal');
+var gt = require('./lib/process/graph-traversal');
+var strategiesModule = require('./lib/process/traversal-strategy');
+var graph = require('./lib/structure/graph');
+var gs = require('./lib/structure/io/graph-serializer');
+var rc = require('./lib/driver/remote-connection');
+var Bytecode = require('./lib/process/bytecode');
 
-  var t = loadModule.call(this, './process/traversal.js');
-  var gt = loadModule.call(this, './process/graph-traversal.js');
-  var graph = loadModule.call(this, './structure/graph.js');
-  var gs = loadModule.call(this, './structure/io/graph-serializer.js');
-  var rc = loadModule.call(this, './driver/remote-connection.js');
-  var toExport = {
-    driver: {
-      RemoteConnection: rc.RemoteConnection,
-      RemoteStrategy: rc.RemoteStrategy,
-      RemoteTraversal: rc.RemoteTraversal
+module.exports = {
+  driver: {
+    RemoteConnection: rc.RemoteConnection,
+    RemoteStrategy: rc.RemoteStrategy,
+    RemoteTraversal: rc.RemoteTraversal
+  },
+  process: {
+    Bytecode: Bytecode,
+    EnumValue: t.EnumValue,
+    P: t.P,
+    Traversal: t.Traversal,
+    TraversalSideEffects: t.TraversalSideEffects,
+    TraversalStrategies: strategiesModule.TraversalStrategies,
+    TraversalStrategy: strategiesModule.TraversalStrategy,
+    Traverser: t.Traverser,
+    barrier: t.barrier,
+    cardinality: t.cardinality,
+    column: t.column,
+    direction: t.direction,
+    operator: t.operator,
+    order: t.order,
+    pop: t.pop,
+    scope: t.scope,
+    t: t.t,
+    GraphTraversal: gt.GraphTraversal,
+    GraphTraversalSource: gt.GraphTraversalSource,
+    statics: gt.statics
+  },
+  structure: {
+    io: {
+      GraphSONReader: gs.GraphSONReader,
+      GraphSONWriter: gs.GraphSONWriter
     },
-    process: {
-      Bytecode: t.Bytecode,
-      EnumValue: t.EnumValue,
-      P: t.P,
-      Traversal: t.Traversal,
-      TraversalSideEffects: t.TraversalSideEffects,
-      TraversalStrategies: t.TraversalStrategies,
-      TraversalStrategy: t.TraversalStrategy,
-      Traverser: t.Traverser,
-      barrier: t.barrier,
-      cardinality: t.cardinality,
-      column: t.column,
-      direction: t.direction,
-      operator: t.operator,
-      order: t.order,
-      pop: t.pop,
-      scope: t.scope,
-      t: t.t,
-      GraphTraversal: gt.GraphTraversal,
-      GraphTraversalSource: gt.GraphTraversalSource,
-      statics: gt.statics
-    },
-    structure: {
-      io: {
-        GraphSONReader: gs.GraphSONReader,
-        GraphSONWriter: gs.GraphSONWriter
-      },
-      Edge: graph.Edge,
-      Graph: graph.Graph,
-      Path: graph.Path,
-      Property: graph.Property,
-      Vertex: graph.Vertex,
-      VertexProperty: graph.VertexProperty
-    }
-  };
-
-
-  if (typeof module !== 'undefined') {
-    // CommonJS
-    module.exports = toExport;
-    return;
+    Edge: graph.Edge,
+    Graph: graph.Graph,
+    Path: graph.Path,
+    Property: graph.Property,
+    Vertex: graph.Vertex,
+    VertexProperty: graph.VertexProperty
   }
-  return toExport;
-}).call(this);
+};

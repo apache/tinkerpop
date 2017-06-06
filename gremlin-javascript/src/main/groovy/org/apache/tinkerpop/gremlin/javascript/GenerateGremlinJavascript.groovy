@@ -17,16 +17,20 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.javascript;
+package org.apache.tinkerpop.gremlin.javascript
 
 public class GenerateGremlinJavascript {
-
-    private GenerateGremlinJavascript() {
-        // just need the main method
-    }
-
     public static void main(String[] args) {
-        TraversalSourceGenerator.create(args[0]);
-        GraphTraversalSourceGenerator.create(args[1]);
+        String projectVersion = args[0];
+        final String baseDir = args[1];
+        final String jsModuleDir = "${baseDir}/src/main/javascript/gremlin-javascript";
+        Integer versionSnapshotIndex = projectVersion.indexOf("-SNAPSHOT");
+        if (versionSnapshotIndex > 0) {
+            // Use a alpha version x.y.z-alpha1
+            projectVersion = projectVersion.substring(0, versionSnapshotIndex) + "-alpha1";
+        }
+        TraversalSourceGenerator.create("$jsModuleDir/lib/process/traversal.js");
+        GraphTraversalSourceGenerator.create("$jsModuleDir/lib/process/graph-traversal.js");
+        PackageJsonGenerator.create("$jsModuleDir/package.json", projectVersion);
     }
 }
