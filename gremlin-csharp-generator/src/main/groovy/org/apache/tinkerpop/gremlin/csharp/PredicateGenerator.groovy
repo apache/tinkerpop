@@ -33,9 +33,8 @@ class PredicateGenerator {
 
         csharpClass.append(
 """
-using Gremlin.Net.Process.Traversal;
 
-namespace Gremlin.CSharp.Process
+namespace Gremlin.Net.Process.Traversal
 {
     public class P
     {""")

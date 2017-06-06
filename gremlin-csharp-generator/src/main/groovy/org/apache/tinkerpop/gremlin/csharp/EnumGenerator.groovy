@@ -40,7 +40,7 @@ class EnumGenerator {
 
         csharpEnum.append(
                 """
-namespace Gremlin.CSharp.Process
+namespace Gremlin.Net.Process.Traversal
 {
     public enum ${enumClass.getSimpleName()}
     {

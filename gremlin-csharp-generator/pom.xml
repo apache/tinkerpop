@@ -56,7 +56,7 @@ limitations under the License.
                         <configuration>
                             <mainClass>org.apache.tinkerpop.gremlin.csharp.GenerateGremlinCSharp</mainClass>
                             <arguments>
-                                <argument>${project.parent.basedir}/gremlin-dotnet/src/Gremlin.CSharp</argument>
+                                <argument>${project.parent.basedir}/gremlin-dotnet/src/Gremlin.Net</argument>
                             </arguments>
                         </configuration>
                     </execution>

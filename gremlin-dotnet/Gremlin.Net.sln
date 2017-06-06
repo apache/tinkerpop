@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{584F838B-DAE2-44F5-868C-1F532949C827}"
 EndProject
@@ -14,16 +14,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.UnitTest", "test\Gremlin.Net.UnitTest\Gremlin.Net.UnitTest.csproj", "{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.IntegrationTest", "test\Gremlin.Net.IntegrationTest\Gremlin.Net.IntegrationTest.csproj", "{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.CSharp", "src\Gremlin.CSharp\Gremlin.CSharp.csproj", "{709D235A-CA13-434F-9AF9-8C8C009B11D7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.CSharp.IntegrationTest", "test\Gremlin.CSharp.IntegrationTest\Gremlin.CSharp.IntegrationTest.csproj", "{232F0F2B-178E-4214-99C7-CC4DC6710F44}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gremlin.Net.Process", "src\Gremlin.Net.Process\Gremlin.Net.Process.csproj", "{4949181B-C97D-4BB4-A312-9C1506EC7DA7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gremlin.Net.Process.UnitTest", "test\Gremlin.Net.Process.UnitTest\Gremlin.Net.Process.UnitTest.csproj", "{D97CA283-AC86-4EC9-9E1D-5F9A97977687}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gremlin.CSharp.UnitTest", "test\Gremlin.CSharp.UnitTest\Gremlin.CSharp.UnitTest.csproj", "{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,26 +33,6 @@ Global
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{709D235A-CA13-434F-9AF9-8C8C009B11D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{709D235A-CA13-434F-9AF9-8C8C009B11D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{709D235A-CA13-434F-9AF9-8C8C009B11D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{709D235A-CA13-434F-9AF9-8C8C009B11D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{232F0F2B-178E-4214-99C7-CC4DC6710F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{232F0F2B-178E-4214-99C7-CC4DC6710F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{232F0F2B-178E-4214-99C7-CC4DC6710F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{232F0F2B-178E-4214-99C7-CC4DC6710F44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4949181B-C97D-4BB4-A312-9C1506EC7DA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4949181B-C97D-4BB4-A312-9C1506EC7DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4949181B-C97D-4BB4-A312-9C1506EC7DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4949181B-C97D-4BB4-A312-9C1506EC7DA7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D97CA283-AC86-4EC9-9E1D-5F9A97977687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D97CA283-AC86-4EC9-9E1D-5F9A97977687}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D97CA283-AC86-4EC9-9E1D-5F9A97977687}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D97CA283-AC86-4EC9-9E1D-5F9A97977687}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,10 +41,5 @@ Global
 		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8} = {584F838B-DAE2-44F5-868C-1F532949C827}
 		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
-		{709D235A-CA13-434F-9AF9-8C8C009B11D7} = {584F838B-DAE2-44F5-868C-1F532949C827}
-		{232F0F2B-178E-4214-99C7-CC4DC6710F44} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
-		{4949181B-C97D-4BB4-A312-9C1506EC7DA7} = {584F838B-DAE2-44F5-868C-1F532949C827}
-		{D97CA283-AC86-4EC9-9E1D-5F9A97977687} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
-		{F2D976C2-D5EC-4BE5-9F6F-FCFAA9F59858} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
 	EndGlobalSection
 EndGlobal
