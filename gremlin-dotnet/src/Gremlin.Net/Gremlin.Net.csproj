@@ -6,7 +6,6 @@
     <Authors>Apache TinkerPop</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <Version>3.2.5-SNAPSHOT</Version>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Gremlin.Net</AssemblyName>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin-dotnet;gremlin;tinkerpop;tinkerpop3</PackageTags>
@@ -23,6 +22,10 @@
     <DocumentationFile />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile />
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Collections" Version="4.3.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
@@ -34,10 +37,6 @@
     <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Gremlin.Net.Process\Gremlin.Net.Process.csproj" />
   </ItemGroup>
 
 </Project>

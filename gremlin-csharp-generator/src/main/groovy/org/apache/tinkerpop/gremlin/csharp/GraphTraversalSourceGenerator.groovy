@@ -35,10 +35,9 @@ class GraphTraversalSourceGenerator {
 """
 using System.Collections.Generic;
 using Gremlin.Net.Process.Remote;
-using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
-namespace Gremlin.CSharp.Process
+namespace Gremlin.Net.Process.Traversal
 {
     public class GraphTraversalSource
     {

@@ -32,9 +32,8 @@ class GraphTraversalGenerator {
         csharpClass.append(
 """
 using System.Collections.Generic;
-using Gremlin.Net.Process.Traversal;
 
-namespace Gremlin.CSharp.Process
+namespace Gremlin.Net.Process.Traversal
 {
     public class GraphTraversal : DefaultTraversal
     {
