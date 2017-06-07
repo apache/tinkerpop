@@ -90,6 +90,9 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
             this.onGraphComputer = TraversalHelper.onGraphComputer(this.getTraversal());
             this.metrics = new MutableMetrics(this.getPreviousStep().getId(), this.getPreviousStep().toString());
             final Step<?, S> previousStep = this.getPreviousStep();
+
+            // give metrics to the step being profiled so that it can add additional data to the metrics like
+            // annotations
             if (previousStep instanceof Profiling)
                 ((Profiling) previousStep).setMetrics(this.metrics);
         }

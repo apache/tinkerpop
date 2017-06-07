@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Default implementation for {@link TraversalMetrics} that aggregates {@link ImmutableMetrics} instances from a
+ * {@link Traversal}.
+ *
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -49,11 +51,20 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private final Map<String, MutableMetrics> metrics = new HashMap<>();
     private final TreeMap<Integer, String> indexToLabelMap = new TreeMap<>();
 
-    /*
-    The following are computed values upon the completion of profiling in order to report the results back to the user
+    /**
+     * A computed value representing the total time spent on all steps.
      */
     private long totalStepDuration;
+
+    /**
+     * The metrics that are reported to the caller of profile() which are computed once all metrics have been gathered.
+     */
     private Map<String, ImmutableMetrics> computedMetrics = new LinkedHashMap<>();
+
+    /**
+     * Determines if final metrics have been computed
+     */
+    private volatile boolean finalized = false;
 
     public DefaultTraversalMetrics() {
     }
@@ -92,6 +103,10 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         return this.computedMetrics.values();
     }
 
+    public boolean isFinalized() {
+        return finalized;
+    }
+
     @Override
     public String toString() {
         // Build a pretty table of metrics data.
@@ -109,6 +124,18 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
                 ">TOTAL", "-", "-", getDuration(TimeUnit.MICROSECONDS) / 1000.0, "-"));
 
         return sb.toString();
+    }
+
+    /**
+     * Extracts metrics from the provided {@code traversal} and computes metrics. Calling this method finalizes the
+     * metrics such that their values can no longer be modified.
+     */
+    public synchronized void setMetrics(final Traversal.Admin traversal, final boolean onGraphComputer) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized");
+        finalized = true;
+        addTopLevelMetrics(traversal, onGraphComputer);
+        handleNestedTraversals(traversal, null, onGraphComputer);
+        computeTotals();
     }
 
     private void appendMetrics(final Collection<? extends Metrics> metrics, final StringBuilder sb, final int indent) {
@@ -222,41 +249,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         tempMetrics.forEach(it -> this.computedMetrics.put(it.getId(), it.getImmutableClone()));
     }
 
-    public static DefaultTraversalMetrics merge(final Iterator<DefaultTraversalMetrics> toMerge) {
-        final DefaultTraversalMetrics newTraversalMetrics = new DefaultTraversalMetrics();
-
-        // iterate the incoming TraversalMetrics
-        toMerge.forEachRemaining(inTraversalMetrics -> {
-            // aggregate the internal Metrics
-            inTraversalMetrics.metrics.forEach((metricsId, toAggregate) -> {
-
-                MutableMetrics aggregateMetrics = newTraversalMetrics.metrics.get(metricsId);
-                if (null == aggregateMetrics) {
-                    // need to create a Metrics to aggregate into
-                    aggregateMetrics = new MutableMetrics(toAggregate.getId(), toAggregate.getName());
-
-                    newTraversalMetrics.metrics.put(metricsId, aggregateMetrics);
-                    // Set the index of the Metrics
-                    for (final Map.Entry<Integer, String> entry : inTraversalMetrics.indexToLabelMap.entrySet()) {
-                        if (metricsId.equals(entry.getValue())) {
-                            newTraversalMetrics.indexToLabelMap.put(entry.getKey(), metricsId);
-                            break;
-                        }
-                    }
-                }
-                aggregateMetrics.aggregate(toAggregate);
-            });
-        });
-        return newTraversalMetrics;
-    }
-
-    public void setMetrics(final Traversal.Admin traversal, final boolean onGraphComputer) {
-        addTopLevelMetrics(traversal, onGraphComputer);
-        handleNestedTraversals(traversal, null, onGraphComputer);
-        computeTotals();
-    }
-
-    private void addTopLevelMetrics(Traversal.Admin traversal, final boolean onGraphComputer) {
+    private void addTopLevelMetrics(final Traversal.Admin traversal, final boolean onGraphComputer) {
         final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (int ii = 0; ii < profileSteps.size(); ii++) {
             // The index is necessary to ensure that step order is preserved after a merge.
@@ -306,6 +299,49 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
                     }
                 }
             }
+        }
+    }
+
+    private void appendMetrics(final Collection<? extends Metrics> metrics, final StringBuilder sb, final int indent) {
+        // Append each StepMetric's row. indexToLabelMap values are ordered by index.
+        for (Metrics m : metrics) {
+            String rowName = m.getName();
+
+            // Handle indentation
+            for (int ii = 0; ii < indent; ii++) {
+                rowName = "  " + rowName;
+            }
+            // Abbreviate if necessary
+            rowName = StringUtils.abbreviate(rowName, 50);
+
+            // Grab the values
+            final Long itemCount = m.getCount(ELEMENT_COUNT_ID);
+            final Long traverserCount = m.getCount(TRAVERSER_COUNT_ID);
+            Double percentDur = (Double) m.getAnnotation(PERCENT_DURATION_KEY);
+
+            // Build the row string
+
+            sb.append(String.format("%n%-50s", rowName));
+
+            if (itemCount != null) {
+                sb.append(String.format(" %21d", itemCount));
+            } else {
+                sb.append(String.format(" %21s", ""));
+            }
+
+            if (traverserCount != null) {
+                sb.append(String.format(" %11d", traverserCount));
+            } else {
+                sb.append(String.format(" %11s", ""));
+            }
+
+            sb.append(String.format(" %15.3f", m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
+
+            if (percentDur != null) {
+                sb.append(String.format(" %8.2f", percentDur));
+            }
+
+            appendMetrics(m.getNested(), sb, indent + 1);
         }
     }
 }

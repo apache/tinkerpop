@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 
 /**
- * A Step can implement this interface in order to receive a reference to the MutableMetrics object for the Step. The
- * MutableMetrics is initialized when the ProfileStrategy executes.
+ * A {@link Step} can implement this interface in order to receive a reference to the {@link MutableMetrics} object
+ * for the {@link Step}. The {@link MutableMetrics} is initialized when the {@link ProfileStrategy} executes.
  *
  * @author Bob Briody (http://bobbriody.com)
  */
