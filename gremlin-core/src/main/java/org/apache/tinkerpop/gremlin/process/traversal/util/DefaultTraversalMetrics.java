@@ -103,6 +103,9 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         return this.computedMetrics.values();
     }
 
+    /**
+     * The metrics have been computed and can no longer be modified.
+     */
     public boolean isFinalized() {
         return finalized;
     }
@@ -131,7 +134,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
      * metrics such that their values can no longer be modified.
      */
     public synchronized void setMetrics(final Traversal.Admin traversal, final boolean onGraphComputer) {
-        if (finalized) throw new IllegalStateException("Metrics have been finalized");
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         finalized = true;
         addTopLevelMetrics(traversal, onGraphComputer);
         handleNestedTraversals(traversal, null, onGraphComputer);
@@ -280,7 +283,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
             if (null != metrics) { // this happens when a particular branch never received a .next() call (the metrics were never initialized)
                 if (!onGraphComputer) {
                     // subtract upstream duration.
-                    long durBeforeAdjustment = metrics.getDuration(TimeUnit.NANOSECONDS);
+                    final long durBeforeAdjustment = metrics.getDuration(TimeUnit.NANOSECONDS);
                     // adjust duration
                     metrics.setDuration(metrics.getDuration(TimeUnit.NANOSECONDS) - prevDur, TimeUnit.NANOSECONDS);
                     prevDur = durBeforeAdjustment;
