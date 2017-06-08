@@ -23,7 +23,8 @@ limitations under the License.
         <artifactId>gremlin-dotnet</artifactId>
         <version>3.2.5-SNAPSHOT</version>
     </parent>
-    <artifactId>Gremlin-DotNet-Tests</artifactId>
+    <artifactId>gremlin-dotnet-tests</artifactId>
+    <name>Apache TinkerPop :: Gremlin-DotNet - Tests</name>
     <packaging>${packaging.type}</packaging>
     <properties>
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping dotnet tests -->
@@ -32,44 +33,6 @@ limitations under the License.
         <!-- this path only works when maven is started from the direct parent directory, this should be fixed -->
         <gremlin.server.dir>${project.parent.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>${groovy.version}</version>
-            <classifier>indy</classifier>
-        </dependency>
-        <!-- TESTING -->
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-server</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-            <version>${slf4j.version}</version>
-        </dependency>
-    </dependencies>
 
     <profiles>
         <profile>
@@ -114,15 +77,15 @@ limitations under the License.
                         <artifactId>gmavenplus-plugin</artifactId>
                         <dependencies>
                             <dependency>
-                                <groupId>org.codehaus.groovy</groupId>
-                                <artifactId>groovy-all</artifactId>
-                                <version>${groovy.version}</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                            <dependency>
                                 <groupId>log4j</groupId>
                                 <artifactId>log4j</artifactId>
                                 <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-server</artifactId>
+                                <version>${project.version}</version>
                                 <scope>runtime</scope>
                             </dependency>
                         </dependencies>
