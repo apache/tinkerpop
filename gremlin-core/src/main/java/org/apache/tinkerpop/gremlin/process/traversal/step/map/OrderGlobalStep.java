@@ -99,6 +99,19 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        int i = 0;
+        for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
+            final Traversal.Admin<S, C> traversal = pair.getValue0();
+            if (null != traversal && traversal.equals(oldTraversal)) {
+                this.comparators.set(i, Pair.with(this.integrateChild(newTraversal), pair.getValue1()));
+                break;
+            }
+            i++;
+        }
+    }
+
+    @Override
     public List<Pair<Traversal.Admin<S, C>, Comparator<C>>> getComparators() {
         return this.comparators.isEmpty() ? Collections.singletonList(new Pair<>(new IdentityTraversal(), (Comparator) Order.incr)) : Collections.unmodifiableList(this.comparators);
     }

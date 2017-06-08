@@ -60,6 +60,12 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.probabilityTraversal && this.probabilityTraversal.equals(oldTraversal))
+            this.probabilityTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.amountToSample, this.probabilityTraversal);
     }

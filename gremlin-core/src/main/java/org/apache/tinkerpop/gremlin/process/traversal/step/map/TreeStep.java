@@ -64,6 +64,18 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        int i = 0;
+        for (final Traversal.Admin<?, ?> traversal : this.traversalRing.getTraversals()) {
+            if (null != traversal && traversal.equals(oldTraversal)) {
+                this.traversalRing.setTraversal(i, this.integrateChild(newTraversal));
+                break;
+            }
+            i++;
+        }
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
@@ -82,7 +94,6 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
         this.traversalRing.reset();
         return topTree;
     }
-
 
     @Override
     public TreeStep<S> clone() {

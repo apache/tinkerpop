@@ -81,6 +81,14 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
+            this.keyTraversal = this.integrateChild(newTraversal);
+        else if (null != this.valueTraversal && this.valueTraversal.equals(oldTraversal))
+            this.valueTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
         this.valueTraversal.reset();

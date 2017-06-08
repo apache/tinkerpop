@@ -78,6 +78,12 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.storeTraversal && this.storeTraversal.equals(oldTraversal))
+            this.storeTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.BULK);
     }

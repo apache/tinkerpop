@@ -84,7 +84,7 @@ public class PathProcessorStrategyTest {
                 {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count()), Collections.emptyList()},
                 {__.select("a").by("name"), __.select("a").map(new ElementValueTraversal<>("name")), Collections.emptyList()},
                 {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
-                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by("name"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 // select("a","b")

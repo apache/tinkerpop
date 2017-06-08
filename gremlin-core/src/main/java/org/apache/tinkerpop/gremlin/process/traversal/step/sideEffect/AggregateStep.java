@@ -72,6 +72,12 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.aggregateTraversal && this.aggregateTraversal.equals(oldTraversal))
+            this.aggregateTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     public List<Traversal.Admin<S, Object>> getLocalChildren() {
         return null == this.aggregateTraversal ? Collections.emptyList() : Collections.singletonList(this.aggregateTraversal);
     }

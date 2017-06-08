@@ -79,6 +79,14 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
+            this.keyTraversal = this.integrateChild(newTraversal);
+        else if (null != this.valueTraversal && this.valueTraversal.equals(oldTraversal))
+            this.valueTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
         this.valueTraversal.reset();

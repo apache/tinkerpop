@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -100,6 +99,12 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.selectTraversal = this.integrateChild(selectTraversal);
+    }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.selectTraversal && this.selectTraversal.equals(oldTraversal))
+            this.selectTraversal = this.integrateChild(newTraversal);
     }
 
     @Override
