@@ -106,4 +106,10 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
         this.keyTraversal = this.integrateChild(keyTraversal);
     }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
+            this.keyTraversal = this.integrateChild(newTraversal);
+    }
 }

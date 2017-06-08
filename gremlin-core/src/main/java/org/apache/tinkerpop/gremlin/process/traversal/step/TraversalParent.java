@@ -57,6 +57,10 @@ public interface TraversalParent extends AutoCloseable {
         throw new IllegalStateException("This traversal parent does not support the removal of global traversals: " + this.getClass().getCanonicalName());
     }
 
+    public default void replaceLocalChild(final Traversal.Admin<?, ?> oldTrversal, final Traversal.Admin<?, ?> newTrversal) {
+        throw new IllegalStateException("This traversal parent does not support the replacement of local traversals: " + this.getClass().getCanonicalName());
+    }
+
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
         final Set<TraverserRequirement> requirements = EnumSet.noneOf(TraverserRequirement.class);
         Collections.addAll(requirements, selfRequirements);

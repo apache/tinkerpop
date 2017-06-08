@@ -52,6 +52,12 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.sackTraversal && this.sackTraversal.equals(oldTraversal))
+            this.sackTraversal = this.integrateChild(newTraversal);
+    }
+
+    @Override
     public List<Traversal.Admin<S, B>> getLocalChildren() {
         return null == this.sackTraversal ? Collections.emptyList() : Collections.singletonList(this.sackTraversal);
     }
