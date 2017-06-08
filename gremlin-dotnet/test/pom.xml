@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.tinkerpop</groupId>
+        <artifactId>gremlin-dotnet</artifactId>
+        <version>3.2.5-SNAPSHOT</version>
+    </parent>
+    <artifactId>Gremlin-DotNet-Tests</artifactId>
+    <packaging>${packaging.type}</packaging>
+    <properties>
+        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping dotnet tests -->
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
+        <!-- this path only works when maven is started from the direct parent directory, this should be fixed -->
+        <gremlin.server.dir>${project.parent.parent.basedir}/gremlin-server</gremlin.server.dir>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${groovy.version}</version>
+            <classifier>indy</classifier>
+        </dependency>
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>tinkergraph-gremlin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+            <version>${slf4j.version}</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>gremlin-dotnet-standard</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <packaging.type>pom</packaging.type>
+            </properties>
+        </profile>
+        <!-- activates the building of .NET components and requires that the .NET Core SDK be installed on the system -->
+        <profile>
+            <id>gremlin-dotnet</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.glv</exists>
+                </file>
+            </activation>
+            <properties>
+                <packaging.type>dotnet-integration-test</packaging.type>
+            </properties>
+            <build>
+                <directory>${basedir}/target</directory>
+                <finalName>${project.artifactId}-${project.version}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eobjects.build</groupId>
+                        <artifactId>dotnet-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>gremlin-server-start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.Settings
+import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+
+if (${skipTests}) return
+
+log.info("Starting Gremlin Server instances for native testing of gremlin-dotnet")
+def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
+settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settings.port = 45950
+
+def server = new GremlinServer(settings)
+server.start().join()
+
+project.setContextValue("gremlin.dotnet.server", server)
+log.info("Gremlin Server with no authentication started on port 45950")
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gremlin-server-stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+
+if (${skipTests}) return
+
+log.info("Tests for native gremlin-dotnet complete")
+
+def server = project.getContextValue("gremlin.dotnet.server")
+log.info("Shutting down $server")
+server.stop().join()
+
+log.info("Gremlin Server instance shutdown for gremlin-dotnet")
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
