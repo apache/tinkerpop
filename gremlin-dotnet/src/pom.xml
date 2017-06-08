@@ -23,7 +23,8 @@ limitations under the License.
         <artifactId>gremlin-dotnet</artifactId>
         <version>3.2.5-SNAPSHOT</version>
     </parent>
-    <artifactId>Gremlin-DotNet-Source</artifactId>
+    <artifactId>gremlin-dotnet-source</artifactId>
+    <name>Apache TinkerPop :: Gremlin-DotNet - Source</name>
     <packaging>${packaging.type}</packaging>
     <profiles>
         <profile>
@@ -51,10 +52,6 @@ limitations under the License.
                 <directory>${basedir}/target</directory>
                 <finalName>${project.artifactId}-${project.version}</finalName>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                    </plugin>
                     <plugin>
                         <groupId>org.eobjects.build</groupId>
                         <artifactId>dotnet-maven-plugin</artifactId>

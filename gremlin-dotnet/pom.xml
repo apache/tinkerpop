@@ -23,7 +23,6 @@ limitations under the License.
         <artifactId>tinkerpop</artifactId>
         <version>3.2.5-SNAPSHOT</version>
     </parent>
-    <groupId>org.apache.tinkerpop</groupId>
     <artifactId>gremlin-dotnet</artifactId>
     <name>Apache TinkerPop :: Gremlin-DotNet</name>
     <packaging>pom</packaging>
@@ -40,14 +39,6 @@ limitations under the License.
                 <artifactId>dotnet-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <version>0.14</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
