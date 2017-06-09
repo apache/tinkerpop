@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Count().Next();
 
-            Assert.Equal((long) 6, count);
+            Assert.Equal(6, count);
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var vertex = (Vertex) g.V(1).Next();
+            var vertex = g.V(1).Next();
 
             Assert.Equal(new Vertex((long) 1), vertex);
             Assert.Equal((long) 1, vertex.Id);
@@ -135,9 +135,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
 
             var shortestPath =
-                (Path)g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<object>(1).Path().Next();
+                g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<object>(1).Path().Next();
 
-            Assert.Equal((long) 4, shortestPath.Count);
+            Assert.Equal(4, shortestPath.Count);
             Assert.Equal(new Vertex((long) 6), shortestPath[3]);
         }
 
@@ -151,7 +151,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var b = new Bindings();
             var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
 
-            Assert.Equal((long) 3, count);
+            Assert.Equal(3, count);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = await g.V().Count().Promise(t => t.Next());
 
-            Assert.Equal((long) 6, count);
+            Assert.Equal(6, count);
         }
     }
 }
