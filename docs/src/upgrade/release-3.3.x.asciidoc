@@ -244,6 +244,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
 * `tinkergraph-gremlin`
 ** `org.apache.tinkerpop.gremlin.tinkergraph.groovy.plugin.TinkerGraphGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.CONFIG_*`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.

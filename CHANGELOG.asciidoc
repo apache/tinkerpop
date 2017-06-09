@@ -32,6 +32,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added "attachment requisite" `VertexProperty.element()` and `Property.element()` data in GraphSON serialization.
 * GraphSON 3.0 is now the default serialization format in TinkerGraph and Gremlin Server.
 * Established the GraphSON 3.0 format.
+* Removed previously deprecated TinkerGraph configuration member variables.
 * Removed previously deprecated `OpSelectorHandler.errorMeter` and `AbstractEvalOpProcessor.errorMeter` fields.
 * Removed previously deprecated `AbstractEvalOpProcessor.validBindingName` field.
 * Removed previously deprecated `SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION` field.
