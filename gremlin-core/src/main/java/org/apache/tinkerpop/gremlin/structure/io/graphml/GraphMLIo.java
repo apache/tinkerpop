@@ -102,16 +102,6 @@ public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.
         private Graph graph;
         private Consumer<Mapper.Builder> onMapper = null;
 
-        /**
-         * @deprecated As of release 3.2.2, replaced by {@link #onMapper(Consumer)}.
-         */
-        @Deprecated
-        @Override
-        public Io.Builder<GraphMLIo> registry(final IoRegistry registry) {
-            // GraphML doesn't make use of a registry but the contract should simply exist
-            return this;
-        }
-
         @Override
         public Io.Builder<? extends Io> onMapper(final Consumer<Mapper.Builder> onMapper) {
             this.onMapper = onMapper;

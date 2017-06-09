@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -518,7 +517,6 @@ public class TinkerGraphTest {
 
         //Test write graph
         graph.close();
-        assertEquals(TestIoBuilder.calledRegistry, 0);
         assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
@@ -531,7 +529,6 @@ public class TinkerGraphTest {
 
         //Test read graph
         final TinkerGraph readGraph = TinkerGraph.open(conf);
-        assertEquals(TestIoBuilder.calledRegistry, 0);
         assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
@@ -672,20 +669,13 @@ public class TinkerGraphTest {
 
     public static class TestIoBuilder implements Io.Builder {
 
-        static int calledRegistry, calledGraph, calledCreate, calledOnMapper;
+        static int calledGraph, calledCreate, calledOnMapper;
 
         public TestIoBuilder(){
             //Looks awkward to reset static vars inside a constructor, but makes sense from testing perspective
-            calledRegistry = 0;
             calledGraph = 0;
             calledCreate = 0;
             calledOnMapper = 0;
-        }
-
-        @Override
-        public Io.Builder<? extends Io> registry(final IoRegistry registry) {
-            calledRegistry++;
-            return this;
         }
 
         @Override

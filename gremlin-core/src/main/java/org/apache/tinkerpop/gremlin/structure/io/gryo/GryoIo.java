@@ -39,12 +39,10 @@ import java.util.function.Consumer;
  */
 public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
 
-    private final IoRegistry registry;
     private final Graph graph;
     private Optional<Consumer<Mapper.Builder>> onMapper;
 
     private GryoIo(final Builder builder) {
-        this.registry = builder.registry;
         this.graph = builder.graph;
         this.onMapper = Optional.ofNullable(builder.onMapper);
     }
@@ -69,7 +67,7 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      */
     @Override
     public GryoMapper.Builder mapper() {
-        final GryoMapper.Builder builder = (null == this.registry) ? GryoMapper.build() : GryoMapper.build().addRegistry(this.registry);
+        final GryoMapper.Builder builder = GryoMapper.build();
         onMapper.ifPresent(c -> c.accept(builder));
         return builder;
     }
@@ -99,20 +97,8 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
     }
 
     public final static class Builder implements Io.Builder<GryoIo> {
-
-        private IoRegistry registry = null;
         private Graph graph;
         private Consumer<Mapper.Builder> onMapper = null;
-
-        /**
-         * @deprecated As of release 3.2.2, replaced by {@link #onMapper(Consumer)}.
-         */
-        @Deprecated
-        @Override
-        public Io.Builder<GryoIo> registry(final IoRegistry registry) {
-            this.registry = registry;
-            return this;
-        }
 
         @Override
         public Io.Builder<? extends Io> onMapper(final Consumer<Mapper.Builder> onMapper) {
