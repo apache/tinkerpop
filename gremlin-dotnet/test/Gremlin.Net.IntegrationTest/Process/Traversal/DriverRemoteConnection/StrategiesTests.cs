@@ -47,7 +47,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Count().Next();
 
-            Assert.Equal((long) 4, count);
+            Assert.Equal(4, count);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.E().Count().Next();
 
-            Assert.Equal((long)0, count);
+            Assert.Equal(0, count);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Label().Dedup().Count().Next();
 
-            Assert.Equal((long)1, count);
+            Assert.Equal(1, count);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Count().Next();
 
-            Assert.Equal((long)1, count);
+            Assert.Equal(1, count);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.E().Count().Next();
 
-            Assert.Equal((long)0, count);
+            Assert.Equal(0, count);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Count().Next();
 
-            Assert.Equal((long)6, count);
+            Assert.Equal(6, count);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.E().Count().Next();
 
-            Assert.Equal((long)6, count);
+            Assert.Equal(6, count);
         }
 
         [Fact]

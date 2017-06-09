@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Has("age", P.Gt(30).And(P.Lt(35))).Count().Next();
 
-            Assert.Equal((long) 1, count);
+            Assert.Equal(1, count);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var count = g.V().Has("name", P.Within("josh", "vadas")).Count().Next();
 
-            Assert.Equal((long) 2, count);
+            Assert.Equal(2, count);
         }
     }
 }

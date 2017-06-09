@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             var personsCount = g.V().Has(T.Label, "person").Count().Next();
 
-            Assert.Equal((long) 4, personsCount);
+            Assert.Equal(4, personsCount);
         }
     }
 }
