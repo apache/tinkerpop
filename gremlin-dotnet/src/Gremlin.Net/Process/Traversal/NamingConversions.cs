@@ -41,7 +41,7 @@ namespace Gremlin.Net.Process.Traversal
             return javaName;
         }
 
-        internal static readonly IDictionary<string, string> CSharpToJavaEnums = new Dictionary<string, string>
+        private static readonly IDictionary<string, string> CSharpToJavaEnums = new Dictionary<string, string>
         {
             {"T.Value", "value"},
             {"Order.Decr", "decr"},
