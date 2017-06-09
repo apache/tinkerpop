@@ -192,6 +192,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
 ** `org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_COMPUTER`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`
@@ -244,7 +246,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
 * `tinkergraph-gremlin`
 ** `org.apache.tinkerpop.gremlin.tinkergraph.groovy.plugin.TinkerGraphGremlinPlugin`
-** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.CONFIG_*`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph#CONFIG_*`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
