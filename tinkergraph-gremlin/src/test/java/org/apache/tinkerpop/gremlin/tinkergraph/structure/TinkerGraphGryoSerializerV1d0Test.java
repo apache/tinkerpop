@@ -19,9 +19,6 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -41,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link TinkerIoRegistry.TinkerGraphGryoSerializer}
+ * Unit tests for {@link TinkerIoRegistryV1d0.TinkerGraphGryoSerializer}
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TinkerGraphGryoSerializerV1d0Test {

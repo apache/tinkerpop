@@ -215,11 +215,6 @@ public final class EmptyGraph implements Graph {
          */
         public final class EmptyGraphVertexPropertyFeatures implements VertexPropertyFeatures {
             @Override
-            public boolean supportsAddProperty() {
-                return false;
-            }
-
-            @Override
             public boolean supportsRemoveProperty() {
                 return false;
             }

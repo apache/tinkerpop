@@ -52,6 +52,9 @@ public final class IoRegistryHelper {
                         instanceMethod = clazz.getDeclaredMethod("instance"); // try for getInstance() ??
                     } catch (final NoSuchMethodException e) {
                         try {
+                            // even though use of "getInstance" is no longer a thing in tinkerpop as of 3.3.0, perhaps
+                            // others are using this style of naming. Doesn't seem to harm anything to continue to
+                            // check for that method.
                             instanceMethod = clazz.getDeclaredMethod("getInstance"); // try for getInstance() ??
                         } catch (final NoSuchMethodException e2) {
                             // no instance() or getInstance() methods
