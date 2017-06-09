@@ -98,11 +98,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void g_V_HasXname_markoX_ValueMap_Next()
         {
-            //Unable to cast object of type 
-            //'System.Collections.Generic.Dictionary`2[System.String,System.Object]' to type 
-            //'System.Collections.Generic.IDictionary`2[System.String,System.Collections.Generic.IList`1[System.Object]]'.
-
-
             var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
