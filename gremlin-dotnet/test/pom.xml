@@ -122,6 +122,19 @@ server.start().join()
 
 project.setContextValue("gremlin.dotnet.server", server)
 log.info("Gremlin Server with no authentication started on port 45950")
+
+def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
+settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settingsSecure.port = 45951
+settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
+settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties", credentialsDbLocation: "${gremlin.server.dir}/data/credentials.kryo"]
+
+def serverSecure = new GremlinServer(settingsSecure)
+serverSecure.start().join()
+
+project.setContextValue("gremlin.dotnet.server.secure", serverSecure)
+log.info("Gremlin Server with authentication started on port 45951")
 ]]>
                                         </script>
                                     </scripts>
@@ -146,6 +159,10 @@ log.info("Tests for native gremlin-dotnet complete")
 def server = project.getContextValue("gremlin.dotnet.server")
 log.info("Shutting down $server")
 server.stop().join()
+
+def serverSecure = project.getContextValue("gremlin.dotnet.server.secure")
+log.info("Shutting down $serverSecure")
+serverSecure.stop().join()
 
 log.info("Gremlin Server instance shutdown for gremlin-dotnet")
 ]]>
