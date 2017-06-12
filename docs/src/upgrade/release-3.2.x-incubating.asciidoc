@@ -157,8 +157,8 @@ $ bin/gremlin.sh -e y.groovy 1 2 3 -e x.groovy
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1653[TINKERPOP-1653]
 
-simplePath(), cyclicPath(), and path() support by()-, from()-, to()-modulation
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Path support for by()-, from()-, to()-modulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is now possible to extract analyze sub-paths using `from()` and `to()` modulations with respective, path-based steps.
 Likewise, `simplePath()` and `cyclicPath()` now support, along with `from()` and `to()`, `by()`-modulation so the cyclicity
