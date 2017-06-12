@@ -359,7 +359,7 @@ limitations under the License.
                         <groupId>org.revapi</groupId>
                         <artifactId>revapi-java</artifactId>
                         <version>0.13.0</version>
-                    </dependency> 
+                    </dependency>
                 </dependencies>
                 <configuration>
                     <skip>${revapi.skip}</skip>
@@ -389,7 +389,7 @@ limitations under the License.
                         </configurationFile>
                         <configurationFile>
                             <path>${project.basedir}/api-contents.json</path>
-                        </configurationFile> 
+                        </configurationFile>
                     </analysisConfigurationFiles>
                     <failOnMissingConfigurationFiles>false</failOnMissingConfigurationFiles>
                 </configuration>

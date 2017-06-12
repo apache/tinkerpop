@@ -84,8 +84,10 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-5]]
-TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.2.5 (Release Date: June 12, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This release also includes changes from <<release-3-1-7, 3.1.7>>.
 
 * Fixed folding of multiple `hasId()`'s into `GraphStep`.
 * Added string performance options to `StarGraph`.
@@ -131,7 +133,8 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `path().from().to()` support to `GraphTraversal` so sub-paths can be isolated from the current path.
 * Added `FromToModulating` interface for use with `to()`- and `from()`-based step modulators.
 * Added `Path.subPath()` which supports isolating a sub-path from `Path` via to/from-labels.
-* Fixed an `NullPointerException` in `GraphMLReader` that occurred when an `<edge>` didn't have an ID field and the base graph supported ID assignment.
+* Fixed an `NullPoiBugs
+^^^^nterException` in `GraphMLReader` that occurred when an `<edge>` didn't have an ID field and the base graph supported ID assignment.
 * Added `ScopingStrategy` which will computer and provide all `Scoping` steps with the path labels of the global `Traversal`.
 * Split `ComputerVerificationStrategy` into two strategies: `ComputerVerificationStrategy` and `ComputerFinalizationStrategy`.
 * Removed `HasTest.g_V_hasId_compilationEquality` from process test suite as it makes too many assumptions about provider compilation.
@@ -152,6 +155,53 @@ TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Deprecated `GraphManager.getGraphs()` and added `GraphManager.getGraphNames()`.
 * Deprecated `GraphManager.getTraversalSources()` and added `GraphManager.getTraversalSourceNames()`.
 * Fixed a bug so now users can supply a YAML with an empty `staticVariableTypes` to be used by the `FileSandboxExtension`
+
+Bugs
+^^^^
+
+* TINKERPOP-1258 HasTest.g_V_hasId_compilationEquality makes GraphStep assumptions
+* TINKERPOP-1528 CountByIsRangeStrategy fails for a particular query
+* TINKERPOP-1626 choose() is buggy in OLAP
+* TINKERPOP-1638 count() is optimized away in where()
+* TINKERPOP-1640 ComputerVerificationStrategy gives false errors
+* TINKERPOP-1652 Disable PathRetractionStrategy strategy if VertexProgramStep has LABELLED_PATH requirement
+* TINKERPOP-1660 Documentation links should not link to TINKERPOP-xxxx branches
+* TINKERPOP-1666 NPE in FileSandboxExtension if staticVariableTypes is empty in supplied YAML file
+* TINKERPOP-1668 RepeatUnrollStrategy should not execute if there is a LoopStep used.
+* TINKERPOP-1670 End type lost when using promise()
+* TINKERPOP-1673 GroovyTranslator produces Gremlin that can't execute on :remote
+* TINKERPOP-1675 RemoteStep#processNextStart() throws CompletionException instead of underlying exception
+* TINKERPOP-1681 Multiple hasId's are or'd into GraphStep
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-761 Some basic mathematical functions / steps
+* TINKERPOP-786 Patterns for DSL Development
+* TINKERPOP-1044 ResponseMessage should contain server-side exception name.
+* TINKERPOP-1095 Create a custom ScriptContext
+* TINKERPOP-1266 Make memory available to benchmarks configurable
+* TINKERPOP-1303 add help for :remote config for Gephi Plugin
+* TINKERPOP-1340 docs do not state at what version an API was introduced (or deprecated)
+* TINKERPOP-1387 from and to modulators for path steps
+* TINKERPOP-1438 Consider GraphManager as an interface*(breaking)*
+* TINKERPOP-1453 Allow Gremlin-Python to handle asynchronous failure
+* TINKERPOP-1577 Provide support for Python3 or Python2 in the Docker builds.
+* TINKERPOP-1599 implement real gremlin-python driver
+* TINKERPOP-1614 Improve documentation for Graph.V() and Graph.E() on main docs page
+* TINKERPOP-1618 Remove groovy dependency from gremlin-python
+* TINKERPOP-1627 LazyBarrierStrategy should not append an end barrier.
+* TINKERPOP-1631 Fix visibility issues with the BindingsGremlinPlugin
+* TINKERPOP-1634 Deprecate old methods of GremlinGroovyScriptEngine customization
+* TINKERPOP-1642 Improve performance of mutating traversals
+* TINKERPOP-1644 Improve script compilation process and include metrics
+* TINKERPOP-1653 Allow multiple scripts with arguments to be passed to the Console
+* TINKERPOP-1657 Provide abstraction to easily allow different HttpAuth schemes
+* TINKERPOP-1663 Validate a maximum for the number of parameters passed to Gremlin Server
+* TINKERPOP-1665 Remove unittest from Gremlin-Python tests
+* TINKERPOP-1671 Default method for RemoteConnection.submitAsync throws exception from submit on calling thread instead of failing the future
+* TINKERPOP-1677 Bump Groovy to 2.4.11
+* TINKERPOP-1680 Add string performance options to StarGraph
 
 [[release-3-2-4]]
 TinkerPop 3.2.4 (Release Date: February 8, 2017)
@@ -781,8 +831,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-7]]
-TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.1.7 (Release Date: June 12, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Configured Modern and The Crew graphs to work with a integer `IdManager` when `TinkerFactory.createXXX()` is called.
 * Added XSLT transform option to convert TinkerPop 2.x GraphML to 3.x GraphML.
@@ -791,6 +841,17 @@ TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed `EventStrategy` so that newly added properties trigger events with the name of the key that was added.
 * Drop use of jitpack for the jbcrypt artifact - using the official one in Maven Central.
 * Bumped to Groovy 2.4.11.
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-1504 MutationListener doesn't provide property key on property additions
+* TINKERPOP-1608 TP2-to-TP3 GraphML XSLT
+* TINKERPOP-1633 Use org.mindrot:jbcrypt v0.4
+* TINKERPOP-1645 Bump to Groovy 2.4.9
+* TINKERPOP-1654 Upgrade to jackson-databind 2.8.6+ in gremlin-shaded
+* TINKERPOP-1659 Docker build should use maven settings.xml
+* TINKERPOP-1664 StarVertexProperty#property should throw an NPE if the value is null
 
 [[release-3-1-6]]
 TinkerPop 3.1.6 (Release Date: February 3, 2017)
