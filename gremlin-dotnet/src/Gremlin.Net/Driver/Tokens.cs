@@ -31,6 +31,11 @@ namespace Gremlin.Net.Driver
     public class Tokens
     {
         /// <summary>
+        ///     Operation used by the client to authenticate itself.
+        /// </summary>
+        public static string OpsAuthentication = "authentication";
+
+        /// <summary>
         ///     Operation used for a request that contains the Bytecode representation of a Traversal.
         /// </summary>
         public static string OpsBytecode = "bytecode";
@@ -107,6 +112,12 @@ namespace Gremlin.Net.Driver
         ///     execute on the server.
         /// </summary>
         public static string ArgsEvalTimeout = "scriptEvaluationTimeout";
+
+        /// <summary>
+        ///     Argument name for the response to the server authentication challenge. This value is dependent on the SASL
+        ///     authentication mechanism required by the server.
+        /// </summary>
+        public static string ArgsSasl = "sasl";
 
         internal static string ValAggregateToMap = "map";
         internal static string ValAggregateToBulkSet = "bulkset";

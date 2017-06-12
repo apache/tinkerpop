@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Driver.ResultsAggregation;
@@ -38,10 +39,15 @@ namespace Gremlin.Net.Driver
         private readonly JsonMessageSerializer _messageSerializer = new JsonMessageSerializer();
         private readonly Uri _uri;
         private readonly WebSocketConnection _webSocketConnection = new WebSocketConnection();
+        private readonly string _username;
+        private readonly string _password;
 
-        public Connection(Uri uri, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter)
+        public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
+            GraphSONWriter graphSONWriter)
         {
             _uri = uri;
+            _username = username;
+            _password = password;
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
         }
@@ -83,7 +89,11 @@ namespace Gremlin.Net.Driver
                 status = receivedMsg.Status;
                 status.ThrowIfStatusIndicatesError();
 
-                if (status.Code != ResponseStatusCode.NoContent)
+                if (status.Code == ResponseStatusCode.Authenticate)
+                {
+                    await AuthenticateAsync().ConfigureAwait(false);
+                }
+                else if (status.Code != ResponseStatusCode.NoContent)
                 {
                     var receivedData = _graphSONReader.ToObject(receivedMsg.Result.Data);
                     foreach (var d in receivedData)
@@ -101,11 +111,30 @@ namespace Gremlin.Net.Driver
                             result.Add(d);
                         }
                 }
-            } while (status.Code == ResponseStatusCode.PartialContent);
+            } while (status.Code == ResponseStatusCode.PartialContent || status.Code == ResponseStatusCode.Authenticate);
 
             if (isAggregatingSideEffects)
                 return new List<T> {(T) aggregator.GetAggregatedResult()};
             return result;
+        }
+
+        private async Task AuthenticateAsync()
+        {
+            if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password))
+                throw new InvalidOperationException(
+                    $"The Gremlin Server requires authentication, but no credentials are specified - username: {_username}, password: {_password}.");
+
+            var message = RequestMessage.Build(Tokens.OpsAuthentication).Processor(Tokens.ProcessorTraversal)
+                .AddArgument(Tokens.ArgsSasl, SaslArgument()).Create();
+
+            await SendAsync(message).ConfigureAwait(false);
+        }
+
+        private string SaslArgument()
+        {
+            var auth = $"\0{_username}\0{_password}";
+            var authBytes = Encoding.UTF8.GetBytes(auth);
+            return Convert.ToBase64String(authBytes);
         }
 
         #region IDisposable Support
