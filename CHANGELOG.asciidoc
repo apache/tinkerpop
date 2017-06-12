@@ -23,8 +23,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-7]]
-TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.1.7 (Release Date: June 12, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Configured Modern and The Crew graphs to work with a integer `IdManager` when `TinkerFactory.createXXX()` is called.
 * Added XSLT transform option to convert TinkerPop 2.x GraphML to 3.x GraphML.
@@ -33,6 +33,17 @@ TinkerPop 3.1.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed `EventStrategy` so that newly added properties trigger events with the name of the key that was added.
 * Drop use of jitpack for the jbcrypt artifact - using the official one in Maven Central.
 * Bumped to Groovy 2.4.11.
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-1504 MutationListener doesn't provide property key on property additions
+* TINKERPOP-1608 TP2-to-TP3 GraphML XSLT
+* TINKERPOP-1633 Use org.mindrot:jbcrypt v0.4
+* TINKERPOP-1645 Bump to Groovy 2.4.9
+* TINKERPOP-1654 Upgrade to jackson-databind 2.8.6+ in gremlin-shaded
+* TINKERPOP-1659 Docker build should use maven settings.xml
+* TINKERPOP-1664 StarVertexProperty#property should throw an NPE if the value is null
 
 [[release-3-1-6]]
 TinkerPop 3.1.6 (Release Date: February 3, 2017)
