@@ -36,9 +36,13 @@ namespace Gremlin.Net.Driver
         /// <param name="hostname">The hostname of the server.</param>
         /// <param name="port">The port on which Gremlin Server can be reached.</param>
         /// <param name="enableSsl">Specifies whether SSL should be enabled.</param>
-        public GremlinServer(string hostname, int port = 8182, bool enableSsl = false)
+        /// <param name="username">The username to submit on requests that require authentication.</param>
+        /// <param name="password">The password to submit on requests that require authentication.</param>
+        public GremlinServer(string hostname, int port = 8182, bool enableSsl = false, string username = null, string password = null)
         {
             Uri = CreateUri(hostname, port, enableSsl);
+            Username = username;
+            Password = password;
         }
 
         /// <summary>
@@ -46,6 +50,16 @@ namespace Gremlin.Net.Driver
         /// </summary>
         /// <value>The WebSocket <see cref="System.Uri" /> that the Gremlin Server responds to.</value>
         public Uri Uri { get; }
+
+        /// <summary>
+        ///     Gets the username to submit on requests that require authentication.
+        /// </summary>
+        public string Username { get; }
+
+        /// <summary>
+        ///     Gets the password to submit on requests that require authentication.
+        /// </summary>
+        public string Password { get; }
 
         private Uri CreateUri(string hostname, int port, bool enableSsl)
         {
