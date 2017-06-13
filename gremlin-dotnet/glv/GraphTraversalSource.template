@@ -47,55 +47,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode = bytecode;
         }
 
-
-        public GraphTraversalSource WithBulk(params object[] args)
+<% sourceStepMethods.each{ method -> %>
+        public GraphTraversalSource <%= toCSharpMethodName.call(method) %>(params object[] args)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withBulk", args);
+            source.Bytecode.AddSource("<%= method %>", args);
             return source;
         }
-
-        public GraphTraversalSource WithPath(params object[] args)
-        {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withPath", args);
-            return source;
-        }
-
-        public GraphTraversalSource WithSack(params object[] args)
-        {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withSack", args);
-            return source;
-        }
-
-        public GraphTraversalSource WithSideEffect(params object[] args)
-        {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withSideEffect", args);
-            return source;
-        }
-
-        public GraphTraversalSource WithStrategies(params object[] args)
-        {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withStrategies", args);
-            return source;
-        }
-
-        public GraphTraversalSource WithoutStrategies(params object[] args)
-        {
-            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode));
-            source.Bytecode.AddSource("withoutStrategies", args);
-            return source;
-        }
-
+<% } %>
         public GraphTraversalSource WithBindings(object bindings)
         {
             return this;
@@ -116,27 +76,13 @@ namespace Gremlin.Net.Process.Traversal
             return WithStrategies(new VertexProgramStrategy(graphComputer, workers, persist, result, vertices, edges, configuration));
         }
 
-
-        public GraphTraversal< Edge,Edge > E(params object[] args)
+<% sourceSpawnMethods.each { method -> %>
+        public GraphTraversal< <%= method.typeArguments.join(",") %> > <%= toCSharpMethodName.call(method.methodName) %>(params object[] args)
         {
-            var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("E", args);
+            var traversal = new GraphTraversal< <%= method.typeArguments.join(",") %> >(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("<%= method.methodName %>", args);
             return traversal;
         }
-
-        public GraphTraversal< Vertex,Vertex > V(params object[] args)
-        {
-            var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("V", args);
-            return traversal;
-        }
-
-        public GraphTraversal< Vertex,Vertex > AddV(params object[] args)
-        {
-            var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("addV", args);
-            return traversal;
-        }
-
+<% } %>
     }
 }

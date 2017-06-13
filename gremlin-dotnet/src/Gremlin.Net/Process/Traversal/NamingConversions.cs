@@ -25,6 +25,9 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     internal static class NamingConversions
     {
         /// <summary>
@@ -41,46 +44,50 @@ namespace Gremlin.Net.Process.Traversal
             return javaName;
         }
 
-        private static readonly IDictionary<string, string> CSharpToJavaEnums = new Dictionary<string, string>
+        internal static readonly IDictionary<string, string> CSharpToJavaEnums = new Dictionary<string, string>
         {
-            {"T.Value", "value"},
-            {"Order.Decr", "decr"},
-            {"Order.KeyDecr", "keyDecr"},
-            {"T.Key", "key"},
-            {"Column.Values", "values"},
-            {"Order.KeyIncr", "keyIncr"},
-            {"Operator.Or", "or"},
-            {"Order.ValueIncr", "valueIncr"},
-            {"Cardinality.List", "list"},
-            {"Order.Incr", "incr"},
-            {"Pop.All", "all"},
-            {"Operator.SumLong", "sumLong"},
-            {"Pop.First", "first"},
-            {"T.Label", "label"},
-            {"Cardinality.Set", "set"},
-            {"Order.Shuffle", "shuffle"},
-            {"Direction.In", "IN"},
-            {"Direction.Both", "BOTH"},
-            {"Scope.Local", "local"},
-            {"Operator.Max", "max"},
-            {"Direction.Out", "OUT"},
-            {"Scope.Global", "global"},
-            {"Pick.Any", "any"},
-            {"Order.ValueDecr", "valueDecr"},
-            {"Column.Keys", "keys"},
-            {"Operator.AddAll", "addAll"},
-            {"Operator.Mult", "mult"},
-            {"Pick.None", "none"},
-            {"Pop.Last", "last"},
-            {"Operator.And", "and"},
-            {"T.Id", "id"},
-            {"Operator.Min", "min"},
             {"Barrier.NormSack", "normSack"},
-            {"Operator.Minus", "minus"},
+            {"Cardinality.List", "list"},
+            {"Cardinality.Set", "set"},
             {"Cardinality.Single", "single"},
+            {"Column.Keys", "keys"},
+            {"Column.Values", "values"},
+            {"Direction.Both", "BOTH"},
+            {"Direction.In", "IN"},
+            {"Direction.Out", "OUT"},
+            {"GraphSONVersion.V1_0", "V1_0"},
+            {"GraphSONVersion.V2_0", "V2_0"},
+            {"GryoVersion.V1_0", "V1_0"},
+            {"Operator.AddAll", "addAll"},
+            {"Operator.And", "and"},
             {"Operator.Assign", "assign"},
             {"Operator.Div", "div"},
-            {"Operator.Sum", "sum"}
+            {"Operator.Max", "max"},
+            {"Operator.Min", "min"},
+            {"Operator.Minus", "minus"},
+            {"Operator.Mult", "mult"},
+            {"Operator.Or", "or"},
+            {"Operator.Sum", "sum"},
+            {"Operator.SumLong", "sumLong"},
+            {"Order.Decr", "decr"},
+            {"Order.Incr", "incr"},
+            {"Order.KeyDecr", "keyDecr"},
+            {"Order.KeyIncr", "keyIncr"},
+            {"Order.Shuffle", "shuffle"},
+            {"Order.ValueDecr", "valueDecr"},
+            {"Order.ValueIncr", "valueIncr"},
+            {"Pick.Any", "any"},
+            {"Pick.None", "none"},
+            {"Pop.All", "all"},
+            {"Pop.First", "first"},
+            {"Pop.Last", "last"},
+            {"Scope.Global", "global"},
+            {"Scope.Local", "local"},
+            {"T.Id", "id"},
+            {"T.Key", "key"},
+            {"T.Label", "label"},
+            {"T.Value", "value"}
+
         };
     }
 }

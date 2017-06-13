@@ -34,6 +34,22 @@ limitations under the License.
         <gremlin.server.dir>${project.parent.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>
 
+    <build>
+        <plugins>
+            <!-- Override the execution from gremlin-dotnet to disable code generation from happening a second time -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-dsl</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>gremlin-dotnet-standard</id>

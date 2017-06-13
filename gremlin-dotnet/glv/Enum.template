@@ -26,8 +26,8 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
     /// </summary>
-    public enum Column
+    public enum <%= enumClass.simpleName %>
     {
-        Keys,Values
+        <%= constants %>
     }
 }

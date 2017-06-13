@@ -26,6 +26,9 @@ using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public static class __
     {
         public static GraphTraversal<object, object> Start()
@@ -487,5 +490,6 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, object>().Where(args);
         }
+
     }
 }
