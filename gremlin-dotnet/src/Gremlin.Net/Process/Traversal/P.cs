@@ -21,11 +21,14 @@
 
 #endregion
 
-
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public class P
     {
+
         public static TraversalPredicate Between(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
@@ -103,5 +106,6 @@ namespace Gremlin.Net.Process.Traversal
             var value = args.Length == 1 ? args[0] : args;
             return new TraversalPredicate("without", value);
         }
+
     }
 }

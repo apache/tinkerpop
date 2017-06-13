@@ -21,13 +21,25 @@
 
 #endregion
 
+using System.Collections.Generic;
+using Gremlin.Net.Structure;
+
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
     /// </summary>
-    public enum Column
+    public static class __
     {
-        Keys,Values
+        public static GraphTraversal<object, object> Start()
+        {
+            return new GraphTraversal<object, object>();
+        }
+<% anonStepMethods.each { method -> %>
+        public static GraphTraversal<object, <%= method.t2 %>> <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %>(params object[] args)
+        {
+            return new GraphTraversal<object, object>().<%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %>(args);
+        }
+<% } %>
     }
 }

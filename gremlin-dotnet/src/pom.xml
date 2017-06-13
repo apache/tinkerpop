@@ -26,6 +26,23 @@ limitations under the License.
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin-DotNet - Source</name>
     <packaging>${packaging.type}</packaging>
+
+    <build>
+        <plugins>
+            <!-- Override the execution from gremlin-dotnet to disable code generation from happening a second time -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-dsl</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>gremlin-dotnet-standard</id>

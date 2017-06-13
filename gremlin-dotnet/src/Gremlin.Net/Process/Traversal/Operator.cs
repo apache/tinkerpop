@@ -23,18 +23,11 @@
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public enum Operator
     {
-        AddAll,
-        And,
-        Assign,
-        Div,
-        Max,
-        Min,
-        Minus,
-        Mult,
-        Or,
-        Sum,
-        SumLong
+        AddAll,And,Assign,Div,Max,Min,Minus,Mult,Or,Sum,SumLong
     }
 }

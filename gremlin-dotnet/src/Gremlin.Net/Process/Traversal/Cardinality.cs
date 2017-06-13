@@ -23,10 +23,11 @@
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public enum Cardinality
     {
-        List,
-        Set,
-        Single
+        List,Set,Single
     }
 }

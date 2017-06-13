@@ -26,6 +26,9 @@ using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public class GraphTraversal<S, E> : DefaultTraversal<S, E>
     {
         public GraphTraversal()
@@ -50,592 +53,594 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 
-        public GraphTraversal<S, Vertex> V(params object[] args)
+        public GraphTraversal< S , Vertex > V (params object[] args)
         {
             Bytecode.AddStep("V", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Edge> AddE(params object[] args)
+        public GraphTraversal< S , Edge > AddE (params object[] args)
         {
             Bytecode.AddStep("addE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Edge> AddInE(params object[] args)
+        public GraphTraversal< S , Edge > AddInE (params object[] args)
         {
             Bytecode.AddStep("addInE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Edge> AddOutE(params object[] args)
+        public GraphTraversal< S , Edge > AddOutE (params object[] args)
         {
             Bytecode.AddStep("addOutE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Vertex> AddV(params object[] args)
+        public GraphTraversal< S , Vertex > AddV (params object[] args)
         {
             Bytecode.AddStep("addV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, E> Aggregate(params object[] args)
+        public GraphTraversal< S , E > Aggregate (params object[] args)
         {
             Bytecode.AddStep("aggregate", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> And(params object[] args)
+        public GraphTraversal< S , E > And (params object[] args)
         {
             Bytecode.AddStep("and", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> As(params object[] args)
+        public GraphTraversal< S , E > As (params object[] args)
         {
             Bytecode.AddStep("as", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Barrier(params object[] args)
+        public GraphTraversal< S , E > Barrier (params object[] args)
         {
             Bytecode.AddStep("barrier", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Vertex> Both(params object[] args)
+        public GraphTraversal< S , Vertex > Both (params object[] args)
         {
             Bytecode.AddStep("both", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Edge> BothE(params object[] args)
+        public GraphTraversal< S , Edge > BothE (params object[] args)
         {
             Bytecode.AddStep("bothE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Vertex> BothV(params object[] args)
+        public GraphTraversal< S , Vertex > BothV (params object[] args)
         {
             Bytecode.AddStep("bothV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, E2> Branch<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Branch<E2> (params object[] args)
         {
             Bytecode.AddStep("branch", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> By(params object[] args)
+        public GraphTraversal< S , E > By (params object[] args)
         {
             Bytecode.AddStep("by", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> Cap<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Cap<E2> (params object[] args)
         {
             Bytecode.AddStep("cap", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Choose<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Choose<E2> (params object[] args)
         {
             Bytecode.AddStep("choose", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Coalesce<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Coalesce<E2> (params object[] args)
         {
             Bytecode.AddStep("coalesce", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Coin(params object[] args)
+        public GraphTraversal< S , E > Coin (params object[] args)
         {
             Bytecode.AddStep("coin", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> Constant<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Constant<E2> (params object[] args)
         {
             Bytecode.AddStep("constant", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, long> Count(params object[] args)
+        public GraphTraversal< S , long > Count (params object[] args)
         {
             Bytecode.AddStep("count", args);
-            return Wrap<S, long>(this);
+            return Wrap< S , long >(this);
         }
 
-        public GraphTraversal<S, E> CyclicPath(params object[] args)
+        public GraphTraversal< S , E > CyclicPath (params object[] args)
         {
             Bytecode.AddStep("cyclicPath", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Dedup(params object[] args)
+        public GraphTraversal< S , E > Dedup (params object[] args)
         {
             Bytecode.AddStep("dedup", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Drop(params object[] args)
+        public GraphTraversal< S , E > Drop (params object[] args)
         {
             Bytecode.AddStep("drop", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Emit(params object[] args)
+        public GraphTraversal< S , E > Emit (params object[] args)
         {
             Bytecode.AddStep("emit", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Filter(params object[] args)
+        public GraphTraversal< S , E > Filter (params object[] args)
         {
             Bytecode.AddStep("filter", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> FlatMap<E2>(params object[] args)
+        public GraphTraversal< S , E2 > FlatMap<E2> (params object[] args)
         {
             Bytecode.AddStep("flatMap", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Fold<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Fold<E2> (params object[] args)
         {
             Bytecode.AddStep("fold", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> From(params object[] args)
+        public GraphTraversal< S , E > From (params object[] args)
         {
             Bytecode.AddStep("from", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Group(params object[] args)
+        public GraphTraversal< S , E > Group (params object[] args)
         {
             Bytecode.AddStep("group", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> GroupCount(params object[] args)
+        public GraphTraversal< S , E > GroupCount (params object[] args)
         {
             Bytecode.AddStep("groupCount", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> GroupV3d0(params object[] args)
+        public GraphTraversal< S , E > GroupV3d0 (params object[] args)
         {
             Bytecode.AddStep("groupV3d0", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Has(params object[] args)
+        public GraphTraversal< S , E > Has (params object[] args)
         {
             Bytecode.AddStep("has", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> HasId(params object[] args)
+        public GraphTraversal< S , E > HasId (params object[] args)
         {
             Bytecode.AddStep("hasId", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> HasKey(params object[] args)
+        public GraphTraversal< S , E > HasKey (params object[] args)
         {
             Bytecode.AddStep("hasKey", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> HasLabel(params object[] args)
+        public GraphTraversal< S , E > HasLabel (params object[] args)
         {
             Bytecode.AddStep("hasLabel", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> HasNot(params object[] args)
+        public GraphTraversal< S , E > HasNot (params object[] args)
         {
             Bytecode.AddStep("hasNot", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> HasValue(params object[] args)
+        public GraphTraversal< S , E > HasValue (params object[] args)
         {
             Bytecode.AddStep("hasValue", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, object> Id(params object[] args)
+        public GraphTraversal< S , object > Id (params object[] args)
         {
             Bytecode.AddStep("id", args);
-            return Wrap<S, object>(this);
+            return Wrap< S , object >(this);
         }
 
-        public GraphTraversal<S, E> Identity(params object[] args)
+        public GraphTraversal< S , E > Identity (params object[] args)
         {
             Bytecode.AddStep("identity", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Vertex> In(params object[] args)
+        public GraphTraversal< S , Vertex > In (params object[] args)
         {
             Bytecode.AddStep("in", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Edge> InE(params object[] args)
+        public GraphTraversal< S , Edge > InE (params object[] args)
         {
             Bytecode.AddStep("inE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Vertex> InV(params object[] args)
+        public GraphTraversal< S , Vertex > InV (params object[] args)
         {
             Bytecode.AddStep("inV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, E> Inject(params object[] args)
+        public GraphTraversal< S , E > Inject (params object[] args)
         {
             Bytecode.AddStep("inject", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Is(params object[] args)
+        public GraphTraversal< S , E > Is (params object[] args)
         {
             Bytecode.AddStep("is", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, string> Key(params object[] args)
+        public GraphTraversal< S , string > Key (params object[] args)
         {
             Bytecode.AddStep("key", args);
-            return Wrap<S, string>(this);
+            return Wrap< S , string >(this);
         }
 
-        public GraphTraversal<S, string> Label(params object[] args)
+        public GraphTraversal< S , string > Label (params object[] args)
         {
             Bytecode.AddStep("label", args);
-            return Wrap<S, string>(this);
+            return Wrap< S , string >(this);
         }
 
-        public GraphTraversal<S, E2> Limit<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Limit<E2> (params object[] args)
         {
             Bytecode.AddStep("limit", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Local<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Local<E2> (params object[] args)
         {
             Bytecode.AddStep("local", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, int> Loops(params object[] args)
+        public GraphTraversal< S , int > Loops (params object[] args)
         {
             Bytecode.AddStep("loops", args);
-            return Wrap<S, int>(this);
+            return Wrap< S , int >(this);
         }
 
-        public GraphTraversal<S, E2> Map<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Map<E2> (params object[] args)
         {
             Bytecode.AddStep("map", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> MapKeys<E2>(params object[] args)
+        public GraphTraversal< S , E2 > MapKeys<E2> (params object[] args)
         {
             Bytecode.AddStep("mapKeys", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> MapValues<E2>(params object[] args)
+        public GraphTraversal< S , E2 > MapValues<E2> (params object[] args)
         {
             Bytecode.AddStep("mapValues", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, IDictionary<string, E2>> Match<E2>(params object[] args)
+        public GraphTraversal< S , IDictionary<string, E2> > Match<E2> (params object[] args)
         {
             Bytecode.AddStep("match", args);
-            return Wrap<S, IDictionary<string, E2>>(this);
+            return Wrap< S , IDictionary<string, E2> >(this);
         }
 
-        public GraphTraversal<S, E2> Max<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Max<E2> (params object[] args)
         {
             Bytecode.AddStep("max", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Mean<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Mean<E2> (params object[] args)
         {
             Bytecode.AddStep("mean", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Min<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Min<E2> (params object[] args)
         {
             Bytecode.AddStep("min", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Not(params object[] args)
+        public GraphTraversal< S , E > Not (params object[] args)
         {
             Bytecode.AddStep("not", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Option(params object[] args)
+        public GraphTraversal< S , E > Option (params object[] args)
         {
             Bytecode.AddStep("option", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> Optional<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Optional<E2> (params object[] args)
         {
             Bytecode.AddStep("optional", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Or(params object[] args)
+        public GraphTraversal< S , E > Or (params object[] args)
         {
             Bytecode.AddStep("or", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Order(params object[] args)
+        public GraphTraversal< S , E > Order (params object[] args)
         {
             Bytecode.AddStep("order", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Vertex> OtherV(params object[] args)
+        public GraphTraversal< S , Vertex > OtherV (params object[] args)
         {
             Bytecode.AddStep("otherV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Vertex> Out(params object[] args)
+        public GraphTraversal< S , Vertex > Out (params object[] args)
         {
             Bytecode.AddStep("out", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Edge> OutE(params object[] args)
+        public GraphTraversal< S , Edge > OutE (params object[] args)
         {
             Bytecode.AddStep("outE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Vertex> OutV(params object[] args)
+        public GraphTraversal< S , Vertex > OutV (params object[] args)
         {
             Bytecode.AddStep("outV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, E> PageRank(params object[] args)
+        public GraphTraversal< S , E > PageRank (params object[] args)
         {
             Bytecode.AddStep("pageRank", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Path> Path(params object[] args)
+        public GraphTraversal< S , Path > Path (params object[] args)
         {
             Bytecode.AddStep("path", args);
-            return Wrap<S, Path>(this);
+            return Wrap< S , Path >(this);
         }
 
-        public GraphTraversal<S, E> PeerPressure(params object[] args)
+        public GraphTraversal< S , E > PeerPressure (params object[] args)
         {
             Bytecode.AddStep("peerPressure", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Profile(params object[] args)
+        public GraphTraversal< S , E > Profile (params object[] args)
         {
             Bytecode.AddStep("profile", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Program(params object[] args)
+        public GraphTraversal< S , E > Program (params object[] args)
         {
             Bytecode.AddStep("program", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, IDictionary<string, E2>> Project<E2>(params object[] args)
+        public GraphTraversal< S , IDictionary<string, E2> > Project<E2> (params object[] args)
         {
             Bytecode.AddStep("project", args);
-            return Wrap<S, IDictionary<string, E2>>(this);
+            return Wrap< S , IDictionary<string, E2> >(this);
         }
 
-        public GraphTraversal<S, E2> Properties<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Properties<E2> (params object[] args)
         {
             Bytecode.AddStep("properties", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Property(params object[] args)
+        public GraphTraversal< S , E > Property (params object[] args)
         {
             Bytecode.AddStep("property", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, IDictionary<string, E2>> PropertyMap<E2>(params object[] args)
+        public GraphTraversal< S , IDictionary<string, E2> > PropertyMap<E2> (params object[] args)
         {
             Bytecode.AddStep("propertyMap", args);
-            return Wrap<S, IDictionary<string, E2>>(this);
+            return Wrap< S , IDictionary<string, E2> >(this);
         }
 
-        public GraphTraversal<S, E2> Range<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Range<E2> (params object[] args)
         {
             Bytecode.AddStep("range", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Repeat(params object[] args)
+        public GraphTraversal< S , E > Repeat (params object[] args)
         {
             Bytecode.AddStep("repeat", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Sack(params object[] args)
+        public GraphTraversal< S , E > Sack (params object[] args)
         {
             Bytecode.AddStep("sack", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Sample(params object[] args)
+        public GraphTraversal< S , E > Sample (params object[] args)
         {
             Bytecode.AddStep("sample", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, IDictionary<string, E2>> Select<E2>(params object[] args)
+        public GraphTraversal< S , IDictionary<string, E2> > Select<E2> (params object[] args)
         {
             Bytecode.AddStep("select", args);
-            return Wrap<S, IDictionary<string, E2>>(this);
+            return Wrap< S , IDictionary<string, E2> >(this);
         }
 
-        public GraphTraversal<S, E> SideEffect(params object[] args)
+        public GraphTraversal< S , E > SideEffect (params object[] args)
         {
             Bytecode.AddStep("sideEffect", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> SimplePath(params object[] args)
+        public GraphTraversal< S , E > SimplePath (params object[] args)
         {
             Bytecode.AddStep("simplePath", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Store(params object[] args)
+        public GraphTraversal< S , E > Store (params object[] args)
         {
             Bytecode.AddStep("store", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Edge> Subgraph(params object[] args)
+        public GraphTraversal< S , Edge > Subgraph (params object[] args)
         {
             Bytecode.AddStep("subgraph", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, E2> Sum<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Sum<E2> (params object[] args)
         {
             Bytecode.AddStep("sum", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Tail<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Tail<E2> (params object[] args)
         {
             Bytecode.AddStep("tail", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> TimeLimit(params object[] args)
+        public GraphTraversal< S , E > TimeLimit (params object[] args)
         {
             Bytecode.AddStep("timeLimit", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E> Times(params object[] args)
+        public GraphTraversal< S , E > Times (params object[] args)
         {
             Bytecode.AddStep("times", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, Vertex> To(params object[] args)
+        public GraphTraversal< S , Vertex > To (params object[] args)
         {
             Bytecode.AddStep("to", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, Edge> ToE(params object[] args)
+        public GraphTraversal< S , Edge > ToE (params object[] args)
         {
             Bytecode.AddStep("toE", args);
-            return Wrap<S, Edge>(this);
+            return Wrap< S , Edge >(this);
         }
 
-        public GraphTraversal<S, Vertex> ToV(params object[] args)
+        public GraphTraversal< S , Vertex > ToV (params object[] args)
         {
             Bytecode.AddStep("toV", args);
-            return Wrap<S, Vertex>(this);
+            return Wrap< S , Vertex >(this);
         }
 
-        public GraphTraversal<S, E> Tree(params object[] args)
+        public GraphTraversal< S , E > Tree (params object[] args)
         {
             Bytecode.AddStep("tree", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> Unfold<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Unfold<E2> (params object[] args)
         {
             Bytecode.AddStep("unfold", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E2> Union<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Union<E2> (params object[] args)
         {
             Bytecode.AddStep("union", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Until(params object[] args)
+        public GraphTraversal< S , E > Until (params object[] args)
         {
             Bytecode.AddStep("until", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
 
-        public GraphTraversal<S, E2> Value<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Value<E2> (params object[] args)
         {
             Bytecode.AddStep("value", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, IDictionary<string, E2>> ValueMap<E2>(params object[] args)
+        public GraphTraversal< S , IDictionary<string, E2> > ValueMap<E2> (params object[] args)
         {
             Bytecode.AddStep("valueMap", args);
-            return Wrap<S, IDictionary<string, E2>>(this);
+            return Wrap< S , IDictionary<string, E2> >(this);
         }
 
-        public GraphTraversal<S, E2> Values<E2>(params object[] args)
+        public GraphTraversal< S , E2 > Values<E2> (params object[] args)
         {
             Bytecode.AddStep("values", args);
-            return Wrap<S, E2>(this);
+            return Wrap< S , E2 >(this);
         }
 
-        public GraphTraversal<S, E> Where(params object[] args)
+        public GraphTraversal< S , E > Where (params object[] args)
         {
             Bytecode.AddStep("where", args);
-            return Wrap<S, E>(this);
+            return Wrap< S , E >(this);
         }
+
+
     }
 }

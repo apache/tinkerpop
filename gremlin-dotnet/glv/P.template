@@ -26,8 +26,14 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
     /// </summary>
-    public enum Column
+    public class P
     {
-        Keys,Values
+<% pmethods.each { method -> %>
+        public static TraversalPredicate <%= toCSharpMethodName.call(method) %>(params object[] args)
+        {
+            var value = args.Length == 1 ? args[0] : args;
+            return new TraversalPredicate("<%= method %>", value);
+        }
+<% } %>
     }
 }

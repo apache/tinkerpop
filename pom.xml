@@ -118,7 +118,6 @@ limitations under the License.
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>gremlin-python</module>
-        <module>gremlin-dotnet-generator</module>
         <module>gremlin-dotnet</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
