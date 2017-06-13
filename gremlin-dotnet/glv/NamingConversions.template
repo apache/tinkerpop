@@ -21,13 +21,32 @@
 
 #endregion
 
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
     /// </summary>
-    public enum Column
+    internal static class NamingConversions
     {
-        Keys,Values
+        /// <summary>
+        /// Gets the Java name equivalent for a given enum value
+        /// </summary>
+        internal static string GetEnumJavaName(string typeName, string value)
+        {
+            var key = \$"{typeName}.{value}";
+            string javaName;
+            if (!CSharpToJavaEnums.TryGetValue(key, out javaName))
+            {
+                throw new KeyNotFoundException(\$"Java name for {key} not found");
+            }
+            return javaName;
+        }
+
+        internal static readonly IDictionary<string, string> CSharpToJavaEnums = new Dictionary<string, string>
+        {
+            <%= body %>
+        };
     }
 }

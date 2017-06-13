@@ -23,14 +23,11 @@
 
 namespace Gremlin.Net.Process.Traversal
 {
+    /// <summary>
+    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    /// </summary>
     public enum Order
     {
-        Decr,
-        Incr,
-        KeyDecr,
-        KeyIncr,
-        Shuffle,
-        ValueDecr,
-        ValueIncr
+        Decr,Incr,KeyDecr,KeyIncr,Shuffle,ValueDecr,ValueIncr
     }
 }
