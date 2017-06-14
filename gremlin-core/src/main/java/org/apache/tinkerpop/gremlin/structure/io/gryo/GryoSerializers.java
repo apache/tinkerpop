@@ -217,7 +217,7 @@ public final class GryoSerializers {
                     if (predicate.equals("between"))
                         return P.between(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("inside"))
-                        return P.between(((List) value).get(0), ((List) value).get(1));
+                        return P.inside(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("outside"))
                         return P.outside(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("within"))
