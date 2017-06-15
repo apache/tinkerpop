@@ -122,7 +122,7 @@ This release also includes changes from <<release-3-1-7, 3.1.7>>.
 * Updated `PathRetractionStrategy` to not run if the provided traversal contains a `VertexProgramStep` that has a `LABELED_PATH` requirement.
 * Added various metrics to the `GremlinGroovyScriptEngine` around script compilation and exposed them in Gremlin Server.
 * Moved the `caffeine` dependency down to `gremlin-groovy` and out of `gremlin-server`.
-* Improved script compilation in `GremlinGroovyScriptEngine to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
+* Improved script compilation in `GremlinGroovyScriptEngine` to use better caching, log long compile times and prevent failed compilations from recompiling on future requests.
 * Synchronized script compilation.
 * Logged Script compilation times.
 * Prevented failed scripts from recompiling.
