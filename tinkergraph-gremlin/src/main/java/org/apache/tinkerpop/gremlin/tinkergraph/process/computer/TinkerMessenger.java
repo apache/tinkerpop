@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -59,14 +60,15 @@ public final class TinkerMessenger<M> implements Messenger<M> {
     @Override
     public Iterator<M> receiveMessages() {
         final MultiIterator<M> multiIterator = new MultiIterator<>();
-        for (final MessageScope messageScope : this.messageBoard.previousMessageScopes) {
+        for (final MessageScope messageScope : this.messageBoard.receiveMessages.keySet()) {
+//        for (final MessageScope messageScope : this.messageBoard.previousMessageScopes) {
             if (messageScope instanceof MessageScope.Local) {
                 final MessageScope.Local<M> localMessageScope = (MessageScope.Local<M>) messageScope;
                 final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
                 final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
                 multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
-                        .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
+                        .map(e -> this.messageBoard.receiveMessages.get(messageScope).get((edge[0] = e).vertices(direction).next()))
                         .filter(q -> null != q)
                         .flatMap(Queue::stream)
                         .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
@@ -74,7 +76,7 @@ public final class TinkerMessenger<M> implements Messenger<M> {
 
             } else {
                 multiIterator.addIterator(Stream.of(this.vertex)
-                        .map(this.messageBoard.receiveMessages::get)
+                        .map(this.messageBoard.receiveMessages.get(messageScope)::get)
                         .filter(q -> null != q)
                         .flatMap(Queue::stream)
                         .iterator());
@@ -85,16 +87,20 @@ public final class TinkerMessenger<M> implements Messenger<M> {
 
     @Override
     public void sendMessage(final MessageScope messageScope, final M message) {
-        this.messageBoard.currentMessageScopes.add(messageScope);
+//        this.messageBoard.currentMessageScopes.add(messageScope);
         if (messageScope instanceof MessageScope.Local) {
-            addMessage(this.vertex, message);
+            addMessage(this.vertex, message, messageScope);
         } else {
-            ((MessageScope.Global) messageScope).vertices().forEach(v -> addMessage(v, message));
+            ((MessageScope.Global) messageScope).vertices().forEach(v -> addMessage(v, message, messageScope));
         }
     }
 
-    private void addMessage(final Vertex vertex, final M message) {
-        this.messageBoard.sendMessages.compute(vertex, (v, queue) -> {
+    private void addMessage(final Vertex vertex, final M message, MessageScope messageScope) {
+        this.messageBoard.sendMessages.compute(messageScope, (ms, messages) -> {
+            if(null==messages) messages = new ConcurrentHashMap<>();
+            return messages;
+        });
+        this.messageBoard.sendMessages.get(messageScope).compute(vertex, (v, queue) -> {
             if (null == queue) queue = new ConcurrentLinkedQueue<>();
             queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
             return queue;
