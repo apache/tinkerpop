@@ -27,6 +27,8 @@ using Gremlin.Net.Structure;
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
+#pragma warning disable 1591
+
     /// <summary>
     ///     An anonymous <see cref="GraphTraversal{SType, EType}" />.
     /// </summary>
@@ -768,5 +770,7 @@ namespace Gremlin.Net.Process.Traversal
             return new GraphTraversal<object, object>().Where(args);
         }
 
+
+#pragma warning restore 1591
     }
 }

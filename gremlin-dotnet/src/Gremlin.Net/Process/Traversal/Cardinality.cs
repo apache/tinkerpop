@@ -24,8 +24,12 @@
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
+#pragma warning disable 1591
+
     public enum Cardinality
     {
         List,Set,Single
     }
+    
+#pragma warning restore 1591
 }

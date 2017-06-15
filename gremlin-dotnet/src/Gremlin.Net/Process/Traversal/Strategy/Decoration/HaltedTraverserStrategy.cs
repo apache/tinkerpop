@@ -23,6 +23,7 @@
 
 namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
 {
+#pragma warning disable 1591
     public class HaltedTraverserStrategy : AbstractTraversalStrategy
     {
         public HaltedTraverserStrategy(string haltedTraverserFactoryName = null)
@@ -31,4 +32,5 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
                 Configuration["haltedTraverserFactory"] = haltedTraverserFactoryName;
         }
     }
+#pragma warning restore 1591
 }
