@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
@@ -394,5 +395,11 @@ public class TraversalHelperTest {
         assertTrue(labels.contains("d"));
         assertTrue(labels.contains("e"));
         assertTrue(labels.contains("f"));
+    }
+
+    @Test
+    public void shouldFindStepsRecursively() {
+        final Traversal<?,?> traversal = __.V().repeat(__.out().simplePath());
+        assertTrue(TraversalHelper.anyStepRecursively(s -> s instanceof PathFilterStep, traversal.asAdmin()));
     }
 }
