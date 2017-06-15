@@ -23,15 +23,13 @@
 
 using System.Collections.Generic;
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-    /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
-    /// </summary>
     internal static class NamingConversions
     {
         /// <summary>
-        /// Gets the Java name equivalent for a given enum value
+        ///     Gets the Java name equivalent for a given enum value
         /// </summary>
         internal static string GetEnumJavaName(string typeName, string value)
         {

@@ -21,26 +21,48 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    ///     A <see cref="GraphTraversalSource" /> is the primary DSL of the Gremlin traversal machine.
+    ///     It provides access to all the configurations and steps for Turing complete graph computing.
     /// </summary>
     public class GraphTraversalSource
     {
+        /// <summary>
+        ///     Gets or sets the traversal strategies associated with this graph traversal source.
+        /// </summary>
         public ICollection<ITraversalStrategy> TraversalStrategies { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the <see cref="Traversal.Bytecode" /> associated with the current state of this graph traversal
+        ///     source.
+        /// </summary>
         public Bytecode Bytecode { get; set; }
 
-         public GraphTraversalSource()
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GraphTraversalSource" /> class.
+        /// </summary>
+        public GraphTraversalSource()
             : this(new List<ITraversalStrategy>(), new Bytecode())
         {
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GraphTraversalSource" /> class.
+        /// </summary>
+        /// <param name="traversalStrategies">The traversal strategies associated with this graph traversal source.</param>
+        /// <param name="bytecode">
+        ///     The <see cref="Traversal.Bytecode" /> associated with the current state of this graph traversal
+        ///     source.
+        /// </param>
         public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode)
         {
             TraversalStrategies = traversalStrategies;
@@ -96,11 +118,21 @@ namespace Gremlin.Net.Process.Traversal
             return source;
         }
 
+        [Obsolete("Use the Bindings class instead.", false)]
         public GraphTraversalSource WithBindings(object bindings)
         {
             return this;
         }
 
+        /// <summary>
+        ///     Configures the <see cref="GraphTraversalSource" /> as a "remote" to issue the
+        ///     <see cref="GraphTraversal{SType, EType}" /> for execution elsewhere.
+        /// </summary>
+        /// <param name="remoteConnection">
+        ///     The <see cref="IRemoteConnection" /> instance to use to submit the
+        ///     <see cref="GraphTraversal{SType, EType}" />.
+        /// </param>
+        /// <returns>A <see cref="GraphTraversalSource" /> configured to use the provided <see cref="IRemoteConnection" />.</returns>
         public GraphTraversalSource WithRemote(IRemoteConnection remoteConnection)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
@@ -109,6 +141,10 @@ namespace Gremlin.Net.Process.Traversal
             return source;
         }
 
+        /// <summary>
+        ///     Add a GraphComputer class used to execute the traversal.
+        ///     This adds a <see cref="VertexProgramStrategy" /> to the strategies.
+        /// </summary>
         public GraphTraversalSource WithComputer(string graphComputer = null, int? workers = null, string persist = null,
             string result = null, ITraversal vertices = null, ITraversal edges = null,
             Dictionary<string, dynamic> configuration = null)
@@ -117,6 +153,10 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the E step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal< Edge,Edge > E(params object[] args)
         {
             var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
@@ -124,6 +164,10 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the V step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal< Vertex,Vertex > V(params object[] args)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
@@ -131,6 +175,10 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal< Vertex,Vertex > AddV(params object[] args)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));

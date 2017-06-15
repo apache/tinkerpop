@@ -21,11 +21,9 @@
 
 #endregion
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-    /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
-    /// </summary>
     public enum Pop
     {
         All,First,Last

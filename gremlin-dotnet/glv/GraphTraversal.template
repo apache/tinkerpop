@@ -24,18 +24,27 @@
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    ///     Graph traversals are the primary way in which graphs are processed.
     /// </summary>
     public class GraphTraversal<S, E> : DefaultTraversal<S, E>
     {
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GraphTraversal{SType, EType}" /> class.
+        /// </summary>
         public GraphTraversal()
             : this(new List<ITraversalStrategy>(), new Bytecode())
         {
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GraphTraversal{SType, EType}" /> class.
+        /// </summary>
+        /// <param name="traversalStrategies">The traversal strategies to be used by this graph traversal at evaluation time.</param>
+        /// <param name="bytecode">The <see cref="Bytecode" /> associated with the construction of this graph traversal.</param>
         public GraphTraversal(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode)
         {
             TraversalStrategies = traversalStrategies;
@@ -53,6 +62,9 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 <% graphStepMethods.each { method -> %>
+        /// <summary>
+        ///     Adds the <%= method.methodName %> step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal< <%= method.t1 %> , <%= method.t2 %> > <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %> (params object[] args)
         {
             Bytecode.AddStep("<%= method.methodName %>", args);
