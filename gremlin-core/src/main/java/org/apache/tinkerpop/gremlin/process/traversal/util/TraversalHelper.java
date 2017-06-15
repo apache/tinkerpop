@@ -427,7 +427,9 @@ public final class TraversalHelper {
                 return true;
             }
 
-            if (step instanceof TraversalParent) anyStepRecursively(predicate, ((TraversalParent) step));
+            if (step instanceof TraversalParent && anyStepRecursively(predicate, ((TraversalParent) step))) {
+                return true;
+            }
         }
         return false;
     }
