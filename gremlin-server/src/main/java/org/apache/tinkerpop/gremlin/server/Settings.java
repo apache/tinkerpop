@@ -28,9 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
-import info.ganglia.gmetric4j.gmetric.GMetric;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -553,17 +552,6 @@ public class Settings {
         public GangliaReporterMetrics() {
             // default ganglia port
             this.port = 8649;
-        }
-
-        public GMetric.UDPAddressingMode optionalAddressingMode() {
-            if (null == addressingMode)
-                return null;
-
-            try {
-                return GMetric.UDPAddressingMode.valueOf(addressingMode);
-            } catch (IllegalArgumentException iae) {
-                return null;
-            }
         }
     }
 

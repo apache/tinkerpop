@@ -1184,11 +1184,7 @@ The following table describes the various YAML configuration options that Gremli
 |writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |65536
 |=========================================================
 
-NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not
-packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To
-run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from
-link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory
-before starting the server.
+See the <<metrics,Metrics>> section for more information on how to configure Ganglia and Graphite.
 
 [[opprocessor-configurations]]
 OpProcessor Configurations
@@ -1677,6 +1673,7 @@ important to use cases where server types need to be coerced to client types (i.
 but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
 extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
 
+[[metrics]]
 Metrics
 ^^^^^^^
 
@@ -1691,6 +1688,19 @@ metrics are exposed in a variety of ways:
 * link:https://en.wikipedia.org/wiki/Java_Management_Extensions[JMX]
 
 The configuration of each of these outputs is described in the Gremlin Server <<_configuring_2, Configuring>> section.
+Note that Graphite and Ganglia are not included as part of the Gremlin Server distribution and must be installed
+to the server manually.
+
+[source,text]
+----
+bin/gremlin-server.sh install com.codahale.metrics metrics-ganglia 3.0.2
+bin/gremlin-server.sh install com.codahale.metrics metrics-graphite 3.0.2
+----
+
+WARNING: Gremlin Server is built to work with Metrics 3.0.2. Usage of other versions may lead to unexpected problems.
+
+NOTE: Installing Ganglia will include `org.acplt:oncrpc`, which is an LGPL licensed dependency.
+
 Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
 `org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
 

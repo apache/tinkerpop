@@ -597,6 +597,7 @@ limitations under the License.
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-graphite</artifactId>
                 <version>${metrics.version}</version>
+                <optional>true</optional>
                 <exclusions>
                     <!-- conflict with jcl-over-slf4j-->
                     <exclusion>
@@ -609,6 +610,7 @@ limitations under the License.
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-ganglia</artifactId>
                 <version>${metrics.version}</version>
+                <optional>true</optional>
                 <exclusions>
                     <!-- conflict with jcl-over-slf4j-->
                     <exclusion>

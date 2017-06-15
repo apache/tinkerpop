@@ -114,6 +114,15 @@ Changes to IO
 ** `RequestMessage`
 ** `ResponseMessage`
 
+Graphite and Ganglia
+^^^^^^^^^^^^^^^^^^^^
+
+Graphite and Ganglia are no longer packaged with the Gremlin Server distribution. They are considered optional
+dependencies and therefore must be installed manually by the user.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1550[TINKERPOP-1550],
+link:http://tinkerpop.apache.org/docs/3.3.0/reference/#metrics[Reference Documentation - Metrics]
+
 SelectStep Defaults to Pop.last
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
