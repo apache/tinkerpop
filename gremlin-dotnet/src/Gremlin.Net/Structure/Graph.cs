@@ -25,8 +25,16 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure
 {
+    /// <summary>
+    ///     A <see cref="Graph" /> is a container object for a collection of <see cref="Vertex" />, <see cref="Edge" />,
+    ///     <see cref="VertexProperty" />, and <see cref="Property" /> objects.
+    /// </summary>
     public class Graph
     {
+        /// <summary>
+        ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
+        /// </summary>
+        /// <returns>A graph traversal source.</returns>
         public GraphTraversalSource Traversal()
         {
             return new GraphTraversalSource();
