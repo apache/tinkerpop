@@ -1,41 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
-  <PropertyGroup>
-    <Description>Gremlin.Net is a cross-platform Gremlin Server driver for .NET that is written in C#. It uses WebSockets to communicate with Gremlin Server.</Description>
-    <AssemblyTitle>Gremlin.Net</AssemblyTitle>
-    <Authors>Apache TinkerPop</Authors>
+
+  <PropertyGroup Label="Build">
     <TargetFramework>netstandard1.3</TargetFramework>
-    <Version>3.2.5-SNAPSHOT</Version>
-    <AssemblyName>Gremlin.Net</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <Version>3.2.5-beta1</Version>
+    <Title>Gremlin-DotNet</Title>
+    <Authors>Apache TinkerPop</Authors>
+    <Description>
+      Apache TinkerPop’s Gremlin-DotNet implements Gremlin within the C# language.
+
+Gremlin-DotNet is an extended version of the Gremlin.Net driver (versions &lt;= 0.X). It includes an implementation of Gremlin in C#. This extended version is now part of the Apache TinkerPop project.
+The 'old' Gremlin.Net driver is however still supported. Head to https://github.com/FlorianHockmann/Gremlin.Net for more information.
+    </Description>
     <PackageId>Gremlin.Net</PackageId>
-    <PackageTags>gremlin-dotnet;gremlin;tinkerpop;tinkerpop3</PackageTags>
+    <PackageTags>gremlin;tinkerpop;tinkerpop3</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile />
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile />
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="System.Linq" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
-    <PackageReference Include="System.Threading" Version="4.3.0" />
+  <ItemGroup Label="Package References">
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="System.Net.WebSockets" Version="4.3.0" />
     <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
-    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
 
