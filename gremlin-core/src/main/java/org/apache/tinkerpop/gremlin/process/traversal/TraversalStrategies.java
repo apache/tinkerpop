@@ -209,6 +209,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     InlineFilterStrategy.instance(),
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
+                    ByModulatorOptimizationStrategy.instance(),
                     FilterRankingStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
@@ -216,8 +217,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     PathRetractionStrategy.instance(),
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
-                    StandardVerificationStrategy.instance(),
-                    ByModulatorOptimizationStrategy.instance());
+                    StandardVerificationStrategy.instance());
             GRAPH_CACHE.put(Graph.class, graphStrategies);
             GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
 
