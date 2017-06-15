@@ -23,6 +23,7 @@
 
 namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
 {
+#pragma warning disable 1591
     public class MatchAlgorithmStrategy : AbstractTraversalStrategy
     {
         public MatchAlgorithmStrategy(string matchAlgorithm = null)
@@ -31,4 +32,5 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
                 Configuration["matchAlgorithm"] = matchAlgorithm;
         }
     }
+#pragma warning restore 1591
 }

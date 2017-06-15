@@ -24,8 +24,12 @@
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
+#pragma warning disable 1591
+
     public enum Operator
     {
         AddAll,And,Assign,Div,Max,Min,Minus,Mult,Or,Sum,SumLong
     }
+    
+#pragma warning restore 1591
 }

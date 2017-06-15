@@ -24,6 +24,8 @@
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
+#pragma warning disable 1591
+
     /// <summary>
     ///     A <see cref="P" /> is a predicate of the form Func&lt;object, bool&gt;.
     ///     That is, given some object, return true or false.
@@ -38,4 +40,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 <% } %>
     }
+
+#pragma warning restore 1591
 }

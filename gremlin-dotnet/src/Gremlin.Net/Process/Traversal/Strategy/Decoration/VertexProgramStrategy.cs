@@ -26,6 +26,7 @@ using System.Linq;
 
 namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
 {
+#pragma warning disable 1591
     public class VertexProgramStrategy : AbstractTraversalStrategy
     {
         public VertexProgramStrategy(string graphComputer = null, int? workers = null, string persist = null,
@@ -47,4 +48,5 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
             configuration?.ToList().ForEach(x => Configuration[x.Key] = x.Value);
         }
     }
+#pragma warning restore 1591
 }
