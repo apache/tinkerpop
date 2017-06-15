@@ -24,18 +24,25 @@
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    ///     An anonymous <see cref="GraphTraversal{SType, EType}" />.
     /// </summary>
     public static class __
     {
+        /// <summary>
+        ///     Starts an empty <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public static GraphTraversal<object, object> Start()
         {
             return new GraphTraversal<object, object>();
         }
 <% anonStepMethods.each { method -> %>
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the <%= method.methodName %> step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, <%= method.t2 %>> <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %>(params object[] args)
         {
             return new GraphTraversal<object, object>().<%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %>(args);

@@ -21,10 +21,12 @@
 
 #endregion
 
+// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    ///     THIS IS A GENERATED CLASS - DO NOT MODIFY THIS CLASS DIRECTLY - see pom.xml
+    ///     A <see cref="P" /> is a predicate of the form Func&lt;object, bool&gt;.
+    ///     That is, given some object, return true or false.
     /// </summary>
     public class P
     {
