@@ -27,6 +27,8 @@ using Gremlin.Net.Structure;
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
+#pragma warning disable 1591
+
     /// <summary>
     ///     Graph traversals are the primary way in which graphs are processed.
     /// </summary>
@@ -946,4 +948,6 @@ namespace Gremlin.Net.Process.Traversal
 
 
     }
+    
+#pragma warning restore 1591
 }

@@ -23,7 +23,9 @@
 
 namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
 {
+#pragma warning disable 1591
     public class RepeatUnrollStrategy : AbstractTraversalStrategy
     {
     }
+#pragma warning restore 1591
 }
