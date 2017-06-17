@@ -76,7 +76,7 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.5, replaced by {@link ImportCustomizer}
+ * @deprecated As of release 3.2.5, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer}
  */
 @Deprecated
 public abstract class AbstractImportCustomizerProvider implements ImportCustomizerProvider {
