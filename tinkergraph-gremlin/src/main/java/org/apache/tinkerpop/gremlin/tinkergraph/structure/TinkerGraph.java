@@ -251,6 +251,11 @@ public final class TinkerGraph implements Graph {
         this.graphComputerView = null;
     }
 
+    /**
+     * This method only has an effect if the {@link #GREMLIN_TINKERGRAPH_GRAPH_LOCATION} is set, in which case the
+     * data in the graph is persisted to that location. This method may be called multiple times and does not release
+     * resources.
+     */
     @Override
     public void close() {
         if (graphLocation != null) saveGraph();
