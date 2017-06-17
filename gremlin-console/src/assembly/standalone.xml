@@ -69,7 +69,7 @@ limitations under the License.
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <excludes>
                 <exclude>org.apache.tinkerpop:gremlin-groovy</exclude>
                 <exclude>org.apache.tinkerpop:tinkergraph-gremlin</exclude>
@@ -78,7 +78,7 @@ limitations under the License.
         <dependencySet>
             <outputDirectory>/ext/tinkergraph-gremlin/plugin</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <includes>
                 <include>org.apache.tinkerpop:tinkergraph-gremlin</include>
             </includes>
@@ -86,7 +86,7 @@ limitations under the License.
         <dependencySet>
             <outputDirectory>/ext/gremlin-groovy/plugin</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <includes>
                 <include>org.apache.tinkerpop:gremlin-groovy</include>
             </includes>
@@ -94,7 +94,7 @@ limitations under the License.
         <dependencySet>
             <outputDirectory>/ext/tinkergraph-gremlin/lib</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <includes>
                 <include>org.apache.tinkerpop:tinkergraph-gremlin</include>
             </includes>
@@ -102,7 +102,7 @@ limitations under the License.
         <dependencySet>
             <outputDirectory>/ext/gremlin-groovy/lib</outputDirectory>
             <unpack>false</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <includes>
                 <include>org.apache.tinkerpop:gremlin-groovy</include>
             </includes>
