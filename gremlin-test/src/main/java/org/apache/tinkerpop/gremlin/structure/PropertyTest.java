@@ -59,9 +59,35 @@ public class PropertyTest {
     public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        public void shouldHaveStandardStringRepresentation() {
+        public void shouldHaveStandardStringRepresentationForVertexProperty() {
             final Vertex v = graph.addVertex("name", "marko");
             final Property p = v.property("name");
+            assertEquals(StringFactory.propertyString(p), p.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldHaveTruncatedStringRepresentationForVertexProperty() {
+            final Vertex v = graph.addVertex("name", "maria de la santa cruz rosalina agnelia rodriguez cuellar rene");
+            final Property p = v.property("name");
+            assertEquals(StringFactory.propertyString(p), p.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldHaveStandardStringRepresentationForEdgeProperty() {
+            final Vertex v = graph.addVertex();
+            final Edge e = v.addEdge("self", v, "short", "s");
+            final Property p = e.property("short");
+            assertEquals(StringFactory.propertyString(p), p.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldHaveTruncatedStringRepresentationForEdgeProperty() {
+            final Vertex v = graph.addVertex();
+            final Edge e = v.addEdge("self", v, "long", "s");
+            final Property p = e.property("long", "this is a really long property to truncate");
             assertEquals(StringFactory.propertyString(p), p.toString());
         }
 
