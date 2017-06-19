@@ -22,15 +22,12 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,7 +41,9 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -407,7 +406,7 @@ public class TransactionTest extends AbstractGremlinTest {
         t.join();
 
         // this was committed
-        assertTrue(graph.vertices(vid.get().id()).hasNext());
+        assertThat(graph.vertices(vid.get().id()).hasNext(), is(true));
 
         try {
             // this was not
@@ -571,7 +570,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadTxStarter.join();
         threadTryCommitTx.join();
 
-        assertTrue(noVerticesInFirstThread.get());
+        assertThat(noVerticesInFirstThread.get(), is(true));
         assertVertexEdgeCounts(graph, 0, 0);
     }
 
@@ -650,224 +649,6 @@ public class TransactionTest extends AbstractGremlinTest {
         } finally {
             if (threadedG.tx().isOpen()) threadedG.tx().rollback();
         }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionFireAndForget() {
-        // first fail the tx
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            grx.addVertex();
-            throw new Exception("fail");
-        })).fireAndForget();
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work
-        g.tx().submit(grx -> graph.addVertex()).fireAndForget();
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // make sure a commit happened and a new tx started
-        g.tx().rollback();
-        assertVertexEdgeCounts(graph, 1, 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionOneAndDone() {
-        // first fail the tx
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                grx.addVertex();
-                throw new Exception("fail");
-            })).oneAndDone();
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work
-        g.tx().submit(grx -> graph.addVertex()).oneAndDone();
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // make sure a commit happened and a new tx started
-        g.tx().rollback();
-        assertVertexEdgeCounts(graph, 1, 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionExponentialBackoff() {
-
-        // first fail the tx
-        final AtomicInteger attempts = new AtomicInteger(0);
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                grx.addVertex();
-                attempts.incrementAndGet();
-                throw new Exception("fail");
-            })).exponentialBackoff();
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work after several tries
-        final AtomicInteger tries = new AtomicInteger(0);
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            final int tryNumber = tries.incrementAndGet();
-            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
-                return graph.addVertex();
-            else
-                throw new Exception("fail");
-        })).exponentialBackoff();
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // make sure a commit happened and a new tx started
-        g.tx().rollback();
-        assertVertexEdgeCounts(graph, 1, 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionExponentialBackoffWithExceptionChecks() {
-        final Set<Class> exceptions = new HashSet<Class>() {{
-            add(IllegalStateException.class);
-        }};
-
-        // first fail the tx
-        final AtomicInteger attempts = new AtomicInteger(0);
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                grx.addVertex();
-                attempts.incrementAndGet();
-                throw new Exception("fail");
-            })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertEquals(1, attempts.get());
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will retry for specific tx and then fail after several tries
-        final AtomicInteger setOfTries = new AtomicInteger(0);
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                final int tryNumber = setOfTries.incrementAndGet();
-                if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
-                    throw new Exception("fail");
-                else
-                    throw new IllegalStateException("fail");
-            })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, setOfTries.get());
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work after several tries
-        final AtomicInteger tries = new AtomicInteger(0);
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            final int tryNumber = tries.incrementAndGet();
-            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
-                return graph.addVertex();
-            else
-                throw new IllegalStateException("fail");
-        })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // make sure a commit happened and a new tx started
-        g.tx().rollback();
-        assertVertexEdgeCounts(graph, 1, 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionRetry() {
-        // first fail the tx
-        final AtomicInteger attempts = new AtomicInteger(0);
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                grx.addVertex();
-                attempts.incrementAndGet();
-                throw new Exception("fail");
-            })).retry();
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work after several tries
-        final AtomicInteger tries = new AtomicInteger(0);
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            final int tryNumber = tries.incrementAndGet();
-            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
-                return graph.addVertex();
-            else
-                throw new Exception("fail");
-        })).retry();
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // make sure a commit happened and a new tx started
-        g.tx().rollback();
-        assertVertexEdgeCounts(graph, 1, 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldSupportTransactionRetryWhenUsingManualTransactions() {
-        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-
-        // first fail the tx
-        final AtomicInteger attempts = new AtomicInteger(0);
-        try {
-            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-                grx.addVertex();
-                attempts.incrementAndGet();
-                throw new Exception("fail");
-            })).retry();
-        } catch (Exception ex) {
-            assertEquals("fail", ex.getCause().getCause().getMessage());
-        }
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
-        assertFalse(g.tx().isOpen());
-        g.tx().open();
-        assertVertexEdgeCounts(graph, 0, 0);
-
-        // this tx will work after several tries
-        final AtomicInteger tries = new AtomicInteger(0);
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            final int tryNumber = tries.incrementAndGet();
-            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
-                return graph.addVertex();
-            else
-                throw new Exception("fail");
-        })).retry();
-
-        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        assertFalse(g.tx().isOpen());
-        g.tx().open();
-        assertVertexEdgeCounts(graph, 1, 0);
-        g.tx().rollback();
     }
 
     @Test
@@ -1149,14 +930,11 @@ public class TransactionTest extends AbstractGremlinTest {
         manualThread.join();
         autoThread.join();
         
-        assertTrue(
-                "manualThread transaction readWrite should be MANUAL and should fail to commit the transaction",
-                commitFailed.get()
-        );
-        assertTrue(
-                "autoThread transaction readWrite should be AUTO and should commit the transaction",
-                commitOccurred.get()
-        );
+        assertThat("manualThread transaction readWrite should be MANUAL and should fail to commit the transaction",
+                   commitFailed.get(),
+                   is(true));
+        assertThat("autoThread transaction readWrite should be AUTO and should commit the transaction",
+                   commitOccurred.get(), is(true));
     }
     
     @Test

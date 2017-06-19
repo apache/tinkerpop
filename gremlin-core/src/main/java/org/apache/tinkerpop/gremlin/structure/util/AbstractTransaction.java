@@ -125,15 +125,6 @@ public abstract class AbstractTransaction implements Transaction {
 
     /**
      * {@inheritDoc}
-     * @deprecated As of release 3.2.6, not replaced.
-     */
-    @Override
-    @Deprecated
-    public <R> Workload<R> submit(final Function<Graph, R> work) {
-        return new Workload<>(g, work);
-    }
-    /**
-     * {@inheritDoc}
      */
     @Override
     public <G extends Graph> G createThreadedTx() {
