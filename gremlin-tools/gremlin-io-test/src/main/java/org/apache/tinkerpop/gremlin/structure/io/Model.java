@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
@@ -104,6 +103,7 @@ public class Model {
         final GraphTraversalSource g = graph.traversal();
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
+        final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
@@ -143,7 +143,7 @@ public class Model {
         final TraversalMetrics tm = createStaticTraversalMetrics();
         final MutableMetrics metrics = new MutableMetrics(tm.getMetrics("7.0.0()"));
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
-        addGraphProcessEntry(metrics, "Metrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(metrics, "Metrics", "", noTypeGraphSONPlusGryo3_3_0);
         addGraphProcessEntry(P.gt(0), "P", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
         addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", noTypeGraphSONPlusGryo3_2_3);
@@ -151,7 +151,7 @@ public class Model {
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", noTypeGraphSONPlusGryo3_2_3);
         addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", noTypeGraphSONPlusGryo3_3_0);
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 
         final Map<String,Object> requestBindings = new HashMap<>();

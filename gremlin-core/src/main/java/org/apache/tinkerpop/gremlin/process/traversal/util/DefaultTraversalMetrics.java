@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation for {@link TraversalMetrics} that aggregates {@link ImmutableMetrics} instances from a
@@ -62,7 +62,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     /**
      * {@link ImmutableMetrics} indexed by their step position.
      */
-    private Map<Integer, ImmutableMetrics> positionIndexedMetrics = new LinkedHashMap<>();
+    private Map<Integer, ImmutableMetrics> positionIndexedMetrics = new HashMap<>();
 
     /**
      * Determines if final metrics have been computed
@@ -100,7 +100,9 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
 
     @Override
     public Collection<ImmutableMetrics> getMetrics() {
-        return this.positionIndexedMetrics.values();
+        return positionIndexedMetrics.entrySet().stream().sorted(Map.Entry.comparingByKey()).
+                collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (oldValue, newValue) -> oldValue, LinkedHashMap::new)).values();
     }
 
     /**
