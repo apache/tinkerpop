@@ -103,6 +103,10 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX();
 
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXlabelX_byXlabel_countX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -519,6 +523,32 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_byXlabel_countX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_group_byXlabelX_byXlabel_countX();
+        printTraversalForm(traversal);
+        final Map<String, Long> map = traversal.next();
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("person"));
+        assertTrue(map.containsKey("software"));
+        assertEquals(4L, map.get("person").longValue());
+        assertEquals(2L, map.get("software").longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX();
+        printTraversalForm(traversal);
+        final Map<String, Long> map = traversal.next();
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("person"));
+        assertTrue(map.containsKey("software"));
+        assertEquals(4L, map.get("person").longValue());
+        assertEquals(2L, map.get("software").longValue());
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -634,6 +664,16 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX() {
             return g.V().hasLabel("person").as("p").out("created").<String, Number>group().by("name").by(__.select("p").values("age").sum());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXlabelX_byXlabel_countX() {
+            return g.V().<String, Long>group().by(__.label()).by(__.label().count());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX() {
+            return g.V().group("m").by(__.label()).by(__.label().count()).cap("m");
         }
     }
 }

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -105,6 +106,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map.Entry<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_descX();
 
     public abstract Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabelX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabel_decrX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -403,6 +408,21 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         entry = iterator.next();
         assertEquals("marko", entry.getKey());
         assertEquals(1.9, entry.getValue().doubleValue(), 0.0001);
+
+    public void g_V_order_byXlabelX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_order_byXlabelX();
+        printTraversalForm(traversal);
+        for (int i = 0; i < 4; i++) {
+            assertTrue(traversal.hasNext());
+            final Vertex v = traversal.next();
+            assertEquals("person", v.label());
+        }
+        for (int i = 0; i < 2; i++) {
+            assertTrue(traversal.hasNext());
+            final Vertex v = traversal.next();
+            assertEquals("software", v.label());
+        }
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -425,6 +445,22 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         entry = o instanceof Map.Entry ? (Map.Entry) o : ((Map<String,Number>) o).entrySet().iterator().next();
         assertEquals("peter", entry.getKey());
         assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
+        assertFalse(traversal.hasNext());
+    }
+
+    public void g_V_order_byXlabel_decrX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_order_byXlabel_decrX();
+        printTraversalForm(traversal);
+        for (int i = 0; i < 2; i++) {
+            assertTrue(traversal.hasNext());
+            final Vertex v = traversal.next();
+            assertEquals("software", v.label());
+        }
+        for (int i = 0; i < 4; i++) {
+            assertTrue(traversal.hasNext());
+            final Vertex v = traversal.next();
+            assertEquals("person", v.label());
+        }
         assertFalse(traversal.hasNext());
     }
 
@@ -580,6 +616,15 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold(final Object v1Id) {
             return g.V(v1Id).elementMap().order(Scope.local).by(keys, desc).unfold();
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_order_byXlabelX() {
+            return g.V().order().by(__.label());
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_order_byXlabel_decrX() {
+            return g.V().order().by(__.label(), Order.decr);
         }
     }
 }
