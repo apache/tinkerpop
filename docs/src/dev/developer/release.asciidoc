@@ -225,6 +225,7 @@ Release & Promote
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly follwing the svn command above to do the release)
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . Update home page site with references to latest distribution - specifically:
 .. Update the `template/header-footer.html`.
