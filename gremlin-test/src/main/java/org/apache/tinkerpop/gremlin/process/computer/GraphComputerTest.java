@@ -24,11 +24,14 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,9 +41,11 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
@@ -1462,6 +1467,94 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void storeState(final Configuration configuration) {
             VertexProgram.super.storeState(configuration);
+        }
+    }
+
+    /////////////////////////////////////////////
+    @Test
+    public void shouldSupportMultipleScopes() throws ExecutionException, InterruptedException {
+        Vertex a = graph.addVertex("a");
+        Vertex b = graph.addVertex("b");
+        Vertex c = graph.addVertex("c");
+        a.addEdge("edge", b);
+        b.addEdge("edge", c);
+
+        // Simple graph:
+        // a -> b -> c
+
+        // Execute a traversal program that sends an incoming message of "2" and an outgoing message of "1" from "b"
+        // then each vertex sums any received messages
+        ComputerResult result = graph.compute().program(new MultiScopeVertexProgram()).submit().get();
+
+        // We expect the results to be {a=2, b=0, c=1}. Instead it is {a=3, b=0, c=3}
+        assertEquals((Long) result.graph().traversal().V().hasLabel("a").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(2L));
+        assertEquals((Long) result.graph().traversal().V().hasLabel("b").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(0L));
+        assertEquals((Long) result.graph().traversal().V().hasLabel("c").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(1L));
+    }
+
+    public static class MultiScopeVertexProgram implements VertexProgram<Long> {
+
+        private final MessageScope.Local<Long> countMessageScopeIn = MessageScope.Local.of(__::inE);
+        private final MessageScope.Local<Long> countMessageScopeOut = MessageScope.Local.of(__::outE);
+
+        private static final String MEMORY_KEY = "count";
+
+        private static final Set<String> COMPUTE_KEYS = Collections.singleton(MEMORY_KEY);
+
+        @Override
+        public void setup(final Memory memory) {}
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+
+        @Override
+        public Set<String> getElementComputeKeys() {
+            return COMPUTE_KEYS;
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            HashSet<MessageScope> scopes = new HashSet<>();
+            scopes.add(countMessageScopeIn);
+            scopes.add(countMessageScopeOut);
+            return scopes;
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger<Long> messenger, Memory memory) {
+            switch (memory.getIteration()) {
+                case 0:
+                    if (vertex.label().equals("b")) {
+                        messenger.sendMessage(this.countMessageScopeIn, 2L);
+                        messenger.sendMessage(this.countMessageScopeOut, 1L);
+                    }
+                    break;
+                case 1:
+                    long edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0L, (a, b) -> a + b);
+                    vertex.property(MEMORY_KEY, edgeCount);
+                    break;
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() == 1;
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public MultiScopeVertexProgram clone() {
+            try {
+                return (MultiScopeVertexProgram) super.clone();
+            } catch (final CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }
