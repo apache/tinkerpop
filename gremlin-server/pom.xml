@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.5</version>
+        <version>3.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Apache TinkerPop :: Gremlin Server</name>
@@ -146,7 +146,7 @@ limitations under the License.
                     <tarLongFileMode>warn</tarLongFileMode>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.tinkerpop.gremlin.console.Console</mainClass>
+                            <mainClass>org.apache.tinkerpop.gremlin.server.GremlinServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

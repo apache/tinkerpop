@@ -47,7 +47,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
         // do nothing by default
     }
 
-    public static <T> void closeIterator(Iterator<T> iterator) {
+    public static <T> void closeIterator(final Iterator<T> iterator) {
         if (iterator instanceof AutoCloseable) {
             try {
                 ((AutoCloseable) iterator).close();

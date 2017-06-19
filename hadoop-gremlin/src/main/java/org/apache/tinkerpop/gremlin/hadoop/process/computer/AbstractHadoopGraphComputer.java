@@ -56,7 +56,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
     private final static Pattern PATH_PATTERN =
-            Pattern.compile(File.pathSeparator.equals(":") ? "([^:]|://)+" : ("[^" + File.pathSeparator + "]"));
+            Pattern.compile(File.pathSeparator.equals(":") ? "([^:]|://)+" : ("[^" + File.pathSeparator + "]+"));
 
     protected final Logger logger;
     protected final HadoopGraph hadoopGraph;
