@@ -280,26 +280,6 @@ NOTE: It may be important to consult the documentation of the `Graph` implementa
 specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
 the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
 
-Retries
-~~~~~~~
-
-There are times when transactions fail.  Failure may be indicative of some permanent condition, but other failures
-might simply require the transaction to be retried for possible future success. The `Transaction` object also exposes
-a method for executing automatic transaction retries:
-
-[gremlin-groovy]
-----
-graph = Neo4jGraph.open('/tmp/neo4j')
-graph.tx().submit {it.addVertex("name","josh")}.retry(10)
-graph.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
-graph.close()
-----
-
-As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly
-retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common
-retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required
-purpose.
-
 Threaded Transactions
 ~~~~~~~~~~~~~~~~~~~~~
 
