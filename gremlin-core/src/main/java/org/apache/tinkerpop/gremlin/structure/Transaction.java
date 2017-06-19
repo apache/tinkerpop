@@ -63,7 +63,9 @@ public interface Transaction extends AutoCloseable {
     /**
      * Submit a unit of work that represents a transaction returning a {@link Workload} that can be automatically
      * retried in the event of failure.
+     * @deprecated As of release 3.2.6, not replaced.
      */
+    @Deprecated
     public <R> Workload<R> submit(final Function<Graph, R> work);
 
     /**
@@ -228,7 +230,9 @@ public interface Transaction extends AutoCloseable {
      * or the unit of work succeeds with a commit operation.
      *
      * @param <R> The type of the result from the unit of work.
+     * @deprecated As of release 3.2.6, not replaced.
      */
+    @Deprecated
     public static class Workload<R> {
         public static final long DEFAULT_DELAY_MS = 20;
         public static final int DEFAULT_TRIES = 8;
