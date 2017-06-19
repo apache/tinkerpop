@@ -110,8 +110,8 @@ This release also includes changes from <<release-3-2-6, 3.2.6>>.
 * Removed access to previously deprecated `CoreGremlinPlugin#INSTANCE` field.
 * `gremlin.sh` and `gremln.bat` no longer support the option to pass a script as an argument for execution mode without using the `-i` option.
 * Graphite and Ganglia are no longer packaged with the Gremlin Server distribution.
-* `TransactionException` is no longer a class of `AbstractTransaction` and it extends `RuntimeException`.
 * Included an ellipse on long property names that are truncated.
+* Added `TraversalParent.replaceTraversal()` which can replace a direct child traversal.
 * Added `ByModulatorOptimizationStrategy` which replaces certain standard traversals w/ optimized traversals (e.g. `TokenTraversal`).
 * Renamed `RangeByIsCountStrategy` to `CountStrategy`.
 * Added more specific typing to various `__` traversal steps. E.g. `<A,Vertex>out()` is `<Vertex,Vertex>out()`.

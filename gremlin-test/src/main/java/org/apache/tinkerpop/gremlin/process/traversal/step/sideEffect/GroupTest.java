@@ -99,6 +99,10 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m);
 
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXlabelX_byXlabel_countX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -488,6 +492,32 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_byXlabel_countX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_group_byXlabelX_byXlabel_countX();
+        printTraversalForm(traversal);
+        final Map<String, Long> map = traversal.next();
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("person"));
+        assertTrue(map.containsKey("software"));
+        assertEquals(4L, map.get("person").longValue());
+        assertEquals(2L, map.get("software").longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX();
+        printTraversalForm(traversal);
+        final Map<String, Long> map = traversal.next();
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("person"));
+        assertTrue(map.containsKey("software"));
+        assertEquals(4L, map.get("person").longValue());
+        assertEquals(2L, map.get("software").longValue());
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -593,6 +623,16 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m) {
             return g.withSideEffect("a", m).V().group("a").by("name").by(outE().label().fold()).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXlabelX_byXlabel_countX() {
+            return g.V().<String, Long>group().by(__.label()).by(__.label().count());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX() {
+            return g.V().group("m").by(__.label()).by(__.label().count()).cap("m");
         }
     }
 }
