@@ -62,7 +62,7 @@ social.persons().where(createdAtLeast(2)).count()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-786[TINKERPOP-786],
-link:http://tinkerpop.apache.org/docs/3.2.5/dev/reference/#dsl[Reference Documentation]
+link:http://tinkerpop.apache.org/docs/3.2.5/reference/#dsl[Reference Documentation]
 
 GraphSON Path Serialization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
