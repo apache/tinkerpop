@@ -2995,7 +2995,7 @@ social.persons("marko").youngestFriendsAge()
 The following sections explain how to develop application specific DSLs for different <<gremlin-variants,Gremlin Language Variants>>
 using the examples above of the Social DSL as the API for the implementation.
 
-[[gremlin-java-dsl]
+[gremlin-java-dsl]
 Gremlin-Java
 ~~~~~~~~~~~~
 
