@@ -22,6 +22,17 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.6
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
 TinkerPop 3.2.5
 ---------------
 

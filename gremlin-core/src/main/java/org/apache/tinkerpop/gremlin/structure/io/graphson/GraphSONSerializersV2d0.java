@@ -580,7 +580,6 @@ class GraphSONSerializersV2d0 {
         public VertexProperty deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final DetachedVertexProperty.Builder vp = DetachedVertexProperty.build();
 
-            Map<String, Object> properties;
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
                     jsonParser.nextToken();
@@ -593,8 +592,12 @@ class GraphSONSerializersV2d0 {
                     vp.setValue(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
-                    properties = deserializationContext.readValue(jsonParser, propertiesType);
-                    properties.entrySet().iterator().forEachRemaining(kv -> vp.addProperty(new DetachedProperty(kv.getKey(), kv.getValue())));
+                    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                        final String key = jsonParser.getCurrentName();
+                        jsonParser.nextToken();
+                        final Object val = deserializationContext.readValue(jsonParser, Object.class);
+                        vp.addProperty(new DetachedProperty(key, val));
+                    }
                 }
             }
 

@@ -28,9 +28,9 @@ TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing l
 link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
 it is a good idea to join both.
 
-It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer
-discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for
-regular contributors it may be best to request that an Apache HipChat account be created.
+It would also be helpful to join the public link:https://apache.hipchat.com/chat/room/2013155[TinkerPop HipChat room]
+for developer discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest,
+but for regular contributors it may be best to request that an Apache HipChat account be created.
 
 Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.

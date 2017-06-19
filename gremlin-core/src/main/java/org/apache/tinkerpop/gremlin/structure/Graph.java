@@ -292,12 +292,15 @@ public interface Graph extends AutoCloseable, Host {
     public Transaction tx();
 
     /**
-     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no futher operations can be executed on
+     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no further operations can be executed on
      * the instance.  Users should consult the documentation of the underlying graph database implementation for what
-     * this "shutdown" will mean as it pertains to open transactions.  It will typically be the end user's
-     * responsibility to synchronize the thread that calls {@code close()} with other threads that are accessing open
-     * transactions. In other words, be sure that all work performed on the {@code Graph} instance is complete prior
-     * to calling this method.
+     * this "shutdown" will mean in general and, if supported, how open transactions are handled.  It will typically
+     * be the end user's responsibility to synchronize the thread that calls {@code close()} with other threads that
+     * are accessing open transactions. In other words, be sure that all work performed on the {@code Graph} instance
+     * is complete prior to calling this method.
+     * <p/>
+     * TinkerPop does not enforce any particular semantics with respect to "shutdown". It is up to the graph provider
+     * to decide what this method will do.
      */
     @Override
     void close() throws Exception;

@@ -106,7 +106,7 @@ under release is protected. Tweaks to documentation and other odds and ends rela
 during this period.
 . At some point during the week:
 .. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
-.. Deploy a final SNAPSHOT to the snapshot repository.
+.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV pre-releases.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 .. Review JIRA tickets in the release and ensure that:
@@ -147,7 +147,11 @@ might be high.
 PMC Vote
 --------
 
-A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
+This section describes the process that process that prepares a release for VOTE by the community. If there are multiple
+releases (as there usually are) being prepared, it may be best for downstream releases to wait for upstream releases
+to complete their process to assure that no last minute commits are required to get the upstream release completed.
+It is up to the discretion of the release managers to decide how they wish to proceed with respect to preparing releases
+in parallel or in a more serial fashion.
 
 . By this point, the testing performed during the code freeze should have validated the release.  If however there
 are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
@@ -156,9 +160,11 @@ validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date - the release date is the date of the vote.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
-... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
-... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
+... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
+`project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
+... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`.
+This formula can help construct each line item for the CHANGELOG if column `A` is the issue number, `B` is the
+issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking","*(breaking)*",""))`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
