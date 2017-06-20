@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TransactionException` is no longer a class of `AbstractTransaction` and it extends `RuntimeException`.
 * Renamed `RangeByIsCountStrategy` to `CountStrategy`.
 * Added more specific typing to various `__` traversal steps. E.g. `<A,Vertex>out()` is `<Vertex,Vertex>out()`.
 * Updated Docker build scripts to include Python dependencies (NOTE: users should remove any previously generated TinkerPop Docker images).
