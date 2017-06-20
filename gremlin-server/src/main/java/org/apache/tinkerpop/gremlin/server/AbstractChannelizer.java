@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -53,7 +52,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
-import java.util.Iterator;
 
 /**
  * A base implementation for the {@code Channelizer} which does a basic configuration of the pipeline, one that
@@ -110,7 +108,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     }
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         settings = serverGremlinExecutor.getSettings();
         gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
         graphManager = serverGremlinExecutor.getGraphManager();

@@ -69,12 +69,12 @@ public class GremlinServer {
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
-    private CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverStarted = null;
+    private CompletableFuture<ServerGremlinExecutor> serverStarted = null;
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
-    private final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor;
+    private final ServerGremlinExecutor serverGremlinExecutor;
     private final boolean isEpollEnabled;
 
     /**
@@ -108,7 +108,7 @@ public class GremlinServer {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }
 
-        serverGremlinExecutor = new ServerGremlinExecutor<>(settings, null, workerGroup, EventLoopGroup.class);
+        serverGremlinExecutor = new ServerGremlinExecutor(settings, null, workerGroup);
         gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
 
         // initialize the OpLoader with configurations being passed to each OpProcessor implementation loaded
@@ -116,46 +116,16 @@ public class GremlinServer {
     }
 
     /**
-     * Construct a Gremlin Server instance from the {@link ServerGremlinExecutor} which internally carries some
-     * pre-constructed objects used by the server as well as the {@link Settings} object itself.  This constructor
-     * is useful when Gremlin Server is being used in an embedded style and there is a need to share thread pools
-     * with the hosting application.
-     *
-     * @deprecated As of release 3.1.1-incubating, not replaced.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-912">TINKERPOP-912</a>
-     */
-    @Deprecated
-    public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
-        this.serverGremlinExecutor = serverGremlinExecutor;
-        this.settings = serverGremlinExecutor.getSettings();
-        this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
-        if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
-            logger.warn("cannot use epoll in non-linux env, falling back to NIO");
-        }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
-
-        final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
-        if(isEpollEnabled) {
-            bossGroup = new EpollEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
-        } else{
-            bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
-        }
-        workerGroup = serverGremlinExecutor.getScheduledExecutorService();
-        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
-    }
-
-    /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public synchronized CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> start() throws Exception {
+    public synchronized CompletableFuture<ServerGremlinExecutor> start() throws Exception {
         if (serverStarted != null) {
             // server already started - don't get it rolling again
             return serverStarted;
         }
 
         serverStarted = new CompletableFuture<>();
-        final CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverReadyFuture = serverStarted;
+        final CompletableFuture<ServerGremlinExecutor> serverReadyFuture = serverStarted;
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -330,7 +300,7 @@ public class GremlinServer {
         return serverStopped;
     }
 
-    public ServerGremlinExecutor<EventLoopGroup> getServerGremlinExecutor() {
+    public ServerGremlinExecutor getServerGremlinExecutor() {
         return serverGremlinExecutor;
     }
 
