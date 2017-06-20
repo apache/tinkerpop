@@ -525,6 +525,11 @@ public interface Graph extends AutoCloseable, Host {
              * {@link VertexProperty.Cardinality#list}.  Implementations that employ a schema can consult it to
              * determine the {@link VertexProperty.Cardinality}.  Those that do no have a schema can return their
              * default {@link VertexProperty.Cardinality} for every key.
+             * <p/>
+             * Note that this method is primarily used by TinkerPop for internal usage and may not be suitable to
+             * reliably determine the cardinality of a key. For some implementation it may offer little more than a
+             * hint on the actual cardinality. Generally speaking it is likely best to drop down to the API of the
+             * {@link Graph} implementation for any schema related queries.
              */
             public default VertexProperty.Cardinality getCardinality(final String key) {
                 return VertexProperty.Cardinality.list;
