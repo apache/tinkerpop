@@ -109,7 +109,7 @@ The build optionally requires link:https://www.microsoft.com/net/core[.NET Core 
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
-`gremlin-dotnet` which also includes Gremlin-Csharp can be build and tested from the command line with:
+`gremlin-dotnet` can be build and tested from the command line with:
 
 [source,text]
 mvn clean install -Pgremlin-dotnet
