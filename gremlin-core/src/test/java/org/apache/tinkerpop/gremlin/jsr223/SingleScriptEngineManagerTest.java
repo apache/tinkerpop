@@ -35,7 +35,6 @@ public class SingleScriptEngineManagerTest {
         assertSame(mgr, SingleGremlinScriptEngineManager.instance());
         assertSame(mgr, SingleGremlinScriptEngineManager.instance());
         assertSame(mgr, SingleGremlinScriptEngineManager.instance());
-        assertSame(mgr, SingleGremlinScriptEngineManager.getInstance());
     }
 
     @Test(expected = IllegalArgumentException.class)

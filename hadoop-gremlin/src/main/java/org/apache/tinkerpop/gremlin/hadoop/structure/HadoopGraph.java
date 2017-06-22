@@ -491,11 +491,6 @@ public final class HadoopGraph implements Graph {
                 public Features.VertexPropertyFeatures properties() {
                     return new Features.VertexPropertyFeatures() {
                         @Override
-                        public boolean supportsAddProperty() {
-                            return false;
-                        }
-
-                        @Override
                         public boolean supportsRemoveProperty() {
                             return false;
                         }

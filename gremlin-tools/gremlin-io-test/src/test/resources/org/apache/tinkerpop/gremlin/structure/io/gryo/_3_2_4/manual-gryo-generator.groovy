@@ -192,7 +192,7 @@ writeSupportedObjects = { mapper, toGryoFunction ->
     toGryoFunction(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper)
 }
 
-mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV2d0.getInstance()).create().createMapper()
+mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV2d0.instance()).create().createMapper()
 
 writeSupportedObjects(mapper, toGryoV1d0)
 

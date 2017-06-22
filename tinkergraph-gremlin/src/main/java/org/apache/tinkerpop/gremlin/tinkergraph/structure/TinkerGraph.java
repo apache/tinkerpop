@@ -75,37 +75,6 @@ public final class TinkerGraph implements Graph {
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_VERTEX_ID = "gremlin.tinkergraph.vertexIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY}
-     */
-    @Deprecated
-    public static final String CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION}
-     */
-    @Deprecated
-    public static final String CONFIG_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_FORMAT}
-     */
-    @Deprecated
-    public static final String CONFIG_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
-    ///////
     public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
     public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
     public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";

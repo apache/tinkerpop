@@ -190,12 +190,18 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager#getInstance()`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
 ** `org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_COMPUTER`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
+** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
+* `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
 * `gremlin-groovy`
 ** `org.apache.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider`
 ** `org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider`
@@ -244,6 +250,10 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
 * `tinkergraph-gremlin`
 ** `org.apache.tinkerpop.gremlin.tinkergraph.groovy.plugin.TinkerGraphGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph#CONFIG_*`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0#getInstance()`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0#getInstance()`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.

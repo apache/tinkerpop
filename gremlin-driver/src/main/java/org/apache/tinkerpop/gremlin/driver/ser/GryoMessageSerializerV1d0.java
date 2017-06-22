@@ -50,17 +50,6 @@ public final class GryoMessageSerializerV1d0 extends AbstractGryoMessageSerializ
         super(kryo.create());
     }
 
-    /**
-     * Creates an instance with a standard {@link GryoMapper} instance. Note that the instance supplied
-     * will be overridden by {@link #configure} if it is called.
-     *
-     * @deprecated As of release 3.2.1, replaced by {@link GryoMessageSerializerV1d0#GryoMessageSerializerV1d0(GryoMapper.Builder)}.
-     */
-    @Deprecated
-    public GryoMessageSerializerV1d0(final GryoMapper kryo) {
-        super(kryo);
-    }
-
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE};
