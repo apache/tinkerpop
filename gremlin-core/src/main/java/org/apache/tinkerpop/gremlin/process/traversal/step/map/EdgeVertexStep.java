@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements AutoCloseable {
+public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements AutoCloseable {
 
     private Direction direction;
 
