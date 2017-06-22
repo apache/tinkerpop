@@ -284,7 +284,7 @@ public enum MetricManager {
      *                     provided arguments
      */
     public synchronized void addGangliaReporter(final String groupOrHost, final int port,
-                                                final GMetric.UDPAddressingMode addressingMode, final int ttl, final Boolean protocol31,
+                                                final String addressingMode, final int ttl, final Boolean protocol31,
                                                 final UUID hostUUID, final String spoof, final long reportIntervalInMS) throws IOException {
         if (null == groupOrHost || groupOrHost.isEmpty())
             throw new IllegalArgumentException("groupOrHost cannot be null or empty");
@@ -292,16 +292,23 @@ public enum MetricManager {
         if (null == addressingMode)
             throw new IllegalArgumentException("addressing mode cannot be null");
 
+        GMetric.UDPAddressingMode gmetricAddressingMode;
+        try {
+            gmetricAddressingMode = GMetric.UDPAddressingMode.valueOf(addressingMode);
+        } catch (IllegalArgumentException iae) {
+            throw new IllegalArgumentException("addressing mode must be MULTICAST or UNICAST");
+        }
+
         if (null != gangliaReporter) {
             log.debug("Metrics GangliaReporter already active; not creating another");
             return;
         }
 
         final boolean protocol = null == protocol31 ? true : protocol31;
-        GMetric ganglia = new GMetric(groupOrHost, port, addressingMode, ttl,
+        final GMetric ganglia = new GMetric(groupOrHost, port, gmetricAddressingMode, ttl,
                 protocol, hostUUID, spoof);
 
-        GangliaReporter.Builder b = GangliaReporter.forRegistry(getRegistry());
+        final GangliaReporter.Builder b = GangliaReporter.forRegistry(getRegistry());
 
         gangliaReporter = b.build(ganglia);
         gangliaReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);

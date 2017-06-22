@@ -63,10 +63,12 @@ limitations under the License.
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-graphite</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-ganglia</artifactId>
+            <optional>true</optional>
         </dependency>
         <!-- TESTING -->
         <dependency>

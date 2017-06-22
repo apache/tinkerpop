@@ -391,7 +391,7 @@ public class GremlinServer {
             if (config.enabled) {
                 try {
                     metrics.addGangliaReporter(config.host, config.port,
-                            config.optionalAddressingMode(), config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
+                            config.addressingMode, config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
                 } catch (IOException ioe) {
                     logger.warn("Error configuring the Ganglia Reporter.", ioe);
                 }
