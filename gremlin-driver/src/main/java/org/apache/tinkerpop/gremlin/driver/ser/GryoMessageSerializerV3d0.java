@@ -27,28 +27,26 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
  * {@link DetachedVertex} include the label and the properties associated with it which could be more costly for
  * network serialization purposes.
  *
- * @see GryoLiteMessageSerializerV1d0
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GryoMessageSerializerV1d0 extends AbstractGryoMessageSerializerV1d0 {
+public final class GryoMessageSerializerV3d0 extends AbstractGryoMessageSerializerV3d0 {
 
-    private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
-    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
+    private static final String MIME_TYPE = SerTokens.MIME_GRYO_V3D0;
+    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V3D0 + "-stringd";
 
     /**
      * Creates an instance with a standard {@link GryoMapper} instance.
      */
-    public GryoMessageSerializerV1d0() {
-        super(GryoMapper.build().version(GryoVersion.V1_0).create());
+    public GryoMessageSerializerV3d0() {
+        super(GryoMapper.build().version(GryoVersion.V3_0).create());
     }
 
     /**
      * Creates an instance with a standard {@link GryoMapper} instance. Note that the instance created by the supplied
      * builder will be overridden by {@link #configure} if it is called.
      */
-    public GryoMessageSerializerV1d0(final GryoMapper.Builder kryo) {
-        super(kryo.version(GryoVersion.V1_0).create());
+    public GryoMessageSerializerV3d0(final GryoMapper.Builder kryo) {
+        super(kryo.version(GryoVersion.V3_0).create());
     }
 
     @Override

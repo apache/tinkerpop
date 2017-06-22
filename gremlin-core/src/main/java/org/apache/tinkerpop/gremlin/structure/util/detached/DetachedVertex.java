@@ -169,6 +169,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
         public Builder addProperty(final DetachedVertexProperty vp) {
             v.internalAddProperty(vp);
+            vp.internalSetVertex(v);
             return this;
         }
 

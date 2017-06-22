@@ -132,6 +132,10 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         this.properties.put(p.key(), Collections.singletonList(p));
     }
 
+    public void internalSetVertex(final DetachedVertex vertex) {
+        this.vertex = vertex;
+    }
+
     /**
      * Provides a way to construct an immutable {@link DetachedEdge}.
      */
@@ -144,6 +148,11 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
 
         private Builder(final DetachedVertexProperty e) {
             this.vp = e;
+        }
+
+        public Builder setV(final DetachedVertex v) {
+            vp.internalSetVertex(v);
+            return this;
         }
 
         public Builder addProperty(final Property p) {

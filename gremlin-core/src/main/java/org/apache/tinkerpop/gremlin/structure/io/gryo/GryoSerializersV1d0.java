@@ -48,14 +48,14 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class used to serialize graph-based objects such as vertices, edges, properties, and paths. These objects are
- * "detached" using {@link DetachedFactory} before serialization. These serializers present a generalized way to
- * serialize the implementations of core interfaces.
+ * This class holds serializers for graph-based objects such as vertices, edges, properties, and paths. These objects
+ * are "detached" using {@link DetachedFactory} before serialization. These serializers present a generalized way to
+ * serialize the implementations of core interfaces. These are serializers for Gryo 1.0.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GryoSerializers {
+public final class GryoSerializersV1d0 {
 
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
