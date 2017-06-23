@@ -57,6 +57,11 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
 
     protected ObjectMapper mapper;
 
+    /**
+     * @deprecated As of release 3.2.6, replaced by functionality provided by {@link AbstractMessageSerializer#TOKEN_IO_REGISTRIES}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1694">TINKERPOP-1694</a>
+     */
+    @Deprecated
     public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
 
     protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {

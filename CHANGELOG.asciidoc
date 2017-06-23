@@ -28,6 +28,7 @@ TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
+* Deprecated the `useMapperFromGraph` configuration option for Gremlin Server serializers.
 * Added annotations to the traversal metrics pretty print.
 * `EdgeVertexStep` is no longer final and can be extended by providers.
 * Deprecated `Transaction.submit(Function)`.
