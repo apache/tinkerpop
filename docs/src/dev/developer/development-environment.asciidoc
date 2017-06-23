@@ -117,7 +117,11 @@ mvn clean install -Pgremlin-dotnet
 which enables the "gremlin-dotnet" Maven profile or in a more automated fashion simply add a `.glv` file to the `src`
 and `test` directories of the `gremlin-dotnet` module  which will signify to Maven that the environment is .NET-ready.
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
-`gremlin-dotnet` in full. 
+`gremlin-dotnet` in full.
+
+For those who will release TinkerPop, it is also necessary to install link:http://www.mono-project.com/[Mono]. The
+release process is known to work with 5.0.1, so it is best to probably install that version if possible. See release
+documentation for more information on configuration for release.
 
 [[release-environment]]
 Release Environment

@@ -47,6 +47,16 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
+            <!--
+            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
