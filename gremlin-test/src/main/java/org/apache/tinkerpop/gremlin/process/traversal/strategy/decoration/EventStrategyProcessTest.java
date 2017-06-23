@@ -562,9 +562,9 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).properties("xxx").properties("to-drop").drop().iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(v.properties()));
-        assertEquals(1, IteratorUtils.count(v.properties().next().properties()));
-        assertEquals("yay!", vp.value("not-dropped"));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
+        assertEquals("yay!", g.V(vp.element()).properties("xxx").values("not-dropped").next());
         assertThat(triggered.get(), is(true));
     }
 
@@ -601,8 +601,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).properties("xxx").property("to-change","bah").iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(v.properties()));
-        assertEquals(1, IteratorUtils.count(v.properties().next().properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
         assertThat(triggered.get(), is(true));
     }
 
@@ -639,8 +639,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).properties("xxx").property("new","yay!").iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(v.properties()));
-        assertEquals(2, IteratorUtils.count(v.properties().next().properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(2, IteratorUtils.count(g.V(v).properties().properties()));
         assertThat(triggered.get(), is(true));
     }
 
@@ -677,7 +677,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.E(e).properties("to-drop").drop().iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(e.properties()));
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
         assertEquals("yay!", e.value("not-dropped"));
         assertThat(triggered.get(), is(true));
     }
@@ -716,7 +716,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.E(e).property("to-change","yay!").iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(e.properties()));
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
         assertThat(triggered.get(), is(true));
     }
 
@@ -754,7 +754,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.E(e).property("new","yay!").iterate();
         tryCommit(graph);
 
-        assertEquals(2, IteratorUtils.count(e.properties()));
+        assertEquals(2, IteratorUtils.count(g.E(e).properties()));
         assertThat(triggered.get(), is(true));
     }
 
@@ -854,8 +854,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).properties("to-remove").drop().iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(v.properties()));
-        assertEquals(vpToKeep.value(), v.value("to-keep"));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(vpToKeep.value(), g.V(v).values("to-keep").next());
         assertThat(triggered.get(), is(true));
     }
 
@@ -890,7 +890,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate();
         tryCommit(graph);
 
-        assertEquals(1, IteratorUtils.count(v.properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
         assertThat(triggered.get(), is(true));
     }
 
@@ -925,7 +925,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
         tryCommit(graph);
 
-        assertEquals(2, IteratorUtils.count(v.properties()));
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
         assertThat(triggered.get(), is(true));
     }
 
