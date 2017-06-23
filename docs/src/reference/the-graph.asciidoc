@@ -198,6 +198,11 @@ a transactional leak does occur between requests somehow, a fresh transaction is
 TIP: The `tx()` method is on the `Graph` interface, but it is also available on the `TraversalSource` spawned from a
 `Graph`.  Calls to `TraversalSource.tx()` are proxied through to the underlying `Graph` as a convenience.
 
+WARNING: TinkerPop provides for basic transaction control, however, like many aspects of TinkerPop, it is up to the
+graph system provider to choose the specific aspects of how their implementation will work and how it fits into the
+TinkerPop stack. Be sure to understand the transaction semantics of the specific graph implementation that is being
+utilized as it may present differing functionality than described here.
+
 Configuring
 ~~~~~~~~~~~
 
