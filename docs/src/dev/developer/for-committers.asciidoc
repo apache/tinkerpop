@@ -111,7 +111,7 @@ this property set.
 * Issues are not assigned "labels" with two exceptions:
 ** The "breaking" label which marks an issue as one that is representative of a change in the API that might
 affect users or providers.  This label is important when organizing release notes.
-** The "deprecation" label which is assigned to an issue that is about removing a deprecated portion of the API.
+** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
 which that particular issue will completed. This is a field usually only set by committers.
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
@@ -146,11 +146,10 @@ public APIs that might be utilized by users or implemented by providers:
 replaced then the comment can simply read "not replaced".  Additional comments that provide more context are
 encouraged.
 ** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>` - supply a link to the
-JIRA issue for reference.
+JIRA issue for reference - the issue should include the "deprecation" label.
 * Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
 call out this fact.
-* Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
-"breaking" label as well as a "deprecation" label.
+* Create a new JIRA issue to track removal of the deprecation for future evaluation.
 * Update the "upgrade documentation" to reflect the API change and how the reader should resolve it.
 
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
