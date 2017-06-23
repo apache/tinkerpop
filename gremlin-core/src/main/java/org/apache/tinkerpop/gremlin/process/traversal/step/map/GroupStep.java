@@ -63,15 +63,19 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         this.setSeedSupplier(HashMapSupplier.instance());
     }
 
+    private void setValueTraversal(final Traversal.Admin<?, ?> kvTraversal) {
+        this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
+        this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+        this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
+    }
+
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
-            this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
+            this.setValueTraversal(kvTraversal);
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
@@ -83,7 +87,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
             this.keyTraversal = this.integrateChild(newTraversal);
         else if (null != this.valueTraversal && this.valueTraversal.equals(oldTraversal))
-            this.valueTraversal = this.integrateChild(newTraversal);
+            this.setValueTraversal(newTraversal);
     }
 
     @Override
