@@ -99,14 +99,9 @@ public final class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> im
 
     @Override
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
-        int i = 0;
-        for (final Traversal.Admin<?, ?> traversal : this.traversalRing.getTraversals()) {
-            if (null != traversal && traversal.equals(oldTraversal)) {
-                this.traversalRing.setTraversal(i, this.integrateChild(newTraversal));
-                break;
-            }
-            i++;
-        }
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<S, E>) oldTraversal,
+                (Traversal.Admin<S, E>) newTraversal);
     }
 
     public List<String> getProjectKeys() {
