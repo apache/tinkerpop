@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements AutoCloseable {
 
-    private Direction direction;
+    protected Direction direction;
 
     public EdgeVertexStep(final Traversal.Admin traversal, final Direction direction) {
         super(traversal);
