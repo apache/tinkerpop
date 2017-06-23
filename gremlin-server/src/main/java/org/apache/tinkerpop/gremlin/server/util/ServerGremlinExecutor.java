@@ -50,43 +50,19 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
+public class ServerGremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ServerGremlinExecutor.class);
 
     private final GraphManager graphManager;
     private final Settings settings;
     private final List<LifeCycleHook> hooks;
 
-    private final T scheduledExecutorService;
+    private final ScheduledExecutorService scheduledExecutorService;
     private final ExecutorService gremlinExecutorService;
     private final GremlinExecutor gremlinExecutor;
 
     private final Map<String,Object> hostOptions = new ConcurrentHashMap<>();
 
-    /**
-     * Create a new object from {@link Settings} where thread pools are internally created. Note that the
-     * {@code scheduleExecutorServiceClass} will be created via
-     * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.
-     */
-    public ServerGremlinExecutor(final Settings settings, final Class<T> scheduleExecutorServiceClass) {
-        this(settings, null, null, scheduleExecutorServiceClass);
-    }
-
-    /**
-     * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
-     * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
-     * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.  If either of the {@link ExecutorService}
-     * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size. The
-     * {@link GraphManager} will be constructed from the {@link Settings}.
-     */
-    public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
-                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass) {
-        this(settings,
-             gremlinExecutorService,
-             scheduledExecutorService,
-             scheduleExecutorServiceClass,
-             null);
-    }
     /**
      * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
      * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
@@ -94,27 +70,24 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
      * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size.
      */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
-                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass,
-                                 GraphManager graphManager) {
+                                 final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
 
-        if (null == graphManager) {
-            try {
-                final Class<?> clazz = Class.forName(settings.graphManager);
-                final Constructor c = clazz.getConstructor(Settings.class);
-                graphManager = (GraphManager) c.newInstance(settings);
-            } catch (ClassNotFoundException e) {
-                logger.error("Could not find GraphManager implementation "
-                             + "defined by the 'graphManager' setting as: {}",
-                             settings.graphManager);
-                throw new RuntimeException(e);
-            } catch (Exception e) {
-                logger.error("Could not invoke constructor on class {} (defined by "
-                             + "the 'graphManager' setting) with one argument of "
-                             + "class Settings",
-                             settings.graphManager);
-                throw new RuntimeException(e);
-            }
+        try {
+            final Class<?> clazz = Class.forName(settings.graphManager);
+            final Constructor c = clazz.getConstructor(Settings.class);
+            graphManager = (GraphManager) c.newInstance(settings);
+        } catch (ClassNotFoundException e) {
+            logger.error("Could not find GraphManager implementation "
+                         + "defined by the 'graphManager' setting as: {}",
+                         settings.graphManager);
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Could not invoke constructor on class {} (defined by "
+                         + "the 'graphManager' setting) with one argument of "
+                         + "class Settings",
+                         settings.graphManager);
+            throw new RuntimeException(e);
         }
 
         if (null == gremlinExecutorService) {
@@ -126,13 +99,10 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         if (null == scheduledExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("worker-%d");
-            this.scheduledExecutorService = scheduleExecutorServiceClass.cast(
-                    Executors.newScheduledThreadPool(settings.threadPoolWorker, threadFactoryGremlin));
+            this.scheduledExecutorService = Executors.newScheduledThreadPool(settings.threadPoolWorker, threadFactoryGremlin);
         } else {
             this.scheduledExecutorService = scheduledExecutorService;
         }
-
-        this.graphManager = graphManager;
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
@@ -215,7 +185,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         hostOptions.clear();
     }
 
-    public T getScheduledExecutorService() {
+    public ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
 
