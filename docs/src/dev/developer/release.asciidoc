@@ -220,6 +220,7 @@ Release & Promote
 .. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
 .. `mvn clean install -DskipTests`
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
+.. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.

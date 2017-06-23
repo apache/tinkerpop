@@ -40,6 +40,16 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
+            <!--
+            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -74,8 +84,82 @@ limitations under the License.
                         <artifactId>dotnet-maven-plugin</artifactId>
                         <extensions>true</extensions>
                         <configuration>
-                            <packOutput>${project.parent.basedir}/target/nuget</packOutput>
+                            <packEnabled>true</packEnabled>
+                            <nugetPushEnabled>false</nugetPushEnabled>
+                            <nugetAddEnabled>false</nugetAddEnabled>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+        Provides a way to deploy the gremlin-dotnet GLV to nuget. This cannot be part of the standard maven execution
+        because nuget does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
+        -->
+        <profile>
+            <id>glv-dotnet-deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>nuget</name>
+                </property>
+            </activation>
+            <properties>
+                <packaging.type>dotnet-library</packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <!--
+                      not seeing much point to making this OS agnostic really. as far as it is known, no one who does
+                      deployments will do so from a windows machine. this part of the build requires mono. note that
+                      the "correct" version of nuget is downloaded as part of the process.
+                     -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-nuget</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                        <if>
+                                            <available file="Gremlin.Net/bin/nuget.exe"/>
+                                            <then>
+                                                <echo>nuget.exe already downloaded and at Gremlin.Net/bin/nuget.exe.</echo>
+                                            </then>
+
+                                            <else>
+                                                <!--
+                                                specifically using 3.4.4 given some bug that seems to pin us to this
+                                                version - https://github.com/NuGet/Home/issues/4090 - it might work
+                                                with newer versions but definitely failed with 4.1.0
+                                                -->
+                                                <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
+                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe"/>
+                                                </exec>
+                                            </else>
+                                        </if>
+                                        <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
+                                            <arg line="nuget.exe push Gremlin.Net.3.2.6-beta1.nupkg -Source https://staging.nuget.org/api/v2/package"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>20020829</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                 </plugins>
             </build>

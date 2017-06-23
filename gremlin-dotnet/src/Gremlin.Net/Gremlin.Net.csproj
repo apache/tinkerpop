@@ -8,16 +8,29 @@
 
   <PropertyGroup Label="Package">
     <Version>3.2.6-beta1</Version>
-    <Title>Gremlin-DotNet</Title>
+    <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>
-      Apache TinkerPop’s Gremlin-DotNet implements Gremlin within the C# language.
-
-Gremlin-DotNet is an extended version of the Gremlin.Net driver (versions &lt;= 0.X). It includes an implementation of Gremlin in C#. This extended version is now part of the Apache TinkerPop project.
-The 'old' Gremlin.Net driver is however still supported. Head to https://github.com/FlorianHockmann/Gremlin.Net for more information.
+      Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
     </Description>
+    <Summary>
+      Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).
+      Gremlin is the graph traversal language of TinkerPop. It can be described as a functional, data-flow language
+      that enables users to succinctly express complex traversals on (or queries of) their application’s property graph.
+
+      Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including “dot notation”
+      for function chaining (a.b.c), round bracket function arguments (a(b,c))`, and support for global namespaces
+      (a(b()) vs a(__.b()))`. As such, anyone familiar with Gremlin-Java will immediately be able to work with
+      Gremlin-DotNet. Moreover, there are a few added constructs to Gremlin-DotNet that make traversals a bit more succinct.
+
+      Please see the reference documentation at Apache TinkerPop for more information on usage.
+
+      NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann (versions &lt;= 0.X) and is now
+      included as part of the Apache TinkerPop project. The 'old' Gremlin.Net driver is however still supported.
+      Head to https://github.com/FlorianHockmann/Gremlin.Net for more information.
+    </Summary>
     <PackageId>Gremlin.Net</PackageId>
-    <PackageTags>gremlin;tinkerpop;tinkerpop3</PackageTags>
+    <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
