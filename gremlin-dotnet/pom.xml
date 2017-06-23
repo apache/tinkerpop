@@ -24,7 +24,7 @@ limitations under the License.
         <version>3.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet</artifactId>
-    <name>Apache TinkerPop :: Gremlin-DotNet</name>
+    <name>Apache TinkerPop :: Gremlin.Net</name>
     <packaging>pom</packaging>
 
     <modules>
