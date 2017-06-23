@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>3.2.5-beta1</Version>
+    <Version>3.2.6-beta1</Version>
     <Title>Gremlin-DotNet</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>
