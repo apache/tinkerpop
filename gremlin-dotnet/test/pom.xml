@@ -24,7 +24,7 @@ limitations under the License.
         <version>3.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-tests</artifactId>
-    <name>Apache TinkerPop :: Gremlin-DotNet - Tests</name>
+    <name>Apache TinkerPop :: Gremlin.Net - Tests</name>
     <packaging>${packaging.type}</packaging>
     <properties>
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping dotnet tests -->

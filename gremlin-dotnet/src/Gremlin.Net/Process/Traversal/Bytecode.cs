@@ -31,7 +31,7 @@ namespace Gremlin.Net.Process.Traversal
     /// <remarks>
     ///     Bytecode is simply a list of ordered instructions.
     ///     Bytecode can be serialized between environments and machines by way of a GraphSON representation.
-    ///     Thus, Gremlin-DotNet can create bytecode in C# and ship it to Gremlin-Java for evaluation in Java.
+    ///     Thus, Gremlin.Net can create bytecode in C# and ship it to Gremlin-Java for evaluation in Java.
     /// </remarks>
     public class Bytecode
     {

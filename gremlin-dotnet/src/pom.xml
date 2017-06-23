@@ -24,7 +24,7 @@ limitations under the License.
         <version>3.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-source</artifactId>
-    <name>Apache TinkerPop :: Gremlin-DotNet - Source</name>
+    <name>Apache TinkerPop :: Gremlin.Net - Source</name>
     <packaging>${packaging.type}</packaging>
 
     <build>
@@ -93,7 +93,7 @@ limitations under the License.
             </build>
         </profile>
         <!--
-        Provides a way to deploy the gremlin-dotnet GLV to nuget. This cannot be part of the standard maven execution
+        Provides a way to deploy the Gremlin.Net GLV to nuget. This cannot be part of the standard maven execution
         because nuget does not have a staging environment like sonatype for releases. As soon as the release is
         published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
         make this stuff public until the vote is over.
