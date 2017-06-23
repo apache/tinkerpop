@@ -119,14 +119,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
-        int i = 0;
-        for (final Traversal.Admin<?, ?> traversal : this.traversalRing.getTraversals()) {
-            if (null != traversal && traversal.equals(oldTraversal)) {
-                this.traversalRing.setTraversal(i, this.integrateChild(newTraversal));
-                break;
-            }
-            i++;
-        }
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<Object, E>) oldTraversal,
+                (Traversal.Admin<Object, E>) newTraversal);
     }
 
     @Override
