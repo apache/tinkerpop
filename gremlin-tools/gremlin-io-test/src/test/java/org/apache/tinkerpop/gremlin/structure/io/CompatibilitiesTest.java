@@ -31,6 +31,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class CompatibilitiesTest {
+    /**
+     * Need to bump this each time we get a new release on the 3.2.x line.
+     */
+    private static final String LAST_OF_3_2_x = "3.2.5";
+
     @Test
     public void shouldFindGryoVersionsBeforeRelease3_2_4() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
@@ -39,16 +44,16 @@ public class CompatibilitiesTest {
     }
 
     @Test
-    public void shouldFindGryoVersionsAfterRelease3_2_4() {
+    public void shouldFindGryoVersionsAfterRelease3_2_x() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .afterRelease("3.2.4").match();
+                .afterRelease(LAST_OF_3_2_x).match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V3D0_3_3_0));
     }
 
     @Test
-    public void shouldFindGryoVersionsBetweenReleases3_2_3And3_3_0() {
+    public void shouldFindGryoVersionsBetweenReleases3_2_3And3_2_5() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .betweenReleases("3.2.3", "3.3.0").match();
+                .betweenReleases("3.2.3", "3.2.5").match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_4));
     }
 
@@ -56,7 +61,8 @@ public class CompatibilitiesTest {
     public void shouldFindGryoVersionsBefore3_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_3, GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_3_0));
+        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_3,
+                GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_2_5, GryoCompatibility.V1D0_3_3_0));
     }
 
     @Test
@@ -69,7 +75,7 @@ public class CompatibilitiesTest {
     @Test
     public void shouldFindGryoVersionsAfterRelease3_2_4AndAfter1_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .afterRelease("3.2.4")
+                .afterRelease(LAST_OF_3_2_x)
                 .after("1.0")
                 .match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0));
@@ -80,13 +86,14 @@ public class CompatibilitiesTest {
         final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
                 .configuredAs(".*partial.*").match();
         assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_2_3,
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_2_5,
+                GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
     }
 
     @Test
     public void shouldFindGraphSONAfterVersion3_2_3WithConfigurationPartial() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
-                .afterRelease("3.2.4")
+                .afterRelease(LAST_OF_3_2_x)
                 .configuredAs(".*partial.*").match();
         assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
     }
@@ -101,6 +108,6 @@ public class CompatibilitiesTest {
                 .match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0,
                 GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4,
-                GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_5, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
     }
 }

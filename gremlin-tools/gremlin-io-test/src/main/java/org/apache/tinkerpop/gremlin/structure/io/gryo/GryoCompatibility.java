@@ -46,6 +46,7 @@ import java.io.IOException;
 public enum GryoCompatibility implements Compatibility {
     V1D0_3_2_3("3.2.3", "1.0", "v1d0"),
     V1D0_3_2_4("3.2.4", "1.0", "v1d0"),
+    V1D0_3_2_5("3.2.5", "1.0", "v1d0"),
     V1D0_3_3_0("3.3.0", "1.0", "v1d0"),
     V3D0_3_3_0("3.3.0", "3.0", "v3d0");
 

@@ -47,6 +47,7 @@ public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
         return Arrays.asList(new Object[][]{
                 {GryoCompatibility.V1D0_3_2_3, mapperV1 },
                 {GryoCompatibility.V1D0_3_2_4, mapperV1 },
+                {GryoCompatibility.V1D0_3_2_5, mapperV1 },
                 {GryoCompatibility.V1D0_3_3_0, mapperV1 },
                 {GryoCompatibility.V3D0_3_3_0, mapperV3 }});
     }
