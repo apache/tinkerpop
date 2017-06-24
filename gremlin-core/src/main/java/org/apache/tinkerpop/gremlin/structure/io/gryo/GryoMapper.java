@@ -88,7 +88,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         this.registrationRequired = builder.registrationRequired;
         this.referenceTracking = builder.referenceTracking;
-        this.classResolver = builder.classResolver;
+        this.classResolver = null == builder.classResolver ? version.getClassResolverMaker() : builder.classResolver;
     }
 
     @Override
@@ -155,7 +155,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         private boolean registrationRequired = true;
         private boolean referenceTracking = true;
-        private Supplier<ClassResolver> classResolver = GryoClassResolver::new;
+        private Supplier<ClassResolver> classResolver;
 
         private Builder() {
         }
@@ -182,8 +182,8 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         /**
          * Provides a custom Kryo {@code ClassResolver} to be supplied to a {@code Kryo} instance.  If this value is
-         * not supplied then it will default to the {@link GryoClassResolver}. To ensure compatibility with Gryo it
-         * is highly recommended that objects passed to this method extend that class.
+         * not supplied then it will default to the {@code ClassResolver} of the provided {@link GryoVersion}. To
+         * ensure compatibility with Gryo it is highly recommended that objects passed to this method extend that class.
          * <p/>
          * If the {@code ClassResolver} implementation share state, then the {@link Supplier} should typically create
          * new instances when requested, as the {@link Supplier} will be called for each {@link Kryo} instance created.

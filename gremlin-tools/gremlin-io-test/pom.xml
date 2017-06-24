@@ -168,7 +168,7 @@ writeSupportedV1Objects = { writer, mapper ->
 }
 
 mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistry.instance()).
+                        addRegistry(TinkerIoRegistryV1d0.instance()).
                         addCustomModule(new AbstractGraphSONMessageSerializerV1d0.GremlinServerModule()).
                         version(GraphSONVersion.V1_0).create().createMapper()
 

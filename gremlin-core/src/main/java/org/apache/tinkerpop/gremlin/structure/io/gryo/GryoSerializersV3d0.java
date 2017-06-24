@@ -25,11 +25,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -45,7 +50,10 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class holds serializers for graph-based objects such as vertices, edges, properties, and paths. These objects
@@ -375,6 +383,68 @@ public final class GryoSerializersV3d0 {
         public <I extends InputShim> DefaultRemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultRemoteTraverser> remoteTraverserClass) {
             final Object o = kryo.readClassAndObject(input);
             return new DefaultRemoteTraverser<>(o, input.readLong());
+        }
+    }
+
+    public final static class TraversalMetricsSerializer implements SerializerShim<TraversalMetrics> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final TraversalMetrics object) {
+            output.writeDouble(object.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
+            final Collection<? extends Metrics> metrics = object.getMetrics();
+            output.writeInt(metrics.size());
+            metrics.forEach(m -> kryo.writeObject(output, m));
+        }
+
+        @Override
+        public <I extends InputShim> TraversalMetrics read(final KryoShim<I, ?> kryo, final I input, final Class<TraversalMetrics> clazz) {
+            final double duration = input.readDouble();
+            final int size = input.readInt();
+
+            final List<MutableMetrics> orderedMetrics = new ArrayList<>();
+            for (int ix = 0; ix < size; ix++) {
+                orderedMetrics.add(kryo.readObject(input, MutableMetrics.class));
+            }
+
+            return new DefaultTraversalMetrics(Math.round(duration * 1000000), orderedMetrics);
+        }
+    }
+
+    public final static class MetricsSerializer implements SerializerShim<Metrics> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Metrics object) {
+            output.writeString(object.getId());
+            output.writeString(object.getName());
+            output.writeDouble(object.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
+            kryo.writeObject(output, object.getCounts());
+            kryo.writeObject(output, object.getAnnotations());
+
+            // kryo might have a problem with LinkedHashMap value collections. can't recreate it independently but
+            // it gets fixed with standard collections for some reason.
+            final List<Metrics> nested = new ArrayList<>(object.getNested());
+            kryo.writeObject(output, nested);
+        }
+
+        @Override
+        public <I extends InputShim> Metrics read(final KryoShim<I, ?> kryo, final I input, final Class<Metrics> clazz) {
+            final MutableMetrics m = new MutableMetrics(input.readString(), input.readString());
+
+            m.setDuration(Math.round(input.readDouble() * 1000000), TimeUnit.NANOSECONDS);
+
+            final Map<String,Long> counts = (Map<String,Long>) kryo.readObject(input, HashMap.class);
+            for (Map.Entry<String, Long> count : counts.entrySet()) {
+                m.setCount(count.getKey(), count.getValue());
+            }
+
+            final Map<String,Object> annotations = (Map<String,Object>) kryo.readObject(input, HashMap.class);
+            for (Map.Entry<String, Object> count : annotations.entrySet()) {
+                m.setAnnotation(count.getKey(), count.getValue());
+            }
+
+            final List<MutableMetrics> nesteds = (List<MutableMetrics>) kryo.readObject(input, ArrayList.class);
+            for (MutableMetrics nested : nesteds) {
+                m.addNested(nested);
+            }
+            return m;
         }
     }
 }

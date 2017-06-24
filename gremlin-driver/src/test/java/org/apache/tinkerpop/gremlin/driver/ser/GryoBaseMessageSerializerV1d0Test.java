@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -560,7 +560,7 @@ public class GryoBaseMessageSerializerV1d0Test {
         }
     }
 
-    public static class ErrorOnlyClassResolver extends GryoClassResolver {
+    public static class ErrorOnlyClassResolver extends GryoClassResolverV1d0 {
         @Override
         public Registration getRegistration(Class clazz) {
             throw new RuntimeException("Registration is not allowed with this ClassResolver - it is not a good implementation");

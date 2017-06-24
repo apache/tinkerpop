@@ -77,8 +77,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTravers
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -103,6 +105,7 @@ import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
@@ -153,11 +156,12 @@ import java.util.function.Supplier;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum GryoVersion {
-    V1_0("1.0", initV1d0Registrations()),
-    V3_0("3.0", initV3d0Registrations());
+    V1_0("1.0", initV1d0Registrations(), GryoClassResolverV1d0::new),
+    V3_0("3.0", initV3d0Registrations(), GryoClassResolverV3d0::new);
 
     private final String versionNumber;
     private final List<TypeRegistration<?>> registrations;
+    private final Supplier<ClassResolver> classResolverMaker;
 
     /**
      * Creates a new {@link GryoVersion}.
@@ -165,8 +169,9 @@ public enum GryoVersion {
      * @param versionNumber the user facing string representation of the version which should follow an {@code x.y}
      *                      pattern
      * @param registrations the list of registrations for this version
+     * @param classResolverMaker providers the default {@code ClassResolver} for a particular version of Gryo
      */
-    GryoVersion(final String versionNumber, final List<TypeRegistration<?>> registrations) {
+    GryoVersion(final String versionNumber, final List<TypeRegistration<?>> registrations, final Supplier<ClassResolver> classResolverMaker) {
         // Validate the default registrations
         // For justification of these default registration rules, see TinkerPopKryoRegistrator
         for (TypeRegistration<?> tr : registrations) {
@@ -184,6 +189,7 @@ public enum GryoVersion {
 
         this.versionNumber = versionNumber;
         this.registrations = registrations;
+        this.classResolverMaker = classResolverMaker;
     }
 
     public List<TypeRegistration<?>> cloneRegistrations() {
@@ -192,6 +198,10 @@ public enum GryoVersion {
 
     public List<TypeRegistration<?>> getRegistrations() {
         return Collections.unmodifiableList(registrations);
+    }
+
+    public Supplier<ClassResolver> getClassResolverMaker() {
+        return classResolverMaker;
     }
 
     public String getVersion() {
@@ -326,9 +336,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Tree.class, 61));
             add(GryoTypeReg.of(HashSet.class, 62));
             add(GryoTypeReg.of(BulkSet.class, 64));
-            add(GryoTypeReg.of(MutableMetrics.class, 69));
-            add(GryoTypeReg.of(ImmutableMetrics.class, 115));
-            add(GryoTypeReg.of(DefaultTraversalMetrics.class, 70));
+            add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3d0.MetricsSerializer()));
+            add(GryoTypeReg.of(TraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalMetricsSerializer()));
+            //add(GryoTypeReg.of(MutableMetrics.class, 69, ));
+            //add(GryoTypeReg.of(ImmutableMetrics.class, 115));
+            //add(GryoTypeReg.of(DefaultTraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalSerializer()));
             add(GryoTypeReg.of(MapMemory.class, 73));
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));

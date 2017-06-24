@@ -18,24 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
-import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoException;
@@ -46,9 +28,6 @@ import org.apache.tinkerpop.shaded.kryo.util.IdentityObjectIntMap;
 import org.apache.tinkerpop.shaded.kryo.util.IntMap;
 import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
 
-import java.net.InetAddress;
-import java.nio.ByteBuffer;
-
 import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
 
 /**
@@ -58,7 +37,7 @@ import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoClassResolver implements ClassResolver {
+public abstract class AbstractGryoClassResolver implements ClassResolver {
     static public final byte NAME = -1;
 
     protected Kryo kryo;
@@ -97,32 +76,14 @@ public class GryoClassResolver implements ClassResolver {
         return register(new Registration(type, kryo.getDefaultSerializer(type), NAME));
     }
 
+    /**
+     * Called from {@link #getRegistration(Class)} to determine the actual type.
+     */
+    public abstract Class coerceType(final Class clazz);
+
     @Override
     public Registration getRegistration(final Class clazz) {
-        // force all instances of Vertex, Edge, VertexProperty, etc. to their respective interface
-        final Class type;
-        if (!ReferenceVertex.class.isAssignableFrom(clazz) && !DetachedVertex.class.isAssignableFrom(clazz) && Vertex.class.isAssignableFrom(clazz))
-            type = Vertex.class;
-        else if (!ReferenceEdge.class.isAssignableFrom(clazz) && !DetachedEdge.class.isAssignableFrom(clazz) && Edge.class.isAssignableFrom(clazz))
-            type = Edge.class;
-        else if (!ReferenceVertexProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && VertexProperty.class.isAssignableFrom(clazz))
-            type = VertexProperty.class;
-        else if (!ReferenceProperty.class.isAssignableFrom(clazz) && !DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
-            type = Property.class;
-        else if (!ReferencePath.class.isAssignableFrom(clazz) && !DetachedPath.class.isAssignableFrom(clazz) && Path.class.isAssignableFrom(clazz))
-            type = Path.class;
-        else if (Lambda.class.isAssignableFrom(clazz))
-            type = Lambda.class;
-        else if (ByteBuffer.class.isAssignableFrom(clazz))
-            type = ByteBuffer.class;
-        else if (Class.class.isAssignableFrom(clazz))
-            type = Class.class;
-        else if (InetAddress.class.isAssignableFrom(clazz))
-            type = InetAddress.class;
-        else if (ConnectiveP.class.isAssignableFrom(clazz))
-            type = P.class;
-        else
-            type = clazz;
+        final Class type = coerceType(clazz);
 
         if (type == memoizedClass) return memoizedClassValue;
         final Registration registration = classToRegistration.get(type);
