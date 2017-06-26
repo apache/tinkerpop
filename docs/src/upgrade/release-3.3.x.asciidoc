@@ -352,3 +352,14 @@ rather than `Exception`. Providers should consider using this exception to wrap 
 to transaction problems and it allows for more common, generalized error handling for users.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+SASL Byte Array
++++++++++++++++
+
+Gremlin Server no longer supports accepting a byte array for the value passed to the "sasl" parameter in
+authentication messages. It only accepts a Base64 encoded string.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1603[TINKERPOP-1603]

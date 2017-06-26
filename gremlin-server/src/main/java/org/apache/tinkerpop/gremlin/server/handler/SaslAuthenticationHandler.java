@@ -87,13 +87,11 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     final Object saslObject = requestMessage.getArgs().get(Tokens.ARGS_SASL);
                     final byte[] saslResponse;
                     
-                    if (saslObject instanceof byte[]) {
-                        saslResponse = (byte[]) saslObject;
-                    } else if(saslObject instanceof String) {
+                    if(saslObject instanceof String) {
                         saslResponse = BASE64_DECODER.decode((String) saslObject);
                     } else {
                         final ResponseMessage error = ResponseMessage.build(request.get())
-                                .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - byte[] or base64 encoded String is expected")
+                                .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - base64 encoded String is expected")
                                 .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).create();
                         ctx.writeAndFlush(error);
                         return;
