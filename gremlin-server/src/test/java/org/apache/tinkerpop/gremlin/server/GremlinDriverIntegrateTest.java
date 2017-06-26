@@ -212,7 +212,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .reconnectIntialDelay(500)
                 .reconnectInterval(500)
                 .maxContentLength(1024).create();
         final Client client = cluster.connect();

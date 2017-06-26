@@ -65,11 +65,6 @@ final class Connection {
     public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
 
-    /**
-     * @deprecated As of release 3.2.3, replaced by {@link #RECONNECT_INTERVAL}.
-     */
-    @Deprecated
-    public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
     public static final long KEEP_ALIVE_INTERVAL = 1800000;
