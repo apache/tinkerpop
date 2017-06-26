@@ -274,34 +274,6 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420], link:
 link:https://issues.apache.org/jira/browse/TINKERPOP-1465[TINKERPOP-1465], link:https://issues.apache.org/jira/browse/TINKERPOP-1526[TINKERPOP-1526],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612], link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Graph Database Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Test Suite Removal
-++++++++++++++++++
-
-A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
-providers who are implementing TinkerPop. Test suites related to perfrmance based on `junit-benchmarks` have been
-removed as have the suites in `gremlin-groovy-test` (in fact, this entire module has been removed). Specifically,
-providers should be concerned with breaking changes related to the removal of:
-
-* `StructurePerformanceSuite`
-* `ProcessPerformanceSuite`
-* `GroovyEnvironmentPerformanceSuite`
-* `GroovyProcessStandardSuite`
-* `GroovyProcessComputerSuite`
-* `GroovyEnvironmentSuite`
-* `GroovyEnvironmentIntegrateSuite`
-
-Those graph providers who relied on these tests should simply remove them from their respective test suites. Beware of
-`OptOut` annotations that reference tests in these suites as test failure will occur if those references are not
-removed.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
-
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -341,3 +313,41 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 ```
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Test Suite Removal
+++++++++++++++++++
+
+A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
+providers who are implementing TinkerPop. Test suites related to perfrmance based on `junit-benchmarks` have been
+removed as have the suites in `gremlin-groovy-test` (in fact, this entire module has been removed). Specifically,
+providers should be concerned with breaking changes related to the removal of:
+
+* `StructurePerformanceSuite`
+* `ProcessPerformanceSuite`
+* `GroovyEnvironmentPerformanceSuite`
+* `GroovyProcessStandardSuite`
+* `GroovyProcessComputerSuite`
+* `GroovyEnvironmentSuite`
+* `GroovyEnvironmentIntegrateSuite`
+
+Those graph providers who relied on these tests should simply remove them from their respective test suites. Beware of
+`OptOut` annotations that reference tests in these suites as test failure will occur if those references are not
+removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
+
+TransactionException
+++++++++++++++++++++
+
+The `AbstractTransaction.TransactionException` class is now just `TransactionException` which extends `RuntimeExcetpion`
+rather than `Exception`. Providers should consider using this exception to wrap their own on calls to
+`Transaction.commit()` or `Transaction.rollback()`. By throwing this exception, the TinkerPop stack can better respond
+to transaction problems and it allows for more common, generalized error handling for users.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]

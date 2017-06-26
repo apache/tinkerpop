@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
+import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
 import java.util.Collections;
 import java.util.Set;
@@ -51,12 +52,16 @@ public interface Transaction extends AutoCloseable {
     public void open();
 
     /**
-     * Commits a transaction.
+     * Commits a transaction. This method may optionally throw {@link TransactionException} on error. Providers should
+     * consider wrapping their transaction exceptions in this TinkerPop exception as it will lead to better error
+     * handling with Gremlin Server and other parts of the stack.
      */
     public void commit();
 
     /**
-     * Rolls back a transaction.
+     * Rolls back a transaction. This method may optionally throw {@link TransactionException} on error. Providers should
+     * consider wrapping their transaction exceptions in this TinkerPop exception as it will lead to better error
+     * handling with Gremlin Server and other parts of the stack.
      */
     public void rollback();
 

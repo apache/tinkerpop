@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.tinkerpop.api.Neo4jFactory;
