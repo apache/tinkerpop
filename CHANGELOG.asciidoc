@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed previously deprecated `:remote config timeout max`.
 * Removed previously deprecated `ConnectionPoolSettings.sessionId` and `ConnectionPoolSettings.optionalSessionId()`.
 * Removed previously deprecated `reconnectInitialDelay` setting from the Java driver.
 * Removed support for passing a byte array on the `sasl` parameter.
