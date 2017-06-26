@@ -48,8 +48,13 @@ public class GiraphIoRegistryCheck extends AbstractIoRegistryCheck {
     }
 
     @Test
-    public void shouldSupportGryoIoRegistry() throws Exception {
-        super.checkGryoIoRegistryCompliance((HadoopGraph) graph, GiraphGraphComputer.class);
+    public void shouldSupportGryoV1d0IoRegistry() throws Exception {
+        super.checkGryoV1d0IoRegistryCompliance((HadoopGraph) graph, GiraphGraphComputer.class);
+    }
+
+    @Test
+    public void shouldSupportGryoV3d0IoRegistry() throws Exception {
+        super.checkGryoV3d0IoRegistryCompliance((HadoopGraph) graph, GiraphGraphComputer.class);
     }
 
     @Test

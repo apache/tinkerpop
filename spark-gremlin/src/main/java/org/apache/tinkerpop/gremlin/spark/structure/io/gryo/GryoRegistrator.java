@@ -68,7 +68,7 @@ public class GryoRegistrator implements KryoRegistrator {
     private static final Logger log = LoggerFactory.getLogger(GryoRegistrator.class);
 
     @Override
-    public void registerClasses(Kryo kryo) {
+    public void registerClasses(final Kryo kryo) {
         registerClasses(kryo, Collections.emptyMap(), Collections.emptySet());
     }
 

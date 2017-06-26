@@ -53,8 +53,13 @@ public class SparkIoRegistryCheck extends AbstractIoRegistryCheck {
     }
 
     @Test
-    public void shouldSupportGryoIoRegistry() throws Exception {
-        super.checkGryoIoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
+    public void shouldSupportGryoV1d0IoRegistry() throws Exception {
+        super.checkGryoV1d0IoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
+    }
+
+    @Test
+    public void shouldSupportGryoV3d0IoRegistry() throws Exception {
+        super.checkGryoV3d0IoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
     }
 
     @Test

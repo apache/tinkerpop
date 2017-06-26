@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.serializers.ExternalizableSerializer;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
@@ -90,6 +91,7 @@ public final class GryoSerializer extends Serializer implements Serializable {
         ioRegistries.addAll(makeApacheConfiguration(sparkConfiguration).getList(IoRegistry.IO_REGISTRY, Collections.emptyList()));
         ioRegistries.add(SparkIoRegistry.class.getCanonicalName().replace("." + SparkIoRegistry.class.getSimpleName(), "$" + SparkIoRegistry.class.getSimpleName()));
         HadoopPools.initialize(GryoPool.build().
+                version(GryoVersion.valueOf(sparkConfiguration.get(GryoPool.CONFIG_IO_GRYO_VERSION, GryoPool.CONFIG_IO_GRYO_POOL_VERSION_DEFAULT.name()))).
                 poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT)).
                 ioRegistries(ioRegistries).
                 initializeMapper(builder ->

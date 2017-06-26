@@ -36,12 +36,18 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.junit.Assert.assertEquals;
@@ -51,7 +57,20 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(Parameterized.class)
 public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
+    @Parameterized.Parameters(name = "expect({0})")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"V1d0", GryoVersion.V1_0},
+                {"V3d0", GryoVersion.V3_0}});
+    }
+
+    @Parameterized.Parameter(value = 0)
+    public String name;
+
+    @Parameterized.Parameter(value = 1)
+    public GryoVersion version;
 
     @Test
     public void shouldSuccessfullyEvaluateSingleIterationTraversals() throws Exception {
@@ -63,6 +82,7 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
+        configuration.setProperty(GryoPool.CONFIG_IO_GRYO_VERSION, version.name());
 
         /////////// WITHOUT SINGLE-ITERATION STRATEGY LESS SINGLE-PASS OPTIONS ARE AVAILABLE
 

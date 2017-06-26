@@ -40,7 +40,9 @@ import java.util.function.Function;
 public final class GryoPool {
 
     public static final String CONFIG_IO_GRYO_POOL_SIZE = "gremlin.io.gryo.poolSize";
+    public static final String CONFIG_IO_GRYO_VERSION = "gremlin.io.gryo.version";
     public static final int CONFIG_IO_GRYO_POOL_SIZE_DEFAULT = 256;
+    public static final GryoVersion CONFIG_IO_GRYO_POOL_VERSION_DEFAULT = GryoVersion.V3_0;
 
     public enum Type {READER, WRITER, READER_WRITER}
 
@@ -145,6 +147,15 @@ public final class GryoPool {
         private List<IoRegistry> ioRegistries = new ArrayList<>();
         private Type type = Type.READER_WRITER;
         private Consumer<GryoMapper.Builder> gryoMapperConsumer = null;
+        private GryoVersion version = GryoVersion.V1_0;
+
+        /**
+         * Set the version of Gryo to use for this pool.
+         */
+        public Builder version(final GryoVersion version) {
+            this.version = version;
+            return this;
+        }
 
         /**
          * The {@code IoRegistry} class names to use for the {@code GryoPool}
@@ -207,7 +218,7 @@ public final class GryoPool {
          * @return the new pool
          */
         public GryoPool create() {
-            final GryoMapper.Builder mapper = GryoMapper.build().version(GryoVersion.V1_0);
+            final GryoMapper.Builder mapper = GryoMapper.build().version(version);
             final GryoPool gryoPool = new GryoPool();
             if (null != this.ioRegistries)
                 this.ioRegistries.forEach(mapper::addRegistry);
