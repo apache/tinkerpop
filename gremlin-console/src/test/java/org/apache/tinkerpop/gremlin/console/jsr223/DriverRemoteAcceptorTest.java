@@ -109,12 +109,6 @@ public class DriverRemoteAcceptorTest {
     }
 
     @Test
-    public void shouldConfigureTimeoutToMax() throws Exception {
-        acceptor.configure(Arrays.asList("timeout", "max"));
-        assertEquals(Integer.MAX_VALUE, acceptor.getTimeout());
-    }
-
-    @Test
     public void shouldConfigureTimeoutToNone() throws Exception {
         acceptor.configure(Arrays.asList("timeout", "none"));
         assertEquals(DriverRemoteAcceptor.NO_TIMEOUT, acceptor.getTimeout());
