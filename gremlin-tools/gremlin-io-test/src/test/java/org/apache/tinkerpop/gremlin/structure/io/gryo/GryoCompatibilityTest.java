@@ -22,6 +22,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
@@ -37,10 +38,11 @@ import java.util.Arrays;
 public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
 
     private static Kryo mapperV1 = GryoMapper.build().
+            version(GryoVersion.V1_0).
             addRegistry(TinkerIoRegistryV2d0.instance()).create().createMapper();
     private static Kryo mapperV3 = GryoMapper.build().
             version(GryoVersion.V3_0).
-            addRegistry(TinkerIoRegistryV2d0.instance()).create().createMapper();
+            addRegistry(TinkerIoRegistryV3d0.instance()).create().createMapper();
 
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {

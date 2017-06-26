@@ -35,6 +35,8 @@ import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -75,10 +77,21 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(Parameterized.class)
 public class GryoMapperTest {
 
-    private final GryoMapper sharedMapper = GryoMapper.build().create();
-    private final Kryo sharedKryo = sharedMapper.createMapper();
+    @Parameterized.Parameters
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"1_0", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V1_0)},
+                {"3_0", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V3_0)}});
+    }
+
+    @Parameterized.Parameter
+    public String name;
+
+    @Parameterized.Parameter(value = 1)
+    public Supplier<GryoMapper.Builder> builder;
 
     @Test
     public void shouldMakeNewInstance() {
@@ -88,7 +101,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldSerializeDeserialize() throws Exception {
-        final GryoMapper mapper = GryoMapper.build().create();
+        final GryoMapper mapper = builder.get().create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -116,7 +129,7 @@ public class GryoMapperTest {
     @Test
     public void shouldSerializeWithCustomClassResolverToDetachedVertex() throws Exception {
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().classResolver(classResolver).create();
+        final GryoMapper mapper = builder.get().classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -124,7 +137,7 @@ public class GryoMapperTest {
 
             kryo.writeClassAndObject(out, x);
 
-            final GryoMapper mapperWithoutKnowledgeOfIox = GryoMapper.build().create();
+            final GryoMapper mapperWithoutKnowledgeOfIox = builder.get().create();
             final Kryo kryoWithoutKnowledgeOfIox = mapperWithoutKnowledgeOfIox.createMapper();
             try (final InputStream inputStream = new ByteArrayInputStream(out.toBytes())) {
                 final Input input = new Input(inputStream);
@@ -137,7 +150,7 @@ public class GryoMapperTest {
     @Test
     public void shouldSerializeWithCustomClassResolverToHashMap() throws Exception {
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().classResolver(classResolver).create();
+        final GryoMapper mapper = builder.get().classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -145,7 +158,7 @@ public class GryoMapperTest {
 
             kryo.writeClassAndObject(out, y);
 
-            final GryoMapper mapperWithoutKnowledgeOfIoy = GryoMapper.build().create();
+            final GryoMapper mapperWithoutKnowledgeOfIoy = builder.get().create();
             final Kryo kryoWithoutKnowledgeOfIox = mapperWithoutKnowledgeOfIoy.createMapper();
             try (final InputStream inputStream = new ByteArrayInputStream(out.toBytes())) {
                 final Input input = new Input(inputStream);
@@ -157,7 +170,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldSerializeWithoutRegistration() throws Exception {
-        final GryoMapper mapper = GryoMapper.build().registrationRequired(false).create();
+        final GryoMapper mapper = builder.get().registrationRequired(false).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -178,8 +191,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
-        final GryoMapper mapper = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+        final GryoMapper mapper = builder.get().addRegistry(IoXIoRegistry.InstanceBased.instance())
                 .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
@@ -201,8 +213,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldExpectReadFailureAsIoRegistryOrderIsNotRespected() throws Exception {
-        final GryoMapper mapperWrite = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+        final GryoMapper mapperWrite = builder.get().addRegistry(IoXIoRegistry.InstanceBased.instance())
                 .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
 
         final GryoMapper mapperRead = GryoMapper.build()
@@ -232,8 +243,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldOverrideExistingSerializer() throws Exception {
-        final GryoMapper mapper = GryoMapper.build()
-                .addCustom(Duration.class, new OverrideDurationSerializer()).create();
+        final GryoMapper mapper = builder.get().addCustom(Duration.class, new OverrideDurationSerializer()).create();
 
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -368,14 +378,15 @@ public class GryoMapperTest {
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
+        final Kryo kryo = builder.get().create().createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
-            sharedKryo.writeObject(out, o);
+            kryo.writeObject(out, o);
             out.flush();
 
             try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
                 final Input input = new Input(inputStream);
-                return sharedKryo.readObject(input, clazz);
+                return kryo.readObject(input, clazz);
             }
         }
     }
@@ -383,7 +394,7 @@ public class GryoMapperTest {
     /**
      * Creates new {@link CustomClassResolver} when requested.
      */
-    public static class CustomClassResolverSupplier implements Supplier<ClassResolver> {
+    private static class CustomClassResolverSupplier implements Supplier<ClassResolver> {
         @Override
         public ClassResolver get() {
             return new CustomClassResolver();
@@ -397,7 +408,7 @@ public class GryoMapperTest {
      * TinkerPop which then removes the requirement for providers to expose serializers on the client side for user
      * consumption.
      */
-    public static class CustomClassResolver extends GryoClassResolverV1d0 {
+    private static class CustomClassResolver extends GryoClassResolverV1d0 {
         private IoXIoRegistry.IoXToVertexSerializer ioXToVertexSerializer = new IoXIoRegistry.IoXToVertexSerializer();
         private IoYIoRegistry.IoYToHashMapSerializer ioYToHashMapSerializer = new IoYIoRegistry.IoYToHashMapSerializer();
 
@@ -414,7 +425,7 @@ public class GryoMapperTest {
         }
     }
 
-    final static class OverrideDurationSerializer extends Serializer<Duration>
+    private final static class OverrideDurationSerializer extends Serializer<Duration>
     {
         @Override
         public void write(final Kryo kryo, final Output output, final Duration duration)

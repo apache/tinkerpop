@@ -342,8 +342,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have thrown exception over bad serialization");
         } catch (Exception ex) {
             final Throwable inner = ExceptionUtils.getRootCause(ex);
-            assertTrue(inner instanceof RuntimeException);
-            assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
+            assertThat(inner, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens

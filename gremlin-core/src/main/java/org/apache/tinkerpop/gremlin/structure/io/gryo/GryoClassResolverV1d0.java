@@ -57,7 +57,7 @@ public class GryoClassResolverV1d0 extends AbstractGryoClassResolver {
             type = Edge.class;
         else if (!ReferenceVertexProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && VertexProperty.class.isAssignableFrom(clazz))
             type = VertexProperty.class;
-        else if (!ReferenceProperty.class.isAssignableFrom(clazz) && !DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
+        else if (!ReferenceProperty.class.isAssignableFrom(clazz) && !DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && !ReferenceVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
             type = Property.class;
         else if (!ReferencePath.class.isAssignableFrom(clazz) && !DetachedPath.class.isAssignableFrom(clazz) && Path.class.isAssignableFrom(clazz))
             type = Path.class;

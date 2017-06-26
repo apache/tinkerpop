@@ -268,11 +268,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(InetAddress.class, 162, new UtilSerializers.InetAddressSerializer()));
             add(GryoTypeReg.of(ByteBuffer.class, 163, new UtilSerializers.ByteBufferSerializer()));
 
-//            add(GryoTypeReg.of(ReferenceEdge.class, 81));
-//            add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
-//            add(GryoTypeReg.of(ReferenceProperty.class, 83));
-//            add(GryoTypeReg.of(ReferenceVertex.class, 84));
-//            add(GryoTypeReg.of(ReferencePath.class, 85));
+            add(GryoTypeReg.of(ReferenceEdge.class, 81));
+            add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
+            add(GryoTypeReg.of(ReferenceProperty.class, 83));
+            add(GryoTypeReg.of(ReferenceVertex.class, 84));
+            add(GryoTypeReg.of(ReferencePath.class, 85));
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
 

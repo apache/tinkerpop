@@ -138,7 +138,7 @@ public final class GryoMapper implements Mapper<Kryo> {
      */
     public static class Builder implements Mapper.Builder<Builder> {
 
-        private GryoVersion version = GryoVersion.V1_0;
+        private GryoVersion version = GryoVersion.V3_0;
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,

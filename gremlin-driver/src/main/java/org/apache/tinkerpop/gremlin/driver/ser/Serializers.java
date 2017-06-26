@@ -34,6 +34,7 @@ public enum Serializers {
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
+    GRYO_V3D0(SerTokens.MIME_GRYO_V3D0),
     GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
 
     private String value;
@@ -72,6 +73,8 @@ public enum Serializers {
                 return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_V1D0:
                 return new GryoMessageSerializerV1d0();
+            case SerTokens.MIME_GRYO_V3D0:
+                return new GryoMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_LITE_V1D0:
                 return new GryoLiteMessageSerializerV1d0();
             default:

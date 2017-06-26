@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -42,7 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -80,9 +80,9 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Before
     public void beforeTest() {
-        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final MessageSerializer serializer = new GryoMessageSerializerV3d0();
         final Map<String,Object> c = new HashMap<>();
-        c.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV1d0.class.getName()));
+        c.put("ioRegistries", Collections.singletonList(TinkerIoRegistryV3d0.class.getName()));
         c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);

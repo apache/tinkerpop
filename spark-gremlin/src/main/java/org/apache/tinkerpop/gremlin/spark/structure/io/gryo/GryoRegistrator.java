@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializersV1d0;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
@@ -107,7 +108,7 @@ public class GryoRegistrator implements KryoRegistrator {
         final Set<Class<?>> shimmedClassesFromGryoMapper = new HashSet<>();
 
         // Apply GryoMapper's default registrations
-        for (TypeRegistration<?> tr : GryoMapper.build().create().getTypeRegistrations()) {
+        for (TypeRegistration<?> tr : GryoMapper.build().version(GryoVersion.V1_0).create().getTypeRegistrations()) {
             // Is this class blacklisted?  Skip it. (takes precedence over serializerOverrides)
             if (blacklist.contains(tr.getTargetClass())) {
                 log.debug("Not registering serializer for {} (blacklisted)", tr.getTargetClass());

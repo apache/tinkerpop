@@ -67,7 +67,7 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class GryoBaseMessageSerializerV1d0Test {
+public class GryoBaseMessageSerializerTest {
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         final GryoMessageSerializerV1d0 v1d0Text = new GryoMessageSerializerV1d0();
@@ -76,9 +76,13 @@ public class GryoBaseMessageSerializerV1d0Test {
         final GryoMessageSerializerV1d0 v1d0LiteText = new GryoMessageSerializerV1d0();
         v1d0LiteText.configure(config, null);
 
+        final GryoMessageSerializerV3d0 v3d0Text = new GryoMessageSerializerV3d0();
+        v3d0Text.configure(config, null);
+
         return Arrays.asList(new Object[][]{
                 {"V1d0", new GryoMessageSerializerV1d0(), v1d0Text},
-                {"V1d0Lite", new GryoLiteMessageSerializerV1d0(), v1d0LiteText }});
+                {"V1d0Lite", new GryoLiteMessageSerializerV1d0(), v1d0LiteText },
+                {"V3d0", new GryoMessageSerializerV3d0(), v3d0Text}});
     }
 
     @Parameterized.Parameter(value = 0)

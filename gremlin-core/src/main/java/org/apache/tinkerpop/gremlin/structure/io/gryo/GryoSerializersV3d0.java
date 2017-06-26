@@ -127,12 +127,16 @@ public final class GryoSerializersV3d0 {
                 output.writeString(vp.label());
                 kryo.writeClassAndObject(output, vp.value());
 
-                final List<Property> metaProperties = IteratorUtils.asList(vp.properties());
-                output.writeInt(metaProperties.size());
-                metaProperties.forEach(p -> {
-                    output.writeString(p.key());
-                    kryo.writeClassAndObject(output, p.value());
-                });
+                if (vp instanceof DetachedVertexProperty || (vertex.graph().features().vertex().supportsMetaProperties())) {
+                    final List<Property> metaProperties = IteratorUtils.asList(vp.properties());
+                    output.writeInt(metaProperties.size());
+                    metaProperties.forEach(p -> {
+                        output.writeString(p.key());
+                        kryo.writeClassAndObject(output, p.value());
+                    });
+                } else {
+                    output.writeInt(0);
+                }
             });
         }
 
@@ -192,12 +196,16 @@ public final class GryoSerializersV3d0 {
             kryo.writeClassAndObject(output, vertexProperty.element().id());
             output.writeString(vertexProperty.element().label());
 
-            final List<Property> metaProperties = IteratorUtils.asList(vertexProperty.properties());
-            output.writeInt(metaProperties.size());
-            metaProperties.forEach(p -> {
-                output.writeString(p.key());
-                kryo.writeClassAndObject(output, p.value());
-            });
+            if (vertexProperty instanceof DetachedVertexProperty || (vertexProperty.graph().features().vertex().supportsMetaProperties())) {
+                final List<Property> metaProperties = IteratorUtils.asList(vertexProperty.properties());
+                output.writeInt(metaProperties.size());
+                metaProperties.forEach(p -> {
+                    output.writeString(p.key());
+                    kryo.writeClassAndObject(output, p.value());
+                });
+            } else {
+                output.writeInt(0);
+            }
         }
 
         @Override

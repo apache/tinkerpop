@@ -207,7 +207,7 @@ public final class GryoPool {
          * @return the new pool
          */
         public GryoPool create() {
-            final GryoMapper.Builder mapper = GryoMapper.build();
+            final GryoMapper.Builder mapper = GryoMapper.build().version(GryoVersion.V1_0);
             final GryoPool gryoPool = new GryoPool();
             if (null != this.ioRegistries)
                 this.ioRegistries.forEach(mapper::addRegistry);
