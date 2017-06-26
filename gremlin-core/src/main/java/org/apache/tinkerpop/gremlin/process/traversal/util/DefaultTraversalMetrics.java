@@ -52,7 +52,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     The following are computed values upon the completion of profiling in order to report the results back to the user
      */
     private long totalStepDuration;
-    private Map<String, ImmutableMetrics> computedMetrics;
+    private Map<String, ImmutableMetrics> computedMetrics = new LinkedHashMap<>();
 
     public DefaultTraversalMetrics() {
     }
