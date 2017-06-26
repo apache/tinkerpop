@@ -317,22 +317,6 @@ final class Settings {
          * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
          */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
-
-        /**
-         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
-         * as the way to establish sessions
-         */
-        @Deprecated
-        public String sessionId = null;
-
-        /**
-         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
-         * as the way to establish sessions
-         */
-        @Deprecated
-        public Optional<String> optionalSessionId() {
-            return Optional.ofNullable(sessionId);
-        }
     }
 
     public static class SerializerSettings {
