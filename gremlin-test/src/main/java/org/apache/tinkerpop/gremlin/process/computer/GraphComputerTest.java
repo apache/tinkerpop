@@ -75,7 +75,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeNoException;
 
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -1591,7 +1590,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportMultipleScopes() throws ExecutionException, InterruptedException {
-        final ComputerResult result = graph.compute().program(new MultiScopeVertexProgram()).submit().get();
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new MultiScopeVertexProgram()).submit().get();
         assertEquals(result.graph().traversal().V().has("name", "josh").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 0L);
         assertEquals(result.graph().traversal().V().has("name", "lop").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
         assertEquals(result.graph().traversal().V().has("name", "ripple").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
@@ -1653,7 +1652,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         public GraphComputer.ResultGraph getPreferredResultGraph() {
             return GraphComputer.ResultGraph.NEW;
         }
-
     }
 
     /////////////////////////////////////////////
@@ -2614,7 +2612,5 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 }
             };
         }
-
-
     }
 }
