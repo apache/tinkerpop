@@ -76,6 +76,8 @@ public class HaltedTraverserStrategyTest {
         g.V().out().out().path().forEachRemaining(path -> assertEquals(DetachedPath.class, path.getClass()));
         g.V().out().pageRank().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
+        // should handle nested collections
+        g.V().out().fold().next().forEach(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
     }
 
     @Test
@@ -104,6 +106,8 @@ public class HaltedTraverserStrategyTest {
         g.V().out().out().path().forEachRemaining(path -> assertEquals(ReferencePath.class, path.getClass()));
         g.V().out().pageRank().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
+        // should handle nested collections
+        g.V().out().fold().next().forEach(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
     }
 
 }
