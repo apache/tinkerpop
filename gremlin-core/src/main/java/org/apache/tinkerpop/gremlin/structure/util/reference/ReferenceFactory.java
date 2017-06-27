@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -86,6 +88,12 @@ public class ReferenceFactory {
                 list.add(ReferenceFactory.detach(item));
             }
             return (D) list;
+        } else if (object instanceof BulkSet) {
+            final BulkSet set = new BulkSet();
+            for (Map.Entry<Object, Long> entry : ((BulkSet<Object>) object).asBulk().entrySet()) {
+                set.add(ReferenceFactory.detach(entry.getKey()), entry.getValue());
+            }
+            return (D) set;
         } else if (object instanceof Set) {
             final Set set = object instanceof LinkedHashSet ? new LinkedHashSet() : new HashSet();
             for (final Object item : (Set) object) {
@@ -93,7 +101,7 @@ public class ReferenceFactory {
             }
             return (D) set;
         } else if (object instanceof Map) {
-            final Map map = object instanceof LinkedHashMap ? new LinkedHashMap() : new HashMap();
+            final Map map = object instanceof Tree ? new Tree() : object instanceof LinkedHashMap ? new LinkedHashMap() : new HashMap();
             for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
                 map.put(ReferenceFactory.detach(entry.getKey()), ReferenceFactory.detach(entry.getValue()));
             }
