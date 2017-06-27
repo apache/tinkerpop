@@ -32,8 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 final class TinkerMessageBoard<M> {
 
-    public Map<Vertex, Queue<M>> sendMessages = new ConcurrentHashMap<>();
-    public Map<Vertex, Queue<M>> receiveMessages = new ConcurrentHashMap<>();
+    public Map<MessageScope, Map<Vertex,Queue<M>>> sendMessages = new ConcurrentHashMap<>();
+    public Map<MessageScope, Map<Vertex, Queue<M>>> receiveMessages = new ConcurrentHashMap<>();
     public Set<MessageScope> previousMessageScopes = new HashSet<>();
     public Set<MessageScope> currentMessageScopes = new HashSet<>();
 

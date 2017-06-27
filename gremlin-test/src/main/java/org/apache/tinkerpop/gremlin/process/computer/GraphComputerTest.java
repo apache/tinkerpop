@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -49,10 +48,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,13 +63,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.apache.tinkerpop.gremlin.structure.T.id;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1588,7 +1584,74 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         public void storeState(final Configuration configuration) {
             VertexProgram.super.storeState(configuration);
         }
+    }
 
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportMultipleScopes() throws ExecutionException, InterruptedException {
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new MultiScopeVertexProgram()).submit().get();
+        assertEquals(result.graph().traversal().V().has("name", "josh").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 0L);
+        assertEquals(result.graph().traversal().V().has("name", "lop").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
+        assertEquals(result.graph().traversal().V().has("name", "ripple").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
+        assertEquals(result.graph().traversal().V().has("name", "marko").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 2L);
+    }
+
+    public static class MultiScopeVertexProgram extends StaticVertexProgram<Long> {
+
+        private final MessageScope.Local<Long> countMessageScopeIn = MessageScope.Local.of(__::inE);
+        private final MessageScope.Local<Long> countMessageScopeOut = MessageScope.Local.of(__::outE);
+
+        private static final String MEMORY_KEY = "count";
+
+
+        @Override
+        public void setup(final Memory memory) {
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+
+        @Override
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of(MEMORY_KEY, false));
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            HashSet<MessageScope> scopes = new HashSet<>();
+            scopes.add(countMessageScopeIn);
+            scopes.add(countMessageScopeOut);
+            return scopes;
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger<Long> messenger, Memory memory) {
+            switch (memory.getIteration()) {
+                case 0:
+                    if (vertex.value("name").equals("josh")) {
+                        messenger.sendMessage(this.countMessageScopeIn, 2L);
+                        messenger.sendMessage(this.countMessageScopeOut, 1L);
+                    }
+                    break;
+                case 1:
+                    long edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0L, (a, b) -> a + b);
+                    vertex.property(MEMORY_KEY, edgeCount);
+                    break;
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() == 1;
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
     }
 
     /////////////////////////////////////////////
@@ -2549,7 +2612,5 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 }
             };
         }
-
-
     }
 }
