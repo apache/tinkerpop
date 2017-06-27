@@ -38,5 +38,7 @@ public interface OutputShim {
 
     public void writeShort(final int s);
 
+    public void writeBoolean(final boolean b);
+
     public void flush();
 }

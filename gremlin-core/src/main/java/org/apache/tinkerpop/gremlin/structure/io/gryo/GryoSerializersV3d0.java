@@ -31,10 +31,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -86,14 +87,18 @@ public final class GryoSerializersV3d0 {
             }
 
             kryo.writeClassAndObject(output, edge.outVertex().id());
-            output.writeString(edge.outVertex().label());
 
-            final List<Property> properties = IteratorUtils.asList(edge.properties());
-            output.writeInt(properties.size());
-            properties.forEach(p -> {
-                output.writeString(p.key());
-                kryo.writeClassAndObject(output, p.value());
-            });
+            // temporary try/catch perhaps? need this to get SparkSingleIterationStrategyTest to work. Trying to grab
+            // the label of the adjacent vertex ends in error if there's a StarEdge in the ComputerGraph$ComputerEdge.
+            // maybe this gets fixed up when TINKERPOP-1592 is in play. hopefully this serializer will get better
+            // with that
+            try {
+                output.writeString(edge.outVertex().label());
+            } catch (Exception ex) {
+                output.writeString(Vertex.DEFAULT_LABEL);
+            }
+
+            writeElementProperties(kryo, output, edge);
         }
 
         @Override
@@ -112,8 +117,7 @@ public final class GryoSerializersV3d0 {
             outV.setLabel(input.readString());
             builder.setOutV(outV.create());
 
-            final int numberOfProperties = input.readInt();
-            for (int ix = 0; ix < numberOfProperties; ix ++) {
+            while(input.readBoolean()) {
                 builder.addProperty(new DetachedProperty<>(input.readString(), kryo.readClassAndObject(input)));
             }
 
@@ -130,24 +134,22 @@ public final class GryoSerializersV3d0 {
             kryo.writeClassAndObject(output, vertex.id());
             output.writeString(vertex.label());
 
-            final List<VertexProperty> properties = IteratorUtils.asList(vertex.properties());
-            output.writeInt(properties.size());
-            properties.forEach(vp -> {
+            final Iterator<? extends VertexProperty> properties = vertex.properties();
+            output.writeBoolean(properties.hasNext());
+            while (properties.hasNext()) {
+                final VertexProperty vp = properties.next();
                 kryo.writeClassAndObject(output, vp.id());
                 output.writeString(vp.label());
                 kryo.writeClassAndObject(output, vp.value());
 
                 if (vp instanceof DetachedVertexProperty || (vertex.graph().features().vertex().supportsMetaProperties())) {
-                    final List<Property> metaProperties = IteratorUtils.asList(vp.properties());
-                    output.writeInt(metaProperties.size());
-                    metaProperties.forEach(p -> {
-                        output.writeString(p.key());
-                        kryo.writeClassAndObject(output, p.value());
-                    });
+                    writeElementProperties(kryo, output, vp);
                 } else {
-                    output.writeInt(0);
+                    output.writeBoolean(false);
                 }
-            });
+
+                output.writeBoolean(properties.hasNext());
+            }
         }
 
         @Override
@@ -156,15 +158,13 @@ public final class GryoSerializersV3d0 {
             builder.setId(kryo.readClassAndObject(input));
             builder.setLabel(input.readString());
 
-            final int numberOfProperties = input.readInt();
-            for (int ix = 0; ix < numberOfProperties; ix ++) {
+            while(input.readBoolean()) {
                 final DetachedVertexProperty.Builder vpBuilder = DetachedVertexProperty.build();
                 vpBuilder.setId(kryo.readClassAndObject(input));
                 vpBuilder.setLabel(input.readString());
                 vpBuilder.setValue(kryo.readClassAndObject(input));
 
-                final int numberOfMetaProperties = input.readInt();
-                for (int iy = 0; iy < numberOfMetaProperties; iy ++) {
+                while(input.readBoolean()) {
                     vpBuilder.addProperty(new DetachedProperty<>(input.readString(), kryo.readClassAndObject(input)));
                 }
 
@@ -207,14 +207,9 @@ public final class GryoSerializersV3d0 {
             output.writeString(vertexProperty.element().label());
 
             if (vertexProperty instanceof DetachedVertexProperty || (vertexProperty.graph().features().vertex().supportsMetaProperties())) {
-                final List<Property> metaProperties = IteratorUtils.asList(vertexProperty.properties());
-                output.writeInt(metaProperties.size());
-                metaProperties.forEach(p -> {
-                    output.writeString(p.key());
-                    kryo.writeClassAndObject(output, p.value());
-                });
+                writeElementProperties(kryo, output, vertexProperty);
             } else {
-                output.writeInt(0);
+                output.writeBoolean(false);
             }
         }
 
@@ -230,8 +225,7 @@ public final class GryoSerializersV3d0 {
             host.setLabel(input.readString());
             vpBuilder.setV(host.create());
 
-            final int numberOfMetaProperties = input.readInt();
-            for (int iy = 0; iy < numberOfMetaProperties; iy ++) {
+            while(input.readBoolean()) {
                 vpBuilder.addProperty(new DetachedProperty<>(input.readString(), kryo.readClassAndObject(input)));
             }
 
@@ -463,6 +457,17 @@ public final class GryoSerializersV3d0 {
                 m.addNested(nested);
             }
             return m;
+        }
+    }
+
+    private static void writeElementProperties(final KryoShim kryo, final OutputShim output, final Element element) {
+        final Iterator<? extends Property> properties = element.properties();
+        output.writeBoolean(properties.hasNext());
+        while (properties.hasNext()) {
+            final Property p = properties.next();
+            output.writeString(p.key());
+            kryo.writeClassAndObject(output, p.value());
+            output.writeBoolean(properties.hasNext());
         }
     }
 }

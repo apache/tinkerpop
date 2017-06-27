@@ -68,6 +68,11 @@ public class UnshadedOutputAdapter implements OutputShim {
     }
 
     @Override
+    public void writeBoolean(final boolean b) {
+        unshadedOutput.writeBoolean(b);
+    }
+
+    @Override
     public void flush() {
         unshadedOutput.flush();
     }

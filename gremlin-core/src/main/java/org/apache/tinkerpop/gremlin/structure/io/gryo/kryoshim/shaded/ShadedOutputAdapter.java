@@ -60,8 +60,13 @@ public class ShadedOutputAdapter implements OutputShim {
     }
 
     @Override
-    public void writeShort(int s) {
+    public void writeShort(final int s) {
         shadedOutput.writeShort(s);
+    }
+
+    @Override
+    public void writeBoolean(final boolean b) {
+        shadedOutput.writeBoolean(b);
     }
 
     @Override

@@ -67,4 +67,9 @@ public class UnshadedInputAdapter implements InputShim {
     public double readDouble() {
         return unshadedInput.readDouble();
     }
+
+    @Override
+    public boolean readBoolean() {
+        return unshadedInput.readBoolean();
+    }
 }
