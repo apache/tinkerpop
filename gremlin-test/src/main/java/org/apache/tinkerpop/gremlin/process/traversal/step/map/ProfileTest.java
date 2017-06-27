@@ -153,7 +153,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         validate_g_V_out_out_profile_grateful(traversalMetrics);
     }
 
-    private void validate_g_V_out_out_profile_grateful(TraversalMetrics traversalMetrics) {
+    private void validate_g_V_out_out_profile_grateful(final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -206,7 +206,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
     }
 
-    private void validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(TraversalMetrics traversalMetrics) {
+    private void validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         // Grab the second (sideEffect{sleep}) step and check the times.
@@ -253,7 +253,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
                         !traversal.asAdmin().getStrategies().toList().contains(ComputerVerificationStrategy.instance()));
     }
 
-    private void validate_g_V_repeat_both_modern_profile(TraversalMetrics traversalMetrics, boolean withRepeatUnrollStrategy) {
+    private void validate_g_V_repeat_both_modern_profile(final TraversalMetrics traversalMetrics, boolean withRepeatUnrollStrategy) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -286,7 +286,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     /////////////
 
-    private void validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(Traversal traversal, TraversalMetrics traversalMetrics) {
+    private void validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(final Traversal traversal, TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         assertEquals("There should be 3 top-level metrics.", 3, traversalMetrics.getMetrics().size());

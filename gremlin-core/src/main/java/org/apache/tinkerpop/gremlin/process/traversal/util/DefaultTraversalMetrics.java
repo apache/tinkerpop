@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -63,7 +64,11 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     public DefaultTraversalMetrics(final long totalStepDurationNs, final List<MutableMetrics> metricsMap) {
         this.totalStepDuration = totalStepDurationNs;
         this.computedMetrics = new LinkedHashMap<>(this.metrics.size());
-        metricsMap.forEach(metric -> this.computedMetrics.put(metric.getId(), metric.getImmutableClone()));
+        final AtomicInteger counter = new AtomicInteger(0);
+        metricsMap.forEach(metric -> {
+            this.computedMetrics.put(metric.getId(), metric.getImmutableClone());
+            this.indexToLabelMap.put(counter.getAndIncrement(), metric.getId());
+        });
     }
 
     @Override
