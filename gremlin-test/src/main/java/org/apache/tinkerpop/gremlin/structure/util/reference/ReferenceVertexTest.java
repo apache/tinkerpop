@@ -189,38 +189,33 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
         final List<Vertex> vertices = ReferenceFactory.detach(g.V().hasLabel("software").fold().next());
         for (final Vertex v : vertices) {
             assertTrue(v instanceof ReferenceVertex);
-            assertEquals("java", v.value("lang"));
         }
         // double nested list
         final List<List<Vertex>> lists = ReferenceFactory.detach(g.V().hasLabel("software").fold().fold().next());
         for (final Vertex v : lists.get(0)) {
             assertTrue(v instanceof ReferenceVertex);
-            assertEquals("java", v.value("lang"));
         }
         // double nested list to set
         final Set<List<Vertex>> set = ReferenceFactory.detach(g.V().hasLabel("software").fold().toSet());
         for (final Vertex v : set.iterator().next()) {
             assertTrue(v instanceof ReferenceVertex);
-            assertEquals("java", v.value("lang"));
         }
         // map keys and values
         Map<Vertex, List<Edge>> map = ReferenceFactory.detach(g.V().hasLabel("software").group().by().by(inE().fold()).next());
         for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
             assertTrue(entry.getKey() instanceof ReferenceVertex);
-            assertEquals("java", entry.getKey().value("lang"));
             for (final Edge edge : entry.getValue()) {
                 assertTrue(edge instanceof ReferenceEdge);
-                assertTrue(edge.property("weight").isPresent());
+                assertFalse(edge.property("weight").isPresent());
             }
         }
         // map keys and values as sideEffect
         map = ReferenceFactory.detach(g.V().hasLabel("software").group("m").by().by(inE().fold()).identity().cap("m").next());
         for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
             assertTrue(entry.getKey() instanceof ReferenceVertex);
-            assertEquals("java", entry.getKey().value("lang"));
             for (final Edge edge : entry.getValue()) {
                 assertTrue(edge instanceof ReferenceEdge);
-                assertTrue(edge.property("weight").isPresent());
+                assertFalse(edge.property("weight").isPresent());
             }
         }
     }
