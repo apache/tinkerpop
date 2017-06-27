@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -324,5 +326,52 @@ public class DetachedVertexTest extends AbstractGremlinTest {
             }
         });
         assertEquals(1, dogTimes.get());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldDetachCollections() {
+        // single element
+        final Vertex vertex = DetachedFactory.detach(g.V().has("name", "marko").next(), true);
+        assertTrue(vertex instanceof DetachedVertex);
+        // list nest
+        final List<Vertex> vertices = DetachedFactory.detach(g.V().hasLabel("software").fold().next(), true);
+        for (final Vertex v : vertices) {
+            assertTrue(v instanceof DetachedVertex);
+            assertEquals("java", v.value("lang"));
+        }
+        // double nested list
+        final List<List<Vertex>> lists = DetachedFactory.detach(g.V().hasLabel("software").fold().fold().next(), true);
+        for (final Vertex v : lists.get(0)) {
+            assertTrue(v instanceof DetachedVertex);
+            assertEquals("java", v.value("lang"));
+        }
+        // double nested list to set
+        final Set<List<Vertex>> set = DetachedFactory.detach(g.V().hasLabel("software").fold().toSet(), true);
+        for (final Vertex v : set.iterator().next()) {
+            assertTrue(v instanceof DetachedVertex);
+            assertEquals("java", v.value("lang"));
+        }
+        // map keys and values
+        Map<Vertex, List<Edge>> map = DetachedFactory.detach(g.V().hasLabel("software").group().by().by(inE().fold()).next(), true);
+        for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
+            assertTrue(entry.getKey() instanceof DetachedVertex);
+            assertEquals("java", entry.getKey().value("lang"));
+            for (final Edge edge : entry.getValue()) {
+                assertTrue(edge instanceof DetachedEdge);
+                assertTrue(edge.property("weight").isPresent());
+            }
+        }
+        // map keys and values as sideEffect
+        map = DetachedFactory.detach(g.V().hasLabel("software").group("m").by().by(inE().fold()).identity().cap("m").next(), true);
+        for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
+            assertTrue(entry.getKey() instanceof DetachedVertex);
+            assertEquals("java", entry.getKey().value("lang"));
+            for (final Edge edge : entry.getValue()) {
+                assertTrue(edge instanceof DetachedEdge);
+                assertTrue(edge.property("weight").isPresent());
+            }
+        }
     }
 }
