@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -41,7 +40,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -1472,27 +1470,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     /////////////////////////////////////////////
     @Test
+    @LoadGraphWith(MODERN)
     public void shouldSupportMultipleScopes() throws ExecutionException, InterruptedException {
-        Vertex a = graph.addVertex("a");
-        Vertex b = graph.addVertex("b");
-        Vertex c = graph.addVertex("c");
-        a.addEdge("edge", b);
-        b.addEdge("edge", c);
-
-        // Simple graph:
-        // a -> b -> c
-
-        // Execute a traversal program that sends an incoming message of "2" and an outgoing message of "1" from "b"
-        // then each vertex sums any received messages
-        ComputerResult result = graph.compute().program(new MultiScopeVertexProgram()).submit().get();
-
-        // We expect the results to be {a=2, b=0, c=1}. Instead it is {a=3, b=0, c=3}
-        assertEquals((Long) result.graph().traversal().V().hasLabel("a").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(2L));
-        assertEquals((Long) result.graph().traversal().V().hasLabel("b").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(0L));
-        assertEquals((Long) result.graph().traversal().V().hasLabel("c").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(),Long.valueOf(1L));
+        final ComputerResult result = graph.compute(graphComputerClass.get()).program(new MultiScopeVertexProgram()).submit().get();
+        assertEquals(result.graph().traversal().V().has("name", "josh").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 0L);
+        assertEquals(result.graph().traversal().V().has("name", "lop").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
+        assertEquals(result.graph().traversal().V().has("name", "ripple").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 1L);
+        assertEquals(result.graph().traversal().V().has("name", "marko").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 2L);
     }
 
-    public static class MultiScopeVertexProgram implements VertexProgram<Long> {
+    public static class MultiScopeVertexProgram extends StaticVertexProgram<Long> {
 
         private final MessageScope.Local<Long> countMessageScopeIn = MessageScope.Local.of(__::inE);
         private final MessageScope.Local<Long> countMessageScopeOut = MessageScope.Local.of(__::outE);
@@ -1502,7 +1489,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         private static final Set<String> COMPUTE_KEYS = Collections.singleton(MEMORY_KEY);
 
         @Override
-        public void setup(final Memory memory) {}
+        public void setup(final Memory memory) {
+        }
 
         @Override
         public GraphComputer.Persist getPreferredPersist() {
@@ -1526,7 +1514,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         public void execute(Vertex vertex, Messenger<Long> messenger, Memory memory) {
             switch (memory.getIteration()) {
                 case 0:
-                    if (vertex.label().equals("b")) {
+                    if (vertex.value("name").equals("josh")) {
                         messenger.sendMessage(this.countMessageScopeIn, 2L);
                         messenger.sendMessage(this.countMessageScopeOut, 1L);
                     }
@@ -1548,15 +1536,5 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return GraphComputer.ResultGraph.NEW;
         }
 
-        @Override
-        public MultiScopeVertexProgram clone() {
-            try {
-                return (MultiScopeVertexProgram) super.clone();
-            } catch (final CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
     }
-
 }
