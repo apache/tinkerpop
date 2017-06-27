@@ -25,6 +25,15 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -71,6 +80,24 @@ public class DetachedFactory {
             return (D) DetachedFactory.detach((Property) object);
         } else if (object instanceof Path) {
             return (D) DetachedFactory.detach((Path) object, withProperties);
+        } else if (object instanceof List) {
+            final List list = new ArrayList();
+            for (final Object item : (List) object) {
+                list.add(DetachedFactory.detach(item, withProperties));
+            }
+            return (D) list;
+        } else if (object instanceof Set) {
+            final Set set = object instanceof LinkedHashSet ? new LinkedHashSet() : new HashSet();
+            for (final Object item : (Set) object) {
+                set.add(DetachedFactory.detach(item, withProperties));
+            }
+            return (D) set;
+        } else if (object instanceof Map) {
+            final Map map = object instanceof LinkedHashMap ? new LinkedHashMap() : new HashMap();
+            for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
+                map.put(DetachedFactory.detach(entry.getKey(), withProperties), DetachedFactory.detach(entry.getValue(), withProperties));
+            }
+            return (D) map;
         } else {
             return (D) object;
         }
