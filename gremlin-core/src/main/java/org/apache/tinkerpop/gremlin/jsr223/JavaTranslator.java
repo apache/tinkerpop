@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -37,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,7 +130,11 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } else if (object instanceof Map) {
-            final Map<Object, Object> map = new LinkedHashMap<>(((Map) object).size());
+            final Map<Object, Object> map = object instanceof Tree ?
+                    new Tree() :
+                    object instanceof LinkedHashMap ?
+                            new LinkedHashMap<>(((Map) object).size()) :
+                            new HashMap<>(((Map) object).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
                 map.put(translateObject(entry.getKey()), translateObject(entry.getValue()));
             }
@@ -138,8 +145,16 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 list.add(translateObject(o));
             }
             return list;
+        } else if (object instanceof BulkSet) {
+            final BulkSet<Object> bulkSet = new BulkSet<>();
+            for (final Map.Entry<?, Long> entry : ((BulkSet<?>) object).asBulk().entrySet()) {
+                bulkSet.add(translateObject(entry.getKey()), entry.getValue());
+            }
+            return bulkSet;
         } else if (object instanceof Set) {
-            final Set<Object> set = new HashSet<>(((Set) object).size());
+            final Set<Object> set = object instanceof LinkedHashSet ?
+                    new LinkedHashSet<>(((Set) object).size()) :
+                    new HashSet<>(((Set) object).size());
             for (final Object o : (Set) object) {
                 set.add(translateObject(o));
             }
