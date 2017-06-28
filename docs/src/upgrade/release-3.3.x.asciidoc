@@ -209,6 +209,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
 ** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
+** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
 * `gremlin-groovy`
