@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `TraversalMetrics` and `Metrics` Gryo formats changed given internal changes to the implementations.
+* `TraversalMetrics` and `Metrics` Gryo 1.0 formats changed given internal changes to their implementations.
 * Made `TraversalMetrics` safe to write to from multiple threads.
 * Established the Gryo 3.0 format.
 * `GryoVersion` now includes a default `ClassResolver` to supply to the `GryoMapper`.
