@@ -27,7 +27,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * A {@link Metrics} implementation that can be modified.
+ *
  * @author Bob Briody (http://bobbriody.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
@@ -61,7 +64,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
     }
 
-    public void addNested(final MutableMetrics metrics) {
+    public synchronized void addNested(final MutableMetrics metrics) {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.nested.put(metrics.getId(), metrics);
     }

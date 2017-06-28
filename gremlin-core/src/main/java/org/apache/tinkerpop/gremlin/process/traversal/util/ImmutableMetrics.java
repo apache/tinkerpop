@@ -23,11 +23,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * A {@link Metrics} implementation that cannot be modified.
+ *
  * @author Bob Briody (http://bobbriody.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ImmutableMetrics implements Metrics, Serializable {
 
@@ -35,9 +39,9 @@ public class ImmutableMetrics implements Metrics, Serializable {
 
     protected String id;
     protected String name;
-    protected Map<String, AtomicLong> counts = new HashMap<>();
+    protected Map<String, AtomicLong> counts = new ConcurrentHashMap<>();
     protected long durationNs = 0l;
-    protected final Map<String, Object> annotations = new HashMap<>();
+    protected final Map<String, Object> annotations = new ConcurrentHashMap<>();
     protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
