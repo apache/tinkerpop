@@ -83,7 +83,7 @@ public class DetachedFactory {
         } else if (object instanceof Path) {
             return (D) DetachedFactory.detach((Path) object, withProperties);
         } else if (object instanceof List) {
-            final List list = new ArrayList();
+            final List list = new ArrayList(((List) object).size());
             for (final Object item : (List) object) {
                 list.add(DetachedFactory.detach(item, withProperties));
             }
@@ -95,13 +95,18 @@ public class DetachedFactory {
             }
             return (D) set;
         } else if (object instanceof Set) {
-            final Set set = object instanceof LinkedHashSet ? new LinkedHashSet() : new HashSet();
+            final Set set = object instanceof LinkedHashSet ?
+                    new LinkedHashSet(((Set) object).size()) :
+                    new HashSet(((Set) object).size());
             for (final Object item : (Set) object) {
                 set.add(DetachedFactory.detach(item, withProperties));
             }
             return (D) set;
         } else if (object instanceof Map) {
-            final Map map = object instanceof Tree ? new Tree() : object instanceof LinkedHashMap ? new LinkedHashMap() : new HashMap();
+            final Map map = object instanceof Tree ? new Tree() :
+                    object instanceof LinkedHashMap ?
+                            new LinkedHashMap(((Map) object).size()) :
+                            new HashMap(((Map) object).size());
             for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
                 map.put(DetachedFactory.detach(entry.getKey(), withProperties), DetachedFactory.detach(entry.getValue(), withProperties));
             }
