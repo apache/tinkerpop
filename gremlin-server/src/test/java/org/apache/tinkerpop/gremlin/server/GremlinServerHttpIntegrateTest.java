@@ -586,11 +586,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode data = resultJson.get("result").get("data");
             assertEquals(1, data.size());
 
-            final List<JsonNode> vertices = data.get(0).findValues(GraphSONTokens.VERTICES);
-            final List<JsonNode> edges = data.get(0).findValues(GraphSONTokens.EDGES);
-
-            assertEquals(6, vertices.get(0).size());
-            assertEquals(6, edges.get(0).size());
+            assertEquals(6, data.get(0).get(GraphSONTokens.VERTICES).get(1).size());
+            assertEquals(6, data.get(0).get(GraphSONTokens.EDGES).get(1).size());
         }
     }
 

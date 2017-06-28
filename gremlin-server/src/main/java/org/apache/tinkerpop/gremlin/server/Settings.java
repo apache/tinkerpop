@@ -379,7 +379,7 @@ public class Settings {
          * A {@link Map} containing {@link MessageSerializer} specific configurations. Consult the
          * {@link MessageSerializer} implementation for specifics on what configurations are expected.
          */
-        public Map<String, Object> config = null;
+        public Map<String, Object> config = Collections.emptyMap();
     }
 
     /**
