@@ -60,7 +60,7 @@ development artifacts must be generated and deployed separately with additional 
 mvn clean install -Pglv-python
 mvn deploy -pl gremlin-python -Dpypi
 
-Python does not use the snapshot model that the JVM does, however, the build is smart in that it will dynamically
+Python does not use the snapshot model the JVM does, however, the build is smart in that it will dynamically
 generate a development version number for the Python artifacts when "-SNAPSHOT" is in the `pom.xml`. The previous
 command will push the development version to link:https://pypi.python.org/pypi/gremlinpython/[pypi] for distribution.
 Use the `testpypi` test environment by updating the `gremlin-python/pom.xml` to verify the `mvn deploy` command works.
@@ -68,6 +68,19 @@ Use the `testpypi` test environment by updating the `gremlin-python/pom.xml` to 
 IMPORTANT: The `clean` in the above commands is more important to the pypi deployment because the process will deploy
 anything found in the `target/python-packaged/dist` directory. Since the names of the artifacts are based on
 timestamps, they will not overwrite one another and multiple artifacts will get uploaded.
+
+For .NET and NuGet, development artifacts can be created as follows:
+
+[source,text]
+mvn clean install -pl :gremlin-dotnet,:gremlin-dotnet-source -Dnuget
+mvn deploy -pl :gremlin-dotnet-source -Dnuget
+
+As with PyPi, NuGet does not support a snapshot model as Java does. The commands above will dynamically generate a
+version number when "-SNAPSHOT" is in the `pom.xml`. Use the `staging.nuget.org` environment by updating the
+`gremlin-dot-source/pom.xml` to ensure the `mvn deploy` command works.
+
+IMPORTANT: These commands will dynamically edit the `gremlin-dotnet-source/Gremlin.Net.csproj`. Take care to commit
+or not commit changes related to that as necessary.
 
 Release Manager Requirements
 ----------------------------
@@ -218,7 +231,7 @@ Release & Promote
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
 . Deploy to link:https://pypi.python.org/pypi[pypi]
 .. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
-.. `mvn clean install -DskipTests`
+.. `mvn clean install -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 .. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
