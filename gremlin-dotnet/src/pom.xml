@@ -146,8 +146,13 @@ limitations under the License.
                                                 </exec>
                                             </else>
                                         </if>
+
+                                        <!--
+                                        until https://github.com/NuGet/Home/issues/4095 we have to have to specify
+                                        the "ConfigFile" option to nuget.
+                                        -->
                                         <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
-                                            <arg line="nuget.exe push Gremlin.Net.3.2.6-beta1.nupkg -Source https://staging.nuget.org/api/v2/package"/>
+                                            <arg line="nuget.exe push Gremlin.Net.3.2.6-beta1.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>

@@ -328,6 +328,7 @@ limitations under the License.
                         <exclude>**/*.user</exclude>
                         <exclude>**/*.csproj</exclude>
                         <exclude>**/.vs/**</exclude>
+                        <exclude>**/NuGet.Config</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

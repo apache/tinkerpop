@@ -29,3 +29,5 @@ tools/
 .vscode/
 .vs/
 *nupkg
+NuGet.Config
+nuget.exe
