@@ -260,6 +260,20 @@ def namingConversionsTemplate = engine.createTemplate(new File('${project.basedi
 def namingConversionsFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/NamingConversions.cs')
 namingConversionsFile.newWriter().withWriter{ it << namingConversionsTemplate }
 
+def determineVersion = {
+    def env = System.getenv()
+    def mavenVersion = env.containsKey("TP_RELEASE_VERSION") ? env.get("DOTNET_RELEASE_VERSION") : '${project.version}'
+
+    // only want to generate a timestamp for the version if this is a nuget deploy
+    if (!mavenVersion.endsWith("-SNAPSHOT") || null == System.getProperty("nuget")) return mavenVersion
+
+    return mavenVersion.replace("-SNAPSHOT", "-dev-" + System.currentTimeMillis())
+}
+
+def versionToUse = determineVersion()
+def csprojTemplate = engine.createTemplate(new File('${project.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
+def csprojFile = new File('${project.basedir}/src/Gremlin.Net/Gremlin.Net.csproj')
+csprojFile.newWriter().withWriter{ it << csprojTemplate }
 ]]>
                                 </script>
                             </scripts>

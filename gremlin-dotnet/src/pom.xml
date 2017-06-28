@@ -152,7 +152,7 @@ limitations under the License.
                                         the "ConfigFile" option to nuget.
                                         -->
                                         <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
-                                            <arg line="nuget.exe push Gremlin.Net.3.2.6-beta1.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
@@ -165,6 +165,52 @@ limitations under the License.
                                 <version>20020829</version>
                             </dependency>
                         </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-core</artifactId>
+                                <version>${project.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>generate-dsl</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script><![CDATA[
+// revert back the version after a SNAPSHOT deployment
+def versionToUse = '${project.version}'
+def engine = new groovy.text.GStringTemplateEngine()
+def csprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
+def csprojFile = new File('${project.basedir}/Gremlin.Net/Gremlin.Net.csproj')
+csprojFile.newWriter().withWriter{ it << csprojTemplate }
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
