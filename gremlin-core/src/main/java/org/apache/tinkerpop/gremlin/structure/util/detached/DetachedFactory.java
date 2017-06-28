@@ -91,7 +91,7 @@ public class DetachedFactory {
         } else if (object instanceof BulkSet) {
             final BulkSet set = new BulkSet();
             for (Map.Entry<Object, Long> entry : ((BulkSet<Object>) object).asBulk().entrySet()) {
-                set.add(DetachedFactory.detach(entry.getKey(),withProperties),entry.getValue());
+                set.add(DetachedFactory.detach(entry.getKey(), withProperties), entry.getValue());
             }
             return (D) set;
         } else if (object instanceof Set) {
