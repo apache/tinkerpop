@@ -30,6 +30,15 @@ TinkerPop 3.2.6
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Deprecated useMapperFromGraph
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `userMapperFromGraph` configuration option for the Gremlin Server serializers has been deprecated. Change
+configuration files to use the `ioRegistries` option instead. The `ioRegistries` option is not a new feature, but
+it has not been promoted as the primary way to add `IoRegistry` instances to serializers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

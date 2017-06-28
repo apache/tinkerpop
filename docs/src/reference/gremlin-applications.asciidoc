@@ -1624,7 +1624,7 @@ consistent with standard JSON data types.  It has the following configuration op
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |=========================================================
 
 [source,yaml]
@@ -1638,7 +1638,7 @@ type names, so interpretation from non-JVM languages will be required.  It has t
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |=========================================================
 
 Gryo
@@ -1660,7 +1660,6 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 |custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
-|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
 |=========================================================
 
 As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  These

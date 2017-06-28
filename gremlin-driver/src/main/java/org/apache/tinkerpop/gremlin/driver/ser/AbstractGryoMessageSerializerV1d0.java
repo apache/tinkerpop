@@ -61,6 +61,12 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
 
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
+
+    /**
+     * @deprecated As of release 3.2.6, replaced by functionality provided by {@link AbstractMessageSerializer#TOKEN_IO_REGISTRIES}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1694">TINKERPOP-1694</a>
+     */
+    @Deprecated
     public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
     public static final String TOKEN_BUFFER_SIZE = "bufferSize";
     public static final String TOKEN_CLASS_RESOLVER_SUPPLIER = "classResolverSupplier";
