@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.ietf.jgss.GSSException;
@@ -224,8 +225,26 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     }
 
     @Test
-    public void shouldAuthenticateWithSerializeResultToString() throws Exception {
+    public void shouldAuthenticateWithSerializeResultToStringV1() throws Exception {
         MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        Map config = new HashMap<String, Object>();
+        config.put("serializeResultToString", true);
+        serializer.configure(config, null);
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
+        final Client client = cluster.connect();
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldAuthenticateWithSerializeResultToStringV3() throws Exception {
+        MessageSerializer serializer = new GryoMessageSerializerV3d0();
         Map config = new HashMap<String, Object>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);

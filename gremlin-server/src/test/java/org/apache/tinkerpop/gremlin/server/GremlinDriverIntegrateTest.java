@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
@@ -663,7 +664,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldSerializeToStringWhenRequested() throws Exception {
+    public void shouldSerializeToStringWhenRequestedGryoV1() throws Exception {
         final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
         final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
@@ -681,10 +682,43 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldDeserializeWithCustomClasses() throws Exception {
+    public void shouldSerializeToStringWhenRequestedGryoV3() throws Exception {
         final Map<String, Object> m = new HashMap<>();
-        m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
+        m.put("serializeResultToString", true);
+        final GryoMessageSerializerV3d0 serializer = new GryoMessageSerializerV3d0();
+        serializer.configure(m, null);
+
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+        final Client client = cluster.connect();
+
+        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
+        final List<Result> results = resultSet.all().join();
+        assertEquals(1, results.size());
+        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldDeserializeWithCustomClassesV1() throws Exception {
+        final Map<String, Object> m = new HashMap<>();
+        m.put("custom", Collections.singletonList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
         final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
+        serializer.configure(m, null);
+
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+        final Client client = cluster.connect();
+
+        final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+        assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
+        cluster.close();
+    }
+
+    @Test
+    public void shouldDeserializeWithCustomClassesV3() throws Exception {
+        final Map<String, Object> m = new HashMap<>();
+        m.put("custom", Collections.singletonList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
+        final GryoMessageSerializerV3d0 serializer = new GryoMessageSerializerV3d0();
         serializer.configure(m, null);
 
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
