@@ -151,11 +151,11 @@ used in `optional()`. However, the behavior would be unpredictable so this backw
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
 
-Gremlin Console Script Execution
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gremlin Console Initialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is no longer possible to run a script in execution mode in the Gremlin Console from the terminal without use of `-e`.
-In other words, prior versions allowed:
+It is no longer possible to intialize the Gremlin Console with a script without use of `-e`. In other words, prior
+versions allowed:
 
 [source,text]
 bin/gremlin.sh gremlin.groovy
@@ -163,9 +163,10 @@ bin/gremlin.sh gremlin.groovy
 Such a command must now be written as:
 
 [source,text]
-bin/gremlin.sh -e gremlin.groovy
+bin/gremlin.sh -i gremlin.groovy
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651]
 
 GraphTraversal valueMap() Signature Updated
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
