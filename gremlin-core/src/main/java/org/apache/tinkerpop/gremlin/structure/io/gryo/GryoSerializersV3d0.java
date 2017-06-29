@@ -78,8 +78,10 @@ public final class GryoSerializersV3d0 {
 
             // temporary try/catch perhaps? need this to get SparkSingleIterationStrategyTest to work. Trying to grab
             // the label of the adjacent vertex ends in error if there's a StarEdge in the ComputerGraph$ComputerEdge.
-            // maybe this gets fixed up when TINKERPOP-1592 is in play. hopefully this serializer will get better
-            // with that
+            // apparently this is how we handle things in DetachedElement. i'll write here in the comments what was
+            // written there:
+            //
+            // ghetto
             try {
                 output.writeString(edge.inVertex().label());
             } catch (Exception ex) {
@@ -88,10 +90,7 @@ public final class GryoSerializersV3d0 {
 
             kryo.writeClassAndObject(output, edge.outVertex().id());
 
-            // temporary try/catch perhaps? need this to get SparkSingleIterationStrategyTest to work. Trying to grab
-            // the label of the adjacent vertex ends in error if there's a StarEdge in the ComputerGraph$ComputerEdge.
-            // maybe this gets fixed up when TINKERPOP-1592 is in play. hopefully this serializer will get better
-            // with that
+            // same nonsense as above for a default label
             try {
                 output.writeString(edge.outVertex().label());
             } catch (Exception ex) {
