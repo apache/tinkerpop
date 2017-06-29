@@ -36,6 +36,7 @@ GraphSON 2.0
 ^^^^^^^^^^^^
 
 TODO - RE-READ THIS WHOLE SECTION - IT MIGHT BE A MESS WITH GRAPHSON 3.0 CHANGES COMING IN
+SHOULD PROBABLY FOLD THESE CHANGES DOWN INTO THE "Changes to IO" SECTION AND ONE SOLID SECTION
 
 Both TinkerGraph and Gremlin Server have been defaulted to work with GraphSON 2.0. For TinkerGraph this means that
 the following commands:
@@ -110,6 +111,15 @@ Changes to IO
 ** `ResponseMessage`
 * GraphSON
 ** embedTypes is gone, use typeInfo setting. will default to no types for GraphSON 1.0 and partial types for graphson 2.0 TINKERPOP-1700
+
+Gryo 3.0
+++++++++
+
+Gryo 3.0 fixes a number of inconsistencies with Gryo 1.0 and hopefully marks a point where Gryo is better versioned
+over time. Gryo 3.0 is not compatible with Gryo 1.0 and is now the default version of Gryo exposed by TinkerPop in
+Gremlin Server and IO.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1698[TINKERPOP-1698]
 
 Graphite and Ganglia
 ^^^^^^^^^^^^^^^^^^^^
