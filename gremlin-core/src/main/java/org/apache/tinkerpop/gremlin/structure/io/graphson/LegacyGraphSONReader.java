@@ -238,7 +238,7 @@ public final class LegacyGraphSONReader implements GraphReader {
         public LegacyGraphSONReader create() {
             final GraphSONMapper.Builder builder = GraphSONMapper.build();
             customModules.forEach(builder::addCustomModule);
-            final GraphSONMapper mapper = builder.embedTypes(embedTypes)
+            final GraphSONMapper mapper = builder.typeInfo(embedTypes ? TypeInfo.PARTIAL_TYPES : TypeInfo.NO_TYPES)
                     .loadCustomModules(loadCustomModules).create();
             return new LegacyGraphSONReader(mapper.createMapper(), batchSize);
         }

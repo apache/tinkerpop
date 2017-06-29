@@ -451,7 +451,7 @@ public class IoTest {
             final SimpleModule module = new SimpleModule();
             module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
             final GraphWriter writer = graph.io(graphson).writer().mapper(
-                    graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).embedTypes(true).create()).create();
+                    graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create();
 
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 writer.writeGraph(baos, graph);
@@ -470,7 +470,7 @@ public class IoTest {
 
                 try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                     final GraphReader reader = graph.io(graphson).reader()
-                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V1_0).embedTypes(true).addCustomModule(module).create()).create();
+                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).addCustomModule(module).create()).create();
                     reader.readGraph(is, g2);
                 }
 

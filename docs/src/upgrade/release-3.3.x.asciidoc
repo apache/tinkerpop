@@ -113,6 +113,8 @@ Changes to IO
 * Gryo incompatibilities with 3.2.x:
 ** `RequestMessage`
 ** `ResponseMessage`
+* GraphSON
+** embedTypes is gone, use typeInfo setting. will default to no types for GraphSON 1.0 and partial types for graphson 2.0 TINKERPOP-1700
 
 Graphite and Ganglia
 ^^^^^^^^^^^^^^^^^^^^

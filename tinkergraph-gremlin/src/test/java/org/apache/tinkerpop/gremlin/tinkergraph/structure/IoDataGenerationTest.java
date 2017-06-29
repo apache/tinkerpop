@@ -170,7 +170,7 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-typed.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
+        GraphSONWriter.build().mapper(GraphSONMapper.build().typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -181,7 +181,7 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-typed.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
+        GraphSONWriter.build().mapper(GraphSONMapper.build().typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -192,7 +192,7 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteCrewGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-typed.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
+        GraphSONWriter.build().mapper(GraphSONMapper.build().typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -315,7 +315,7 @@ public class IoDataGenerationTest {
         }
 
         /* keep this hanging around because changes to gryo format will need grateful dead generated from json so you can generate the gio
-        final GraphSONMapper mapper = GraphSONMapper.build().embedTypes(true).create();
+        final GraphSONMapper mapper = GraphSONMapper.build().typeInfo(TypeInfo.PARTIAL_TYPES).create();
         final GraphReader reader = org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader.build().mapper(mapper).create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead-typed.json")) {
             reader.readGraph(stream, g);
@@ -369,7 +369,7 @@ public class IoDataGenerationTest {
         os4.close();
 
         final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-typed.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os5, g);
+        GraphSONWriter.build().mapper(GraphSONMapper.build().typeInfo(TypeInfo.PARTIAL_TYPES).create()).create().writeGraph(os5, g);
         os5.close();
 
         final OutputStream os6 = new FileOutputStream(tempPath + "grateful-dead-v2d0-typed.json");

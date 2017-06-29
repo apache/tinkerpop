@@ -65,7 +65,6 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final List<SimpleModule> customModules;
     private final boolean loadCustomSerializers;
     private final boolean normalize;
-    private final boolean embedTypes;
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
 
@@ -73,9 +72,12 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         this.customModules = builder.customModules;
         this.loadCustomSerializers = builder.loadCustomModules;
         this.normalize = builder.normalize;
-        this.embedTypes = builder.embedTypes;
         this.version = builder.version;
-        this.typeInfo = builder.typeInfo;
+
+        if (null == builder.typeInfo)
+            this.typeInfo = builder.version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
+        else
+            this.typeInfo = builder.typeInfo;
     }
 
     @Override
@@ -125,7 +127,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             });
             om.setDefaultTyping(typer);
         } else if (version == GraphSONVersion.V1_0 || version == GraphSONVersion.V2_0) {
-            if (embedTypes) {
+            if (typeInfo == TypeInfo.PARTIAL_TYPES) {
                 final TypeResolverBuilder<?> typer = new StdTypeResolverBuilder()
                         .init(JsonTypeInfo.Id.CLASS, null)
                         .inclusion(JsonTypeInfo.As.PROPERTY)
@@ -160,7 +162,6 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         return this.typeInfo;
     }
 
-
     private void registerJavaBaseTypes(final GraphSONTypeIdResolver graphSONTypeIdResolver) {
         Arrays.asList(
                 UUID.class,
@@ -176,11 +177,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private List<SimpleModule> customModules = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
-        private boolean embedTypes = false;
         private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V2_0;
-        // GraphSON 2.0 should have types activated by default, otherwise use there's no point in using it instead of 1.0.
-        private TypeInfo typeInfo = TypeInfo.PARTIAL_TYPES;
+        // GraphSON 2.0 should have types activated by default, and 1.0 should use no types by default
+        private TypeInfo typeInfo = null;
 
         private Builder() {
         }
@@ -236,36 +236,13 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Embeds Java types into generated JSON to clarify their origins. Setting this value will override the value
-         * of {@link #typeInfo(TypeInfo)} where true will set it to {@link TypeInfo#PARTIAL_TYPES} and false will set
-         * it to {@link TypeInfo#NO_TYPES}.
-         *
-         * @deprecated As of release 3.2.1, replaced by {@link #typeInfo(TypeInfo)}.
-         */
-        @Deprecated
-        public Builder embedTypes(final boolean embedTypes) {
-            this.embedTypes = embedTypes;
-            this.typeInfo = embedTypes ? TypeInfo.PARTIAL_TYPES : TypeInfo.NO_TYPES;
-            return this;
-        }
-
-        /**
-         * Specify if the values are going to be typed or not, and at which level. Setting this value will override
-         * the value of {@link #embedTypes(boolean)} where {@link TypeInfo#PARTIAL_TYPES} will set it to true and
-         * {@link TypeInfo#NO_TYPES} will set it to false.
+         * Specify if the values are going to be typed or not, and at which level.
          *
          * The level can be {@link TypeInfo#NO_TYPES} or {@link TypeInfo#PARTIAL_TYPES}, and could be extended in the
          * future.
          */
         public Builder typeInfo(final TypeInfo typeInfo) {
             this.typeInfo = typeInfo;
-            if (typeInfo.equals(TypeInfo.PARTIAL_TYPES))
-                this.embedTypes = true;
-            else if (typeInfo.equals(TypeInfo.NO_TYPES))
-                this.embedTypes = false;
-            else
-                throw new IllegalArgumentException("This value can only be set to PARTIAL_TYPES and NO_TYPES");
-
             return this;
         }
 
