@@ -289,6 +289,21 @@ The switch name has changed for installing dependencies. `-i` has been deprecate
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_configuring_2[Reference Documentation - Server Configuration].
 
+Removal of useMapperFromGraph
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `userMapperFromGraph` serialization configuration option was used to allow the IO configurations of a specific
+graph to be assigned to a specific serializer. This feature has been removed completely now. Please use the
+`ioRegistries` configuration option to add one or more specific `Graph` serialization capabilities to a serializer.
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}            # application/vnd.gremlin-v1.0+gryo
+----
+
+see: link:https://issues.apache.org/jira/browse/TINKERPOP-1699[TINKERPOP-1699]
+
 Gremlin-server.bat
 ^^^^^^^^^^^^^^^^^^
 
