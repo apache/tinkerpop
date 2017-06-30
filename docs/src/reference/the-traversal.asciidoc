@@ -2283,6 +2283,20 @@ tree['marko']['josh']
 tree.getObjectsAtDepth(3)
 ----
 
+Note that when using `by()`-modulation, tree nodes are combined based on projection uniqueness, not on the
+uniqueness of the original objects being projected. For instance:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','josh').out('created').values('name').tree() <1>
+g.V().has('name','josh').out('created').values('name').
+  tree().by('name').by(label).by() <2>
+----
+
+<1> When the `tree()` is created, vertex 3 and 5 are unique and thus, form unique branches in the tree structure.
+<2> When the `tree()` is `by()`-modulated by `label`, then vertex 3 and 5 are both "software" and thus are merged to a single node in the tree.
+
+
 [[unfold-step]]
 Unfold Step
 ~~~~~~~~~~~
