@@ -2617,6 +2617,15 @@ g.V().groupCount().by(label).order(local).by(values,decr)
 g.V().fold().sample(local,2)
 ----
 
+Finally, note that <<local-step,`local()`>>-step is a "hard-scoped step" that transforms any internal traversal into a
+locally-scoped operation. A contrived example is provided below:
+
+[gremlin-groovy,modern]
+----
+g.V().fold().local(unfold().count())
+g.V().fold().count(local)
+----
+
 [[a-note-on-lambdas]]
 A Note On Lambdas
 -----------------
