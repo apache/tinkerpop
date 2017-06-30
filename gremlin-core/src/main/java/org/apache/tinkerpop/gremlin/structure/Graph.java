@@ -161,19 +161,6 @@ public interface Graph extends AutoCloseable, Host {
     }
 
     /**
-     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}.
-     * The reusable {@link TraversalSource} provides methods for spawning {@link Traversal} instances.
-     *
-     * @param sourceBuilder The traversal source builder to use
-     * @param <C>           The traversal source class
-     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-     */
-    @Deprecated
-    public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
-        return sourceBuilder.create(this);
-    }
-
-    /**
      * Generate a reusable {@link GraphTraversalSource} instance.
      * The {@link GraphTraversalSource} provides methods for creating
      * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal} instances.
