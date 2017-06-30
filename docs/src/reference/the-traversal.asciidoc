@@ -2580,7 +2580,7 @@ A Note on Scopes
 
 The `Scope` enum has two constants: `Scope.local` and `Scope.global`. Scope determines whether the particular step
 being scoped is with respects to the current object (`local`) at that step or to the entire stream of objects up to that
-step ('global').
+step (`global`).
 
 [gremlin-groovy,modern]
 ----
