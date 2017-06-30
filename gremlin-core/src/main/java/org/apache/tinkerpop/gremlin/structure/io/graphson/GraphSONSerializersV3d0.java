@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -43,18 +44,22 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
+import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -239,8 +244,6 @@ class GraphSONSerializersV3d0 {
 
             jsonGenerator.writeEndObject();
         }
-
-
     }
 
     final static class PathJacksonSerializer extends StdScalarSerializer<Path> {
@@ -254,8 +257,10 @@ class GraphSONSerializersV3d0 {
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
 
-            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, path.labels());
-            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, path.objects());
+            // paths shouldn't serialize with properties if the path contains graph elements
+            final Path p = DetachedFactory.detach(path, false);
+            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, p.labels());
+            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, p.objects());
 
             jsonGenerator.writeEndObject();
         }
@@ -417,88 +422,191 @@ class GraphSONSerializersV3d0 {
 
     //////////////////////////// DESERIALIZERS ///////////////////////////
 
-
-    static class VertexJacksonDeserializer extends AbstractObjectDeserializer<Vertex> {
+    static class VertexJacksonDeserializer extends StdDeserializer<Vertex> {
 
         public VertexJacksonDeserializer() {
             super(Vertex.class);
         }
 
+        public Vertex deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final DetachedVertex.Builder v = DetachedVertex.build();
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
+                    jsonParser.nextToken();
+                    v.setId(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
+                    jsonParser.nextToken();
+                    v.setLabel(jsonParser.getText());
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
+                    jsonParser.nextToken();
+                    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                        jsonParser.nextToken();
+                        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                            v.addProperty((DetachedVertexProperty) deserializationContext.readValue(jsonParser, VertexProperty.class));
+                        }
+                    }
+                }
+            }
+
+            return v.create();
+        }
+
         @Override
-        public Vertex createObject(final Map<String, Object> vertexData) {
-            return new DetachedVertex(
-                    vertexData.get(GraphSONTokens.ID),
-                    vertexData.get(GraphSONTokens.LABEL).toString(),
-                    (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES)
-            );
+        public boolean isCachable() {
+            return true;
         }
     }
 
-    static class EdgeJacksonDeserializer extends AbstractObjectDeserializer<Edge> {
+    static class EdgeJacksonDeserializer extends StdDeserializer<Edge> {
 
         public EdgeJacksonDeserializer() {
             super(Edge.class);
         }
 
         @Override
-        public Edge createObject(final Map<String, Object> edgeData) {
-            return new DetachedEdge(
-                    edgeData.get(GraphSONTokens.ID),
-                    edgeData.get(GraphSONTokens.LABEL).toString(),
-                    (Map) edgeData.get(GraphSONTokens.PROPERTIES),
-                    edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString(),
-                    edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString());
+        public Edge deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final DetachedEdge.Builder e = DetachedEdge.build();
+            final DetachedVertex.Builder inV = DetachedVertex.build();
+            final DetachedVertex.Builder outV = DetachedVertex.build();
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
+                    jsonParser.nextToken();
+                    e.setId(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
+                    jsonParser.nextToken();
+                    e.setLabel(jsonParser.getText());
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
+                    jsonParser.nextToken();
+                    outV.setId(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT_LABEL)) {
+                    jsonParser.nextToken();
+                    outV.setLabel(jsonParser.getText());
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN)) {
+                    jsonParser.nextToken();
+                    inV.setId(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN_LABEL)) {
+                    jsonParser.nextToken();
+                    inV.setLabel(jsonParser.getText());
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
+                    jsonParser.nextToken();
+                    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                        jsonParser.nextToken();
+                        e.addProperty(deserializationContext.readValue(jsonParser, Property.class));
+                    }
+                }
+            }
+
+            e.setInV(inV.create());
+            e.setOutV(outV.create());
+
+            return e.create();
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
-    static class PropertyJacksonDeserializer extends AbstractObjectDeserializer<Property> {
+    static class PropertyJacksonDeserializer extends StdDeserializer<Property> {
 
         public PropertyJacksonDeserializer() {
             super(Property.class);
         }
 
         @Override
-        public Property createObject(final Map<String, Object> propData) {
-            return new DetachedProperty(
-                    (String) propData.get(GraphSONTokens.KEY),
-                    propData.get(GraphSONTokens.VALUE));
+        public Property deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String key = null;
+            Object value = null;
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.KEY)) {
+                    jsonParser.nextToken();
+                    key = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    value = deserializationContext.readValue(jsonParser, Object.class);
+                }
+            }
+
+            return new DetachedProperty<>(key, value);
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
-    static class PathJacksonDeserializer extends AbstractObjectDeserializer<Path> {
+    static class PathJacksonDeserializer extends StdDeserializer<Path> {
+        private static final JavaType setType = TypeFactory.defaultInstance().constructCollectionType(HashSet.class, String.class);
 
         public PathJacksonDeserializer() {
             super(Path.class);
         }
 
         @Override
-        public Path createObject(final Map<String, Object> pathData) {
+        public Path deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final JsonNode n = jsonParser.readValueAsTree();
             final Path p = MutablePath.make();
 
-            final List labels = (List) pathData.get(GraphSONTokens.LABELS);
-            final List objects = (List) pathData.get(GraphSONTokens.OBJECTS);
+            final ArrayNode labels = (ArrayNode) n.get(GraphSONTokens.LABELS);
+            final ArrayNode objects = (ArrayNode) n.get(GraphSONTokens.OBJECTS);
 
             for (int i = 0; i < objects.size(); i++) {
-                p.extend(objects.get(i), new HashSet((List) labels.get(i)));
+                final JsonParser po = objects.get(i).traverse();
+                po.nextToken();
+                final JsonParser pl = labels.get(i).traverse();
+                pl.nextToken();
+                p.extend(deserializationContext.readValue(po, Object.class), deserializationContext.readValue(pl, setType));
             }
+
             return p;
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
-    static class VertexPropertyJacksonDeserializer extends AbstractObjectDeserializer<VertexProperty> {
+    static class VertexPropertyJacksonDeserializer extends StdDeserializer<VertexProperty> {
+        private static final JavaType propertiesType = TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
 
         protected VertexPropertyJacksonDeserializer() {
             super(VertexProperty.class);
         }
 
         @Override
-        public VertexProperty createObject(final Map<String, Object> propData) {
-            return new DetachedVertexProperty(
-                    propData.get(GraphSONTokens.ID),
-                    (String) propData.get(GraphSONTokens.LABEL),
-                    propData.get(GraphSONTokens.VALUE),
-                    (Map) propData.get(GraphSONTokens.PROPERTIES)
-            );
+        public VertexProperty deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final DetachedVertexProperty.Builder vp = DetachedVertexProperty.build();
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
+                    jsonParser.nextToken();
+                    vp.setId(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
+                    jsonParser.nextToken();
+                    vp.setLabel(jsonParser.getText());
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    vp.setValue(deserializationContext.readValue(jsonParser, Object.class));
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
+                    jsonParser.nextToken();
+                    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                        final String key = jsonParser.getCurrentName();
+                        jsonParser.nextToken();
+                        final Object val = deserializationContext.readValue(jsonParser, Object.class);
+                        vp.addProperty(new DetachedProperty(key, val));
+                    }
+                }
+            }
+
+            return vp.create();
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 
@@ -555,6 +663,11 @@ class GraphSONSerializersV3d0 {
             }
             return t;
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
     static class IntegerJackonsDeserializer extends StdDeserializer<Integer> {
@@ -567,6 +680,11 @@ class GraphSONSerializersV3d0 {
         public Integer deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             return jsonParser.getIntValue();
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
     static class DoubleJackonsDeserializer extends StdDeserializer<Double> {
@@ -578,6 +696,11 @@ class GraphSONSerializersV3d0 {
         @Override
         public Double deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             return jsonParser.getDoubleValue();
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 }
