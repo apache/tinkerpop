@@ -72,7 +72,7 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         Graph graph = GraphFactory.open(configuration);
         final GraphTraversal.Admin<Vertex, Map<Vertex, Collection<Vertex>>> traversal = graph.traversal().withComputer(SparkGraphComputer.class).V().group("m").<Map<Vertex, Collection<Vertex>>>cap("m").asAdmin();
         assertTrue(traversal.hasNext());
-        assertTrue(traversal.next() == traversal.getSideEffects().get("m"));
+        assertEquals(traversal.next(), traversal.getSideEffects().get("m"));
         assertFalse(traversal.hasNext());
         assertTrue(traversal.getSideEffects().exists("m"));
         assertTrue(traversal.getSideEffects().get("m") instanceof Map);
