@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
+public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
 
     public EdgeOtherVertexStep(final Traversal.Admin traversal) {
         super(traversal);
