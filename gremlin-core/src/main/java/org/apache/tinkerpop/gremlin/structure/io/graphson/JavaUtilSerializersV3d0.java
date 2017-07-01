@@ -18,16 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
-import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
+import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
+import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
+import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * GraphSON serializers for classes in {@code java.util.*} for the version 3.0 of GraphSON.
@@ -35,6 +41,31 @@ import java.util.Map;
 final class JavaUtilSerializersV3d0 {
 
     private JavaUtilSerializersV3d0() {}
+
+    ////////////////////////////// SERIALIZERS /////////////////////////////////
+
+    final static class MapJacksonSerializer extends StdSerializer<Map> {
+        public MapJacksonSerializer() {
+            super(Map.class);
+        }
+
+        @Override
+        public void serialize(final Map map, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            for(Map.Entry entry : (Set<Map.Entry>) map.entrySet()) {
+                jsonGenerator.writeObject(entry.getKey());
+                jsonGenerator.writeObject(entry.getValue());
+            }
+        }
+
+        @Override
+        public void serializeWithType(final Map map, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            typeSerializer.writeTypePrefixForObject(map, jsonGenerator);
+            serialize(map, jsonGenerator, serializerProvider);
+            typeSerializer.writeTypeSuffixForObject(map, jsonGenerator);
+        }
+    }
 
     final static class MapEntryJacksonSerializer extends StdSerializer<Map.Entry> {
 
@@ -45,41 +76,61 @@ final class JavaUtilSerializersV3d0 {
         @Override
         public void serialize(final Map.Entry entry, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            jsonGenerator.writeStartObject();
-            ser(entry, jsonGenerator, serializerProvider);
-            jsonGenerator.writeEndObject();
+            jsonGenerator.writeObject(entry.getKey());
+            jsonGenerator.writeObject(entry.getValue());
         }
 
         @Override
         public void serializeWithType(final Map.Entry entry, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             typeSerializer.writeTypePrefixForObject(entry, jsonGenerator);
-            ser(entry, jsonGenerator, serializerProvider);
+            serialize(entry, jsonGenerator, serializerProvider);
             typeSerializer.writeTypeSuffixForObject(entry, jsonGenerator);
         }
+    }
 
-        private static void ser(final Map.Entry entry, final JsonGenerator jsonGenerator,
-                                final SerializerProvider serializerProvider) throws IOException {
-            // this treatment of keys is consistent with the current GraphSONKeySerializer which extends the
-            // StdKeySerializer
-            final Object key = entry.getKey();
-            final Class cls = key.getClass();
-            String k;
-            if (cls == String.class)
-                k = (String) key;
-            else if (Element.class.isAssignableFrom(cls))
-                k = ((Element) key).id().toString();
-            else if(Date.class.isAssignableFrom(cls)) {
-                if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS))
-                    k = String.valueOf(((Date) key).getTime());
-                else
-                    k = serializerProvider.getConfig().getDateFormat().format((Date) key);
-            } else if(cls == Class.class)
-                k = ((Class) key).getName();
-            else
-                k = key.toString();
+    ////////////////////////////// DESERIALIZERS /////////////////////////////////
 
-            serializerProvider.defaultSerializeField(k, entry.getValue(), jsonGenerator);
+
+    static class MapJacksonDeserializer extends StdDeserializer<Map> {
+
+        protected MapJacksonDeserializer() {
+            super(Map.class);
+        }
+
+        @Override
+        public Map deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<Object,Object> m = new LinkedHashMap<>();
+
+            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                final Object key = deserializationContext.readValue(jsonParser, Object.class);
+                jsonParser.nextToken();
+                final Object val = deserializationContext.readValue(jsonParser, Object.class);
+                m.put(key, val);
+            }
+
+            return m;
+        }
+    }
+
+    static class MapEntryJacksonDeserializer extends StdDeserializer<Map.Entry> {
+
+        protected MapEntryJacksonDeserializer() {
+            super(Map.Entry.class);
+        }
+
+        @Override
+        public Map.Entry deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<Object,Object> m = new HashMap<>();
+
+            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                final Object key = deserializationContext.readValue(jsonParser, Object.class);
+                jsonParser.nextToken();
+                final Object val = deserializationContext.readValue(jsonParser, Object.class);
+                m.put(key, val);
+            }
+
+            return m.entrySet().iterator().next();
         }
     }
 }

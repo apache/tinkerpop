@@ -44,7 +44,6 @@ final class GraphSONSerializerProvider extends DefaultSerializerProvider {
             setDefaultKeySerializer(new GraphSONSerializersV2d0.GraphSONKeySerializer());
             unknownTypeSerializer = new ToStringGraphSONSerializer();
         } else {
-            setDefaultKeySerializer(new GraphSONSerializersV3d0.GraphSONKeySerializer());
             unknownTypeSerializer = new ToStringGraphSONSerializer();
         }
     }

@@ -85,6 +85,11 @@ final class JavaTimeSerializersV3d0 {
         public T deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
             return parse(jsonParser.getText());
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
     final static class DurationJacksonSerializer extends AbstractJavaTimeSerializer<Duration> {

@@ -3,16 +3,16 @@
   "op" : "eval",
   "processor" : "",
   "args" : {
-    "gremlin" : "social.V(x)",
-    "language" : "gremlin-groovy",
-    "aliases" : {
-      "g" : "social"
-    },
-    "bindings" : {
-      "x" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "social.V(x)", "language", "gremlin-groovy", "aliases", {
+      "@type" : "g:Map",
+      "@value" : [ "g", "social" ]
+    }, "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }

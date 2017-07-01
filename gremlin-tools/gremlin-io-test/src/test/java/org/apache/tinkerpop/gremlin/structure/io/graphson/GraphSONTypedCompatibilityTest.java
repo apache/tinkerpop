@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -41,9 +42,9 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
             version(GraphSONVersion.V2_0).create().createMapper();
 
     private static ObjectMapper mapperV3 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV2d0.instance()).
-            addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-            addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+            addRegistry(TinkerIoRegistryV3d0.instance()).
+            addCustomModule(GraphSONXModuleV3d0.build().create(false)).
+            addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
 
     @Parameterized.Parameters(name = "expect({0})")

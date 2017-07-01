@@ -597,7 +597,7 @@ public class IoTest {
             final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
             graph.addVertex(T.id, new CustomId("vertex", id));
 
-            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModule();
+            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV2d0();
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().version(GraphSONVersion.V2_0).addCustomModule(module).create()).create();
 
@@ -720,7 +720,7 @@ public class IoTest {
             final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
             graph.addVertex(T.id, new CustomId("vertex", id));
 
-            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModule();
+            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV3d0();
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().version(GraphSONVersion.V3_0).addCustomModule(module).create()).create();
 

@@ -18,10 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-/**
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -45,6 +41,8 @@ import java.util.Map;
 
 /**
  * Version 2.0 of GraphSON extensions.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphSONXModuleV2d0 extends GraphSONModule {
 

@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -132,15 +131,15 @@ public class GraphSONMessageSerializerV3d0Test {
         final ResponseMessage response = convert(IteratorUtils.asList(map.entrySet()));
         assertCommon(response);
 
-        final List<Map<String, Object>> deserializedEntries = (List<Map<String, Object>>) response.getResult().getData();
+        final List<Map.Entry<Object, Object>> deserializedEntries = (List<Map.Entry<Object, Object>>) response.getResult().getData();
         assertEquals(3, deserializedEntries.size());
         deserializedEntries.forEach(e -> {
-            if (e.containsKey("x"))
-                assertEquals(1, e.get("x"));
-            else if (e.containsKey(v1.id().toString()))
-                assertEquals(100, e.get(v1.id().toString()));
-            else if (e.containsKey(StdDateFormat.instance.format(d)))
-                assertEquals("test", e.get(StdDateFormat.instance.format(d)));
+            if (e.getKey().equals("x"))
+                assertEquals(1, e.getValue());
+            else if (e.getKey() instanceof Vertex && e.getKey().equals(v1))
+                assertEquals(100, e.getValue());
+            else if (e.getKey() instanceof Date)
+                assertEquals("test", e.getValue());
             else
                 fail("Map entries contains a key that is not part of what was serialized");
         });
@@ -246,17 +245,15 @@ public class GraphSONMessageSerializerV3d0Test {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().has("name", "marko").next(), 1000);
+        final Vertex v1 = g.V().has("name", "marko").next();
+        map.put(v1, 1000);
 
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<String, Integer> deserializedMap = (Map<String, Integer>) response.getResult().getData();
+        final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) response.getResult().getData();
         assertEquals(1, deserializedMap.size());
-
-        // with no embedded types the key (which is a vertex) simply serializes out to an id
-        // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
-        assertEquals(new Integer(1000), deserializedMap.get("1"));
+        assertEquals(new Integer(1000), deserializedMap.get(v1));
     }
 
     @Test

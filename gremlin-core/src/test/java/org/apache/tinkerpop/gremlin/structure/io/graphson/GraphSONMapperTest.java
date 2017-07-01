@@ -48,6 +48,9 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class GraphSONMapperTest {
 
+    /**
+     * No need to test V3 as it does not have an option to be constructed without types
+     */
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{

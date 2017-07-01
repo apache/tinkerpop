@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +33,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,16 +47,32 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Tests automatic typed serialization/deserialization for GraphSON 2.0.
+ * Tests automatic typed serialization/deserialization for GraphSON 2.0+.
+ *
+ * @author Kevin Gallardo (https://kgdo.me)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONTest {
+@RunWith(Parameterized.class)
+public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest {
 
-    private final ObjectMapper mapper = GraphSONMapper.build()
-            .version(GraphSONVersion.V2_0)
-            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
-            .typeInfo(TypeInfo.PARTIAL_TYPES)
-            .create()
-            .createMapper();
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
+                        .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                        .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
+                {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
+                        .addCustomModule(GraphSONXModuleV3d0.build().create(false))
+                        .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
+        });
+    }
+
+    @Parameterized.Parameter(1)
+    public ObjectMapper mapper;
+
+
+    @Parameterized.Parameter(0)
+    public String version;
 
     @Test
     public void shouldSerializeDeserializeNestedCollectionsAndMapAndTypedValuesCorrectly() throws Exception {

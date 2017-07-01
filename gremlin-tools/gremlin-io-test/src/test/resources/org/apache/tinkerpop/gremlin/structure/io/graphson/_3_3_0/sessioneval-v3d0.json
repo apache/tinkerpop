@@ -3,17 +3,16 @@
   "op" : "eval",
   "processor" : "session",
   "args" : {
-    "gremlin" : "g.V(x)",
-    "language" : "gremlin-groovy",
-    "session" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "session", {
       "@type" : "g:UUID",
       "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    },
-    "bindings" : {
-      "x" : {
+    }, "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }

@@ -23,9 +23,13 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
@@ -136,17 +140,73 @@ public class CustomId {
         }
     }
 
-    public static class CustomIdTinkerPopJacksonModule extends TinkerPopJacksonModule {
+    public static class CustomIdTinkerPopJacksonModuleV2d0 extends TinkerPopJacksonModule {
 
         private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
                 new LinkedHashMap<Class, String>() {{
                     put(CustomId.class, "id");
                 }});
 
-        public CustomIdTinkerPopJacksonModule() {
+        public CustomIdTinkerPopJacksonModuleV2d0() {
             super("custom");
             addSerializer(CustomId.class, new CustomIdJacksonSerializerV2d0());
             addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV2d0());
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return TYPE_DEFINITIONS;
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return "simple";
+        }
+    }
+
+    public static class CustomIdJacksonSerializerV3d0 extends StdScalarSerializer<CustomId> {
+        public CustomIdJacksonSerializerV3d0() {
+            super(CustomId.class);
+        }
+
+        @Override
+        public void serialize(final CustomId customId, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException, JsonGenerationException {
+            final Map<String, Object> m = new HashMap<>();
+            m.put("cluster", customId.getCluster());
+            m.put("elementId", customId.getElementId());
+            jsonGenerator.writeObject(m);
+        }
+    }
+
+    public static class CustomIdJacksonDeserializerV3d0 extends StdDeserializer<CustomId> {
+        public CustomIdJacksonDeserializerV3d0() {
+            super(CustomId.class);
+        }
+
+        @Override
+        public CustomId deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<String, Object> data = deserializationContext.readValue(jsonParser, Map.class);
+            return new CustomId((String) data.get("cluster"), (UUID) data.get("elementId"));
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
+    public static class CustomIdTinkerPopJacksonModuleV3d0 extends TinkerPopJacksonModule {
+
+        private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
+                new LinkedHashMap<Class, String>() {{
+                    put(CustomId.class, "id");
+                }});
+
+        public CustomIdTinkerPopJacksonModuleV3d0() {
+            super("custom");
+            addSerializer(CustomId.class, new CustomIdJacksonSerializerV3d0());
+            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV3d0());
         }
 
         @Override

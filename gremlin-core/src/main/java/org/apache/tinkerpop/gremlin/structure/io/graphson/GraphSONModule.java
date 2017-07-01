@@ -71,6 +71,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1d0;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV2d0;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV3d0;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.time.Duration;
@@ -121,6 +122,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Long.class, "Int64");
                     put(Double.class, "Double");
                     put(Float.class, "Float");
+
+                    put(Map.Entry.class, "Entry");
+                    put(Map.class, "Map");
 
                     // Tinkerpop Graph objects
                     put(Lambda.class, "Lambda");
@@ -196,11 +200,12 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(TraversalMetrics.class, new GraphSONSerializersV3d0.TraversalMetricsJacksonSerializer());
             addSerializer(TraversalExplanation.class, new GraphSONSerializersV3d0.TraversalExplanationJacksonSerializer());
             addSerializer(Path.class, new GraphSONSerializersV3d0.PathJacksonSerializer());
-            addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV2d0(normalize));
+            addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV3d0(normalize));
             addSerializer(Tree.class, new GraphSONSerializersV3d0.TreeJacksonSerializer());
 
             // java.util
             addSerializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonSerializer());
+            addSerializer(Map.class, new JavaUtilSerializersV3d0.MapJacksonSerializer());
 
             // need to explicitly add serializers for those types because Jackson doesn't do it at all.
             addSerializer(Integer.class, new GraphSONSerializersV3d0.IntegerGraphSONSerializer());
@@ -236,6 +241,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Metrics.class, new GraphSONSerializersV3d0.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV3d0.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV3d0.TreeJacksonDeserializer());
+
+            // java.util
+            addDeserializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonDeserializer());
+            addDeserializer(Map.class, new JavaUtilSerializersV3d0.MapJacksonDeserializer());
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV3d0.IntegerJackonsDeserializer());

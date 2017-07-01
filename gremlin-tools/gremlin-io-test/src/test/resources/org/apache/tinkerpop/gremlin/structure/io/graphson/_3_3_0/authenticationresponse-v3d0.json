@@ -3,7 +3,7 @@
   "op" : "authentication",
   "processor" : "",
   "args" : {
-    "saslMechanism" : "PLAIN",
-    "sasl" : "AHN0ZXBocGhlbgBwYXNzd29yZA=="
+    "@type" : "g:Map",
+    "@value" : [ "saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==" ]
   }
 }

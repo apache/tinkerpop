@@ -94,9 +94,12 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             om.findAndRegisterModules();
 
         // graphson 3.0 only allows type - there is no option to remove embedded types
+        if (version == GraphSONVersion.V3_0 && typeInfo == TypeInfo.NO_TYPES)
+            throw new IllegalStateException(String.format("GraphSON 3.0 does not support %s", TypeInfo.NO_TYPES));
+
         if (version == GraphSONVersion.V3_0 || (version == GraphSONVersion.V2_0 && typeInfo != TypeInfo.NO_TYPES)) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
-            final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder()
+            final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(getTypeInfo())
                     .valuePropertyName(GraphSONTokens.VALUEPROP)
                     .init(JsonTypeInfo.Id.CUSTOM, graphSONTypeIdResolver)

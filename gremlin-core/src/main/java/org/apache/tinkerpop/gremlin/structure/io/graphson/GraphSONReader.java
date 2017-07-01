@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -73,8 +74,8 @@ public final class GraphSONReader implements GraphReader {
     private final GraphSONVersion version;
     private boolean unwrapAdjacencyList = false;
 
-    final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
-    };
+    final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {};
+    final TypeReference<LinkedHashMap<String, Object>> linkedHashMapTypeReference = new TypeReference<LinkedHashMap<String, Object>>() {};
 
     private GraphSONReader(final Builder builder) {
         mapper = builder.mapper.createMapper();
@@ -173,7 +174,9 @@ public final class GraphSONReader implements GraphReader {
                              final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
-        final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
+        // graphson v3 has special handling for generic Map instances, by forcing to linkedhashmap (which is probably
+        // what it should have been anyway) stargraph format can remain unchanged across all versions
+        final Map<String, Object> vertexData = mapper.readValue(inputStream, version == GraphSONVersion.V3_0 ? linkedHashMapTypeReference : mapTypeReference);
         final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 

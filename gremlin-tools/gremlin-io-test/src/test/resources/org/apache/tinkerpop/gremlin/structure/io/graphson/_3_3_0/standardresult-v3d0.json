@@ -3,7 +3,10 @@
   "status" : {
     "message" : "",
     "code" : 200,
-    "attributes" : { }
+    "attributes" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   },
   "result" : {
     "data" : [ {
@@ -106,6 +109,9 @@
         }
       }
     } ],
-    "meta" : { }
+    "meta" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   }
 }

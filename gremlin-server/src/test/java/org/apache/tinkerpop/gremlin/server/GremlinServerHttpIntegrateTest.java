@@ -731,7 +731,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(true, node.get("result").get("data").get(0).isObject());
-            assertEquals(1, node.get("result").get("data").get(0).get("y").get("@value").asInt());
+            assertEquals(1, node.get("result").get("data").get(0).get("@value").get(1).get("@value").asInt());
         }
     }
 

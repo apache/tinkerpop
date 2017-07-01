@@ -1,54 +1,49 @@
 {
   "@type" : "g:Metrics",
   "@value" : {
-    "dur" : {
+    "@type" : "g:Map",
+    "@value" : [ "dur", {
       "@type" : "g:Double",
       "@value" : 100.0
-    },
-    "counts" : {
-      "traverserCount" : {
+    }, "counts", {
+      "@type" : "g:Map",
+      "@value" : [ "traverserCount", {
         "@type" : "g:Int64",
         "@value" : 4
-      },
-      "elementCount" : {
+      }, "elementCount", {
         "@type" : "g:Int64",
         "@value" : 4
-      }
-    },
-    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
-    "annotations" : {
-      "percentDur" : {
+      } ]
+    }, "name", "TinkerGraphStep(vertex,[~label.eq(person)])", "annotations", {
+      "@type" : "g:Map",
+      "@value" : [ "percentDur", {
         "@type" : "g:Double",
         "@value" : 25.0
-      }
-    },
-    "id" : "7.0.0()",
-    "metrics" : [ {
+      } ]
+    }, "id", "7.0.0()", "metrics", [ {
       "@type" : "g:Metrics",
       "@value" : {
-        "dur" : {
+        "@type" : "g:Map",
+        "@value" : [ "dur", {
           "@type" : "g:Double",
           "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
+        }, "counts", {
+          "@type" : "g:Map",
+          "@value" : [ "traverserCount", {
             "@type" : "g:Int64",
             "@value" : 7
-          },
-          "elementCount" : {
+          }, "elementCount", {
             "@type" : "g:Int64",
             "@value" : 7
-          }
-        },
-        "name" : "VertexStep(OUT,vertex)",
-        "annotations" : {
-          "percentDur" : {
+          } ]
+        }, "name", "VertexStep(OUT,vertex)", "annotations", {
+          "@type" : "g:Map",
+          "@value" : [ "percentDur", {
             "@type" : "g:Double",
             "@value" : 25.0
-          }
-        },
-        "id" : "3.0.0()"
+          } ]
+        }, "id", "3.0.0()" ]
       }
-    } ]
+    } ] ]
   }
 }

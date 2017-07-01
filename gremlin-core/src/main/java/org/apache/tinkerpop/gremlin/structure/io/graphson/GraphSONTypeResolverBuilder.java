@@ -34,11 +34,17 @@ import java.util.Collection;
  * deserializers. Contains the typeInfo level that should be provided by the GraphSONMapper.
  *
  * @author Kevin Gallardo (https://kgdo.me)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
 
     private TypeInfo typeInfo;
     private String valuePropertyName;
+    private final GraphSONVersion version;
+
+    public GraphSONTypeResolverBuilder(final GraphSONVersion version) {
+        this.version = version;
+    }
 
     @Override
     public TypeDeserializer buildTypeDeserializer(final DeserializationConfig config, final JavaType baseType,
@@ -52,7 +58,9 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
     public TypeSerializer buildTypeSerializer(final SerializationConfig config, final JavaType baseType,
                                               final Collection<NamedType> subtypes) {
         final TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, true, false);
-        return new GraphSONTypeSerializer(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
+        return version == GraphSONVersion.V2_0 ?
+                new GraphSONTypeSerializerV2d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName) :
+                new GraphSONTypeSerializerV3d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
     }
 
     public GraphSONTypeResolverBuilder valuePropertyName(final String valuePropertyName) {

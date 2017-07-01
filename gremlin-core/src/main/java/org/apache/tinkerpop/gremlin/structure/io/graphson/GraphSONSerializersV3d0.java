@@ -64,6 +64,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -610,20 +611,21 @@ class GraphSONSerializersV3d0 {
         }
     }
 
-    static class MetricsJacksonDeserializer extends AbstractObjectDeserializer<Metrics> {
+    static class MetricsJacksonDeserializer extends StdDeserializer<Metrics> {
         public MetricsJacksonDeserializer() {
             super(Metrics.class);
         }
 
         @Override
-        public Metrics createObject(final Map<String, Object> metricsData) {
+        public Metrics deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<String, Object> metricsData = deserializationContext.readValue(jsonParser, Map.class);
             final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
-            for (Map.Entry<String, Long> count : ((Map<String, Long>)metricsData.getOrDefault(GraphSONTokens.COUNTS, new HashMap<>(0))).entrySet()) {
+            for (Map.Entry<String, Long> count : ((Map<String, Long>)metricsData.getOrDefault(GraphSONTokens.COUNTS, new LinkedHashMap<>(0))).entrySet()) {
                 m.setCount(count.getKey(), count.getValue());
             }
-            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, new HashMap<>(0))).entrySet()) {
+            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, new LinkedHashMap<>(0))).entrySet()) {
                 m.setAnnotation(count.getKey(), count.getValue());
             }
             for (MutableMetrics nested : (List<MutableMetrics>)metricsData.getOrDefault(GraphSONTokens.METRICS, new ArrayList<>(0))) {
@@ -631,20 +633,32 @@ class GraphSONSerializersV3d0 {
             }
             return m;
         }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
     }
 
-    static class TraversalMetricsJacksonDeserializer extends AbstractObjectDeserializer<TraversalMetrics> {
+    static class TraversalMetricsJacksonDeserializer extends StdDeserializer<TraversalMetrics> {
 
         public TraversalMetricsJacksonDeserializer() {
             super(TraversalMetrics.class);
         }
 
         @Override
-        public TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
+        public TraversalMetrics deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<String, Object> traversalMetricsData = deserializationContext.readValue(jsonParser, Map.class);
+
             return new DefaultTraversalMetrics(
                     Math.round((Double) traversalMetricsData.get(GraphSONTokens.DURATION) * 1000000),
                     (List<MutableMetrics>) traversalMetricsData.get(GraphSONTokens.METRICS)
             );
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
         }
     }
 

@@ -3,10 +3,16 @@
   "status" : {
     "message" : "",
     "code" : 407,
-    "attributes" : { }
+    "attributes" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   },
   "result" : {
     "data" : null,
-    "meta" : { }
+    "meta" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   }
 }

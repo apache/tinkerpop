@@ -1,5 +1,5 @@
 {
-  "@type" : "g:Tree",
+  "@type" : "g:Map",
   "@value" : [ {
     "key" : {
       "@type" : "g:Vertex",
@@ -102,7 +102,7 @@
       }
     },
     "value" : {
-      "@type" : "g:Tree",
+      "@type" : "g:Map",
       "@value" : [ {
         "key" : {
           "@type" : "g:Vertex",
@@ -128,7 +128,7 @@
           }
         },
         "value" : {
-          "@type" : "g:Tree",
+          "@type" : "g:Map",
           "@value" : [ {
             "key" : {
               "@type" : "g:Vertex",
@@ -154,7 +154,7 @@
               }
             },
             "value" : {
-              "@type" : "g:Tree",
+              "@type" : "g:Map",
               "@value" : [ ]
             }
           } ]

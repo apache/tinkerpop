@@ -50,6 +50,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +195,7 @@ public final class TinkerIoRegistryV3d0 extends AbstractIoRegistry {
             final List<? extends Vertex> vertices;
 
             jsonParser.nextToken();
-            final Map<String, Object> graphData = deserializationContext.readValue(jsonParser, Map.class);
+            final Map<String, Object> graphData = deserializationContext.readValue(jsonParser, LinkedHashMap.class);
             vertices = (List<DetachedVertex>) graphData.get(GraphSONTokens.VERTICES);
             edges = (List<DetachedEdge>) graphData.get(GraphSONTokens.EDGES);
 

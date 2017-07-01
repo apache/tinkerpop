@@ -3,13 +3,13 @@
   "op" : "eval",
   "processor" : "",
   "args" : {
-    "gremlin" : "g.V(x)",
-    "language" : "gremlin-groovy",
-    "bindings" : {
-      "x" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }
