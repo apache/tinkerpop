@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
@@ -50,8 +51,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -191,26 +190,23 @@ public final class TinkerIoRegistryV3d0 extends AbstractIoRegistry {
             conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
             final TinkerGraph graph = TinkerGraph.open(conf);
 
-            final List<? extends Edge> edges;
-            final List<? extends Vertex> vertices;
-
-            jsonParser.nextToken();
-            final Map<String, Object> graphData = deserializationContext.readValue(jsonParser, LinkedHashMap.class);
-            vertices = (List<DetachedVertex>) graphData.get(GraphSONTokens.VERTICES);
-            edges = (List<DetachedEdge>) graphData.get(GraphSONTokens.EDGES);
-
-
-            vertices.forEach(e -> {
-                if (e instanceof DetachedVertex) {
-                    ((DetachedVertex)e).attach(Attachable.Method.getOrCreate(graph));
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals("vertices")) {
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        if (jsonParser.currentToken() == JsonToken.START_OBJECT) {
+                            final DetachedVertex v = (DetachedVertex) deserializationContext.readValue(jsonParser, Vertex.class);
+                            v.attach(Attachable.Method.getOrCreate(graph));
+                        }
+                    }
+                } else if (jsonParser.getCurrentName().equals("edges")) {
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        if (jsonParser.currentToken() == JsonToken.START_OBJECT) {
+                            final DetachedEdge e = (DetachedEdge) deserializationContext.readValue(jsonParser, Edge.class);
+                            e.attach(Attachable.Method.getOrCreate(graph));
+                        }
+                    }
                 }
-            });
-
-            edges.forEach(e -> {
-                if (e instanceof DetachedEdge) {
-                    ((DetachedEdge) e).attach(Attachable.Method.getOrCreate(graph));
-                }
-            });
+            }
 
             return graph;
         }
