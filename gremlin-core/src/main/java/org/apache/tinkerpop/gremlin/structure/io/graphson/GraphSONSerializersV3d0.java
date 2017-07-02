@@ -547,18 +547,22 @@ class GraphSONSerializersV3d0 {
 
         @Override
         public Path deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final JsonNode n = jsonParser.readValueAsTree();
             final Path p = MutablePath.make();
 
-            final ArrayNode labels = (ArrayNode) n.get(GraphSONTokens.LABELS);
-            final ArrayNode objects = (ArrayNode) n.get(GraphSONTokens.OBJECTS);
+            List<Object> labels = new ArrayList<>();
+            List<Object> objects = new ArrayList<>();
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.LABELS)) {
+                    jsonParser.nextToken();
+                    labels = deserializationContext.readValue(jsonParser, List.class);
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OBJECTS)) {
+                    jsonParser.nextToken();
+                    objects = deserializationContext.readValue(jsonParser, List.class);
+                }
+            }
 
             for (int i = 0; i < objects.size(); i++) {
-                final JsonParser po = objects.get(i).traverse();
-                po.nextToken();
-                final JsonParser pl = labels.get(i).traverse();
-                pl.nextToken();
-                p.extend(deserializationContext.readValue(po, Object.class), deserializationContext.readValue(pl, setType));
+                p.extend(objects.get(i), (Set<String>) labels.get(i));
             }
 
             return p;

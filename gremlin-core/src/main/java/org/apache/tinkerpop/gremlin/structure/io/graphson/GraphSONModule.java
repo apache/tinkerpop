@@ -90,7 +90,9 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -125,6 +127,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
                     put(Map.Entry.class, "Entry");
                     put(Map.class, "Map");
+                    put(List.class, "List");
+                    put(Set.class, "Set");
 
                     // Tinkerpop Graph objects
                     put(Lambda.class, "Lambda");
@@ -206,6 +210,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             // java.util
             addSerializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonSerializer());
             addSerializer(Map.class, new JavaUtilSerializersV3d0.MapJacksonSerializer());
+            addSerializer(List.class, new JavaUtilSerializersV3d0.ListJacksonSerializer());
+            addSerializer(Set.class, new JavaUtilSerializersV3d0.SetJacksonSerializer());
 
             // need to explicitly add serializers for those types because Jackson doesn't do it at all.
             addSerializer(Integer.class, new GraphSONSerializersV3d0.IntegerGraphSONSerializer());
@@ -245,6 +251,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             // java.util
             addDeserializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonDeserializer());
             addDeserializer(Map.class, new JavaUtilSerializersV3d0.MapJacksonDeserializer());
+            addDeserializer(List.class, new JavaUtilSerializersV3d0.ListJacksonDeserializer());
+            addDeserializer(Set.class, new JavaUtilSerializersV3d0.SetJacksonDeserializer());
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV3d0.IntegerJackonsDeserializer());

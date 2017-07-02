@@ -32,6 +32,9 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -89,6 +92,50 @@ final class JavaUtilSerializersV3d0 {
         }
     }
 
+    final static class SetJacksonSerializer extends StdSerializer<Set> {
+        public SetJacksonSerializer() {
+            super(Set.class);
+        }
+
+        @Override
+        public void serialize(final Set set, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            for(Object o : set) {
+                jsonGenerator.writeObject(o);
+            }
+        }
+
+        @Override
+        public void serializeWithType(final Set set, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            typeSerializer.writeTypePrefixForArray(set, jsonGenerator);
+            serialize(set, jsonGenerator, serializerProvider);
+            typeSerializer.writeTypeSuffixForArray(set, jsonGenerator);
+        }
+    }
+
+    final static class ListJacksonSerializer extends StdSerializer<List> {
+        public ListJacksonSerializer() {
+            super(List.class);
+        }
+
+        @Override
+        public void serialize(final List list, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            for(Object o : list) {
+                jsonGenerator.writeObject(o);
+            }
+        }
+
+        @Override
+        public void serializeWithType(final List list, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            typeSerializer.writeTypePrefixForArray(list, jsonGenerator);
+            serialize(list, jsonGenerator, serializerProvider);
+            typeSerializer.writeTypeSuffixForArray(list, jsonGenerator);
+        }
+    }
+
     ////////////////////////////// DESERIALIZERS /////////////////////////////////
 
 
@@ -131,6 +178,42 @@ final class JavaUtilSerializersV3d0 {
             }
 
             return m.entrySet().iterator().next();
+        }
+    }
+
+    static class SetJacksonDeserializer extends StdDeserializer<Set> {
+
+        protected SetJacksonDeserializer() {
+            super(Set.class);
+        }
+
+        @Override
+        public Set deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Set<Object> s = new LinkedHashSet<>();
+
+            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                s.add(deserializationContext.readValue(jsonParser, Object.class));
+            }
+
+            return s;
+        }
+    }
+
+    static class ListJacksonDeserializer extends StdDeserializer<List> {
+
+        protected ListJacksonDeserializer() {
+            super(List.class);
+        }
+
+        @Override
+        public List deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final List<Object> s = new LinkedList<>();
+
+            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                s.add(deserializationContext.readValue(jsonParser, Object.class));
+            }
+
+            return s;
         }
     }
 }

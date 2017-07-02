@@ -42,10 +42,15 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.Matchers.either;
@@ -83,7 +88,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandleMap() throws Exception {
         assumeThat(version, startsWith("v3"));
 
-        final Map<Object,Object> o = new HashMap<>();
+        final Map<Object,Object> o = new LinkedHashMap<>();
         o.put("string key", "string value");
         o.put(1, 1);
         o.put(1L, 1L);
@@ -92,6 +97,41 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         o.put(l, "crazy");
 
         assertEquals(o, serializeDeserialize(mapper, o, Map.class));
+    }
+
+    @Test
+    public void shouldHandleList() throws Exception {
+        assumeThat(version, startsWith("v3"));
+
+        final List<Object> o = new ArrayList<>();
+        o.add("test");
+        o.add(1);
+        o.add(1);
+        o.add(1L);
+        o.add(1L);
+
+        final List<Object> l = Arrays.asList("test", 1, 5L);
+        o.add(l);
+
+        assertEquals(o, serializeDeserialize(mapper, o, List.class));
+    }
+
+    @Test
+    public void shouldHandleSet() throws Exception {
+        assumeThat(version, startsWith("v3"));
+
+        final Set<Object> o = new LinkedHashSet<>();
+        o.add("test");
+        o.add(1);
+        o.add(1);
+        o.add(1L);
+        o.add(1L);
+
+        final List<Object> l = Arrays.asList("test", 1, 5L);
+        o.add(l);
+
+        assertEquals(o, serializeDeserialize(mapper, o, Set.class));
+
     }
 
     @Test

@@ -42,7 +42,9 @@ import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * GraphSON 2.0 {@code TypeSerializer}.
@@ -78,6 +80,26 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
     }
 
     @Override
+    public void writeTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
+        if (o instanceof List || o instanceof Set) {
+            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
+            jsonGenerator.writeStartArray();
+        } else {
+            jsonGenerator.writeStartArray();
+        }
+    }
+
+    @Override
+    public void writeTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
+        if (o instanceof List || o instanceof Set) {
+            jsonGenerator.writeEndArray();
+            writeTypeSuffix(jsonGenerator);
+        } else {
+            jsonGenerator.writeEndArray();
+        }
+    }
+
+    @Override
     protected Class getClassFromObject(final Object o) {
         final Class c = o.getClass();
         if (classMap.containsKey(c))
@@ -88,6 +110,10 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
             mapped = Map.class;
         else if (Map.Entry.class.isAssignableFrom(c))
             mapped = Map.Entry.class;
+        else if (List.class.isAssignableFrom(c))
+            mapped = List.class;
+        else if (Set.class.isAssignableFrom(c))
+            mapped = Set.class;
         else if (Vertex.class.isAssignableFrom(c))
             mapped = Vertex.class;
         else if (Edge.class.isAssignableFrom(c))
