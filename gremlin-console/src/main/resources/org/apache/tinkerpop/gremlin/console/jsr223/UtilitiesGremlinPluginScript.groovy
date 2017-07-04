@@ -34,7 +34,7 @@ describeGraph = { Class<? extends org.apache.tinkerpop.gremlin.structure.Graph> 
     def testsOptedOut = optOuts != null && optOuts.size() > 0 ? optOuts.collect { "> " + it.test() + "#" + it.method() + "${lf}\t\"" + it.reason() + "\"" }.join(lf) : "> none";
 
     // not the use of {lf} here rather than triple quoted string is that groovy 2.4.0 seems to have trouble
-    // parsing that into groovysh - note the bug report here: https://jira.codehaus.org/browse/GROOVY-7290
+    // parsing that into groovysh - note the bug report here: https://issues.apache.org/jira/browse/GROOVY-7290
     return "${lf}" +
 "IMPLEMENTATION - ${c.getCanonicalName()} ${lf}" +
 "TINKERPOP TEST SUITE ${lf}" +
