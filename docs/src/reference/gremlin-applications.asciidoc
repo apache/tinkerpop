@@ -118,7 +118,7 @@ more information on the `:plugin use` command to manually enable plugins. These 
 These plugins can only be deactivated.
 
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.
-Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
+Please review link:http://www.groovy-lang.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
 superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier
 to interact with the Java API.  Moreover, Gremlin provides many neat shorthands to make it easier to express paths
 through a property graph.
@@ -146,7 +146,7 @@ TIP: When using Gremlin-Groovy in a Groovy class file, add `static { GremlinLoad
 Console Commands
 ~~~~~~~~~~~~~~~~
 
-In addition to the standard commands of the link:http://groovy.codehaus.org/Groovy+Shell[Groovy Shell], Gremlin adds
+In addition to the standard commands of the link:http://www.groovy-lang.org/Groovy+Shell[Groovy Shell], Gremlin adds
 some other useful operations.  The following table outlines the most commonly used commands:
 
 [width="100%",cols="3,^2,10",options="header"]
