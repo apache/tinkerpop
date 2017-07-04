@@ -535,7 +535,7 @@ containing a Gremlin script to be processed with results returned.
 $ curl -L -O https://www.apache.org/dist/tinkerpop/x.y.z/apache-tinkerpop-gremlin-server-x.y.z-bin.zip
 $ unzip apache-tinkerpop-gremlin-server-x.y.z-bin.zip
 $ cd apache-tinkerpop-gremlin-server-x.y.z
-$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+$ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
