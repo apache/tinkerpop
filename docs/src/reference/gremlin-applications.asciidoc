@@ -31,12 +31,12 @@ Console and Server, where a universal plugin system makes it possible to extend 
 important aspects of the plugin system is the ability to help the user install the plugins through the command line
 thus automating the process of gathering dependencies and other error prone activities.
 
-The process of plugin installation is handled by link:http://groovy.codehaus.org/Grape[Grape], which helps resolve
+The process of plugin installation is handled by link:http://www.groovy-lang.org/Grape[Grape], which helps resolve
 dependencies into the classpath.  It is therefore important to ensure that Grape is properly configured in order to
 use the automated capabilities of plugin installation.  Grape is configured by `~/.groovy/grapeConfig.xml` and
 generally speaking, if that file is not present, the default settings will suffice.  However, they will not suffice
 if a required dependency is not in one of the default configured repositories. Please see the
-link:http://groovy.codehaus.org/Grape[Custom Ivy Settings] section of the Grape documentation for more details on
+link:http://www.groovy-lang.org/Grape[Custom Ivy Settings] section of the Grape documentation for more details on
 the defaults.  TinkerPop recommends the following configuration in that file:
 
 [source,xml]
@@ -102,7 +102,7 @@ more information on the `:plugin use` command to manually enable plugins. These 
 These plugins can only be deactivated.
 
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.
-Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
+Please review link:http://www.groovy-lang.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
 superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier
 to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths
 through a property graph.
@@ -130,7 +130,7 @@ TIP: When using Gremlin-Groovy in a Groovy class file, add `static { GremlinLoad
 Console Commands
 ~~~~~~~~~~~~~~~~
 
-In addition to the standard commands of the link:http://groovy.codehaus.org/Groovy+Shell[Groovy Shell], Gremlin adds
+In addition to the standard commands of the link:http://www.groovy-lang.org/Groovy+Shell[Groovy Shell], Gremlin adds
 some other useful operations.  The following table outlines the most commonly used commands:
 
 [width="100%",cols="3,^2,10",options="header"]
