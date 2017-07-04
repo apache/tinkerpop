@@ -175,7 +175,7 @@ assert(IteratorUtils.count(graph.edges()) == 0)
 // tada!
 
 IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the
-link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of
+link:http://www.groovy-lang.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of
 Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language
 and for production users to connect to their graph and execute traversals in an interactive manner. Moreover,
 Gremlin-Groovy provides various syntax simplifications.
