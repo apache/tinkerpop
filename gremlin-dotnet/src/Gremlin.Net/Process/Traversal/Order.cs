@@ -28,7 +28,13 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Order
     {
-        Decr,Incr,KeyDecr,KeyIncr,Shuffle,ValueDecr,ValueIncr
+        Decr,
+		Incr,
+		KeyDecr,
+		KeyIncr,
+		Shuffle,
+		ValueDecr,
+		ValueIncr
     }
     
 #pragma warning restore 1591

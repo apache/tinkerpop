@@ -28,7 +28,10 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum T
     {
-        Id,Key,Label,Value
+        Id,
+		Key,
+		Label,
+		Value
     }
     
 #pragma warning restore 1591

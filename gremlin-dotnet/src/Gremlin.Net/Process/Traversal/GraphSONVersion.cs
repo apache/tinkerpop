@@ -28,7 +28,8 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum GraphSONVersion
     {
-        V1_0,V2_0
+        V1_0,
+		V2_0
     }
     
 #pragma warning restore 1591

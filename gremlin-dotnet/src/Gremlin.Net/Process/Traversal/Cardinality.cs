@@ -28,7 +28,9 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Cardinality
     {
-        List,Set,Single
+        List,
+		Set,
+		Single
     }
     
 #pragma warning restore 1591

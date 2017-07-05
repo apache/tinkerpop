@@ -28,7 +28,9 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Pop
     {
-        All,First,Last
+        All,
+		First,
+		Last
     }
     
 #pragma warning restore 1591

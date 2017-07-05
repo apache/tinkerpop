@@ -28,7 +28,8 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Column
     {
-        Keys,Values
+        Keys,
+		Values
     }
     
 #pragma warning restore 1591

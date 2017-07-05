@@ -28,7 +28,8 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Pick
     {
-        Any,None
+        Any,
+		None
     }
     
 #pragma warning restore 1591

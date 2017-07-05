@@ -237,7 +237,7 @@ def createEnum = { enumClass, csharpToJava ->
                                         def csharpName = toCSharpName(enumClass, value.name())
                                         csharpToJava.put(enumClass.simpleName + "." + csharpName, value.name())
                                         return csharpName
-                                    }.join(",")]
+                                    }.join(",\n\t\t")]
 
     def enumTemplate = engine.createTemplate(new File('${project.basedir}/glv/Enum.template')).make(b)
     def enumFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/' + enumClass.getSimpleName() + '.cs')
