@@ -30,6 +30,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
 * Removed previously deprecated `TraversalScriptHelper` class.
+* Removed previously deprecated `ScriptEngineCache` class.
+* Removed previously deprecated `CoreImports` class.
 * `gremlin.sh` and `gremln.bat` no longer support the option to pass a script as an argument for execution mode without using the `-i` option.
 * Graphite and Ganglia are no longer packaged with the Gremlin Server distribution.
 * `TransactionException` is no longer a class of `AbstractTransaction` and it extends `RuntimeException`.

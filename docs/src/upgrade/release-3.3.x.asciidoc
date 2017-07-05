@@ -220,6 +220,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
 ** `org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder#embedTypes(boolean)`
 ** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
+** `org.apache.tinkerpop.gremlin.util.CoreImports`
+** `org.apache.tinkerpop.gremlin.util.ScriptEngineCache`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster$Builder#reconnectIntialDelay(int)`
 ** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
@@ -304,7 +306,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1706[TINKERPOP-1706]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
