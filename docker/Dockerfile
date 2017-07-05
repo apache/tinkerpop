@@ -26,7 +26,7 @@ RUN apt-get update \
     && sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list' \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
     && apt-get update \
-    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server dotnet-dev-1.0.1 \
+    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server dotnet-dev-1.0.4 \
     && rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
 
 RUN sed -i 's@PermitRootLogin without-password@PermitRootLogin yes@' /etc/ssh/sshd_config
