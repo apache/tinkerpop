@@ -113,6 +113,8 @@ Changes to IO
 * Gryo incompatibilities with 3.2.x:
 ** `RequestMessage`
 ** `ResponseMessage`
+* GraphSON
+** embedTypes is gone, use typeInfo setting. will default to no types for GraphSON 1.0 and partial types for graphson 2.0 TINKERPOP-1700
 
 Graphite and Ganglia
 ^^^^^^^^^^^^^^^^^^^^
@@ -149,11 +151,11 @@ used in `optional()`. However, the behavior would be unpredictable so this backw
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
 
-Gremlin Console Script Execution
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gremlin Console Initialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is no longer possible to run a script in execution mode in the Gremlin Console from the terminal without use of `-e`.
-In other words, prior versions allowed:
+It is no longer possible to intialize the Gremlin Console with a script without use of `-e`. In other words, prior
+versions allowed:
 
 [source,text]
 bin/gremlin.sh gremlin.groovy
@@ -161,9 +163,10 @@ bin/gremlin.sh gremlin.groovy
 Such a command must now be written as:
 
 [source,text]
-bin/gremlin.sh -e gremlin.groovy
+bin/gremlin.sh -i gremlin.groovy
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651]
 
 GraphTraversal valueMap() Signature Updated
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -217,6 +220,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
 ** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
 * `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.Cluster$Builder#reconnectIntialDelay(int)`
 ** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
 * `gremlin-groovy`
 ** `org.apache.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider`
@@ -294,6 +298,21 @@ The switch name has changed for installing dependencies. `-i` has been deprecate
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_configuring_2[Reference Documentation - Server Configuration].
 
+Removal of useMapperFromGraph
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `userMapperFromGraph` serialization configuration option was used to allow the IO configurations of a specific
+graph to be assigned to a specific serializer. This feature has been removed completely now. Please use the
+`ioRegistries` configuration option to add one or more specific `Graph` serialization capabilities to a serializer.
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}            # application/vnd.gremlin-v1.0+gryo
+----
+
+see: link:https://issues.apache.org/jira/browse/TINKERPOP-1699[TINKERPOP-1699]
+
 Gremlin-server.bat
 ^^^^^^^^^^^^^^^^^^
 
@@ -358,3 +377,14 @@ rather than `Exception`. Providers should consider using this exception to wrap 
 to transaction problems and it allows for more common, generalized error handling for users.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+SASL Byte Array
++++++++++++++++
+
+Gremlin Server no longer supports accepting a byte array for the value passed to the "sasl" parameter in
+authentication messages. It only accepts a Base64 encoded string.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1603[TINKERPOP-1603]

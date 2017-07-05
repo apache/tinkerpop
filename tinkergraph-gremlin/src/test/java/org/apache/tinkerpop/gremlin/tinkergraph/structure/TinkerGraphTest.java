@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -351,7 +352,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldSerializeTinkerGraphToGraphSONWithTypes() throws Exception {
         final TinkerGraph graph = TinkerFactory.createModern();
-        final Mapper<ObjectMapper> mapper = graph.io(IoCore.graphson()).mapper().embedTypes(true).create();
+        final Mapper<ObjectMapper> mapper = graph.io(IoCore.graphson()).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create();
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             final GraphWriter writer = GraphSONWriter.build().mapper(mapper).create();
             writer.writeObject(out, graph);

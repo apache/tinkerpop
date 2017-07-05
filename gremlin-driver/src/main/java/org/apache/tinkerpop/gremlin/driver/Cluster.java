@@ -175,7 +175,6 @@ public final class Cluster {
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
-                .reconnectIntialDelay(settings.connectionPool.reconnectInitialDelay)
                 .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
                 .channelizer(settings.connectionPool.channelizer)
                 .maxContentLength(settings.connectionPool.maxContentLength)
@@ -380,13 +379,6 @@ public final class Cluster {
     }
 
     /**
-     * Gets time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
-     */
-    public int getReconnectIntialDelay() {
-        return manager.connectionPoolSettings.reconnectInitialDelay;
-    }
-
-    /**
      * Gets time in milliseconds to wait between retries when attempting to reconnect to a dead host.
      */
     public int getReconnectInterval() {
@@ -489,7 +481,6 @@ public final class Cluster {
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
-        private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
@@ -734,17 +725,6 @@ public final class Cluster {
         }
 
         /**
-         * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
-         *
-         * @deprecated As of release 3.2.3, the value of the initial delay is now the same as the {@link #reconnectInterval}.
-         */
-        @Deprecated
-        public Builder reconnectIntialDelay(final int initialDelay) {
-            this.reconnectInitialDelay = initialDelay;
-            return this;
-        }
-
-        /**
          * Time in milliseconds to wait between retries when attempting to reconnect to a dead host.
          */
         public Builder reconnectInterval(final int interval) {
@@ -893,7 +873,6 @@ public final class Cluster {
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForSessionClose = builder.maxWaitForSessionClose;
             connectionPoolSettings.maxContentLength = builder.maxContentLength;
-            connectionPoolSettings.reconnectInitialDelay = builder.reconnectInitialDelay;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;

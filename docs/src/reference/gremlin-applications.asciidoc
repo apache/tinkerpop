@@ -732,8 +732,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
 |connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
 |connectionPool.minSize |The minimum size of a connection pool for a host. |2
-|connectionPool.reconnectInitialDelay |The amount of time in milliseconds to wait before trying to reconnect to a dead host for the first time. |1000
-|connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. This interval occurs after the time specified by the `reconnectInitialDelay`. |1000
+|connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the `TrustManager` will be established with a self-signed certificate which is NOT suitable for production purposes. |_none_
 |hosts |The list of hosts that the driver will connect to. |localhost

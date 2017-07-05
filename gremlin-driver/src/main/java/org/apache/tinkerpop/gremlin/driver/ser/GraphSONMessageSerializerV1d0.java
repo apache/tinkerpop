@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessage
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         // already set to 1.0 in AbstractGraphSONMessageSerializerV1d0
         return builder.addCustomModule(new GremlinServerModule())
-                .embedTypes(false);
+                .typeInfo(TypeInfo.NO_TYPES);
     }
 
     @Override

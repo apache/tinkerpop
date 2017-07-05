@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
@@ -31,7 +30,6 @@ import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -57,13 +55,6 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
 
     protected ObjectMapper mapper;
 
-    /**
-     * @deprecated As of release 3.2.6, replaced by functionality provided by {@link AbstractMessageSerializer#TOKEN_IO_REGISTRIES}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1694">TINKERPOP-1694</a>
-     */
-    @Deprecated
-    public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
-
     protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
@@ -82,29 +73,8 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
 
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
-        final GraphSONMapper.Builder initialBuilder;
-        final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
-        if (graphToUseForMapper != null) {
-            if (null == graphs) throw new IllegalStateException(String.format(
-                    "No graphs have been provided to the serializer and therefore %s is not a valid configuration", TOKEN_USE_MAPPER_FROM_GRAPH));
-
-            final Graph g = graphs.get(graphToUseForMapper.toString());
-            if (null == g) throw new IllegalStateException(String.format(
-                    "There is no graph named [%s] configured to be used in the %s setting",
-                    graphToUseForMapper, TOKEN_USE_MAPPER_FROM_GRAPH));
-
-            // a graph was found so use the mapper it constructs.  this allows graphson to be auto-configured with any
-            // custom classes that the implementation allows for
-            initialBuilder = initBuilder(g.io(GraphSONIo.build()).mapper());
-        } else {
-            // no graph was supplied so just use the default - this will likely be the case when using a graph
-            // with no custom classes or a situation where the user needs complete control like when using two
-            // distinct implementations each with their own custom classes.
-            initialBuilder = initBuilder(null);
-        }
-
+        final GraphSONMapper.Builder initialBuilder = initBuilder(null);
         addIoRegistries(config, initialBuilder);
-
         mapper = configureBuilder(initialBuilder).create().createMapper();
     }
 

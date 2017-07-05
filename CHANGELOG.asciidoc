@@ -30,6 +30,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
 * Removed previously deprecated `TraversalScriptHelper` class.
+* `gremlin.sh` and `gremln.bat` no longer support the option to pass a script as an argument for execution mode without using the `-i` option.
 * Graphite and Ganglia are no longer packaged with the Gremlin Server distribution.
 * `TransactionException` is no longer a class of `AbstractTransaction` and it extends `RuntimeException`.
 * Included an ellipse on long property names that are truncated.
@@ -39,13 +40,19 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added "attachment requisite" `VertexProperty.element()` and `Property.element()` data in GraphSON serialization.
 * GraphSON 3.0 is now the default serialization format in TinkerGraph and Gremlin Server.
 * Established the GraphSON 3.0 format.
+* Changed `ServerGremlinExecutor` to not use generics since there really is no flexibility in the kind of `ScheduledExecutorService` that will be used.
+* Removed support for passing a byte array on the `sasl` parameter.
+* Removed previously deprecated `GraphSONMapper$Builder#embedTypes` option.
+* Removed previously deprecated `:remote config timeout max`.
+* Removed previously deprecated `ConnectionPoolSettings.sessionId` and `ConnectionPoolSettings.optionalSessionId()`.
+* Removed previously deprecated `reconnectInitialDelay` setting from the Java driver.
+* Removed previously deprecated `useMapperFromGraph` option.
 * Removed previously deprecated `Io.Builder#registry(IoRegistry)` method.
 * Removed previously deprecated `GryoMessageSerializerV1d0(GryoMapper)` constructor.
 * Removed previously deprecated `TinkerIoRegistry`.
 * Removed previously deprecated `getInstance()` methods on all TinkerPop classes.
 * Removed previously deprecated `VertexPropertyFeatures.supportsAddProperty()`.
 * Removed previously deprecated TinkerGraph configuration member variables.
-* Changed `ServerGremlinExecutor` to not use generics since there really is no flexibility in the kind of `ScheduledExecutorService` that will be used.
 * Removed previously deprecated `Transaction.submit(Function)`.
 * Removed previously deprecated `OpSelectorHandler.errorMeter` and `AbstractEvalOpProcessor.errorMeter` fields.
 * Removed previously deprecated `AbstractEvalOpProcessor.validBindingName` field.

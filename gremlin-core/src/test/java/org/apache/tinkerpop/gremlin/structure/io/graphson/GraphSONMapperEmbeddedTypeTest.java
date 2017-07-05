@@ -57,7 +57,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"v1", GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(true).create().createMapper()},
+                {"v1", GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
                         .addCustomModule(GraphSONXModuleV2d0.build().create(false))
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},

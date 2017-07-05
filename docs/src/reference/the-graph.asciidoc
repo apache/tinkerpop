@@ -582,12 +582,12 @@ GraphSON 1.0:
 graph = TinkerFactory.createModern()
 g = graph.traversal()
 f = new ByteArrayOutputStream()
-mapper = graph.io(graphson()).mapper().embedTypes(true).create()
+mapper = graph.io(graphson()).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()
 graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
 ----
 
-In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
+In the above code, the `typeInfo` option is set to `true` and the output below shows the difference in the output:
 
 [source,json]
 ----

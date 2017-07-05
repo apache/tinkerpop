@@ -199,9 +199,6 @@ final class Settings {
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
 
-            if (connectionPoolConf.containsKey("reconnectInitialDelay"))
-                cpSettings.reconnectInitialDelay = connectionPoolConf.getInt("reconnectInitialDelay");
-
             if (connectionPoolConf.containsKey("resultIterationBatchSize"))
                 cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
 
@@ -304,15 +301,9 @@ final class Settings {
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is
-         * 1000. This interval occurs after the time specified by the {@link #reconnectInitialDelay}.
+         * 1000.
          */
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
-
-        /**
-         * The amount of time in milliseconds to wait before trying to reconnect to a dead host for the first time.
-         * The default value is 1000.
-         */
-        public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
 
         /**
          * The override value for the size of the result batches to be returned from the server. This value is set to
@@ -326,22 +317,6 @@ final class Settings {
          * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
          */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
-
-        /**
-         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
-         * as the way to establish sessions
-         */
-        @Deprecated
-        public String sessionId = null;
-
-        /**
-         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
-         * as the way to establish sessions
-         */
-        @Deprecated
-        public Optional<String> optionalSessionId() {
-            return Optional.ofNullable(sessionId);
-        }
     }
 
     public static class SerializerSettings {

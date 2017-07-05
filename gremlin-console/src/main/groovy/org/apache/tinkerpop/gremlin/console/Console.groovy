@@ -446,14 +446,8 @@ class Console {
             System.exit(0)
         }
 
-        // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
-        // feature can be removed. ultimately this should be removed when a breaking change can go in
-        if (args.length == 1 && !args[0].startsWith("-")) {
-            new Console(io, [[args[0]]], true)
-        } else {
-            def scriptAndArgs = parseArgs(options.e ? "-e" : "-i", args, cli)
-            new Console(io, scriptAndArgs, !options.e)
-        }
+        def scriptAndArgs = parseArgs(options.e ? "-e" : "-i", args, cli)
+        new Console(io, scriptAndArgs, !options.e)
     }
 
     /**

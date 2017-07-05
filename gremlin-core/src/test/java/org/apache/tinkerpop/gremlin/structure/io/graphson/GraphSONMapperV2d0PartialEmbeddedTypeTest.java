@@ -148,7 +148,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
     public void shouldHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
-                .embedTypes(true)
+                .typeInfo(TypeInfo.PARTIAL_TYPES)
                 .create()
                 .createMapper();
 
@@ -165,7 +165,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
     public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
-                .embedTypes(false)
+                .typeInfo(TypeInfo.NO_TYPES)
                 .create()
                 .createMapper();
 

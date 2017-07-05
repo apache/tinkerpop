@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * String constants used in gremlin-driver and gremlin-server.
  *
@@ -36,36 +33,6 @@ public final class Tokens {
     public static final String OPS_GATHER = "gather";
     public static final String OPS_KEYS = "keys";
     public static final String OPS_CLOSE = "close";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_SHOW = "show";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_IMPORT = "import";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_RESET = "reset";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_USE = "use";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_VERSION = "version";
 
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
@@ -88,65 +55,6 @@ public final class Tokens {
      */
     @Deprecated
     public static final String ARGS_REBINDINGS = "rebindings";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    public static final String ARGS_COORDINATES = "coordinates";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_COORDINATES_GROUP = "group";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_COORDINATES_ARTIFACT = "artifact";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_COORDINATES_VERSION = "version";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_IMPORTS = "imports";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_INFO_TYPE_DEPENDENCIES = "dependencies";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    public static final String ARGS_INFO_TYPE = "infoType";
-
-    /**
-     * @deprecated As of release 3.1.1-incubating, replaced by {@link #ARGS_INFO_TYPE_DEPENDENCIES}
-     */
-    @Deprecated
-    public static final String ARGS_INFO_TYPE_DEPDENENCIES = "dependencies";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String ARGS_INFO_TYPE_IMPORTS = "imports";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPENDENCIES,
-            ARGS_INFO_TYPE_IMPORTS);
 
     public static final String VAL_AGGREGATE_TO_BULKSET = "bulkset";
     public static final String VAL_AGGREGATE_TO_LIST = "list";
