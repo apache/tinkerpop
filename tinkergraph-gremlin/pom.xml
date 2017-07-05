@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.1.8-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>tinkergraph-gremlin</artifactId>
     <name>Apache TinkerPop :: TinkerGraph Gremlin</name>
@@ -31,19 +31,19 @@ limitations under the License.
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- provided scope for gremlin-groovy because it is only used for purpose of scriptengine plugin in
-             the console and server - in which case that jar should already be present -->
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-groovy</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-groovy-test</artifactId>
+            <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -72,7 +72,7 @@ limitations under the License.
             </activation>
 
             <properties>
-                <io.tmp.dir>${project.build.directory}/tinkerpop-io</io.tmp.dir>
+                <io.tmp.dir>${project.build.directory}/test-case-data/TinkerGraphTest/tinkerpop-io</io.tmp.dir>
             </properties>
 
             <build>
@@ -80,7 +80,6 @@ limitations under the License.
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.17</version>
                         <configuration>
                             <includes>
                                 <include>**/IoDataGenerationTest.java</include>
@@ -111,7 +110,7 @@ limitations under the License.
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <excludes>
-                                                <exclude>**/*-normalized.json</exclude>
+                                                <exclude>**/*-normalized*.json</exclude>
                                                 <exclude>**/sample.kryo</exclude>
                                             </excludes>
                                         </resource>

@@ -19,9 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
@@ -31,16 +30,16 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
+public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing {
 
-    private Iterator<Traverser<E>> previousIterator = EmptyIterator.instance();
+    private Iterator<Traverser.Admin<E>> previousIterator = EmptyIterator.instance();
 
     public ComputerAwareStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Traverser<E> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         while (true) {
             if (this.previousIterator.hasNext())
                 return this.previousIterator.next();
@@ -49,8 +48,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     }
 
     @Override
-    public void onEngine(final TraversalEngine engine) {
-        this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+    public void onGraphComputer() {
+        this.traverserStepIdAndLabelsSetByChild = true;
     }
 
     @Override
@@ -60,24 +59,25 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         return clone;
     }
 
-    protected abstract Iterator<Traverser<E>> standardAlgorithm() throws NoSuchElementException;
+    protected abstract Iterator<Traverser.Admin<E>> standardAlgorithm() throws NoSuchElementException;
 
-    protected abstract Iterator<Traverser<E>> computerAlgorithm() throws NoSuchElementException;
+    protected abstract Iterator<Traverser.Admin<E>> computerAlgorithm() throws NoSuchElementException;
 
     //////
 
-    public static class EndStep<S> extends AbstractStep<S, S> implements EngineDependent {
+    public static class EndStep<S> extends AbstractStep<S, S> implements GraphComputing {
 
         public EndStep(final Traversal.Admin traversal) {
             super(traversal);
         }
 
         @Override
-        protected Traverser<S> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
             if (this.traverserStepIdAndLabelsSetByChild) {
-                start.setStepId(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getNextStep().getId());
-                start.path().extend(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getLabels());
+                final ComputerAwareStep<?, ?> step = (ComputerAwareStep<?, ?>) this.getTraversal().getParent();
+                start.setStepId(step.getNextStep().getId());
+                start.addLabels(step.getLabels());
             }
             return start;
         }
@@ -88,8 +88,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         }
 
         @Override
-        public void onEngine(final TraversalEngine engine) {
-            this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+        public void onGraphComputer() {
+            this.traverserStepIdAndLabelsSetByChild = true;
         }
     }
 

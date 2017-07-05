@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -38,12 +37,11 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRank() throws Exception {
-        if (g.getGraphComputer().get().features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
-            final ComputerResult result = graph.compute(g.getGraphComputer().get().getClass()).program(PageRankVertexProgram.build().create(graph)).submit().get();
+        if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
+            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).program(PageRankVertexProgram.build().create(graph)).submit().get();
             result.graph().traversal().V().forEachRemaining(v -> {
-                assertEquals(4, v.keys().size()); // name, age/lang, edgeCount, pageRank
+                assertEquals(3, v.keys().size()); // name, age/lang, pageRank
                 assertTrue(v.keys().contains("name"));
-                assertTrue(v.keys().contains(PageRankVertexProgram.EDGE_COUNT));
                 assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
                 assertEquals(1, IteratorUtils.count(v.values("name")));
                 assertEquals(1, IteratorUtils.count(v.values(PageRankVertexProgram.PAGE_RANK)));

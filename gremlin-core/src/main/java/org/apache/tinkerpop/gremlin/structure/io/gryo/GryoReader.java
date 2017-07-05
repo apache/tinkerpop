@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -45,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -60,6 +63,7 @@ import java.util.function.Function;
  */
 public final class GryoReader implements GraphReader {
     private final Kryo kryo;
+    private final Map<GraphFilter, StarGraphGryoSerializer> graphFilterCache = new HashMap<>();
 
     private final long batchSize;
 
@@ -99,6 +103,10 @@ public final class GryoReader implements GraphReader {
             // StarAdjacentVertex whose equality should match StarVertex.
             final Vertex cachedOutV = cache.get(e.outVertex());
             final Vertex cachedInV = cache.get(e.inVertex());
+
+            if (null == cachedOutV) throw new IllegalStateException(String.format("Could not find outV with id [%s] to create edge with id [%s]", e.outVertex().id(), e.id()));
+            if (null == cachedInV) throw new IllegalStateException(String.format("Could not find inV with id [%s] to create edge with id [%s]", e.inVertex().id(), e.id()));
+
             final Edge newEdge = edgeFeatures.willAllowId(e.id()) ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
             e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -106,6 +114,21 @@ public final class GryoReader implements GraphReader {
         }));
 
         if (supportsTx) graphToWriteTo.tx().commit();
+    }
+
+    @Override
+    public Optional<Vertex> readVertex(final InputStream inputStream, final GraphFilter graphFilter) throws IOException {
+        StarGraphGryoSerializer serializer = this.graphFilterCache.get(graphFilter);
+        if (null == serializer) {
+            serializer = StarGraphGryoSerializer.withGraphFilter(graphFilter);
+            this.graphFilterCache.put(graphFilter, serializer);
+        }
+        final Input input = new Input(inputStream);
+        this.readHeader(input);
+        final StarGraph starGraph = this.kryo.readObject(input, StarGraph.class, serializer);
+        // read the terminator
+        this.kryo.readClassAndObject(input);
+        return Optional.ofNullable(starGraph == null ? null : starGraph.getStarVertex());
     }
 
     /**

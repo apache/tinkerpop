@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -49,7 +50,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
@@ -93,13 +93,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * Handler that processes HTTP requests to the REST Gremlin endpoint.
+ * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private static final Charset UTF8 = Charset.forName("UTF-8");
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
@@ -188,6 +189,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
                         requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
+                if (settings.authentication.enableAuditLog) {
+                    String address = ctx.channel().remoteAddress().toString();
+                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                    auditLogger.info("User with address {} requested: {}", address, requestArguments.getValue0());
+                }
                 final ChannelPromise promise = ctx.channel().newPromise();
                 final AtomicReference<Object> resultHolder = new AtomicReference<>();
                 promise.addListener(future -> {
@@ -252,9 +258,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             }
                         }));
 
-                evalFuture.exceptionally(t -> {
-                    sendError(ctx, INTERNAL_SERVER_ERROR,
-                            String.format("Error encountered evaluating script: %s", requestArguments.getValue0()), Optional.of(t));
+                evalFuture.exceptionally(t -> {		
+					if (t.getMessage() != null)
+						sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t));
+					else
+						sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
+									 , Optional.of(t));			
                     promise.setFailure(t);
                     return null;
                 });
@@ -287,16 +296,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (!rebindingMap.isEmpty()) {
             for (Map.Entry<String, String> kv : rebindingMap.entrySet()) {
                 boolean found = false;
-                final Map<String, Graph> graphs = this.graphManager.getGraphs();
-                if (graphs.containsKey(kv.getValue())) {
-                    bindings.put(kv.getKey(), graphs.get(kv.getValue()));
+                final Graph g = this.graphManager.getGraph(kv.getValue());
+                if (null != g) {
+                    bindings.put(kv.getKey(), g);
                     found = true;
                 }
 
                 if (!found) {
-                    final Map<String, TraversalSource> traversalSources = this.graphManager.getTraversalSources();
-                    if (traversalSources.containsKey(kv.getValue())) {
-                        bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
+                    final TraversalSource ts = this.graphManager.getTraversalSource(kv.getValue());
+                    if (null != ts) {
+                        bindings.put(kv.getKey(), ts);
                         found = true;
                     }
                 }
@@ -454,6 +463,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         errorMeter.mark();
         final ObjectNode node = mapper.createObjectNode();
         node.put("message", message);
+		if (t.isPresent()) {
+            // "Exception-Class" needs to go away - didn't realize it was named that way during review for some reason.
+            // replaced with the same method for exception reporting as is used with websocket/nio protocol
+			node.put("Exception-Class", t.get().getClass().getName());
+            final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
+            ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
+            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(t.get()));
+		}
+		
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -45,7 +46,8 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Parameterizing {
+public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
+        implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Parameterizing, Scoping {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
@@ -53,15 +55,18 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);
-        this.parameters.set(T.key, keyObject);
-        this.parameters.set(T.value, valueObject);
+        this.parameters.set(this, T.key, keyObject, T.value, valueObject);
         this.cardinality = cardinality;
-        this.parameters.integrateTraversals(this);
     }
 
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
     }
 
     @Override
@@ -71,8 +76,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override
@@ -105,7 +109,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
             else if (element instanceof VertexProperty)
                 evt = new Event.VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) element, true),
                         newProperty ?
-                                new DetachedProperty(key, null):
+                                new DetachedProperty(key, null) :
                                 DetachedFactory.detach(currentProperty), value);
             else
                 throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), element));
@@ -136,6 +140,12 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
     public int hashCode() {
         final int hash = super.hashCode() ^ this.parameters.hashCode();
         return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override

@@ -41,7 +41,8 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     public LP_O_OB_S_SE_SL_Traverser(final T t, final Step<T, ?> step) {
         super(t, step);
         this.path = ImmutablePath.make();
-        if (!step.getLabels().isEmpty()) this.path = this.path.extend(t, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) this.path = this.path.extend(t, labels);
     }
 
     /////////////////
@@ -66,7 +67,8 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         final LP_O_OB_S_SE_SL_Traverser<R> clone = (LP_O_OB_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.path = clone.path.clone();
-        if (!step.getLabels().isEmpty()) clone.path = clone.path.extend(r, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) clone.path = clone.path.extend(r, labels);
         return clone;
     }
 
@@ -80,7 +82,7 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     @Override
     public void addLabels(final Set<String> labels) {
         if (!labels.isEmpty())
-            this.path = this.path.size() == 0 || !this.path.get(this.path.size() - 1).equals(this.t) ?
+            this.path = this.path.isEmpty() || !this.t.equals(this.path.head()) ?
                     this.path.extend(this.t, labels) :
                     this.path.extend(labels);
     }
@@ -93,10 +95,10 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return (object instanceof LP_O_OB_S_SE_SL_Traverser)
-                && ((LP_O_OB_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((LP_O_OB_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((LP_O_OB_S_SE_SL_Traverser) object).loops() == this.loops()
+                && ((LP_O_OB_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((LP_O_OB_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((LP_O_OB_S_SE_SL_Traverser) object).loops == this.loops
                 && (null == this.sack || null != this.sideEffects.getSackMerger())
-                && ((LP_O_OB_S_SE_SL_Traverser) object).path().popEquals(Pop.last, this.path); // this should be Pop.all?
+                && ((LP_O_OB_S_SE_SL_Traverser) object).path.popEquals(Pop.last, this.path); // this should be Pop.all?
     }
 }

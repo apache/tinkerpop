@@ -19,10 +19,11 @@
 package org.apache.tinkerpop.gremlin.server.op.session;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
@@ -30,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,6 +42,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * Defines a "session" for the {@link SessionOpProcessor} which preserves state between requests made to Gremlin
+ * Server. Since transactions are bound to a single thread the "session" maintains its own thread to process Gremlin
+ * statements so that each request can be executed within it to preserve the transaction state from one request to
+ * the next.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Session {
@@ -52,6 +57,7 @@ public class Session {
     private final String session;
     private final ScheduledExecutorService scheduledExecutorService;
     private final long configuredSessionTimeout;
+    private final long configuredPerGraphCloseTimeout;
 
     private AtomicBoolean killing = new AtomicBoolean(false);
     private AtomicReference<ScheduledFuture> kill = new AtomicReference<>();
@@ -82,12 +88,16 @@ public class Session {
         this.scheduledExecutorService = context.getScheduledExecutorService();
         this.sessions = sessions;
 
-        final Settings.ProcessorSettings processorSettings = this.settings.processors.stream()
-                .filter(p -> p.className.equals(SessionOpProcessor.class.getCanonicalName()))
-                .findAny().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
-        this.configuredSessionTimeout = Long.parseLong(processorSettings.config.get(SessionOpProcessor.CONFIG_SESSION_TIMEOUT).toString());
+        final Settings.ProcessorSettings processorSettings = this.settings.optionalProcessor(SessionOpProcessor.class).
+                orElse(SessionOpProcessor.DEFAULT_SETTINGS);
+        this.configuredSessionTimeout = Long.parseLong(processorSettings.config.getOrDefault(
+                SessionOpProcessor.CONFIG_SESSION_TIMEOUT, SessionOpProcessor.DEFAULT_SESSION_TIMEOUT).toString());
+        this.configuredPerGraphCloseTimeout = Long.parseLong(processorSettings.config.getOrDefault(
+                SessionOpProcessor.CONFIG_PER_GRAPH_CLOSE_TIMEOUT, SessionOpProcessor.DEFAULT_PER_GRAPH_CLOSE_TIMEOUT).toString());
 
         this.gremlinExecutor = initializeGremlinExecutor().create();
+
+        settings.scriptEngines.keySet().forEach(this::registerMetrics);
     }
 
     public GremlinExecutor getGremlinExecutor() {
@@ -119,7 +129,7 @@ public class Session {
                 return this.scheduledExecutorService.schedule(() -> {
                         logger.info("Session {} has been idle for more than {} milliseconds - preparing to close",
                                 this.session, this.configuredSessionTimeout);
-                        kill();
+                        kill(false);
                     }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS);
             }
 
@@ -128,18 +138,22 @@ public class Session {
     }
 
     /**
-     * Stops the session with call to {@link #kill()} but also stops the session expiration call which ensures that
-     * the session is only killed once.
+     * Stops the session with call to {@link #kill(boolean)} but also stops the session expiration call which ensures
+     * that the session is only killed once. See {@link #kill(boolean)} for information on how what "forcing" the
+     * session kill will mean.
      */
-    public void manualKill() {
+    public void manualKill(final boolean force) {
         kill.get().cancel(true);
-        kill();
+        kill(force);
     }
 
     /**
-     * Kills the session and rollback any uncommitted changes on transactional graphs.
+     * Kills the session and rollback any uncommitted changes on transactional graphs. When "force" closed, the
+     * session won't bother to try to submit transaction close commands. It will be up to the underlying graph
+     * implementation to determine how it will clean up orphaned transactions. The force will try to cancel scheduled
+     * jobs and interrupt any currently running ones. Interruption is not guaranteed, but an attempt will be made.
      */
-    public synchronized void kill() {
+    public synchronized void kill(final boolean force) {
         killing.set(true);
 
         // if the session has already been removed then there's no need to do this process again.  it's possible that
@@ -147,29 +161,40 @@ public class Session {
         // kill() from being called more than once
         if (!sessions.containsKey(session)) return;
 
-        // when the session is killed open transaction should be rolled back
-        graphManager.getGraphs().entrySet().forEach(kv -> {
-            final Graph g = kv.getValue();
-            if (g.features().graph().supportsTransactions()) {
-                // have to execute the rollback in the executor because the transaction is associated with
-                // that thread of execution from this session
-                try {
-                    executor.submit(() -> {
-                        if (g.tx().isOpen()) {
-                            logger.info("Rolling back open transactions on {} before killing session: {}", kv.getKey(), session);
-                            g.tx().rollback();
-                        }
-                    }).get(30000, TimeUnit.MILLISECONDS);
-                } catch (Exception ex) {
-                    logger.warn("An error occurred while attempting rollback when closing session: " + session, ex);
+        if (!force) {
+            // when the session is killed open transaction should be rolled back
+            graphManager.getGraphNames().forEach(gName -> {
+                final Graph g = graphManager.getGraph(gName);
+                if (g.features().graph().supportsTransactions()) {
+                    // have to execute the rollback in the executor because the transaction is associated with
+                    // that thread of execution from this session
+                    try {
+                        executor.submit(() -> {
+                            if (g.tx().isOpen()) {
+                                logger.info("Rolling back open transactions on {} before killing session: {}", gName, session);
+                                g.tx().rollback();
+                            }
+                        }).get(configuredPerGraphCloseTimeout, TimeUnit.MILLISECONDS);
+                    } catch (Exception ex) {
+                        logger.warn(String.format("An error occurred while attempting rollback on %s when closing session: %s", gName, session), ex);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            logger.info("Skipped attempt to close open graph transactions on {} - close was forced", session);
+        }
 
-        // prevent any additional requests from processing now that the mass rollback has been completed
+        // prevent any additional requests from processing. if the kill was not "forced" then jobs were scheduled to
+        // try to rollback open transactions. those jobs either timed-out or completed successfully. either way, no
+        // additional jobs will be allowed, running jobs will be cancelled (if possible) and any scheduled jobs will
+        // be cancelled
         executor.shutdownNow();
 
         sessions.remove(session);
+
+        // once a session is dead release the gauges in the registry for it
+        MetricManager.INSTANCE.getRegistry().removeMatching((s, metric) -> s.contains(session));
+
         logger.info("Session {} closed", session);
     }
 
@@ -185,19 +210,24 @@ public class Session {
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
-                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init - not really necessary here because
-            // lifecycle hooks are not executed per session, but there should be some consistency .... i guess
-            v.imports.add(LifeCycleHook.class.getCanonicalName());
-            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
-            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+            // use plugins if they are present
+            if (!v.plugins.isEmpty()) {
+                // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
+                // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
+                gremlinExecutorBuilder.addPlugins(k, v.plugins);
+            }
         });
 
         return gremlinExecutorBuilder;
+    }
+
+    private void registerMetrics(final String engineName) {
+        final GremlinScriptEngine engine = gremlinExecutor.getScriptEngineManager().getEngineByName(engineName);
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "session", session, "class-cache");
     }
 }

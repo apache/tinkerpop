@@ -1,0 +1,262 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+Appendix
+========
+
+Many of the recipes are based on questions and answers provided on the
+link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users mailing list] or on
+link:http://stackoverflow.com/questions/tagged/gremlin[StackOverflow]. This section contains those traversals from
+those sources that do not easily fit any particular pattern (i.e. a recipe), but are nonetheless interesting and thus
+remain good tools for learning Gremlin.
+
+[[appendix-a]]
+_For each person in a "follows" graph, determine the number of followers and list their names._
+
+[gremlin-groovy]
+----
+g.addV().property('name','marko').as('marko').
+  addV().property('name','josh').as('josh').
+  addV().property('name','daniel').as('daniel').
+  addV().property('name','matthias').as('matthias').
+  addE('follows').from('josh').to('marko').
+  addE('follows').from('matthias').to('josh').
+  addE('follows').from('daniel').to('josh').
+  addE('follows').from('daniel').to('marko').iterate()
+g.V().as('p').
+  map(__.in('follows').values('name').fold()).
+  project('person','followers','numFollowers').
+    by(select('p').by('name')).
+    by().
+    by(count(local))
+----
+
+It might also be alternatively written as:
+
+[gremlin-groovy,existing]
+----
+g.V().group().
+        by('name').
+        by(project('numFollowers','followers').
+             by(__.in('follows').count()).
+             by(__.in('follows').values('name').fold())).next()
+----
+
+or even:
+
+[gremlin-groovy,existing]
+----
+g.V().group().
+        by('name').
+        by(__.in('follows').values('name').fold().
+            project('numFollowers','followers').
+              by(count(local)).
+              by()).next()
+----
+
+[[appendix-b]]
+_In the "modern" graph, show each person, the software they worked on and the co-worker count for the software and
+the names of those co-workers._
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").as("p").
+  out("created").as("s").
+  map(__.in("created").
+    where(neq("p")).values("name").fold()).
+  group().by(select("p").by("name")).
+    by(group().by(select("s").by("name")).
+    by(project("numCoworkers","coworkers").
+         by(count(local)).by())).next()
+----
+
+[[appendix-c]]
+_Assuming a graph of students, classes and times, detect students who have a conflicting schedule._
+
+[gremlin-groovy]
+----
+g.addV("student").property("name", "Pete").as("s1").
+  addV("student").property("name", "Joe").as("s2").
+  addV("class").property("name", "Java's GC").as("c1").
+  addV("class").property("name", "FP Principles").as("c2").
+  addV("class").property("name", "Memory Management in C").as("c3").
+  addV("class").property("name", "Memory Management in C++").as("c4").
+  addV("timeslot").property("date", "11/25/2016").property("fromTime", "10:00").property("toTime", "11:00").as("t1").
+  addV("timeslot").property("date", "11/25/2016").property("fromTime", "11:00").property("toTime", "12:00").as("t2").
+  addE("attends").from("s1").to("c1").
+  addE("attends").from("s1").to("c2").
+  addE("attends").from("s1").to("c3").
+  addE("attends").from("s1").to("c4").
+  addE("attends").from("s2").to("c2").
+  addE("attends").from("s2").to("c3").
+  addE("allocated").from("c1").to("t1").
+  addE("allocated").from("c1").to("t2").
+  addE("allocated").from("c2").to("t1").
+  addE("allocated").from("c3").to("t2").
+  addE("allocated").from("c4").to("t2").iterate()
+g.V().hasLabel("student").as("s").
+  out("attends").as("c").
+  out("allocated").as("t").
+  select("s").
+  out("attends").
+  where(neq("c")).
+  out("allocated").
+  where(eq("t")).
+  group().
+    by(select("s").by("name")).
+    by(group().by(select("t").by(valueMap("fromTime","toTime"))).
+               by(select("c").dedup().values("name").fold())).next()
+----
+
+[[appendix-d]]
+_In the "modern" graph, with a duplicate edge added, find the vertex pairs that have more than one edge between them._
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
+g.V(1).outE("created")
+g.V().as("a").
+  out().as("b").
+  groupCount().
+    by(select("a","b")).
+  unfold().
+  filter(select(values).is(gt(1))).
+  select(keys)
+----
+
+The following example assumes that the edges point in the `OUT` direction. Assuming undirected edges:
+
+[gremlin-groovy,modern]
+----
+g.V().where(without("x")).as("a").
+  outE().as("e").inV().as("b").
+  filter(bothE().where(neq("e")).otherV().where(eq("a"))).store("x").
+  select("a","b").dedup()
+----
+
+[[appendix-e]]
+_In the "crew" graph, find vertices that match on a complete set of multi-properties._
+
+[gremlin-groovy,theCrew]
+----
+places = ["centreville","dulles"];[]  // will not match as "purcellville" is missing
+g.V().not(has("location", without(places))).
+  where(values("location").is(within(places)).count().is(places.size())).
+  valueMap()
+places = ["centreville","dulles","purcellville"];[]
+g.V().not(has("location", without(places))).
+  where(values("location").is(within(places)).count().is(places.size())).
+  valueMap()
+----
+
+[[appendix-f]]
+_Methods for performing some basic mathematical operations in the "modern" graph._
+
+[gremlin-groovy,modern]
+----
+g.V().values("age").sum() // sum all ages
+g.V().values("age").fold(1, mult) // multiply all ages
+g.withSack(0).V().values("age").sack(sum).sack(sum).by(constant(-1)).sack() // subtract 1
+g.withSack(0).V().values("age").sack(sum).sack(sum).sack() // multiply by 2 (simple)
+g.withSack(0).V().values("age").sack(sum).sack(mult).by(constant(2)).sack() // multiply by 2 (generally useful for multiplications by n)
+----
+
+[[appendix-g]]
+_Dropping a vertex, as well as the vertices related to that dropped vertex that are connected by a "knows" edge in the
+"modern" graph_
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').outE()
+g.V().has('name','marko').sideEffect(out('knows').drop()).drop()
+g.V().has('name','marko')
+g.V(2,4,3)
+----
+
+[[appendix-h]]
+_For the specified graph, find all neighbor vertices connected to "A" as filtered by datetime, those neighbor vertices
+that don't have datetime vertices, and those neighbor vertices that have the label "dimon"._
+
+[gremlin-groovy]
+----
+g.addV().property("name", "A").as("a").
+  addV().property("name", "B").as("b").
+  addV().property("name", "C").as("c").
+  addV().property("name", "D").as("d").
+  addV().property("name", "E").as("e").
+  addV("dimon").property("name", "F").as("f").
+  addV().property("name", "G").as("g").property("date", 20160818).
+  addV().property("name", "H").as("h").property("date", 20160817).
+  addE("rel").from("a").to("b").
+  addE("rel").from("a").to("c").
+  addE("rel").from("a").to("d").
+  addE("rel").from("a").to("e").
+  addE("rel").from("c").to("f").
+  addE("occured_at").from("d").to("g").
+  addE("occured_at").from("e").to("h").iterate()
+// D and E have a valid datetime
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", gte(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// only E has a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", lte(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// only D has a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", gt(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+// neither D nor E have a valid date
+g.V().has("name", "A").out("rel").
+  union(where(out("occured_at").has("date", lt(20160817))),
+        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  valueMap()
+----
+
+[[appendix-i]]
+_Use element labels in a `select`._
+
+[gremlin-groovy,modern]
+----
+g.V(1).as("a").
+  both().
+  map(group().by(label).by(unfold())).as("b").
+  select("a","b").
+  map(union(project("a").by(select("a")), select("b")).
+  unfold().
+  group().
+    by(select(keys)).
+    by(select(values)))
+g.V().as("a").
+  both().
+  map(group().by(label).by(unfold())).as("b").
+  select("a","b").
+  group().
+    by(select("a")).
+    by(select("b").
+         group().
+           by(select(keys)).
+           by(select(values).fold())).
+    unfold().
+    map(union(select(keys).project("a").by(), select(values)).
+    unfold().
+    group().
+      by(select(keys).unfold()).
+      by(select(values).unfold().unfold().fold()))
+----

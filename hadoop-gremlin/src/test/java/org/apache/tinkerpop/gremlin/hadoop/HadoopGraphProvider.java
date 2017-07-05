@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,11 +53,11 @@ import java.util.Set;
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
-    private static final Random RANDOM = new Random();
+    protected static final Random RANDOM = new Random();
     private boolean graphSONInput = false;
 
     public static Map<String, String> PATHS = new HashMap<>();
-    private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
+    public static final Set<Class> IMPLEMENTATION = Collections.unmodifiableSet(new HashSet<Class>() {{
         add(HadoopEdge.class);
         add(HadoopElement.class);
         add(HadoopGraph.class);
@@ -70,7 +71,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         add(ComputerGraph.ComputerVertexProperty.class);
         add(ComputerGraph.ComputerAdjacentVertex.class);
         add(ComputerGraph.ComputerProperty.class);
-    }};
+    }});
 
     static {
         try {
@@ -84,10 +85,10 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             }
 
             final List<String> graphsonResources = Arrays.asList(
-                    "tinkerpop-modern.json",
-                    "grateful-dead.json",
-                    "tinkerpop-classic.json",
-                    "tinkerpop-crew.json");
+                    "tinkerpop-modern-v2d0-typed.json",
+                    "grateful-dead-v2d0-typed.json",
+                    "tinkerpop-classic-v2d0-typed.json",
+                    "tinkerpop-crew-v2d0-typed.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
@@ -112,8 +113,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         this.graphSONInput = RANDOM.nextBoolean();
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, HadoopGraph.class.getName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_HADOOP_GRAPH_READER, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
@@ -136,16 +137,16 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
-        final String type = this.graphSONInput ? "json" : "kryo";
+        final String type = this.graphSONInput ? "-v2d0-typed.json" : ".kryo";
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew" + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

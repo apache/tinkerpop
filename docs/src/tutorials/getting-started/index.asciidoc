@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500]
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+
+*x.y.z*
 
 Getting Started
 ---------------
@@ -491,7 +493,7 @@ graph.createIndex('userId', Vertex.class) <1>
 g = graph.traversal()
 
 getOrCreate = { id ->
-  g.V().has('userId', id).tryNext().orElseGet{ g.addV('userId', id).next() }
+  g.V().has('userId', id).tryNext().orElseGet{ g.addV().property('userId', id).next() }
 }
 
 new File('wiki-Vote.txt').eachLine {
@@ -526,7 +528,7 @@ Gremlin Server
 
 image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
-this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_rest[REST]
+this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_http[HTTP]
 and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[WebSocket], which allow a request
 containing a Gremlin script to be processed with results returned.
 
@@ -535,7 +537,7 @@ containing a Gremlin script to be processed with results returned.
 $ curl -L -O https://www.apache.org/dist/tinkerpop/x.y.z/apache-tinkerpop-gremlin-server-x.y.z-bin.zip
 $ unzip apache-tinkerpop-gremlin-server-x.y.z-bin.zip
 $ cd apache-tinkerpop-gremlin-server-x.y.z
-$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+$ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)

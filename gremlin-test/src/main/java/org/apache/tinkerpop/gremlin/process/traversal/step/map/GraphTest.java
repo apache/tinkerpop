@@ -52,6 +52,8 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX();
 
+    public abstract Traversal<Vertex, String> get_g_V_outXknowsX_V_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_V_valuesXnameX() {
@@ -62,7 +64,6 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name();
         printTraversalForm(traversal);
@@ -71,7 +72,6 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX() {
         final Traversal<Vertex, Edge> traversal = get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX();
@@ -87,11 +87,24 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
         assertEquals(8, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXknowsX_V_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_outXknowsX_V_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "marko", "josh", "josh", "vadas", "vadas", "peter", "peter", "lop", "lop", "ripple", "ripple"), traversal);
+    }
+
     public static class Traversals extends GraphTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_V_valuesXnameX(final Object v1Id) {
             return g.V(v1Id).V().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_V_name() {
+            return g.V().out("knows").V().values("name");
         }
 
         @Override

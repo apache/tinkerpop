@@ -1,0 +1,711 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.tinkerpop</groupId>
+        <artifactId>tinkerpop</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>gremlin-python</artifactId>
+    <name>Apache TinkerPop :: Gremlin Python</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.python</groupId>
+            <artifactId>jython-standalone</artifactId>
+            <version>2.7.1b2</version>
+        </dependency>
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>tinkergraph-gremlin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <properties>
+        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
+        <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+    </properties>
+    <build>
+        <directory>${basedir}/target</directory>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources
+                </directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/resources
+                </directory>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesets>
+                        <!-- SOURCE DIRECTORIES -->
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/driver</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/process</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/structure</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/structure/io</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <!-- TEST DIRECTORIES -->
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/driver</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/process</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/structure</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/structure/io</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- This default profile works around the issue where the glv-python profile which is expected to run all tests
+             can't override the exclusions defined below. -->
+        <profile>
+            <id>glv-python-standard</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- excludes python related tests that require python itself installed on the system - run with the
+                         python profile if glVPython is present -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <python.home>${project.build.outputDirectory}</python.home>
+                            </systemPropertyVariables>
+                            <excludes>
+                                <exclude>**/jsr223/Python*Test.java</exclude>
+                                <exclude>**/graphson/GraphSON*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- activates the building of python components and requires that python be installed on the system -->
+        <profile>
+            <id>glv-python</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.glv</exists>
+                </file>
+            </activation>
+            <build>
+
+                <!-- don't exclude any tests as python is assumed to be installed on this system -->
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <python.home>${project.build.outputDirectory}</python.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.sf.mavenjython</groupId>
+                        <artifactId>jython-compile-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>jython</goal>
+                                </goals>
+                                <configuration>
+                                    <libraries>
+                                        <param>aenum==1.4.5</param>
+                                        <param>tornado==4.4.1</param>
+                                        <param>six==1.10.0</param>
+                                        <param>futures==3.0.5</param>
+                                    </libraries>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-python-reports-directory</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <mkdir dir="${project.build.directory}/python-reports"/>
+                                        <mkdir dir="${project.build.directory}/python/env"/>
+                                        <mkdir dir="${project.build.directory}/python-packaged/env"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <!-- copy files in jython directory to target/py and run virtual env to sandbox python.
+                                 there is no need to "activate" the virtualenv because all calls to python occur
+                                 directly from bin/ -->
+                            <execution>
+                                <id>setup-py-env</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <!-- seems like we need a few different copies of the same source. all the
+                                             different python/jython stuff doesn't seem to want to share. we use
+                                             /python for basic tests and stuff, /jython for jython compilation with
+                                             the jython plugin, /python-packaged for distribution tasks. some of the
+                                             problem seems to stem from the python lifecycle not binding perfectly well
+                                             to the maven lifecycle (integration tests seems to cause troubles
+                                             specifically). note that the commands to install wheel are largely for
+                                             safety in case someone is using an older version of virtualenv (which
+                                             doesn't install wheel by default) -->
+                                        <copy todir="${project.build.directory}/python3">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <copy todir="${project.build.directory}/python2">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <copy todir="${project.build.directory}/python-packaged">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <exec dir="${project.build.directory}/python2" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python2 env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python3" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python3 env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <copy todir="${project.build.directory}/jython">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-python2-build</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-python3-build</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                            <!--
+                            build/package python source distribution and wheel archive. the version is bound to an
+                            environment variable that gets used in setup.py to dynamically construct a module
+                            __version__file
+                             -->
+                            <execution>
+                                <id>package-py</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
+                                              failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py sdist bdist_wheel"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                            <!--
+                            use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
+                            this has to be an integration-test because we need gremlin-server running and the standard
+                            test phase doesn't have a pre/post event like integration-test does.
+                            -->
+                            <execution>
+                                <id>native-python2-test</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py test"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-python3-test</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py test"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>generate-dsl</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script><![CDATA[
+import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import java.lang.reflect.Modifier
+
+// this is a bit of a copy of what's in SymbolHelper - no way around it because this code generation task occurs
+// before the SymbolHelper is available to the plugin.
+def toPythonMap = ["global": "global_",
+                   "as": "as_",
+                   "in": "in_",
+                   "and": "and_",
+                   "or": "or_",
+                   "is": "is_",
+                   "not": "not_",
+                   "from": "from_",
+                   "list": "list_",
+                   "set": "set_",
+                   "all": "all_"]
+def toJavaMap = toPythonMap.collectEntries{k,v -> [(v):k]}
+
+def toPython = { symbol -> toPythonMap.getOrDefault(symbol, symbol) }
+def toJava = { symbol -> toJavaMap.getOrDefault(symbol, symbol) }
+
+def binding = ["enums": CoreImports.getClassImports()
+                                 .findAll { Enum.class.isAssignableFrom(it) }
+                                 .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() },
+               "pmethods": P.class.getMethods().
+                                 findAll { Modifier.isStatic(it.getModifiers()) }.
+                                 findAll { P.class.isAssignableFrom(it.returnType) }.
+                                 collect { toPython(it.name) }.
+                                 unique().
+                                 sort { a, b -> a <=> b },
+               "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
+                                        findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                                        findAll {
+                                            !it.name.equals("clone") &&
+                                                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
+                                                    !it.name.equals(TraversalSource.Symbols.withRemote) &&
+                                                    !it.name.equals(TraversalSource.Symbols.withComputer)
+                                        }.
+                                        collect { toPython(it.name) }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        collect { toPython(it.name) }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "graphStepMethods": GraphTraversal.getMethods().
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
+                                        collect { toPython(it.name) }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "anonStepMethods": __.class.getMethods().
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        findAll { Modifier.isStatic(it.getModifiers()) }.
+                                        findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                                        collect { toPython(it.name) }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "toPython": toPython,
+               "toJava": toJava]
+
+def engine = new groovy.text.GStringTemplateEngine()
+def traversalTemplate = engine.createTemplate(new File('${project.basedir}/src/main/resources/TraversalSource.template')).make(binding)
+def traversalFile = new File('${project.basedir}/src/main/jython/gremlin_python/process/traversal.py')
+traversalFile.newWriter().withWriter{ it << traversalTemplate }
+
+def graphTraversalTemplate = engine.createTemplate(new File('${project.basedir}/src/main/resources/GraphTraversalSource.template')).make(binding)
+def graphTraversalFile = new File('${project.basedir}/src/main/jython/gremlin_python/process/graph_traversal.py')
+graphTraversalFile.newWriter().withWriter{ it << graphTraversalTemplate }
+]]>                                     </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gremlin-server-start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.Settings
+import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+
+if (${skipTests}) return
+
+log.info("Starting Gremlin Server instances for native testing of gremlin-python")
+def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
+settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settings.port = 45940
+
+println settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files
+
+def server = new GremlinServer(settings)
+server.start().join()
+
+project.setContextValue("gremlin.py.server", server)
+log.info("Gremlin Server with no authentication started on port 45940")
+
+def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
+settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settingsSecure.port = 45941
+settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
+settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties"]
+
+def serverSecure = new GremlinServer(settingsSecure)
+serverSecure.start().join()
+
+project.setContextValue("gremlin.py.server.secure", serverSecure)
+log.info("Gremlin Server with authentication started on port 45941")
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gremlin-server-stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+
+if (${skipTests}) return
+
+log.info("Tests for native gremlin-python complete")
+
+def server = project.getContextValue("gremlin.py.server")
+log.info("Shutting down $server")
+server.stop().join()
+
+def serverSecure = project.getContextValue("gremlin.py.server.secure")
+log.info("Shutting down $serverSecure")
+serverSecure.stop().join()
+
+log.info("All Gremlin Server instances are shutdown for gremlin-python")
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+        Provides a way to deploy the gremlinpython GLV to pypi. This cannot be part of the standard maven execution
+        because pypi does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
+        -->
+        <profile>
+            <id>glv-python-deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>pypi</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!--
+                    pypi doesn't have a staging area like sonatype so the deploy to pypi is done out of the normal
+                    release band. it is performed after successful VOTE in which case, the maven artifacts should
+                    not be deployed again - hence the plugin is disabled. deployment to pypi uses the antrun plugin
+                    below with twine so disabling the plugin has no effect on the pypi deployment.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!-- deploy to pypi. assumes that ~/.pypirc is configured appropriately -->
+                            <execution>
+                                <id>deploy-py</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install twine"/>
+                                        </exec>
+                                        <!-- to use the pypi test environment add: -r pypitest -->
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
+                                              failonerror="true">
+                                            <arg line="upload dist/* -r pypi -s "/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

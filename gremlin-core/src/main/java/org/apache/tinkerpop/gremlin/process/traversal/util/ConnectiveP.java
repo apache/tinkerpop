@@ -21,24 +21,30 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class ConnectiveP<V> extends P<V> {
 
-    protected List<P<V>> predicates;
+    protected List<P<V>> predicates = new ArrayList<>();
 
-    public ConnectiveP(final P<V>... predicates) {
+    public ConnectiveP(final List<P<V>> predicates) {
         super(null, null);
-        if (predicates.length < 2)
-            throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.length);
-        this.predicates = new ArrayList<>();
-        Stream.of(predicates).forEach(this.predicates::add);
+        if (predicates.size() < 2)
+            throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.size());
+    }
+
+    @Deprecated
+    /**
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link ConnectiveP(List)}
+     */
+    public ConnectiveP(final P<V>... predicates) {
+        this(Arrays.asList(predicates));
     }
 
     public List<P<V>> getPredicates() {
@@ -103,13 +109,13 @@ public abstract class ConnectiveP<V> extends P<V> {
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be and'd together");
-        return new AndP<>(this, (P) predicate);
+        return new AndP<>(Arrays.asList(this, (P<V>) predicate));
     }
 
     @Override
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
-        return new OrP<>(this, (P) predicate);
+        return new OrP<>(Arrays.asList(this, (P<V>) predicate));
     }
 }

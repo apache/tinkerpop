@@ -1,6 +1,5 @@
 #!/bin/bash
 #
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -18,45 +17,264 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-case `uname` in
-  CYGWIN*)
-    CP="`dirname $0`"/../conf/
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
-    ;;
-  *)
-    CP="`dirname $0`"/../conf/
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
-esac
-#echo $CP
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+### BEGIN INIT INFO
+# Provides:          gremlin-server
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Gremlin Server
+# Description:       Apache Tinkerpop Gremlin Server
+# chkconfig:         2345 98 01
+### END INIT INFO
+
+[[ -n "$DEBUG" ]] && set -x
+
+SOURCE="$0"
+while [[ -h "$SOURCE" ]]; do
+  cd -P "$( dirname "$SOURCE" )" || exit 1
+  DIR="$(pwd)"
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-CP=$CP:$( find -L "$DIR"/../ext -mindepth 1 -maxdepth 1 -type d | \
-          sort | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
+cd -P "$( dirname "$SOURCE" )" || exit 1
+GREMLIN_BIN="$(pwd)"
 
-export CLASSPATH="${CLASSPATH:-}:$CP"
+GREMLIN_CONF=$GREMLIN_BIN/gremlin-server.conf
+
+[[ -r $GREMLIN_CONF ]] && source $GREMLIN_CONF
+[[ -n "$DEBUG" ]] && set -x
+
+if [[ -z "$GREMLIN_HOME" ]]; then
+  cd ..
+  GREMLIN_HOME="$(pwd)"
+fi
+
+if [[ -z "$LOG_DIR" ]] ; then
+  LOG_DIR="$GREMLIN_HOME/logs"
+fi
+
+if [[ -z "$LOG_FILE" ]]; then
+  LOG_FILE="$LOG_DIR/gremlin.log"
+fi
+
+if [[ -z "$PID_DIR" ]] ; then
+  PID_DIR="$GREMLIN_HOME/run"
+fi
+
+if [[ -z "$PID_FILE" ]]; then
+  PID_FILE=$PID_DIR/gremlin.pid
+fi
+
+if [[ -z "$GREMLIN_YAML" ]]; then
+  GREMLIN_YAML=$GREMLIN_HOME/conf/gremlin-server.yaml
+fi
+
+if [[ ! -r "$GREMLIN_YAML" ]]; then
+  # try relative to home
+  GREMLIN_YAML="$GREMLIN_HOME/$GREMLIN_YAML"
+  if [[ ! -r "$GREMLIN_YAML" ]]; then
+    echo WARNING: $GREMLIN_YAML is unreadable
+  fi
+fi
+
+# absolute file path requires 'file:'
+LOG4J_CONF="file:$GREMLIN_HOME/conf/log4j-server.properties"
 
 # Find Java
-if [ "$JAVA_HOME" = "" ] ; then
-    JAVA="java -server"
+if [[ "$JAVA_HOME" = "" ]] ; then
+    JAVA="java"
 else
-    JAVA="$JAVA_HOME/bin/java -server"
+    JAVA="$JAVA_HOME/bin/java"
 fi
 
 # Set Java options
-if [ "$JAVA_OPTIONS" = "" ] ; then
+if [[ "$JAVA_OPTIONS" = "" ]] ; then
     JAVA_OPTIONS="-Xms32m -Xmx512m"
 fi
 
-# Execute the application and return its exit code
-if [ "$1" = "-i" ]; then
-  shift
-  exec $JAVA -Dlog4j.configuration=conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall "$@"
-else
-  exec $JAVA -Dlog4j.configuration=conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.GremlinServer "$@"
-fi
+# Build Java CLASSPATH
+CP="$GREMLIN_HOME/conf/"
+CP="$CP":$( echo $GREMLIN_HOME/lib/*.jar . | sed 's/ /:/g')
+CP="$CP":$( find -L "$GREMLIN_HOME"/ext -mindepth 1 -maxdepth 1 -type d | \
+        sort | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
+
+CLASSPATH="${CLASSPATH:-}:$CP"
+
+GREMLIN_SERVER_CMD=org.apache.tinkerpop.gremlin.server.GremlinServer
+GREMLIN_INSTALL_CMD=org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall
+
+
+isRunning() {
+  if [[ -r "$PID_FILE" ]] ; then
+    PID=$(cat "$PID_FILE")
+    ps -p "$PID" &> /dev/null
+    return $?
+  else
+    return 1
+  fi
+}
+
+status() {
+  isRunning
+  RUNNING=$?
+    if [[ $RUNNING -gt 0 ]]; then
+      echo Server not running
+    else
+      echo Server running with PID $(cat "$PID_FILE")
+    fi
+}
+
+stop() {
+  isRunning
+  RUNNING=$?
+  if [[ $RUNNING -gt 0 ]]; then
+    echo Server not running
+    rm -f "$PID_FILE"
+  else
+    kill "$PID" &> /dev/null || { echo "Unable to kill server [$PID]"; exit 1; }
+    for i in $(seq 1 60); do
+      ps -p "$PID" &> /dev/null || { echo "Server stopped [$PID]"; rm -f "$PID_FILE"; return 0; }
+      [[ $i -eq 30 ]] && kill "$PID" &> /dev/null
+      sleep 1
+    done
+    echo "Unable to kill server [$PID]";
+    exit 1;
+  fi
+}
+
+start() {
+  isRunning
+  RUNNING=$?
+  if [[ $RUNNING -eq 0 ]]; then
+    echo Server already running with PID $(cat "$PID_FILE").
+    exit 1
+  fi
+
+  if [[ -z "$RUNAS" ]]; then
+
+    mkdir -p "$LOG_DIR" &>/dev/null
+    if [[ ! -d "$LOG_DIR" ]]; then
+      echo ERROR: LOG_DIR $LOG_DIR does not exist and could not be created.
+      exit 1
+    fi
+
+    mkdir -p "$PID_DIR" &>/dev/null
+    if [[ ! -d "$PID_DIR" ]]; then
+      echo ERROR: PID_DIR $PID_DIR does not exist and could not be created.
+      exit 1
+    fi
+
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML" >> "$LOG_FILE" 2>&1 &
+    PID=$!
+    disown $PID
+    echo $PID > "$PID_FILE"
+  else
+
+    su -c "mkdir -p $LOG_DIR &>/dev/null"  "$RUNAS"
+    if [[ ! -d "$LOG_DIR" ]]; then
+      echo ERROR: LOG_DIR $LOG_DIR does not exist and could not be created.
+      exit 1
+    fi
+
+    su -c "mkdir -p $PID_DIR &>/dev/null"  "$RUNAS"
+    if [[ ! -d "$PID_DIR" ]]; then
+      echo ERROR: PID_DIR $PID_DIR does not exist and could not be created.
+      exit 1
+    fi
+
+    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD \"$GREMLIN_YAML\" >> \"$LOG_FILE\" 2>&1 & echo \$! "  "$RUNAS" > "$PID_FILE"
+    chown "$RUNAS" "$PID_FILE"
+  fi
+
+  isRunning
+  RUNNING=$?
+  if [[ $RUNNING -eq 0 ]]; then
+    echo Server started $(cat "$PID_FILE").
+    exit 0
+  else
+    echo Server failed
+    exit 1
+  fi
+
+}
+
+startForeground() {
+  isRunning
+  RUNNING=$?
+  if [[ $RUNNING -eq 0 ]]; then
+    echo Server already running with PID $(cat "$PID_FILE").
+    exit 1
+  fi
+
+  if [[ -z "$RUNAS" ]]; then
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
+    exit 0
+  else
+    echo Starting in foreground not supported with RUNAS
+    exit 1
+  fi
+
+}
+
+install() {
+
+  isRunning
+  RUNNING=$?
+  if [[ $RUNNING -eq 0 ]]; then
+    echo Server must be stopped before installing.
+    exit 1
+  fi
+
+  echo Installing dependency $@
+
+  DEPS="$@"
+  if [[ -z "$RUNAS" ]]; then
+    $JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH  $GREMLIN_INSTALL_CMD $DEPS
+  else
+    su -c "$JAVA -Dlog4j.configuration=$LOG4J_CONF $JAVA_OPTIONS -cp $CP:$CLASSPATH $GREMLIN_INSTALL_CMD $DEPS "  "$RUNAS"
+  fi
+
+}
+
+case "$1" in
+  status)
+    status
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  -i)
+    shift
+    echo "Redirecting to 'install $@' (-i will be removed in a future release)"
+    install "$@"
+    ;;
+  install)
+    shift
+    install "$@"
+    ;;
+  console)
+    startForeground
+    ;;
+  *)
+    if [[ -n "$1" ]] ; then
+      if [[ -r "$1" ]]; then
+        GREMLIN_YAML="$1"
+        startForeground
+      elif [[ -r "$GREMLIN_HOME/$1" ]] ; then
+        GREMLIN_YAML="$GREMLIN_HOME/$1"
+        startForeground
+      fi
+      echo Configuration file not found.
+    fi
+    echo "Usage: $0 {start|stop|restart|status|console|install <group> <artifact> <version>|<conf file>}"; exit 1;
+    ;;
+esac

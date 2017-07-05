@@ -45,19 +45,6 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public LocalStep<S, E> clone() {
-        final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
-        clone.localTraversal = clone.integrateChild(this.localTraversal.clone());
-        clone.first = true;
-        return clone;
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, this.localTraversal);
-    }
-
-    @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
         return Collections.singletonList(this.localTraversal);
     }
@@ -68,14 +55,14 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    protected Traverser<E> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (this.first) {
             this.first = false;
             this.localTraversal.addStart(this.starts.next());
         }
         while (true) {
             if (this.localTraversal.hasNext())
-                return this.localTraversal.getEndStep().next();
+                return this.localTraversal.nextTraverser();
             else if (this.starts.hasNext()) {
                 this.localTraversal.reset();
                 this.localTraversal.addStart(this.starts.next());
@@ -86,13 +73,33 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode() ^ this.localTraversal.hashCode();
-    }
-
-    @Override
     public void reset() {
         super.reset();
         this.first = true;
+        this.localTraversal.reset();
+    }
+
+    @Override
+    public LocalStep<S, E> clone() {
+        final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
+        clone.localTraversal = this.localTraversal.clone();
+        clone.first = true;
+        return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.localTraversal);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.localTraversal);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.localTraversal.hashCode();
     }
 }

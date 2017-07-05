@@ -41,6 +41,7 @@ public class ImmutableMetrics implements Metrics, Serializable {
     protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
+        // necessary for gryo serialization
     }
 
     @Override
@@ -58,7 +59,7 @@ public class ImmutableMetrics implements Metrics, Serializable {
 
     @Override
     public Map<String, Long> getCounts() {
-        Map<String, Long> ret = new HashMap<>();
+        final Map<String, Long> ret = new HashMap<>();
         for (Map.Entry<String, AtomicLong> count : counts.entrySet()) {
             ret.put(count.getKey(), count.getValue().get());
         }

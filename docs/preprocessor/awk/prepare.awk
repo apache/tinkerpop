@@ -20,6 +20,7 @@
 #
 BEGIN {
   p = 0
+  c = "//"
 }
 
 function escape_string(string) {
@@ -32,11 +33,11 @@ function print_string(string) {
 }
 
 function transform_callouts(code) {
-  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, " //// \\1", "", code)
+  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, " " c c " \\1", "g", code)
 }
 
 function remove_callouts(code) {
-  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, "", "", code)
+  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, "", "g", code)
 }
 
 /^----$/ {
@@ -66,6 +67,18 @@ function remove_callouts(code) {
 
 /^\[gremlin-/ {
   inCodeSection = 1
+  split($0, a, "-")
+  b = gensub(/]'/, "", "g", a[2])
+  split(b, l, ",")
+  lang = l[1]
+  switch (lang) {
+    case "python":
+      c = "#"
+      break
+    default:
+      c = "//"
+      break
+  }
 }
 
 END {

@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.util.SystemUtil;
 
 import java.util.Collections;
 
@@ -33,7 +36,7 @@ public final class HadoopPools {
     private HadoopPools() {
     }
 
-    private static GryoPool GRYO_POOL = GryoPool.build().create();
+    private static GryoPool GRYO_POOL = null;
     private static boolean INITIALIZED = false;
 
     public synchronized static void initialize(final Configuration configuration) {
@@ -41,7 +44,8 @@ public final class HadoopPools {
             INITIALIZED = true;
             GRYO_POOL = GryoPool.build().
                     poolSize(configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
-                    ioRegistries(configuration.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
+                    ioRegistries(configuration.getList(IoRegistry.IO_REGISTRY, Collections.emptyList())).
+                    initializeMapper(m -> m.registrationRequired(false)).
                     create();
         }
     }
@@ -50,9 +54,22 @@ public final class HadoopPools {
         HadoopPools.initialize(ConfUtil.makeApacheConfiguration(configuration));
     }
 
+    public synchronized static void initialize(final GryoPool gryoPool) {
+        GRYO_POOL = gryoPool;
+        INITIALIZED = true;
+    }
+
     public static GryoPool getGryoPool() {
-        if (!INITIALIZED)
-            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
+        if (!INITIALIZED) {
+            final Configuration configuration = SystemUtil.getSystemPropertiesConfiguration("tinkerpop", true);
+            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using system properties configuration: " + ConfigurationUtils.toString(configuration));
+            initialize(configuration);
+        }
         return GRYO_POOL;
+    }
+
+    public static void close() {
+        INITIALIZED = false;
+        GRYO_POOL = null;
     }
 }

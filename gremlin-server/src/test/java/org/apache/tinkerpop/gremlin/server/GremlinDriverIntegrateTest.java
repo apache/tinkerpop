@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -26,22 +27,30 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,9 +61,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -64,6 +74,10 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -79,6 +93,37 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
+
+    private Log4jRecordingAppender recordingAppender = null;
+    private Level previousLogLevel;
+
+    @Before
+    public void setupForEachTest() {
+        recordingAppender = new Log4jRecordingAppender();
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(Level.DEBUG);
+        }
+
+        rootLogger.addAppender(recordingAppender);
+    }
+
+    @After
+    public void teardownForEachTest() {
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        }
+
+        rootLogger.removeAppender(recordingAppender);
+    }
+
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -92,7 +137,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 try {
                     final String p = TestHelper.generateTempFileFromResource(
                             GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
-                    settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList(p);
+                    final Map<String,Object> m = new HashMap<>();
+                    m.put("files", Collections.singletonList(p));
+                    settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -130,6 +177,36 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldKeepAliveForWebSockets() throws Exception {
+        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
+        // complicate the assertion logic
+        final Cluster cluster = TestClientFactory.build().
+                minConnectionPoolSize(1).
+                maxConnectionPoolSize(1).
+                keepAliveInterval(1000).create();
+        final Client client = cluster.connect();
+
+        // fire up lots of requests so as to schedule/deschedule lots of ping jobs
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // don't send any messages for a bit so that the driver pings in the background
+        Thread.sleep(3000);
+
+        // make sure no bonus messages sorta fire off once we get back to sending requests
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // there really shouldn't be more than 3 of these sent. should definitely be at least one though
+        final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
+        assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
+
+        cluster.close();
     }
 
     @Test
@@ -291,6 +368,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof ResponseException);
             assertThat(inner.getMessage(), endsWith("Division by zero"));
+
+            final ResponseException rex = (ResponseException) inner;
+            assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
+            assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
+            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java:1742)\n\tat org.codehaus.groovy.runtime.typehandling.BigDecimalMath.divideImpl(BigDecimalMath.java:68)\n\tat org.codehaus.groovy.runtime.typehandling.IntegerMath.divideImpl(IntegerMath.java:49)\n\tat org.codehaus.groovy.runtime.dgmimpl.NumberNumberDiv$NumberNumber.invoke(NumberNumberDiv.java:323)\n\tat org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite.call(PojoMetaMethodSite.java:56)\n\tat org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)\n"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -334,19 +416,28 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final CompletableFuture<List<Result>> futureFive = rsFive.all();
         final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final AtomicBoolean hit = new AtomicBoolean(false);
-        while (!futureFive.isDone()) {
-            // futureZero can't finish before futureFive - racy business here?
-            assertThat(futureZero.isDone(), is(false));
-            hit.set(true);
-        }
+        final CountDownLatch latch = new CountDownLatch(2);
+        final List<String> order = new ArrayList<>();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        // should have entered the loop at least once and thus proven that futureZero didn't return ahead of
-        // futureFive
-        assertThat(hit.get(), is(true));
+        futureFive.thenAcceptAsync(r -> {
+            order.add(r.get(0).getString());
+            latch.countDown();
+        }, executor);
 
-        assertEquals("zero", futureZero.get().get(0).getString());
-        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+        futureZero.thenAcceptAsync(r -> {
+            order.add(r.get(0).getString());
+            latch.countDown();
+        }, executor);
+
+        // wait for both results
+        latch.await(30000, TimeUnit.MILLISECONDS);
+
+        // should be two results
+        assertEquals(2, order.size());
+
+        // ensure that "five" is first then "zero"
+        assertThat(order, contains("five", "zero"));
     }
 
     @Test
@@ -517,7 +608,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         });
 
         // countdown should have reached zero as results should have eventually been all returned and processed
-        assertTrue(latch.await(20, TimeUnit.SECONDS));
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         IntStream.range(0, requests).forEach(r ->
@@ -600,13 +691,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final List<Result> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+        final List<Result> json = client.submit("b = new groovy.json.JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
         assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
         cluster.close();
     }
 
     @Test
-    public void shouldWorkWithGraphSONSerialization() throws Exception {
+    public void shouldWorkWithGraphSONV1Serialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
@@ -637,6 +728,40 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(2, ageProperties.size());
         assertEquals(1l, ageProperties.get("id"));
         assertEquals(29, ageProperties.get("value"));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONV2Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Vertex v = r.get(0).get(DetachedVertex.class);
+        assertEquals(1, v.id());
+        assertEquals("person", v.label());
+
+        assertEquals(2, IteratorUtils.count(v.properties()));
+        assertEquals("marko", v.value("name"));
+        assertEquals(29, Integer.parseInt(v.value("age").toString()));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final Instant now = Instant.now();
+        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+        assertEquals(1, r.size());
+
+        final Instant then = r.get(0).get(Instant.class);
+        assertEquals(now, then);
 
         cluster.close();
     }

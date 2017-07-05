@@ -18,67 +18,64 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, PathProcessor, MapReducer<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
+public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
+    private Set<String> keepLabels;
 
     public TreeSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, TreeSupplier.instance());
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) TreeSupplier.instance(), TreeStep.TreeBiOperator.instance());
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        Tree depth = traverser.sideEffects(this.sideEffectKey);
+        final Tree root = new Tree();
+        Tree depth = root;
         final Path path = traverser.path();
         for (int i = 0; i < path.size(); i++) {
-            final Object object = TraversalUtil.apply(path.<Object>get(i), this.traversalRing.next());
+            final Object object = TraversalUtil.applyNullable(path.<Object>get(i), this.traversalRing.next());
             if (!depth.containsKey(object))
                 depth.put(object, new Tree<>());
             depth = (Tree) depth.get(object);
         }
         this.traversalRing.reset();
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, root);
+    }
+
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
-    }
-
-    @Override
-    public MapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> getMapReduce() {
-        return new TreeSideEffectMapReduce(this);
     }
 
     @Override
@@ -96,8 +93,13 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     public TreeSideEffectStep<S> clone() {
         final TreeSideEffectStep<S> clone = (TreeSideEffectStep<S>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -111,7 +113,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> treeTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> treeTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(treeTraversal));
     }
 
@@ -120,64 +122,13 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
-    ////////////////
-
-    public static final class TreeSideEffectMapReduce extends StaticMapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
-
-        public static final String TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.treeSideEffectStep.sideEffectKey";
-
-        private String sideEffectKey;
-
-        private TreeSideEffectMapReduce() {
-
-        }
-
-        public TreeSideEffectMapReduce(final TreeSideEffectStep step) {
-            this.sideEffectKey = step.getSideEffectKey();
-        }
-
-        @Override
-        public void storeState(final Configuration configuration) {
-            super.storeState(configuration);
-            configuration.setProperty(TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-        }
-
-        @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
-            this.sideEffectKey = configuration.getString(TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
-        }
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return true;
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, Tree> emitter) {
-            VertexTraversalSideEffects.of(vertex).<Tree<?>>get(this.sideEffectKey).ifPresent(emitter::emit);
-        }
-
-        @Override
-        public void combine(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
-            this.reduce(key, values, emitter);
-        }
-
-        @Override
-        public void reduce(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
-            final Tree tree = new Tree();
-            values.forEachRemaining(tree::addTree);
-            emitter.emit(tree);
-        }
-
-        @Override
-        public Tree generateFinalResult(final Iterator<KeyValue<NullObject, Tree>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : new Tree();
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return this.sideEffectKey;
-        }
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
     }
 
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 }

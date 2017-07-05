@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -55,19 +57,33 @@ public interface GraphReader {
      * It is up to individual implementations to manage transactions, but it is not required or enforced.  Consult
      * the documentation of an implementation to understand the approach it takes.
      *
-     * @param inputStream a stream containing an entire graph of vertices and edges as defined by the accompanying
-     *                    {@link GraphWriter#writeGraph(OutputStream, Graph)}.
+     * @param inputStream    a stream containing an entire graph of vertices and edges as defined by the accompanying
+     *                       {@link GraphWriter#writeGraph(OutputStream, Graph)}.
      * @param graphToWriteTo the graph to write to when reading from the stream.
      */
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException;
+
+    /**
+     * Reads a single vertex from an {@link InputStream}. This method will filter the read the read vertex by the provided
+     * {@link GraphFilter}. If the graph filter will filter the vertex itself, then the returned {@link Optional} is empty.
+     *
+     * @param inputStream a stream containing at least a single vertex as defined by the accompanying
+     *                    {@link GraphWriter#writeVertex(OutputStream, Vertex)}.
+     * @param graphFilter The {@link GraphFilter} to filter the vertex and its associated edges by.
+     * @return the vertex with filtered edges or {@link Optional#empty()}  if the vertex itself was filtered.
+     * @throws IOException
+     */
+    public default Optional<Vertex> readVertex(final InputStream inputStream, final GraphFilter graphFilter) throws IOException {
+        throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " currently does not support " + GraphFilter.class.getSimpleName() + " deserialization filtering");
+    }
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties but not edges.
      * It is expected that the user will manager their own transaction context with respect to this method (i.e.
      * implementations should not commit the transaction for the user).
      *
-     * @param inputStream a stream containing at least a single vertex as defined by the accompanying
-     *                    {@link GraphWriter#writeVertex(OutputStream, Vertex)}.
+     * @param inputStream        a stream containing at least a single vertex as defined by the accompanying
+     *                           {@link GraphWriter#writeVertex(OutputStream, Vertex)}.
      * @param vertexAttachMethod a function that creates re-attaches a {@link Vertex} to a {@link Host} object.
      */
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException;
@@ -77,10 +93,10 @@ public interface GraphReader {
      * given the direction supplied as an argument.  It is expected that the user will manager their own transaction
      * context with respect to this method (i.e. implementations should not commit the transaction for the user).
      *
-     * @param inputStream a stream containing at least one {@link Vertex} as defined by the accompanying
-     *                    {@link GraphWriter#writeVertices(OutputStream, Iterator, Direction)} method.
-     * @param vertexAttachMethod a function that creates re-attaches a {@link Vertex} to a {@link Host} object.
-     * @param edgeAttachMethod a function that creates re-attaches a {@link Edge} to a {@link Host} object.
+     * @param inputStream                a stream containing at least one {@link Vertex} as defined by the accompanying
+     *                                   {@link GraphWriter#writeVertices(OutputStream, Iterator, Direction)} method.
+     * @param vertexAttachMethod         a function that creates re-attaches a {@link Vertex} to a {@link Host} object.
+     * @param edgeAttachMethod           a function that creates re-attaches a {@link Edge} to a {@link Host} object.
      * @param attachEdgesOfThisDirection only edges of this direction are passed to the {@code edgeMaker}.
      */
     public Vertex readVertex(final InputStream inputStream,
@@ -95,11 +111,11 @@ public interface GraphReader {
      * transaction context with respect to this method (i.e. implementations should not commit the transaction for
      * the user).
      *
-     * @param inputStream a stream containing at least one {@link Vertex} as defined by the accompanying
-     *                    {@link GraphWriter#writeVertices(OutputStream, Iterator, Direction)} or
-     *                    {@link GraphWriter#writeVertices(OutputStream, Iterator)} methods.
-     * @param vertexAttachMethod a function that creates re-attaches a {@link Vertex} to a {@link Host} object.
-     * @param edgeAttachMethod a function that creates re-attaches a {@link Edge} to a {@link Host} object.
+     * @param inputStream                a stream containing at least one {@link Vertex} as defined by the accompanying
+     *                                   {@link GraphWriter#writeVertices(OutputStream, Iterator, Direction)} or
+     *                                   {@link GraphWriter#writeVertices(OutputStream, Iterator)} methods.
+     * @param vertexAttachMethod         a function that creates re-attaches a {@link Vertex} to a {@link Host} object.
+     * @param edgeAttachMethod           a function that creates re-attaches a {@link Edge} to a {@link Host} object.
      * @param attachEdgesOfThisDirection only edges of this direction are passed to the {@code edgeMaker}.
      */
     public Iterator<Vertex> readVertices(final InputStream inputStream,
@@ -112,8 +128,8 @@ public interface GraphReader {
      * transaction context with respect to this method (i.e. implementations should not commit the transaction for
      * the user).
      *
-     * @param inputStream a stream containing at least one {@link Edge} as defined by the accompanying
-     *                    {@link GraphWriter#writeEdge(OutputStream, Edge)} method.
+     * @param inputStream      a stream containing at least one {@link Edge} as defined by the accompanying
+     *                         {@link GraphWriter#writeEdge(OutputStream, Edge)} method.
      * @param edgeAttachMethod a function that creates re-attaches a {@link Edge} to a {@link Host} object.
      */
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException;
@@ -123,8 +139,8 @@ public interface GraphReader {
      * transaction context with respect to this method (i.e. implementations should not commit the transaction for
      * the user).
      *
-     * @param inputStream a stream containing at least one {@link VertexProperty} as written by the accompanying
-     *                    {@link GraphWriter#writeVertexProperty(OutputStream, VertexProperty)} method.
+     * @param inputStream                a stream containing at least one {@link VertexProperty} as written by the accompanying
+     *                                   {@link GraphWriter#writeVertexProperty(OutputStream, VertexProperty)} method.
      * @param vertexPropertyAttachMethod a function that creates re-attaches a {@link VertexProperty} to a
      *                                   {@link Host} object.
      * @return the value returned by the attach method.
@@ -137,8 +153,8 @@ public interface GraphReader {
      * transaction context with respect to this method (i.e. implementations should not commit the transaction for
      * the user).
      *
-     * @param inputStream a stream containing at least one {@link Property} as written by the accompanying
-     *                    {@link GraphWriter#writeProperty(OutputStream, Property)} method.
+     * @param inputStream          a stream containing at least one {@link Property} as written by the accompanying
+     *                             {@link GraphWriter#writeProperty(OutputStream, Property)} method.
      * @param propertyAttachMethod a function that creates re-attaches a {@link Property} to a {@link Host} object.
      * @return the value returned by the attach method.
      */
@@ -148,8 +164,8 @@ public interface GraphReader {
     /**
      * Reads an arbitrary object using the registered serializers.
      *
-     * @param inputStream  a stream containing an object.
-     * @param clazz the class expected to be in the stream - may or may not be used by the underlying implementation.
+     * @param inputStream a stream containing an object.
+     * @param clazz       the class expected to be in the stream - may or may not be used by the underlying implementation.
      */
     public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException;
 

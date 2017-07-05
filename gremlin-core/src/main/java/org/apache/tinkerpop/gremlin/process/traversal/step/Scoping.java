@@ -20,28 +20,27 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * This interface is implemented by {@link Step} implementations that access labeled path steps, side-effects or
+ * {@code Map} values by key, such as {@code select('a')} step. Note that a step like {@code project()} is non-scoping
+ * because while it creates a {@code Map} it does not introspect them.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Scoping {
 
-    public static enum Variable {START, END}
-
-    public static final Set<TraverserRequirement> TYPICAL_LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    public static final Set<TraverserRequirement> TYPICAL_GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
-    public static final TraverserRequirement[] TYPICAL_LOCAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS};
-    public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS};
+    public enum Variable {START, END}
 
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
-        if (traverser.getSideEffects().get(key).isPresent())
-            return traverser.getSideEffects().<S>get(key).get();
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
@@ -49,14 +48,14 @@ public interface Scoping {
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
-            return null == pop ? path.get(key) : path.get(pop, key);
+            return path.get(pop, key);
         ///
         throw new IllegalArgumentException("Neither the sideEffects, map, nor path has a " + key + "-key: " + this);
     }
 
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
-        if (traverser.getSideEffects().get(key).isPresent())
-            return traverser.getSideEffects().<S>get(key).get();
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
@@ -64,10 +63,15 @@ public interface Scoping {
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
-            return null == pop ? path.get(key) : path.get(pop, key);
+            return path.get(pop, key);
         ///
         return null;
     }
 
+    /**
+     * Get the labels that this scoping step will access during the traversal
+     *
+     * @return the accessed labels of the scoping step
+     */
     public Set<String> getScopeKeys();
 }

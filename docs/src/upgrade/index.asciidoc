@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500]
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
@@ -34,6 +34,10 @@ These providers include:
 * Graph Driver Provider
 * Graph Language Provider
 * Graph Plugin Provider
+
+include::release-3.3.x.asciidoc[]
+
+include::release-3.2.x-incubating.asciidoc[]
 
 include::release-3.1.x-incubating.asciidoc[]
 

@@ -1,0 +1,357 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[gremlin-variants]]
+Gremlin Variants
+================
+
+image::gremlin-house-of-mirrors.png[width=1024]
+
+Gremlin is a graph traversal language that makes use of two fundamental programming constructs:
+link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
+link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. Given this generality, it is possible to embed
+Gremlin in any modern programming language.
+
+IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will emulate its
+structure as best as possible given the constructs of the host language. A strong correspondence between variants ensures
+that the general Gremlin reference documentation is applicable to all variants and that users moving between development
+languages can easily adopt the Gremlin variant for that language.
+
+image::gremlin-variant-architecture.png[width=650,float=left]
+
+NOTE: The information herein describes how to use the Gremlin language variants distributed
+with Apache TinkerPop. For information on how to build a Gremlin language variant,
+please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
+tutorial.
+
+[[gremlin-java]]
+Gremlin-Java
+------------
+
+image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the Java8
+language and can be used by any Java8 compliant virtual machine. Gremlin-Java is considered the canonical, reference
+implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
+
+The Lambda Solution
+~~~~~~~~~~~~~~~~~~~
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most language do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
+
+[source,java]
+g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
+g.V().out("knows").sideEffect(System.out::println) <2>
+g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <3>
+
+<1> A Java8 function is used to map a `Traverser<S>` to an object `E`.
+<2> Gremlin steps that take consumer arguments can be passed Java8 method references.
+<3> Gremlin-Java may sometimes require explicit lambda typing when types can not be automatically inferred.
+
+When sending traversals over the wire via a `RemoteConnection`, the static methods of `Lambda` should be used
+and should denote a particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted
+into a lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
+
+[source,java]
+g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
+g.V().out("knows").sideEffect(Lambda.consumer("println it"))
+g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
+
+[[gremlin-groovy]]
+Gremlin-Groovy
+--------------
+
+image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
+link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
+Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
+<<gremlin-console,Gremlin Console>>.
+
+WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
+statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
+`g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
+
+[[gremlin-python]]
+Gremlin-Python
+--------------
+
+image:gremlin-python-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Python implements Gremlin within
+the link:https://www.python.org/[Python] language and can be used on any Python virtual machine including the popular
+link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has the same constructs as Java including
+"dot notation" for function chaining (`a.b.c`), round bracket function arguments (`a(b,c)`), and support for global
+namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
+with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
+
+WARNING: In Python, `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` are reserved words. Gremlin-Python simply
+postfixes `_` to the end of these terms for their use with graph traversal. For instance: `g.V().as_('a').in_().as_('b').select('a','b')`.
+
+To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
+
+[source,bash]
+pip install gremlinpython
+
+Gremlin-Python users will typically make use of the following classes.
+
+[source,python]
+>>> from gremlin_python import statics
+>>> from gremlin_python.structure.graph import Graph
+>>> from gremlin_python.process.graph_traversal import __
+>>> from gremlin_python.process.strategies import *
+>>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+
+In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
+The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
+<<connecting-via-remotegraph,`RemoteConnection`>>-enabled server). The `gremlin_python.driver.driver_remote_connection`
+is provided with Apache TinkerPop's Gremlin-Python distribution.
+
+IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
+`gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
+
+When Gremlin Server is running, Gremlin-Python can communicate with Gremlin Server. The `conf/gremlin-server-modern-py.yaml`
+configuration maintains a `GremlinJythonScriptEngine` as well as the appropriate serializers for communicating `Bytecode`.
+
+IMPORTANT: Gremlin-Python is compatible with GraphSON 2.0 only, so this serializer must be configured in Gremlin Server.
+
+[source,bash]
+----
+$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
+$ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
+[INFO] GremlinServer -
+       \,,,/
+       (o o)
+---oOOo-(3)-oOOo---
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern-py.yaml
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] Logger - 51 attributes loaded from 40 stream(s) in 16ms, 51 saved, 614 ignored: ["Ant-Version", "Archiver-Version", "Bnd-LastModified", "Boot-Class-Path", "Build-Jdk", "Build-Version", "Built-By", "Bundle-ClassPath", "Bundle-Description", "Bundle-DocURL", "Bundle-License", "Bundle-ManifestVersion", "Bundle-Name", "Bundle-RequiredExecutionEnvironment", "Bundle-SymbolicName", "Bundle-Vendor", "Bundle-Version", "Can-Redefine-Classes", "Created-By", "DynamicImport-Package", "Eclipse-BuddyPolicy", "Export-Package", "Extension-Name", "Extension-name", "Fragment-Host", "Ignore-Package", "Implementation-Build", "Implementation-Title", "Implementation-URL", "Implementation-Vendor", "Implementation-Vendor-Id", "Implementation-Version", "Import-Package", "Include-Resource", "JCabi-Build", "JCabi-Date", "JCabi-Version", "Main-Class", "Main-class", "Manifest-Version", "Originally-Created-By", "Private-Package", "Require-Capability", "Specification-Title", "Specification-Vendor", "Specification-Version", "Tool", "X-Compile-Source-JDK", "X-Compile-Target-JDK", "hash", "version"]
+[INFO] ScriptEngines - Loaded gremlin-jython ScriptEngine
+[INFO] ScriptEngines - Loaded gremlin-python ScriptEngine
+[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
+[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] OpLoader - Adding the standard OpProcessor.
+[INFO] OpLoader - Adding the control OpProcessor.
+[INFO] OpLoader - Adding the session OpProcessor.
+[INFO] OpLoader - Adding the traversal OpProcessor.
+[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
+[INFO] GremlinServer - Executing start up LifeCycleHook
+[INFO] Logger$info - Loading 'modern' graph data.
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-lite with org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v2.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+
+----
+
+NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
+path. Future starts of Gremlin Server will not require that command.
+
+Within the CPython console, an empty `Graph` is created and a traversal source is spawned with `RemoteStrategy`.
+
+[source,python]
+>>> graph = Graph()
+>>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+
+When a traversal from the `GraphTraversalSource` is iterated, the traversal's `Bytecode` is sent over the wire
+via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
+Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
+does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
+use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
+Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
+
+IMPORTANT: Gremlin-Python's `Traversal` class supports the standard Gremlin methods such as `next()`, `nextTraverser()`,
+`toSet()`, `toList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
+
+RemoteConnection Submission
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are various ways to submit a traversal to a `RemoteConnection`. Just as in Gremlin-Java, there are various
+"terminal/action methods" off of `Traversal`.
+
+* `Traversal.next()`
+* `Traversal.nextTraverser()`
+* `Traversal.toList()`
+* `Traversal.toSet()`
+* `Traversal.iterate()`
+
+Gremlin-Python Sugar
+~~~~~~~~~~~~~~~~~~~~
+
+Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
+makes traversals a bit more concise.
+
+[gremlin-python,modern]
+----
+g.V().both()[1:3].toList()
+g.V().both()[1].toList()
+g.V().both().name.toList()
+----
+
+Static Enums and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python as Python `Enums`.
+
+[source,python]
+>>> from gremlin_python.process.traversal import T
+>>> from gremlin_python.process.traversal import Order
+>>> from gremlin_python.process.traversal import Cardinality
+>>> from gremlin_python.process.traversal import Column
+>>> from gremlin_python.process.traversal import Direction
+>>> from gremlin_python.process.traversal import Operator
+>>> from gremlin_python.process.traversal import P
+>>> from gremlin_python.process.traversal import Pop
+>>> from gremlin_python.process.traversal import Scope
+>>> from gremlin_python.process.traversal import Barrier
+
+These can be used analogously to how they are used in Gremlin-Java.
+
+[gremlin-python,modern]
+----
+g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr).toList()
+----
+
+Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be ommitted.
+
+[source,python]
+>>> statics.load_statics(globals())
+
+With statics loaded its possible to represent the above traversal as below.
+
+[gremlin-python,modern]
+----
+g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr).toList()
+----
+
+Finally, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
+That is, without the `__.`-prefix.
+
+[gremlin-python,modern]
+----
+g.V().repeat(out()).times(2).name.fold().toList()
+----
+
+Bindings
+~~~~~~~~
+
+When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
+If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
+Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
+from `g.V(4).out('created').name'` as they have different script "string" representations. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
+`{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be used.
+In Gremlin-Python, bindings are 2-tuples and used as follows.
+
+[gremlin-python,modern]
+----
+g.V(('id',1)).out('created').name.toList()
+g.V(('id',4)).out('created').name.toList()
+----
+
+Traversal Strategies
+~~~~~~~~~~~~~~~~~~~~
+
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
+`TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+
+[gremlin-python,modern]
+----
+g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+g = g.withoutStrategies(SubgraphStrategy)
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+g = g.withComputer(workers=2,vertices=has('name','marko'))
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+----
+
+NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on
+Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
+the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
+re-construction machine-side.
+
+The Lambda Solution
+~~~~~~~~~~~~~~~~~~~
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most language do not support lambda introspection and thus, code analysis. In Gremlin-Python,
+a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg callable
+that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be changed via
+`gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator and ultimate execution engine to use.
+
+[gremlin-python,modern]
+----
+g.V().out().map(lambda: "lambda x: len(x.get().value('name'))").sum().toList()                     <1>
+statics.default_lambda_language                                                                    <2>
+g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()      <3>
+statics.default_lambda_language = 'gremlin-groovy'                                                 <4>
+g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()                          <5>
+g.V().out().map(lambda: ("lambda x: len(x.get().value('name'))", "gremlin-python")).sum().toList() <6>
+statics.default_lambda_language = 'gremlin-python'                                                 <7>
+g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()                            <8>
+----
+
+<1> A zero-arg lambda yields a string representation of a lambda in Gremlin-Python.
+<2> The default lambda language is currently Gremlin-Python.
+<3> A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Groovy).
+<4> The default lambda language can be statically changed.
+<5> A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
+<6> A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Python).
+<7> The default lambda language is changed back to Gremlin-Python.
+<8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
+
+Custom Serialization
+~~~~~~~~~~~~~~~~~~~~
+
+Gremlin-Python provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
+(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add
+new types by creating serializers and deserializers in Python and registering them with the `RemoteConnection`.
+
+[source,python]
+----
+class MyType(object):
+  GRAPHSON_PREFIX = "providerx"
+  GRAPHSON_BASE_TYPE = "MyType"
+  GRAPHSON_TYPE = GraphSONUtil.formatType(GRAPHSON_PREFIX, GRAPHSON_BASE_TYPE)
+
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+  @classmethod
+  def objectify(cls, value, reader):
+    return cls(value['x'], value['y'])
+
+  @classmethod
+  def dictify(cls, value, writer):
+    return GraphSONUtil.typedValue(cls.GRAPHSON_BASE_TYPE,
+                                  {'x': value.x, 'y': value.y},
+                                  cls.GRAPHSON_PREFIX)
+
+graphson_reader = GraphSONReader({MyType.GRAPHSON_TYPE: MyType})
+graphson_writer = GraphSONWriter({MyType: MyType})
+
+connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
+                                     graphson_reader=graphson_reader,
+                                     graphson_writer=graphson_writer)
+----

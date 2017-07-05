@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.1.8-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Apache TinkerPop :: Gremlin Server</name>
@@ -45,6 +45,16 @@ limitations under the License.
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- METRICS -->
         <dependency>
             <groupId>com.codahale.metrics</groupId>
@@ -53,10 +63,12 @@ limitations under the License.
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-graphite</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-ganglia</artifactId>
+            <optional>true</optional>
         </dependency>
         <!-- TESTING -->
         <dependency>
@@ -89,6 +101,12 @@ limitations under the License.
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kerby</groupId>
+            <artifactId>kerb-simplekdc</artifactId>
+            <version>1.0.0-RC2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
@@ -108,8 +126,8 @@ limitations under the License.
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -130,7 +148,7 @@ limitations under the License.
                     <tarLongFileMode>warn</tarLongFileMode>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.tinkerpop.gremlin.console.Console</mainClass>
+                            <mainClass>org.apache.tinkerpop.gremlin.server.GremlinServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -189,7 +207,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.3-2.3.2</version>
+                    <version>0.3-2.3.3</version>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>

@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
@@ -34,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Constructs a {@link Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
+ * Constructs a {@link Channelizer} that exposes an HTTP endpoint in Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -42,10 +43,10 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
-    private HttpBasicAuthenticationHandler authenticationHandler;
+    private AbstractAuthenticationHandler authenticationHandler;
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
         httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings);
     }
@@ -68,7 +69,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             // not occur. It may not be a safe assumption that the handler
             // is sharable so create a new handler each time.
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new HttpBasicAuthenticationHandler(authenticator);
+                    null : new HttpBasicAuthenticationHandler(authenticator, settings.authentication);
             if (authenticationHandler != null)
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }
@@ -76,10 +77,19 @@ public class HttpChannelizer extends AbstractChannelizer {
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
     }
 
+    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {
+        final String authHandlerClass = authSettings.authenticationHandler;
+        if (authHandlerClass == null) {
+            //Keep things backwards compatible
+            return new HttpBasicAuthenticationHandler(authenticator, authSettings);
+        } else {
+            return createAuthenticationHandler(authSettings);
+        }
+    }
+
     @Override
     public void finalize(final ChannelPipeline pipeline) {
         pipeline.remove(PIPELINE_OP_SELECTOR);
-        pipeline.remove(PIPELINE_RESULT_ITERATOR_HANDLER);
         pipeline.remove(PIPELINE_OP_EXECUTOR);
     }
 }

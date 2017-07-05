@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -36,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent {
+public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
     private final int amountToSample;
@@ -53,7 +55,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> probabilityTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> probabilityTraversal) {
         this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 
@@ -63,14 +65,21 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
+    public void processAllStarts() {
+        while (this.starts.hasNext()) {
+            this.traverserSet.add(this.createProjectedTraverser(this.starts.next()));
+        }
+    }
+
+    @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
         // return the entire traverser set if the set is smaller than the amount to sample
         if (traverserSet.bulkSize() <= this.amountToSample)
             return;
         //////////////// else sample the set
         double totalWeight = 0.0d;
-        for (final Traverser<S> s : traverserSet) {
-            totalWeight = totalWeight + TraversalUtil.apply(s.asAdmin(), this.probabilityTraversal).doubleValue() * s.bulk();
+        for (final Traverser.Admin<S> s : traverserSet) {
+            totalWeight = totalWeight + (((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue() * s.bulk());
         }
         ///////
         final TraverserSet<S> sampledSet = new TraverserSet<>();
@@ -81,12 +90,12 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             for (final Traverser.Admin<S> s : traverserSet) {
                 long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
                 if (sampleBulk < s.bulk()) {
-                    final double currentWeight = TraversalUtil.apply(s, this.probabilityTraversal).doubleValue();
+                    final double currentWeight = ((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue();
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                         runningWeight = runningWeight + currentWeight;
                         if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
-                            final Traverser.Admin<S> split = s.asAdmin().split();
-                            split.asAdmin().setBulk(1l);
+                            final Traverser.Admin<S> split = s.split();
+                            split.setBulk(1L);
                             sampledSet.add(split);
                             runningAmountToSample++;
                             totalWeight = totalWeight - currentWeight;
@@ -103,6 +112,11 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         traverserSet.addAll(sampledSet);
     }
 
+
+    private final ProjectedTraverser<S, Number> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+        return new ProjectedTraverser<>(traverser, Collections.singletonList(TraversalUtil.apply(traverser, this.probabilityTraversal)));
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.BULK);
@@ -111,8 +125,14 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     @Override
     public SampleGlobalStep<S> clone() {
         final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
-        clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone());
+        clone.probabilityTraversal = this.probabilityTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.probabilityTraversal);
     }
 
     @Override

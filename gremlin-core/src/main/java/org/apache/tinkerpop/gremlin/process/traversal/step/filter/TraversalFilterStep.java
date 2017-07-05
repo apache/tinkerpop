@@ -54,8 +54,14 @@ public final class TraversalFilterStep<S> extends FilterStep<S> implements Trave
     @Override
     public TraversalFilterStep<S> clone() {
         final TraversalFilterStep<S> clone = (TraversalFilterStep<S>) super.clone();
-        clone.filterTraversal = clone.integrateChild(this.filterTraversal.clone());
+        clone.filterTraversal = this.filterTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.filterTraversal);
     }
 
     @Override

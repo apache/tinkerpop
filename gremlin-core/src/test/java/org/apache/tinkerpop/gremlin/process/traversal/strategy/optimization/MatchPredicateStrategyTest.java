@@ -20,113 +20,66 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(Enclosed.class)
+@RunWith(Parameterized.class)
 public class MatchPredicateStrategyTest {
 
-    @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractMatchPredicateStrategyTest {
+    @Parameterized.Parameter(value = 0)
+    public Traversal original;
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
+    @Parameterized.Parameter(value = 1)
+    public Traversal optimized;
+
+    @Parameterized.Parameter(value = 2)
+    public Collection<TraversalStrategy> otherStrategies;
+
+    @Test
+    public void doTest() {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(MatchPredicateStrategy.instance());
+        for (final TraversalStrategy strategy : this.otherStrategies) {
+            strategies.addStrategies(strategy);
         }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+        this.original.asAdmin().setStrategies(strategies);
+        this.original.asAdmin().applyStrategies();
+        assertEquals(this.optimized, this.original);
     }
 
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractMatchPredicateStrategyTest {
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+        return Arrays.asList(new Object[][]{
+                {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().has("name", "marko").as("a").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
+                {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").as("a").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
+                {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), Collections.emptyList()}, // no has() pull out
+                {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), Collections.emptyList()}, // no has() pull out
+                {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), Collections.emptyList()}, // no has() pull out
+                /////////
+                {__.match(as("a").out().as("b"), __.where(as("b").out("knows").as("c"))), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c"))), Collections.emptyList()}, // make as().where()
+                {__.match(as("a").out().as("b"), __.where("a", P.gt("b"))), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b"))), Collections.emptyList()},  // make as().where()
+                /////////
+                {__.match(as("a").out().as("b")).where(as("b").filter(has("name")).out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(has("name").out("knows").as("c"))), Collections.singletonList(InlineFilterStrategy.instance())}, // make as().where()
+                {__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), as("a").where(P.gt("b"))), Collections.emptyList()},  // make as().where()
+        });
     }
 
-    private static abstract class AbstractMatchPredicateStrategyTest {
-
-        protected TraversalEngine traversalEngine;
-
-        void applyMatchWhereStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(MatchPredicateStrategy.instance(), IdentityRemovalStrategy.instance());
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyMatchWhereStrategy(traversal);
-            assertEquals(optimized, traversal);
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            return Arrays.asList(new Traversal[][]{
-                    {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
-                    {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
-                    {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
-                    {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b")))}, // no has() pull out
-                    {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
-                    /////////
-                    {__.match(as("a").out().as("b"), __.where(as("b").out("knows").as("c"))), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
-                    {__.match(as("a").out().as("b"), __.where("a", P.gt("b"))), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
-                    /////////
-                    //{__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
-                    //{__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
-            });
-        }
-    }
 }

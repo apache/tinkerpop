@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 /**
  * Ties together the core interfaces of an IO format: {@link GraphReader}, {@link GraphWriter} and {@link Mapper}.
@@ -84,14 +85,16 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
      * that class will be passed to {@link Graph#io(Io.Builder)} by the user.
      */
     public interface Builder<I extends Io> {
-
         /**
-         * Providers use this method to supply an {@link IoRegistry} to the {@link Io} implementation.  End-users
-         * should not use this method directly.  If a user wants to register custom serializers, then such things
-         * can be done via calls to {@link Io#mapper()} after the {@link Io} is constructed via
+         * Allows a {@link Graph} implementation to have full control over the {@link Mapper.Builder} instance.
+         * Typically, the implementation will just pass in its {@link IoRegistry} implementation so that the
+         * {@link Mapper} that gets built will have knowledge of any custom classes and serializers it may have.
+         * <p/>
+         * End-users should not use this method directly.  If a user wants to register custom serializers, then such
+         * things can be done via calls to {@link Io#mapper()} after the {@link Io} is constructed via
          * {@link Graph#io(Io.Builder)}.
          */
-        public Builder<? extends Io> registry(final IoRegistry registry);
+        public Builder<? extends Io> onMapper(final Consumer<Mapper.Builder> onMapper);
 
         /**
          * Providers use this method to supply the current instance of their {@link Graph} to the builder.  End-users

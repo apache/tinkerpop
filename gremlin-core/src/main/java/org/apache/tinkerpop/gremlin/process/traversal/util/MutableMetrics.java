@@ -31,7 +31,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
     // Note: if you add new members then you probably need to add them to the copy constructor;
 
-    private long tempTime = -1l;
+    private long tempTime = -1L;
 
     protected MutableMetrics() {
         // necessary for gryo serialization
@@ -42,8 +42,19 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.name = name;
     }
 
+    /**
+     * Create a {@code MutableMetrics} from an immutable one.
+     */
+    public MutableMetrics(final Metrics other) {
+        this.id = other.getId();
+        this.name = other.getName();
+        this.annotations.putAll(other.getAnnotations());
+        this.durationNs = other.getDuration(TimeUnit.NANOSECONDS);
+        other.getCounts().forEach((key, count) -> this.counts.put(key, new AtomicLong(count)));
+        other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
+    }
 
-    public void addNested(MutableMetrics metrics) {
+    public void addNested(final MutableMetrics metrics) {
         this.nested.put(metrics.getId(), metrics);
     }
 
@@ -61,7 +72,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.tempTime = -1;
     }
 
-    public void incrementCount(String key, final long incr) {
+    public void incrementCount(final String key, final long incr) {
         AtomicLong count = this.counts.get(key);
         if (count == null) {
             count = new AtomicLong();
@@ -70,15 +81,15 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         count.addAndGet(incr);
     }
 
-    public void setDuration(long dur, TimeUnit unit) {
+    public void setDuration(final long dur, final TimeUnit unit) {
         this.durationNs = TimeUnit.NANOSECONDS.convert(dur, unit);
     }
 
-    public void setCount(String key, final long val) {
+    public void setCount(final String key, final long val) {
         this.counts.put(key, new AtomicLong(val));
     }
 
-    public void aggregate(MutableMetrics other) {
+    public void aggregate(final MutableMetrics other) {
         this.durationNs += other.durationNs;
         for (Map.Entry<String, AtomicLong> otherCount : other.counts.entrySet()) {
             AtomicLong thisCount = this.counts.get(otherCount.getKey());
@@ -138,7 +149,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
      * @param key
      * @param value
      */
-    public void setAnnotation(String key, Object value) {
+    public void setAnnotation(final String key, final Object value) {
         if (!(value instanceof String) && !(value instanceof Number)) {
             throw new IllegalArgumentException("Metrics annotations only support String and Number values.");
         }
@@ -146,7 +157,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     }
 
     @Override
-    public MutableMetrics getNested(String metricsId) {
+    public MutableMetrics getNested(final String metricsId) {
         return (MutableMetrics) nested.get(metricsId);
     }
 
@@ -178,4 +189,9 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         return clone;
     }
 
+    public void finish(final long bulk) {
+        stop();
+        incrementCount(TraversalMetrics.TRAVERSER_COUNT_ID, 1);
+        incrementCount(TraversalMetrics.ELEMENT_COUNT_ID, bulk);
+    }
 }

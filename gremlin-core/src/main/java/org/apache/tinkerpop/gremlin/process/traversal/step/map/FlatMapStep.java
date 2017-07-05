@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Iterator;
@@ -38,11 +39,12 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     }
 
     @Override
-    protected Traverser<E> processNextStart() {
+    protected Traverser.Admin<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext()) {
                 return this.head.split(this.iterator.next(), this);
             } else {
+                closeIterator();
                 this.head = this.starts.next();
                 this.iterator = this.flatMap(this.head);
             }
@@ -54,6 +56,11 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     @Override
     public void reset() {
         super.reset();
+        closeIterator();
         this.iterator = EmptyIterator.instance();
+    }
+
+    protected void closeIterator() {
+        CloseableIterator.closeIterator(iterator);
     }
 }

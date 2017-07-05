@@ -78,9 +78,10 @@ public final class InputOutputHelper {
         newConfiguration.copy(hadoopConfiguration);
         if (resultGraph.equals(GraphComputer.ResultGraph.NEW)) {
             newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopConfiguration.getOutputLocation());
-            if (hadoopConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))
-                newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphOutputFormat()).getCanonicalName());
-            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, persist.equals(GraphComputer.Persist.EDGES));
+            if (hadoopConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER))
+                if (null != InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphWriter()))
+                    newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphWriter()).getCanonicalName());
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES, persist.equals(GraphComputer.Persist.EDGES));
         }
         newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopConfiguration.getOutputLocation() + "_");
         return HadoopGraph.open(newConfiguration);

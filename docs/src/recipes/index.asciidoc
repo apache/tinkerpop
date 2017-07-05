@@ -1,0 +1,140 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+
+*x.y.z*
+
+:toc-position: left
+
+Recipes
+=======
+
+image:gremlin-chef.png[width=120,float=left] All programming languages tend to have
+link:https://en.wikipedia.org/wiki/Software_design_pattern[patterns of usage] for commonly occurring problems. Gremlin
+is not different in that respect. There are many commonly occurring traversal themes that have general applicability
+to any graph. Gremlin Recipes present these common traversal patterns and methods of usage that will
+provide some basic building blocks for virtually any graph in any domain.
+
+Recipes assume general familiarity with Gremlin and the TinkerPop stack. Be sure to have read the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
+
+Traversal Recipes
+=================
+
+include::between-vertices.asciidoc[]
+
+include::centrality.asciidoc[]
+
+include::connected-components.asciidoc[]
+
+include::cycle-detection.asciidoc[]
+
+include::duplicate-edge.asciidoc[]
+
+include::duplicate-vertex.asciidoc[]
+
+include::if-then-based-grouping.asciidoc[]
+
+include::pagination.asciidoc[]
+
+include::recommendation.asciidoc[]
+
+include::shortest-path.asciidoc[]
+
+include::traversal-induced-values.asciidoc[]
+
+include::tree.asciidoc[]
+
+Implementation Recipes
+======================
+
+include::style-guide.asciidoc[]
+
+include::traversal-component-reuse.asciidoc[]
+
+[[contributing]]
+How to Contribute a Recipe
+==========================
+
+Recipes are generated under the same system as all TinkerPop documentation and is stored directly in the source code
+repository. TinkerPop documentation is all link:http://asciidoc.org/[asciidoc] based and can be generated locally with
+either link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#building-testing[shell script/Maven] or
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#docker-integration[Docker] build commands. Once
+changes are complete, submit a pull request for review by TinkerPop committers.
+
+NOTE: Please review existing recipes and attempt to conform to their writing and visual style. It may also be a good
+idea to discuss ideas for a recipe on the link:+++https://lists.apache.org/list.html?dev@tinkerpop.apache.org+++[developer mailing list]
+prior to starting work on it, as the community might provide insight on the approach and idea that would be helpful.
+It is preferable that a link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA issue] be opened that describes the nature
+of the recipe so that the eventual pull request can be bound to that issue.
+
+IMPORTANT: Please read TinkerPop's link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_contributing[policy on contributing]
+prior to submitting a recipe.
+
+To contribute a recipe, first clone the repository:
+
+[source, shell]
+git clone https://github.com/apache/tinkerpop.git
+
+The recipes can be found in this directory:
+
+[source, shell]
+ls docs/src/recipes
+
+Each recipe exists within a separate `.asciidoc` file.  The file name should match the name of the recipe. Recipe names
+should be short, but descriptive (as they need to fit in the left-hand table of contents when generated). The
+`index.asciidoc` is the parent document that "includes" the content of each individual recipe file. A recipe file is
+included in the `index.asciidoc` with an entry like this: `include::my-recipe.asciidoc[]`
+
+Documentation should be generated locally for review prior to submitting a pull request. TinkerPop documentation is
+"live" in that it is bound to a specific version when generated. Furthermore, code examples (those that are
+`gremlin-groovy` based) are executed at document generation time with the results written directly into the output.
+The following command will generate the documentation with:
+
+[source,shell]
+bin/process-docs.sh
+
+The generated documentation can be found at `target/docs/htmlsingle/recipes`. This process can be long on the first
+run of the documentation as it is generating all of the documentation locally (e.g. reference documentation,
+tutorials, etc). To generate just the recipes, follow this process:
+
+[source,shell]
+bin/process-docs.sh --dryRun               <1>
+rm -r target/postprocess-asciidoc/recipes  <2>
+bin/process-docs.sh                        <3>
+
+<1> That command will quickly generate all of the documentation, but it does not do the code example execution (which is
+the "slow" part).
+<2> Delete the recipes directory, which forces a fresh copy of the recipes to be generated.
+<3> Process all of the documentation that is "new" (i.e. the fresh copy of recipes).
+
+The `bin/process-docs.sh` approach requires that Hadoop is installed. To avoid that prerequisite, try using Docker:
+
+[source,shell]
+docker/build.sh -d
+
+The downside to using Docker is that the process will take longer as each run will require the entire documentation set
+to be generated.
+
+The final step to submitting a recipe is to issue a link:https://help.github.com/articles/using-pull-requests/[pull request through GitHub].
+It is helpful to prefix the name of the pull request with the JIRA issue number, so that TinkerPop's automation between
+GitHub and JIRA are linked.  As mentioned earlier in this section, the recipe will go under review by TinkerPop
+committers prior to merging. This process may take several days to complete. We look forward to receiving your
+submissions!
+
+include::appendix.asciidoc[]

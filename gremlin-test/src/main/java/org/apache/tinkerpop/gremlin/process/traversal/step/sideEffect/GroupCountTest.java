@@ -22,16 +22,26 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,12 +70,19 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Long, Long>> get_g_V_groupCount_byXbothE_countX();
 
+    public abstract Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum();
+
+    public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+
+    public abstract Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupCount_byXnameX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_groupCount_byXnameX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -74,6 +91,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     private static void assertCommonA(Traversal<Vertex, Map<String, Long>> traversal) {
@@ -110,6 +128,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         assertTrue(hasRipple);
         assertFalse(hasSomethingElse);
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "x", HashMap.class);
     }
 
     @Test
@@ -118,6 +137,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_name_groupCount();
         printTraversalForm(traversal);
         assertCommonB(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -126,6 +146,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_name_groupCountXaX_capXaX();
         printTraversalForm(traversal);
         assertCommonB(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     private static void assertCommonB(final Traversal<Vertex, Map<String, Long>> traversal) {
@@ -142,6 +163,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_hasXnoX_groupCount();
         printTraversalForm(traversal);
         assertCommonC(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -150,6 +172,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_hasXnoX_groupCountXaX_capXaX();
         printTraversalForm(traversal);
         assertCommonC(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     private static void assertCommonC(final Traversal<Vertex, Map<Object, Long>> traversal) {
@@ -170,6 +193,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         assertEquals(2l, map.get("ripple").longValue());
         assertEquals(1l, map.get("josh").longValue());
         assertEquals(1l, map.get("vadas").longValue());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -182,6 +206,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         assertEquals(2, map.size());
         assertEquals(2, map.get("marko").longValue());
         assertEquals(2, map.get("java").longValue());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "m", HashMap.class);
     }
 
     @Test
@@ -193,6 +218,44 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
             put(1l, 3l);
             put(3l, 3l);
         }}, traversal.next());
+        checkSideEffects(traversal.asAdmin().getSideEffects());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum() {
+        final Traversal<Vertex, Long> traversal = get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum();
+        printTraversalForm(traversal);
+        assertEquals(12l, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
+        final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+        printTraversalForm(traversal);
+        //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
+        final Map<Vertex, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(6, map.size());
+        assertEquals(6l, map.get(convertToVertex(graph, "marko")).longValue());
+        assertEquals(2l, map.get(convertToVertex(graph, "vadas")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "lop")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "josh")).longValue());
+        assertEquals(2l, map.get(convertToVertex(graph, "ripple")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "marko")).longValue());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "lop", "lop", "peter", "marko", "marko", "marko", "ripple", "vadas", "josh", "josh", "josh"), traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     public static class Traversals extends GroupCountTest {
@@ -247,6 +310,21 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Long, Long>> get_g_V_groupCount_byXbothE_countX() {
             return g.V().<Long>groupCount().by(bothE().count());
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum() {
+            return g.V().union(out("knows"), out("created").in("created")).groupCount().select(Column.values).unfold().sum();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
+            return g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+            return g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(gt(2))).select("b").values("name");
         }
     }
 }

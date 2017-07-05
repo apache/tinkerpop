@@ -23,9 +23,12 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
  */
 public final class GraphSONTokens {
 
-    private GraphSONTokens() {}
+    private GraphSONTokens() {
+    }
 
     public static final String CLASS = "@class";
+    public static final String VALUETYPE = "@type";
+    public static final String VALUEPROP = "@value";
     public static final String ID = "id";
     public static final String TYPE = "type";
     public static final String VALUE = "value";
@@ -33,7 +36,9 @@ public final class GraphSONTokens {
     public static final String KEY = "key";
     public static final String EDGE = "edge";
     public static final String EDGES = "edges";
+    public static final String ELEMENT = "ELEMENT";
     public static final String VERTEX = "vertex";
+    public static final String VERTEX_PROPERTY = "vertexProperty";
     public static final String VERTICES = "vertices";
     public static final String IN = "inV";
     public static final String OUT = "outV";
@@ -44,6 +49,8 @@ public final class GraphSONTokens {
     public static final String OBJECTS = "objects";
     public static final String IN_LABEL = "inVLabel";
     public static final String OUT_LABEL = "outVLabel";
+    public static final String GREMLIN_TYPE_NAMESPACE = "g";
+    public static final String GREMLINX_TYPE_NAMESPACE = "gx";
 
     // TraversalExplanation Tokens
     public static final String ORIGINAL = "original";
@@ -59,4 +66,15 @@ public final class GraphSONTokens {
     public static final String NAME = "name";
     public static final String COUNTS = "counts";
     public static final String ANNOTATIONS = "annotations";
+
+    public static final String BULK = "bulk";
+
+    public static final String SCRIPT = "script";
+    public static final String LANGUAGE = "language";
+    public static final String ARGUMENTS = "arguments";
+    public static final String PREDICATE = "predicate";
+    public static final String AND = "and";
+    public static final String OR = "or";
+    public static final String SOURCE = "source";
+    public static final String STEP = "step";
 }

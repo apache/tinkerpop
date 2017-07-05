@@ -25,8 +25,13 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
+import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.ByteArrayInputStream;
@@ -38,7 +43,7 @@ import java.io.InputStream;
  */
 public final class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    private final GraphSONReader graphsonReader = GraphSONReader.build().create();
+    private GraphSONReader graphsonReader;
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
     private boolean hasEdges;
@@ -50,7 +55,12 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
-        this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, true);
+        this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES, true);
+        this.graphsonReader = GraphSONReader.build().mapper(
+                GraphSONMapper.build().
+                        version(GraphSONVersion.V2_0).
+                        typeInfo(TypeInfo.PARTIAL_TYPES).
+                        addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(context.getConfiguration()))).create()).create();
     }
 
     @Override
@@ -84,5 +94,6 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
     @Override
     public synchronized void close() throws IOException {
         this.lineRecordReader.close();
+        this.graphsonReader = null;
     }
 }

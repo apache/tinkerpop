@@ -20,7 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -33,12 +37,12 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasContainer implements Serializable, Cloneable, Predicate<Element> {
+public class HasContainer implements Serializable, Cloneable, Predicate<Element> {
 
     private String key;
     private P predicate;
 
-    private boolean testingIdString;
+    private final boolean testingIdString;
 
     public HasContainer(final String key, final P<?> predicate) {
         this.key = key;
@@ -66,34 +70,55 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
         }
     }
 
-    public boolean test(final Element element) {
+    public final boolean test(final Element element) {
         // it is OK to evaluate equality of ids via toString(), given that the test suite enforces the value of
         // id().toString() to be a first class representation of the identifier. a string test is only executed
         // if the predicate value is a String.  this allows stuff like: g.V().has(id,lt(10)) to work properly
         if (this.key.equals(T.id.getAccessor()))
-            return testingIdString ?  this.predicate.test(element.id().toString()) : this.predicate.test(element.id());
+            return testingIdString ? testIdAsString(element) : testId(element);
         else if (this.key.equals(T.label.getAccessor()))
-            return this.predicate.test(element.label());
+            return testLabel(element);
         else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))
-            return this.predicate.test(((VertexProperty) element).value());
+            return testValue((VertexProperty) element);
         else if (element instanceof VertexProperty && this.key.equals(T.key.getAccessor()))
-            return this.predicate.test(((VertexProperty) element).key());
+            return testKey((VertexProperty) element);
         else {
             if (element instanceof Vertex) {
                 final Iterator<? extends Property> itty = element.properties(this.key);
                 while (itty.hasNext()) {
-                    if (this.predicate.test(itty.next().value()))
+                    if (testValue(itty.next()))
                         return true;
                 }
                 return false;
             } else {
                 final Property property = element.property(this.key);
-                return property.isPresent() && this.predicate.test(property.value());
+                return property.isPresent() && testValue(property);
             }
         }
     }
 
-    public String toString() {
+    protected boolean testId(Element element) {
+        return this.predicate.test(element.id());
+    }
+
+    protected boolean testIdAsString(Element element) {
+        return this.predicate.test(element.id().toString());
+    }
+
+    protected boolean testLabel(Element element) {
+        return this.predicate.test(element.label());
+    }
+
+    protected boolean testValue(Property property) {
+        return this.predicate.test(property.value());
+    }
+
+    protected boolean testKey(Property property) {
+        return this.predicate.test(property.key());
+    }
+
+
+    public final String toString() {
         return this.key + '.' + this.predicate;
     }
 
@@ -112,23 +137,23 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
         return (this.key != null ? this.key.hashCode() : 0) ^ (this.predicate != null ? this.predicate.hashCode() : 0);
     }
 
-    public String getKey() {
+    public final String getKey() {
         return this.key;
     }
 
-    public void setKey(final String key) {
+    public final void setKey(final String key) {
         this.key = key;
     }
 
-    public P<?> getPredicate() {
+    public final P<?> getPredicate() {
         return this.predicate;
     }
 
-    public BiPredicate<?, ?> getBiPredicate() {
+    public final BiPredicate<?, ?> getBiPredicate() {
         return this.predicate.getBiPredicate();
     }
 
-    public Object getValue() {
+    public final Object getValue() {
         return this.predicate.getValue();
     }
 
@@ -151,6 +176,11 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
         return true;
     }
 
+
+    /**
+     * @deprecated As of release 3.2.4. Providers should handle composite {@link P#and} predicates and not rely on splitting.
+     */
+    @Deprecated
     public static HasContainer[] makeHasContainers(final String key, final P<?> predicate) {
         if (predicate instanceof AndP) {
             final List<P<?>> predicates = ((AndP) predicate).getPredicates();

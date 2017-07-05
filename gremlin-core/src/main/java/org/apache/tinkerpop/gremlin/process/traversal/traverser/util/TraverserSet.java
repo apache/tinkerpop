@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.AbstractSet;
@@ -64,7 +65,11 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     }
 
     public long bulkSize() {
-        return this.map.values().stream().map(Traverser::bulk).reduce(0l, (a, b) -> a + b);
+        long bulk = 0L;
+        for (final Traverser.Admin<S> traverser : this.map.values()) {
+            bulk = bulk + traverser.bulk();
+        }
+        return bulk;
     }
 
     @Override
@@ -136,18 +141,20 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public String toString() {
-        return this.map.keySet().toString();
+        return this.map.values().toString();
     }
 
     public void sort(final Comparator<Traverser<S>> comparator) {
-        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.values());
+        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.size());
+        IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.sort(list, comparator);
         this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));
     }
 
     public void shuffle() {
-        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.values());
+        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.size());
+        IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.shuffle(list);
         this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));

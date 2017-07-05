@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -64,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
@@ -312,6 +312,19 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldSerializeTinkerGraphWithMultiPropertiesToGryo() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createTheCrew();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
+            final byte[] b = out.toByteArray();
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(b)) {
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertCrewGraph(target, false);
+            }
+        }
+    }
+
+    @Test
     public void shouldSerializeTinkerGraphToGraphSON() throws Exception {
         final TinkerGraph graph = TinkerFactory.createModern();
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -319,6 +332,18 @@ public class TinkerGraphTest {
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
                 final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
                 IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
+
+    @Test
+    public void shouldSerializeTinkerGraphWithMultiPropertiesToGraphSON() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createTheCrew();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.graphson()).writer().create().writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertCrewGraph(target, false);
             }
         }
     }
@@ -492,7 +517,7 @@ public class TinkerGraphTest {
 
         //Test write graph
         graph.close();
-        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
 
@@ -504,7 +529,7 @@ public class TinkerGraphTest {
 
         //Test read graph
         final TinkerGraph readGraph = TinkerGraph.open(conf);
-        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
     }
@@ -518,7 +543,35 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistry.getInstance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV1d0.instance()).classResolver(classResolver).create();
+        final Kryo kryo = mapper.createMapper();
+        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+
+            kryo.writeObject(out, colorList);
+            out.flush();
+            final byte[] b = stream.toByteArray();
+
+            try (final InputStream inputStream = new ByteArrayInputStream(b)) {
+                final Input input = new Input(inputStream);
+                final List m = kryo.readObject(input, ArrayList.class);
+                final TinkerGraph readX = (TinkerGraph) m.get(0);
+                assertEquals(104, IteratorUtils.count(readX.vertices()));
+                assertEquals(102, IteratorUtils.count(readX.edges()));
+            }
+        }
+    }
+
+    @Test
+    public void shouldSerializeWithColorClassResolverToTinkerGraphUsingDeprecatedTinkerIoRegistry() throws Exception {
+        final Map<String,Color> colors = new HashMap<>();
+        colors.put("red", Color.RED);
+        colors.put("green", Color.GREEN);
+
+        final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
+
+        final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
+        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistryV1d0.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -614,25 +667,25 @@ public class TinkerGraphTest {
         }
     }
 
-    public static class TestIoBuilder implements Io.Builder{
+    public static class TestIoBuilder implements Io.Builder {
 
-        static int calledRegistry, calledGraph, calledCreate;
+        static int calledGraph, calledCreate, calledOnMapper;
 
         public TestIoBuilder(){
             //Looks awkward to reset static vars inside a constructor, but makes sense from testing perspective
-            calledRegistry=0;
-            calledGraph=0;
-            calledCreate=0;
+            calledGraph = 0;
+            calledCreate = 0;
+            calledOnMapper = 0;
         }
 
         @Override
-        public Io.Builder<? extends Io> registry(IoRegistry registry) {
-            calledRegistry++;
+        public Io.Builder<? extends Io> onMapper(final Consumer onMapper) {
+            calledOnMapper++;
             return this;
         }
 
         @Override
-        public Io.Builder<? extends Io> graph(Graph graph) {
+        public Io.Builder<? extends Io> graph(final Graph graph) {
             calledGraph++;
             return this;
         }

@@ -18,21 +18,34 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Class used to serialize graph-based objects such as vertices, edges, properties, and paths. These objects are
@@ -42,19 +55,19 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class GryoSerializers {
+public final class GryoSerializers {
 
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      */
-    final static class EdgeSerializer extends Serializer<Edge> {
+    public final static class EdgeSerializer implements SerializerShim<Edge> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Edge edge) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Edge edge) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
         }
 
         @Override
-        public Edge read(final Kryo kryo, final Input input, final Class<Edge> edgeClass) {
+        public <I extends InputShim> Edge read(final KryoShim<I, ?> kryo, final I input, final Class<Edge> edgeClass) {
             final Object o = kryo.readClassAndObject(input);
             return (Edge) o;
         }
@@ -63,17 +76,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      */
-    final static class VertexSerializer extends Serializer<Vertex> {
-        public VertexSerializer() {
-        }
-
+    public final static class VertexSerializer implements SerializerShim<Vertex> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Vertex vertex) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Vertex vertex) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
         }
 
         @Override
-        public Vertex read(final Kryo kryo, final Input input, final Class<Vertex> vertexClass) {
+        public <I extends InputShim> Vertex read(final KryoShim<I, ?> kryo, final I input, final Class<Vertex> vertexClass) {
             return (Vertex) kryo.readClassAndObject(input);
         }
     }
@@ -81,17 +91,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
      */
-    final static class PropertySerializer extends Serializer<Property> {
-        public PropertySerializer() {
-        }
-
+    public final static class PropertySerializer implements SerializerShim<Property> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Property property) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Property property) {
             kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
         }
 
         @Override
-        public Property read(final Kryo kryo, final Input input, final Class<Property> propertyClass) {
+        public <I extends InputShim> Property read(final KryoShim<I, ?> kryo, final I input, final Class<Property> propertyClass) {
             return (Property) kryo.readClassAndObject(input);
         }
     }
@@ -99,17 +106,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
      */
-    final static class VertexPropertySerializer extends Serializer<VertexProperty> {
-        public VertexPropertySerializer() {
-        }
-
+    public final static class VertexPropertySerializer implements SerializerShim<VertexProperty> {
         @Override
-        public void write(final Kryo kryo, final Output output, final VertexProperty vertexProperty) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
         }
 
         @Override
-        public VertexProperty read(final Kryo kryo, final Input input, final Class<VertexProperty> vertexPropertyClass) {
+        public <I extends InputShim> VertexProperty read(final KryoShim<I, ?> kryo, final I input, final Class<VertexProperty> vertexPropertyClass) {
             return (VertexProperty) kryo.readClassAndObject(input);
         }
     }
@@ -117,18 +121,165 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
      */
-    final static class PathSerializer extends Serializer<Path> {
-        public PathSerializer() {
-        }
-
+    public final static class PathSerializer implements SerializerShim<Path> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Path path) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Path path) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(path, false));
         }
 
         @Override
-        public Path read(final Kryo kryo, final Input input, final Class<Path> pathClass) {
+        public <I extends InputShim> Path read(final KryoShim<I, ?> kryo, final I input, final Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
+        }
+    }
+
+    public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
+            writeInstructions(kryo, output, bytecode.getSourceInstructions());
+            writeInstructions(kryo, output, bytecode.getStepInstructions());
+        }
+
+        @Override
+        public <I extends InputShim> Bytecode read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode> clazz) {
+            final Bytecode bytecode = new Bytecode();
+            final int sourceInstructionCount = input.readInt();
+            for (int ix = 0; ix < sourceInstructionCount; ix++) {
+                final String operator = input.readString();
+                final Object[] args = operator.equals(TraversalSource.Symbols.withoutStrategies) ?
+                        kryo.readObject(input, Class[].class) :
+                        kryo.readObject(input, Object[].class);
+                bytecode.addSource(operator, args);
+            }
+
+            final int stepInstructionCount = input.readInt();
+            for (int ix = 0; ix < stepInstructionCount; ix++) {
+                final String operator = input.readString();
+                final Object[] args = kryo.readObject(input, Object[].class);
+                bytecode.addStep(operator, args);
+            }
+
+            return bytecode;
+        }
+
+        private static <O extends OutputShim> void writeInstructions(final KryoShim<?, O> kryo, final O output,
+                                                                     final List<Bytecode.Instruction> instructions) {
+            output.writeInt(instructions.size());
+            for (Bytecode.Instruction inst : instructions) {
+                output.writeString(inst.getOperator());
+                kryo.writeObject(output, inst.getArguments());
+            }
+        }
+    }
+
+    public final static class PSerializer implements SerializerShim<P> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final P p) {
+            output.writeString(p instanceof ConnectiveP ?
+                    (p instanceof AndP ? "and" : "or") :
+                    p.getBiPredicate().toString());
+            if (p instanceof ConnectiveP || p.getValue() instanceof Collection) {
+                output.writeByte((byte) 0);
+                final Collection<?> coll = p instanceof ConnectiveP ?
+                        ((ConnectiveP<?>) p).getPredicates() : (Collection) p.getValue();
+                output.writeInt(coll.size());
+                coll.forEach(v -> kryo.writeClassAndObject(output, v));
+            } else {
+                output.writeByte((byte) 1);
+                kryo.writeClassAndObject(output, p.getValue());
+            }
+        }
+
+        @Override
+        public <I extends InputShim> P read(final KryoShim<I, ?> kryo, final I input, final Class<P> clazz) {
+            final String predicate = input.readString();
+            final boolean isCollection = input.readByte() == (byte) 0;
+            final Object value;
+            if (isCollection) {
+                value = new ArrayList();
+                final int size = input.readInt();
+                for (int ix = 0; ix < size; ix++) {
+                    ((List) value).add(kryo.readClassAndObject(input));
+                }
+            } else {
+                value = kryo.readClassAndObject(input);
+            }
+
+            try {
+                if (predicate.equals("and") || predicate.equals("or"))
+                    return predicate.equals("and") ? new AndP((List<P>) value) : new OrP((List<P>) value);
+                else if (value instanceof Collection) {
+                    if (predicate.equals("between"))
+                        return P.between(((List) value).get(0), ((List) value).get(1));
+                    else if (predicate.equals("inside"))
+                        return P.inside(((List) value).get(0), ((List) value).get(1));
+                    else if (predicate.equals("outside"))
+                        return P.outside(((List) value).get(0), ((List) value).get(1));
+                    else if (predicate.equals("within"))
+                        return P.within((Collection) value);
+                    else if (predicate.equals("without"))
+                        return P.without((Collection) value);
+                    else
+                        return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
+                } else
+                    return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
+
+    public final static class LambdaSerializer implements SerializerShim<Lambda> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Lambda lambda) {
+            output.writeString(lambda.getLambdaScript());
+            output.writeString(lambda.getLambdaLanguage());
+            output.writeInt(lambda.getLambdaArguments());
+        }
+
+        @Override
+        public <I extends InputShim> Lambda read(final KryoShim<I, ?> kryo, final I input, final Class<Lambda> clazz) {
+            final String script = input.readString();
+            final String language = input.readString();
+            final int arguments = input.readInt();
+            //
+            if (-1 == arguments || arguments > 2)
+                return new Lambda.UnknownArgLambda(script, language, arguments);
+            else if (0 == arguments)
+                return new Lambda.ZeroArgLambda<>(script, language);
+            else if (1 == arguments)
+                return new Lambda.OneArgLambda<>(script, language);
+            else
+                return new Lambda.TwoArgLambda<>(script, language);
+        }
+    }
+
+    public final static class BindingSerializer implements SerializerShim<Bytecode.Binding> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode.Binding binding) {
+            output.writeString(binding.variable());
+            kryo.writeClassAndObject(output, binding.value());
+        }
+
+        @Override
+        public <I extends InputShim> Bytecode.Binding read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode.Binding> clazz) {
+            final String var = input.readString();
+            final Object val = kryo.readClassAndObject(input);
+            return new Bytecode.Binding(var, val);
+        }
+    }
+
+    public final static class DefaultRemoteTraverserSerializer implements SerializerShim<DefaultRemoteTraverser> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final DefaultRemoteTraverser remoteTraverser) {
+            kryo.writeClassAndObject(output, remoteTraverser.get());
+            output.writeLong(remoteTraverser.bulk());
+        }
+
+        @Override
+        public <I extends InputShim> DefaultRemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultRemoteTraverser> remoteTraverserClass) {
+            final Object o = kryo.readClassAndObject(input);
+            return new DefaultRemoteTraverser<>(o, input.readLong());
         }
     }
 }

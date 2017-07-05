@@ -1,0 +1,71 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[if-then-based-grouping]]
+If-Then Based Grouping
+----------------------
+
+Consider the following traversal over the "modern" toy graph:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').groupCount().by('age')
+----
+
+The result is an age distribution that simply shows that every "person" in the graph is of a different age. In some
+cases, this result is exactly what is needed, but sometimes a grouping may need to be transformed to provide a
+different picture of the result. For example, perhaps a grouping on the value "age" would be better represented by
+a domain concept such as "young", "old" and "very old".
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").groupCount().by(values("age").choose(
+  is(lt(28)),constant("young"),
+  choose(is(lt(30)),
+         constant("old"),
+         constant("very old"))))
+----
+
+Note that the `by` modulator has been altered from simply taking a string key of "age" to take a `Traversal`. That
+inner `Traversal` utilizes `choose` which is like an `if-then-else` clause. The `choose` is nested and would look
+like the following in Java:
+
+[source,java]
+----
+if (age < 28) {
+  return "young";
+} else {
+  if (age < 30) {
+    return "old";
+  } else {
+    return "very old";
+  }
+}
+----
+
+The use of `choose` is a good intutive choice for this `Traversal` as it is a natural mapping to `if-then-else`, but
+there is another option to consider with `coalesce`:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").
+  groupCount().by(values("age").
+  coalesce(is(lt(28)).constant("young"),
+           is(lt(30)).constant("old"),
+           constant("very old")))
+----
+
+The answer is the same, but this traversal removes the nested `choose`, which makes it easier to read.

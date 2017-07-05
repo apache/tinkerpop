@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -40,7 +41,8 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public B_LP_O_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
         this.path = ImmutablePath.make();
-        if (!step.getLabels().isEmpty()) this.path = this.path.extend(t, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) this.path = this.path.extend(t, labels);
     }
 
     /////////////////
@@ -65,7 +67,8 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         final B_LP_O_S_SE_SL_Traverser<R> clone = (B_LP_O_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.path = clone.path.clone();
-        if (!step.getLabels().isEmpty()) clone.path = clone.path.extend(r, step.getLabels());
+        final Set<String> labels = step.getLabels();
+        if (!labels.isEmpty()) clone.path = clone.path.extend(r, labels);
         return clone;
     }
 
@@ -79,9 +82,32 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public void addLabels(final Set<String> labels) {
         if (!labels.isEmpty())
-            this.path = this.path.size() == 0 || !this.path.get(this.path.size() - 1).equals(this.t) ?
+            this.path = this.path.isEmpty() || !this.t.equals(this.path.head()) ?
                     this.path.extend(this.t, labels) :
                     this.path.extend(labels);
+    }
+
+    @Override
+    public void keepLabels(final Set<String> labels) {
+        final Set<String> retractLabels = new HashSet<>();
+        for (final Set<String> stepLabels : this.path.labels()) {
+            for (final String label : stepLabels) {
+                if (!labels.contains(label))
+                    retractLabels.add(label);
+            }
+        }
+        this.path = this.path.retract(retractLabels);
+    }
+
+    @Override
+    public void dropLabels(final Set<String> labels) {
+        if (!labels.isEmpty())
+            this.path = path.retract(labels);
+    }
+
+    @Override
+    public void dropPath() {
+        this.path = ImmutablePath.make();
     }
 
     @Override
@@ -92,11 +118,11 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return (object instanceof B_LP_O_S_SE_SL_Traverser)
-                && ((B_LP_O_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_LP_O_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((B_LP_O_S_SE_SL_Traverser) object).loops() == this.loops()
-                && (null == this.sack || null != this.sideEffects.getSackMerger())
-                && ((B_LP_O_S_SE_SL_Traverser) object).path().popEquals(Pop.last, this.path); // this should be Pop.all?
+                && ((B_LP_O_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((B_LP_O_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((B_LP_O_S_SE_SL_Traverser) object).loops == this.loops
+                && (null == this.sack || (null != this.sideEffects && null != this.sideEffects.getSackMerger())) // hmmm... serialization in OLAP destroys the transient sideEffects
+                && ((B_LP_O_S_SE_SL_Traverser) object).path.popEquals(Pop.last, this.path); // this should be Pop.all?
     }
 
 }

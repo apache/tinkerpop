@@ -19,76 +19,50 @@
 package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
 import org.apache.giraph.aggregators.Aggregator;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.javatuples.Pair;
+
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MemoryAggregator implements Aggregator<Rule> {
+public final class MemoryAggregator implements Aggregator<ObjectWritable<Pair<BinaryOperator, Object>>> {
 
-    private Object currentObject;
-    private Rule.Operation lastOperation = null;
+    private ObjectWritable<Pair<BinaryOperator, Object>> currentObject = ObjectWritable.<Pair<BinaryOperator, Object>>empty();
 
-    public MemoryAggregator() {
-        this.currentObject = null;
+    public MemoryAggregator() { // for Giraph serialization
+
     }
 
     @Override
-    public Rule getAggregatedValue() {
-        if (null == this.currentObject)
-            return createInitialValue();
-        else if (this.currentObject instanceof Long)
-            return new Rule(Rule.Operation.INCR, this.currentObject);
-        else
-            return new Rule(null == this.lastOperation ? Rule.Operation.NO_OP : this.lastOperation, this.currentObject);
+    public ObjectWritable<Pair<BinaryOperator, Object>> getAggregatedValue() {
+        return this.currentObject;
     }
 
     @Override
-    public void setAggregatedValue(final Rule rule) {
-        this.currentObject = null == rule ? null : rule.getObject();
+    public void setAggregatedValue(final ObjectWritable<Pair<BinaryOperator, Object>> object) {
+        if (null != object)
+            this.currentObject = object;
+    }
+
+    @Override
+    public void aggregate(final ObjectWritable<Pair<BinaryOperator, Object>> object) {
+        if (null == object)
+            return;
+        else if (this.currentObject.isEmpty())
+            this.currentObject = object;
+        else if (!object.isEmpty())
+            this.currentObject.set(new Pair<>(object.get().getValue0(), object.get().getValue0().apply(this.currentObject.get().getValue1(), object.get().getValue1())));
     }
 
     @Override
     public void reset() {
-        this.currentObject = null;
+        this.currentObject = ObjectWritable.<Pair<BinaryOperator, Object>>empty();
     }
 
     @Override
-    public Rule createInitialValue() {
-        return new Rule(Rule.Operation.NO_OP, null);
-    }
-
-    @Override
-    public void aggregate(final Rule ruleWritable) {
-        final Rule.Operation rule = ruleWritable.getOperation();
-        final Object object = ruleWritable.getObject();
-        if (rule != Rule.Operation.NO_OP)
-            this.lastOperation = rule;
-
-        if (null == this.currentObject || rule.equals(Rule.Operation.SET)) {
-            this.currentObject = object;
-        } else {
-            if (rule.equals(Rule.Operation.INCR)) {
-                this.currentObject = (Long) this.currentObject + (Long) object;
-            } else if (rule.equals(Rule.Operation.AND)) {
-                this.currentObject = (Boolean) this.currentObject && (Boolean) object;
-            } else if (rule.equals(Rule.Operation.OR)) {
-                this.currentObject = (Boolean) this.currentObject || (Boolean) object;
-            } else if (rule.equals(Rule.Operation.NO_OP)) {
-                if (object instanceof Boolean) { // only happens when NO_OP booleans are being propagated will this occur
-                    if (null == this.lastOperation) {
-                        // do nothing ... why?
-                    } else if (this.lastOperation.equals(Rule.Operation.AND)) {
-                        this.currentObject = (Boolean) this.currentObject && (Boolean) object;
-                    } else if (this.lastOperation.equals(Rule.Operation.OR)) {
-                        this.currentObject = (Boolean) this.currentObject || (Boolean) object;
-                    } else {
-                        throw new IllegalStateException("This state should not have occurred: " + ruleWritable);
-                    }
-                }
-            } else {
-                throw new IllegalArgumentException("The provided rule is unknown: " + ruleWritable);
-            }
-        }
+    public ObjectWritable<Pair<BinaryOperator, Object>> createInitialValue() {
+        return ObjectWritable.<Pair<BinaryOperator, Object>>empty();
     }
 }

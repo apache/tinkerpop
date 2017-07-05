@@ -51,9 +51,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedVertex outVertex;
     private DetachedVertex inVertex;
 
-    private DetachedEdge() {
-
-    }
+    private DetachedEdge() {}
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
@@ -74,14 +72,43 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
+                        final Object outVId, final String outVLabel,
+                        final Object inVId, final String inVLabel) {
+        super(id, label);
+        this.outVertex = new DetachedVertex(outVId, outVLabel, Collections.emptyMap());
+        this.inVertex = new DetachedVertex(inVId, inVLabel, Collections.emptyMap());
+        if (properties != null && !properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            properties.entrySet().iterator().forEachRemaining(entry -> {
+                if (Property.class.isAssignableFrom(entry.getValue().getClass())) {
+                    this.properties.put(entry.getKey(), Collections.singletonList((Property)entry.getValue()));
+                } else {
+                    this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this)));
+                }
+            });
+        }
+    }
+
+    /**
+     * @deprecated As for release 3.2.5, replaced by {@link #DetachedEdge(Object, String, Map, Object, String, Object, String)}.
+     */
+    @Deprecated
+    public DetachedEdge(final Object id, final String label,
+                        final Map<String, Object> properties,
                         final Pair<Object, String> outV,
                         final Pair<Object, String> inV) {
         super(id, label);
         this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1(), Collections.emptyMap());
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1(), Collections.emptyMap());
-        if (!properties.isEmpty()) {
+        if (properties != null && !properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().stream().forEach(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
+            properties.entrySet().iterator().forEachRemaining(entry -> {
+                if (Property.class.isAssignableFrom(entry.getValue().getClass())) {
+                    this.properties.put(entry.getKey(), Collections.singletonList((Property)entry.getValue()));
+                } else {
+                    this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this)));
+                }
+            });
         }
     }
 
@@ -120,5 +147,53 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
+    }
+
+    @Override
+    void internalAddProperty(final Property p) {
+        if (null == properties) properties = new HashMap<>();
+        this.properties.put(p.key(), Collections.singletonList(p));
+    }
+
+    /**
+     * Provides a way to construct an immutable {@link DetachedEdge}.
+     */
+    public static DetachedEdge.Builder build() {
+        return new Builder(new DetachedEdge());
+    }
+
+    public static class Builder {
+        private DetachedEdge e;
+
+        private Builder(final DetachedEdge e) {
+            this.e = e;
+        }
+
+        public Builder addProperty(final Property p) {
+            e.internalAddProperty(p);
+            return this;
+        }
+
+        public Builder setId(final Object id) {
+            e.id = id;
+            return this;
+        }
+
+        public Builder setLabel(final String label) {
+            e.label = label;
+            return this;
+        }
+
+        public void setOutV(final DetachedVertex v) {
+            e.outVertex = v;
+        }
+
+        public void setInV(final DetachedVertex v) {
+            e.inVertex = v;
+        }
+
+        public DetachedEdge create() {
+            return e;
+        }
     }
 }

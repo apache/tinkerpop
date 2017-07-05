@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -29,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * {@code IdentityRemovalStrategy} looks for {@link IdentityStep} instances and removes them.
  * If the identity step is labeled, its labels are added to the previous step.
- * If the identity step is labeled and its the first step, in the traversal, it stays.
+ * If the identity step is labeled and its the first step in the traversal, it stays.
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,16 +47,15 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().size() <= 1 || !TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+        if (traversal.getSteps().size() <= 1)
             return;
 
-        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {
-            final Step<?, ?> previousStep = identityStep.getPreviousStep();
-            if (!(previousStep instanceof EmptyStep) || identityStep.getLabels().isEmpty()) {
-                ((IdentityStep<?>) identityStep).getLabels().forEach(previousStep::addLabel);
+        for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+            if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
+                TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
                 traversal.removeStep(identityStep);
             }
-        });
+        }
     }
 
     public static IdentityRemovalStrategy instance() {

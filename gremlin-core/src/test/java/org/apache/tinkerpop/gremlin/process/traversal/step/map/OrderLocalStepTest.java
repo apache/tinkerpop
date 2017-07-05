@@ -34,13 +34,9 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class OrderLocalStepTest extends StepTest {
-
-    @Override
-    @Ignore("hashCode() doesn't work properly for .order(local).by()")
-    public void testEquality() {
-    }
 
     @Override
     protected List<Traversal> getTraversals() {

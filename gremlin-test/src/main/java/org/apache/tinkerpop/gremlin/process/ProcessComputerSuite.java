@@ -26,9 +26,12 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVerte
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndTest;
@@ -60,7 +63,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
@@ -73,7 +81,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCount
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTestV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
@@ -81,7 +88,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
@@ -112,6 +119,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // branch
             BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
+            OptionalTest.Traversals.class,
             LocalTest.Traversals.class,
             RepeatTest.Traversals.class,
             UnionTest.Traversals.class,
@@ -149,7 +157,12 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MinTest.Traversals.class,
             SumTest.Traversals.class,
             OrderTest.Traversals.class,
+            PageRankTest.Traversals.class,
             PathTest.Traversals.class,
+            PeerPressureTest.Traversals.class,
+            ProfileTest.Traversals.class,
+            ProjectTest.Traversals.class,
+            ProgramTest.Traversals.class,
             PropertiesTest.Traversals.class,
             SelectTest.Traversals.class,
             UnfoldTest.Traversals.class,
@@ -172,14 +185,18 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
 
+            // compliance
+            ComplexTest.Traversals.class,
+            TraversalInterruptionComputerTest.class,
+
             // algorithms
             PageRankVertexProgramTest.class,
             PeerPressureVertexProgramTest.class,
             BulkLoaderVertexProgramTest.class,
             BulkDumperVertexProgramTest.class,
 
-            // strategy
-            ComputerVerificationStrategyProcessTest.ComputerTraversals.class,
+            // creations
+            TranslationStrategyProcessTest.class,
 
             // decorations
             ReadOnlyStrategyProcessTest.class,
@@ -193,6 +210,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // branch
             BranchTest.class,
             ChooseTest.class,
+            OptionalTest.class,
             LocalTest.class,
             RepeatTest.class,
             UnionTest.class,
@@ -225,7 +243,12 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SumTest.class,
             MatchTest.class,
             OrderTest.class,
+            PageRankTest.class,
+            // PeerPressureTest.class,
             PathTest.class,
+            ProfileTest.class,
+            ProjectTest.class,
+            ProgramTest.class,
             PropertiesTest.class,
             SelectTest.class,
             UnfoldTest.class,
@@ -238,7 +261,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,
-            ProfileTest.class,
             SackTest.class,
             SideEffectCapTest.class,
             SideEffectTest.class,

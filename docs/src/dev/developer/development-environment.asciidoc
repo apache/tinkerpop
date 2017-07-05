@@ -14,16 +14,137 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+[[development-environment]]
 Development Environment
 =======================
+
+TinkerPop is fairly large body of code spread across many modules and covering multiple programming languages. Despite
+this complexity, it remains relatively straightforward a project to build. This following subsections explain how to
+configure a development environment for TinkerPop.
+
+[[system-configuration]]
+System Configuration
+--------------------
+
+At a minimum, development of TinkerPop requires link:http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java 1.8.0_40+]
+and link:https://maven.apache.org/download.cgi[Maven 3.2.5+]. Maven is used as the common build system, which even
+controls the builds of non-JVM link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
+such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
+will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
+possible to get a clean and successful build with this minimum, but it will not be possible to build non-JVM aspects
+of the project and those will go untested.
+
+To gain the ability to execute all aspects of the TinkerPop build system, other environmental configurations must be
+established. Those prerequisites are defined in the following subsections.
+
+IMPORTANT: For those who intend to offer a contribution, building with a minimal configuration may not be sufficient
+when submitting a pull request. Consider setting up the full environment.
+
+NOTE: For those using Windows, efforts have been made to keep the build OS independent, but, in practice, it is likely
+that TinkerPop's build system will only allow for a minimum build at best.
+
+[[documentation-environment]]
+Documentation Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
+scripts should work on Mac and Linux.
+
+To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 2.7.x] is running in
+link:https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
+mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
+link:http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
+to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
+
+Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
+
+Documentation can be generated locally with:
+
+[source,text]
+bin/process-docs.sh
+
+Documentation is generated to the `target/docs` directory. It is also possible to generate documentation locally with
+Docker. `docker/build.sh -d`.
+
+To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
+shell script:
+
+[source,text]
+bin/generate-home.sh
+
+The site will be generated to the `target/site/home` directory.
+
+[[python-environment]]
+Python Environment
+~~~~~~~~~~~~~~~~~~
+
+As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python 2.x] to work with the
+`gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
+Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
+and link:https://virtualenv.pypa.io/en/stable/[virtualenv] (version 15.0.2 - older versions may cause build failures).
+
+Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
+done manually from the command line with:
+
+[source,text]
+mvn clean install -Pglv-python
+
+which enables the "glv-python" Maven profile or in a more automated fashion simply add a `.glv` file to the root of the
+`gremlin-python` module which will signify to Maven that the environment is Python-ready. The `.glv` file need not have
+any contents and is ignored by Git. A standard `mvn clean install` will then build `gremlin-python` in full.
+
+As of TinkerPop 3.2.5, the build also requires Python to execute `gremlin-console` integration tests. The integration
+test is configured by a "console-integration-tests" Maven profile. This profile can be activated manually or can more
+simply piggy-back on the `.glv` file in `gremlin-python`. Note that unlike `gremlin-python` the tests are actually
+integration tests and therefore must be actively switched on with `-DskipIntegrationTests=false`:
+
+[source,text]
+mvn clean install -pl gremlin-console -DskipIntegrationTests=false
+
+[[release-environment]]
+Release Environment
+~~~~~~~~~~~~~~~~~~~
+
+This section is only useful to TinkerPop release managers and describes prerequisites related to deploying an official
+release of TinkerPop. All Apache releases must be signed. Please see link:http://www.apache.org/dev/release-signing.html[this guide]
+in the Apache documentation for instructions on to set up gpg. Keys should be added to KEYS files in both the
+link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
+link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
+using Apache Subversion (SVN).
+
+Uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically installed by the build
+process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy environments and username
+and password combinations. The file typically looks like this:
+
+[source,text]
+----
+[distutils]
+index-servers=
+    pypi
+    pypitest
+
+[pypitest]
+repository = https://testpypi.python.org/pypi
+username = <username>
+password =
+
+[pypi]
+repository = https://pypi.python.org/pypi
+username = <username>
+password =
+----
+
+The release manager shall use the project's pypi credentials, which are available in the PMC repository.
+The `password` should be left blank so the deployment process in Maven will prompt for it at deployment time.
 
 [[building-testing]]
 Building and Testing
 --------------------
 
-TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+The following commands are a mix of Maven flags and shell scripts that handle different build operations
 
-* Build Project: `mvn clean install`
+* Build project: `mvn clean install`
+** Build a specific module (e.g. `gremlin-server`) within the project: `mvn clean install -pl gremlin-server`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
 Maven project list argument, e.g.:
 +
@@ -37,11 +158,11 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
-* Build AsciiDocs (Hadoop must be running and link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required): `bin/process-docs.sh`
+* Build AsciiDocs (see <<documentation-environment,Documentation Environment>>): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
 ** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
+** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone "" "*" `pwd`/docs/src/xyz.asciidoc]+
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
@@ -49,7 +170,13 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 ** Execute with the `-DincludeNeo4j` option to include transactional tests.
 ** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
-* Performance Tests: `mvn verify -DskipPerformanceTests=false`
+* Benchmarks: `mvn verify -DskipBenchmarks=false`
+** Reports are generated to the console and to `gremlin-tools/gremlin-benchmark/target/reports/benchmark`.
+* Test coverage report: `mvn clean install -Dcoverage` - note that the `install` is necessary because report aggregation is bound to that part of the lifecycle.
+** Reports are generated to `gremlin-tools/gremlin-coverage/target/site`.
+* `cd site`
+** Generate web site locally: `bin/generate-home.sh`
+** Publish web site: `bin/publish-home.sh <username>`
 
 [[docker-integration]]
 Docker Integration
@@ -117,3 +244,13 @@ This will ensure that tests will properly execute within the IDE.
 
 If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then
 install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
+
+The `gremlin-core` module uses a Java annotation processor to help support DSLs. To support this capability be sure
+that:
+
+. `File | Settings | Compiler | Annotation Processors` has the checkbox with the "Enable annotation processing" checked.
+Intellij should be able to detect the processor automatically on build.
+. The `gremlin-core/target` directory should not be hidden and `target/classes`, `target/gneerated-sources` and
+`target/generated-test-sources should be marked as "Generated Sources Root". If they are not setup that way by
+Intellij by default then simply right-click on them use the "Mark Directory with" option to make the appropriate
+selections.

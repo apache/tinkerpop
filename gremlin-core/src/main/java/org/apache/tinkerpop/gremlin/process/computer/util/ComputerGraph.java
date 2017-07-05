@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
@@ -55,9 +55,9 @@ public final class ComputerGraph implements Graph {
     private final Set<String> computeKeys;
     private State state;
 
-    private ComputerGraph(final State state, final Vertex starVertex, final Optional<VertexProgram> vertexProgram) {
+    private ComputerGraph(final State state, final Vertex starVertex, final Optional<VertexProgram<?>> vertexProgram) {
         this.state = state;
-        this.computeKeys = vertexProgram.isPresent() ? vertexProgram.get().getElementComputeKeys() : Collections.emptySet();
+        this.computeKeys = vertexProgram.isPresent() ? vertexProgram.get().getVertexComputeKeys().stream().map(VertexComputeKey::getKey).collect(Collectors.toSet()) : Collections.emptySet();
         this.starVertex = new ComputerVertex(starVertex);
     }
 

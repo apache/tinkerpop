@@ -26,7 +26,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramMessageCombiner implements MessageCombiner<TraverserSet<?>> {
+public final class TraversalVertexProgramMessageCombiner implements MessageCombiner<TraverserSet<Object>> {
 
     private static final Optional<TraversalVertexProgramMessageCombiner> INSTANCE = Optional.of(new TraversalVertexProgramMessageCombiner());
 
@@ -34,8 +34,8 @@ public final class TraversalVertexProgramMessageCombiner implements MessageCombi
 
     }
 
-    public TraverserSet<?> combine(final TraverserSet<?> messageA, final TraverserSet<?> messageB) {
-        messageA.addAll((TraverserSet) messageB);
+    public TraverserSet<Object> combine(final TraverserSet<Object> messageA, final TraverserSet<Object> messageB) {
+        messageA.addAll(messageB);
         return messageA;
     }
 

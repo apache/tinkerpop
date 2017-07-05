@@ -23,17 +23,23 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.junit.Assert.*;
 
 /**
@@ -170,5 +176,47 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldNotHaveAnyVertices() {
         final ReferenceVertex rv = ReferenceFactory.detach(g.V(convertToVertexId("marko")).next());
         assertFalse(rv.vertices(Direction.BOTH).hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldDetachCollections() {
+        // single element
+        final Vertex vertex = ReferenceFactory.detach(g.V().has("name", "marko").next());
+        assertTrue(vertex instanceof ReferenceVertex);
+        // list nest
+        final List<Vertex> vertices = ReferenceFactory.detach(g.V().hasLabel("software").fold().next());
+        for (final Vertex v : vertices) {
+            assertTrue(v instanceof ReferenceVertex);
+        }
+        // double nested list
+        final List<List<Vertex>> lists = ReferenceFactory.detach(g.V().hasLabel("software").fold().fold().next());
+        for (final Vertex v : lists.get(0)) {
+            assertTrue(v instanceof ReferenceVertex);
+        }
+        // double nested list to set
+        final Set<List<Vertex>> set = ReferenceFactory.detach(g.V().hasLabel("software").fold().toSet());
+        for (final Vertex v : set.iterator().next()) {
+            assertTrue(v instanceof ReferenceVertex);
+        }
+        // map keys and values
+        Map<Vertex, List<Edge>> map = ReferenceFactory.detach(g.V().hasLabel("software").group().by().by(inE().fold()).next());
+        for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
+            assertTrue(entry.getKey() instanceof ReferenceVertex);
+            for (final Edge edge : entry.getValue()) {
+                assertTrue(edge instanceof ReferenceEdge);
+                assertFalse(edge.property("weight").isPresent());
+            }
+        }
+        // map keys and values as sideEffect
+        map = ReferenceFactory.detach(g.V().hasLabel("software").group("m").by().by(inE().fold()).identity().cap("m").next());
+        for (final Map.Entry<Vertex, List<Edge>> entry : map.entrySet()) {
+            assertTrue(entry.getKey() instanceof ReferenceVertex);
+            for (final Edge edge : entry.getValue()) {
+                assertTrue(edge instanceof ReferenceEdge);
+                assertFalse(edge.property("weight").isPresent());
+            }
+        }
     }
 }

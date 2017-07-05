@@ -25,20 +25,25 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,18 +63,26 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
 
         final String outputLocation = TestHelper.makeTestDataDirectory(GryoSerializerIntegrateTest.class, UUID.randomUUID().toString());
         Configuration configuration = getBaseConfiguration();
+        configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         Graph graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        final GraphTraversal.Admin<Vertex, Map<Vertex, Collection<Vertex>>> traversal = graph.traversal().withComputer(SparkGraphComputer.class).V().group("m").<Map<Vertex, Collection<Vertex>>>cap("m").asAdmin();
+        assertTrue(traversal.hasNext());
+        assertEquals(traversal.next(), traversal.getSideEffects().get("m"));
+        assertFalse(traversal.hasNext());
+        assertTrue(traversal.getSideEffects().exists("m"));
+        assertTrue(traversal.getSideEffects().get("m") instanceof Map);
+        assertEquals(totalVertices, traversal.getSideEffects().<Map>get("m").size());
 
         configuration = getBaseConfiguration();
+        configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "DISK_ONLY");
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "persisted-rdd");
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
@@ -77,23 +90,24 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         assertEquals(totalVertices, graph.compute(SparkGraphComputer.class).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph().traversal().V().count().next().longValue());
 
         configuration = getBaseConfiguration();
+        configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, "persisted-rdd");
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        assertEquals(totalVertices, graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue());
 
         configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, "persisted-rdd");
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY"); // this should be ignored as you can't change the persistence level once created
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_AND_DISK");
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        assertEquals(totalVertices, graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue());
     }
 }

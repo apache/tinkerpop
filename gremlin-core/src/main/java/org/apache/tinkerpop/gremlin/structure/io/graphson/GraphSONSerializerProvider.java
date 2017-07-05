@@ -26,32 +26,45 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.ToStringSerializer;
 
 /**
- * Implementation of the {@code DefaultSerializerProvider} for Jackson that users the {@code ToStringSerializer} for
+ * Implementation of the {@code DefaultSerializerProvider} for Jackson that uses the {@code ToStringSerializer} for
  * unknown types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class GraphSONSerializerProvider extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
-    private static final ToStringSerializer toStringSerializer = new ToStringSerializer();
+    private final JsonSerializer<Object> unknownTypeSerializer;
 
-    public GraphSONSerializerProvider() {
+    public GraphSONSerializerProvider(final GraphSONVersion version) {
         super();
+        if (version == GraphSONVersion.V1_0) {
+            setDefaultKeySerializer(new GraphSONSerializersV1d0.GraphSONKeySerializer());
+            unknownTypeSerializer = new ToStringSerializer();
+        } else {
+            setDefaultKeySerializer(new GraphSONSerializersV2d0.GraphSONKeySerializer());
+            unknownTypeSerializer = new ToStringGraphSONSerializer();
+        }
     }
 
     protected GraphSONSerializerProvider(final SerializerProvider src,
-                                         final SerializationConfig config, final SerializerFactory f) {
+                                         final SerializationConfig config, final SerializerFactory f,
+                                         final JsonSerializer<Object> unknownTypeSerializer) {
         super(src, config, f);
+        this.unknownTypeSerializer = unknownTypeSerializer;
     }
 
     @Override
     public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
-        return toStringSerializer;
+        return unknownTypeSerializer;
     }
 
     @Override
     public GraphSONSerializerProvider createInstance(final SerializationConfig config,
                                                      final SerializerFactory jsf) {
-        return new GraphSONSerializerProvider(this, config, jsf);
+        // createInstance is called pretty often to create a new SerializerProvider
+        // we give it the unknownTypeSerializer that we had in the first place,
+        // when the object was first constructed through the public constructor
+        // that has a GraphSONVersion.
+        return new GraphSONSerializerProvider(this, config, jsf, unknownTypeSerializer);
     }
 }

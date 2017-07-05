@@ -170,7 +170,7 @@ final class ConnectionPool {
         logger.debug("Attempting to return {} on {}", connection, host);
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-        int borrowed = connection.borrowed.decrementAndGet();
+        final int borrowed = connection.borrowed.decrementAndGet();
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
             considerUnavailable();

@@ -26,9 +26,6 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.collection.JavaConversions;
 import scala.collection.mutable.WrappedArray;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -36,11 +33,19 @@ public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>>
 
     @Override
     public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
-        kryo.writeClassAndObject(output,new ArrayList<>(JavaConversions.asJavaList(iterable)));
+        output.writeVarInt(iterable.size(), true);
+        JavaConversions.asJavaCollection(iterable).forEach(t -> {
+            kryo.writeClassAndObject(output, t);
+        });
     }
 
     @Override
     public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
-        return new WrappedArray.ofRef<>((T[]) ((List<T>) kryo.readClassAndObject(input)).toArray());
+        final int size = input.readVarInt(true);
+        final Object[] array = new Object[size];
+        for (int i = 0; i < size; i++) {
+            array[i] = kryo.readClassAndObject(input);
+        }
+        return new WrappedArray.ofRef<>((T[]) array);
     }
 }

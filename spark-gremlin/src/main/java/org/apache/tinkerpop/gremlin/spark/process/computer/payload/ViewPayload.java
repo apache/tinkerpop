@@ -38,6 +38,6 @@ public final class ViewPayload implements Payload {
     }
 
     public List<DetachedVertexProperty<Object>> getView() {
-        return this.view;
+        return null == this.view ? Collections.emptyList() : this.view;
     }
 }

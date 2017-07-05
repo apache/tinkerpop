@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -244,6 +246,38 @@ public class StarGraphTest extends AbstractGremlinTest {
         assertFalse(edgeIterator.hasNext());
         TestHelper.validateEdgeEquality(e1, v1.edges(Direction.OUT, "self", "nothing").next());
         TestHelper.validateEdgeEquality(e1, v1.edges(Direction.IN).next());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
+    public void shouldHandleBothEdgesGraphFilterOnSelfLoop() {
+        assertEquals(0l, IteratorUtils.count(graph.vertices()));
+        assertEquals(0l, IteratorUtils.count(graph.edges()));
+
+        // these vertex label, edge label, and property names/values were copied from existing tests
+        StarGraph starGraph = StarGraph.open();
+        Vertex vertex = starGraph.addVertex(T.label, "person", "name", "furnace");
+        Edge edge = vertex.addEdge("self", vertex);
+        edge.property("acl", "private");
+
+        // traversing a self-loop should yield the edge once for inE/outE
+        // and the edge twice for bothE (one edge emitted two times, not two edges)
+        assertEquals(1L, IteratorUtils.count(starGraph.traversal().V().inE()));
+        assertEquals(1L, IteratorUtils.count(starGraph.traversal().V().outE()));
+        assertEquals(2L, IteratorUtils.count(starGraph.traversal().V().bothE()));
+        
+        // Try a filter that retains BOTH
+        GraphFilter graphFilter = new GraphFilter();
+        graphFilter.setEdgeFilter(__.bothE("self"));
+        starGraph = starGraph.applyGraphFilter(graphFilter).get();
+
+        // Retest traversal counts after filtering
+        assertEquals(1L, IteratorUtils.count(starGraph.traversal().V().inE()));
+        assertEquals(1L, IteratorUtils.count(starGraph.traversal().V().outE()));
+        assertEquals(2L, IteratorUtils.count(starGraph.traversal().V().bothE()));
     }
 
 

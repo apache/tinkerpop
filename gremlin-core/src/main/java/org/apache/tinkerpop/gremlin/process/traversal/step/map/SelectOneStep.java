@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -36,13 +37,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor {
+public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
 
     private final Pop pop;
     private final String selectKey;
     private Traversal.Admin<S, E> selectTraversal = null;
+    private Set<String> keepLabels;
 
-    public SelectOneStep(final Traversal.Admin traversal, Pop pop, final String selectKey) {
+    public SelectOneStep(final Traversal.Admin traversal, final Pop pop, final String selectKey) {
         super(traversal);
         this.pop = pop;
         this.selectKey = selectKey;
@@ -63,8 +65,14 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     public SelectOneStep<S, E> clone() {
         final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
         if (null != this.selectTraversal)
-            clone.selectTraversal = clone.integrateChild(this.selectTraversal.clone());
+            clone.selectTraversal = this.selectTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.selectTraversal);
     }
 
     @Override
@@ -83,20 +91,47 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
+    public void removeLocalChild(final Traversal.Admin<?, ?> traversal) {
+        if (this.selectTraversal == traversal)
+            this.selectTraversal = null;
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.selectTraversal = this.integrateChild(selectTraversal);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).contains(this.selectKey) ?
-                TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
-                TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
     public Set<String> getScopeKeys() {
         return Collections.singleton(this.selectKey);
+    }
+
+    public Pop getPop() {
+        return this.pop;
+    }
+
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
+
+    @Override
+    protected Traverser.Admin<E> processNextStart() {
+        final Traverser.Admin<E> traverser = super.processNextStart();
+        if (!(this.getTraversal().getParent() instanceof MatchStep)) {
+            PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
+        }
+        return traverser;
     }
 }
 

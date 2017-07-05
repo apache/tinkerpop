@@ -1,0 +1,100 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[shortest-path]]
+Shortest Path
+-------------
+
+image:shortest-path.png[width=300]
+
+When working with a graph, it is often necessary to identify the
+link:https://en.wikipedia.org/wiki/Shortest_path_problem[shortest path] between two identified vertices. The following
+is a simple example that identifies the shortest path between vertex "1" and vertex "5" while traversing over out edges:
+
+[gremlin-groovy]
+----
+g.addV().property(id, 1).as('1').
+  addV().property(id, 2).as('2').
+  addV().property(id, 3).as('3').
+  addV().property(id, 4).as('4').
+  addV().property(id, 5).as('5').
+  addE('knows').from('1').to('2').
+  addE('knows').from('2').to('4').
+  addE('knows').from('4').to('5').
+  addE('knows').from('2').to('3').
+  addE('knows').from('3').to('4').iterate()
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().limit(1)     <1>
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().count(local) <2>
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
+  group().by(count(local)).next()                                     <3>
+----
+
+<1> The traversal starts at vertex with the identifier of "1" and repeatedly traverses on out edges "until" it finds a
+vertex with an identifier of "5". The inclusion of `simplePath` within the `repeat` is present to filter out repeated
+paths. The traversal terminates with `limit` in this case as the first path returned will be the shortest one. Of
+course, it is possible for there to be more than one path in the graph of the same length (i.e. two or more paths of
+length three), but this example is not considering that.
+<2> It might be interesting to know the path lengths for all paths between vertex "1" and "5".
+<3> Alternatively, one might wish to do a path length distribution over all the paths.
+
+The previous example defines the length of the path by the number of vertices in the path, but the "path" might also
+be measured by data within the graph itself. The following example use the same graph structure as the previous example,
+but includes a "weight" on the edges, that will be used to help determine the "cost" of a particular path:
+
+[gremlin-groovy]
+----
+g.addV().property(id, 1).as('1').
+  addV().property(id, 2).as('2').
+  addV().property(id, 3).as('3').
+  addV().property(id, 4).as('4').
+  addV().property(id, 5).as('5').
+  addE('knows').from('1').to('2').property('weight', 1.25).
+  addE('knows').from('2').to('4').property('weight', 1.5).
+  addE('knows').from('4').to('5').property('weight', 0.25).
+  addE('knows').from('2').to('3').property('weight', 0.25).
+  addE('knows').from('3').to('4').property('weight', 0.25).iterate()
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
+  group().by(count(local)).next()                                                         <1>
+g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
+  path().by(coalesce(values('weight'),
+                     constant(0.0))).
+  map(unfold().sum())                                                                     <2>
+g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
+  path().by(constant(0.0)).by('weight').map(unfold().sum())                               <3>
+g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
+  path().as('p').
+  map(unfold().coalesce(values('weight'),
+                        constant(0.0)).sum()).as('cost').
+  select('cost','p')                                                                      <4>
+----
+
+<1> Note that the shortest path as determined by the structure of the graph is the same.
+<2> Calculate the "cost" of the path as determined by the weight on the edges. As the "weight" data is on the edges
+between the vertices, it is necessary to change the contents of the `repeat` step to use `outE().inV()` so that the
+edge is included in the path. The path is then post-processed with a `by` modulator that extracts the "weight" value.
+The traversal uses `coalesce` as there is a mixture of vertices and edges in the path and the traversal is only
+interested in edge elements that can return a "weight" property. The final part of the traversal executes a map
+function over each path, unfolding it and summing the weights.
+<3> The same traversal as the one above it, but avoids the use of `coalesce` with the use of two `by` modulators. The
+`by` modulator is applied in a round-robin fashion, so the first `by` will always apply to a vertex (as it is the first
+item in every path) and the second `by` will always apply to an edge (as it always follows the vertex in the path).
+<4> The output of the previous examples of the "cost" wasn't terribly useful as it didn't include which path had the
+calculated cost. With some slight modifications given the use of `select` it becomes possible to include the path in
+the output. Note that the path with the lowest "cost" actually has a longer path length as determined by the graph
+structure.
+
+
+

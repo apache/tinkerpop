@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
 public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<V>> implements VertexProperty<V> {
 
     private ReferenceVertex vertex;
-    private String key;
+    private String label;
     private V value;
 
     private ReferenceVertexProperty() {
@@ -43,8 +43,8 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<
 
     public ReferenceVertexProperty(final VertexProperty<V> vertexProperty) {
         super(vertexProperty);
-        this.vertex = ReferenceFactory.detach(vertexProperty.element());
-        this.key = vertexProperty.key();
+        this.vertex = new ReferenceVertex(vertexProperty.element());
+        this.label = vertexProperty.key();
         this.value = vertexProperty.value();
     }
 
@@ -55,12 +55,12 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<
 
     @Override
     public String key() {
-        return this.key;
+        return this.label;
     }
 
     @Override
     public String label() {
-        return this.key;
+        return this.label;
     }
 
     @Override

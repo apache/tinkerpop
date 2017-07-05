@@ -20,13 +20,22 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +46,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Traversal.Admin<S, M> branchTraversal;
     protected Map<M, List<Traversal.Admin<S, E>>> traversalOptions = new HashMap<>();
     private boolean first = true;
+    private boolean hasBarrier = false;
 
     public BranchStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -53,6 +63,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         else
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
         traversalOption.addStep(new EndStep(traversalOption));
+        if (!this.hasBarrier && !TraversalHelper.getStepsOfAssignableClassRecursively(Barrier.class, traversalOption).isEmpty())
+            this.hasBarrier = true;
         this.integrateChild(traversalOption);
     }
 
@@ -74,7 +86,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    protected Iterator<Traverser<E>> standardAlgorithm() {
+    protected Iterator<Traverser.Admin<E>> standardAlgorithm() {
         while (true) {
             if (!this.first) {
                 for (final List<Traversal.Admin<S, E>> options : this.traversalOptions.values()) {
@@ -86,29 +98,33 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             }
             this.first = false;
             ///
-            final Traverser.Admin<S> start = this.starts.next();
-            final M choice = TraversalUtil.apply(start, this.branchTraversal);
-            final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
-            if (null != branch) {
-                branch.forEach(traversal -> {
-                    traversal.reset();
-                    traversal.addStart(start.split());
-                });
-            }
-            if (choice != Pick.any) {
-                final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
-                if (null != anyBranch)
-                    anyBranch.forEach(traversal -> {
-                        traversal.reset();
-                        traversal.addStart(start.split());
-                    });
+            if (this.hasBarrier) {
+                if (!this.starts.hasNext())
+                    throw FastNoSuchElementException.instance();
+                while (this.starts.hasNext()) {
+                    this.handleStart(this.starts.next());
+                }
+            } else {
+                this.handleStart(this.starts.next());
             }
         }
     }
 
+    private final void handleStart(final Traverser.Admin<S> start) {
+        final M choice = TraversalUtil.apply(start, this.branchTraversal);
+        final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+        if (null != branch)
+            branch.forEach(traversal -> traversal.addStart(start.split()));
+        if (choice != Pick.any) {
+            final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
+            if (null != anyBranch)
+                anyBranch.forEach(traversal -> traversal.addStart(start.split()));
+        }
+    }
+
     @Override
-    protected Iterator<Traverser<E>> computerAlgorithm() {
-        final List<Traverser<E>> ends = new ArrayList<>();
+    protected Iterator<Traverser.Admin<E>> computerAlgorithm() {
+        final List<Traverser.Admin<E>> ends = new ArrayList<>();
         final Traverser.Admin<S> start = this.starts.next();
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
         final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
@@ -144,15 +160,19 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 final List<Traversal.Admin<S, E>> clonedTraversals = clone.traversalOptions.compute(entry.getKey(), (k, v) ->
                         (v == null) ? new ArrayList<>(traversals.size()) : v);
                 for (final Traversal.Admin<S, E> traversal : traversals) {
-                    final Traversal.Admin<S, E> clonedTraversal = traversal.clone();
-                    clonedTraversals.add(clonedTraversal);
-                    clone.integrateChild(clonedTraversal);
+                    clonedTraversals.add(traversal.clone());
                 }
             }
         }
         clone.branchTraversal = this.branchTraversal.clone();
-        clone.integrateChild(clone.branchTraversal);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.branchTraversal);
+        this.traversalOptions.values().stream().flatMap(List::stream).forEach(this::integrateChild);
     }
 
     @Override
@@ -173,6 +193,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     public void reset() {
         super.reset();
+        this.getGlobalChildren().forEach(Traversal.Admin::reset);
         this.first = true;
     }
 }

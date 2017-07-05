@@ -45,12 +45,12 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
 
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
 
     }
 
@@ -126,7 +126,7 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public Traverser<E> next() {
+    public Traverser.Admin<E> next() {
         throw FastNoSuchElementException.instance();
     }
 

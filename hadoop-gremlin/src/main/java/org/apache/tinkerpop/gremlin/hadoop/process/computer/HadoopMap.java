@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public final class HadoopMap extends Mapper<NullWritable, VertexWritable, Object
     @Override
     public void setup(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(context.getConfiguration());
-        HadoopPools.initialize(apacheConfiguration);
+        KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
         this.mapReduce = MapReduce.createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
         this.mapReduce.workerStart(MapReduce.Stage.MAP);
     }

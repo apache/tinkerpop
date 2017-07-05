@@ -27,7 +27,7 @@ if [ -z $2 ]; then
   echo
   echo "Example:"
   echo
-  echo "  $0 /usr/local/spark-1.5.2-bin-hadoop2.6 spark@master spark@slave1 spark@slave2 spark@slave3"
+  echo "  $0 /usr/local/spark-1.6.1-bin-hadoop2.6 spark@master spark@slave1 spark@slave2 spark@slave3"
   echo
   exit 1
 fi

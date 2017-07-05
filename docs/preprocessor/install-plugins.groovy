@@ -20,7 +20,7 @@
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
+import org.apache.tinkerpop.gremlin.groovy.util.Artifact
 import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
 
 installPlugin = { def artifact ->

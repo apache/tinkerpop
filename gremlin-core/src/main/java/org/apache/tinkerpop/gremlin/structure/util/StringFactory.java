@@ -18,14 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -36,7 +39,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -45,6 +47,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -66,12 +69,8 @@ public final class StringFactory {
     private static final String L_BRACKET = "[";
     private static final String R_BRACKET = "]";
     private static final String COMMA_SPACE = ", ";
-    private static final String COLON = ":";
-    private static final String EMPTY_MAP = "{}";
-    private static final String DOTS = "...";
     private static final String DASH = "-";
     private static final String ARROW = "->";
-    private static final String STAR = "*";
     private static final String EMPTY_PROPERTY = "p[empty]";
     private static final String EMPTY_VERTEX_PROPERTY = "vp[empty]";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -104,11 +103,11 @@ public final class StringFactory {
         if (property instanceof VertexProperty) {
             if (!property.isPresent()) return EMPTY_VERTEX_PROPERTY;
             final String valueString = String.valueOf(property.value());
-            return VP + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET;
+            return VP + L_BRACKET + property.key() + ARROW + StringUtils.abbreviate(valueString, 20) + R_BRACKET;
         } else {
             if (!property.isPresent()) return EMPTY_PROPERTY;
             final String valueString = String.valueOf(property.value());
-            return P + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET;
+            return P + L_BRACKET + property.key() + ARROW + StringUtils.abbreviate(valueString, 20) + R_BRACKET;
         }
     }
 
@@ -137,14 +136,10 @@ public final class StringFactory {
         return graphComputer.getClass().getSimpleName().toLowerCase();
     }
 
-    public static String traversalEngineString(final TraversalEngine traversalEngine) {
-        return traversalEngine.getClass().getSimpleName().toLowerCase();
-    }
-
     public static String traversalSourceString(final TraversalSource traversalSource) {
-        final String graphString = traversalSource.getGraph().orElse(EmptyGraph.instance()).toString();
-        final String graphComputerString = traversalSource.getGraphComputer().isPresent() ? traversalSource.getGraphComputer().get().toString() : "standard";
-        return traversalSource.getClass().getSimpleName().toLowerCase() + L_BRACKET + graphString + COMMA_SPACE + graphComputerString + R_BRACKET;
+        final String graphString = traversalSource.getGraph().toString();
+        final Optional<Computer> optional = VertexProgramStrategy.getComputer(traversalSource.getStrategies());
+        return traversalSource.getClass().getSimpleName().toLowerCase() + L_BRACKET + graphString + COMMA_SPACE + (optional.isPresent() ? optional.get().toString() : "standard") + R_BRACKET;
     }
 
     public static String featureString(final Graph.Features features) {
@@ -180,6 +175,10 @@ public final class StringFactory {
         return traversalStrategy.getClass().getSimpleName();
     }
 
+    public static String translatorString(final Translator translator) {
+        return "translator[" + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + "]";
+    }
+
     public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {
         return vertexProgram.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
     }
@@ -211,21 +210,20 @@ public final class StringFactory {
         final List<String> strings = Stream.of(arguments)
                 .filter(o -> null != o)
                 .filter(o -> {
-                    if (o instanceof TraversalRing) {
-                        return ((TraversalRing) o).size() > 0;
-                    } else if (o instanceof Collection) {
-                        return ((Collection) o).size() > 0;
-                    } else if (o instanceof Map) {
-                        return ((Map) o).size() > 0;
-                    } else {
-                        return o.toString().length() > 0;
-                    }
+                    if (o instanceof TraversalRing)
+                        return !((TraversalRing) o).isEmpty();
+                    else if (o instanceof Collection)
+                        return !((Collection) o).isEmpty();
+                    else if (o instanceof Map)
+                        return !((Map) o).isEmpty();
+                    else
+                        return !o.toString().isEmpty();
                 })
                 .map(o -> {
                     final String string = o.toString();
                     return string.contains("$") ? "lambda" : string;
                 }).collect(Collectors.toList());
-        if (strings.size() > 0) {
+        if (!strings.isEmpty()) {
             builder.append('(');
             builder.append(String.join(",", strings));
             builder.append(')');
@@ -241,6 +239,11 @@ public final class StringFactory {
 
     public static String storageString(final String internalString) {
         return STORAGE + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String removeEndBrackets(final Collection collection) {
+        final String string = collection.toString();
+        return string.substring(1, string.length() - 1);
     }
 
 }

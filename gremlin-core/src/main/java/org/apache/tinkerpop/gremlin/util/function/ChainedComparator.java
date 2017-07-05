@@ -19,8 +19,11 @@
 package org.apache.tinkerpop.gremlin.util.function;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComparatorTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,19 +34,21 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChainedComparator<T> implements Comparator<T>, Serializable {
+public final class ChainedComparator<S, C extends Comparable> implements Comparator<S>, Serializable, Cloneable {
 
-    private final List<Comparator<T>> comparators;
-    private transient Comparator<T> chain;
+    private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
     private final boolean isShuffle;
+    private final boolean traversers;
 
-    public ChainedComparator(final List<Comparator<T>> comparators) {
+    public ChainedComparator(final boolean traversers, final List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators) {
+        this.traversers = traversers;
         if (comparators.isEmpty())
-            throw new IllegalArgumentException("A chained comparator requires at least one comparator");
-        this.comparators = new ArrayList<>(comparators);
-        this.isShuffle = ChainedComparator.testIsShuffle(this.comparators.get(this.comparators.size() - 1));
+            this.comparators.add(new Pair<>(new IdentityTraversal(), (Comparator) Order.incr));
+        else
+            this.comparators.addAll(comparators);
+        this.isShuffle = (Comparator) (this.comparators.get(this.comparators.size() - 1).getValue1()) == Order.shuffle;
         if (!this.isShuffle)
-            this.comparators.removeAll(this.comparators.stream().filter(ChainedComparator::testIsShuffle).collect(Collectors.toList()));
+            this.comparators.removeAll(this.comparators.stream().filter(pair -> (Comparator) pair.getValue1() == Order.shuffle).collect(Collectors.toList()));
     }
 
     public boolean isShuffle() {
@@ -51,20 +56,28 @@ public final class ChainedComparator<T> implements Comparator<T>, Serializable {
     }
 
     @Override
-    public int compare(final T objectA, final T objectB) {
-        if (null == this.chain) this.chain = this.comparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
-        return this.chain.compare(objectA, objectB);
+    public int compare(final S objectA, final S objectB) {
+        for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
+            final int comparison = this.traversers ?
+                    pair.getValue1().compare(TraversalUtil.apply((Traverser.Admin<S>) objectA, pair.getValue0()), TraversalUtil.apply((Traverser.Admin<S>) objectB, pair.getValue0())) :
+                    pair.getValue1().compare(TraversalUtil.apply(objectA, pair.getValue0()), TraversalUtil.apply(objectB, pair.getValue0()));
+            if (comparison != 0)
+                return comparison;
+        }
+        return 0;
     }
 
-    private static boolean testIsShuffle(final Comparator comparator) {
-        if (comparator.equals(Order.shuffle))
-            return true;
-        else if (comparator instanceof ComparatorTraverser)
-            return testIsShuffle(((ComparatorTraverser) comparator).getComparator());
-        else if (comparator instanceof TraversalComparator)
-            return testIsShuffle(((TraversalComparator) comparator).getComparator());
-        else
-            return false;
+    @Override
+    public ChainedComparator<S, C> clone() {
+        try {
+            final ChainedComparator<S, C> clone = (ChainedComparator<S, C>) super.clone();
+            clone.comparators = new ArrayList<>();
+            for (final Pair<Traversal.Admin<S, C>, Comparator<C>> comparator : this.comparators) {
+                clone.comparators.add(new Pair<>(comparator.getValue0().clone(), comparator.getValue1()));
+            }
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
-
 }

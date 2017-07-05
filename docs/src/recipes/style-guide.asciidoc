@@ -1,0 +1,81 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[style-guide]]
+Style Guide
+-----------
+
+Gremlin is a data flow language where each new step concatenation alters the stream accordingly. This aspect of the
+language allows users to easily "build-up" a traversal (literally) step-by-step until the expected results are
+returned. For instance:
+
+[gremlin-groovy,modern]
+----
+g.V(1)
+g.V(1).out('knows')
+g.V(1).out('knows').out('created')
+g.V(1).out('knows').out('created').groupCount()
+g.V(1).out('knows').out('created').groupCount().by('name')
+----
+
+A drawback of building up a traversal is that users tend to create long, single line traversal that are hard to read.
+For simple traversals, a single line is fine. For complex traversals, there are few formatting patterns that should be followed
+which will yield cleaner, easier to understand traversals. For instance, the last traversal above would be written:
+
+[gremlin-groovy,modern]
+----
+g.V(1).out('knows').out('created').
+  groupCount().by('name')
+----
+
+Lets look at a complex traversal and analyze each line according to the recommended formatting rule is subscribes to.
+
+[gremlin-groovy,modern]
+----
+g.V().out('knows').out('created').  <1>
+  group().by('lang').by().          <2>
+    select('java').unfold().        <3>
+  in('created').hasLabel('person'). <4>
+  order().                          <5>
+    by(inE().count(),decr).         <6>
+    by('age',incr).
+  dedup().limit(10).values('name')  <7>
+----
+
+
+<1> A sequence of `ins().outs().filters().etc()` on a single line until it gets too long.
+<2> When a barrier (reducer, aggregator, etc.) is used, put it on a new line.
+<3> When a next line component is an "add on" to the previous line component, 2 space indent.
+The `select()`-step in this context is "almost like" a `by()`-modulator as its projecting data out of the `group()`.
+The `unfold()`-step is a data formatting necessity that should not be made too prominent.
+<4> Back to a series of `ins().outs().filters().etc()` on a single line.
+<5> `order()` is a barrier step and thus, should be on a new line.
+<6> If there is only one `by()`-modulator (or a series of short ones), keep it on one line, else each `by()` is a new line.
+<7> Back to a series `ins().outs().filters().etc()`.
+
+Style Guide Rules
+~~~~~~~~~~~~~~~~~
+
+A generalization of the specifics above are presented below.
+
+* Always use 2 space indent.
+* No newline should ever have the same indent as the line starting with the traversal source `g`.
+* Barrier steps should form line breaks unless they are simple (e.g. `sum()`).
+* Complex `by()`-modulators form indented "paragraphs."
+* Standard filters, maps, flatMaps remain on the same line until they get too long.
+
+Given the diversity of traversals and the complexities introduced by lambdas (for example), these rules will not always
+lead to optimal representations. However, by in large, the style rules above will help make 90% of traversals look great.

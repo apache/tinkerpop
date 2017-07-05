@@ -19,21 +19,23 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyPerformanceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,12 +44,7 @@ import static org.mockito.Mockito.when;
 public class IdentityRemovalStrategyTest {
 
     @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractIdentityRemovalStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
+    public static class ParameterizedTests {
 
         @Parameterized.Parameter(value = 0)
         public Traversal original;
@@ -55,64 +52,23 @@ public class IdentityRemovalStrategyTest {
         @Parameterized.Parameter(value = 1)
         public Traversal optimized;
 
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
 
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractIdentityRemovalStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
-    }
-
-    private static abstract class AbstractIdentityRemovalStrategyTest {
-
-        protected TraversalEngine traversalEngine;
-
-        void applyMatchWhereStrategy(final Traversal traversal) {
+        private void applyIdentityRemovalStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(IdentityRemovalStrategy.instance());
-
             traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
 
         }
 
-        public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyMatchWhereStrategy(traversal);
-            assertEquals(optimized, traversal);
+        @Test
+        public void doTest() {
+            applyIdentityRemovalStrategy(original);
+            assertEquals(optimized, original);
         }
 
-        static Iterable<Object[]> generateTestParameters() {
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
                     {__.identity(), __.identity()},
@@ -123,6 +79,43 @@ public class IdentityRemovalStrategyTest {
                     {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
                     {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
             });
+        }
+
+    }
+
+    public static class PerformanceTest extends TraversalStrategyPerformanceTest {
+
+        @Override
+        protected Class<? extends TraversalStrategy> getStrategyUnderTest() {
+            return IdentityRemovalStrategy.class;
+        }
+
+        @Override
+        protected Iterator<GraphTraversal> getTraversalIterator() {
+
+            return new Iterator<GraphTraversal>() {
+
+                final int minIdentities = 5;
+                final int maxIdentities = 10;
+                final Integer[] starts = IntStream.range(0, 1000).boxed().toArray(Integer[]::new);
+
+                private int numberOfIdentities = minIdentities;
+
+                @Override
+                public boolean hasNext() {
+                    return numberOfIdentities <= maxIdentities;
+                }
+
+                @Override
+                public GraphTraversal next() {
+                    final GraphTraversal traversal = __.inject(starts);
+                    for (int j = 0; j < numberOfIdentities; j++) {
+                        traversal.identity();
+                    }
+                    numberOfIdentities++;
+                    return traversal;
+                }
+            };
         }
     }
 }

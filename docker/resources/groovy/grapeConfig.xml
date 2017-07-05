@@ -1,14 +1,21 @@
 <ivysettings>
   <settings defaultResolver="downloadGrapes"/>
+  <property name="m2-pattern" value="${user.home}/.m2/repository/org/apache/tinkerpop/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" />
+  <property name="m2-pattern-ivy" value="${user.home}/.m2/repository/org/apache/tinkerpop/[module]/[revision]/[module]-[revision](-[classifier]).pom" />
+  <caches>
+    <cache name="nocache" useOrigin="true" />
+  </caches>
   <resolvers>
     <chain name="downloadGrapes">
+      <filesystem name="local-maven2" checkmodified="true" changingPattern=".*" changingMatcher="regexp" m2compatible="true" cache="nocache">
+        <artifact pattern="${m2-pattern}"/>
+        <ivy pattern="${m2-pattern-ivy}"/>
+      </filesystem>
       <filesystem name="cachedGrapes">
         <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml"/>
         <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]"/>
       </filesystem>
-      <ibiblio name="central" root="http://central.maven.org/maven2/" m2compatible="true"/>
-      <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true"/>
-      <ibiblio name="hyracs-releases" root="http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/" m2compatible="true"/>
+      <ibiblio name="ibiblio" m2compatible="true"/>
       <ibiblio name="local" root="file:${user.home}/.m2/repository/" m2compatible="true"/>
     </chain>
   </resolvers>

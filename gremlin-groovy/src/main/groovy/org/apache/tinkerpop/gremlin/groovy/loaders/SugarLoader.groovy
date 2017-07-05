@@ -32,8 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 class SugarLoader {
 
     private static final String NAME = "name";
-    //private static final String FROM = "from";
-    //private static final String SELECT = "select";
 
     public static void load() {
 
@@ -46,20 +44,14 @@ class SugarLoader {
         Traverser.metaClass.methodMissing = { final String name, final def args ->
             ((Traverser) delegate).get()."$name"(*args);
         }
+
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            //if (name.toLowerCase().equals(FROM))
-            //    return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
-            //else
             return ((GraphTraversal) delegate).values(name);
         }
 
         GraphTraversalSource.metaClass.getProperty = { final String key ->
             GraphTraversalSourceCategory.get((GraphTraversalSource) delegate, key);
-        }
-
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.getProperty = { final String key ->
-            GraphTraversalSourceStubCategory.get((GraphTraversalSource.GraphTraversalSourceStub) delegate, key);
         }
 
         // __.age and __.out
@@ -78,15 +70,8 @@ class SugarLoader {
                 return __."$name";
         }*/
 
-        // select x,y from ...
-        /*Object.metaClass.methodMissing = { final String name, final def args ->
-            if (name.toLowerCase().equals(SELECT)) return __.select(*args)
-            throw new MissingMethodException(name, delegate.getClass(), args);
-        }*/
-
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversalSource.metaClass.mixin(GraphTraversalSourceCategory.class);
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.mixin(GraphTraversalSourceStubCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
@@ -165,26 +150,6 @@ class SugarLoader {
         public String toString() {
             return StringFactory.traversalSourceString(this.metaClass.owner);
         }
-    }
-
-    public static class GraphTraversalSourceStubCategory {
-
-        private static final String V = "V";
-        private static final String E = "E";
-
-        public static final get(
-                final GraphTraversalSource.GraphTraversalSourceStub graphTraversalSourceStub, final String key) {
-            if (key.equals(V))
-                return graphTraversalSourceStub.V();
-            else if (key.equals(E))
-                return graphTraversalSourceStub.E();
-            else
-                throw new UnsupportedOperationException("The provided key does not reference a known method: " + key);
-        }
-
-        /*public String toString() {
-            return StringFactory.traversalSourceString(this.metaClass.owner);
-        }*/
     }
 
     public static class GraphTraversalCategory {

@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * A {@code ByPassing} step can be stated (at runtime) to simply enact the identity function.
+ * This is useful in for steps that need to dynamically change their behavior on {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Bypassing {

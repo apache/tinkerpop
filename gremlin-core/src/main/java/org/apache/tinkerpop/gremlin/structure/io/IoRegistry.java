@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * A generalized custom serializer registry for providers implementing a {@link Graph}.  Providers should develop an
  * implementation of this interface if their implementation requires custom serialization of identifiers or other
  * such content housed in their graph.  Consider extending from {@link AbstractIoRegistry} and ensure that the
- * implementation has a zero-arg constructor or a static "getInstance" method that returns an {@code IoRegistry}
+ * implementation has a zero-arg constructor or a static "instance" method that returns an {@code IoRegistry}
  * instance, as implementations may need to be constructed from reflection given different parts of the TinkerPop
  * stack.
  * <p/>
@@ -48,6 +48,9 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface IoRegistry {
+
+    public static final String IO_REGISTRY = "gremlin.io.registry";
+
     /**
      * Find a list of all the serializers registered to an {@link Io} class by the {@link Graph}.
      */

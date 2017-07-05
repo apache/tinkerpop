@@ -18,17 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
@@ -42,8 +44,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -52,13 +55,21 @@ import java.util.stream.StreamSupport;
  * This is the base interface for all traversal's, where each extending interface is seen as a domain specific language.
  * For example, {@link GraphTraversal} is a domain specific language for traversing a graph using "graph concepts" (e.g. vertices, edges).
  * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
- * A {@link Traversal} is evaluated in one of two ways: {@link StandardTraversalEngine} (OLTP) and {@link ComputerTraversalEngine} (OLAP).
+ * A {@link Traversal} is evaluated in one of two ways: iterator-based OLTP or {@link GraphComputer}-based OLAP.
  * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
  * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (and/or cores).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
+public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, AutoCloseable {
+
+    public static class Symbols {
+        private Symbols() {
+            // static fields only
+        }
+
+        public static final String profile = "profile";
+    }
 
     /**
      * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
@@ -133,6 +144,25 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     }
 
     /**
+     * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
+     * Note that this method can only be used if the {@code Traversal} is constructed using
+     * {@link TraversalSource#withRemote(Configuration)}. Calling this method otherwise will yield an
+     * {@code IllegalStateException}.
+     */
+    public default <T> CompletableFuture<T> promise(final Function<Traversal<S,E>, T> traversalFunction) {
+        // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
+        if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+
+        // use the end step so the results are bulked
+        final Step<?, E> endStep = this.asAdmin().getEndStep();
+        if (endStep instanceof RemoteStep) {
+            return ((RemoteStep) endStep).promise().thenApply(traversalFunction);
+        } else {
+            throw new IllegalStateException("Only traversals created using withRemote() can be used in an async way");
+        }
+    }
+
+    /**
      * Add all the results of the traversal to the provided collection.
      *
      * @param collection the collection to fill
@@ -175,10 +205,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     /**
      * Profile the traversal.
      *
-     * @return the updated traversal with respective {@link ProfileStep}.
+     * @return the updated traversal with respective {@link ProfileSideEffectStep}.
      */
-    public default Traversal<S, E> profile() {
-        return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
+    public default Traversal<S, TraversalMetrics> profile() {
+        this.asAdmin().getBytecode().addStep(Symbols.profile);
+        return this.asAdmin()
+                .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
+                .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
     }
 
     /**
@@ -222,6 +255,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     }
 
     /**
+     * Releases resources opened in any steps that implement {@link AutoCloseable}.
+     */
+    @Override
+    public default void close() throws Exception {
+        for(final Step<?,?> step : this.asAdmin().getSteps()) {
+            if(step instanceof AutoCloseable)
+                ((AutoCloseable) step).close();
+        }
+    }
+
+    /**
      * A collection of {@link Exception} types associated with Traversal execution.
      */
     public static class Exceptions {
@@ -238,23 +282,30 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
-         * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
+         * Get the {@link Bytecode} associated with the construction of this traversal.
+         *
+         * @return the byte code representation of the traversal
+         */
+        public Bytecode getBytecode();
+
+        /**
+         * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
          * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
          *
          * @param starts an iterators of traversers
          */
-        public default void addStarts(final Iterator<Traverser<S>> starts) {
+        public default void addStarts(final Iterator<Traverser.Admin<S>> starts) {
             if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStarts(starts);
         }
 
         /**
-         * Add a single {@link Traverser} object to the head of the traversal.
+         * Add a single {@link Traverser.Admin} object to the head of the traversal.
          * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
          *
          * @param start a traverser to add to the traversal
          */
-        public default void addStart(final Traverser<S> start) {
+        public default void addStart(final Traverser.Admin<S> start) {
             if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStart(start);
         }
@@ -345,56 +396,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public void applyStrategies() throws IllegalStateException;
 
         /**
-         * Get the {@link TraversalEngine} that will be used to execute this traversal.
-         *
-         * @return get the traversal engine associated with this traversal.
-         */
-        public TraversalEngine getEngine();
-
-        /**
-         * Set the {@link TraversalEngine} to be used for executing this traversal.
-         *
-         * @param engine the engine to execute the traversal with.
-         */
-        public void setEngine(final TraversalEngine engine);
-
-        /**
          * Get the {@link TraverserGenerator} associated with this traversal.
          * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement}.
          *
          * @return the generator of traversers
          */
-        public default TraverserGenerator getTraverserGenerator() {
-            return this.getStrategies().getTraverserGeneratorFactory().getTraverserGenerator(this);
-        }
+        public TraverserGenerator getTraverserGenerator();
 
         /**
          * Get the set of all {@link TraverserRequirement}s for this traversal.
          *
          * @return the features of a traverser that are required to execute properly in this traversal
          */
-        public default Set<TraverserRequirement> getTraverserRequirements() {
-            final Set<TraverserRequirement> requirements = this.getSteps().stream()
-                    .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
-                    .collect(Collectors.toSet());
-            if (this.getSideEffects().keys().size() > 0)
-                requirements.add(TraverserRequirement.SIDE_EFFECTS);
-            if (null != this.getSideEffects().getSackInitialValue())
-                requirements.add(TraverserRequirement.SACK);
-            if (this.getEngine().isComputer())
-                requirements.add(TraverserRequirement.BULK);
-            if (requirements.contains(TraverserRequirement.ONE_BULK))
-                requirements.remove(TraverserRequirement.BULK);
-            return requirements;
-        }
-
-        /**
-         * Add a {@link TraverserRequirement} to this traversal and respective nested sub-traversals.
-         * This is here to allow {@link TraversalStrategy} and {@link TraversalSource} instances to insert requirements.
-         *
-         * @param traverserRequirement the traverser requirement to add
-         */
-        public void addTraverserRequirement(final TraverserRequirement traverserRequirement);
+        public Set<TraverserRequirement> getTraverserRequirements();
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.
@@ -479,6 +493,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             }
             return false;
         }
+
+        public default Traverser.Admin<E> nextTraverser() {
+            return this.getEndStep().next();
+        }
+
     }
 
 }

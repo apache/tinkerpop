@@ -18,21 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.max;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.min;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,20 +43,16 @@ import static org.mockito.Mockito.when;
 @RunWith(Parameterized.class)
 public class ComputerVerificationStrategyTest {
 
-    private TraversalEngine traversalEngine;
-
-    @Before
-    public void setup() {
-        this.traversalEngine = mock(TraversalEngine.class);
-        when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-    }
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.out().union(__.out().count(),__.in().count())", __.out().union(__.out().count(), __.in().count())},
-                {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name"))},
-                {"__.groupCount(\"a\").out().cap(\"a\").count()", __.groupCount("a").out().cap("a").count()},
+                // illegal
+                {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name")), false},
+                {"__.local(out().out())", __.local(out().out()), false},
+                // legal
+                {"__.values(\"age\").union(max(), min(), sum())", __.values("age").union(max(), min(), sum()), true},
+                {"__.count().sum()", __.count().sum(), true},
+                {"__.where(\"a\",eq(\"b\")).out()", __.where("a", P.eq("b")).out(), true},
 
         });
     }
@@ -64,17 +63,23 @@ public class ComputerVerificationStrategyTest {
     @Parameterized.Parameter(value = 1)
     public Traversal traversal;
 
+    @Parameterized.Parameter(value = 2)
+    public boolean legal;
+
     @Test
     public void shouldBeVerifiedIllegal() {
+
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(ComputerVerificationStrategy.instance());
+        this.traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
+        this.traversal.asAdmin().setStrategies(strategies);
         try {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(ComputerVerificationStrategy.instance());
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-            fail("The strategy should not allow lambdas: " + this.traversal);
-        } catch (VerificationException ise) {
-           assertTrue(true);
+            this.traversal.asAdmin().applyStrategies();
+            if (!this.legal)
+                fail("The traversal should not be allowed: " + this.traversal);
+        } catch (final VerificationException ise) {
+            if (this.legal)
+                fail("The traversal should be allowed: " + this.traversal);
         }
     }
 

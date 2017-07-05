@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
@@ -32,9 +31,10 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineThreadInterruptTest {
+
     @Test
     public void shouldInterruptWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptGroovyCustomizer());
         final AtomicBoolean asserted = new AtomicBoolean(false);
 
         final Thread t = new Thread(() -> {

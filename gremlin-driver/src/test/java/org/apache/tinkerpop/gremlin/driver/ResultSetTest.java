@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -43,7 +45,15 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
     @Before
     public void setupThis() {
-        resultSet = new ResultSet(resultQueue, pool, readCompleted);
+        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
+    }
+
+    @Test
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadComplete() {
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(all.isDone(), is(false));
+        readCompleted.complete(null);
+        assertThat(all.isDone(), is(true));
     }
 
     @Test
@@ -51,6 +61,26 @@ public class ResultSetTest extends AbstractResultQueueTest {
         assertThat(resultSet.allItemsAvailable(), is(false));
         readCompleted.complete(null);
         assertThat(resultSet.allItemsAvailable(), is(true));
+    }
+
+    @Test
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadCompleteWhileLoading() throws Exception {
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(all.isDone(), is(false));
+
+        final AtomicBoolean atLeastOnce = new AtomicBoolean(false);
+        addToQueue(1000, 1, true, true);
+        while (!readCompleted.isDone()) {
+            atLeastOnce.set(true);
+            if (!atLeastOnce.get())
+                assertThat(all.isDone(), is(false));
+        }
+
+        assertThat(atLeastOnce.get(), is(true));
+
+        // ensure there is enough time for the readComplete to complete the "all" future
+        all.get(30000, TimeUnit.MILLISECONDS);
+        assertThat(all.isDone(), is(true));
     }
 
     @Test

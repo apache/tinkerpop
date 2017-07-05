@@ -47,7 +47,7 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         // TestHelper creates the directory and we need it not to exist
         deleteDirectory(outputLocation);
-        super.checkHeadMethods(storage, inputLocation, outputLocation, InputOutputHelper.getInputFormat((Class) Class.forName(graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))), SequenceFileInputFormat.class);
+        super.checkHeadMethods(storage, inputLocation, outputLocation, InputOutputHelper.getInputFormat((Class) Class.forName(graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER))), SequenceFileInputFormat.class);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
         final String newOutputLocation = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "new-location-for-copy");
         // TestHelper creates the directory and we need it not to exist
         deleteDirectory(newOutputLocation);
-        super.checkCopyMethods(storage, outputLocation, newOutputLocation, InputOutputHelper.getInputFormat((Class) Class.forName(graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))), SequenceFileInputFormat.class);
+        super.checkCopyMethods(storage, outputLocation, newOutputLocation, InputOutputHelper.getInputFormat((Class) Class.forName(graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER))), SequenceFileInputFormat.class);
 
     }
 

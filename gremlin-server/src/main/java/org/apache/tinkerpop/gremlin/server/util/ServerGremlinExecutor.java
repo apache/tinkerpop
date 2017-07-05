@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -28,8 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,43 +50,19 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
+public class ServerGremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ServerGremlinExecutor.class);
 
     private final GraphManager graphManager;
     private final Settings settings;
     private final List<LifeCycleHook> hooks;
 
-    private final T scheduledExecutorService;
+    private final ScheduledExecutorService scheduledExecutorService;
     private final ExecutorService gremlinExecutorService;
     private final GremlinExecutor gremlinExecutor;
 
     private final Map<String,Object> hostOptions = new ConcurrentHashMap<>();
 
-    /**
-     * Create a new object from {@link Settings} where thread pools are internally created. Note that the
-     * {@code scheduleExecutorServiceClass} will be created via
-     * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.
-     */
-    public ServerGremlinExecutor(final Settings settings, final Class<T> scheduleExecutorServiceClass) {
-        this(settings, null, null, scheduleExecutorServiceClass);
-    }
-
-    /**
-     * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
-     * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
-     * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.  If either of the {@link ExecutorService}
-     * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size. The
-     * {@link GraphManager} will be constructed from the {@link Settings}.
-     */
-    public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
-                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass) {
-        this(settings,
-             gremlinExecutorService,
-             scheduledExecutorService,
-             scheduleExecutorServiceClass,
-             new GraphManager(settings));
-    }
     /**
      * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
      * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
@@ -93,9 +70,25 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
      * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size.
      */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
-                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass,
-                                 final GraphManager graphManager) {
+                                 final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
+
+        try {
+            final Class<?> clazz = Class.forName(settings.graphManager);
+            final Constructor c = clazz.getConstructor(Settings.class);
+            graphManager = (GraphManager) c.newInstance(settings);
+        } catch (ClassNotFoundException e) {
+            logger.error("Could not find GraphManager implementation "
+                         + "defined by the 'graphManager' setting as: {}",
+                         settings.graphManager);
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Could not invoke constructor on class {} (defined by "
+                         + "the 'graphManager' setting) with one argument of "
+                         + "class Settings",
+                         settings.graphManager);
+            throw new RuntimeException(e);
+        }
 
         if (null == gremlinExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("exec-%d");
@@ -106,13 +99,10 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         if (null == scheduledExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("worker-%d");
-            this.scheduledExecutorService = scheduleExecutorServiceClass.cast(
-                    Executors.newScheduledThreadPool(settings.threadPoolWorker, threadFactoryGremlin));
+            this.scheduledExecutorService = Executors.newScheduledThreadPool(settings.threadPoolWorker, threadFactoryGremlin);
         } else {
             this.scheduledExecutorService = scheduledExecutorService;
         }
-
-        this.graphManager = graphManager;
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
@@ -121,42 +111,62 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
                 .afterTimeout(b -> this.graphManager.rollbackAll())
-                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(this.graphManager.getAsBindings())
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init
-            v.imports.add(LifeCycleHook.class.getCanonicalName());
-            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
-            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+            // use plugins if they are present
+            if (!v.plugins.isEmpty()) {
+                // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
+                // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
+                gremlinExecutorBuilder.addPlugins(k, v.plugins);
+            }
         });
 
         gremlinExecutor = gremlinExecutorBuilder.create();
 
-        logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+        logger.info("Initialized GremlinExecutor and preparing GremlinScriptEngines instances.");
+
+        // force each scriptengine to process something so that the init scripts will fire (this is necessary if
+        // the GremlinExecutor is using the GremlinScriptEngineManager. this is a bit of hack, but it at least allows
+        // the global bindings to become available after the init scripts are run (DefaultGremlinScriptEngineManager
+        // runs the init scripts when the GremlinScriptEngine is created.
+        settings.scriptEngines.keySet().forEach(engineName -> {
+            try {
+                gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+                registerMetrics(engineName);
+                logger.info("Initialized {} GremlinScriptEngine and registered metrics", engineName);
+            } catch (Exception ex) {
+                logger.warn(String.format("Could not initialize %s GremlinScriptEngine as init script could not be evaluated", engineName), ex);
+            }
+        });
 
         // script engine init may have altered the graph bindings or maybe even created new ones - need to
         // re-apply those references back
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
+        gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> this.graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
+                .forEach(kv -> this.graphManager.putGraph(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
+        gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    this.graphManager.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
+                    this.graphManager.putTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
                 });
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
         // up for execution
-        hooks = gremlinExecutor.getGlobalBindings().entrySet().stream()
+        hooks = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());
+    }
+
+    private void registerMetrics(final String engineName) {
+        final GremlinScriptEngine engine = gremlinExecutor.getScriptEngineManager().getEngineByName(engineName);
+        MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "sessionless", "class-cache");
     }
 
     public void addHostOption(final String key, final Object value) {
@@ -175,7 +185,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         hostOptions.clear();
     }
 
-    public T getScheduledExecutorService() {
+    public ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
 

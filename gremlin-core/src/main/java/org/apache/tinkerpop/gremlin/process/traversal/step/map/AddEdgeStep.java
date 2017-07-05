@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -34,8 +36,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +46,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing {
+public final class AddEdgeStep<S> extends MapStep<S, Edge>
+        implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -54,7 +57,7 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(T.label, edgeLabel);
+        this.parameters.set(this, T.label, edgeLabel);
     }
 
     @Override
@@ -68,19 +71,23 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     }
 
     @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
+    }
+
+    @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
-    public void addTo(final Object toObject) {
-        this.parameters.set(TO, toObject);
-        this.parameters.integrateTraversals(this);
+    @Override
+    public void addTo(final Traversal.Admin<?,?> toObject) {
+        this.parameters.set(this, TO, toObject);
     }
 
-    public void addFrom(final Object fromObject) {
-        this.parameters.set(FROM, fromObject);
-        this.parameters.integrateTraversals(this);
+    @Override
+    public void addFrom(final Traversal.Admin<?,?> fromObject) {
+        this.parameters.set(this, FROM, fromObject);
     }
 
     @Override
@@ -90,10 +97,10 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
-            if (callbackRegistry != null) {
-                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-            }
+        if (callbackRegistry != null) {
+            final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
+            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+        }
         return edge;
     }
 
@@ -116,6 +123,12 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters.toString());
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override

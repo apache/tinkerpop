@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,7 +51,9 @@ public class IoGraphTest extends AbstractGremlinTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"graphml", IoCore.graphml(), false, true, ".xml"},
-                {"graphson", IoCore.graphson(), true, true, ".json"},
+                {"graphsonv1d0", IoCore.graphson(), true, true, ".json"},
+                {"graphsonv2d0", GraphSONIo.build(GraphSONVersion.V2_0), true, true, ".json"},
+                {"graphsonv3d0", GraphSONIo.build(GraphSONVersion.V3_0), true, true, ".json"},
                 {"gryo", IoCore.gryo(), false, false, ".kryo"}
         });
     }
@@ -202,8 +207,8 @@ public class IoGraphTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteCrewToGryo() throws Exception {
-        assumeThat("GraphML does not suppport multi/metaproperties", ioType, not("graphml"));
+    public void shouldReadWriteCrew() throws Exception {
+        assumeThat("GraphML does not support multi/metaproperties", ioType, not("graphml"));
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
             final GraphWriter writer = graph.io(ioBuilderToTest).writer().create();

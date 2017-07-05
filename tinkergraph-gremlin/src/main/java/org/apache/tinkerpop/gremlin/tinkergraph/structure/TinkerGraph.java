@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -60,57 +61,20 @@ import java.util.stream.Stream;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
-@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_PERFORMANCE)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
-@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-@Graph.OptIn("org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.TinkerGraphStrategySuite")
 public final class TinkerGraph implements Graph {
 
     static {
-        TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(TinkerGraphStepStrategy.instance()));
+        TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+                TinkerGraphStepStrategy.instance(),
+                TinkerGraphCountStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_VERTEX_ID = "gremlin.tinkergraph.vertexIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER}
-     */
-    @Deprecated
-    public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY}
-     */
-    @Deprecated
-    public static final String CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION}
-     */
-    @Deprecated
-    public static final String CONFIG_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_FORMAT}
-     */
-    @Deprecated
-    public static final String CONFIG_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
-    ///////
     public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
     public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
     public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
@@ -120,7 +84,7 @@ public final class TinkerGraph implements Graph {
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
-    protected AtomicLong currentId = new AtomicLong(-1l);
+    protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
 
@@ -231,7 +195,7 @@ public final class TinkerGraph implements Graph {
 
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
-        return (I) builder.graph(this).registry(TinkerIoRegistry.getInstance()).create();
+        return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV3d0.instance())).create();
     }
 
     @Override
@@ -243,12 +207,17 @@ public final class TinkerGraph implements Graph {
         this.vertices.clear();
         this.edges.clear();
         this.variables = null;
-        this.currentId.set(-1l);
+        this.currentId.set(-1L);
         this.vertexIndex = null;
         this.edgeIndex = null;
         this.graphComputerView = null;
     }
 
+    /**
+     * This method only has an effect if the {@link #GREMLIN_TINKERGRAPH_GRAPH_LOCATION} is set, in which case the
+     * data in the graph is persisted to that location. This method may be called multiple times and does not release
+     * resources.
+     */
     @Override
     public void close() {
         if (graphLocation != null) saveGraph();
@@ -324,8 +293,9 @@ public final class TinkerGraph implements Graph {
     private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
                                                                   final IdManager idManager,
                                                                   final Object... ids) {
+        final Iterator<T> iterator;
         if (0 == ids.length) {
-            return elements.values().iterator();
+            iterator = elements.values().iterator();
         } else {
             final List<Object> idList = Arrays.asList(ids);
             validateHomogenousIds(idList);
@@ -335,9 +305,14 @@ public final class TinkerGraph implements Graph {
             // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
             // vertex to be findable in OrientDB
             return clazz.isAssignableFrom(ids[0].getClass()) ?
-               IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
-                : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
+                    IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
+                    : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
         }
+        return TinkerHelper.inComputerMode(this) ?
+                (Iterator<T>) (clazz.equals(Vertex.class) ?
+                        IteratorUtils.filter((Iterator<Vertex>) iterator, t -> this.graphComputerView.legalVertex(t)) :
+                        IteratorUtils.filter((Iterator<Edge>) iterator, t -> this.graphComputerView.legalEdge(t.outVertex(), t))) :
+                iterator;
     }
 
     /**

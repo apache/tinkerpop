@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -70,7 +71,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     public static final String DEFAULT_BULK_LOADER_VERTEX_ID = "bulkLoader.vertex.id";
 
     private final MessageScope messageScope;
-    private final Set<String> elementComputeKeys;
+    private final Set<VertexComputeKey> elementComputeKeys;
     private Configuration configuration;
     private BulkLoader bulkLoader;
     private Graph graph;
@@ -152,7 +153,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             ConfigurationUtils.copy(config, configuration);
         }
         intermediateBatchSize = configuration.getLong(INTERMEDIATE_BATCH_SIZE_CFG_KEY, 0L);
-        elementComputeKeys.add(DEFAULT_BULK_LOADER_VERTEX_ID);
+        elementComputeKeys.add(VertexComputeKey.of(DEFAULT_BULK_LOADER_VERTEX_ID, true));
         bulkLoader = createBulkLoader();
     }
 
@@ -171,7 +172,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
                 listener = new BulkLoadingListener();
-                g = GraphTraversalSource.build().with(EventStrategy.build().addListener(listener).create()).create(graph);
+                g = graph.traversal().withStrategies(EventStrategy.build().addListener(listener).create());
             } catch (Exception e) {
                 try {
                     graph.close();
@@ -272,7 +273,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     }
 
     @Override
-    public Set<String> getElementComputeKeys() {
+    public Set<VertexComputeKey> getVertexComputeKeys() {
         return elementComputeKeys;
     }
 
@@ -301,12 +302,12 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         if (bulkLoader != null) {
-            sb.append("bulkLoader=").append(bulkLoader.getClass().getSimpleName()).append(",");
-            sb.append("vertexIdProperty=").append(bulkLoader.getVertexIdProperty()).append(",");
-            sb.append("userSuppliedIds=").append(bulkLoader.useUserSuppliedIds()).append(",");
-            sb.append("keepOriginalIds=").append(bulkLoader.keepOriginalIds()).append(",");
+            sb.append("bulkLoader=").append(bulkLoader.getClass().getSimpleName()).append(", ");
+            sb.append("vertexIdProperty=").append(bulkLoader.getVertexIdProperty()).append(", ");
+            sb.append("userSuppliedIds=").append(bulkLoader.useUserSuppliedIds()).append(", ");
+            sb.append("keepOriginalIds=").append(bulkLoader.keepOriginalIds()).append(", ");
         } else {
-            sb.append("bulkLoader=").append(bulkLoader).append(",");
+            sb.append("bulkLoader=").append(bulkLoader).append(", ");
         }
         sb.append("batchSize=").append(intermediateBatchSize);
         return StringFactory.vertexProgramString(this, sb.toString());

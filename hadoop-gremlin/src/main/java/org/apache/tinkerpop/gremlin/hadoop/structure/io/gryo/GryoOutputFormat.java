@@ -34,7 +34,7 @@ public final class GryoOutputFormat extends CommonFileOutputFormat implements Ha
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GryoRecordWriter(getDataOuputStream(job), job.getConfiguration());
+        return new GryoRecordWriter(getDataOutputStream(job), job.getConfiguration());
     }
 
 }

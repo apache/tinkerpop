@@ -47,4 +47,8 @@ public final class Serializer {
         in.close();
         return object;
     }
+
+    public static <V> V cloneObject(final V object) throws IOException, ClassNotFoundException {
+        return (V) Serializer.deserializeObject(Serializer.serializeObject(object));
+    }
 }

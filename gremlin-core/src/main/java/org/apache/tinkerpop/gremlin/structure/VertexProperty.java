@@ -99,6 +99,10 @@ public interface VertexProperty<V> extends Property<V>, Element {
             return new UnsupportedOperationException("Multiple properties on a vertex is not supported");
         }
 
+        public static UnsupportedOperationException identicalMultiPropertiesNotSupported() {
+            return new UnsupportedOperationException("Multiple properties on a vertex is supported, but a single key may not hold the same value more than once");
+        }
+
         public static UnsupportedOperationException metaPropertiesNotSupported() {
             return new UnsupportedOperationException("Properties on a vertex property is not supported");
         }

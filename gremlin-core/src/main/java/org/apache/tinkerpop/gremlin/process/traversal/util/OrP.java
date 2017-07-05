@@ -19,8 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -29,28 +32,42 @@ import java.util.function.Predicate;
  */
 public final class OrP<V> extends ConnectiveP<V> {
 
-    public OrP(final P<V>... predicates) {
+    public OrP(final List<P<V>> predicates) {
         super(predicates);
+        for (final P<V> p : predicates) {
+            this.or(p);
+        }
         this.biPredicate = new OrBiPredicate(this);
+    }
+
+    @Deprecated
+    /**
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link OrP(List)}
+     */
+    public OrP(final P<V>... predicates) {
+        this(Arrays.asList(predicates));
     }
 
     @Override
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
-        this.predicates.add((P<V>) predicate);   // TODO: clone and add?
+        else if (predicate instanceof OrP)
+            this.predicates.addAll(((OrP) predicate).getPredicates());
+        else
+            this.predicates.add((P<V>) predicate);
         return this;
     }
 
     @Override
     public P<V> negate() {
         super.negate();
-        return new AndP(this.predicates.toArray(new P[this.predicates.size()]));
+        return new AndP<>(this.predicates);
     }
 
     @Override
     public String toString() {
-        return "or(" + this.predicates + ")";
+        return "or(" + StringFactory.removeEndBrackets(this.predicates) + ")";
     }
 
     @Override

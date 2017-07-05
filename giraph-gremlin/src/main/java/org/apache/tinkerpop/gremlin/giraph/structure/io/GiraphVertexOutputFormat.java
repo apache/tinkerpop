@@ -18,17 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.giraph.structure.io;
 
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.io.VertexOutputFormat;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 
 import java.io.IOException;
 
@@ -37,29 +35,21 @@ import java.io.IOException;
  */
 public final class GiraphVertexOutputFormat extends VertexOutputFormat {
 
-    private OutputFormat<NullWritable, VertexWritable> hadoopGraphOutputFormat;
-
     @Override
     public VertexWriter createVertexWriter(final TaskAttemptContext context) throws IOException, InterruptedException {
-        this.constructor(context.getConfiguration());
-        return new GiraphVertexWriter(this.hadoopGraphOutputFormat);
+        return new GiraphVertexWriter();
     }
 
     @Override
     public void checkOutputSpecs(final JobContext context) throws IOException, InterruptedException {
-        this.constructor(context.getConfiguration());
-        this.hadoopGraphOutputFormat.checkOutputSpecs(context);
+        final Configuration configuration = context.getConfiguration();
+        ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class, OutputFormat.class), configuration).checkOutputSpecs(context);
     }
 
     @Override
     public OutputCommitter getOutputCommitter(final TaskAttemptContext context) throws IOException, InterruptedException {
-        this.constructor(context.getConfiguration());
-        return this.hadoopGraphOutputFormat.getOutputCommitter(context);
+        final Configuration configuration = context.getConfiguration();
+        return ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class, OutputFormat.class), configuration).getOutputCommitter(context);
     }
 
-    private final void constructor(final Configuration configuration) {
-        if (null == this.hadoopGraphOutputFormat) {
-            this.hadoopGraphOutputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration);
-        }
-    }
 }

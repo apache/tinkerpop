@@ -18,14 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -37,26 +33,24 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
 
     @Test
     public void shouldTimeoutScriptOnTimedWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new TimedInterruptGroovyCustomizer(1000));
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
         } catch (ScriptException se) {
-            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+            assertEquals(org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
         }
     }
 
     @Test
     public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new TimedInterruptGroovyCustomizer(1000));
         Thread.sleep(2000);
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
         } catch (ScriptException se) {
-            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+            assertEquals(org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
         }
 
         assertEquals(2, engine.eval("1+1"));
@@ -65,7 +59,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
+                new TimedInterruptGroovyCustomizer(1000));
 
         for (int ix = 0; ix < 5; ix++) {
             try {
@@ -73,7 +67,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
                 engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 2000) {}");
                 fail("This should have timed out");
             } catch (ScriptException se) {
-                assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
+                assertEquals(org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
             }
 
             // this script takes 500 ms less than the interruptionTimeout
@@ -86,8 +80,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
     @Test
     public void shouldNotTimeoutStandaloneFunction() throws Exception {
         // use a super fast timeout which should not prevent the call of a cached function
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1), new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new TimedInterruptGroovyCustomizer(1));
         engine.eval("def addItUp(x,y) { x + y }");
 
         assertEquals(3, engine.eval("addItUp(1,2)"));

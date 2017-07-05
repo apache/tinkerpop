@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +38,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinServerIntegrationTest {
-    private GremlinServer server;
+    protected GremlinServer server;
     private final static String epollOption = "gremlin.server.epoll";
     private static final boolean GREMLIN_SERVER_EPOLL = "true".equalsIgnoreCase(System.getProperty(epollOption));
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
@@ -82,6 +83,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     public void stopServer() throws Exception {
         server.stop().join();
+
+        // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
+        // between tests
+        OpLoader.reset();
     }
 
     public static boolean deleteDirectory(final File directory) {

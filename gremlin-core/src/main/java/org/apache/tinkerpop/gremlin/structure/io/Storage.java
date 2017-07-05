@@ -96,21 +96,21 @@ public interface Storage {
      * Get the vertices at the specified graph location.
      *
      * @param location    the location of the graph (or the root location and search will be made)
-     * @param parserClass the class of the parser that understands the graph format
+     * @param readerClass the class of the parser that understands the graph format
      * @param totalLines  the total number of lines of the graph to return
      * @return an iterator of vertices.
      */
-    public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines);
+    public Iterator<Vertex> head(final String location, final Class readerClass, final int totalLines);
 
     /**
      * Get the vertices at the specified graph location.
      *
      * @param location    the location of the graph (or the root location and search will be made)
-     * @param parserClass the class of the parser that understands the graph format
+     * @param readerClass the class of the parser that understands the graph format
      * @return an iterator of vertices.
      */
-    public default Iterator<Vertex> head(final String location, final Class parserClass) {
-        return this.head(location, parserClass, Integer.MAX_VALUE);
+    public default Iterator<Vertex> head(final String location, final Class readerClass) {
+        return this.head(location, readerClass, Integer.MAX_VALUE);
     }
 
     /**
@@ -118,11 +118,11 @@ public interface Storage {
      *
      * @param location    the root location of the data
      * @param memoryKey   the memory key
-     * @param parserClass the class of the parser that understands the memory format
+     * @param readerClass the class of the parser that understands the memory format
      * @param totalLines  the total number of key-values to return
      * @return an iterator of key-values.
      */
-    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines);
+    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class readerClass, final int totalLines);
 
 
     /**
@@ -130,10 +130,10 @@ public interface Storage {
      *
      * @param location    the root location of the data
      * @param memoryKey   the memory key
-     * @param parserClass the class of the parser that understands the memory format
+     * @param readerClass the class of the parser that understands the memory format
      * @return an iterator of key-values.
      */
-    public default <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass) {
-        return this.head(location, memoryKey, parserClass, Integer.MAX_VALUE);
+    public default <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class readerClass) {
+        return this.head(location, memoryKey, readerClass, Integer.MAX_VALUE);
     }
 }

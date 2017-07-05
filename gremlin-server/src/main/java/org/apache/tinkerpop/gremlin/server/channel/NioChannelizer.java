@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
@@ -46,13 +45,13 @@ public class NioChannelizer extends AbstractChannelizer {
     private NioGremlinResponseFrameEncoder nioGremlinResponseFrameEncoder;
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
 
         // configure authentication - null means don't bother to add authentication to the pipeline
         if (authenticator != null)
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new SaslAuthenticationHandler(authenticator);
+                    null : new SaslAuthenticationHandler(authenticator, settings.authentication);
 
         gremlinResponseFrameEncoder = new GremlinResponseFrameEncoder();
         nioGremlinResponseFrameEncoder = new NioGremlinResponseFrameEncoder();

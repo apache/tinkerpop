@@ -22,10 +22,8 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -95,6 +93,20 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXlocationX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_in_hasIdXneqX1XX(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_value();
+
+    public abstract Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value();
+
+    public abstract Traversal<Vertex, String> get_g_V_hasNotXageX_name();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -173,22 +185,21 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_hasXage_gt_30X() {
-        final Traversal<Vertex,Vertex> traversalMarko = get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversalMarko = get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversalMarko);
         assertFalse(traversalMarko.hasNext());
-        final Traversal<Vertex,Vertex> traversalJosh = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
+        final Traversal<Vertex, Vertex> traversalJosh = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
         printTraversalForm(traversalJosh);
         assertTrue(traversalJosh.hasNext());
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VXv1X_hasXage_gt_30X() {
-        final Traversal<Vertex,Vertex> traversalMarko = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversalMarko = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversalMarko);
         assertFalse(traversalMarko.hasNext());
-        final Traversal<Vertex,Vertex> traversalJosh = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("josh"));
+        final Traversal<Vertex, Vertex> traversalJosh = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("josh"));
         printTraversalForm(traversalJosh);
         assertTrue(traversalJosh.hasNext());
     }
@@ -366,11 +377,75 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "stephen"), convertToVertex(graph, "daniel"), convertToVertex(graph, "matthias")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("peter", "vadas"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_in_hasIdXneqX1XX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_in_hasIdXneqX1XX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            Vertex vertex = traversal.next();
+            assertTrue(vertex.value("name").equals("josh") || vertex.value("name").equals("peter"));
+            count++;
+        }
+        assertEquals(3, count);
+    }
+
     private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Edge e = traversal.next();
         assertEquals(edgeId, e.id());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_dedup_properties_hasKeyXageX_value() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_both_properties_dedup_hasKeyXageX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29, 27, 32, 35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(32, 35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith
+    public void g_V_hasNotXageX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasNotXageX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "ripple"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasIdX1X_hasIdX2X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasIdX1X_hasIdX2X(
+                convertToVertexId("marko"), convertToVertexId("vadas")
+        );
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXpersonX_hasLabelXsoftwareX();
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
 
@@ -478,6 +553,41 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXlocationX() {
             return g.V().has("location");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_in_hasIdXneqX1XX(final Object v1Id) {
+            return g.V().in().hasId(P.neq(v1Id));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
+            return g.V().hasLabel("person").has("age", P.not(P.lte(10).and(P.not(P.between(11, 20)))).and(P.lt(29).or(P.eq(35)))).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_value() {
+            return g.V().both().properties().dedup().hasKey("age").value();
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value() {
+            return g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(30)).value();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasNotXageX_name() {
+            return g.V().hasNot("age").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex>  get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id) {
+            return g.V().hasId(v1Id).hasId(v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
+            return g.V().hasLabel("person").hasLabel("software");
         }
     }
 }

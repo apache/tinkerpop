@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,10 +43,17 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
         Spark.close();
     }
 
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        Spark.create("local[4]");
+        Spark.close();
+    }
+
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHeadMethods() throws Exception {
-        final Storage storage = SparkContextStorage.open("local[4]");
+        final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkHeadMethods(storage, graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), outputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
     }
@@ -52,7 +61,7 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoveAndListMethods() throws Exception {
-        final Storage storage = SparkContextStorage.open("local[4]");
+        final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkRemoveAndListMethods(storage, outputLocation);
     }
@@ -60,7 +69,7 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportCopyMethods() throws Exception {
-        final Storage storage = SparkContextStorage.open("local[4]");
+        final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = "new-location-for-copy";
         super.checkCopyMethods(storage, outputLocation, newOutputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
@@ -69,14 +78,14 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotHaveResidualDataInStorage() throws Exception {
-        final Storage storage = SparkContextStorage.open("local[4]");
+        final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkResidualDataInStorage(storage, outputLocation);
     }
 
     @Test
     public void shouldSupportDirectoryFileDistinction() throws Exception {
-        final Storage storage = SparkContextStorage.open("local[4]");
+        final Storage storage = SparkContextStorage.open(graph.configuration());
         for (int i = 0; i < 10; i++) {
             JavaSparkContext.fromSparkContext(Spark.getContext()).emptyRDD().setName("directory1/file1-" + i + ".txt.bz").persist(StorageLevel.DISK_ONLY());
         }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,19 @@ public final class OpLoader {
         });
     }
 
+    private static volatile boolean initialized = false;
+
+    /**
+     * Initialize the {@code OpLoader} with server settings. This method should only be called once at startup but is
+     * designed to be idempotent.
+     */
+    public static synchronized void init(final Settings settings) {
+        if (!initialized) {
+            processors.values().forEach(processor -> processor.init(settings));
+            initialized = true;
+        }
+    }
+
     /**
      * Gets an {@link OpProcessor} by its name. If it cannot be found an {@link Optional#EMPTY} is returned.
      */
@@ -63,5 +77,13 @@ public final class OpLoader {
      */
     public static Map<String, OpProcessor> getProcessors() {
         return Collections.unmodifiableMap(processors);
+    }
+
+    /**
+     * Reset the processors so that they can be re-initialized with different settings which is useful in testing
+     * scenarios.
+     */
+    public synchronized static void reset() {
+        initialized = false;
     }
 }

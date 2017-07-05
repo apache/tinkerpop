@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.min;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

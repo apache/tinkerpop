@@ -1,0 +1,71 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[traversal-component-reuse]]
+Traversal Component Reuse
+-------------------------
+
+Good software development practices require reuse to keep software maintainable. In Gremlin, there are often bits of
+traversal logic that could be represented as components that might be tested independently and utilized
+as part of other traversals. One approach to doing this would be to extract such logic into an anonymous traversal
+and provide it to a parent traversal through `flatMap()` step.
+
+Using the modern toy graph as an example, assume that there are number of traversals that are interested in filtering
+on edges where the "weight" property is greater than "0.5". A query like that might look like this:
+
+[gremlin-groovy,modern]
+----
+g.V(1).outE("knows").has('weight', P.gt(0.5d)).inV().both()
+----
+
+Repeatedly requiring that filter on "weight" could lead to a lot of duplicate code, which becomes difficult to
+maintain. It would be nice to extract that logic so as to centralize it for reuse in all places where needed. An
+anonymous traversal allows that to happen and can be created as follows.
+
+[gremlin-groovy,modern]
+----
+weightFilter = outE("knows").has('weight', P.gt(0.5d)).inV();[]
+g.V(1).flatMap(weightFilter).both()
+----
+
+The `weightFilter` is an anonymous traversal and it is created by way `__` class. The `__` is omitted above from
+initalization of `weightFilter` because it is statically imported to the Gremlin Console. The `weightFilter` gets
+passed to the "full" traversal by way for `flatMap()` step and the results are the same. Of course, there is a problem.
+If there is an attempt to use that `weightFilter` a second time, the traversal with thrown an exception because both
+the `weightFilter` and parent traversal have been "compiled" which prevents their re-use. A simple fix to this would
+be to clone the `weightFilter`.
+
+[gremlin-groovy,modern]
+----
+weightFilter = outE("knows").has('weight', P.gt(0.5d)).inV();[]
+g.V(1).flatMap(weightFilter.clone()).both()
+g.V(1).flatMap(weightFilter.clone()).bothE().otherV()
+g.V(1).flatMap(weightFilter.clone()).groupCount()
+----
+
+Now the `weightFilter` can be reused over and over again. Remembering to `clone()` might lead to yet another maintenance
+issue in that failing to recall that step would likely result in a bug. One option might be to wrap the `weightFilter`
+creation in a function that returns the clone. Another approach might be to parameterize that function to construct
+a new anonymous traversal each time with the idea being that this might gain even more flexibility in parameterizing
+the anonymous traversal itself.
+
+[gremlin-groovy,modern]
+----
+weightFilter = { w -> outE("knows").has('weight', P.gt(w)).inV() }
+g.V(1).flatMap(weightFilter(0.5d)).both()
+g.V(1).flatMap(weightFilter(0.5d)).bothE().otherV()
+g.V(1).flatMap(weightFilter(0.5d)).groupCount()
+----

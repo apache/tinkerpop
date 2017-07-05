@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.ParseCode
 import org.codehaus.groovy.tools.shell.Parser
+import org.codehaus.groovy.tools.shell.util.CommandArgumentParser
 
 /**
  * Overrides the posix style parsing of Groovysh allowing for commands to parse prior to Groovy 2.4.x.
@@ -45,13 +47,20 @@ class GremlinGroovysh extends Groovysh {
     Command findCommand(final String line, final List<String> parsedArgs = null) {
         def l = line ?: ""
 
-        final List<String> args = parseLine(l)
-        if (args.size() == 0) return null
+        final List<String> linetokens = parseLine(l)
+        if (linetokens.size() == 0) return null
 
-        def cmd = registry.find(args[0])
+        def cmd = registry.find(linetokens[0])
 
-        if (cmd != null && args.size() > 1 && parsedArgs != null) {
-            parsedArgs.addAll(args[1..-1])
+        if (cmd != null && linetokens.size() > 1 && parsedArgs != null) {
+            if (cmd instanceof GremlinSetCommand) {
+                // the following line doesn't play well with :remote scripts because it tokenizes quoted args as single args
+                // but at this point only the set command had trouble with quoted params/args with spaces
+                List<String> args = CommandArgumentParser.parseLine(line, parsedArgs == null ? 1 : -1)
+                parsedArgs.addAll(args[1..-1])
+            } else {
+                parsedArgs.addAll(linetokens[1..-1])
+            }
         }
 
         return cmd

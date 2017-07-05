@@ -1,0 +1,240 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[hadoop-gremlin]]
+Hadoop-Gremlin
+--------------
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>hadoop-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed
+computing framework that is used to process data represented across a multi-machine compute cluster. When the
+data in the Hadoop cluster represents a TinkerPop3 graph, then Hadoop-Gremlin can be used to process the graph
+using both TinkerPop3's OLTP and OLAP graph computing models.
+
+IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
+started with Hadoop, please see the
+link:http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
+tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is advisable that the reader also
+familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark
+(link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
+
+Installing Hadoop-Gremlin
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that
+Hadoop-Gremlin requires a Gremlin Console restart after installing.
+
+[source,text]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> :install org.apache.tinkerpop hadoop-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, hadoop-gremlin, x.y.z] - restart the console to use [tinkerpop.hadoop]
+gremlin> :q
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> :plugin use tinkerpop.hadoop
+==>tinkerpop.hadoop activated
+gremlin>
+----
+
+It is important that the `CLASSPATH` environmental variable references `HADOOP_CONF_DIR` and that the configuration
+files in `HADOOP_CONF_DIR` contain references to a live Hadoop cluster. It is easy to verify a proper configuration
+from within the Gremlin Console. If `hdfs` references the local file system, then there is a configuration issue.
+
+[source,text]
+----
+gremlin> hdfs
+==>storage[org.apache.hadoop.fs.LocalFileSystem@65bb9029] // BAD
+
+gremlin> hdfs
+==>storage[DFS[DFSClient[clientName=DFSClient_NONMAPREDUCE_1229457199_1, ugi=user (auth:SIMPLE)]]] // GOOD
+----
+
+The `HADOOP_GREMLIN_LIBS` references locations that contain jars that should be uploaded to a respective
+distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer).
+Note that the locations in `HADOOP_GREMLIN_LIBS` can be colon-separated (`:`) and all jars from all locations will
+be loaded into the cluster. Locations can be local paths (e.g. `/path/to/libs`), but may also be prefixed with a file
+scheme to reference files or directories in different file systems (e.g. `hdfs:///path/to/distributed/libs`).
+Typically, only the jars of the respective GraphComputer are required to be loaded (e.g. `GiraphGraphComputer` plugin lib
+directory).
+
+[source,shell]
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
+
+Properties Files
+~~~~~~~~~~~~~~~~
+
+`HadoopGraph` makes use of properties files which ultimately get turned into Apache configurations and/or
+Hadoop configurations.
+
+[source,text]
+gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.outputLocation=output
+gremlin.hadoop.graphWriter=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
+gremlin.hadoop.jarsInDistributedCache=true
+gremlin.hadoop.defaultGraphComputer=org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
+####################################
+# Spark Configuration              #
+####################################
+spark.master=local[4]
+spark.executor.memory=1g
+spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
+gremlin.spark.persistContext=true
+#####################################
+# GiraphGraphComputer Configuration #
+#####################################
+giraph.minWorkers=2
+giraph.maxWorkers=2
+giraph.useOutOfCoreGraph=true
+giraph.useOutOfCoreMessages=true
+mapreduce.map.java.opts=-Xmx1024m
+mapreduce.reduce.java.opts=-Xmx1024m
+giraph.numInputThreads=2
+giraph.numComputeThreads=2
+
+A review of the Hadoop-Gremlin specific properties are provided in the table below. For the respective OLAP
+engines (<<sparkgraphcomputer,`SparkGraphComputer`>> or <<giraphgraphcomputer,`GiraphGraphComputer`>>) refer
+to their respective documentation for configuration options.
+
+[width="100%",cols="2,10",options="header"]
+|=========================================================
+|Property |Description
+|gremlin.graph |The class of the graph to construct using GraphFactory.
+|gremlin.hadoop.inputLocation |The location of the input file(s) for Hadoop-Gremlin to read the graph from.
+|gremlin.hadoop.graphReader |The class that the graph input file(s) are read with (e.g. an `InputFormat`).
+|gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
+|gremlin.hadoop.graphWriter |The class that the graph output file(s) are written with (e.g. an `OutputFormat`).
+|gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to a distributed cache (necessary if jars are not on the machines' classpaths).
+|gremlin.hadoop.defaultGraphComputer |The default `GraphComputer` to use when `graph.compute()` is called. This is optional.
+|=========================================================
+
+Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties]
+can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
+
+IMPORTANT: As the size of the graphs being processed becomes large, it is important to fully understand how the
+underlying OLAP engine (e.g. Spark, Giraph, etc.) works and understand the numerous parameterizations offered by
+these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times,
+garbage collection issues, etc.
+
+OLTP Hadoop-Gremlin
+~~~~~~~~~~~~~~~~~~~
+
+image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over a `HadoopGraph`.
+However, realize that the underlying HDFS files are not random access and thus, to retrieve a vertex, a linear scan
+is required. OLTP operations are useful for peeking into the graph prior to executing a long running OLAP job -- e.g.
+`g.V().valueMap().limit(10)`.
+
+WARNING: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable
+for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>>
+which is the OLAP Gremlin machine.
+
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
+hdfs.ls()
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal()
+g.V().count()
+g.V().out().out().values('name')
+g.V().group().by{it.value('name')[1]}.by('name').next()
+----
+
+OLAP Hadoop-Gremlin
+~~~~~~~~~~~~~~~~~~~
+
+image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via
+`GraphComputer`. The OLTP examples presented previously are reproduced below, but using `TraversalVertexProgram`
+for the execution of the Gremlin traversal.
+
+A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin
+supports the following three implementations.
+
+* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce engine to execute TinkerPop3 OLAP
+computations. (*coming soon*)
+** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is
+coordinated via MapReduce jobs over the on-disk graph (slow traversals).
+* <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop3 OLAP computations.
+** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via
+Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
+* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Apache Giraph to execute TinkerPop3 OLAP computations.
+** The graph should fit within the total RAM of the Hadoop cluster (graph size restriction), though "out-of-core"
+processing is possible. Message passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
+
+TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with
+their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of
+the Gremlin Console session if it is not already activated.
+
+Note that `SparkGraphComputer` and `GiraphGraphComputer` are loaded via their respective plugins. Typically only
+one plugin or the other is loaded depending on the desired `GraphComputer` to use.
+
+[source,text]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :install org.apache.tinkerpop giraph-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [tinkerpop.giraph]
+gremlin> :install org.apache.tinkerpop spark-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, spark-gremlin, x.y.z] - restart the console to use [tinkerpop.spark]
+gremlin> :q
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :plugin use tinkerpop.giraph
+==>tinkerpop.giraph activated
+gremlin> :plugin use tinkerpop.spark
+==>tinkerpop.spark activated
+----
+
+WARNING: Hadoop, Spark, and Giraph all depend on many of the same libraries (e.g. ZooKeeper, Snappy, Netty, Guava,
+etc.). Unfortunately, typically these dependencies are not to the same versions of the respective libraries. As such,
+it is best to *not* have both Spark and Giraph plugins loaded in the same console session nor in the same Java
+project (though intelligent `<exclusion>`-usage can help alleviate conflicts in a Java project).

@@ -1,0 +1,28 @@
+// Example:
+// {
+//   "3.3.0": {
+//      "revapi": {
+//       "ignore": [
+//         {
+//           "code": "java.method.addedToInterface",
+//           "new": "method void org.apache.tinkerpop.gremlin.structure.Graph::solveWorldHunger()",
+//           "justification": "Gremlin became sentient and self-aware. This is what it/she/he did first."
+//         }
+//       ]
+//     }
+//   },
+//   "3.3.1": {
+//     "revapi": {
+//       "ignore": [
+//         {
+//           "code": "java.method.removed",
+//           "old": "method void org.apache.tinkerpop.gremlin.structure.Graph::solveWorldHunger()",
+//           "justification": "Gremlin has a strange sense of humour."
+//         }
+//       ]
+//     }
+//   },
+//   ...
+// }
+{
+}

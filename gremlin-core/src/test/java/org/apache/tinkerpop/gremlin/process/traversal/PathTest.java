@@ -33,7 +33,11 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -76,6 +80,29 @@ public class PathTest {
             assertEquals(Integer.valueOf(2), path.get(1));
             assertEquals(Integer.valueOf(3), path.get(2));
             assertEquals(Integer.valueOf(3), path.get(3));
+            Path retractedPath = path.retract(Collections.singleton("f")).clone();
+            assertFalse(path.hasLabel("f"));
+            assertEquals(4, path.size());
+            assertEquals(retractedPath, path);
+            path = path.retract(Collections.singleton("b"));
+            assertFalse(path.hasLabel("b"));
+            assertEquals(3, path.size());
+            assertEquals(retractedPath.retract(Collections.singleton("b")), path);
+            path = path.retract(Collections.singleton("a"));
+            assertEquals(2, path.size());
+            assertFalse(path.hasLabel("a"));
+            assertTrue(path.hasLabel("d"));
+            path = path.retract(new HashSet<>(Arrays.asList("c", "d")));
+            assertFalse(path.hasLabel("c"));
+            assertFalse(path.hasLabel("d"));
+            assertTrue(path.hasLabel("e"));
+            assertEquals(1, path.size());
+            path = path.retract(Collections.singleton("e"));
+            assertFalse(path.hasLabel("c"));
+            assertFalse(path.hasLabel("d"));
+            assertFalse(path.hasLabel("e"));
+            assertNotEquals(retractedPath, path);
+            assertEquals(0, path.size());
         });
     }
 
@@ -317,6 +344,24 @@ public class PathTest {
             assertTrue(pathA1.popEquals(Pop.last, pathA2));
             assertTrue(pathA2.popEquals(Pop.last, pathB1));
             assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("stephen", Collections.singleton("c"));
+            pathA2 = pathA2.extend("stephen", Collections.singleton("d"));
+            pathB1 = pathB1.extend("marko", Collections.singleton("e"));
+            pathB2 = pathB2.extend("stephen", Collections.singleton("f"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA1));
+            assertFalse(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertFalse(pathB1.popEquals(Pop.all, pathB2));
+            assertFalse(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertFalse(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathB1.popEquals(Pop.first, pathB1));
+            assertFalse(pathA1.popEquals(Pop.last, pathA2));
+            assertFalse(pathA2.popEquals(Pop.last, pathB1));
+            assertFalse(pathB1.popEquals(Pop.last, pathB2));
+            assertTrue(pathB2.popEquals(Pop.last, pathB2));
         });
     }
 
@@ -333,5 +378,127 @@ public class PathTest {
                 assertEquals(pathA.hashCode(), pathB.hashCode());
             }
         }
+    }
+
+    @Test
+    public void shouldHaveSubPathSupport() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("b"));
+            path = path.extend("matthias", new HashSet<>(Arrays.asList("c", "x")));
+            path = path.extend("bob", Collections.singleton("d"));
+            assertEquals(4, path.size());
+            assertEquals(4, path.objects().size());
+            assertEquals(4, path.labels().size());
+            ///
+            Path subPath = path.subPath("b", "c");
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            assertEquals("matthias", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("b"));
+            assertEquals(1, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("c"));
+            assertTrue(subPath.labels().get(1).contains("x"));
+            assertEquals(2, subPath.labels().get(1).size());
+            ///
+            subPath = path.subPath("b", "b");
+            assertEquals(1, subPath.size());
+            assertEquals(1, subPath.objects().size());
+            assertEquals(1, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            ///
+            subPath = path.subPath("b", "b");
+            assertEquals(1, subPath.size());
+            assertEquals(1, subPath.objects().size());
+            assertEquals(1, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            ///
+            subPath = path.subPath("c", "d");
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("matthias", subPath.objects().get(0));
+            assertEquals("bob", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("c"));
+            assertTrue(subPath.labels().get(0).contains("x"));
+            assertEquals(2, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("d"));
+            assertEquals(1, subPath.labels().get(1).size());
+            ///
+            subPath = path.subPath("c", null);
+            assertEquals(2, subPath.size());
+            assertEquals(2, subPath.objects().size());
+            assertEquals(2, subPath.labels().size());
+            assertEquals("matthias", subPath.objects().get(0));
+            assertEquals("bob", subPath.objects().get(1));
+            assertTrue(subPath.labels().get(0).contains("c"));
+            assertTrue(subPath.labels().get(0).contains("x"));
+            assertEquals(2, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("d"));
+            assertEquals(1, subPath.labels().get(1).size());
+            ///
+            subPath = path.subPath("a", "d");
+            assertEquals(4, subPath.size());
+            assertEquals(4, subPath.objects().size());
+            assertEquals(4, subPath.labels().size());
+            ///
+            subPath = path.subPath(null, "d");
+            assertEquals(4, subPath.size());
+            assertEquals(4, subPath.objects().size());
+            assertEquals(4, subPath.labels().size());
+            ///
+            try {
+                subPath = path.subPath("d", "a");
+                fail("Path labels must be ordered along path");
+            } catch (final IllegalArgumentException e) {
+                assertEquals(Path.Exceptions.couldNotIsolatedSubPath("d", "a").getMessage(), e.getMessage());
+            }
+            ///
+            try {
+                subPath = path.subPath("a", "e");
+                fail("End path label was not found");
+            } catch (final IllegalArgumentException e) {
+                assertEquals(Path.Exceptions.couldNotLocatePathToLabel("e").getMessage(), e.getMessage());
+            }
+            ///
+            try {
+                subPath = path.subPath("e", "b");
+                fail("Start path label was not found");
+            } catch (final IllegalArgumentException e) {
+                assertEquals(Path.Exceptions.couldNotLocatePathFromLabel("e").getMessage(), e.getMessage());
+            }
+        });
+    }
+
+    @Test
+    public void shouldHaveSubPathPopSupport() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("a"));
+            path = path.extend("matthias", new HashSet<>(Arrays.asList("c", "x")));
+            path = path.extend("bob", Collections.singleton("c"));
+            assertEquals(4, path.size());
+            assertEquals(4, path.objects().size());
+            assertEquals(4, path.labels().size());
+            ///
+            Path subPath = path.subPath("a", "c");
+            assertEquals(3, subPath.size());
+            assertEquals(3, subPath.objects().size());
+            assertEquals(3, subPath.labels().size());
+            assertEquals("stephen", subPath.objects().get(0));
+            assertEquals("matthias", subPath.objects().get(1));
+            assertEquals("bob", subPath.objects().get(2));
+            assertTrue(subPath.labels().get(0).contains("a"));
+            assertEquals(1, subPath.labels().get(0).size());
+            assertTrue(subPath.labels().get(1).contains("c"));
+            assertTrue(subPath.labels().get(1).contains("x"));
+            assertEquals(2, subPath.labels().get(1).size());
+            assertTrue(subPath.labels().get(2).contains("c"));
+            assertEquals(1, subPath.labels().get(2).size());
+        });
     }
 }

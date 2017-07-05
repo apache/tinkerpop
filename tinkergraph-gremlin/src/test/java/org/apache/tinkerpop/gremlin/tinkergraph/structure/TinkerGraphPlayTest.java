@@ -18,14 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -38,10 +41,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
@@ -54,7 +62,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -66,46 +73,74 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
-        //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
-        logger.info(g.V().both().both().groupCount().order(Scope.local).by(Column.values, Order.incr).toList().toString());
+        GraphTraversalSource g = graph.traversal();
 
+        final Traversal<?, ?> traversal = g.V().repeat(out()).times(2).groupCount().by("name").select(Column.keys).order().by(Order.decr);
+        final Bytecode bytecode = traversal.asAdmin().getBytecode();
+        //final JavaTranslator translator = JavaTranslator.of(g);
+        final Map<Bytecode, Traversal.Admin<?, ?>> cache = new HashMap<>();
+        cache.put(bytecode, traversal.asAdmin());
+        final HashSet<?> result = new LinkedHashSet<>(Arrays.asList("ripple", "lop"));
+
+        System.out.println("BYTECODE: " + bytecode + "\n");
+        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
+            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
+            final Traversal t = JavaTranslator.of(g).translate(bytecode);
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("\n==Second test with reversed execution==\n");
+
+        System.out.println("BYTECODE: " + bytecode + "\n");
+        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
+            final Traversal t = JavaTranslator.of(g).translate(bytecode);
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
+            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
+            //assertEquals(result, t.next());
+        }));
     }
 
     @Test
     @Ignore
     public void benchmarkGroup() throws Exception {
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
-        graph.io(GraphMLIo.build()).readGraph("data/grateful-dead.xml");
+        GraphTraversalSource g = graph.traversal();
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
         /////////
 
-        g.V().group().by(T.label).by(values("name")).forEachRemaining(x -> logger.info(x.toString()));
+        //g.V().group().by(T.label).by(values("name")).forEachRemaining(x -> logger.info(x.toString()));
 
-        logger.info("group: " + g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next());
-        logger.info("groupV3d0: " + g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next());
+        System.out.println("group: " + g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next());
+        System.out.println("groupV3d0: " + g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next());
 
         //
-        logger.info("\n\nBig Values -- by(songType)");
+        System.out.println("\n\nBig Values -- by(songType)");
 
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next()) + "\n");
-
-        ///
-
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(fold()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().next()));
-
-        ///
-        logger.info("\n\nBig Keys -- by(name)");
-
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(count()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().by(__.count(Scope.local)).next()) + "\n");
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next()) + "\n");
 
         ///
 
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(fold()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().next()));
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(fold()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().next()));
+
+        ///
+        System.out.println("\n\nBig Keys -- by(name)");
+
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(count()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().by(__.count(Scope.local)).next()) + "\n");
+
+        ///
+
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(fold()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().next()));
 
     }
 
@@ -225,7 +260,7 @@ public class TinkerGraphPlayTest {
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");*/
         //System.out.println(g.V().properties().key().groupCount().next());
         TinkerGraph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = graph.traversal();
         final List<Supplier<GraphTraversal<?, ?>>> traversals = Arrays.asList(
                 () -> g.V().out().as("v").match(
                         __.as("v").outE().count().as("outDegree"),
@@ -246,7 +281,7 @@ public class TinkerGraphPlayTest {
         TinkerGraph graph = TinkerGraph.open();
         graph.createIndex("name", Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = graph.traversal();
 
         final Supplier<Traversal<?, ?>> traversal = () ->
                 g.V().match(
@@ -254,7 +289,7 @@ public class TinkerGraphPlayTest {
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
                         as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select("a", "b", "c", "d").by("name");
+                        as("d").where(neq("a"))).select("a", "b", "c", "d").by("name");
 
 
         logger.info(traversal.get().toString());
@@ -265,9 +300,60 @@ public class TinkerGraphPlayTest {
 
     @Test
     @Ignore
+    public void testPaths() throws Exception {
+        TinkerGraph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("/Users/twilmes/work/repos/scratch/tinkerpop/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphml/grateful-dead.xml");
+//        graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(1));
+
+        System.out.println(g.V().match(
+                __.as("a").in("sungBy").as("b"),
+                __.as("a").in("sungBy").as("c"),
+                __.as("b").out("writtenBy").as("d"),
+                __.as("c").out("writtenBy").as("e"),
+                __.as("d").has("name", "George_Harrison"),
+                __.as("e").has("name", "Bob_Marley")).select("a").count().next());
+
+//        System.out.println(g.V().out("created").
+//                project("a","b").
+//                by("name").
+//                by(__.in("created").count()).
+//                order().by(select("b")).
+//                select("a").toList());
+
+//        System.out.println(g.V().as("a").out().where(neq("a")).barrier().out().count().profile().next());
+//        System.out.println(g.V().out().as("a").where(out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")).toList());
+//        System.out.println(g.V().match(
+//                __.as("a").out().as("b"),
+//                __.as("b").out().as("c")).select("c").count().profile().next());
+
+    }
+
+    @Test
+    @Ignore
+    public void testPlay9() throws Exception {
+        Graph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
+
+        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(4)).withStrategies(PathRetractionStrategy.instance());
+        GraphTraversalSource h = graph.traversal().withComputer(Computer.compute().workers(4)).withoutStrategies(PathRetractionStrategy.class);
+
+        for (final GraphTraversalSource source : Arrays.asList(g, h)) {
+            System.out.println(source.V().match(
+                    __.as("a").in("sungBy").as("b"),
+                    __.as("a").in("sungBy").as("c"),
+                    __.as("b").out("writtenBy").as("d"),
+                    __.as("c").out("writtenBy").as("e"),
+                    __.as("d").has("name", "George_Harrison"),
+                    __.as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
+        }
+    }
+
+    @Test
+    @Ignore
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        final GraphTraversalSource g = graph.traversal();
         for (int i = 0; i < 1000; i++) {
             graph.addVertex(T.label, "person", T.id, i);
         }
@@ -280,5 +366,15 @@ public class TinkerGraphPlayTest {
         });
         graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
         logger.info(TimeUtil.clockWithResult(500, () -> g.V().match(as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()).toString());
+    }
+
+    @Test
+    @Ignore
+    public void testBugs() {
+        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").explain());
+        System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").toList());
+
     }
 }

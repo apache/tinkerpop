@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -32,7 +31,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,9 +42,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     public HasStep(final Traversal.Admin traversal, final HasContainer... hasContainers) {
         super(traversal);
         this.hasContainers = new ArrayList<>();
-        for (final HasContainer hasContainer : hasContainers) {
-            this.addHasContainer(hasContainer);
-        }
+        Collections.addAll(this.hasContainers, hasContainers);
     }
 
     @Override
@@ -62,6 +58,11 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public List<HasContainer> getHasContainers() {
         return Collections.unmodifiableList(this.hasContainers);
+    }
+
+    @Override
+    public void removeHasContainer(final HasContainer hasContainer) {
+        this.hasContainers.remove(hasContainer);
     }
 
     @Override

@@ -66,14 +66,26 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     /**
-     * Configuration setting for how long a session will be available before it timesout.
+     * Configuration setting for how long a session will be available before it times out.
      */
     public static final String CONFIG_SESSION_TIMEOUT = "sessionTimeout";
 
     /**
+     * Configuration setting for how long to wait in milliseconds for each configured graph to close any open
+     * transactions when the session is killed.
+     */
+    public static final String CONFIG_PER_GRAPH_CLOSE_TIMEOUT = "perGraphCloseTimeout";
+
+    /**
      * Default timeout for a session is eight hours.
      */
-    public static final long DEFAULT_SESSION_TIMEOUT = 28800000l;
+    public static final long DEFAULT_SESSION_TIMEOUT = 28800000;
+
+    /**
+     * Default amount of time to wait in milliseconds for each configured graph to close any open transactions when
+     * the session is killed.
+     */
+    public static final long DEFAULT_PER_GRAPH_CLOSE_TIMEOUT = 10000;
 
     static final Settings.ProcessorSettings DEFAULT_SETTINGS = new Settings.ProcessorSettings();
 
@@ -81,6 +93,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         DEFAULT_SETTINGS.className = SessionOpProcessor.class.getCanonicalName();
         DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
             put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
+            put(CONFIG_PER_GRAPH_CLOSE_TIMEOUT, DEFAULT_PER_GRAPH_CLOSE_TIMEOUT);
+            put(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
         }};
     }
 
@@ -91,6 +105,12 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     @Override
     public String getName() {
         return OP_PROCESSOR_NAME;
+    }
+
+    @Override
+    public void init(final Settings settings) {
+        this.maxParameters = (int) settings.optionalProcessor(SessionOpProcessor.class).orElse(DEFAULT_SETTINGS).config.
+                getOrDefault(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
     }
 
     /**
@@ -106,6 +126,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
+            final boolean force = requestMessage.<Boolean>optionalArgs(Tokens.ARGS_FORCE).orElse(false);
+
             return Optional.of(ctx -> {
                 // validate the session is present and then remove it if it is.
                 final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
@@ -114,7 +136,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                sessionToClose.manualKill();
+                sessionToClose.manualKill(force);
 
                 // send back a confirmation of the close
                 ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(requestMessage)
@@ -145,7 +167,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
     @Override
     public void close() throws Exception {
-       sessions.values().forEach(Session::manualKill);
+       sessions.values().forEach(session -> session.manualKill(false));
     }
 
     protected void evalOp(final Context context) throws OpProcessorException {
@@ -216,18 +238,18 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     boolean found = false;
 
                     // first check if the alias refers to a Graph instance
-                    final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
-                    if (graphs.containsKey(aliasKv.getValue())) {
-                        bindings.put(aliasKv.getKey(), graphs.get(aliasKv.getValue()));
+                    final Graph graph = context.getGraphManager().getGraph(aliasKv.getValue());
+                    if (null != graph) {
+                        bindings.put(aliasKv.getKey(), graph);
                         found = true;
                     }
 
                     // if the alias wasn't found as a Graph then perhaps it is a TraversalSource - it needs to be
                     // something
                     if (!found) {
-                        final Map<String, TraversalSource> traversalSources = context.getGraphManager().getTraversalSources();
-                        if (traversalSources.containsKey(aliasKv.getValue())) {
-                            bindings.put(aliasKv.getKey(), traversalSources.get(aliasKv.getValue()));
+                        final TraversalSource ts = context.getGraphManager().getTraversalSource(aliasKv.getValue());
+                        if (null != ts) {
+                            bindings.put(aliasKv.getKey(), ts);
                             found = true;
                         }
                     }

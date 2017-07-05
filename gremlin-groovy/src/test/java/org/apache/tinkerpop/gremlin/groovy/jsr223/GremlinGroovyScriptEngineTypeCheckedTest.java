@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TypeCheckedCustomizerProvider;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
 
@@ -35,6 +33,7 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineTypeCheckedTest {
+
     @Test
     public void shouldTypeCheck() throws Exception {
         // with no type checking this should pass
@@ -42,7 +41,7 @@ public class GremlinGroovyScriptEngineTypeCheckedTest {
             assertEquals(255, scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()"));
         }
 
-        final TypeCheckedCustomizerProvider provider = new TypeCheckedCustomizerProvider();
+        final TypeCheckedGroovyCustomizer provider = new TypeCheckedGroovyCustomizer();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(provider)) {
             scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()");
             fail("Should have failed type checking");
@@ -56,12 +55,12 @@ public class GremlinGroovyScriptEngineTypeCheckedTest {
     @Test
     public void shouldTypeCheckWithExtension() throws Exception {
         // with no type checking extension this should pass
-        final TypeCheckedCustomizerProvider providerNoExtension = new TypeCheckedCustomizerProvider();
+        final TypeCheckedGroovyCustomizer providerNoExtension = new TypeCheckedGroovyCustomizer();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerNoExtension)) {
             assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
         }
 
-        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+        final TypeCheckedGroovyCustomizer providerWithExtension = new TypeCheckedGroovyCustomizer(
                 PrecompiledExtensions.PreventColorUsageExtension.class.getName());
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
             scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
@@ -75,13 +74,13 @@ public class GremlinGroovyScriptEngineTypeCheckedTest {
     @Test
     public void shouldTypeCheckWithMultipleExtension() throws Exception {
         // with no type checking extension this should pass
-        final TypeCheckedCustomizerProvider providerNoExtension = new TypeCheckedCustomizerProvider();
+        final TypeCheckedGroovyCustomizer providerNoExtension = new TypeCheckedGroovyCustomizer();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerNoExtension)) {
             assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
             assertEquals(1l, scriptEngine.eval("def c = new java.util.concurrent.CountDownLatch(1); c.count"));
         }
 
-        final TypeCheckedCustomizerProvider providerWithExtension = new TypeCheckedCustomizerProvider(
+        final TypeCheckedGroovyCustomizer providerWithExtension = new TypeCheckedGroovyCustomizer(
                 PrecompiledExtensions.PreventColorUsageExtension.class.getName() +
                         "," + PrecompiledExtensions.PreventCountDownLatchUsageExtension.class.getName());
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {

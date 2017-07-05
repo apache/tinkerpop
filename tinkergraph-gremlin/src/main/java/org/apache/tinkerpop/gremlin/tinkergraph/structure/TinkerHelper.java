@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -100,8 +102,8 @@ public final class TinkerHelper {
         return null != graph.graphComputerView;
     }
 
-    public static TinkerGraphComputerView createGraphComputerView(final TinkerGraph graph, final Set<String> computeKeys) {
-        return graph.graphComputerView = new TinkerGraphComputerView(graph, computeKeys);
+    public static TinkerGraphComputerView createGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
+        return graph.graphComputerView = new TinkerGraphComputerView(graph, graphFilter, computeKeys);
     }
 
     public static TinkerGraphComputerView getGraphComputerView(final TinkerGraph graph) {
@@ -200,5 +202,13 @@ public final class TinkerHelper {
             }
         }
         return (Iterator) vertices.iterator();
+    }
+
+    public static Map<Object, Vertex> getVertices(final TinkerGraph graph) {
+        return graph.vertices;
+    }
+
+    public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
+        return graph.edges;
     }
 }

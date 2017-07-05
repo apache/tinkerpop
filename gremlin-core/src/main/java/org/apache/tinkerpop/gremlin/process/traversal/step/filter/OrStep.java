@@ -22,8 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
-import java.util.NoSuchElementException;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -34,13 +32,11 @@ public final class OrStep<S> extends ConnectiveStep<S> {
     }
 
     @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
-        while (true) {
-            final Traverser.Admin<S> start = this.starts.next();
-            for (final Traversal.Admin<S, ?> traversal : this.traversals) {
-                if (TraversalUtil.test(start, traversal))
-                    return start;
-            }
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        for (final Traversal.Admin<S, ?> traversal : this.traversals) {
+            if (TraversalUtil.test(traverser, traversal))
+                return true;
         }
+        return false;
     }
 }

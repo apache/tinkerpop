@@ -1,0 +1,354 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+TinkerPop 3.3.0
+===============
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=225]
+
+*Gremlin Symphony #40 in G Minor*
+
+TinkerPop 3.3.0
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.0/CHANGELOG.asciidoc#release-3-3-0[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+GraphSON 2.0
+^^^^^^^^^^^^
+
+Both TinkerGraph and Gremlin Server have been defaulted to work with GraphSON 2.0. For TinkerGraph this means that
+the following commands:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+graph.io(IoCore.graphson()).writeGraph("tinkerpop-modern.json");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io(IoCore.graphson()).readGraph("tinkerpop-modern.json");
+----
+
+will write and read GraphSON 2.0 format rather than 1.0. To use 1.0 format simply set the `version()` on the
+appropriate builder methods:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().version(GraphSONVersion.V1_0).create()
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
+    graph.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
+}
+
+final Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
+    newGraph.io(IoCore.graphson()).reader().mapper(mapper).vertexIdKey("name").create().readGraph(stream, newGraph);
+}
+----
+
+For Gremlin Server, this change means that the `application/json` mime type no longer returns GraphSON 1.0 without
+type embedding. Instead, Gremlin Server will return GraphSON 2.0 with partial types enabled (i.e. which is equivalent
+to `application/vnd.gremlin-v2.0+json`). The `serializers` section the sample Gremlin Server YAML files now typically
+look like this:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}             # application/vnd.gremlin-v1.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/vnd.gremlin-v1.0+gryo-lite
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}         # application/vnd.gremlin-v1.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry] }} # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { useMapperFromGraph: graph  }} # application/vnd.gremlin-v2.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0, config: { useMapperFromGraph: graph }}         # application/json
+----
+
+It is possible to bring back the original configuration for `application/json` by changing the last entry as follows:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}             # application/vnd.gremlin-v1.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/vnd.gremlin-v1.0+gryo-lite
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}         # application/vnd.gremlin-v1.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry] }} # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { useMapperFromGraph: graph  }} # application/vnd.gremlin-v2.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/json
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414]
+
+GraphTraversal Has-Methods Re-Organized
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`GraphTraversal.hasXXX()`, where `XXX` is `Id`, `Label`, `Key`, `Value`, was faulty in that they relied on calling an
+intermediate method for flattening `Object[]` arguments and thus, yielding a non 1-to-1 correspondence between `GraphTraversal`
+and `Bytecode`. This has been remedied. Most users will not notice this change. Perhaps only some users that may use
+Java reflection over `GraphTraversal` might have a simple problem.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1520[TINKERPOP-1520]
+
+Changes to IO
+^^^^^^^^^^^^^
+
+*WILL NEED TO WRITE SOMETHING MORE COHESIVE HERE - JUST LISTING STUFF FOR RIGHT NOW*
+
+* Gryo incompatibilities with 3.2.x:
+** `RequestMessage`
+** `ResponseMessage`
+
+Graphite and Ganglia
+^^^^^^^^^^^^^^^^^^^^
+
+Graphite and Ganglia are no longer packaged with the Gremlin Server distribution. They are considered optional
+dependencies and therefore must be installed manually by the user.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1550[TINKERPOP-1550],
+link:http://tinkerpop.apache.org/docs/3.3.0/reference/#metrics[Reference Documentation - Metrics]
+
+SelectStep Defaults to Pop.last
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`SelectStep` and `SelectOneStep` (`select()`) are the only `Scoping` steps that default to `Pop.mixed` as their labeled path
+selection criteria. All other steps, like `match()`, `where()` and `dedup()`, use `Pop.last`. In order to better enable optimizations
+around total `Pop.last` traversals, the `select()`-steps now default to `Pop.last`. Most users will not notice a difference as
+it is rare for repeated labels to be used in practice. However, formal backwards compatibility is possible as outlined below.
+
+Assuming that `x` is not a `Pop` argument:
+
+1. Change all `select(x,y,z)` calls to `selectV3d2(x,y,z)` calls.
+2. Change all `select(x,y,z)`-step calls to `select(Pop.mixed,x,y,z)`.
+
+If an explicit `Pop` argument is provided, then no changes are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1541[TINKERPOP-1541]
+
+OptionalStep and Side-Effects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `optional()`-step was previously implemented using `ChooseStep`. However, if the optional branch contained side-effects,
+then unexpected behaviors can emerge. Thus, a potential backwards compatibility issue arises if side-effects were being
+used in `optional()`. However, the behavior would be unpredictable so this backwards incompatibility is desirable.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
+
+Gremlin Console Script Execution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is no longer possible to run a script in execution mode in the Gremlin Console from the terminal without use of `-e`.
+In other words, prior versions allowed:
+
+[source,text]
+bin/gremlin.sh gremlin.groovy
+
+Such a command must now be written as:
+
+[source,text]
+bin/gremlin.sh -e gremlin.groovy
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283]
+
+GraphTraversal valueMap() Signature Updated
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`GraphTraversal.valueMap(includeTokens,propertyKeys...)` now returns a `Map<Object,E>` to account for the presence of `T.id` or `T.label` if you pass `true` to it.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1483]
+
+HADOOP_GREMLIN_LIBS and Spark
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TinkerPop reference documentation has always mentioned that the `gremlin-spark` `/lib` directory needed to be
+added to `HADOOP_GREMLIN_LIBS` environment variable. In reality, that was not truly necessary. With Spark 1.x having
+`gremlin-spark` in `HADOOP_GREMLIN_LIBS` hasn't been a problem, but Spark 2.0 introduces a check for duplicate jars
+on the path which will cause job initialization to fail. As a result, going forward with TinkerPop 3.3.0, the
+`gremlin-spark` `lib` directory should not be included in `HADOOP_GREMLIN_LIBS`.
+
+Deprecation Removal
+^^^^^^^^^^^^^^^^^^^
+
+The following deprecated classes, methods or fields have been removed in this version:
+
+* `giraph-gremlin`
+** org.apache.tinkerpop.gremlin.giraph.groovy.plugin.GiraphGremlinPlugin
+* `gremlin-console`
+** `org.apache.tinkerpop.gremlin.console.Console(String)`
+** `org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.console.plugin.*`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.DriverRemoteAcceptor`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.GephiGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.console.groovy.plugin.UtilitiesGremlinPlugin`
+* `gremlin-core`
+** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager#getInstance()`
+** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
+** `org.apache.tinkerpop.gremlin.jsr223.console.PluginAcceptor`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
+** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
+** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_COMPUTER`
+** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT`
+** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
+** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
+** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
+* `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
+* `gremlin-groovy`
+** `org.apache.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider`
+** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#build(String,List,List,List,Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getScriptEngines()`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getGlobalBindings()`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#enabledPlugins(Set)
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#addEngineSettings(String,List,List,List,Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#engineSettings(Map)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#use(List)`
+** `org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines`
+** `org.apache.tinkerpop.gremlin.groovy.function.*`
+** `org.apache.tinkerpop.gremlin.groovy.plugin.*`
+** `org.apache.tinkerpop.gremlin.groovy.plugin.credential.*`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(ImportCustomizerProvider)`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(CompilerCustomizerProvider)`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine#plugins()`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptEnginePluginAcceptor`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.*`
+** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#deleteDependenciesFromPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#copyDependenciesToPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+* `gremlin-server`
+** `org.apache.tinkerpop.gremlin.server.Settings#plugins`
+** `org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.Authenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator.newSaslNegotiator()`
+** `org.apache.tinkerpop.gremlin.server.handler.IteratorHandler`
+** `org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder`
+** `org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder`
+** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler.errorMeter`
+** `org.apache.tinkerpop.gremlin.server.op.control.*`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.errorMeter`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.validBindingName`
+** `org.apache.tinkerpop.gremlin.server.op.session.Session.kill()`
+** `org.apache.tinkerpop.gremlin.server.op.session.Session.manualkill()`
+* `spark-gremlin`
+** `org.apache.tinkerpop.gremlin.spark.groovy.plugin.SparkGremlinPlugin`
+* `tinkergraph-gremlin`
+** `org.apache.tinkerpop.gremlin.tinkergraph.groovy.plugin.TinkerGraphGremlinPlugin`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph#CONFIG_*`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0#getInstance()`
+** `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0#getInstance()`
+
+Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
+understand how to resolve this breaking change.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1010[TINKERPOP-1010],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040], link:https://issues.apache.org/jira/browse/TINKERPOP-1046[TINKERPOP-1046],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1049[TINKERPOP-1049], link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420], link:https://issues.apache.org/jira/browse/TINKERPOP-1421[TINKERPOP-1421],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1465[TINKERPOP-1465], link:https://issues.apache.org/jira/browse/TINKERPOP-1526[TINKERPOP-1526],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612], link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622]
+
+Gremlin-server.sh and Init Scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the
+foreground with defaults like previous usage, please use the `console` parameter. Also, `gremlin-server.sh` will
+continue to start in the foreground when provided a yaml configuration file.
+
+How to install as a service has been added to the link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_as_a_service[Reference Documentation - As A Service].
+
+The switch name has changed for installing dependencies. `-i` has been deprecated and replaced by `install`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_configuring_2[Reference Documentation - Server Configuration].
+
+Gremlin-server.bat
+^^^^^^^^^^^^^^^^^^
+
+The switch name has changed for installing dependencies. `-i` has been deprecated and replaced by `install`.
+
+SparkGraphComputer GryoRegistrator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Historically, `SparkGraphComputer` has  used `GryoSerializer` to handle the serialization of objects in Spark. The reason
+this exists is because TinkerPop uses a shaded version of Kryo and thus, couldn't use the standard `KryoSerializer`-model
+provided by Spark. However, a "shim model" was created which allows for the shaded and unshaded versions of Kryo to
+interact with one another. To this end, `KryoSerializer` can now be used with a `GryoRegistrator`. The properties file
+for a `SparkGraphComputer` now looks as follows:
+
+```
+spark.serializer=org.apache.spark.serializer.KryoSerializer
+spark.kryo.registrator=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator
+```
+
+If the old `GryoSerializer` model is desired, then the properties file should simply look as before:
+
+```
+spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Test Suite Removal
+++++++++++++++++++
+
+A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
+providers who are implementing TinkerPop. Test suites related to perfrmance based on `junit-benchmarks` have been
+removed as have the suites in `gremlin-groovy-test` (in fact, this entire module has been removed). Specifically,
+providers should be concerned with breaking changes related to the removal of:
+
+* `StructurePerformanceSuite`
+* `ProcessPerformanceSuite`
+* `GroovyEnvironmentPerformanceSuite`
+* `GroovyProcessStandardSuite`
+* `GroovyProcessComputerSuite`
+* `GroovyEnvironmentSuite`
+* `GroovyEnvironmentIntegrateSuite`
+
+Those graph providers who relied on these tests should simply remove them from their respective test suites. Beware of
+`OptOut` annotations that reference tests in these suites as test failure will occur if those references are not
+removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
+
+TransactionException
+++++++++++++++++++++
+
+The `AbstractTransaction.TransactionException` class is now just `TransactionException` which extends `RuntimeExcetpion`
+rather than `Exception`. Providers should consider using this exception to wrap their own on calls to
+`Transaction.commit()` or `Transaction.rollback()`. By throwing this exception, the TinkerPop stack can better respond
+to transaction problems and it allows for more common, generalized error handling for users.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]

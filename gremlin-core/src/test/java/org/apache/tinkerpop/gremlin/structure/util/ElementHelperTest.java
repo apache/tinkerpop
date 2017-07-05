@@ -271,6 +271,23 @@ public class ElementHelperTest {
     }
 
     @Test
+    public void shouldDetermineElementsAreNotEqualWhenBothNull() {
+        assertFalse(ElementHelper.areEqual((Element) null, null));
+    }
+
+    @Test
+    public void shouldDetermineElementsAreNotEqualBecauseFirstArgumentIsNull() {
+        Element v = mock(Element.class);
+        assertFalse(ElementHelper.areEqual((Element) null, v));
+    }
+
+    @Test
+    public void shouldDetermineElementsAreNotEqualBecauseSecondArgumentIsNull() {
+        Element v = mock(Element.class);
+        assertFalse(ElementHelper.areEqual(v, null));
+    }
+
+    @Test
     public void shouldDetermineEdgesAreEqual() {
         final Element mockEdgeA = mock(Edge.class);
         final Element mockEdgeB = mock(Edge.class);
@@ -289,24 +306,19 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldFailPropertyAreEqualTestBecauseFirstArgumentIsNull() {
-        try {
-            ElementHelper.areEqual((Property) null, "some object");
-            fail("Should throw exception since the first argument is null");
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("a").getMessage(), iae.getMessage());
-        }
+    public void shouldDeterminePropertiesAreNotEqualBecauseBothAreNull() {
+        assertFalse(ElementHelper.areEqual((Property) null, null));
     }
 
     @Test
-    public void shouldFailPropertyAreEqualTestBecauseSecondArgumentIsNull() {
+    public void shouldDeterminePropertiesAreNotEqualBecauseFirstArgumentIsNull() {
+        assertFalse(ElementHelper.areEqual((Property) null, "some object"));
+    }
+
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualTestBecauseSecondArgumentIsNull() {
         final Property mockProperty = mock(Property.class);
-        try {
-            ElementHelper.areEqual(mockProperty, null);
-            fail("Should throw exception since the second argument is null");
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("b").getMessage(), iae.getMessage());
-        }
+        assertFalse(ElementHelper.areEqual(mockProperty, null));
     }
 
     @Test
@@ -415,6 +427,39 @@ public class ElementHelperTest {
         when(mockPropertyB.value()).thenReturn("v1");
 
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
+    @Test
+    public void shouldDetermineAbsentPropertiesEqual() {
+        Property<?> p1 = mock(Property.class);
+        Property<?> p2 = mock(Property.class);
+
+        when(p1.isPresent()).thenReturn(false);
+        when(p2.isPresent()).thenReturn(false);
+
+        assertTrue(ElementHelper.areEqual(p1, p2));
+    }
+
+    @Test
+    public void shouldDetermineAbsentPropertyNotEqualToPresent() {
+        Property<?> p1 = mock(Property.class);
+        Property<?> p2 = mock(Property.class);
+
+        when(p1.isPresent()).thenReturn(false);
+        when(p2.isPresent()).thenReturn(true);
+
+        assertFalse(ElementHelper.areEqual(p1, p2));
+    }
+
+    @Test
+    public void shouldDeterminePresentPropertyNotEqualToAbsent() {
+        Property<?> p1 = mock(Property.class);
+        Property<?> p2 = mock(Property.class);
+
+        when(p1.isPresent()).thenReturn(true);
+        when(p2.isPresent()).thenReturn(false);
+
+        assertFalse(ElementHelper.areEqual(p1, p2));
     }
 
     @Test

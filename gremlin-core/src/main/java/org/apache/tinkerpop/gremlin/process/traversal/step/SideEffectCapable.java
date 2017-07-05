@@ -19,10 +19,19 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * A {@code SideEffectCapable} step stores a side-effect data structure accessible by a side-effect key.
+ * All SideEffectCapable steps are {@link Generating} in that they may require a post-processing function once
+ * the side-effect data has been aggregated.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface SideEffectCapable {
+public interface SideEffectCapable<S, E> extends Generating<S, E> {
 
+    /**
+     * The side-effect key of the step.
+     *
+     * @return the side-effect key
+     */
     public String getSideEffectKey();
 
 }

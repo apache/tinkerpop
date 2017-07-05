@@ -48,6 +48,7 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -90,7 +91,11 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
-
+                Logger.getRootLogger().setLevel(Level.INFO);
+                break;
+            case "shouldBlockAdditionalRequestsDuringClose":
+            case "shouldBlockAdditionalRequestsDuringForceClose":
+                clearNeo4j(settings);
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
@@ -99,30 +104,75 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                clearNeo4j(settings);
                 break;
         }
 
         return settings;
     }
 
+    private static void clearNeo4j(Settings settings) {
+        deleteDirectory(new File("/tmp/neo4j"));
+        settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
     @Test
     public void shouldBlockAdditionalRequestsDuringClose() throws Exception {
+        assumeNeo4jIsPresent();
+
         // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
-        client1.submit("1+1").all().join();
+        client1.submit("graph.addVertex()").all().join();
         final Cluster cluster2 = TestClientFactory.open();
         final Client client2 = cluster2.connect(name.getMethodName());
+        client2.submit("1+1").all().join();
+
+        final ResultSet rs = client1.submit("Thread.sleep(3000);1+1");
+
+        // close while the previous request is still executing
+        client2.close();
+
+        assertEquals(2, rs.all().join().get(0).getInt());
+
+        client1.close();
+
+        cluster1.close();
+        cluster2.close();
+
+        // triggered an error during close and since we didn't force close, the attempt to close the transaction
+        // is made
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Rolling back open transactions on graph before killing session: " + name.getMethodName() + "\n"));
+
+    }
+
+    @Test
+    public void shouldBlockAdditionalRequestsDuringForceClose() throws Exception {
+        assumeNeo4jIsPresent();
+
+        // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
+        // basically, we need one to submit the long run job and one to do the close operation that will cancel the
+        // long run job. it is probably possible to do this with some low-level message manipulation but that's
+        // probably not necessary
+        final Cluster cluster1 = TestClientFactory.open();
+        final Client client1 = cluster1.connect(name.getMethodName());
+        client1.submit("graph.addVertex()").all().join();
+        final Cluster cluster2 = TestClientFactory.open();
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
+                .sessionId(name.getMethodName())
+                .forceClosed(true).create();
+        final Client client2 = cluster2.connect(Client.Settings.build().useSession(sessionSettings).create());
         client2.submit("1+1").all().join();
 
         final ResultSet rs = client1.submit("Thread.sleep(10000);1+1");
 
         client2.close();
+
+        // because the close was forced, the message should appear immediately
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on " + name.getMethodName() + " - close was forced\n"));
 
         try {
             rs.all().join();
@@ -137,7 +187,6 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster1.close();
         cluster2.close();
     }
-
 
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {

@@ -1,0 +1,63 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[gryo]]
+Gryo
+====
+
+image:gremlin-kryo.png[width=400,float=left] Gryo uses the popular link:https://github.com/EsotericSoftware/kryo[Kryo]
+library to handle binary serialization for the JVM. There currently aren't any Kryo implementations in other languages
+so the binding of this format to the JVM is a bit of a limitation, but if building a system on the JVM the use of
+Gryo over other serialization format should yield smaller data sizes than other formats like GraphSON or GraphML,
+improved serialization speed, as well as better support for the various Java data types that might not be supported
+otherwise.
+
+Gryo is useful both as a "graph" serialization format and as a generalized serialization format that can read or
+write any object. This characteristic makes it ideal for use in Gremlin Server, which is designed to return arbitrary
+results of varying types.
+
+It is unlikely that Gryo users will try to consume or produce Gryo without using TinkerPop and Kryo classes to help do
+it. Attempting to read or write a byte stream of Gryo without those tools would be challenging, so the depths of
+what the Gryo format looks like in a byte-by-byte perspective will not be discussed here. It is enough to know that
+TinkerPop has Kryo-based serializers for certain classes that it supports and that the bytes written or read must be
+Kryo compliant.
+
+While there is only one version of Gryo at the moment, 1.0, the format has generally expanded as new releases of
+TinkerPop have been produced. "Expansion" has generally meant that new types have come to be supported over time. The
+addition of new types means that while Gryo has remained at 1.0, older releases that produced Gryo files will not
+be compatible with newer TinkerPop releases if the newer types are utilized. On the flip side, newer release of
+TinkerPop are fully backward compatible with Gryo produced on older versions of TinkerPop.
+
+The full list of Gryo 1.0 types can be found in the `GryoMapper` source code. Looking at the source code for a specific
+release tag would show what types were compatible for a specific release. For example, the type listing for 3.2.2
+can be found link:https://github.com/apache/tinkerpop/blob/3.2.2/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/io/gryo/GryoMapper.java#L249[here].
+
+One of the key aspects of Gryo is that, by default, it requires that all types expected to be used to be registered
+with the `GryoMapper`. There are two ways to do that:
+
+* On the `GryoMapper.Builder`, use the `addCustom` methods. These methods allow registration of single classes with
+an optional custom serializer.
+* Add a custom `IoRegistry` implementation with the `addRegistry` method on `GryoMapper.Builder`. The `IoRegistry`
+contains registrations that will be supplied to the `GryoMapper`. There is additional documentation on how this works
+in the link:http://tinkerpop.apache.org/docs/current/dev/provider/#io-implementations[provider documentation].
+
+When using `addCustom` or `addRegistry`, it is important to remember that the order in which those methods are called
+is important. The registrations get numeric "registration ids" and their order must match if the the Gryo is expected
+to be compatible. Calls to `addCustom` will be applied first, prior to calls to `addRegistry` (which internally call
+`addCustom`).
+
+It is possible to disable registration by setting `registrationRequired` on the `GryoMapper.Builder` to `false`, but
+Gryo is less efficient with this feature is turned off.

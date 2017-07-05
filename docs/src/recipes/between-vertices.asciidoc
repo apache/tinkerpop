@@ -1,0 +1,115 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[between-vertices]]
+Between Vertices
+----------------
+
+It is quite common to have a situation where there are two particular vertices of a graph and a need to execute some
+traversal on the paths found between them. Consider the following examples using the modern toy graph:
+
+[gremlin-groovy,modern]
+----
+g.V(1).bothE()                                   <1>
+g.V(1).bothE().where(otherV().hasId(2))          <2>
+v1 = g.V(1).next();[]
+v2 = g.V(2).next();[]
+g.V(v1).bothE().where(otherV().is(v2))           <3>
+g.V(v1).outE().where(inV().is(v2))               <4>
+g.V(1).outE().where(inV().has(id, within(2,3)))  <5>
+g.V(1).out().where(__.in().hasId(6))             <6>
+----
+
+<1> There are three edges from the vertex with the identifier of "1".
+<2> Filter those three edges using the `where()` step using the identifier of the vertex returned by `otherV()` to
+ensure it matches on the vertex of concern, which is the one with an identifier of "2".
+<3> Note that the same traversal will work if there are actual `Vertex` instances rather than just vertex identiers.
+<4> The vertex with identifier "1" has all outgoing edges, so it would also be acceptable to use the directional steps
+of `outE()` and `inV()` since the schema allows it.
+<5> There is also no problem with filtering the terminating side of the traversal on multiple vertices, in this case,
+vertices with identifiers "2" and "3".
+<6> There's no reason why the same pattern of exclusion used for edges with `where()` can't work for a vertex between
+two vertices.
+
+The basic pattern of using `where()` step to find the "other" known vertex can be applied in far more complex
+scenarios. For one such example, consider the following traversal that finds all the paths between a group of defined
+vertices:
+
+[gremlin-groovy,modern]
+----
+ids = [2,4,6].toArray()
+g.V(ids).as("a").
+  repeat(bothE().otherV().simplePath()).times(5).emit(hasId(within(ids))).as("b").
+  filter(select(last,"a","b").by(id).where("a", lt("b"))).
+  path().by().by(label)
+----
+
+For another example, consider the following schema:
+
+image:recipe-job-schema.png[width=750]
+
+Assume that the goal is to find information about a known job and a known person. Specifically, the idea would be
+to extract the known job, the company that created the job, the date it was created by the company and whether or not
+the known person completed an application.
+
+[gremlin-groovy]
+----
+vBob = graph.addVertex(label, "person", "name", "bob")
+vStephen = graph.addVertex(label, "person", "name", "stephen")
+vBlueprintsInc = graph.addVertex(label, "company", "name", "Blueprints, Inc")
+vRexsterLlc = graph.addVertex(label, "company", "name", "Rexster, LLC")
+vBlueprintsJob1 = graph.addVertex(label, "job", "name", "job1")
+vBlueprintsJob2 = graph.addVertex(label, "job", "name", "job2")
+vBlueprintsJob3 = graph.addVertex(label, "job", "name", "job3")
+vRexsterJob1 = graph.addVertex(label, "job", "name", "job4")
+vAppBob1 = graph.addVertex(label, "application", "name", "application1")
+vAppBob2 = graph.addVertex(label, "application", "name", "application2")
+vAppStephen1 = graph.addVertex(label, "application", "name", "application3")
+vAppStephen2 = graph.addVertex(label, "application", "name", "application4")
+vBob.addEdge("completes", vAppBob1)
+vBob.addEdge("completes", vAppBob2)
+vStephen.addEdge("completes", vAppStephen1)
+vStephen.addEdge("completes", vAppStephen2)
+vAppBob1.addEdge("appliesTo", vBlueprintsJob1)
+vAppBob2.addEdge("appliesTo", vBlueprintsJob2)
+vAppStephen1.addEdge("appliesTo", vRexsterJob1)
+vAppStephen2.addEdge("appliesTo", vBlueprintsJob3)
+vBlueprintsInc.addEdge("created", vBlueprintsJob1, "creationDate", "12/20/2015")
+vBlueprintsInc.addEdge("created", vBlueprintsJob2, "creationDate", "12/15/2015")
+vBlueprintsInc.addEdge("created", vBlueprintsJob3, "creationDate", "12/16/2015")
+vRexsterLlc.addEdge("created", vRexsterJob1, "creationDate", "12/18/2015")
+g.V(vRexsterJob1).as('job').
+  inE('created').as('created').
+  outV().as('company').
+  select('job').
+  coalesce(__.in('appliesTo').where(__.in('completes').is(vStephen)),
+           constant(false)).as('application').
+  select('job', 'company', 'created', 'application').
+    by().by().by('creationDate').by()
+g.V(vRexsterJob1, vBlueprintsJob1).as('job').
+  inE('created').as('created').
+  outV().as('company').
+  select('job').
+  coalesce(__.in('appliesTo').where(__.in('completes').is(vBob)),
+           constant(false)).as('application').
+  select('job', 'company', 'created', 'application').
+    by().by().by('creationDate').by()
+----
+
+While the traversals above are more complex, the pattern for finding "things" between two vertices is largely the same.
+Note the use of the `where()` step to terminate the traversers for a specific user. It is embedded in a `coalesce()`
+step to handle situations where the specified user did not complete an application for the specified job and will
+return `false` in those cases.

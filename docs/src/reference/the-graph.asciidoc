@@ -81,8 +81,8 @@ A running example using vertex properties is provided below to demonstrate and e
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal(standard())
-v = g.addV('name','marko','name','marko a. rodriguez').next()
+g = graph.traversal()
+v = g.addV().property('name','marko').property('name','marko a. rodriguez').next()
 g.V(v).properties('name').count() <1>
 v.property(list, 'name', 'm. a. rodriguez') <2>
 g.V(v).properties('name').count()
@@ -187,7 +187,7 @@ modify the graph as required and call `graph.tx().commit()` to apply changes or 
 When the next read or write action occurs against the graph, a new transaction will be started within that current
 thread of execution.
 
-When using transactions in this fashion, especially in web application (e.g. REST server), it is important to ensure
+When using transactions in this fashion, especially in web application (e.g. HTTP server), it is important to ensure
 that transactions do not leak from one request to the next.  In other words, unless a client is somehow bound via
 session to process every request on the same server thread, every request must be committed or rolled back at the end
 of the request.  By ensuring that the request encapsulates a transaction, it ensures that a future request processed
@@ -197,6 +197,11 @@ a transactional leak does occur between requests somehow, a fresh transaction is
 
 TIP: The `tx()` method is on the `Graph` interface, but it is also available on the `TraversalSource` spawned from a
 `Graph`.  Calls to `TraversalSource.tx()` are proxied through to the underlying `Graph` as a convenience.
+
+WARNING: TinkerPop provides for basic transaction control, however, like many aspects of TinkerPop, it is up to the
+graph system provider to choose the specific aspects of how their implementation will work and how it fits into the
+TinkerPop stack. Be sure to understand the transaction semantics of the specific graph implementation that is being
+utilized as it may present differing functionality than described here.
 
 Configuring
 ~~~~~~~~~~~
@@ -279,26 +284,6 @@ or other read operations executed in the context of that open transaction.
 NOTE: It may be important to consult the documentation of the `Graph` implementation you are using when it comes to the
 specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
 the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
-
-Retries
-~~~~~~~
-
-There are times when transactions fail.  Failure may be indicative of some permanent condition, but other failures
-might simply require the transaction to be retried for possible future success. The `Transaction` object also exposes
-a method for executing automatic transaction retries:
-
-[gremlin-groovy]
-----
-graph = Neo4jGraph.open('/tmp/neo4j')
-graph.tx().submit {it.addVertex("name","josh")}.retry(10)
-graph.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
-graph.close()
-----
-
-As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly
-retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common
-retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required
-purpose.
 
 Threaded Transactions
 ~~~~~~~~~~~~~~~~~~~~~
@@ -520,12 +505,12 @@ demonstrated in the following example where a single `Vertex` is written to Grap
 ----
 graph = TinkerFactory.createModern()
 g = graph.traversal()
-f = new FileOutputStream("vertex-1.json")
+f = new ByteArrayOutputStream()
 graph.io(graphson()).writer().create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
 ----
 
-The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
+The following GraphSON example shows the output of `GraphSONWriter.writeVertex()` with associated edges:
 
 [source,json]
 ----
@@ -579,13 +564,24 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to
 interpret the numeric values.  In coercing those Java values to JSON, such information is lost.
 
-With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
+[[graphson-types-embedding]]
+Types embedding
+^^^^^^^^^^^^^^^
+
+With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided.
+
+[[graphson-1-0-types]]
+Types with GraphSON 1.0
++++++++++++++++++++++++
+
+GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with
+GraphSON 1.0:
 
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
 g = graph.traversal()
-f = new FileOutputStream("vertex-1.json")
+f = new ByteArrayOutputStream()
 mapper = graph.io(graphson()).mapper().embedTypes(true).create()
 graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
@@ -678,6 +674,129 @@ from JSON typing.  While the output is more verbose, it comes with the security 
 non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the
 values should be coerced back into the correct types in the target language.
 
+[[graphson-2-0-types]]
+GraphSON 2.0
+++++++++++++
+
+GraphSON 2.0 has been introduced to improve the format of the typed values from GraphSON 1.0. It provides non-Java
+centric types information in a consistent format.
+
+With GraphSON 2.0, types are enabled by default.
+
+The type format is:
+
+* Non typed value - `value`
+* Typed value     - `{"@type":"typeID", "@value":value}`
+
+TypeIDs are composed of 2 parts, a namespace, and a type name, in the format `"namespace:typename"`.
+A namespace gives the possibility for TinkerPop implementors to categorize custom types they may implement
+and avoid collision with existing TinkerPop types. By default, TinkerPop types will have the
+namespace `g`.
+
+GraphSON 2.0 will provide type information for any value that is not `String`, `Boolean`, `Map` or `Collection`.
+TinkerPop includes types for graph elements:
+
+* Vertex - `g:Vertex`
+* Edge - `g:Edge`
+* VertexPropery - `g:VertexProperty`
+* Property - `g:Property`
+* Path - `g:Path`
+* Tree - `g:Tree`
+* Graph - `g:Graph`
+* Metrics - `g:Metrics`
+* TraversalMetrics - `g:TraversalMetrics`
+
+GraphSON 2.0 can also be configured with "extended" types that build on top of the core types in the "g" namespace.
+The extended types are in the "gx" namespace as exposed by `GraphSONXModuleV2d0` and includes additional types like
+mappings to Java's `java.time.*` classes, `BigInteger`, `BigDecimal` and others. This module can be added when building
+a `GraphSONMapper` by calling the `addCustomModule()` method on the `Builder`.
+
+IMPORTANT: When using the extended type system in Gremlin Server, support for these types when used in the context of
+Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These
+implementations are only required to support the core types and not the extended ones.
+
+Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+f = new ByteArrayOutputStream()
+mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).create()
+graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
+f.close()
+----
+
+Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder. Here's is the
+example output from the code above:
+
+[source, json]
+----
+{
+    "@type": "g:Vertex",
+    "@value": {
+        "id": {
+            "@type": "g:Int32",
+            "@value": 1
+        },
+        "label": "person",
+        "properties": {
+            "name": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 0
+                    },
+                    "value": "marko",
+                    "label": "name"
+                }
+            }],
+            "uuid": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 12
+                    },
+                    "value": {
+                        "@type": "g:UUID",
+                        "@value": "829c7ddb-3831-4687-a872-e25201230cd3"
+                    },
+                    "label": "uuid"
+                }
+            }],
+            "age": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 1
+                    },
+                    "value": {
+                        "@type": "g:Int32",
+                        "@value": 29
+                    },
+                    "label": "age"
+                }
+            }]
+        }
+    }
+}
+----
+
+Types can be disabled when creating a GraphSON 2.0 `Mapper` with:
+
+[source,groovy]
+----
+graph.io(graphson()).mapper().
+      version(GraphSONVersion.V2_0).
+      typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
+----
+
+By disabling types, the JSON payload produced will lack the extra information that is written for types. Please note,
+disabling types can be unsafe with regards to the written data in that types can be lost.
+
 [[gryo-reader-writer]]
 Gryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
@@ -766,7 +885,7 @@ gremlin> r = LegacyGraphSONReader.build().create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'), graph)
 ==>null
-gremlin> g = graph.traversal(standard())
+gremlin> g = graph.traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.E()
 ==>e[11][4-created->3]

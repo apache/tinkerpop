@@ -22,6 +22,7 @@ manager" (a committer fulfills this role), who ensures that the steps in this do
 multi-phased and can therefore take several weeks to complete given the time needed for Apache voting and community
 feedback.  Once a release point has been identified, the following phases represent the flow of "release":
 
+* Release manager key setup.
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
 * Submit the official release for PMC vote.
@@ -31,6 +32,64 @@ NOTE: It might be helpful to use this document as generated from the currently r
 from a previous version or from recent `SNAPSHOT`. When using one generated for release, all the "versions" in the
 commands end up being set to the version that is being released, making cut and paste of those commands less labor
 intensive and error prone.
+
+IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
+properly for release and includes a `.glv` file in `gremlin-python` as described in the <<python-environment,Python Environment>>
+section, so that the `gremlin-python` module builds in full.
+
+Development Versions
+~~~~~~~~~~~~~~~~~~~~
+
+A "development version" or snapshot (in Java parlance) is not an "official" release. Artifacts produced for a
+snapshot are solely for the convenience of providers and other developers who want to use the latest releases of
+TinkerPop. These releases do not require a VOTE and do not require a "release manager". Any PMC member can deploy them.
+It is important to note that these releases cannot be promoted outside of the developer mailing list and should not be
+recommended for use beyond the purpose of evaluation and testing.
+
+IMPORTANT: A development release must contain the suffix "-SNAPSHOT" in the `pom.xml`.
+
+For JVM-based artifacts, simply use the following command:
+
+[source,text]
+mvn clean deploy
+
+and artifacts will be pushed to the link:http://repository.apache.org/snapshots/[Apache Snapshot Repository]. Python
+development artifacts must be generated and deployed separately with additional commands:
+
+[source,text]
+mvn clean install -Pglv-python
+mvn deploy -pl gremlin-python -Dpypi
+
+Python does not use the snapshot model that the JVM does, however, the build is smart in that it will dynamically
+generate a development version number for the Python artifacts when "-SNAPSHOT" is in the `pom.xml`. The previous
+command will push the development version to link:https://pypi.python.org/pypi/gremlinpython/[pypi] for distribution.
+Use the `testpypi` test environment by updating the `gremlin-python/pom.xml` to verify the `mvn deploy` command works.
+
+IMPORTANT: The `clean` in the above commands is more important to the pypi deployment because the process will deploy
+anything found in the `target/python-packaged/dist` directory. Since the names of the artifacts are based on
+timestamps, they will not overwrite one another and multiple artifacts will get uploaded.
+
+Release Manager Requirements
+----------------------------
+
+If this is your first time as release manager, you will need to setup keys for signing purposes per the Apache
+release process.  Generally speaking, this will mean that you will need to generate a key-pair and then upload your
+public key to a public keyserver.
+
+For a general overview of key basics, refer to link:https://www.apache.org/dev/release-signing.html#key-basics[this].  For detailed
+step-by-step instructions, please follow the instructions link:https://www.apache.org/dev/openpgp.html#generate-key[here].
+
+After completing the key-pair setup instructions, be sure to add yourself to the `PGP signature` section of `bin/validate-distribution.sh`.
+
+[source,text]
+----
+echo -n "  * PGP signature ... "
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
+[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
+{ echo "failed"; exit 1; }
+echo "OK"
+----
 
 Pre-flight Check
 ----------------
@@ -47,7 +106,7 @@ under release is protected. Tweaks to documentation and other odds and ends rela
 during this period.
 . At some point during the week:
 .. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
-.. Deploy a final SNAPSHOT to the snapshot repository.
+.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV pre-releases.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 .. Review JIRA tickets in the release and ensure that:
@@ -72,7 +131,6 @@ might be high.
 
 . `mvn clean install -DincludeNeo4j`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
-.. `mvn verify -DskipPerformanceTests=false`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
@@ -89,7 +147,11 @@ might be high.
 PMC Vote
 --------
 
-A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
+This section describes the process that process that prepares a release for VOTE by the community. If there are multiple
+releases (as there usually are) being prepared, it may be best for downstream releases to wait for upstream releases
+to complete their process to assure that no last minute commits are required to get the upstream release completed.
+It is up to the discretion of the release managers to decide how they wish to proceed with respect to preparing releases
+in parallel or in a more serial fashion.
 
 . By this point, the testing performed during the code freeze should have validated the release.  If however there
 are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
@@ -98,9 +160,11 @@ validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date - the release date is the date of the vote.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
-... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
-... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
+... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
+`project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
+... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`.
+This formula can help construct each line item for the CHANGELOG if column `A` is the issue number, `B` is the
+issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking","*(breaking)*",""))`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
@@ -108,12 +172,20 @@ current release was under development as this new release will have those change
 . Update "upgrade documentation":
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
+. Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
+.. This step should only be performed by the release manager for the newest line of code (i.e. if release 3.3.x, 3.2.x and 3.1.x,
+then only do this step for 3.3.x, but update the site for 3.2.x and 3.1.x).
+.. Update the `template/header-footer.html`.
+.. Update `index.html`.
+.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git diff` and review the updated files
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
-. `bin/process-docs.sh` and validate the generated documentation locally (don't rely on "SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly)
+. `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have a gray background and do not show the results of the commands.
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
 document generation and this step now merely needs to upload what was generated. Note that this step will be responsible
 for generating javadoc and without that the binary distributions won't contain that documentation.
@@ -151,19 +223,20 @@ Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
+. Deploy to link:https://pypi.python.org/pypi[pypi]
+.. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
+.. `mvn clean install -DskipTests`
+.. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly follwing the svn command above to do the release)
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
-. Update home page site with references to latest distribution - specifically:
-.. Update the `template/header-footer.html`.
-.. Update `index.html`.
-.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+. `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
-. This step should olny occur after the website is updated and all links are working. If there are releases present in
+. This step should only occur after the website is updated and all links are working. If there are releases present in
 SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
 if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
 code is still under potential development, it may stay.
@@ -277,6 +350,10 @@ https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXX
 The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
+
+Python artifacts have also been deployed to pypi:
+
+https://pypi.python.org/pypi/gremlinpython/xx.yy.zz
 
 [include the release line logo image]
 ----

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.javatuples.Pair;
 
 import java.util.Comparator;
 
@@ -58,8 +59,8 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
             if (step instanceof LambdaHolder)
                 throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
             if (step instanceof ComparatorHolder) {
-                for (final Comparator<?> comparator : ((ComparatorHolder<?>) step).getComparators()) {
-                    if (comparator instanceof LambdaHolder || comparator.toString().contains("$$Lambda$"))
+                for (final Pair<Traversal.Admin<Object, Comparable>, Comparator<Comparable>> comparator : ((ComparatorHolder<Object, Comparable>) step).getComparators()) {
+                    if (comparator.toString().contains("$$Lambda$"))
                         throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
             }

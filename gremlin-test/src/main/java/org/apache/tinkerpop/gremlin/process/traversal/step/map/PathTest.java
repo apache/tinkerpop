@@ -23,11 +23,14 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +59,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path();
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id);
+
+    public abstract Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -157,6 +162,16 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX() {
+        final Traversal<Vertex, Path> traveral = get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX();
+        printTraversalForm(traveral);
+        checkResults(Arrays.asList(
+                MutablePath.make().extend("josh", Collections.singleton("b")).extend("lop", Collections.singleton("c")),
+                MutablePath.make().extend("josh", Collections.singleton("b")).extend("ripple", Collections.singleton("c"))), traveral);
+    }
+
     public static class Traversals extends PathTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
@@ -186,6 +201,11 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_outEXcreatedX_inV_inE_outV_path(final Object v1Id) {
             return g.V(v1Id).outE("created").inV().inE().outV().path();
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_out_asXbX_out_asXcX_path_fromXbX_toXcX_byXnameX() {
+            return g.V().as("a").out().as("b").out().as("c").path().from("b").to("c").by("name");
         }
     }
 }

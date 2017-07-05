@@ -22,16 +22,22 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.base64.Base64Decoder;
 import io.netty.util.Attribute;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
@@ -48,13 +54,17 @@ import org.slf4j.LoggerFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
+public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    private final Authenticator authenticator;
+    private final Settings.AuthenticationSettings authenticationSettings;
 
-    public SaslAuthenticationHandler(final Authenticator authenticator) {
-        this.authenticator = authenticator;
+    public SaslAuthenticationHandler(final Authenticator authenticator, final Settings.AuthenticationSettings authenticationSettings) {
+        super(authenticator);
+        this.authenticationSettings = authenticationSettings;
     }
 
     @Override
@@ -80,7 +90,7 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                     if (saslObject instanceof byte[]) {
                         saslResponse = (byte[]) saslObject;
                     } else if(saslObject instanceof String) {
-                        saslResponse = Base64.getDecoder().decode((String) saslObject);
+                        saslResponse = BASE64_DECODER.decode((String) saslObject);
                     } else {
                         final ResponseMessage error = ResponseMessage.build(request.get())
                                 .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - byte[] or base64 encoded String is expected")
@@ -88,21 +98,32 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                         ctx.writeAndFlush(error);
                         return;
                     }
-                    
+
                     try {
                         final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
-                            // todo: do something with this user
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();
-
+                            // User name logged with the remote socket address and authenticator classname for audit logging
+                            if (authenticationSettings.enableAuditLog) {
+                                String address = ctx.channel().remoteAddress().toString();
+                                if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                                String[] authClassParts = authenticator.getClass().toString().split("[.]");
+                                auditLogger.info("User {} with address {} authenticated by {}",
+                                        user.getName(), address, authClassParts[authClassParts.length - 1]);
+                            }
                             // If we have got here we are authenticated so remove the handler and pass
                             // the original message down the pipeline for processing
                             ctx.pipeline().remove(this);
                             final RequestMessage original = request.get();
                             ctx.fireChannelRead(original);
                         } else {
-                            // not done here - send back the sasl message for next challenge
+                            // not done here - send back the sasl message for next challenge. note that we send back
+                            // the base64 encoded sasl as well as the byte array. the byte array will eventually be
+                            // phased out, but is present now for backward compatibility in 3.2.x
+                            final Map<String,Object> metadata = new HashMap<>();
+                            metadata.put(Tokens.ARGS_SASL, BASE64_ENCODER.encodeToString(saslMessage));
                             final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
+                                    .statusAttributes(metadata)
                                     .code(ResponseStatusCode.AUTHENTICATE).result(saslMessage).create();
                             ctx.writeAndFlush(authenticate);
                         }

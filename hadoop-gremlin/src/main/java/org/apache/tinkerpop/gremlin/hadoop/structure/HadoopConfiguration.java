@@ -52,12 +52,12 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
 
     @Override
     protected void addPropertyDirect(final String key, final Object value) {
-        this.properties.put(key, value);
+        this.properties.put(convertKey(key), value);
     }
 
     @Override
     protected void clearPropertyDirect(final String key) {
-        this.properties.remove(key);
+        this.properties.remove(convertKey(key));
     }
 
     @Override
@@ -67,12 +67,12 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
 
     @Override
     public boolean containsKey(final String key) {
-        return this.properties.containsKey(key);
+        return this.properties.containsKey(convertKey(key));
     }
 
     @Override
     public Object getProperty(final String key) {
-        return this.properties.get(key);
+        return this.properties.get(convertKey(key));
     }
 
     @Override
@@ -80,19 +80,61 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
         return this.properties.keySet().iterator();
     }
 
+    @Deprecated
+    private static String convertKey(final String key) {
+        if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT))
+            return Constants.GREMLIN_HADOOP_GRAPH_READER;
+        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))
+            return Constants.GREMLIN_HADOOP_GRAPH_WRITER;
+        else if (key.equals(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD))
+            return Constants.GREMLIN_HADOOP_GRAPH_READER;
+        else if (key.equals(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD))
+            return Constants.GREMLIN_HADOOP_GRAPH_WRITER;
+        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES))
+            return Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES;
+        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES))
+            return Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES;
+        else
+            return key;
+    }
+
     ///////
 
-    public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
+    public <A> Class<A> getGraphReader() {
         try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT));
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
+    public <A> Class<A> getGraphWriter() {
+        try {
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER));
+        } catch (final ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphReader()}.
+     */
+    @Deprecated
+    public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
+        try {
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        } catch (final ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphWriter()}.
+     */
+    @Deprecated
     public Class<OutputFormat<NullWritable, VertexWritable>> getGraphOutputFormat() {
         try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT));
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER));
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

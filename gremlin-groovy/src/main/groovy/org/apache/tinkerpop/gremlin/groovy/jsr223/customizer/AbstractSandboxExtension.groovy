@@ -51,7 +51,7 @@ abstract class AbstractSandboxExtension extends GroovyTypeCheckingExtensionSuppo
         def boolean autoTypeUnknown = allowAutoTypeOfUnknown()
 
         unresolvedVariable { var ->
-            if (staticVariableTyping.containsKey(var.name)) {
+            if ((null != staticVariableTyping) && (staticVariableTyping.containsKey(var.name))) {
                 storeType(var, classNodeFor(staticVariableTyping[var.name]))
                 handled = true
                 return

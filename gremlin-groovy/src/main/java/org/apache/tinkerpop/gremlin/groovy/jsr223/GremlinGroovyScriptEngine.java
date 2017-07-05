@@ -18,17 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
-import groovy.grape.Grape;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.DelegatingMetaClass;
@@ -37,6 +29,16 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -47,11 +49,12 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.util.ReferenceBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
@@ -62,12 +65,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -77,13 +85,14 @@ import java.util.stream.Collectors;
  * down on compilation times of future evaluations of the same script.  This {@code ScriptEngine} implementation is
  * heavily adapted from the {@code GroovyScriptEngineImpl} to include some additional functionality.
  *
- * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
+        implements AutoCloseable, GremlinScriptEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(GremlinGroovyScriptEngine.class);
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
      */
@@ -93,10 +102,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * The attribute key (passed as a binding on the context) for how to cache scripts.  The value must be one of
      * the following:
      * <ul>
-     *     <li>{@link #REFERENCE_TYPE_HARD}</li>
-     *     <li>{@link #REFERENCE_TYPE_SOFT}</li>
-     *     <li>{@link #REFERENCE_TYPE_WEAK}</li>
-     *     <li>{@link #REFERENCE_TYPE_PHANTOM}</li>
+     * <li>{@link #REFERENCE_TYPE_HARD}</li>
+     * <li>{@link #REFERENCE_TYPE_SOFT}</li>
+     * <li>{@link #REFERENCE_TYPE_WEAK}</li>
+     * <li>{@link #REFERENCE_TYPE_PHANTOM}</li>
      * </ul>
      */
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
@@ -105,7 +114,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * A value to the {@link #KEY_REFERENCE_TYPE} that immediately garbage collects the script after evaluation.
      */
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
-
 
     /**
      * A value to the {@link #KEY_REFERENCE_TYPE} that marks the script as one that can be garbage collected
@@ -127,32 +135,77 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     /**
      * Name of variable that holds local variables to be globally bound if "interpreter mode" is enabled with
-     * {@link InterpreterModeCustomizerProvider}.
+     * {@link InterpreterModeGroovyCustomizer}.
      */
     public static final String COLLECTED_BOUND_VARS_MAP_VARNAME = "gremlin_script_engine_collected_boundvars";
 
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
-    public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>(){
+    public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>() {
         @Override
         protected Map<String, Object> initialValue() {
             return new HashMap<>();
         }
     };
 
+    private GremlinGroovyClassLoader loader;
+
     /**
      * Script to generated Class map.
      */
-    private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
+    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().
+            softValues().
+            recordStats().
+            build(new CacheLoader<String, Future<Class>>() {
+        @Override
+        public Future<Class> load(final String script) throws Exception {
+            final long start = System.currentTimeMillis();
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
+                    final long finish = System.currentTimeMillis();
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    failedCompilationCount.incrementAndGet();
+                    throw e;
+                } finally {
+                    final long time = System.currentTimeMillis() - start;
+                    if (time > expectedCompilationTime) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                        longRunCompilationCount.incrementAndGet();
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
+                }
+            }, Runnable::run);
+        }
+    });
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
      */
-    private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
+    private final ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-    private GremlinGroovyClassLoader loader;
+    /**
+     * Ensures unique script names across all instances.
+     */
+    private final static AtomicLong scriptNameCounter = new AtomicLong(0L);
 
-    private AtomicLong counter = new AtomicLong(0L);
+    /**
+     * A counter for the instance that tracks the number of warnings issued during script compilations that exceeded
+     * the {@link #expectedCompilationTime}.
+     */
+    private final AtomicLong longRunCompilationCount = new AtomicLong(0L);
+
+    /**
+     * A counter for the instance that tracks the number of failed compilations. Note that the failures need to be
+     * tracked outside of cache failure load stats because the loading mechanism will always successfully return
+     * a future and won't trigger a failure.
+     */
+    private final AtomicLong failedCompilationCount = new AtomicLong(0L);
 
     /**
      * The list of loaded plugins for the console.
@@ -166,149 +219,50 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private static final String DOT_GROOVY = ".groovy";
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
-    private ImportCustomizerProvider importCustomizerProvider;
-    private final List<CompilerCustomizerProvider> customizerProviders;
+    private final ImportGroovyCustomizer importGroovyCustomizer;
+    private final List<GroovyCustomizer> groovyCustomizers;
 
-    private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
+    private final long expectedCompilationTime;
 
     /**
-     * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
+     * Creates a new instance using no {@link Customizer}.
      */
     public GremlinGroovyScriptEngine() {
-        this((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
+        this(new Customizer[0]);
     }
 
-    /**
-     * @deprecated As of release 3.0.1, replaced by {@link #GremlinGroovyScriptEngine(CompilerCustomizerProvider...)}
-     */
-    @Deprecated
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
-        this((CompilerCustomizerProvider) importCustomizerProvider);
-    }
+    public GremlinGroovyScriptEngine(final Customizer... customizers) {
+        final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
 
-    /**
-     * Creates a new instance with the specified {@link CompilerCustomizerProvider} objects.
-     */
-    public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
-        final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
+        // always need this plugin for a scriptengine to be "Gremlin-enabled"
+        CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
 
         GremlinLoader.load();
 
-        importCustomizerProvider = providers.stream()
-                .filter(p -> p instanceof ImportCustomizerProvider)
-                .map(p -> (ImportCustomizerProvider) p)
-                .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
+        final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
+                .filter(p -> p instanceof ImportCustomizer)
+                .map(p -> (ImportCustomizer) p)
+                .collect(Collectors.toList());
+        final ImportCustomizer[] importCustomizerArray = new ImportCustomizer[importCustomizers.size()];
+        importGroovyCustomizer = new ImportGroovyCustomizer(importCustomizers.toArray(importCustomizerArray));
 
-        // determine if interpreter mode should be enabled
-        interpreterModeEnabled = providers.stream()
-                .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
-
-        // remove used providers as the rest will be applied directly
-        customizerProviders = providers.stream()
-                .filter(p -> p != null &&
-                             !((p instanceof ImportCustomizerProvider)))
+        groovyCustomizers = listOfCustomizers.stream()
+                .filter(p -> p instanceof GroovyCustomizer)
+                .map(p -> ((GroovyCustomizer) p))
                 .collect(Collectors.toList());
 
+        final Optional<CompilationOptionsCustomizer> compilationOptionsCustomizerProvider = listOfCustomizers.stream()
+                .filter(p -> p instanceof CompilationOptionsCustomizer)
+                .map(p -> (CompilationOptionsCustomizer) p).findFirst();
+        expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
+                compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
+
+        // determine if interpreter mode should be enabled
+        interpreterModeEnabled = groovyCustomizers.stream()
+                .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
+
         createClassLoader();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * This method should be called after "expected" imports have been added to the {@code DependencyManager}
-     * because adding imports with {@link #addImports(java.util.Set)} will reset the classloader and flush away
-     * dependencies.
-     */
-    @Override
-    public synchronized List<GremlinPlugin> use(final String group, final String artifact, final String version) {
-        final Map<String, Object> dependency = new HashMap<String, Object>() {{
-            put("group", group);
-            put("module", artifact);
-            put("version", version);
-        }};
-
-        final Map<String, Object> args = new HashMap<String, Object>() {{
-            put("classLoader", loader);
-        }};
-
-        Grape.grab(args, dependency);
-
-        // note that the service loader utilized the classloader from the groovy shell as shell class are available
-        // from within there given loading through Grape.
-        final List<GremlinPlugin> pluginsFound = new ArrayList<>();
-        ServiceLoader.load(GremlinPlugin.class, loader).forEach(pluginsFound::add);
-
-        artifactsToUse.add(new Artifact(group, artifact, version));
-
-        return pluginsFound;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException {
-        for (GremlinPlugin gremlinPlugin : plugins) {
-            if (!loadedPlugins.contains(gremlinPlugin.getName())) {
-                gremlinPlugin.pluginTo(new ScriptEnginePluginAcceptor(this));
-                loadedPlugins.add(gremlinPlugin.getName());
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map[] dependencies() {
-        return Grape.listDependencies(loader);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String, Set<String>> imports() {
-        final Map<String, Set<String>> m = new HashMap<>();
-        m.put("imports", importCustomizerProvider.getImports());
-        m.put("staticImports", importCustomizerProvider.getStaticImports());
-        m.put("extraImports", importCustomizerProvider.getExtraImports());
-        m.put("extraStaticImports", importCustomizerProvider.getExtraStaticImports());
-        return m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void addImports(final Set<String> importStatements) {
-        final Set<String> staticImports = new HashSet<>();
-        final Set<String> imports = new HashSet<>();
-
-        importStatements.forEach(s -> {
-            final String trimmed = s.trim();
-            if (patternImportStatic.matcher(trimmed).matches()) {
-                final int pos = trimmed.indexOf(STATIC);
-                staticImports.add(s.substring(pos + 6).trim());
-            } else
-                imports.add(s.substring(6).trim());
-        });
-
-        // use the EmptyImportCustomizer because it doesn't come with static initializers containing
-        // existing imports.
-        importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
-        internalReset();
-    }
-
-    /**
-     * Get the list of loaded plugins.
-     *
-     * @deprecated As of release 3.0.1, replaced by {@link #getPlugins()}
-     */
-    @Deprecated
-    public Set plugins() {
-        return loadedPlugins;
     }
 
     /**
@@ -319,36 +273,67 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
+        bindings.putAll(bytecode.getBindings());
+        String traversalSource = "g";
+        for (final Map.Entry<String, Object> entry : bindings.entrySet()) {
+            if (entry.getValue() instanceof TraversalSource) {
+                traversalSource = entry.getKey();
+                break;
+            }
+        }
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(traversalSource).translate(bytecode), bindings);
+    }
+
+    /**
+     * @deprecated As of release 3.2.4, not replaced as this class will not implement {@code AutoCloseable} in the
+     * future.
+     */
+    @Override
+    @Deprecated
     public void close() throws Exception {
     }
 
     /**
-     * {@inheritDoc}
+     * Resets the entire {@code GremlinGroovyScriptEngine} by clearing script caches, recreating the classloader,
+     * clearing bindings.
      */
-    @Override
     public void reset() {
         internalReset();
-
-        loadedPlugins.clear();
-
         getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
     /**
-     * Resets the {@code ScriptEngine} but does not clear the loaded plugins or bindings.  Typically called by
-     * {@link DependencyManager} methods that need to just force the classloader to be recreated and script caches
-     * cleared.
+     * Creates the {@code ScriptContext} using a {@link GremlinScriptContext} which avoids a significant amount of
+     * additional object creation on script evaluation.
+     */
+    @Override
+    protected ScriptContext getScriptContext(final Bindings nn) {
+        final GremlinScriptContext ctxt = new GremlinScriptContext(context.getReader(), context.getWriter(), context.getErrorWriter());
+        final Bindings gs = getBindings(ScriptContext.GLOBAL_SCOPE);
+
+        if (gs != null) ctxt.setBindings(gs, ScriptContext.GLOBAL_SCOPE);
+
+        if (nn != null) {
+            ctxt.setBindings(nn,
+                    ScriptContext.ENGINE_SCOPE);
+        } else {
+            throw new NullPointerException("Engine scope Bindings may not be null.");
+        }
+
+        return ctxt;
+    }
+
+    /**
+     * Resets the {@code ScriptEngine} but does not clear the loaded plugins or bindings.
      */
     private void internalReset() {
         createClassLoader();
 
         // must clear the local cache here because the classloader has been reset.  therefore, classes previously
         // referenced before that might not have evaluated might cleanly evaluate now.
-        classMap.clear();
+        classMap.invalidateAll();
         globalClosures.clear();
-
-        final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
-        toReuse.forEach(this::use);
     }
 
     /**
@@ -401,7 +386,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * {@inheritDoc}
      */
     @Override
-    public ScriptEngineFactory getFactory() {
+    public GremlinScriptEngineFactory getFactory() {
         if (factory == null) {
             synchronized (this) {
                 if (factory == null) {
@@ -458,17 +443,133 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return makeInterface(thiz, clazz);
     }
 
-    Class getScriptClass(final String script) throws CompilationFailedException {
-        Class clazz = classMap.get(script);
-        if (clazz != null) return clazz;
+    /**
+     * Gets the number of compilations that extended beyond the {@link #expectedCompilationTime}.
+     */
+    public long getClassCacheLongRunCompilationCount() {
+        return longRunCompilationCount.longValue();
+    }
 
-        clazz = loader.parseClass(script, generateScriptName());
-        classMap.put(script, clazz);
-        return clazz;
+    /**
+     * Gets the estimated size of the class cache for compiled scripts.
+     */
+    public long getClassCacheEstimatedSize() {
+        return classMap.estimatedSize();
+    }
+
+    /**
+     * Gets the average time spent compiling new scripts.
+     */
+    public double getClassCacheAverageLoadPenalty() {
+        return classMap.stats().averageLoadPenalty();
+    }
+
+    /**
+     * Gets the number of times a script compiled to a class has been evicted from the cache.
+     */
+    public long getClassCacheEvictionCount() {
+        return classMap.stats().evictionCount();
+    }
+
+    /**
+     * Gets the sum of the weights of evicted entries from the class cache.
+     */
+    public long getClassCacheEvictionWeight() {
+        return classMap.stats().evictionWeight();
+    }
+
+    /**
+     * Gets the number of times cache look up for a compiled script returned a cached value.
+     */
+    public long getClassCacheHitCount() {
+        return classMap.stats().hitCount();
+    }
+
+    /**
+     * Gets the hit rate of the class cache.
+     */
+    public double getClassCacheHitRate() {
+        return classMap.stats().hitRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method attempted to compile new scripts.
+     */
+    public long getClassCacheLoadCount() {
+        return classMap.stats().loadCount();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method failed to compile a new script.
+     */
+    public long getClassCacheLoadFailureCount() {
+        // don't use classMap.stats().loadFailureCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that failed.
+     */
+    public double getClassCacheLoadFailureRate() {
+        // don't use classMap.stats().loadFailureRate() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        long totalLoadCount = classMap.stats().loadCount();
+        return (totalLoadCount == 0)
+                ? 0.0
+                : (double) failedCompilationCount.longValue() / totalLoadCount;
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method succeeded to compile a new script.
+     */
+    public long getClassCacheLoadSuccessCount() {
+        // don't use classMap.stats().loadSuccessCount() because the load mechanism always succeeds with a future
+        // that will in turn contain the success or failure
+        return classMap.stats().loadCount() - failedCompilationCount.longValue();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a newly compiled script.
+     */
+    public long getClassCacheMissCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the ratio of script compilation attempts that were misses.
+     */
+    public double getClassCacheMissRate() {
+        return classMap.stats().missRate();
+    }
+
+    /**
+     * Gets the total number of times the cache lookup method returned a cached or uncached value.
+     */
+    public long getClassCacheRequestCount() {
+        return classMap.stats().missCount();
+    }
+
+    /**
+     * Gets the total number of nanoseconds that the cache spent compiling scripts.
+     */
+    public long getClassCacheTotalLoadTime() {
+        return classMap.stats().totalLoadTime();
+    }
+
+    Class getScriptClass(final String script) throws CompilationFailedException {
+        try {
+            return classMap.get(script).get();
+        } catch (ExecutionException e) {
+            throw ((CompilationFailedException)e.getCause());
+        } catch (InterruptedException e) {
+            //This should never happen as the future should completed before it is returned to the us.
+            throw new AssertionError();
+        }
     }
 
     boolean isCached(final String script) {
-        return classMap.get(script) != null;
+        return classMap.getIfPresent(script) != null;
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
@@ -582,22 +683,22 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     private void registerBindingTypes(final ScriptContext context) {
-        final Map<String,ClassNode> variableTypes = new HashMap<>();
+        final Map<String, ClassNode> variableTypes = new HashMap<>();
         clearVarTypes();
 
         // use null for the classtype if the binding value itself is null - not fully sure if that is
         // a sound way to deal with that.  didn't see a class type for null - maybe it should just be
         // unknown and be "Object".  at least null is properly being accounted for now.
         context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) ->
-            variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
+                variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
 
         COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
     }
 
     private static void clearVarTypes() {
-        final Map<String,Object> m = COMPILE_OPTIONS.get();
+        final Map<String, Object> m = COMPILE_OPTIONS.get();
         if (m.containsKey(COMPILE_OPTIONS_VAR_TYPES))
-            ((Map<String,ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
+            ((Map<String, ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
     }
 
     private Object invokeImpl(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
@@ -618,15 +719,16 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private synchronized void createClassLoader() {
         final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        conf.addCompilationCustomizers(this.importCustomizerProvider.create());
+        conf.addCompilationCustomizers(this.importGroovyCustomizer.create());
 
-        customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
+        // ConfigurationCustomizerProvider is treated separately
+        groovyCustomizers.stream().filter(cp -> !(cp instanceof ConfigurationGroovyCustomizer))
+                .forEach(p -> conf.addCompilationCustomizers(p.create()));
+
+        groovyCustomizers.stream().filter(cp -> cp instanceof ConfigurationGroovyCustomizer).findFirst()
+                .ifPresent(cp -> ((ConfigurationGroovyCustomizer) cp).applyCustomization(conf));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
-    }
-
-    private void use(final Artifact artifact) {
-        use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
     }
 
     private Object callGlobal(final String name, final Object args[]) {
@@ -648,7 +750,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     private synchronized String generateScriptName() {
-        return SCRIPT + counter.incrementAndGet() + DOT_GROOVY;
+        return SCRIPT + scriptNameCounter.incrementAndGet() + DOT_GROOVY;
     }
 
     @SuppressWarnings("unchecked")

@@ -110,7 +110,7 @@ public final class TinkerMessenger<M> implements Messenger<M> {
     ///////////
 
     private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal.Admin<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        incidentTraversal.addStep(0, new StartStep<>(incidentTraversal, vertex));
+        incidentTraversal.addStart(incidentTraversal.getTraverserGenerator().generate(vertex,incidentTraversal.getStartStep(),1l));
         return (T) incidentTraversal;
     }
 

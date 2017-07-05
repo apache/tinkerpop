@@ -60,17 +60,7 @@ public final class ImmutableMemory implements Memory.Admin {
     }
 
     @Override
-    public void incr(final String key, final long delta) {
-        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
-    }
-
-    @Override
-    public void and(final String key, final boolean bool) {
-        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
-    }
-
-    @Override
-    public void or(final String key, final boolean bool) {
+    public void add(final String key, final Object value) {
         throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 

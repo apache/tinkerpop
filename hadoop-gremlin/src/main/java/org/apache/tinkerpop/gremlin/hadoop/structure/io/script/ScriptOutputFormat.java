@@ -41,7 +41,7 @@ public final class ScriptOutputFormat extends CommonFileOutputFormat implements 
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return getRecordWriter(job, getDataOuputStream(job));
+        return getRecordWriter(job, getDataOutputStream(job));
     }
 
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream) throws IOException, InterruptedException {

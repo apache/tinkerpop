@@ -63,18 +63,13 @@ public final class InputOutputHelper {
     }
 
     public static HadoopGraph getOutputGraph(final Configuration configuration, final GraphComputer.ResultGraph resultGraph, final GraphComputer.Persist persist) {
-        try {
-            final HadoopConfiguration hadoopConfiguration = new HadoopConfiguration(configuration);
-            final BaseConfiguration newConfiguration = new BaseConfiguration();
-            newConfiguration.copy(org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper.getOutputGraph(configuration, resultGraph, persist).configuration());
-            if (resultGraph.equals(GraphComputer.ResultGraph.NEW) && hadoopConfiguration.containsKey(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD)) {
-                newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
-                //newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputRDDFormat.class.getCanonicalName());
-                newConfiguration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputOutputHelper.getInputFormat((Class) Class.forName(hadoopConfiguration.getString(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD))).getCanonicalName());
-            }
-            return HadoopGraph.open(newConfiguration);
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+        final HadoopConfiguration hadoopConfiguration = new HadoopConfiguration(configuration);
+        final BaseConfiguration newConfiguration = new BaseConfiguration();
+        newConfiguration.copy(org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper.getOutputGraph(configuration, resultGraph, persist).configuration());
+        if (resultGraph.equals(GraphComputer.ResultGraph.NEW) && hadoopConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER)) {
+            if (null != InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphWriter()))
+                newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphWriter()).getCanonicalName());
         }
+        return HadoopGraph.open(newConfiguration);
     }
 }

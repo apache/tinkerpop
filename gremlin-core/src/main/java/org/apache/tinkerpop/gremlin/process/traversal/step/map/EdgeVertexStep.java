@@ -33,9 +33,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
+public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements AutoCloseable {
 
-    private Direction direction;
+    protected Direction direction;
 
     public EdgeVertexStep(final Traversal.Admin traversal, final Direction direction) {
         super(traversal);
@@ -68,5 +68,10 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public void close() throws Exception {
+        closeIterator();
     }
 }

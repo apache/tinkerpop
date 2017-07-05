@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
+import org.apache.tinkerpop.gremlin.groovy.util.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber;
 import groovy.lang.GroovyClassLoader;
 

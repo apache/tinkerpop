@@ -25,8 +25,10 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -51,6 +54,15 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
 
     protected final Function<Context, BindingSupplier> bindingMaker;
 
+    static final Settings.ProcessorSettings DEFAULT_SETTINGS = new Settings.ProcessorSettings();
+
+    static {
+        DEFAULT_SETTINGS.className = StandardOpProcessor.class.getCanonicalName();
+        DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
+            put(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
+        }};
+    }
+
     public StandardOpProcessor() {
         super(true);
         bindingMaker = getBindingMaker();
@@ -59,6 +71,12 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     @Override
     public String getName() {
         return OP_PROCESSOR_NAME;
+    }
+
+    @Override
+    public void init(final Settings settings) {
+        this.maxParameters = (int) settings.optionalProcessor(StandardOpProcessor.class).orElse(DEFAULT_SETTINGS).config.
+                getOrDefault(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
     }
 
     @Override
@@ -117,18 +135,18 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
                     boolean found = false;
 
                     // first check if the alias refers to a Graph instance
-                    final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
-                    if (graphs.containsKey(aliasKv.getValue())) {
-                        bindings.put(aliasKv.getKey(), graphs.get(aliasKv.getValue()));
+                    final Graph graph = context.getGraphManager().getGraph(aliasKv.getValue());
+                    if (null != graph) {
+                        bindings.put(aliasKv.getKey(), graph);
                         found = true;
                     }
 
                     // if the alias wasn't found as a Graph then perhaps it is a TraversalSource - it needs to be
                     // something
                     if (!found) {
-                        final Map<String, TraversalSource> traversalSources = context.getGraphManager().getTraversalSources();
-                        if (traversalSources.containsKey(aliasKv.getValue())) {
-                            bindings.put(aliasKv.getKey(), traversalSources.get(aliasKv.getValue()));
+                        final TraversalSource ts = context.getGraphManager().getTraversalSource(aliasKv.getValue());
+                        if (null != ts) {
+                            bindings.put(aliasKv.getKey(), ts);
                             found = true;
                         }
                     }

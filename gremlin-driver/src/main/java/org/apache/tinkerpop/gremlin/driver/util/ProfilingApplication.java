@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,22 +48,43 @@ import java.util.stream.IntStream;
  */
 public class ProfilingApplication {
 
+    private static final Random random = new Random();
+    private static final String[] scripts = new String[]{
+            "g.V()",
+            "g.V(1).out('knows')",
+            "g.V(1).out('knows').has('name','josh')",
+            "g.V(1).as(\"a\").out(\"knows\").as(\"b\").select(\"a\", \"b\")",
+            "g.V(1).as(\"a\").out(\"knows\").as(\"b\").select(\"a\", \"b\").by(\"name\")",
+            "g.V().hasLabel(\"person\").as(\"p\").map(__.bothE().label().groupCount()).as(\"r\").select(\"p\", \"r\")",
+            "g.V().choose(__.outE().count().is(0L), __.as(\"a\"), __.as(\"b\")).choose(__.select(\"a\"), __.select(\"a\"), __.select(\"b\"))",
+            "g.V().group(\"a\").by(T.label).by(outE().values(\"weight\").sum()).cap(\"a\")",
+            "g.V().repeat(__.union(__.out(\"knows\").group(\"a\").by(\"age\"), __.out(\"created\").group(\"b\").by(\"name\").by(count())).group(\"a\").by(\"name\")).times(2).cap(\"a\", \"b\")",
+            "g.V().match(\n" +
+            "  as(\"a\").out(\"knows\").as(\"b\"),\n" +
+            "  as(\"b\").out(\"created\").has(\"name\", \"lop\"),\n" +
+            "  as(\"b\").match(\n" +
+            "  as(\"b\").out(\"created\").as(\"d\"),\n" +
+            "  as(\"d\").in(\"created\").as(\"c\")).select(\"c\").as(\"c\")).<Vertex>select(\"a\", \"b\", \"c\")"
+    };
+
     private final Cluster cluster;
     private final int requests;
     private final String executionName;
     private final String script;
     private final int tooSlowThreshold;
+    private final boolean exercise;
 
     private final ExecutorService executor;
 
     public ProfilingApplication(final String executionName, final Cluster cluster, final int requests, final ExecutorService executor,
-                                final String script, final int tooSlowThreshold) {
+                                final String script, final int tooSlowThreshold, final boolean exercise) {
         this.executionName = executionName;
         this.cluster = cluster;
         this.requests = requests;
         this.executor = executor;
         this.script = script;
         this.tooSlowThreshold = tooSlowThreshold;
+        this.exercise = exercise;
     }
 
     public long execute() throws Exception {
@@ -75,8 +97,9 @@ public class ProfilingApplication {
             client.init();
 
             final long start = System.nanoTime();
-            IntStream.range(0, requests).forEach(i ->
-                client.submitAsync(script).thenAcceptAsync(r -> {
+            IntStream.range(0, requests).forEach(i -> {
+                final String s = exercise ? chooseScript() : script;
+                client.submitAsync(s).thenAcceptAsync(r -> {
                     try {
                         r.all().get(tooSlowThreshold, TimeUnit.MILLISECONDS);
                     } catch (TimeoutException ex) {
@@ -86,8 +109,8 @@ public class ProfilingApplication {
                     } finally {
                         latch.countDown();
                     }
-                }, executor)
-            );
+                }, executor);
+            });
 
             // finish once all requests are accounted for
             latch.await();
@@ -97,7 +120,7 @@ public class ProfilingApplication {
             final double totalSeconds = total / 1000000000d;
             final long requestCount = requests;
             final long reqSec = Math.round(requestCount / totalSeconds);
-            System.out.println(String.format(StringUtils.rightPad(executionId, 10) + " requests: %s | time(s): %s | req/sec: %s | too slow: %s", requestCount, StringUtils.rightPad(String.valueOf(totalSeconds), 14), StringUtils.rightPad(String.valueOf(reqSec), 7), tooSlow.get()));
+            System.out.println(String.format(StringUtils.rightPad(executionId, 10) + " requests: %s | time(s): %s | req/sec: %s | too slow: %s", requestCount, StringUtils.rightPad(String.valueOf(totalSeconds), 14), StringUtils.rightPad(String.valueOf(reqSec), 7), exercise ? "N/A" : tooSlow.get()));
             return reqSec;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -105,6 +128,10 @@ public class ProfilingApplication {
         } finally {
             client.close();
         }
+    }
+
+    private String chooseScript() {
+        return scripts[random.nextInt(scripts.length - 1)];
     }
 
     public static void main(final String[] args) {
@@ -133,6 +160,7 @@ public class ProfilingApplication {
         final String channelizer = options.getOrDefault("channelizer", Channelizer.WebSocketChannelizer.class.getName()).toString();
         final String serializer = options.getOrDefault("serializer", Serializers.GRYO_V1D0.name()).toString();
 
+        final boolean exercise = Boolean.parseBoolean(options.getOrDefault("exercise", "false").toString());
         final String script = options.getOrDefault("script", "1+1").toString();
 
         final Cluster cluster = Cluster.build(host)
@@ -149,6 +177,18 @@ public class ProfilingApplication {
                 .workerPoolSize(workerPoolSize).create();
 
         try {
+            if (exercise) {
+                System.out.println("--------------------------INITIALIZATION--------------------------");
+                final Client client = cluster.connect();
+                client.submit("graph.clear()").all().join();
+                System.out.println("Cleared existing 'graph'");
+
+                client.submit("TinkerFactory.generateModern(graph)").all().join();
+                client.close();
+
+                System.out.println("Modern graph loaded");
+            }
+
             final Object fileName = options.get("store");
             final File f = null == fileName ? null : new File(fileName.toString());
             if (f != null && f.length() == 0) {
@@ -161,7 +201,7 @@ public class ProfilingApplication {
             final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
-                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold).execute();
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold, exercise).execute();
                 meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
             }
@@ -170,11 +210,11 @@ public class ProfilingApplication {
             long totalRequestsPerSecond = 0;
 
             // no need to execute this if we didn't pass the basic expectation in the warmups
-            if (meetsRpsExpectation.get()) {
+            if (exercise || meetsRpsExpectation.get()) {
                 final long start = System.nanoTime();
                 System.out.println("----------------------------TEST CYCLE----------------------------");
                 for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold).execute();
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold, exercise).execute();
                     exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                     TimeUnit.SECONDS.sleep(1); // pause between executions
                 }

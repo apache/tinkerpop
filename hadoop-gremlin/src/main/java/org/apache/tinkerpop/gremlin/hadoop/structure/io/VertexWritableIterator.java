@@ -23,12 +23,12 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 /**
@@ -76,7 +76,7 @@ public final class VertexWritableIterator implements Iterator<Vertex> {
             } else {
                 while (true) {
                     if (this.readers.isEmpty())
-                        throw FastNoSuchElementException.instance();
+                        throw new NoSuchElementException();
                     if (this.readers.peek().next(this.value)) {
                         return this.value.get();
                     } else

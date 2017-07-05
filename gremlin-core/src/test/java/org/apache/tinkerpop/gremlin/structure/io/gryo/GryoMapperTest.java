@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -29,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Registration;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
@@ -37,6 +40,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,15 +57,20 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -168,8 +179,8 @@ public class GryoMapperTest {
     @Test
     public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
         final GryoMapper mapper = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -191,12 +202,12 @@ public class GryoMapperTest {
     @Test
     public void shouldExpectReadFailureAsIoRegistryOrderIsNotRespected() throws Exception {
         final GryoMapper mapperWrite = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
 
         final GryoMapper mapperRead = GryoMapper.build()
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoYIoRegistry.InstanceBased.instance())
+                .addRegistry(IoXIoRegistry.InstanceBased.instance()).create();
 
         final Kryo kryoWriter = mapperWrite.createMapper();
         final Kryo kryoReader = mapperRead.createMapper();
@@ -220,87 +231,140 @@ public class GryoMapperTest {
     }
 
     @Test
-    public void shouldHandleDuration()throws Exception  {
+    public void shouldOverrideExistingSerializer() throws Exception {
+        final GryoMapper mapper = GryoMapper.build()
+                .addCustom(Duration.class, new OverrideDurationSerializer()).create();
+
+        try (final OutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+            mapper.createMapper().writeObject(out, Duration.ZERO);
+            fail("The OverrideDurationSerializer throws exceptions so this should not have worked");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(UnsupportedOperationException.class));
+            assertEquals("I don't do anything", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldHandleDefaultRemoteTraverser() throws Exception  {
+        final DefaultRemoteTraverser<Integer> br = new DefaultRemoteTraverser<>(123, 1000);
+        final DefaultRemoteTraverser inOut = serializeDeserialize(br, DefaultRemoteTraverser.class);
+        assertEquals(br.bulk(), inOut.bulk());
+        assertEquals(br.get(), inOut.get());
+    }
+
+    @Test
+    public void shouldHandleDuration() throws Exception  {
         final Duration o = Duration.ZERO;
         assertEquals(o, serializeDeserialize(o, Duration.class));
     }
 
     @Test
-    public void shouldHandleInstant()throws Exception  {
+    public void shouldHandleInstant() throws Exception  {
         final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
         assertEquals(o, serializeDeserialize(o, Instant.class));
     }
 
     @Test
-    public void shouldHandleLocalDate()throws Exception  {
+    public void shouldHandleLocalDate() throws Exception  {
         final LocalDate o = LocalDate.now();
         assertEquals(o, serializeDeserialize(o, LocalDate.class));
     }
 
     @Test
-    public void shouldHandleLocalDateTime()throws Exception  {
+    public void shouldHandleLocalDateTime() throws Exception  {
         final LocalDateTime o = LocalDateTime.now();
         assertEquals(o, serializeDeserialize(o, LocalDateTime.class));
     }
 
     @Test
-    public void shouldHandleLocalTime()throws Exception  {
+    public void shouldHandleLocalTime() throws Exception  {
         final LocalTime o = LocalTime.now();
         assertEquals(o, serializeDeserialize(o, LocalTime.class));
     }
 
     @Test
-    public void shouldHandleMonthDay()throws Exception  {
+    public void shouldHandleMonthDay() throws Exception  {
         final MonthDay o = MonthDay.now();
         assertEquals(o, serializeDeserialize(o, MonthDay.class));
     }
 
     @Test
-    public void shouldHandleOffsetDateTime()throws Exception  {
+    public void shouldHandleOffsetDateTime() throws Exception  {
         final OffsetDateTime o = OffsetDateTime.now();
         assertEquals(o, serializeDeserialize(o, OffsetDateTime.class));
     }
 
     @Test
-    public void shouldHandleOffsetTime()throws Exception  {
+    public void shouldHandleOffsetTime() throws Exception  {
         final OffsetTime o = OffsetTime.now();
         assertEquals(o, serializeDeserialize(o, OffsetTime.class));
     }
 
     @Test
-    public void shouldHandlePeriod()throws Exception  {
+    public void shouldHandlePeriod() throws Exception  {
         final Period o = Period.ofDays(3);
         assertEquals(o, serializeDeserialize(o, Period.class));
     }
 
     @Test
-    public void shouldHandleYear()throws Exception  {
+    public void shouldHandleYear() throws Exception  {
         final Year o = Year.now();
         assertEquals(o, serializeDeserialize(o, Year.class));
     }
 
     @Test
-    public void shouldHandleYearMonth()throws Exception  {
+    public void shouldHandleYearMonth() throws Exception  {
         final YearMonth o = YearMonth.now();
         assertEquals(o, serializeDeserialize(o, YearMonth.class));
     }
 
     @Test
-    public void shouldHandleZonedDateTime()throws Exception  {
+    public void shouldHandleZonedDateTime() throws Exception  {
         final ZonedDateTime o = ZonedDateTime.now();
         assertEquals(o, serializeDeserialize(o, ZonedDateTime.class));
     }
 
     @Test
-    public void shouldHandleZonedOffset()throws Exception  {
+    public void shouldHandleZonedOffset() throws Exception  {
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
         assertEquals(o, serializeDeserialize(o, ZoneOffset.class));
     }
 
     @Test
-    public void shouldHandleTraversalExplanation()throws Exception  {
+    public void shouldHandleTraversalExplanation() throws Exception  {
         final TraversalExplanation te = __().out().outV().outE().explain();
         assertEquals(te.toString(), serializeDeserialize(te, TraversalExplanation.class).toString());
+    }
+
+    @Test
+    public void shouldHandleBytecode() throws Exception {
+        final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
+        assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
+    }
+
+    @Test
+    public void shouldHandleClass() throws Exception {
+        final Class clazz = java.io.File.class;
+        assertEquals(clazz, serializeDeserialize(clazz, Class.class));
+    }
+
+    @Test
+    public void shouldHandleTimestamp() throws Exception {
+        final Timestamp ts = new java.sql.Timestamp(1481750076295L);
+        assertEquals(ts, serializeDeserialize(ts, java.sql.Timestamp.class));
+    }
+
+    @Test
+    public void shouldHandleINetAddress() throws Exception {
+        final InetAddress addy = InetAddress.getByName("localhost");
+        assertEquals(addy, serializeDeserialize(addy, InetAddress.class));
+    }
+
+    @Test
+    public void shouldHandleByteBuffer() throws Exception {
+        final ByteBuffer bb = ByteBuffer.wrap("some bytes for you".getBytes());
+        assertThat(Arrays.equals(bb.array(), serializeDeserialize(bb, ByteBuffer.class).array()), is(true));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
@@ -349,4 +413,20 @@ public class GryoMapperTest {
             }
         }
     }
+
+    final static class OverrideDurationSerializer extends Serializer<Duration>
+    {
+        @Override
+        public void write(final Kryo kryo, final Output output, final Duration duration)
+        {
+            throw new UnsupportedOperationException("I don't do anything");
+        }
+
+        @Override
+        public Duration read(final Kryo kryo, final Input input, final Class<Duration> durationClass)
+        {
+            throw new UnsupportedOperationException("I don't do anything");
+        }
+    }
+
 }

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -84,13 +85,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
-        this.starts.add((Iterator) starts);
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
+        this.starts.add(starts);
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
-        this.starts.add((Traverser.Admin<S>) start);
+    public void addStart(final Traverser.Admin<S> start) {
+        this.starts.add(start);
     }
 
     @Override
@@ -114,7 +115,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public Traverser<E> next() {
+    public Traverser.Admin<E> next() {
         if (null != this.nextEnd) {
             try {
                 return this.prepareTraversalForNextStep(this.nextEnd);
@@ -123,7 +124,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             }
         } else {
             while (true) {
-                final Traverser.Admin<E> traverser = (Traverser.Admin<E>) this.processNextStart();
+                if (Thread.interrupted()) throw new TraversalInterruptedException();
+                final Traverser.Admin<E> traverser = this.processNextStart();
                 if (null != traverser.get() && 0 != traverser.bulk())
                     return this.prepareTraversalForNextStep(traverser);
             }
@@ -137,7 +139,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         else {
             try {
                 while (true) {
-                    this.nextEnd = (Traverser.Admin<E>) this.processNextStart();
+                    if (Thread.interrupted()) throw new TraversalInterruptedException();
+                    this.nextEnd = this.processNextStart();
                     if (null != this.nextEnd.get() && 0 != this.nextEnd.bulk())
                         return true;
                     else
@@ -159,7 +162,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.traversal = traversal;
     }
 
-    protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
+    protected abstract Traverser.Admin<E> processNextStart() throws NoSuchElementException;
 
     @Override
     public String toString() {
@@ -176,6 +179,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = null;
             clone.traversal = EmptyTraversal.instance();
+            clone.labels = new LinkedHashSet<>(this.labels);
             clone.reset();
             return clone;
         } catch (final CloneNotSupportedException e) {

@@ -24,6 +24,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -84,7 +85,7 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        final Client client = new Client.ClusteredClient(this);
+        final Client client = new Client.ClusteredClient(this, Client.Settings.build().create());
         manager.trackClient(client);
         return (T) client;
     }
@@ -123,9 +124,19 @@ public final class Cluster {
      * @param manageTransactions enables auto-transactions when set to true
      */
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
-        if (null == sessionId || sessionId.isEmpty())
-            throw new IllegalArgumentException("sessionId cannot be null or empty");
-        final Client client = new Client.SessionedClient(this, sessionId, manageTransactions);
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
+                .manageTransactions(manageTransactions)
+                .sessionId(sessionId).create();
+        final Client.Settings settings = Client.Settings.build().useSession(sessionSettings).create();
+        return connect(settings);
+    }
+
+    /**
+     * Creates a new {@link Client} based on the settings provided.
+     */
+    public <T extends Client> T connect(final Client.Settings settings) {
+        final Client client = settings.getSession().isPresent() ? new Client.SessionedClient(this, settings) :
+                new Client.ClusteredClient(this, settings);
         manager.trackClient(client);
         return (T) client;
     }
@@ -145,6 +156,10 @@ public final class Cluster {
 
     public static Builder build(final File configurationFile) throws FileNotFoundException {
         final Settings settings = Settings.read(new FileInputStream(configurationFile));
+        return getBuilderFromSettings(settings);
+    }
+
+    private static Builder getBuilderFromSettings(final Settings settings) {
         final List<String> addresses = settings.hosts;
         if (addresses.size() == 0)
             throw new IllegalStateException("At least one value must be specified to the hosts setting");
@@ -153,6 +168,7 @@ public final class Cluster {
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
+                .keepAliveInterval(settings.connectionPool.keepAliveInterval)
                 .keyCertChainFile(settings.connectionPool.keyCertChainFile)
                 .keyFile(settings.connectionPool.keyFile)
                 .keyPassword(settings.connectionPool.keyPassword)
@@ -198,6 +214,13 @@ public final class Cluster {
      */
     public static Cluster open() {
         return build("localhost").create();
+    }
+
+    /**
+     * Create a {@code Cluster} from Apache Configurations.
+     */
+    public static Cluster open(final Configuration conf) {
+        return getBuilderFromSettings(Settings.from(conf)).create();
     }
 
     /**
@@ -249,6 +272,156 @@ public final class Cluster {
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * Size of the pool for handling request/response operations.
+     */
+    public int getNioPoolSize() {
+        return manager.nioPoolSize;
+    }
+
+    /**
+     * Size of the pool for handling background work.
+     */
+    public int getWorkerPoolSize() {
+        return manager.workerPoolSize;
+    }
+
+    /**
+     * Get the {@link MessageSerializer} MIME types supported.
+     */
+    public String[] getSerializers() {
+        return getSerializer().mimeTypesSupported();
+    }
+
+    /**
+     * Determines if connectivity over SSL is enabled.
+     */
+    public boolean isSslEnabled() {
+        return manager.connectionPoolSettings.enableSsl;
+    }
+
+    /**
+     * Gets the minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
+     * for closing on return to the {@link ConnectionPool}.
+     */
+    public int getMinInProcessPerConnection() {
+        return manager.connectionPoolSettings.minInProcessPerConnection;
+    }
+
+    /**
+     * Gets the maximum number of in-flight requests that can occur on a {@link Connection}.
+     */
+    public int getMaxInProcessPerConnection() {
+        return manager.connectionPoolSettings.maxInProcessPerConnection;
+    }
+
+    /**
+     * Gets the maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
+     */
+    public int maxSimultaneousUsagePerConnection() {
+        return manager.connectionPoolSettings.maxSimultaneousUsagePerConnection;
+    }
+
+    /**
+     * Gets the minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
+     * under consideration for closing.
+     */
+    public int minSimultaneousUsagePerConnection() {
+        return manager.connectionPoolSettings.minSimultaneousUsagePerConnection;
+    }
+
+    /**
+     * Gets the maximum size that the {@link ConnectionPool} can grow.
+     */
+    public int maxConnectionPoolSize() {
+        return manager.connectionPoolSettings.maxSize;
+    }
+
+    /**
+     * Gets the minimum size of the {@link ConnectionPool}.
+     */
+    public int minConnectionPoolSize() {
+        return manager.connectionPoolSettings.minSize;
+    }
+
+    /**
+     * Gets the override for the server setting that determines how many results are returned per batch.
+     */
+    public int getResultIterationBatchSize() {
+        return manager.connectionPoolSettings.resultIterationBatchSize;
+    }
+
+    /**
+     * Gets the maximum amount of time to wait for a connection to be borrowed from the connection pool.
+     */
+    public int getMaxWaitForConnection() {
+        return manager.connectionPoolSettings.maxWaitForConnection;
+    }
+
+    /**
+     * Gets how long a session will stay open assuming the current connection actually is configured for their use.
+     */
+    public int getMaxWaitForSessionClose() {
+        return manager.connectionPoolSettings.maxWaitForSessionClose;
+    }
+
+    /**
+     * Gets the maximum size in bytes of any request sent to the server.
+     */
+    public int getMaxContentLength() {
+        return manager.connectionPoolSettings.maxContentLength;
+    }
+
+    /**
+     * Gets the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+     */
+    public String getChannelizer() {
+        return manager.connectionPoolSettings.channelizer;
+    }
+
+    /**
+     * Gets time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+     */
+    public int getReconnectIntialDelay() {
+        return manager.connectionPoolSettings.reconnectInitialDelay;
+    }
+
+    /**
+     * Gets time in milliseconds to wait between retries when attempting to reconnect to a dead host.
+     */
+    public int getReconnectInterval() {
+        return manager.connectionPoolSettings.reconnectInterval;
+    }
+
+    /**
+     * Gets time in milliseconds to wait after the last message is sent over a connection before sending a keep-alive
+     * message to the server.
+     */
+    public long getKeepAliveInterval() {
+        return manager.connectionPoolSettings.keepAliveInterval;
+    }
+
+    /**
+     * Specifies the load balancing strategy to use on the client side.
+     */
+    public Class<? extends LoadBalancingStrategy> getLoadBalancingStrategy() {
+        return manager.loadBalancingStrategy.getClass();
+    }
+
+    /**
+     * Gets the port that the Gremlin Servers will be listening on.
+     */
+    public int getPort() {
+        return manager.port;
+    }
+
+    /**
+     * Gets a list of all the configured hosts.
+     */
+    public Collection<Host> allHosts() {
+        return Collections.unmodifiableCollection(manager.allHosts());
+    }
+
     Factory getFactory() {
         return manager.factory;
     }
@@ -271,10 +444,6 @@ public final class Cluster {
 
     AuthProperties authProperties() {
         return manager.authProps;
-    }
-
-    Collection<Host> allHosts() {
-        return manager.allHosts();
     }
 
     SslContext createSSLContext() throws Exception  {
@@ -323,6 +492,7 @@ public final class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String trustCertChainFile = null;
@@ -345,7 +515,6 @@ public final class Cluster {
          * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
          */
         public Builder nioPoolSize(final int nioPoolSize) {
-            if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.nioPoolSize = nioPoolSize;
             return this;
         }
@@ -355,7 +524,6 @@ public final class Cluster {
          * by 2
          */
         public Builder workerPoolSize(final int workerPoolSize) {
-            if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
             return this;
         }
@@ -414,6 +582,16 @@ public final class Cluster {
          */
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
+            return this;
+        }
+
+        /**
+         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
+         * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
+         * {@link Channelizer#supportsKeepAlive()}.  Set to zero to disable this feature.
+         */
+        public Builder keepAliveInterval(final long keepAliveInterval) {
+            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -557,7 +735,10 @@ public final class Cluster {
 
         /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+         *
+         * @deprecated As of release 3.2.3, the value of the initial delay is now the same as the {@link #reconnectInterval}.
          */
+        @Deprecated
         public Builder reconnectIntialDelay(final int initialDelay) {
             this.reconnectInitialDelay = initialDelay;
             return this;
@@ -687,11 +868,17 @@ public final class Cluster {
 
         private final ScheduledExecutorService executor;
 
+        private final int nioPoolSize;
+        private final int workerPoolSize;
+        private final int port;
+
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
         private final List<WeakReference<Client>> openedClients = new ArrayList<>();
 
         private Manager(final Builder builder) {
+            validateBuilder(builder);
+
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
@@ -714,14 +901,70 @@ public final class Cluster {
             connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
             connectionPoolSettings.keyFile = builder.keyFile;
             connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
+
+            nioPoolSize = builder.nioPoolSize;
+            workerPoolSize = builder.workerPoolSize;
+            port = builder.port;
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;
             this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+        }
+
+        private void validateBuilder(final Builder builder) {
+            if (builder.minInProcessPerConnection < 0)
+                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
+
+            if (builder.maxInProcessPerConnection < 1)
+                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
+
+            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
+                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
+
+            if (builder.minSimultaneousUsagePerConnection < 0)
+                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
+
+            if (builder.maxSimultaneousUsagePerConnection < 1)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
+
+            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
+
+            if (builder.minConnectionPoolSize < 0)
+                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
+
+            if (builder.maxConnectionPoolSize < 1)
+                throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
+
+            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
+                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
+
+            if (builder.maxWaitForConnection < 1)
+                throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
+
+            if (builder.maxWaitForSessionClose < 1)
+                throw new IllegalArgumentException("maxWaitForSessionClose must be greater than zero");
+
+            if (builder.maxContentLength < 1)
+                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+
+            if (builder.reconnectInterval < 1)
+                throw new IllegalArgumentException("reconnectInterval must be greater than zero");
+
+            if (builder.resultIterationBatchSize < 1)
+                throw new IllegalArgumentException("resultIterationBatchSize must be greater than zero");
+
+            if (builder.nioPoolSize < 1)
+                throw new IllegalArgumentException("nioPoolSize must be greater than zero");
+
+            if (builder.workerPoolSize < 1)
+                throw new IllegalArgumentException("workerPoolSize must be greater than zero");
+
         }
 
         synchronized void init() {

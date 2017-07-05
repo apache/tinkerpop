@@ -22,8 +22,8 @@ import org.apache.giraph.conf.GiraphConstants;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
  */
 @GraphProvider.Descriptor(computer = GiraphGraphComputer.class)
 public final class GiraphHadoopGraphProvider extends HadoopGraphProvider {
-
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -59,6 +58,11 @@ public final class GiraphHadoopGraphProvider extends HadoopGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
+        return graph.traversal().withComputer(GiraphGraphComputer.class);
+    }
+
+    @Override
+    public GraphComputer getGraphComputer(final Graph graph) {
+        return graph.compute(GiraphGraphComputer.class);
     }
 }

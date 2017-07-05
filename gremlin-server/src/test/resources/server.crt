@@ -1,0 +1,41 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+-----BEGIN CERTIFICATE-----
+MIIDrjCCApYCCQCg8hxjInTcQzANBgkqhkiG9w0BAQsFADCBlzELMAkGA1UEBhMC
+VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQHDAtTYW50YSBDbGFyYTEZMBcGA1UECgwQ
+QXBhY2hlIFRpbmtlclBvcDEQMA4GA1UECwwHR3JlbWxpbjESMBAGA1UEAwwJbG9j
+YWxob3N0MSQwIgYJKoZIhvcNAQkBFhVzcG1hbGxldHRlQGFwYWNoZS5vcmcwIBcN
+MTcwMTIzMTg0MTEwWhgPMjExNjEyMzAxODQxMTBaMIGXMQswCQYDVQQGEwJVUzEL
+MAkGA1UECAwCQ0ExFDASBgNVBAcMC1NhbnRhIENsYXJhMRkwFwYDVQQKDBBBcGFj
+aGUgVGlua2VyUG9wMRAwDgYDVQQLDAdHcmVtbGluMRIwEAYDVQQDDAlsb2NhbGhv
+c3QxJDAiBgkqhkiG9w0BCQEWFXNwbWFsbGV0dGVAYXBhY2hlLm9yZzCCASIwDQYJ
+KoZIhvcNAQEBBQADggEPADCCAQoCggEBAK5l+5DDrSGq1n1vYIMbb95buWlo4u5s
+V8wHNmeFCuqNvGfxermHS88SSy6qvdSXISfe+kj9Jkfn1Pjx4czwcnF/q4Au3Gc6
+T9MiAKJUfb4+MwPKERacFobk6LTreKpzvXymAhhM1ktvvA7/opZ+nENDEoIJK/KS
+CY9vRWeHqI1Q+Rf5Nrqw8eySq/ZhPDlppsu5sQr1ghSsuzXhpYNhq8VBMsysL2Zi
+VF5DFMqg9yhBkxrqo70W/pjo4kQJ/iF/4d/3HHicSCVq3/NCkWMVg0HeOZ1eVaZ/
+D6EXv8cYwyaRmf7SldE7RtdbAU0M+Y0Lmuoi2evls0Oiqf8uxEDXeLUCAwEAATAN
+BgkqhkiG9w0BAQsFAAOCAQEAJFAAUxYeUbf6tAGEKCXISted10TybPW/qCxOXEPN
+TTO+xvnzksbcbzOc2X0N+yYIKtkfiuWgD9UJ4QnLSeEKmouMbkTk0ToYJj7SrviI
+f+9R1IiZMiwz+n0igETkEGOK0Ql26Z4g3kc1IueSD07QOLASTvVLtEyoya7LD4S6
+jk1LnbpbHVmgHY4kmtsg6lVQ1zkqrsDQg9goh8dI5AlNCudpd8zLxzsPbm+Q2+DC
+Wd4A2lKdh3rbY2LYpbVhBj9c6E0laaqgyGC7s37XfmyBp4wYlX/30p6RpCR2rcRW
+SKh5NXN52Xx3WuiP42wm9ZC/de8gaODrW8n44xlEaMPJ3A==
+-----END CERTIFICATE-----

@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -31,16 +31,17 @@ import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.0, replaced by {@link ScriptTraversal}.
  */
 public final class TraversalScriptFunction<S, E> implements Function<Graph, Traversal.Admin<S, E>>, Serializable {
 
-    private final TraversalSource.Builder traversalSourceBuilder;
+    private final TraversalSourceFactory traversalSourceFactory;
     private final String scriptEngineName;
     private final String traversalScript;
     private final Object[] bindings;
 
-    public TraversalScriptFunction(final TraversalSource.Builder traversalSourceBuilder, final String scriptEngineName, final String traversalScript, final Object... bindings) {
-        this.traversalSourceBuilder = traversalSourceBuilder;
+    public TraversalScriptFunction(final TraversalSource traversalSource, final String scriptEngineName, final String traversalScript, final Object... bindings) {
+        this.traversalSourceFactory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngineName = scriptEngineName;
         this.traversalScript = traversalScript;
         this.bindings = bindings;
@@ -50,9 +51,9 @@ public final class TraversalScriptFunction<S, E> implements Function<Graph, Trav
 
     public Traversal.Admin<S, E> apply(final Graph graph) {
         try {
-            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
+            final ScriptEngine engine = SingleGremlinScriptEngineManager.get(this.scriptEngineName);
             final Bindings engineBindings = engine.createBindings();
-            engineBindings.put("g", this.traversalSourceBuilder.create(graph));
+            engineBindings.put("g", this.traversalSourceFactory.createTraversalSource(graph));
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }

@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
-import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-
-import java.util.concurrent.CompletableFuture
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -35,6 +32,10 @@ class Mediator {
     private final Console console
 
     private static String LINE_SEP = System.getProperty("line.separator")
+
+    public static final String IMPORT_SPACE = "import "
+    public static final String IMPORT_STATIC_SPACE = "import static "
+    public static final String IMPORT_WILDCARD = ".*"
 
     public Mediator(final Console console) {
         this.console = console

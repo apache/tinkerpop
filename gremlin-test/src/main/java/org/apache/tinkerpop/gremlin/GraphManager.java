@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -70,7 +72,7 @@ public class GraphManager {
      * When {@link #openTestGraph(Configuration)} is called the created object is stored in a list and when tests are
      * complete the {@link #tryClearGraphs()} is called. When this is called, an attempt is made to close all open graphs.
      */
-    public static class ManagedGraphProvider implements GraphProvider {
+    public static class ManagedGraphProvider implements GraphProvider, AutoCloseable {
         private static final Logger logger = LoggerFactory.getLogger(ManagedGraphProvider.class);
         private final GraphProvider innerGraphProvider;
         private final List<Pair<Graph, Configuration>> openGraphs = new ArrayList<>();
@@ -104,6 +106,11 @@ public class GraphManager {
         @Override
         public GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
             return innerGraphProvider.traversal(graph, strategies);
+        }
+
+        @Override
+        public GraphComputer getGraphComputer(final Graph graph) {
+            return innerGraphProvider.getGraphComputer(graph);
         }
 
         @Override
@@ -164,6 +171,17 @@ public class GraphManager {
         @Override
         public Set<Class> getImplementations() {
             return innerGraphProvider.getImplementations();
+        }
+
+        @Override
+        public Optional<TestListener> getTestListener() {
+            return innerGraphProvider.getTestListener();
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (innerGraphProvider instanceof AutoCloseable)
+                ((AutoCloseable) innerGraphProvider).close();
         }
     }
 

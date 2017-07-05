@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -61,16 +62,6 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public TraversalStrategies clone() {
         return this;
-    }
-
-    @Override
-    public TraverserGeneratorFactory getTraverserGeneratorFactory() {
-        return DefaultTraverserGeneratorFactory.instance();
-    }
-
-    @Override
-    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
-
     }
 
     public static EmptyTraversalStrategies instance() {

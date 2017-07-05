@@ -21,13 +21,15 @@ package org.apache.tinkerpop.gremlin.structure.io.graphml;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Constructs GraphML IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
@@ -38,9 +40,11 @@ import java.io.OutputStream;
  */
 public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builder, GraphMLMapper.Builder> {
     private final Graph graph;
+    private Optional<Consumer<Mapper.Builder>> onMapper;
 
-    private GraphMLIo(final Graph graph) {
-        this.graph = graph;
+    private GraphMLIo(final Builder builder) {
+        this.graph = builder.graph;
+        this.onMapper = Optional.ofNullable(builder.onMapper);
     }
 
     /**
@@ -64,7 +68,9 @@ public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.
      */
     @Override
     public GraphMLMapper.Builder mapper() {
-        return GraphMLMapper.build();
+        final GraphMLMapper.Builder builder = GraphMLMapper.build();
+        onMapper.ifPresent(c -> c.accept(builder));
+        return builder;
     }
 
     /**
@@ -94,10 +100,11 @@ public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.
     public final static class Builder implements Io.Builder<GraphMLIo> {
 
         private Graph graph;
+        private Consumer<Mapper.Builder> onMapper = null;
 
         @Override
-        public Io.Builder<GraphMLIo> registry(final IoRegistry registry) {
-            // GraphML doesn't make use of a registry but the contract should simply exist
+        public Io.Builder<? extends Io> onMapper(final Consumer<Mapper.Builder> onMapper) {
+            this.onMapper = onMapper;
             return this;
         }
 
@@ -110,7 +117,7 @@ public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.
         @Override
         public GraphMLIo create() {
             if (null == graph) throw new IllegalArgumentException("The graph argument was not specified");
-            return new GraphMLIo(graph);
+            return new GraphMLIo(this);
         }
     }
 }

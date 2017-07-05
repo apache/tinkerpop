@@ -40,7 +40,7 @@ public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTr
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
         this.e = (E) this.t.apply(start.get());
     }
 

@@ -27,14 +27,14 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  */
 public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Builder> implements VertexProgram.Builder {
 
-    public static final String GREMLIN_GROOVY = "gremlin-groovy";
-
     protected final BaseConfiguration configuration = new BaseConfiguration();
 
     public AbstractVertexProgramBuilder() {
+        this.configuration.setDelimiterParsingDisabled(true);
     }
 
     public AbstractVertexProgramBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
+        this();
         this.configuration.setProperty(VertexProgram.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
 

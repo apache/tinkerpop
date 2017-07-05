@@ -20,140 +20,120 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import javax.script.SimpleBindings;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 /**
- * Holder for {@link Graph} and {@link TraversalSource} instances configured for the server to be passed to script
- * engine bindings. The {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in
- * the configuration file. The {@link TraversalSource} instances are rebound to the {@code GraphManager} once
- * initialization scripts construct them.
+ * The {@link GraphManager} interface allows for reference tracking of Graph references through
+ * a {@code Map<String, Graph>}; the interface plugs into the lifeline of gremlin script
+ * executions, meaning that commit() and rollback() will be called on all graphs stored in the
+ * graph reference tracker at the end of the script executions; you may want to implement
+ * this interface if you want to define a custom graph instantiation/closing mechanism; note that
+ * the interface also defines similar features for {@link TraversalSource} objects.
  */
-public final class GraphManager {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
-
-    private final Map<String, Graph> graphs = new ConcurrentHashMap<>();
-    private final Map<String, TraversalSource> traversalSources = new ConcurrentHashMap<>();
-
+public interface GraphManager {
     /**
-     * Create a new instance using the {@link Settings} from Gremlin Server.
-     */
-    public GraphManager(final Settings settings) {
-        settings.graphs.entrySet().forEach(e -> {
-            try {
-                final Graph newGraph = GraphFactory.open(e.getValue());
-                graphs.put(e.getKey(), newGraph);
-                logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
-            } catch (RuntimeException re) {
-                logger.warn(String.format("Graph [%s] configured at [%s] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: %s",
-                        e.getKey(), e.getValue(), re.getMessage()), re);
-                if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
-            }
-        });
-    }
-
-    /**
-     * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
-     * configuration file.
+     * Get a list of the {@link Graph} instances and their binding names.
      *
-     * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
+     * {@link #getGraph(String)} - note that the expectation is this method return an immutable {@code Map} which was
+     * not the expectation prior to 3.2.5.
      */
-    public Map<String, Graph> getGraphs() {
-        return graphs;
-    }
+    @Deprecated
+    public Map<String, Graph> getGraphs();
 
     /**
-     * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
-     * initialization scripts.
+     * Get a {@link Set} of {@link String} graphNames corresponding to names stored in the graph's
+     * reference tracker.
+     */
+    public Set<String> getGraphNames();
+
+    /**
+     * Get {@link Graph} instance whose name matches {@code graphName}.
+     *
+     * @return {@link Graph} if exists, else null
+     */
+    public Graph getGraph(final String graphName);
+
+    /**
+     * Add or update the specified {@link Graph} with the specified name to {@code Map<String, Graph>} .
+     */
+    public void putGraph(final String graphName, final Graph g);
+
+    /**
+     * Get a list of the {@link TraversalSource} instances and their binding names
      *
      * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
      *         {@link TraversalSource} itself
+     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
+     * {@link #getTraversalSource(String)} (String)} - note that the expectation is this method return an immutable
+     * {@code Map} which was not the expectation prior to 3.2.5.
      */
-    public Map<String, TraversalSource> getTraversalSources() {
-        return traversalSources;
-    }
+    @Deprecated
+    public Map<String, TraversalSource> getTraversalSources();
+
+    /**
+     * Get a {@code Set} of the names of the the stored {@link TraversalSource} instances.
+     */
+    public Set<String> getTraversalSourceNames();
+
+    /**
+     * Get {@link TraversalSource} instance whose name matches {@code traversalSourceName}
+     *
+     * @return {@link TraversalSource} if exists, else null
+     */
+    public TraversalSource getTraversalSource(final String traversalSourceName);
+
+    /**
+     * Add or update the specified {@link TraversalSource} with the specified name.
+     */
+    public void putTraversalSource(final String tsName, final TraversalSource ts);
+
+    /**
+     * Remove {@link TraversalSource} by name.
+     */
+    public TraversalSource removeTraversalSource(final String tsName);
 
     /**
      * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
      */
-    public Bindings getAsBindings() {
-        final Bindings bindings = new SimpleBindings();
-        graphs.forEach(bindings::put);
-        traversalSources.forEach(bindings::put);
-        return bindings;
-    }
+    public Bindings getAsBindings();
 
     /**
      * Rollback transactions across all {@link Graph} objects.
      */
-    public void rollbackAll() {
-        graphs.entrySet().forEach(e -> {
-            final Graph graph = e.getValue();
-            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
-                graph.tx().rollback();
-        });
-    }
+    public void rollbackAll();
 
     /**
      * Selectively rollback transactions on the specified graphs or the graphs of traversal sources.
      */
-    public void rollback(final Set<String> graphSourceNamesToCloseTxOn) {
-        closeTx(graphSourceNamesToCloseTxOn, Transaction.Status.ROLLBACK);
-    }
+    public void rollback(final Set<String> graphSourceNamesToCloseTxOn);
 
     /**
      * Commit transactions across all {@link Graph} objects.
      */
-    public void commitAll() {
-        graphs.entrySet().forEach(e -> {
-            final Graph graph = e.getValue();
-            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
-                graph.tx().commit();
-        });
-    }
+    public void commitAll();
 
     /**
      * Selectively commit transactions on the specified graphs or the graphs of traversal sources.
      */
-    public void commit(final Set<String> graphSourceNamesToCloseTxOn) {
-        closeTx(graphSourceNamesToCloseTxOn, Transaction.Status.COMMIT);
-    }
+    public void commit(final Set<String> graphSourceNamesToCloseTxOn);
 
     /**
-     * Selectively close transactions on the specified graphs or the graphs of traversal sources.
+     * Implementation that allows for custom graph-opening implementations; if the {@code Map}
+     * tracking graph references has a {@link Graph} object corresponding to the graph name, then we return that
+     * {@link Graph}-- otherwise, we use the custom {@code Function} to instantiate a new {@link Graph}, add it to
+     * the {@link Map} tracking graph references, and return said {@link Graph}.
      */
-    private void closeTx(final Set<String> graphSourceNamesToCloseTxOn, final Transaction.Status tx) {
-        final Set<Graph> graphsToCloseTxOn = new HashSet<>();
+    public Graph openGraph(final String graphName, final Function<String, Graph> supplier);
 
-        // by the time this method has been called, it should be validated that the source/graph is present.
-        // might be possible that it could have been removed dynamically, but that i'm not sure how one would do
-        // that as of right now unless they were embedded in which case they'd need to know what they were doing
-        // anyway
-        graphSourceNamesToCloseTxOn.forEach(r -> {
-            if (graphs.containsKey(r))
-                graphsToCloseTxOn.add(graphs.get(r));
-            else
-                graphsToCloseTxOn.add(traversalSources.get(r).getGraph().get());
-        });
-
-        graphsToCloseTxOn.forEach(graph -> {
-            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) {
-                if (tx == Transaction.Status.COMMIT)
-                    graph.tx().commit();
-                else
-                    graph.tx().rollback();
-            }
-        });
-    }
+    /**
+     * Implementation that allows for custom graph closing implementations; this method should remove the {@link Graph}
+     * from the {@code GraphManager}.
+     */
+    public Graph removeGraph(final String graphName) throws Exception;
 }

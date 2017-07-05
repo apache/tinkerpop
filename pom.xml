@@ -21,11 +21,11 @@ limitations under the License.
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>16</version>
+        <version>18</version>
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.1.8-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -103,14 +103,22 @@ limitations under the License.
             <email>dylan.millikin@gmail.com</email>
             <url>https://github.com/PommeVerte</url>
         </contributor>
+        <contributor>
+            <name>Ted Wilmes</name>
+            <email>twilmes@gmail.com</email>
+            <url>https://github.com/twilmes</url>
+        </contributor>
     </contributors>
+    <prerequisites>
+        <maven>3.0.5</maven>
+    </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
         <module>gremlin-groovy</module>
-        <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
+        <module>gremlin-python</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>giraph-gremlin</module>
@@ -119,6 +127,7 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
+        <module>gremlin-tools</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
@@ -127,17 +136,22 @@ limitations under the License.
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
+        <commons.lang.version>2.6</commons.lang.version>
+        <commons.lang3.version>3.3.1</commons.lang3.version>
         <groovy.version>2.4.11</groovy.version>
-        <junit.version>4.12</junit.version>
+        <hadoop.version>2.7.2</hadoop.version>
+        <java.tuples.version>1.2</java.tuples.version>
+        <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
+        <jcabi.version>1.1</jcabi.version>
         <metrics.version>3.0.2</metrics.version>
+        <netty.version>4.0.42.Final</netty.version>
+        <slf4j.version>1.7.21</slf4j.version>
+        <snakeyaml.version>1.15</snakeyaml.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
-        <slf4j.version>1.7.21</slf4j.version>
-        <hadoop.version>2.7.2</hadoop.version>
-        <java.tuples.version>1.2</java.tuples.version>
-        <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
 
         <!--
         This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
@@ -148,6 +162,9 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
+
+        <!-- By default API checks are not run. Modules can opt in by setting this property to false in their poms. -->
+        <revapi.skip>true</revapi.skip>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -158,7 +175,7 @@ limitations under the License.
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
+                <version>1.4.1</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -171,6 +188,9 @@ limitations under the License.
                                 <requireJavaVersion>
                                     <version>[1.8.0-40,)</version>
                                 </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.2.5,)</version>
+                                </requireMavenVersion>
                             </rules>
                         </configuration>
                     </execution>
@@ -179,7 +199,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -230,7 +250,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.3</version>
+                <version>1.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -242,7 +262,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -255,7 +275,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.11</version>
+                <version>0.12</version>
                 <executions>
                     <execution>
                         <id>rat-checks</id>
@@ -269,6 +289,7 @@ limitations under the License.
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
                         <exclude>.travis.yml</exclude>
+                        <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
@@ -282,9 +303,14 @@ limitations under the License.
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
+                        <exclude>**/*.graffle</exclude>
                         <exclude>**/goal.txt</exclude>
-                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/groovy/plugin/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/jsr223/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/test/resources/org/apache/tinkerpop/gremlin/console/jsr223/script-customizer-*.groovy</exclude>
+                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/ext/**</exclude>
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
@@ -292,6 +318,8 @@ limitations under the License.
                         <exclude>**/.glv</exclude>
                         <exclude>bin/gremlin.sh</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
+                        <exclude>docs/site/home/css/**</exclude>
+                        <exclude>docs/site/home/js/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -311,6 +339,79 @@ limitations under the License.
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Needed to figure out the version components when reading revapi API check config below -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.revapi</groupId>
+                <artifactId>revapi-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.revapi</groupId>
+                        <artifactId>revapi-java</artifactId>
+                        <version>0.13.0</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <skip>${revapi.skip}</skip>
+                    <analysisConfiguration><![CDATA[
+                    {
+                      "revapi": {
+                        "semver": {
+                          "ignore": {
+                            "enabled": true,
+                            "versionIncreaseAllows": {
+                              "major": "breaking",
+                              "minor": "breaking",
+                              "patch": "nonBreaking"
+                            },
+                            "passThroughDifferences": ["java.class.nonPublicPartOfAPI"]
+                          }
+                        }
+                      }
+                    }
+                    ]]></analysisConfiguration>
+                    <analysisConfigurationFiles>
+                        <configurationFile>
+                            <path>${project.basedir}/api-changes.json</path>
+                            <roots>
+                                <root>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</root>
+                            </roots>
+                        </configurationFile>
+                        <configurationFile>
+                            <path>${project.basedir}/api-contents.json</path>
+                        </configurationFile>
+                    </analysisConfigurationFiles>
+                    <failOnMissingConfigurationFiles>false</failOnMissingConfigurationFiles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -329,25 +430,24 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.1</version>
+                    <version>2.8.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>2.20</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
-                            <exclude>**/*PerformanceTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>2.20</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -360,29 +460,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}
+                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>performance-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>**/*PerformanceTest.java</include>
-                                </includes>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}
-                                </argLine>
-                                <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                             </configuration>
                         </execution>
                         <execution>
@@ -397,87 +477,68 @@ limitations under the License.
                                 </summaryFiles>
                             </configuration>
                         </execution>
-                        <execution>
-                            <id>verify-performance-test</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                            <configuration>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <summaryFiles>
-                                    <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
-                                </summaryFiles>
-                            </configuration>
-                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>0.1.4</version>
+                    <version>1.5.5</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>3.0.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.0</version>
+                    <version>1.0.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>addSources</goal>
+                                <goal>addTestSources</goal>
+                                <goal>generateStubs</goal>
+                                <goal>compile</goal>
+                                <goal>testGenerateStubs</goal>
+                                <goal>testCompile</goal>
+                                <goal>removeStubs</goal>
+                                <goal>removeTestStubs</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <targetBytecode>1.8</targetBytecode>
+                        <invokeDynamic>true</invokeDynamic>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc-plugin.version}</version>
-                <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>non-aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>javadoc</report>
-                        </reports>
-                    </reportSet>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <dependencyManagement>
         <dependencies>
@@ -497,6 +558,11 @@ limitations under the License.
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -549,6 +615,7 @@ limitations under the License.
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-graphite</artifactId>
                 <version>${metrics.version}</version>
+                <optional>true</optional>
                 <exclusions>
                     <!-- conflict with jcl-over-slf4j-->
                     <exclusion>
@@ -561,6 +628,7 @@ limitations under the License.
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-ganglia</artifactId>
                 <version>${metrics.version}</version>
+                <optional>true</optional>
                 <exclusions>
                     <!-- conflict with jcl-over-slf4j-->
                     <exclusion>
@@ -585,6 +653,58 @@ limitations under the License.
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>1.9.5</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.4.201502262128</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -670,6 +790,7 @@ limitations under the License.
                                     </resources>
                                     <nonFilteredFileExtensions>
                                         <nonFilteredFileExtension>png</nonFilteredFileExtension>
+                                        <nonFilteredFileExtension>py</nonFilteredFileExtension>
                                     </nonFilteredFileExtensions>
                                 </configuration>
                             </execution>
@@ -778,6 +899,31 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>io-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/io</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/io</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>3</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>provider-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
@@ -803,6 +949,31 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>recipe-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/recipes</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/recipes</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>2</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>tutorial-getting-started</id>
                                 <phase>generate-resources</phase>
                                 <goals>
@@ -811,7 +982,8 @@ limitations under the License.
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -831,9 +1003,35 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console
+                                    </sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console
+                                    </outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-gremlin-language-variants</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlin-language-variants
+                                    </sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/gremlin-language-variants
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -901,7 +1099,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>
@@ -921,11 +1119,20 @@ limitations under the License.
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java
                                     </sourcepath>
                                     <sourceFileIncludes>
+                                        <!-- jsr223 -->
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/jsr223/*.java
+                                        </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/jsr223/console/*.java
+                                        </include>
                                         <!-- structure -->
-                                        <include>org/apache/tinkerpop/gremlin/structure/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/*.java
                                         </include>
                                         <!-- io -->
-                                        <include>org/apache/tinkerpop/gremlin/structure/io/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/io/*.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java
@@ -946,7 +1153,8 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWriter.java
                                         </include>
                                         <!-- process -->
-                                        <include>org/apache/tinkerpop/gremlin/process/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/*.java
                                         </include>
                                         <!-- computer -->
                                         <include>org/apache/tinkerpop/gremlin/process/computer/*.java
@@ -961,7 +1169,8 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
                                         </include>
                                         <!-- traversal -->
-                                        <include>org/apache/tinkerpop/gremlin/process/traversal/*.java
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/traversal/*.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java
@@ -992,7 +1201,85 @@ limitations under the License.
                                             <artifactId>gremlin-shaded</artifactId>
                                             <version>${project.version}</version>
                                         </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-groovysh</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.codehaus.groovy</groupId>
+                                            <artifactId>groovy-json</artifactId>
+                                            <version>${groovy.version}</version>
+                                            <classifier>indy</classifier>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-lang3</artifactId>
+                                            <version>${commons.lang3.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>commons-lang</groupId>
+                                            <artifactId>commons-lang</artifactId>
+                                            <version>${commons.lang.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.slf4j</groupId>
+                                            <artifactId>slf4j-api</artifactId>
+                                            <version>${slf4j.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-all</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.yaml</groupId>
+                                            <artifactId>snakeyaml</artifactId>
+                                            <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.jcabi</groupId>
+                                            <artifactId>jcabi-manifests</artifactId>
+                                            <version>${jcabi.version}</version>
+                                        </additionalDependency>
                                     </additionalDependencies>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>apply-filters-to-javadoc</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/javadoc-temp</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/site/apidocs</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-java-doc-back</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/site/apidocs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/javadoc-temp</directory>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1026,11 +1313,11 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
-                                <exclude>**/*PerformanceTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -1051,6 +1338,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
+                        <version>1.6.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
@@ -1068,5 +1356,97 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>surefireArgLine</propertyName>
+                                    <excludes>
+                                        <exclude>Lib/*.class</exclude>
+                                        <exclude>Lib/aenum/**</exclude>
+                                        <exclude>Lib/backports/**</exclude>
+                                        <exclude>Lib/certifi/**</exclude>
+                                        <exclude>Lib/setuptools/**</exclude>
+                                        <exclude>Lib/setuptools.command/**</exclude>
+                                        <exclude>Lib/tornado/**</exclude>
+                                        <exclude>Lib/tornado.platform/**</exclude>
+                                        <exclude>Lib/tornado.test/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>prepare-it-agent</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco-it.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>failsafeArgLine</propertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <id>aggregate-surefire-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>install</phase>
+                                <configuration>
+                                    <aggregate>true</aggregate>
+                                    <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+
     </profiles>
 </project>

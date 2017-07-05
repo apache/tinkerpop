@@ -82,8 +82,8 @@ memory manipulations).
 ----
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
-g = result.graph().traversal(standard())
-g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
+g = result.graph().traversal()
+g.V().valueMap()
 ----
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's
@@ -140,7 +140,7 @@ that the property is "hidden" unless it is directly accessed via name.
 graph = TinkerFactory.createModern()
 result = graph.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
 result.memory().get('clusterPopulation')
-g = result.graph().traversal(standard())
+g = result.graph().traversal()
 g.V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 g.V().valueMap()
 ----
@@ -160,8 +160,8 @@ result.memory().clusterCount
 
 IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the
 MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a
-`Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not feed back
-into map.
+`Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not fed back
+into a `map()`.
 
 A Collection of VertexPrograms
 ------------------------------
@@ -186,54 +186,73 @@ methods of a `VertexProgram`, the PageRankVertexProgram code is analyzed below.
 
 [source,java]
 ----
-public class PageRankVertexProgram implements VertexProgram<Double> { <1>
+public class PageRankVertexProgram implements VertexProgram<Double> {  <1>
 
-    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE); <2>
-    private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
-
-    public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank"; <3>
-    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
-
+    public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
+    private static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
+    private static final String PROPERTY = "gremlin.pageRankVertexProgram.property";
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
-    private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
+    private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
+    private static final String INITIAL_RANK_TRAVERSAL = "gremlin.pageRankVertexProgram.initialRankTraversal";
 
-    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE); <2>
+    private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
+    private PureTraversal<Vertex, Edge> edgeTraversal = null;
+    private PureTraversal<Vertex, ? extends Number> initialRankTraversal = null;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
+    private String property = PAGE_RANK; <3>
+    private Set<VertexComputeKey> vertexComputeKeys;
 
-    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
+    private PageRankVertexProgram() {
 
-    private PageRankVertexProgram() {}
+    }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) { <4>
-        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
-                    this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
-                    this.incidentMessageScope = MessageScope.Local.of(this.configurationTraversal);
-                    this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
-                }
+        if (configuration.containsKey(INITIAL_RANK_TRAVERSAL))
+            this.initialRankTraversal = PureTraversal.loadState(configuration, INITIAL_RANK_TRAVERSAL, graph);
+        if (configuration.containsKey(EDGE_TRAVERSAL)) {
+            this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
+            this.incidentMessageScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
+            this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
+        }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        this.property = configuration.getString(PROPERTY, PAGE_RANK);
+        this.vertexComputeKeys = new HashSet<>(Arrays.asList(VertexComputeKey.of(this.property, false), VertexComputeKey.of(EDGE_COUNT, true))); <5>
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        VertexProgram.super.storeState(configuration);
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
-        if (null != this.traversalSupplier) {
-            this.traversalSupplier.storeState(configuration);
-        }
+        configuration.setProperty(PROPERTY, this.property);
+        if (null != this.edgeTraversal)
+            this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
+        if (null != this.initialRankTraversal)
+            this.initialRankTraversal.storeState(configuration, INITIAL_RANK_TRAVERSAL);
     }
 
     @Override
-    public Set<String> getElementComputeKeys() { <5>
-        return COMPUTE_KEYS;
+    public GraphComputer.ResultGraph getPreferredResultGraph() {
+        return GraphComputer.ResultGraph.NEW;
+    }
+
+    @Override
+    public GraphComputer.Persist getPreferredPersist() {
+        return GraphComputer.Persist.VERTEX_PROPERTIES;
+    }
+
+    @Override
+    public Set<VertexComputeKey> getVertexComputeKeys() {   <6>
+        return this.vertexComputeKeys;
     }
 
     @Override
@@ -242,10 +261,22 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     }
 
     @Override
-    public Set<MessageScope> getMessageScopes(final int iteration) {
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
         final Set<MessageScope> set = new HashSet<>();
-        set.add(0 == iteration ? this.countMessageScope : this.incidentMessageScope);
+        set.add(memory.isInitialIteration() ? this.countMessageScope : this.incidentMessageScope);
         return set;
+    }
+
+    @Override
+    public PageRankVertexProgram clone() {
+        try {
+            final PageRankVertexProgram clone = (PageRankVertexProgram) super.clone();
+            if (null != this.initialRankTraversal)
+                clone.initialRankTraversal = this.initialRankTraversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -253,46 +284,51 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     }
 
-   @Override
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) { <6>
-        if (memory.isInitialIteration()) {  <7>
-            messenger.sendMessage(this.countMessageScope, 1.0d);
-        } else if (1 == memory.getIteration()) {  <8>
-            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) { <7>
+        if (memory.isInitialIteration()) {
+            messenger.sendMessage(this.countMessageScope, 1.0d); <8>
+        } else if (1 == memory.getIteration()) {
+            double initialPageRank = (null == this.initialRankTraversal ?
+                    1.0d :
+                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue()) / this.vertexCountAsDouble;  <9>
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-            vertex.property(PAGE_RANK, initialPageRank);
-            vertex.property(EDGE_COUNT, edgeCount);
-            messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
-        } else { <9>
-            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
+            vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
+            vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
+        } else {
+            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b); <10>
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(PAGE_RANK, newPageRank);
-            messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
+            vertex.property(VertexProperty.Cardinality.single, this.property, newPageRank);
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
 
     @Override
-    public boolean terminate(final Memory memory) { <10>
-        return memory.getIteration() >= this.totalIterations;
+    public boolean terminate(final Memory memory) {
+        return memory.getIteration() >= this.totalIterations;  <11>
     }
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ",iterations=" + this.totalIterations);
+        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations);
     }
 }
 ----
 
 <1> `PageRankVertexProgram` implements `VertexProgram<Double>` because the messages it sends are Java doubles.
 <2> The default path of energy propagation is via outgoing edges from the current vertex.
-<3> The resulting PageRank values for the vertices are stored as a hidden property.
+<3> The resulting PageRank values for the vertices are stored as a vertex property.
 <4> A vertex program is constructed using an Apache `Configuration` to ensure easy dissemination across a cluster of JVMs.
-<5> A vertex program must define the "compute keys" that are the properties being operated on during the computation.
-<6> The "while"-loop of the vertex program.
-<7> In order to determine how to distribute the energy to neighbors, a "1"-count is used to determine how many incident vertices exist for the `MessageScope`.
-<8> Initially, each vertex is provided an equal amount of energy represented as a double.
-<9> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageScope.Local`.
-<10> The computation is terminated after a pre-defined number of iterations.
+<5> `EDGE_COUNT` is a transient "scratch data" compute key while `PAGE_RANK` is not.
+<6> A vertex program must define the "compute keys" that are the properties being operated on during the computation.
+<7> The "while"-loop of the vertex program.
+<8> In order to determine how to distribute the energy to neighbors, a "1"-count is used to determine how many incident vertices exist for the `MessageScope`.
+<9> Initially, each vertex is provided an equal amount of energy represented as a double.
+<10> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageScope.Local`.
+<11> The computation is terminated after a pre-defined number of iterations.
 
 The above `PageRankVertexProgram` is used as follows.
 
@@ -300,8 +336,17 @@ The above `PageRankVertexProgram` is used as follows.
 ----
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
-g = result.graph().traversal(standard())
-g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
+g = result.graph().traversal()
+g.V().valueMap()
+----
+
+Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().pageRank().valueMap()
+g.V().pageRank().by('pageRank').times(5).order().by('pageRank').valueMap()
 ----
 
 [[peerpressurevertexprogram]]
@@ -318,6 +363,15 @@ same cluster. The algorithm proceeds in the following manner.
  . Every vertex generates a vote energy distribution of received cluster IDs and changes its current cluster ID to the most frequent cluster ID.
   .. If there is a tie, then the cluster with the lowest `toString()` comparison is selected.
  . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
+
+Note that `GraphTraversal` provides a <<peerpressure-step,`peerPressure()`>>-step.
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().peerPressure().by('cluster').valueMap()
+g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
+----
 
 [[bulkdumpervertexprogram]]
 BulkDumperVertexProgram
@@ -393,7 +447,7 @@ TraversalVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~
 
 image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in
-that it can be executed via a `GraphTraversal` with a `ComputerTraversalEngine`. In Gremlin, it is possible to have
+that it can be executed via a `Traversal` and a `GraphComputer`. In Gremlin, it is possible to have
 the same traversal executed using either the standard OLTP-engine or the `GraphComputer` OLAP-engine. The difference
 being where the traversal is submitted.
 
@@ -403,9 +457,9 @@ link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engine
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLTP
-g = graph.traversal(computer())
+g = graph.traversal().withComputer()
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLAP
 ----
 
@@ -421,33 +475,25 @@ evaluation requires (logically) 5 BSP iterations and each iteration is interpret
  . `groupCount()`: Count how many times a particular age has been seen.
 
 While 5 iterations were presented, in fact, `TraversalVertexProgram` will execute the traversal in only
-3 iterations. The reason being is that `hasLabel('person').values('age').groupCount()` can all be executed in a
-single iteration as any message sent would simply be to the current executing vertex. Thus, a simple optimization
+2 iterations. The reason being is that `g.V().both()` and `hasLabel('person').values('age').groupCount()` can be
+executed in a single iteration as any message sent would simply be to the current executing vertex. Thus, a simple optimization
 exists in Gremlin OLAP called "reflexive message passing" which simulates non-message-passing BSP iterations within a
 single BSP iteration.
 
-When the computation is complete a <<mapreduce,MapReduce>> job executes which aggregates all the `groupCount()`
-sideEffect Map (i.e. "`HashMap`") objects on each vertex into a single local representation (thus, turning the
-distributed Map representation into a local Map representation).
-
-////
-The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
+The same OLAP traversal can be executed using the standard `graph.compute()` model, though at the expense of verbosity.
 `TraversalVertexProgram` provides a fluent `Builder` for constructing a `TraversalVertexProgram`. The specified
-`traversal()` can be either a `Supplier<Traversal>` object, a `Supplier<Traversal>` class, or a
-link:http://en.wikipedia.org/wiki/Scripting_for_the_Java_Platform[JSR-223] script that will generate (i.e. supply) a
-`Traversal`. If `traversal()` is supplied a single string, it is assumed that "gremlin-groovy" is the `ScriptEngine`
-to use. If two strings are supplied, then the first string denotes the `ScriptEngine` to evaluate the second string
-script with in order to generate (i.e. supply) the `Traversal`.
+`traversal()` can be either a direct `Traversal` object or a
+link:http://en.wikipedia.org/wiki/Scripting_for_the_Java_Platform[JSR-223] script that will generate a
+`Traversal`. There is no benefit to using the model below. It is demonstrated to help elucidate how Gremlin OLAP traversals
+are ultimately compiled for execution on a `GraphComputer`.
 
 [gremlin-groovy,modern]
 ----
-//g.engine(computer())
-//result = g.compute().program(TraversalVertexProgram.build().traversal(g.V().both().hasLabel('person').values('age').groupCount('a')).create()).submit().get()
-//result.memory().a
-//result.memory().iteration
-//result.memory().runtime
+result = graph.compute().program(TraversalVertexProgram.build().traversal(g.V().both().hasLabel('person').values('age').groupCount('a')).create()).submit().get()
+result.memory().a
+result.memory().iteration
+result.memory().runtime
 ----
-////
 
 [[distributed-gremlin-gotchas]]
 Distributed Gremlin Gotchas
@@ -460,32 +506,59 @@ IMPORTANT: There are two primary theoretical differences between Gremlin OLTP an
 Depth-first execution has a limited memory footprint due to link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy evaluation].
 On the other hand, Gremlin OLAP (via `TraversalVertexProgram`) leverages a
 link:http://en.wikipedia.org/wiki/Breadth-first_search[breadth-first] execution engine which maintains a larger memory
-footprint, but a better time complexity due to vertex-local traversers being able to be merged. The second difference
-is that Gremlin OLTP is executed in a serial fashion, while Gremlin OLAP is executed in a parallel fashion. These two
+footprint, but a better time complexity due to vertex-local traversers being able to be "bulked." The second difference
+is that Gremlin OLTP is executed in a serial/streaming fashion, while Gremlin OLAP is executed in a parallel/step-wise fashion. These two
 fundamental differences lead to the behaviors enumerated below.
 
 image::gremlin-without-a-cause.png[width=200,float=right]
 
-. Traversal sideEffects are represented as a distributed data structure across the graph's vertex set. It is not
-possible to get a global view of a sideEffect until it is aggregated via a <<mapreduce,MapReduce>> job. In some
-situations, the local vertex representation of the sideEffect is sufficient to ensure the intended semantics of the
+. Traversal sideEffects are represented as a distributed data structure across `GraphComputer` workers. It is not
+possible to get a global view of a sideEffect until after an iteration has occurred and global sideEffects are re-broadcasted to the workers.
+In some situations, a "stale" local representation of the sideEffect is sufficient to ensure the intended semantics of the
 traversal are respected. However, this is not generally true so be wary of traversals that require global views of a
-sideEffect.
+sideEffect. To ensure a fresh global representation, use `barrier()` prior to accessing the global sideEffect. Note that this
+only comes into play with custom steps and <<lambda-steps,lambda steps>>. The standard Gremlin step library is respective of OLAP semantics.
 . When evaluating traversals that rely on path information (i.e. the history of the traversal), practical
 computational limits can easily be reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion]
 of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to being
-counted/merged. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more
+counted/merged. The difference being a collection of paths vs. a single 64-bit long at a single vertex. In other words,
+ bulking is very unlikely with traversers that maintain path information. For more
 information on this concept, please see link:https://thinkaurelius.wordpress.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].
-. When traversals of the form `x.as('a').y.someSideEffectStep('a').z` are evaluated, the `a` object is stored in the
-path information of the traverser and thus, such traversals (may) turn on path calculations when executed on a
-`GraphComputer`
 . Steps that are concerned with the global ordering of traversers do not have a meaningful representation in
 OLAP. For example, what does <<order-step,`order()`>>-step mean when all traversers are being processed in parallel?
 Even if the traversers were aggregated and ordered, then at the next step they would return to being executed in
 parallel and thus, in an unpredictable order. When `order()`-like steps are executed at the end of a traversal (i.e
-the final step), the `TraverserMapReduce` job ensures the resultant serial representation is ordered accordingly.
-. Steps that are concerned with providing a global aggregate to the next step of computation do not have a correlate
-in OLAP. For example, <<fold-step,`fold()`>>-step can only fold up the objects at each executing vertex. Next, even
-if a global fold was possible, where would it go? Which vertex would be the host of the data structure? The
-`fold()`-step only makes sense as an end-step whereby a MapReduce job can generate the proper global-to-local data
-reduction.
+the final step), `TraversalVertexProgram` ensures a serial representation is ordered accordingly. Moreover, it is intelligent enough
+to maintain the ordering of `g.V().hasLabel("person").order().by("age").values("name")`. However, the OLAP traversal
+`g.V().hasLabel("person").order().by("age").out().values("name")` will lose the original ordering as the `out()`-step
+will rebroadcast traversers across the cluster.
+
+[[graph-filter]]
+Graph Filter
+------------
+
+Most OLAP jobs do not require the entire source graph to faithfully execute their `VertexProgram`. For instance, if
+`PageRankVertexProgram` is only going to compute the centrality of people in the friendship-graph, then the following
+`GraphFilter` can be applied.
+
+[source,java]
+----
+graph.computer().
+  vertices(hasLabel("person")).
+  edges(bothE("knows")).
+  program(PageRankVertexProgram...)
+----
+
+There are two methods for constructing a `GraphFilter`.
+
+* `vertices(Traversal<Vertex,Vertex>)`: A traversal that will be used that can only analyze a vertex and its properties.
+If the traversal `hasNext()`, the input `Vertex` is passed to the `GraphComputer`.
+* `edges(Traversal<Vertex,Edge>)`: A traversal that will iterate all legal edges for the source vertex.
+
+`GraphFilter` is a "push-down predicate" that providers can reason on to determine the most efficient way to provide
+graph data to the `GraphComputer`.
+
+IMPORTANT: Apache TinkerPop provides `GraphFilterStrategy` <<traversalstrategy,traversal strategy>> which analyzes a submitted
+OLAP traversal and, if possible, creates an appropriate `GraphFilter` automatically. For instance, `g.V().count()` would
+yield a `GraphFilter.edges(limit(0))`. Thus, for traversal submissions, users typically do not need to be aware of creating
+graph filters explicitly. Users can use the <<explain-step,`explain()`>>-step to see the `GraphFilter` generated by `GraphFilterStrategy`.

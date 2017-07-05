@@ -18,15 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
-import info.ganglia.gmetric4j.gmetric.GMetric;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -54,15 +57,9 @@ import java.util.UUID;
 public class Settings {
 
     public Settings() {
-        // setup some sensible defaults like gremlin-groovy and gryo serialization
+        // setup some sensible defaults like gremlin-groovy
         scriptEngines = new HashMap<>();
         scriptEngines.put("gremlin-groovy", new ScriptEngineSettings());
-
-        serializers = new ArrayList<>();
-        final SerializerSettings gryoSerializerSettings = new SerializerSettings();
-        gryoSerializerSettings.className = GryoMessageSerializerV1d0.class.getName();
-        gryoSerializerSettings.config = Collections.emptyMap();
-        serializers.add(gryoSerializerSettings);
     }
 
     /**
@@ -88,10 +85,10 @@ public class Settings {
 
     /**
      * Size of the Gremlin thread pool. This pool handles Gremlin script execution and other related "long-run"
-     * processing.  This setting should be sufficiently large to ensure that requests processed by the non-blocking
-     * worker threads are processed with limited queuing.  Defaults to 8.
+     * processing. Defaults to a setting of 0 which indicates the value should be set to
+     * {@code Runtime#availableProcessors()}.
      */
-    public int gremlinPool = 8;
+    public int gremlinPool = 0;
 
     /**
      * Size of the boss thread pool.  Defaults to 1 and should likely stay at 1.  The bossy thread accepts incoming
@@ -107,9 +104,12 @@ public class Settings {
 
     /**
      * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
-     * total serialization time for the request.  Defaults to 30000.
+     * total serialization time allowed for the request.  Defaults to 0 which disables this setting.
+     *
+     * @deprecated As of release 3.2.1, replaced wholly by {@link #scriptEvaluationTimeout}.
      */
-    public long serializedResponseTimeout = 30000L;
+    @Deprecated
+    public long serializedResponseTimeout = 0L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
@@ -176,6 +176,11 @@ public class Settings {
     public String channelizer = WebSocketChannelizer.class.getName();
 
     /**
+     * The full class name of the {@link GraphManager} to use in Gremlin Server.
+     */
+    public String graphManager = DefaultGraphManager.class.getName();
+
+    /**
      * Configured metrics for Gremlin Server.
      */
     public ServerMetrics metrics = null;
@@ -192,9 +197,10 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
-     * List of {@link MessageSerializer} to configure.
+     * List of {@link MessageSerializer} to configure. If no serializers are specified then default serializers for
+     * the most current versions of "application/json" and "application/vnd.gremlin-v1.0+gryo" are applied.
      */
-    public List<SerializerSettings> serializers;
+    public List<SerializerSettings> serializers = Collections.emptyList();
 
     /**
      * Configures settings for SSL.
@@ -204,16 +210,20 @@ public class Settings {
     public AuthenticationSettings authentication = new AuthenticationSettings();
 
     /**
-     * The list of plugins to enable for the server.  Plugins may be available on the classpath, but with this
-     * configuration it is possible to explicitly include or omit them.
-     */
-    public List<String> plugins = new ArrayList<>();
-
-    /**
      * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
      * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
+
+    /**
+     * Find the {@link ProcessorSettings} related to the specified class. If there are multiple entries then only the
+     * first is returned.
+     */
+    public Optional<ProcessorSettings> optionalProcessor(final Class<? extends OpProcessor> clazz) {
+        return processors.stream()
+                .filter(p -> p.className.equals(clazz.getCanonicalName()))
+                .findFirst();
+    }
 
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);
@@ -261,6 +271,7 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
         scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
+        scriptEngineSettingsDescription.putMapPropertyType("plugins", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -339,12 +350,25 @@ public class Settings {
          * {@code ScriptEngine} implementation being used.
          */
         public Map<String, Object> config = null;
+
+        /**
+         * A set of configurations for {@link GremlinPlugin} instances to apply to this {@link GremlinScriptEngine}.
+         */
+        public Map<String,Map<String,Object>> plugins = new HashMap<>();
     }
 
     /**
      * Settings for the {@link MessageSerializer} implementations.
      */
     public static class SerializerSettings {
+
+        public SerializerSettings() {}
+
+        SerializerSettings(final String className, final Map<String, Object> config) {
+            this.className = className;
+            this.config = config;
+        }
+
         /**
          * The fully qualified class name of the {@link MessageSerializer} implementation. This class name will be
          * used to load the implementation from the classpath.
@@ -355,7 +379,7 @@ public class Settings {
          * A {@link Map} containing {@link MessageSerializer} specific configurations. Consult the
          * {@link MessageSerializer} implementation for specifics on what configurations are expected.
          */
-        public Map<String, Object> config = null;
+        public Map<String, Object> config = Collections.emptyMap();
     }
 
     /**
@@ -367,7 +391,28 @@ public class Settings {
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
          */
+        public String authenticator = null;
+
+        /**
+         * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
+         * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
+         * not specified.
+         * @deprecated As of release 3.2.5, replaced by {@link #authenticator}.
+         */
+        @Deprecated
         public String className = AllowAllAuthenticator.class.getName();
+
+        /**
+         * The fully qualified class name of the {@link AbstractAuthenticationHandler} implementation.
+         * This class name will be used to load the implementation from the classpath.
+         * Defaults to null when not specified.
+         */
+        public String authenticationHandler = null;
+
+        /**
+         * Enable audit logging of authenticated users and gremlin evaluation requests.
+         */
+        public boolean enableAuditLog = false;
 
         /**
          * A {@link Map} containing {@link Authenticator} specific configurations. Consult the
@@ -407,6 +452,11 @@ public class Settings {
          * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
          */
         public String trustCertChainFile = null;
+
+        /**
+         * Require client certificate authentication
+         */
+        public ClientAuth needClientAuth = ClientAuth.NONE;
 
         private SslContext sslContext;
 
@@ -502,17 +552,6 @@ public class Settings {
         public GangliaReporterMetrics() {
             // default ganglia port
             this.port = 8649;
-        }
-
-        public GMetric.UDPAddressingMode optionalAddressingMode() {
-            if (null == addressingMode)
-                return null;
-
-            try {
-                return GMetric.UDPAddressingMode.valueOf(addressingMode);
-            } catch (IllegalArgumentException iae) {
-                return null;
-            }
         }
     }
 

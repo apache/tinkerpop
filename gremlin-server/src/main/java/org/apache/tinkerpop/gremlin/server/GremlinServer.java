@@ -62,18 +62,19 @@ public class GremlinServer {
     }
 
     private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
+    public static final String AUDIT_LOGGER_NAME = "audit.org.apache.tinkerpop.gremlin.server";
 
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
-    private CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverStarted = null;
+    private CompletableFuture<ServerGremlinExecutor> serverStarted = null;
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
-    private final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor;
+    private final ServerGremlinExecutor serverGremlinExecutor;
     private final boolean isEpollEnabled;
 
     /**
@@ -82,6 +83,7 @@ public class GremlinServer {
     public GremlinServer(final Settings settings) {
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
         this.settings = settings;
+        provideDefaultForGremlinPoolSize(settings);
         this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
         if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
             logger.warn("cannot use epoll in non-linux env, falling back to NIO");
@@ -106,56 +108,24 @@ public class GremlinServer {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }
 
-        serverGremlinExecutor = new ServerGremlinExecutor<>(settings, null, workerGroup, EventLoopGroup.class);
+        serverGremlinExecutor = new ServerGremlinExecutor(settings, null, workerGroup);
         gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
 
-        // force an early load of the OpLoader (even if not used by a Channelizer).  this is an expensive operation
-        // as it uses ServiceLoader and if left uninitialized puts a burden on the first client request that passes
-        // through an OpProcessor
-        OpLoader.getProcessors();
-    }
-
-    /**
-     * Construct a Gremlin Server instance from the {@link ServerGremlinExecutor} which internally carries some
-     * pre-constructed objects used by the server as well as the {@link Settings} object itself.  This constructor
-     * is useful when Gremlin Server is being used in an embedded style and there is a need to share thread pools
-     * with the hosting application.
-     *
-     * @deprecated As of release 3.1.1-incubating, not replaced.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-912">TINKERPOP-912</a>
-     */
-    @Deprecated
-    public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
-        this.serverGremlinExecutor = serverGremlinExecutor;
-        this.settings = serverGremlinExecutor.getSettings();
-        this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
-        if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
-            logger.warn("cannot use epoll in non-linux env, falling back to NIO");
-        }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
-
-        final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
-        if(isEpollEnabled) {
-            bossGroup = new EpollEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
-        } else{
-            bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
-        }
-        workerGroup = serverGremlinExecutor.getScheduledExecutorService();
-        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+        // initialize the OpLoader with configurations being passed to each OpProcessor implementation loaded
+        OpLoader.init(settings);
     }
 
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public synchronized CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> start() throws Exception {
+    public synchronized CompletableFuture<ServerGremlinExecutor> start() throws Exception {
         if (serverStarted != null) {
             // server already started - don't get it rolling again
             return serverStarted;
         }
 
         serverStarted = new CompletableFuture<>();
-        final CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverReadyFuture = serverStarted;
+        final CompletableFuture<ServerGremlinExecutor> serverReadyFuture = serverStarted;
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -218,10 +188,10 @@ public class GremlinServer {
             final Class clazz = Class.forName(settings.channelizer);
             final Object o = clazz.newInstance();
             return (Channelizer) o;
-        } catch (ClassNotFoundException fnfe) {
+        } catch (ClassNotFoundException cnfe) {
             logger.error("Could not find {} implementation defined by the 'channelizer' setting as: {}",
                     Channelizer.class.getName(), settings.channelizer);
-            throw new RuntimeException(fnfe);
+            throw new RuntimeException(cnfe);
         } catch (Exception ex) {
             logger.error("Class defined by the 'channelizer' setting as: {} could not be properly instantiated as a {}",
                     settings.channelizer, Channelizer.class.getName());
@@ -302,14 +272,14 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            serverGremlinExecutor.getGraphManager().getGraphs().forEach((k, v) -> {
-                logger.debug("Closing Graph instance [{}]", k);
+            serverGremlinExecutor.getGraphManager().getGraphNames().forEach(gName -> {
+                logger.debug("Closing Graph instance [{}]", gName);
                 try {
-                    v.close();
+                    serverGremlinExecutor.getGraphManager().getGraph(gName).close();
                 } catch (Exception ex) {
-                    logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
+                    logger.warn(String.format("Exception while closing Graph instance [%s]", gName), ex);
                 } finally {
-                    logger.info("Closed Graph instance [{}]", k);
+                    logger.info("Closed Graph instance [{}]", gName);
                 }
             });
 
@@ -318,6 +288,11 @@ public class GremlinServer {
             // removing them all will silent them up and release the appropriate resources.
             MetricManager.INSTANCE.removeAllReporters();
 
+            // removing all the metrics should allow Gremlin Server to clean up the metrics instance so that it can be
+            // started again in the same JVM without those metrics initialized which generates a warning and won't
+            // reset to start values
+            MetricManager.INSTANCE.removeAllMetrics();
+
             logger.info("Gremlin Server - shutdown complete");
             serverStopped.complete(null);
         }, SERVER_THREAD_PREFIX + "stop").start();
@@ -325,7 +300,7 @@ public class GremlinServer {
         return serverStopped;
     }
 
-    public ServerGremlinExecutor<EventLoopGroup> getServerGremlinExecutor() {
+    public ServerGremlinExecutor getServerGremlinExecutor() {
         return serverGremlinExecutor;
     }
 
@@ -386,7 +361,7 @@ public class GremlinServer {
             if (config.enabled) {
                 try {
                     metrics.addGangliaReporter(config.host, config.port,
-                            config.optionalAddressingMode(), config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
+                            config.addressingMode, config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
                 } catch (IOException ioe) {
                     logger.warn("Error configuring the Ganglia Reporter.", ioe);
                 }
@@ -400,5 +375,15 @@ public class GremlinServer {
 
     private static void printHeader() {
         logger.info(getHeader());
+    }
+
+    private static void provideDefaultForGremlinPoolSize(final Settings settings) {
+        if (settings.gremlinPool == 0)
+            settings.gremlinPool = Runtime.getRuntime().availableProcessors();
+    }
+
+    @Override
+    public String toString() {
+        return "GremlinServer " + settings.host + ":" + settings.port;
     }
 }

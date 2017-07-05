@@ -35,11 +35,9 @@ public final class HasNextStep<S> extends AbstractStep<S, Boolean> {
     }
 
     @Override
-    protected Traverser<Boolean> processNextStart() throws NoSuchElementException {
-        if (this.starts.hasNext()) {
-            final Traverser.Admin<S> s = this.starts.next();
-            return s.split(Boolean.TRUE, this);
-        } else
-            return this.traversal.asAdmin().getTraverserGenerator().generate(Boolean.FALSE, (Step) this, 1l);
+    protected Traverser.Admin<Boolean> processNextStart() throws NoSuchElementException {
+        return this.starts.hasNext() ?
+                this.starts.next().split(Boolean.TRUE, this) :
+                this.getTraversal().getTraverserGenerator().generate(Boolean.FALSE, (Step) this, 1L);
     }
 }

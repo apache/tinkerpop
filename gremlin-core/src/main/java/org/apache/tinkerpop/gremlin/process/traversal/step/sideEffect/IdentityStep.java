@@ -34,7 +34,7 @@ public final class IdentityStep<S> extends AbstractStep<S, S> {
     }
 
     @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
         return this.starts.next();
     }
 }

@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -29,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,7 +45,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
+        implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing, Scoping {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -51,13 +54,17 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.parameters.set(T.label, label);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, T.label, label);
     }
 
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return this.parameters.getReferencedLabels();
     }
 
     @Override
@@ -67,20 +74,20 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        this.parameters.set(keyValues);
-        this.parameters.integrateTraversals(this);
+        this.parameters.set(this, keyValues);
     }
 
     @Override
-    protected Traverser<Vertex> processNextStart() {
+    protected Traverser.Admin<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
-            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(EmptyTraverser.instance()));
+            final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
+            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(generator.generate(false, (Step) this, 1L)));
             if (this.callbackRegistry != null) {
                 final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(vertex, true));
                 this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
-            return this.getTraversal().getTraverserGenerator().generate(vertex, this, 1l);
+            return generator.generate(vertex, this, 1L);
         } else
             throw FastNoSuchElementException.instance();
     }
@@ -104,12 +111,17 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     @Override
     public void reset() {
         super.reset();
-        this.first = false;
     }
 
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters);
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override

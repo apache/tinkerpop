@@ -222,6 +222,7 @@ invocation. If there were a problem, an error would be output or an exception wo
 IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph
 systems that support them) see the section dedicated to <<transactions,transactions>>.
 
+[[the-graph-process]]
 The Graph Process
 -----------------
 
@@ -250,7 +251,7 @@ called a step and each step modulates the results of the previous step in one of
 
  . `map`: transform the incoming traverser's object to another object (S &rarr; E).
  . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E*).
- . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; S &cup; &empty;).
+ . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; E &sube; S).
  . `sideEffect`: allow the traverser to proceed unchanged, but yield some computational sideEffect in the process (S &rarrlp; S).
  . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rarr; { S~1~ &rarr; E*, ..., S~n~ &rarr; E* } &rarr; E*).
 
@@ -274,7 +275,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> graph = TinkerFactory.createModern() // <1>
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal(standard())        // <2>
+gremlin> g = graph.traversal()        // <2>
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ==>vadas
@@ -342,17 +343,17 @@ On Gremlin Language Variants
 ----------------------------
 
 Gremlin is written in Java 8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with
-TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala], Gremlin-JavaScript, Gremlin-Clojure
-(known as link:https://github.com/clojurewerkz/ogre[Ogre]), etc. It is best to think of Gremlin as a style of graph
-traversing that is not bound to a particular programming language per se. Within a programming language familiar to
-the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum,
-a programming language providing a Gremlin implementation must support
+TinkerPop3), Gremlin-Python (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala],
+Gremlin-JavaScript, Gremlin-Clojure (known as link:https://github.com/clojurewerkz/ogre[Ogre]), etc.
+It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se.
+Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages
+the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support
 link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with
 link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the
-variant wishes to offer arbitrary computations beyond the provided Gremlin steps).
+variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
 
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is
-the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require
+the <<gremlin-console,Gremlin Console>> -- an interactive programming environment exists that does not require
 code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin
 Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns
 are presented below.
@@ -379,6 +380,8 @@ Java doesn't with all parameters requiring naming.
 and link:http://mrhaki.blogspot.de/2009/08/groovy-goodness-turn-methods-into.html[Gremlin-Groovy].
 <4> Groovy is lenient on object typing and Java is not. When the parameter type of the lambda is not known,
 typecasting is required.
+
+Please see the <<gremlin-variants, Gremlin Variants>> section for more information on this topic.
 
 Graph System Integration
 ------------------------

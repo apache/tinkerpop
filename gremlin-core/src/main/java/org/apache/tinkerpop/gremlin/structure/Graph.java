@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -148,26 +146,42 @@ public interface Graph extends AutoCloseable, Host {
     public GraphComputer compute() throws IllegalArgumentException;
 
     /**
-     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}. The {@link TraversalSource}
-     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
-     * and a {@link GraphComputer}.
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource} class.
+     * The reusable {@link TraversalSource} provides methods for spawning {@link Traversal} instances.
+     *
+     * @param traversalSourceClass The traversal source class
+     * @param <C>                  The traversal source class
+     */
+    public default <C extends TraversalSource> C traversal(final Class<C> traversalSourceClass) {
+        try {
+            return traversalSourceClass.getConstructor(Graph.class).newInstance(this);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}.
+     * The reusable {@link TraversalSource} provides methods for spawning {@link Traversal} instances.
      *
      * @param sourceBuilder The traversal source builder to use
      * @param <C>           The traversal source class
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
      */
+    @Deprecated
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
 
     /**
-     * Generate a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
-     * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
-     * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
+     * Generate a reusable {@link GraphTraversalSource} instance.
+     * The {@link GraphTraversalSource} provides methods for creating
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal} instances.
      *
-     * @return A standard graph traversal source
+     * @return A graph traversal source
      */
     public default GraphTraversalSource traversal() {
-        return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
+        return new GraphTraversalSource(this);
     }
 
     /**
@@ -278,12 +292,15 @@ public interface Graph extends AutoCloseable, Host {
     public Transaction tx();
 
     /**
-     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no futher operations can be executed on
+     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no further operations can be executed on
      * the instance.  Users should consult the documentation of the underlying graph database implementation for what
-     * this "shutdown" will mean as it pertains to open transactions.  It will typically be the end user's
-     * responsibility to synchronize the thread that calls {@code close()} with other threads that are accessing open
-     * transactions. In other words, be sure that all work performed on the {@code Graph} instance is complete prior
-     * to calling this method.
+     * this "shutdown" will mean in general and, if supported, how open transactions are handled.  It will typically
+     * be the end user's responsibility to synchronize the thread that calls {@code close()} with other threads that
+     * are accessing open transactions. In other words, be sure that all work performed on the {@code Graph} instance
+     * is complete prior to calling this method.
+     * <p/>
+     * TinkerPop does not enforce any particular semantics with respect to "shutdown". It is up to the graph provider
+     * to decide what this method will do.
      */
     @Override
     void close() throws Exception;
@@ -373,9 +390,9 @@ public interface Graph extends AutoCloseable, Host {
             public static IllegalArgumentException variableValueCanNotBeNull() {
                 return new IllegalArgumentException("Graph variable value can not be null");
             }
-            
+
             public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
-            	return dataTypeOfVariableValueNotSupported(val, null);
+                return dataTypeOfVariableValueNotSupported(val, null);
             }
 
             public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val, final Exception rootCause) {
@@ -499,6 +516,7 @@ public interface Graph extends AutoCloseable, Host {
         public interface VertexFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
             public static final String FEATURE_MULTI_PROPERTIES = "MultiProperties";
+            public static final String FEATURE_DUPLICATE_MULTI_PROPERTIES = "DuplicateMultiProperties";
             public static final String FEATURE_META_PROPERTIES = "MetaProperties";
             public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
 
@@ -507,6 +525,11 @@ public interface Graph extends AutoCloseable, Host {
              * {@link VertexProperty.Cardinality#list}.  Implementations that employ a schema can consult it to
              * determine the {@link VertexProperty.Cardinality}.  Those that do no have a schema can return their
              * default {@link VertexProperty.Cardinality} for every key.
+             * <p/>
+             * Note that this method is primarily used by TinkerPop for internal usage and may not be suitable to
+             * reliably determine the cardinality of a key. For some implementation it may offer little more than a
+             * hint on the actual cardinality. Generally speaking it is likely best to drop down to the API of the
+             * {@link Graph} implementation for any schema related queries.
              */
             public default VertexProperty.Cardinality getCardinality(final String key) {
                 return VertexProperty.Cardinality.list;
@@ -534,6 +557,16 @@ public interface Graph extends AutoCloseable, Host {
             @FeatureDescriptor(name = FEATURE_MULTI_PROPERTIES)
             public default boolean supportsMultiProperties() {
                 return true;
+            }
+
+            /**
+             * Determines if a {@link Vertex} can support non-unique values on the same key. For this value to be
+             * {@code true}, then {@link #supportsMetaProperties()} must also return true. By default this method,
+             * just returns what {@link #supportsMultiProperties()} returns.
+             */
+            @FeatureDescriptor(name = FEATURE_DUPLICATE_MULTI_PROPERTIES)
+            public default boolean supportsDuplicateMultiProperties() {
+                return supportsMultiProperties();
             }
 
             /**
@@ -726,12 +759,6 @@ public interface Graph extends AutoCloseable, Host {
          * Features that are related to {@link Vertex} {@link Property} objects.
          */
         public interface VertexPropertyFeatures extends PropertyFeatures {
-            /**
-             * @deprecated As of release 3.1.1-incubating, replaced by
-             * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#FEATURE_META_PROPERTIES}
-             */
-            @Deprecated
-            public static final String FEATURE_ADD_PROPERTY = "AddProperty";
             public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
             public static final String FEATURE_NUMERIC_IDS = "NumericIds";
@@ -739,18 +766,6 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_UUID_IDS = "UuidIds";
             public static final String FEATURE_CUSTOM_IDS = "CustomIds";
             public static final String FEATURE_ANY_IDS = "AnyIds";
-
-            /**
-             * Determines if a {@link VertexProperty} allows properties to be added.
-             *
-             * @deprecated As of release 3.1.1-incubating, replaced by
-             * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()}
-             */
-            @Deprecated
-            @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
-            public default boolean supportsAddProperty() {
-                return true;
-            }
 
             /**
              * Determines if a {@link VertexProperty} allows properties to be removed.
@@ -1118,6 +1133,7 @@ public interface Graph extends AutoCloseable, Host {
             return new UnsupportedOperationException("Graph does not support graph computer");
         }
 
+        @Deprecated
         public static IllegalArgumentException traversalEngineNotSupported(final TraversalEngine engine) {
             return new IllegalArgumentException("Graph does not support the provided traversal engine: " + engine.getClass().getCanonicalName());
         }
@@ -1146,20 +1162,32 @@ public interface Graph extends AutoCloseable, Host {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
         }
 
+        /**
+         * Deprecated as of 3.2.3, not replaced.
+         *
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-944">TINKERPOP-944</a>
+         */
+        @Deprecated
         public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id) {
             return (null == id) ?
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
         }
-        
+
+        /**
+         * Deprecated as of 3.2.3, not replaced.
+         *
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-944">TINKERPOP-944</a>
+         */
+        @Deprecated
         public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id, final Exception rootCause) {
-        	NoSuchElementException elementNotFoundException;
-        	if(null == id)
-        		elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
-    		else
-    			elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
-        	elementNotFoundException.initCause(rootCause);
-			return elementNotFoundException;
+            NoSuchElementException elementNotFoundException;
+            if (null == id)
+                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
+            else
+                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
+            elementNotFoundException.initCause(rootCause);
+            return elementNotFoundException;
         }
     }
 
@@ -1174,15 +1202,8 @@ public interface Graph extends AutoCloseable, Host {
     public @interface OptIn {
         public static String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
         public static String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
-        public static String SUITE_STRUCTURE_PERFORMANCE = "org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite";
         public static String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
         public static String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
-        public static String SUITE_PROCESS_PERFORMANCE = "org.apache.tinkerpop.gremlin.process.ProcessPerformanceSuite";
-        public static String SUITE_GROOVY_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
-        public static String SUITE_GROOVY_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT_PERFORMANCE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite";
 
         /**
          * The test suite class to opt in to.
@@ -1239,7 +1260,7 @@ public interface Graph extends AutoCloseable, Host {
          * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
          * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
          */
-        public String[] computers() default { };
+        public String[] computers() default {};
 
     }
 

@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinCloseRequestDecoder;
@@ -52,10 +53,10 @@ public class WebSocketChannelizer extends AbstractChannelizer {
     private WsGremlinBinaryRequestDecoder wsGremlinBinaryRequestDecoder;
     private WsGremlinResponseFrameEncoder wsGremlinResponseFrameEncoder;
     private WsGremlinCloseRequestDecoder wsGremlinCloseRequestDecoder;
-    private SaslAuthenticationHandler authenticationHandler;
+    private AbstractAuthenticationHandler authenticationHandler;
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
 
         gremlinResponseFrameEncoder = new GremlinResponseFrameEncoder();
@@ -67,7 +68,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         // configure authentication - null means don't bother to add authentication to the pipeline
         if (authenticator != null)
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new SaslAuthenticationHandler(authenticator);
+                    null : new SaslAuthenticationHandler(authenticator, settings.authentication);
     }
 
     @Override
@@ -108,5 +109,15 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         if (authenticationHandler != null)
             pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+    }
+
+    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {
+        final String authenticationHandler = authSettings.authenticationHandler;
+        if (authenticationHandler == null) {
+            //Keep things backwards compatible
+            return new SaslAuthenticationHandler(authenticator, authSettings);
+        } else {
+            return createAuthenticationHandler(authSettings);
+        }
     }
 }

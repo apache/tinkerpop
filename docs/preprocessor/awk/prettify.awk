@@ -21,14 +21,8 @@
 /^==>\/\/\/\/$/ { doPrint = 1 }
 
 {
-  lastLineStartedWithGremlin = lastLineStartedWithGremlin && inCodeSection
-  if (inCodeSection) {
-    if ($0 ~ /^gremlin> / && ($0 ~ /([.,({]|""")(\s*\/\/.*)?$/ || $0 ~ /^gremlin>  /)) {
-      if (lastLineStartedWithGremlin) gsub(/^gremlin> /, "         ")
-      lastLineStartedWithGremlin = 1
-    } else {
-      lastLineStartedWithGremlin = 0
-    }
+  if (inCodeSection && $0 ~ /^\.*[0-9]+> /) {
+    gsub(/^.{8}/, "        ")
   }
   if (doPrint) print
 }

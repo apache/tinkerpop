@@ -90,12 +90,16 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return this.emitTraversal;
     }
 
+    public Traversal.Admin<S, S> getRepeatTraversal() {
+        return this.repeatTraversal;
+    }
+
     public List<Traversal.Admin<S, S>> getGlobalChildren() {
         return null == this.repeatTraversal ? Collections.emptyList() : Collections.singletonList(this.repeatTraversal);
     }
 
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        final List<Traversal.Admin<S, ?>> list = new ArrayList<>();
+        final List<Traversal.Admin<S, ?>> list = new ArrayList<>(2);
         if (null != this.untilTraversal)
             list.add(this.untilTraversal);
         if (null != this.emitTraversal)
@@ -123,6 +127,17 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             return StringFactory.stepString(this, this.repeatTraversal, untilString(), emitString());
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        if (null != this.emitTraversal)
+            this.emitTraversal.reset();
+        if (null != this.untilTraversal)
+            this.untilTraversal.reset();
+        if (null != this.repeatTraversal)
+            this.repeatTraversal.reset();
+    }
+
     private final String untilString() {
         return null == this.untilTraversal ? "until(false)" : "until(" + this.untilTraversal + ')';
     }
@@ -136,12 +151,20 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     public RepeatStep<S> clone() {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        clone.repeatTraversal = clone.integrateChild(this.repeatTraversal.clone());
+        clone.repeatTraversal = this.repeatTraversal.clone();
         if (null != this.untilTraversal)
-            clone.untilTraversal = clone.integrateChild(this.untilTraversal.clone());
+            clone.untilTraversal = this.untilTraversal.clone();
         if (null != this.emitTraversal)
-            clone.emitTraversal = clone.integrateChild(this.emitTraversal.clone());
+            clone.emitTraversal = this.emitTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.repeatTraversal);
+        this.integrateChild(this.untilTraversal);
+        this.integrateChild(this.emitTraversal);
     }
 
     @Override
@@ -157,7 +180,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     @Override
-    protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<S>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
             if (this.repeatTraversal.getEndStep().hasNext()) {
                 return this.repeatTraversal.getEndStep();
@@ -178,7 +201,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     @Override
-    protected Iterator<Traverser<S>> computerAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
         final Traverser.Admin<S> start = this.starts.next();
         if (doUntil(start, true)) {
             start.resetLoops();
@@ -245,7 +268,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         }
 
         @Override
-        protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
+        protected Iterator<Traverser.Admin<S>> standardAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
                 final Traverser.Admin<S> start = this.starts.next();
@@ -268,7 +291,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         }
 
         @Override
-        protected Iterator<Traverser<S>> computerAlgorithm() throws NoSuchElementException {
+        protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
             start.incrLoops(repeatStep.getId());
@@ -283,6 +306,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
                     emitSplit.setStepId(repeatStep.getNextStep().getId());
+                    emitSplit.addLabels(repeatStep.labels);
                     return IteratorUtils.of(start, emitSplit);
                 }
                 return IteratorUtils.of(start);

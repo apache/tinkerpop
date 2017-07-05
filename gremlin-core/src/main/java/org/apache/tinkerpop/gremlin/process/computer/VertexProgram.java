@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -133,7 +134,7 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @return the set of element keys that will be mutated during the vertex program's execution
      */
-    public default Set<String> getElementComputeKeys() {
+    public default Set<VertexComputeKey> getVertexComputeKeys() {
         return Collections.emptySet();
     }
 
@@ -144,7 +145,7 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @return the set of memory keys that will be read/written
      */
-    public default Set<String> getMemoryComputeKeys() {
+    public default Set<MemoryComputeKey> getMemoryComputeKeys() {
         return Collections.emptySet();
     }
 
@@ -180,6 +181,16 @@ public interface VertexProgram<M> extends Cloneable {
      * @return the set of {@link MapReduce} jobs associated with this {@link VertexProgram}
      */
     public default Set<MapReduce> getMapReducers() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * The traverser requirements that are needed when this VP is used as part of a traversal.
+     * The default is an empty set.
+     *
+     * @return the traverser requirements
+     */
+    public default Set<TraverserRequirement> getTraverserRequirements() {
         return Collections.emptySet();
     }
 

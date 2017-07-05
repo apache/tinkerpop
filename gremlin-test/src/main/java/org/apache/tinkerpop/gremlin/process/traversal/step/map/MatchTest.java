@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -143,8 +145,19 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // distinct values with by()-modulation
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_both_b__b_both_cX_dedupXa_bX_byXlabelX();
 
+    public abstract Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count();
+
+    // reducing barrier on lazy standard shouldn't yield an empty barrier
+    public abstract Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX();
+
+    // verifying keep labels and dedup labels interactions
+    public abstract Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX();
+
     // test not(match)
     public abstract Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name();
+
+    // test inline counts
+    public abstract Traversal<Vertex, Long> get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -287,12 +300,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: this test requires Traversal.reverse()
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__c_knows_bX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__c_knows_bX();
-        printTraversalForm(traversal);
-        traversal.iterate();
+        try {
+            printTraversalForm(traversal);
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            //final Throwable root = ExceptionUtils.getRootCause(ex);
+            //assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
     @Test
@@ -308,20 +326,30 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: this test requires Traversal.reverse()
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX();
-        printTraversalForm(traversal);
-        traversal.iterate();
+        try {
+            printTraversalForm(traversal);
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            //final Throwable root = ExceptionUtils.getRootCause(ex);
+            //assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() throws Exception {
         final Traversal<Vertex, String> traversal = get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
-        printTraversalForm(traversal);
-        traversal.iterate();
+        try {
+            printTraversalForm(traversal);
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            //final Throwable root = ExceptionUtils.getRootCause(ex);
+            //assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
     @Test
@@ -496,6 +524,33 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count();
+        printTraversalForm(traversal);
+        assertEquals(584, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_knows_count_bX_selectXbX() {
+        final Traversal<Vertex, Long> traversal = get_g_V_matchXa_knows_count_bX_selectXbX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0L, 0L, 0L, 0L, 0L, 2L), traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX();
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
     @LoadGraphWith(MODERN)
     public void g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name();
@@ -503,21 +558,24 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("marko", "peter", "josh", "vadas", "lop", "ripple"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count();
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList(6L), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
             super.setupTest();
-            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
+            g = g.withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
         }
     }
 
     public static class CountMatchTraversals extends Traversals {
-        // make sure default works -- i.e. CountMatchAlgorithm
-        /*@Before
-        public void setupTest() {
-            super.setupTest();
-            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
-        }*/
+
     }
 
     public abstract static class Traversals extends MatchTest {
@@ -761,8 +819,36 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count() {
+            return g.V().hasLabel("song").match(
+                    __.as("a").values("name").as("b"),
+                    __.as("a").values("performances").as("c")
+            ).select("b", "c").count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX() {
+            return g.V().match(as("a").out("knows").count().as("b")).select("b");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX() {
+            return g.V().match(
+                    as("a").out("knows").as("b"),
+                    as("b").out("created").as("c"),
+                    as("a").out("created").as("c")).dedup("a", "b", "c").<String>select("a").by("name");
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
             return g.V().not(match(__.as("a").values("age").as("b"), __.as("a").values("name").as("c")).where("b", eq("c")).select("a")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count() {
+            return g.V().match(
+                    as("a").out("followedBy").count().is(P.gt(10)).as("b"),
+                    as("a").in("followedBy").count().is(P.gt(10)).as("b")).count();
         }
     }
 }

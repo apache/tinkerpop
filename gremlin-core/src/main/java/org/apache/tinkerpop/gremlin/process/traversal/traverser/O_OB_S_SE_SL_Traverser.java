@@ -32,6 +32,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
     protected transient TraversalSideEffects sideEffects;
     protected String future = HALT;
+    protected long bulk = 1L;
 
     protected O_OB_S_SE_SL_Traverser() {
     }
@@ -44,6 +45,16 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     }
 
     /////////////////
+
+    @Override
+    public void setBulk(final long count) {
+        this.bulk = count > 0 ? 1L : 0L;
+    }
+
+    @Override
+    public long bulk() {
+        return this.bulk;
+    }
 
     @Override
     public <S> S sack() {
@@ -115,6 +126,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
 
     @Override
     public void merge(final Traverser.Admin<?> other) {
+        super.merge(other);
         if (null != this.sack && null != this.sideEffects.getSackMerger())
             this.sack = this.sideEffects.getSackMerger().apply(this.sack, other.sack());
     }
@@ -129,9 +141,9 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return object instanceof O_OB_S_SE_SL_Traverser
-                && ((O_OB_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((O_OB_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((O_OB_S_SE_SL_Traverser) object).loops() == this.loops()
+                && ((O_OB_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((O_OB_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((O_OB_S_SE_SL_Traverser) object).loops == this.loops
                 && (null == this.sack || (null != this.sideEffects && null != this.sideEffects.getSackMerger())); // hmmm... serialization in OLAP destroys the transient sideEffects
     }
 }

@@ -1,0 +1,181 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[centrality]]
+Centrality
+----------
+
+There are many measures of link:https://en.wikipedia.org/wiki/Centrality[centrality] which are meant to help identify
+the most important vertices in a graph. As these measures are common in graph theory, this section attempts to
+demonstrate how some of these different indicators can be calculated using Gremlin.
+
+[[degree-centrality]]
+Degree Centrality
+~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality#Degree_centrality[Degree centrality] is a measure of the number of
+edges associated to each vertex. The following examples use the modern toy graph:
+
+[gremlin-groovy,modern]
+----
+g.V().group().by().by(bothE().count())                <1>
+g.V().group().by().by(inE().count())                  <2>
+g.V().group().by().by(outE().count())                 <3>
+g.V().project("v","degree").by().by(bothE().count())  <4>
+g.V().project("v","degree").by().by(bothE().count()). <5>
+  order().by(select("degree"), decr).
+  limit(4)
+----
+
+<1> Calculation of degree centrality which counts all incident edges on each vertex to include those that are both
+incoming and outgoing.
+<2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
+<3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
+<4> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
+stream of `Map` objects can allow some greater flexibility.
+<5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
+OLAP traversals.
+
+NOTE: The link:http://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[group] step takes up to two separate
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[by] modulators. The first `by()` tells `group()`
+what the key in the resulting `Map` will be (i.e. the value to group on). In the above examples, the `by()` is empty
+and as a result, the grouping will be on the incoming `Vertex` object itself. The second `by()` is the value to be
+stored in the `Map` for each key.
+
+[[betweeness-centrality]]
+Betweeness Centrality
+~~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Betweenness_centrality[Betweeness centrality] is a measure of the number of times
+a vertex is found between the <<shortest-path,shortest path>> of each vertex pair in a graph.  Consider the following
+graph for demonstration purposes:
+
+image:betweeness-example.png[width=600]
+
+[gremlin-groovy ]
+----
+g.addV().property(id,'A').as('a').
+  addV().property(id,'B').as('b').
+  addV().property(id,'C').as('c').
+  addV().property(id,'D').as('d').
+  addV().property(id,'E').as('e').
+  addV().property(id,'F').as('f').
+  addE('next').from('a').to('b').
+  addE('next').from('b').to('c').
+  addE('next').from('b').to('d').
+  addE('next').from('c').to('e').
+  addE('next').from('d').to('e').
+  addE('next').from('e').to('f').iterate()
+g.V().as("v").                                                                  <1>
+  repeat(both().simplePath().as("v")).emit().                                   <2>
+  filter(project("x","y","z").by(select(first, "v")).                           <3>
+                              by(select(last, "v")).
+                              by(select(all, "v").count(local)).as("triple").
+         coalesce(select("x","y").as("a").                                      <4>
+                    select("triples").unfold().as("t").
+                    select("x","y").where(eq("a")).
+                    select("t"),
+                  store("triples")).                                            <5>
+         select("z").as("length").
+         select("triple").select("z").where(eq("length"))).                     <6>
+  select(all, "v").unfold().                                                    <7>
+  groupCount().next()                                                           <8>
+----
+
+<1> Starting from each vertex in the graph...
+<2> ...traverse on both - incoming and outgoing - edges, avoiding <<cycle-detection, cyclic paths>>.
+<3> Create a triple consisting of the first vertex, the last vertex and the length of the path between them.
+<4> Determine whether a path between those two vertices was already found.
+<5> If this is the first path between the two vertices, store the triple in an internal collection named "triples".
+<6> Keep only those paths between a pair of vertices that have the same length as the first path that was found between them.
+<7> Select all shortest paths and unfold them.
+<8> Count the number of occurrences of each vertex, which is ultimately its betweeness score.
+
+WARNING: Since the betweeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
+its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
+the link:http://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
+pairs).
+
+[[closeness-centrality]]
+Closeness Centrality
+~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality[Closeness centrality] is a measure of the distance of one vertex to all
+other reachable vertices in the graph. The following examples use the modern toy graph:
+
+[gremlin-groovy,modern]
+----
+g = TinkerFactory.createModern().traversal()
+g.withSack(1f).V().as("v").                                                     <1>
+  repeat(both().simplePath().as("v")).emit().                                   <2>
+  filter(project("x","y","z").by(select(first, "v")).                           <3>
+                              by(select(last, "v")).
+                              by(select(all, "v").count(local)).as("triple").
+         coalesce(select("x","y").as("a").                                      <4>
+                    select("triples").unfold().as("t").
+                    select("x","y").where(eq("a")).
+                    select("t"),
+                  store("triples")).                                            <5>
+         select("z").as("length").
+         select("triple").select("z").where(eq("length"))).                     <6>
+  group().by(select(first, "v")).                                               <7>
+          by(select(all, "v").count(local).sack(div).sack().sum()).next()
+----
+
+<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of one.
+<2> Traverses on both - incoming and outgoing - edges, avoiding <<cycle-detection, cyclic paths>>.
+<3> Create a triple consisting of the first vertex, the last vertex and the length of the path between them.
+<4> Determine whether a path between those two vertices was already found.
+<5> If this is the first path between the two vertices, store the triple in an internal collection named "triples".
+<6> Keep only those paths between a pair of vertices that have the same length as the first path that was found between them.
+<7> For each vertex divide 1 by the product of the lengths of all shortest paths that start with this particular vertex.
+
+WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
+its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
+the link:http://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
+pairs).
+
+[[eigenvector-centrality]]
+Eigenvector Centrality
+~~~~~~~~~~~~~~~~~~~~~~
+
+A calculation of link:https://en.wikipedia.org/wiki/Centrality#Eigenvector_centrality[eigenvector centrality] uses the
+relative importance of adjacent vertices to help determine their centrality. In other words, unlike
+<<degree-centrality, degree centrality>> the vertex with the greatest number of incident edges does not necessarily
+give it the highest rank. Consider the following example using the Grateful Dead graph:
+
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g.V().repeat(groupCount('m').by('name').out()).times(5).cap('m').                <1>
+  order(local).by(values, decr).limit(local, 10).next()                          <2>
+g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m'). <3>
+  order(local).by(values, decr).limit(local, 10).next()
+----
+
+<1> The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
+passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
+`out()` traversal is repeated thirty times or until the paths are exhausted. Five iterations should provide enough
+time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
+<2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
+<3> The previous examples can be expanded on a little bit by including a
+link:http://tinkerpop.apache.org/docs/current/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
+traversal from taking longer than one hundred milliseconds to execute (the previous example takes considerably longer
+than that). While the answer provided with the `timeLimit()` is not the absolute ranking, it does provide a relative
+ranking that closely matches the absolute one. The use of `timeLimit()` in certain algorithms (e.g. recommendations)
+can shorten the time required to get a reasonable and usable result.

@@ -27,10 +27,13 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
-import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -45,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -53,17 +57,20 @@ import java.util.Iterator;
 public final class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
-    //protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
+    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
     private final static String GRAPH = "graph";
     private final static String LINE = "line";
     private final static String FACTORY = "factory";
     private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
+    private final GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
 
     private ScriptEngine engine;
     private String parse;
     private CompiledScript script;
+
+    private GraphFilter graphFilter = new GraphFilter();
 
     public ScriptRecordReader() {
         this.lineRecordReader = new LineRecordReader();
@@ -73,8 +80,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
-        this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
-        //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
+        if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
+            this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+        this.engine = manager.getEngineByName(configuration.get(SCRIPT_ENGINE, "gremlin-groovy"));
         final FileSystem fs = FileSystem.get(configuration);
         try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));
              final InputStreamReader reader = new InputStreamReader(stream)) {
@@ -96,10 +104,13 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 bindings.put(GRAPH, graph);
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, factory);
-                final Vertex vertex = (Vertex) script.eval(bindings);
-                if (vertex != null) {
-                    this.vertexWritable.set(vertex);
-                    return true;
+                final StarGraph.StarVertex sv = (StarGraph.StarVertex) script.eval(bindings);
+                if (sv != null) {
+                    final Optional<StarGraph.StarVertex> vertex = sv.applyGraphFilter(this.graphFilter);
+                    if (vertex.isPresent()) {
+                        this.vertexWritable.set(vertex.get());
+                        return true;
+                    }
                 }
             } catch (final ScriptException e) {
                 throw new IOException(e.getMessage(), e);

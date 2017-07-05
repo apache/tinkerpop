@@ -29,6 +29,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
+import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,6 +212,23 @@ public abstract class AbstractGremlinSuite extends Suite {
         if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass()))
             super.runChild(runner, notifier);
         afterTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass());
+    }
+
+    @Override
+    protected Statement withAfterClasses(final Statement statement) {
+        final Statement wrappedStatement = new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                statement.evaluate();
+
+                // release resources in GraphProviders that implement AutoCloseable
+                final GraphProvider gp = GraphManager.getGraphProvider();
+                if (gp instanceof AutoCloseable)
+                    ((AutoCloseable) gp).close();
+            }
+        };
+
+        return super.withAfterClasses(wrappedStatement);
     }
 
     /**

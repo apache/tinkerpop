@@ -71,6 +71,13 @@ fi
 trap cleanup INT
 
 function cleanup {
+  if [ -f "${output}" ]; then
+    if [ `wc -l "${output}" | awk '{print $1}'` -gt 0 ]; then
+      echo -e "\n\e[1mLast 10 lines of ${output}:\e[0m\n"
+      tail -n10 ${output}
+      echo
+    fi
+  fi
   rm -rf ${output} ${CONSOLE_HOME}/.ext
   exit 255
 }
@@ -100,11 +107,20 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
       mv ext/spark-gremlin .ext/
       cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'SparkGremlinPlugin' > .ext/plugins.txt
       ;;
-    "implementations-hadoop")
+    "implementations-hadoop-start" | "implementations-hadoop-end" | "implementations-spark" | "implementations-giraph")
       # deactivate Neo4j plugin to prevent version conflicts between TinkerPop's Spark jars and Neo4j's Spark jars
       mkdir .ext
       mv ext/neo4j-gremlin .ext/
       cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'Neo4jGremlinPlugin' > .ext/plugins.txt
+      ;;
+    "gremlin-variants")
+      # deactivate plugin to prevent version conflicts
+      mkdir .ext
+      mv ext/neo4j-gremlin .ext/
+      mv ext/spark-gremlin .ext/
+      mv ext/giraph-gremlin .ext/
+      mv ext/hadoop-gremlin .ext/
+      cat ext/plugins.txt | tee .ext/plugins.all | grep -v 'Neo4jGremlinPlugin\|SparkGremlinPlugin\|GiraphGremlinPlugin\|HadoopGremlinPlugin' > .ext/plugins.txt
       ;;
   esac
 
@@ -112,12 +128,15 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
     mv .ext/plugins.txt ext/
   fi
 
-  awk -f ${AWK_SCRIPTS}/prepare.awk ${input} |
-  awk -f ${AWK_SCRIPTS}/init-code-blocks.awk |
-  awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
+  sed 's/\t/    /g' ${input} |
+  awk -f ${AWK_SCRIPTS}/prepare.awk |
+  awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" -v PYTHONPATH="${TP_HOME}/gremlin-python/target/classes/Lib" |
+  awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template |
+  HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
   ${lb} awk -f ${AWK_SCRIPTS}/ignore.awk   |
   ${lb} awk -f ${AWK_SCRIPTS}/prettify.awk |
-  ${lb} awk -f ${AWK_SCRIPTS}/cleanup.awk  > ${output}
+  ${lb} awk -f ${AWK_SCRIPTS}/cleanup.awk  |
+  ${lb} awk -f ${AWK_SCRIPTS}/language-variants.awk > ${output}
 
   ps=(${PIPESTATUS[@]})
   for i in {0..6}; do

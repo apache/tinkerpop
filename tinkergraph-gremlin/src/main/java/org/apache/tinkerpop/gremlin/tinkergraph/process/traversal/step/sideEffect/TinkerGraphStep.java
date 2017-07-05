@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -120,6 +122,16 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
 
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
-        this.hasContainers.add(hasContainer);
+        if (hasContainer.getPredicate() instanceof AndP) {
+            for (final P<?> predicate : ((AndP<?>) hasContainer.getPredicate()).getPredicates()) {
+                this.addHasContainer(new HasContainer(hasContainer.getKey(), predicate));
+            }
+        } else
+            this.hasContainers.add(hasContainer);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.hasContainers.hashCode();
     }
 }

@@ -32,7 +32,7 @@ public abstract class FilterStep<S> extends AbstractStep<S, S> {
     }
 
     @Override
-    protected Traverser<S> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
             if (this.filter(traverser))

@@ -22,6 +22,8 @@
 set -e
 set -u
 
+USER_DIR=`pwd`
+
 cd $(dirname $0)
 DIR=`pwd`
 
@@ -78,15 +80,8 @@ if [ -z "${SCRIPT_DEBUG:-}" ]; then
 fi
 
 # Process options
-MAIN_CLASS=org.apache.tinkerpop.gremlin.console.Console
-while getopts "elv" opt; do
+while getopts ":l" opt; do
     case "$opt" in
-    e) MAIN_CLASS=org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor
-       # For compatibility with behavior pre-Titan-0.5.0, stop
-       # processing gremlin.sh arguments as soon as the -e switch is
-       # seen; everything following -e becomes arguments to the
-       # ScriptExecutor main class
-       break;;
     l) eval GREMLIN_LOG_LEVEL=\$$OPTIND
        OPTIND="$(( $OPTIND + 1 ))"
        if [ "$GREMLIN_LOG_LEVEL" = "TRACE" -o \
@@ -94,22 +89,18 @@ while getopts "elv" opt; do
 	   SCRIPT_DEBUG=y
        fi
        ;;
-    v) MAIN_CLASS=org.apache.tinkerpop.gremlin.util.Gremlin
     esac
 done
 
-# Remove processed options from $@. Anything after -e is preserved by the break;; in the case
-shift $(( $OPTIND - 1 ))
-
-JAVA_OPTIONS="${JAVA_OPTIONS} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+JAVA_OPTIONS="${JAVA_OPTIONS} -Duser.working_dir=${USER_DIR} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
 JAVA_OPTIONS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JAVA_OPTIONS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then
+    # in debug mode enable debugging of :install command
+    JAVA_OPTIONS="${JAVA_OPTIONS} -Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true"
     echo "CLASSPATH: $CLASSPATH"
     set -x
 fi
 
-# include the following in $JAVA_OPTIONS "-Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true" to debug :install
-
 # Start the JVM, execute the application, and return its exit code
-exec $JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
+exec $JAVA $JAVA_OPTIONS org.apache.tinkerpop.gremlin.console.Console "$@"

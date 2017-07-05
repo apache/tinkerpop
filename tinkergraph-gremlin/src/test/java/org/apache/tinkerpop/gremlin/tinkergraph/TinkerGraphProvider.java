@@ -151,22 +151,32 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 return TinkerGraph.DefaultIdManager.UUID;
         }  else if (test.equals(IoEdgeTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
-                add("shouldReadWriteEdge[graphson]");
-                add("shouldReadWriteDetachedEdgeAsReference[graphson]");
-                add("shouldReadWriteDetachedEdge[graphson]");
+                add("shouldReadWriteEdge[graphson-v1]");
+                add("shouldReadWriteDetachedEdgeAsReference[graphson-v1]");
+                add("shouldReadWriteDetachedEdge[graphson-v1]");
+                add("shouldReadWriteEdge[graphson-v2]");
+                add("shouldReadWriteDetachedEdgeAsReference[graphson-v2]");
+                add("shouldReadWriteDetachedEdge[graphson-v2]");
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
                 return TinkerGraph.DefaultIdManager.LONG;
         } else if (test.equals(IoVertexTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
-                add("shouldReadWriteVertexWithBOTHEdges[graphson]");
-                add("shouldReadWriteVertexWithINEdges[graphson]");
-                add("shouldReadWriteVertexWithOUTEdges[graphson]");
-                add("shouldReadWriteVertexNoEdges[graphson]");
-                add("shouldReadWriteDetachedVertexNoEdges[graphson]");
-                add("shouldReadWriteDetachedVertexAsReferenceNoEdges[graphson]");
-                add("shouldReadWriteVertexMultiPropsNoEdges[graphson]");
+                add("shouldReadWriteVertexWithBOTHEdges[graphson-v1]");
+                add("shouldReadWriteVertexWithINEdges[graphson-v1]");
+                add("shouldReadWriteVertexWithOUTEdges[graphson-v1]");
+                add("shouldReadWriteVertexNoEdges[graphson-v1]");
+                add("shouldReadWriteDetachedVertexNoEdges[graphson-v1]");
+                add("shouldReadWriteDetachedVertexAsReferenceNoEdges[graphson-v1]");
+                add("shouldReadWriteVertexMultiPropsNoEdges[graphson-v1]");
+                add("shouldReadWriteVertexWithBOTHEdges[graphson-v2]");
+                add("shouldReadWriteVertexWithINEdges[graphson-v2]");
+                add("shouldReadWriteVertexWithOUTEdges[graphson-v2]");
+                add("shouldReadWriteVertexNoEdges[graphson-v2]");
+                add("shouldReadWriteDetachedVertexNoEdges[graphson-v2]");
+                add("shouldReadWriteDetachedVertexAsReferenceNoEdges[graphson-v2]");
+                add("shouldReadWriteVertexMultiPropsNoEdges[graphson-v2]");
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))

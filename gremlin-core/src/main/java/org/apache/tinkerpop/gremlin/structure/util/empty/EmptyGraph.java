@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactoryClass;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,6 +36,7 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@GraphFactoryClass(EmptyGraph.EmptyGraphFactory.class)
 public final class EmptyGraph implements Graph {
 
     private static final String MESSAGE = "The graph is immutable and empty";
@@ -94,6 +98,11 @@ public final class EmptyGraph implements Graph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return Collections.emptyIterator();
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.graphString(this, "empty");
     }
 
     /**
@@ -206,11 +215,6 @@ public final class EmptyGraph implements Graph {
          */
         public final class EmptyGraphVertexPropertyFeatures implements VertexPropertyFeatures {
             @Override
-            public boolean supportsAddProperty() {
-                return false;
-            }
-
-            @Override
             public boolean supportsRemoveProperty() {
                 return false;
             }
@@ -234,6 +238,17 @@ public final class EmptyGraph implements Graph {
             public boolean supportsRemoveProperty() {
                 return false;
             }
+        }
+    }
+
+    /**
+     * {@link EmptyGraph} doesn't have a standard {@code open()} method because it is a singleton. Use this factory
+     * to provide as a {@link GraphFactoryClass} for {@link EmptyGraph} so that {@link GraphFactory} can instantiate
+     * it in a generalized way. End users should not generally use this method of instantiation.
+     */
+    public static final class EmptyGraphFactory {
+        public static Graph open(final Configuration conf) {
+            return EmptyGraph.instance();
         }
     }
 }

@@ -27,6 +27,8 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 
+import java.util.Optional;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -37,7 +39,8 @@ public final class PersistedInputRDD implements InputRDD {
         if (!configuration.containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " to read the persisted RDD from");
         Spark.create(sparkContext.sc());
-        return JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), SparkContextStorage.open(sparkContext.sc())).get()).toJavaRDD());
+        final Optional<String> graphLocation = Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), SparkContextStorage.open());
+        return graphLocation.isPresent() ? JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(graphLocation.get()).toJavaRDD()) : JavaPairRDD.fromJavaRDD(sparkContext.emptyRDD());
     }
 
     @Override

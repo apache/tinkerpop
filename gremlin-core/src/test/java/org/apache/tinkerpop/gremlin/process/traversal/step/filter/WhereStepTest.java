@@ -43,7 +43,11 @@ public class WhereStepTest extends StepTest {
                 as("a").out().as("b").where(as("a").out()),
                 as("a").out().as("b").where(as("a").out().as("b")),
                 as("a").out().as("b").where("a", P.neq("b")),
-                as("a").out().as("b").where("a", P.neq("c"))
+                as("a").out().as("b").where("a", P.neq("c")),
+                as("a").out().as("b").where("a", P.neq("b")).by("name"),
+                as("a").out().as("b").where("a", P.neq("b")).by("name").by("age"),
+                as("a").out().as("b").where("a", P.neq("b")).by("age"),
+                as("a").out().as("b").where("a", P.neq("b").and(P.neq("a"))).by("age")
         );
     }
 
@@ -52,10 +56,10 @@ public class WhereStepTest extends StepTest {
         Object[][] traversalPaths = new Object[][]{
                 {false, __.where(P.not(P.within("x"))).asAdmin()},
                 {true, __.as("x").where(P.not(P.within("x"))).asAdmin()},
-                {false, __.as("a").where(P.not(P.within("x"))).asAdmin()},
+                {true, __.as("a").where(P.not(P.within("x"))).asAdmin()},
                 {false, __.local(__.where(P.not(P.within("x")))).asAdmin()},
                 {true, __.as("x").local(__.where(P.not(P.within("x")))).asAdmin()},
-                {false, __.as("a").local(__.where(P.not(P.within("x")))).asAdmin()},
+                {false, __.local(__.where(P.not(P.within("x")))).asAdmin()},
         };
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));

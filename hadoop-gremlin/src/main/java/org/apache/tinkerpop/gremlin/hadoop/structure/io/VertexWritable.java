@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -60,42 +60,15 @@ public final class VertexWritable implements Writable, Serializable {
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        try {
-            this.vertex = null;
-            this.vertex = HadoopPools.getGryoPool().doWithReader(gryoReader -> {
-                try {
-                    final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
-                    return gryoReader.readObject(inputStream, StarGraph.class).getStarVertex(); // read the star graph
-                } catch (final IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            });
-        } catch (final IllegalStateException e) {
-            if (e.getCause() instanceof IOException)
-                throw (IOException) e.getCause();
-            else
-                throw e;
-        }
+        this.vertex = null;
+        final ByteArrayInputStream bais = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
+        this.vertex = ((StarGraph)KryoShimServiceLoader.readClassAndObject(bais)).getStarVertex(); // read the star graph;
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        try {
-            HadoopPools.getGryoPool().doWithWriter(gryoWriter -> {
-                try {
-                    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    gryoWriter.writeObject(outputStream, this.vertex.graph()); // write the star graph
-                    WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
-                } catch (final IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            });
-        } catch (final IllegalStateException e) {
-            if (e.getCause() instanceof IOException)
-                throw (IOException) e.getCause();
-            else
-                throw e;
-        }
+        final byte serialized[] = KryoShimServiceLoader.writeClassAndObjectToBytes(this.vertex.graph());
+        WritableUtils.writeCompressedByteArray(output, serialized);
     }
 
     private void writeObject(final ObjectOutputStream outputStream) throws IOException {

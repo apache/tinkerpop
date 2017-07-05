@@ -31,7 +31,7 @@ def stringify(v) {
         default:
             throw new Exception("Unexpected vertex label: ${v.label()}")
     }
-    def g = v.graph().traversal(standard())
+    def g = v.graph().traversal()
     def outE = g.V(v).outE().map {
         def e = it.get()
         def weight = e.property("weight")

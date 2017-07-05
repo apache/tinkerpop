@@ -35,14 +35,13 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONDeserializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeType;
-import org.javatuples.Pair;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -71,6 +70,7 @@ import java.util.stream.Stream;
 public final class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
+    private final GraphSONVersion version;
     private boolean unwrapAdjacencyList = false;
 
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
@@ -80,6 +80,7 @@ public final class GraphSONReader implements GraphReader {
         mapper = builder.mapper.createMapper();
         batchSize = builder.batchSize;
         unwrapAdjacencyList = builder.unwrapAdjacencyList;
+        version = ((GraphSONMapper)builder.mapper).getVersion();
     }
 
     /**
@@ -112,6 +113,10 @@ public final class GraphSONReader implements GraphReader {
             // StarAdjacentVertex whose equality should match StarVertex.
             final Vertex cachedOutV = cache.get(e.outVertex());
             final Vertex cachedInV = cache.get(e.inVertex());
+
+            if (null == cachedOutV) throw new IllegalStateException(String.format("Could not find outV with id [%s] to create edge with id [%s]", e.outVertex().id(), e.id()));
+            if (null == cachedInV) throw new IllegalStateException(String.format("Could not find inV with id [%s] to create edge with id [%s]", e.inVertex().id(), e.id()));
+
             final Edge newEdge = edgeFeatures.willAllowId(e.id()) ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
             e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -169,14 +174,14 @@ public final class GraphSONReader implements GraphReader {
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        final StarGraph starGraph = StarGraphGraphSONSerializer.readStarGraphVertex(vertexData);
+        final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
         if (vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
-            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
+            StarGraphGraphSONDeserializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
 
         if (vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
-            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
+            StarGraphGraphSONDeserializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
 
         return starGraph.getStarVertex();
     }
@@ -191,17 +196,21 @@ public final class GraphSONReader implements GraphReader {
      */
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
-        final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
 
-        final Map<String,Object> edgeProperties = edgeData.containsKey(GraphSONTokens.PROPERTIES) ?
-                (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES) : Collections.EMPTY_MAP;
-        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
-                edgeData.get(GraphSONTokens.LABEL).toString(),
-                edgeProperties,
-                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+            final Map<String, Object> edgeProperties = edgeData.containsKey(GraphSONTokens.PROPERTIES) ?
+                    (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES) : Collections.EMPTY_MAP;
+            final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
+                    edgeData.get(GraphSONTokens.LABEL).toString(),
+                    edgeProperties,
+                    edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString(),
+                    edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString());
 
-        return edgeAttachMethod.apply(edge);
+            return edgeAttachMethod.apply(edge);
+        } else {
+            return edgeAttachMethod.apply((DetachedEdge) mapper.readValue(inputStream, Edge.class));
+        }
     }
 
     /**
@@ -217,12 +226,16 @@ public final class GraphSONReader implements GraphReader {
     @Override
     public VertexProperty readVertexProperty(final InputStream inputStream,
                                              final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
-        final Map<String, Object> vpData = mapper.readValue(inputStream, mapTypeReference);
-        final Map<String, Object> metaProperties = (Map<String, Object>) vpData.get(GraphSONTokens.PROPERTIES);
-        final DetachedVertexProperty vp = new DetachedVertexProperty(vpData.get(GraphSONTokens.ID),
-                vpData.get(GraphSONTokens.LABEL).toString(),
-                vpData.get(GraphSONTokens.VALUE), metaProperties);
-        return vertexPropertyAttachMethod.apply(vp);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> vpData = mapper.readValue(inputStream, mapTypeReference);
+            final Map<String, Object> metaProperties = (Map<String, Object>) vpData.get(GraphSONTokens.PROPERTIES);
+            final DetachedVertexProperty vp = new DetachedVertexProperty(vpData.get(GraphSONTokens.ID),
+                    vpData.get(GraphSONTokens.LABEL).toString(),
+                    vpData.get(GraphSONTokens.VALUE), metaProperties);
+            return vertexPropertyAttachMethod.apply(vp);
+        } else {
+            return vertexPropertyAttachMethod.apply((DetachedVertexProperty) mapper.readValue(inputStream, VertexProperty.class));
+        }
     }
 
     /**
@@ -236,9 +249,13 @@ public final class GraphSONReader implements GraphReader {
     @Override
     public Property readProperty(final InputStream inputStream,
                                  final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
-        final Map<String, Object> propertyData = mapper.readValue(inputStream, mapTypeReference);
-        final DetachedProperty p = new DetachedProperty(propertyData.get(GraphSONTokens.KEY).toString(), propertyData.get(GraphSONTokens.VALUE));
-        return propertyAttachMethod.apply(p);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> propertyData = mapper.readValue(inputStream, mapTypeReference);
+            final DetachedProperty p = new DetachedProperty(propertyData.get(GraphSONTokens.KEY).toString(), propertyData.get(GraphSONTokens.VALUE));
+            return propertyAttachMethod.apply(p);
+        } else {
+            return propertyAttachMethod.apply((DetachedProperty) mapper.readValue(inputStream, Property.class));
+        }
     }
 
     /**

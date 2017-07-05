@@ -18,113 +18,109 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Predicate;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(Enclosed.class)
+@RunWith(Parameterized.class)
 public class FilterRankingStrategyTest {
 
-    @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractDedupBijectionStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+    public static Iterable<Object[]> data() {
+        return generateTestParameters();
     }
 
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractDedupBijectionStrategyTest {
+    @Parameterized.Parameter(value = 0)
+    public Traversal original;
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
+    @Parameterized.Parameter(value = 1)
+    public Traversal optimized;
+
+    @Parameterized.Parameter(value = 2)
+    public Collection<TraversalStrategy> otherStrategies;
+
+    @Test
+    public void doTest() {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(FilterRankingStrategy.instance());
+        for (final TraversalStrategy strategy : this.otherStrategies) {
+            strategies.addStrategies(strategy);
         }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+        this.original.asAdmin().setStrategies(strategies);
+        this.original.asAdmin().applyStrategies();
+        assertEquals(this.optimized, this.original);
     }
 
-    private static abstract class AbstractDedupBijectionStrategyTest {
-
-        protected TraversalEngine traversalEngine;
-
-        void applyDedupBijectionStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(FilterRankingStrategy.instance(), IdentityRemovalStrategy.instance());
-
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyDedupBijectionStrategy(traversal);
-            assertEquals(optimized, traversal);
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            return Arrays.asList(new Traversal[][]{
-                    {__.dedup().order(), __.dedup().order()},
-                    {__.order().dedup(), __.dedup().order()},
-                    {__.identity().order().dedup(), __.dedup().order()},
-                    {__.order().identity().dedup(), __.dedup().order()},
-                    {__.order().out().dedup(), __.order().out().dedup()},
-                    {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup()},
-                    {__.dedup().filter(__.out()).has("value", 0), __.has("value", 0).filter(__.out()).dedup()},
-                    {__.filter(__.out()).dedup().has("value", 0), __.has("value", 0).filter(__.out()).dedup()},
-                    {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup()},
-            });
-        }
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
+        final Predicate testP = t -> true;
+        return Arrays.asList(new Object[][]{
+                {__.dedup().order(), __.dedup().order(), Collections.emptyList()},
+                {__.has("name", "marko").as("a").out().as("b").has("age", 32).where("a", neq("b")).as("c").out(), __.has("name", "marko").as("a").out().has("age", 32).as("b").where("a", neq("b")).as("c").out(), Collections.emptyList()},
+                {__.has("name", "marko").as("a").out().has("age", 32).as("b").where("a", neq("b")), __.has("name", "marko").as("a").out().has("age", 32).as("b").where("a", neq("b")), Collections.emptyList()},
+                {__.has("name", "marko").has("age", 32).dedup().has("name", "bob").as("a"), __.has("name", "marko").has("age", 32).has("name", "bob").dedup().as("a"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.has("name", "marko").dedup().as("a").has("age", 32).has("name", "bob").as("b"), __.has("name", "marko").has("age", 32).has("name", "bob").dedup().as("b", "a"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.where("b", eq("c")).as("a").dedup("a").has("name", "marko"), __.has("name", "marko").where("b", eq("c")).as("a").dedup("a"), Collections.emptyList()},
+                {__.where("b", eq("c")).has("name", "bob").as("a").dedup("a").has("name", "marko"), __.has("name", "bob").has("name", "marko").where("b", eq("c")).as("a").dedup("a"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.has("name", "marko").as("a").out().has("name", "bob").dedup().as("b").where(__.as("a").out().as("b")), __.has("name", "marko").as("a").out().has("name", "bob").dedup().as("b").where(__.as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.has("name", "marko").as("a").out().has("name", "bob").as("b").dedup().where(__.as("a").out().as("b")), __.has("name", "marko").as("a").out().has("name", "bob").dedup().as("b").where(__.as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.has("name", "marko").as("a").out().has("name", "bob").dedup().as("c").where(__.as("a").out().as("b")), __.has("name", "marko").as("a").out().has("name", "bob").where(__.as("a").out().as("b")).dedup().as("c"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.order().dedup(), __.dedup().order(), Collections.emptyList()},
+                {__.order().filter(testP).dedup(), __.order().filter(testP).dedup(), Collections.emptyList()},
+                {__.order().as("a").dedup(), __.dedup().order().as("a"), Collections.emptyList()},
+                {__.order().as("a").dedup("a"), __.order().as("a").dedup("a"), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko"), __.has("name", "marko").as("a").dedup("a").order(), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko").out(), __.has("name", "marko").as("a").dedup("a").order().out(), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko").where("a", eq("b")).out(), __.has("name", "marko").as("a").where("a", eq("b")).dedup("a").order().out(), Collections.emptyList()},
+                {__.identity().order().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
+                {__.order().identity().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
+                {__.order().out().dedup(), __.order().out().dedup(), Collections.emptyList()},
+                {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {__.dedup().has("value", 0).or(not(has("age")), has("age", 10)).has("value", 1), __.has("value", 0).has("value", 1).or(not(has("age")), has("age", 10)).dedup(), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.dedup().filter(out()).has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {filter(out()).dedup().has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {__.as("a").out().has("age").where(P.eq("a")), __.as("a").out().where(P.eq("a")).has("age"), Collections.emptyList()},
+                {__.as("a").out().has("age").where(P.eq("a")).by("age"), __.as("a").out().has("age").where(P.eq("a")).by("age"), Collections.emptyList()},
+                {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")).by("age"), __.as("a").out().and(has("age"), has("name")).where(P.eq("a")).by("age"), Collections.emptyList()},
+                {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")), __.as("a").out().where(P.eq("a")).and(has("age"), has("name")), Collections.emptyList()},
+                {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")).by("age"), __.as("a").out().has("age").has("name").where(P.eq("a")).by("age"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")), __.as("a").out().where(P.eq("a")).has("age").has("name"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.as("a").out().and(has("age"), has("name")).filter(__.where(P.eq("a"))), __.as("a").out().where(P.eq("a")).has("age").has("name"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.as("a").out().and(has("age"), has("name")).filter(__.where(P.eq("a")).by("age")), __.as("a").out().has("age").has("name").where(P.eq("a")).by("age"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {has("value", 0).or(has("name"), has("age")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(has("name"), has("age")).dedup(), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).or(out(), in()).as(Graph.Hidden.hide("x")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(outE(), inE()).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {has("value", 0).and(has("age"), has("name", "marko")).is(10), __.is(10).has("value", 0).has("age").has("name", "marko"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).filter(or(not(has("age")), has("age", 1))).has("value", 1).dedup(), has("value", 0).has("value", 1).or(not(filter(properties("age"))), has("age", 1)).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+        });
     }
 }
+
 

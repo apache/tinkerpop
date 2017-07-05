@@ -26,9 +26,15 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Serializers {
+    /**
+     * GraphSON 3.0.
+     */
     GRAPHSON(SerTokens.MIME_JSON),
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
-    GRYO_V1D0(SerTokens.MIME_GRYO_V1D0);
+    GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
+    GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
+    GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
+    GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
 
     private String value;
 
@@ -57,11 +63,17 @@ public enum Serializers {
     public MessageSerializer simpleInstance() {
         switch (value) {
             case SerTokens.MIME_JSON:
-                return new GraphSONMessageSerializerV1d0();
+                return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRAPHSON_V1D0:
                 return new GraphSONMessageSerializerGremlinV1d0();
+            case SerTokens.MIME_GRAPHSON_V2D0:
+                return new GraphSONMessageSerializerGremlinV2d0();
+            case SerTokens.MIME_GRAPHSON_V3D0:
+                return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_V1D0:
                 return new GryoMessageSerializerV1d0();
+            case SerTokens.MIME_GRYO_LITE_V1D0:
+                return new GryoLiteMessageSerializerV1d0();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }

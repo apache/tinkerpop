@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
@@ -49,6 +50,25 @@ public interface Path extends Cloneable, Iterable<Object> {
     }
 
     /**
+     * Determine if the path is empty or not.
+     *
+     * @return whether the path is empty or not.
+     */
+    public default boolean isEmpty() {
+        return this.size() == 0;
+    }
+
+    /**
+     * Get the head of the path.
+     *
+     * @param <A> the type of the head of the path
+     * @return the head of the path
+     */
+    public default <A> A head() {
+        return (A) this.objects().get(this.size() - 1);
+    }
+
+    /**
      * Add a new step to the path with an object and any number of associated labels.
      *
      * @param object the new head of the path
@@ -64,6 +84,14 @@ public interface Path extends Cloneable, Iterable<Object> {
      * @return the path with added labels
      */
     public Path extend(final Set<String> labels);
+
+    /**
+     * Remove labels from path.
+     *
+     * @param labels the labels to remove
+     * @return the path with removed labels
+     */
+    public Path retract(final Set<String> labels);
 
     /**
      * Get the object associated with the particular label of the path.
@@ -107,7 +135,9 @@ public interface Path extends Cloneable, Iterable<Object> {
      * @throws IllegalArgumentException if the path does not contain the label
      */
     public default <A> A get(final Pop pop, final String label) throws IllegalArgumentException {
-        if (Pop.all == pop) {
+        if (Pop.mixed == pop) {
+            return this.get(label);
+        } else if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -211,10 +241,66 @@ public interface Path extends Cloneable, Iterable<Object> {
                 isPresent();
     }
 
+    /**
+     * Isolate a sub-path from the path object. The isolation is based solely on the path labels.
+     * The to-label is inclusive. Thus, from "b" to "c" would isolate the example path as follows {@code a,[b,c],d}.
+     * Note that if there are multiple path segments with the same label, then its the last occurrence that is isolated.
+     * For instance, from "b" to "c" would be {@code a,b,[b,c,d,c]}.
+     *
+     * @param fromLabel The label to start recording the sub-path from.
+     * @param toLabel   The label to end recording the sub-path to.
+     * @return the isolated sub-path.
+     */
+    public default Path subPath(final String fromLabel, final String toLabel) {
+        if (null == fromLabel && null == toLabel)
+            return this;
+        else {
+            Path subPath = MutablePath.make();
+            final int size = this.size();
+            int fromIndex = -1;
+            int toIndex = -1;
+            for (int i = size - 1; i >= 0; i--) {
+                final Set<String> labels = this.labels().get(i);
+                if (-1 == fromIndex && labels.contains(fromLabel))
+                    fromIndex = i;
+                if (-1 == toIndex && labels.contains(toLabel))
+                    toIndex = i;
+            }
+            if (null != fromLabel && -1 == fromIndex)
+                throw Path.Exceptions.couldNotLocatePathFromLabel(fromLabel);
+            if (null != toLabel && -1 == toIndex)
+                throw Path.Exceptions.couldNotLocatePathToLabel(toLabel);
+
+            if (fromIndex == -1)
+                fromIndex = 0;
+            if (toIndex == -1)
+                toIndex = size-1;
+            if (fromIndex > toIndex)
+                throw Path.Exceptions.couldNotIsolatedSubPath(fromLabel, toLabel);
+            for (int i = fromIndex; i <= toIndex; i++) {
+                final Set<String> labels = this.labels().get(i);
+                subPath.extend(this.get(i), labels);
+            }
+            return subPath;
+        }
+    }
+
     public static class Exceptions {
 
         public static IllegalArgumentException stepWithProvidedLabelDoesNotExist(final String label) {
             return new IllegalArgumentException("The step with label " + label + " does not exist");
+        }
+
+        public static IllegalArgumentException couldNotLocatePathFromLabel(final String fromLabel) {
+            return new IllegalArgumentException("Could not locate path from-label: " + fromLabel);
+        }
+
+        public static IllegalArgumentException couldNotLocatePathToLabel(final String toLabel) {
+            return new IllegalArgumentException("Could not locate path to-label: " + toLabel);
+        }
+
+        public static IllegalArgumentException couldNotIsolatedSubPath(final String fromLabel, final String toLabel) {
+            return new IllegalArgumentException("Could not isolate path because from comes after to: " + fromLabel + "->" + toLabel);
         }
     }
 }

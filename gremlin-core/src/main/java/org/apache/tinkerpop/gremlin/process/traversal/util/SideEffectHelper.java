@@ -28,12 +28,20 @@ public final class SideEffectHelper {
     private SideEffectHelper() {
     }
 
-    public static void validateSideEffect(final String key, final Object value) throws IllegalArgumentException {
-        if (null == value)
-            throw TraversalSideEffects.Exceptions.sideEffectValueCanNotBeNull();
+    public static void validateSideEffectKey(final String key) throws IllegalArgumentException {
         if (null == key)
             throw TraversalSideEffects.Exceptions.sideEffectKeyCanNotBeNull();
         if (key.isEmpty())
             throw TraversalSideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
+    }
+
+    public static void validateSideEffectValue(final Object value) throws IllegalArgumentException {
+        if (null == value)
+            throw TraversalSideEffects.Exceptions.sideEffectValueCanNotBeNull();
+    }
+
+    public static void validateSideEffectKeyValue(final String key, final Object value) throws IllegalArgumentException {
+        SideEffectHelper.validateSideEffectKey(key);
+        SideEffectHelper.validateSideEffectValue(value);
     }
 }

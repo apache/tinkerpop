@@ -25,7 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -47,7 +52,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
         for (final Traversal.Admin<S, E> coalesceTraversal : this.coalesceTraversals) {
             coalesceTraversal.reset();
-            coalesceTraversal.addStart(traverser.asAdmin().split());
+            coalesceTraversal.addStart(traverser.split());
             if (coalesceTraversal.hasNext())
                 return coalesceTraversal;
         }
@@ -68,10 +73,18 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     public CoalesceStep<S, E> clone() {
         final CoalesceStep<S, E> clone = (CoalesceStep<S, E>) super.clone();
         clone.coalesceTraversals = new ArrayList<>();
-        for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
-            clone.coalesceTraversals.add(clone.integrateChild(conjunctionTraversal.clone()));
+        for (final Traversal.Admin<S, E> conjunctionTraversal : this.coalesceTraversals) {
+            clone.coalesceTraversals.add(conjunctionTraversal.clone());
         }
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        for (final Traversal.Admin<S, E> conjunctionTraversal : this.coalesceTraversals) {
+            this.integrateChild(conjunctionTraversal);
+        }
     }
 
     @Override

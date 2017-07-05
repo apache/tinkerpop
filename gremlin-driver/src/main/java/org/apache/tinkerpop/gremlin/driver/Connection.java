@@ -57,15 +57,22 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
+    private final long keepAliveInterval;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
     public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
+
+    /**
+     * @deprecated As of release 3.2.3, replaced by {@link #RECONNECT_INTERVAL}.
+     */
+    @Deprecated
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
+    public static final long KEEP_ALIVE_INTERVAL = 1800000;
 
     /**
      * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
@@ -84,6 +91,7 @@ final class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
+    private final AtomicReference<ScheduledFuture> keepAliveFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
@@ -91,6 +99,7 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
+        this.keepAliveInterval = pool.settings().keepAliveInterval;
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
@@ -156,6 +165,10 @@ final class Connection {
         final CompletableFuture<Void> future = new CompletableFuture<>();
         closeFuture.set(future);
 
+        // stop any pings being sent at the server for keep-alive
+        final ScheduledFuture keepAlive = keepAliveFuture.get();
+        if (keepAlive != null) keepAlive.cancel(true);
+
         // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
         // can be immediate.  if not this method will signal the readCompleted future defined in the write()
         // operation to check if it can close.  in this way the connection no longer receives writes, but
@@ -187,14 +200,15 @@ final class Connection {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
-        final ChannelPromise promise = channel.newPromise()
+
+        final ChannelPromise requestPromise = channel.newPromise()
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
                             logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
                         thisConnection.isDead = true;
                         thisConnection.returnToPool();
-                        future.completeExceptionally(f.cause());
+                        cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
@@ -236,12 +250,33 @@ final class Connection {
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        future.complete(new ResultSet(handler, cluster.executor(), readCompleted));
+                        cluster.executor().submit(() -> future.complete(
+                                new ResultSet(handler, cluster.executor(), readCompleted, requestMessage, pool.host)));
                     }
                 });
-        channel.writeAndFlush(requestMessage, promise);
+        channel.writeAndFlush(requestMessage, requestPromise);
 
-        return promise;
+        // try to keep the connection alive if the channel allows such things - websockets will
+        if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
+
+            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.executor().scheduleAtFixedRate(() -> {
+                logger.debug("Request sent to server to keep {} alive", thisConnection);
+                try {
+                    channel.writeAndFlush(channelizer.createKeepAliveMessage());
+                } catch (Exception ex) {
+                    // will just log this for now - a future real request can be responsible for the failure that
+                    // marks the host as dead. this also may not mean the host is actually dead. more robust handling
+                    // is in play for real requests, not this simple ping
+                    logger.warn(String.format("Keep-alive did not succeed on %s", thisConnection), ex);
+                }
+            }, keepAliveInterval, keepAliveInterval, TimeUnit.MILLISECONDS));
+
+            // try to cancel the old future if it's still un-executed - no need to ping since a new write has come
+            // through on the connection
+            if (oldKeepAliveFuture != null) oldKeepAliveFuture.cancel(true);
+        }
+
+        return requestPromise;
     }
 
     public void returnToPool() {
@@ -271,9 +306,12 @@ final class Connection {
         // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
+            // maybe this should be delegated back to the Client implementation??? kinda weird to instanceof here.....
             if (client instanceof Client.SessionedClient) {
-                // maybe this should be delegated back to the Client implementation???
-                final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE)).create();
+                final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
+                final RequestMessage closeMessage = client.buildMessage(
+                        RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
+
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
                 write(closeMessage, closed);
 

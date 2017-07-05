@@ -1,0 +1,176 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[traversal-induced-values]]
+Traversal Induced Values
+------------------------
+
+The parameters of a `Traversal` can be known ahead of time as constants or might otherwise be passed in as dynamic
+arguments.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').out('knows').has('age', gt(29)).values('name')
+----
+
+In plain language, the above Gremlin asks, "What are the names of the people who Marko knows who are over the age of
+29?". In this case, "29" is known as a constant to the traversal. Of course, if the question is changed slightly to
+instead ask, "What are the names of the people who Marko knows who are older than he is?", the hardcoding of "29" will
+no longer suffice. There are multiple ways Gremlin would allow this second question to be answered. The first is
+obvious to any programmer - use a variable:
+
+[gremlin-groovy,modern]
+----
+marko = g.V().has('name','marko').next()
+g.V(marko).out('knows').has('age', gt(marko.value('age'))).values('name')
+----
+
+The downside to this approach is that it takes two separate traversals to answer the question. Ideally, there should
+be a single traversal, that can query "marko" once, determine his `age` and then use that for the value supplied to
+filter the people he knows. In this way the _value_ for the `age` in the `has()`-filter is _induced_ from the `Traversal`
+itself.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').as('marko').      <1>
+  out('knows').as('friend').                <2>
+    where('friend', gt('marko')).by('age'). <3>
+  values('name')                            <4>
+----
+
+<1> Find the "marko" `Vertex` and label it as "marko".
+<2> Traverse out on the "knows" edges to the adjacent `Vertex` and label it as "friend".
+<3> Continue to traverser only if Marko's current friend is older than him.
+<4> Get the name of Marko's older friend.
+
+As another example of how traversal induced values can be used, consider a scenario where there was a graph that
+contained people, their friendship relationships, and the movies that they liked.
+
+image:traversal-induced-values-3.png[width=600]
+
+[gremlin-groovy]
+----
+g.addV("user").property("name", "alice").as("u1").
+  addV("user").property("name", "jen").as("u2").
+  addV("user").property("name", "dave").as("u3").
+  addV("movie").property("name", "the wild bunch").as("m1").
+  addV("movie").property("name", "young guns").as("m2").
+  addV("movie").property("name", "unforgiven").as("m3").
+  addE("friend").from("u1").to("u2").
+  addE("friend").from("u1").to("u3").
+  addE("like").from("u2").to("m1").
+  addE("like").from("u2").to("m2").
+  addE("like").from("u3").to("m2").
+  addE("like").from("u3").to("m3").iterate()
+----
+
+Getting a list of all the movies that Alice's friends like could be done like this:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').out("friend").out("like").values("name")
+----
+
+but what if there was a need to get a list of movies that *all* her Alice's friends liked. In this case, that would
+mean filtering out "the wild bunch" and "unforgiven".
+
+[gremlin-groovy,existing]
+----
+g.V().has("name","alice").
+  out("friend").aggregate("friends").                            <1>
+  out("like").dedup().                                           <2>
+  filter(__.in("like").where(within("friends")).count().as("a"). <3>
+            select("friends").count(local).where(eq("a"))).      <4>
+  values("name")
+----
+
+<1> Gather Alice's list of friends to a list called "friends".
+<2> Traverse to the unique list of movies that Alice's friends like.
+<3> Remove movies that weren't liked by all friends. This starts by taking each movie and traversing back in on the
+"like" edges to friends who liked the movie (note the use of `where(within("friends"))` to limit those likes to only
+Alice's friends as aggregated in step one) and count them up into "a".
+<4> Count the aggregated friends and see if the number matches what was stored in "a" which would mean that all friends
+like the movie.
+
+Traversal induced values are not just for filtering. They can also be used when writing the values of the properties
+of one `Vertex` to another:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', 'marko').as('marko').
+  out('created').property('creator', select('marko').by('name'))
+g.V().has('name', 'marko').out('created').valueMap()
+----
+
+In a more complex example of how this might work, consider a situation where the goal is to propagate a value stored on
+a particular vertex through one of more additional connected vertices using some value on the connecting edges to
+determine the value to assign. For example, the following graph depicts three "tank" vertices where the edges represent
+the direction a particular "tank" should drain and the "factor" by which it should do it:
+
+image:traversal-induced-values-1.png[width=700]
+
+If the traversal started at tank "a", then the value of "amount" on that tank would be used to calculate what the value
+of tank "b" was by multiplying it by the value of the "factor" property on the edge between vertices "a" and "b". In
+this case the amount of tank "b" would then be 50. Following this pattern, when going from tank "b" to tank "c", the
+value of the "amount" of tank "c" would be 5.
+
+image:traversal-induced-values-2.png[width=700]
+
+Using Gremlin `sack()`, this kind of operation could be specified as a single traversal:
+
+[gremlin-groovy]
+----
+g.addV('tank').property('name', 'a').property('amount', 100.0).as('a').
+  addV('tank').property('name', 'b').property('amount', 0.0).as('b').
+  addV('tank').property('name', 'c').property('amount', 0.0).as('c').
+  addE('drain').property('factor', 0.5).from('a').to('b').
+  addE('drain').property('factor', 0.1).from('b').to('c').iterate()
+a = g.V().has('name','a').next()
+g.withSack(a.value('amount')).
+  V(a).repeat(outE('drain').sack(mult).by('factor').
+              inV().property('amount', sack())).
+       until(__.outE('drain').count().is(0)).iterate()
+g.V().valueMap()
+----
+
+The "sack value" gets initialized to the value of tank "a". The traversal iteratively traverses out on the "drain"
+edges and uses `mult` to multiply the sack value by the value of "factor". The sack value at that point is then
+written to the "amount" of the current vertex.
+
+As shown in the previous example, `sack()` is a useful way to "carry" and manipulate a value that can be later used
+elsewhere in the traversal. Here is another example of its usage where it is utilized to increment all the "age" values
+in the modern toy graph by 10:
+
+[gremlin-groovy,modern]
+----
+g.withSack(0).V().has("age").
+  sack(assign).by("age").sack(sum).by(constant(10)).
+  property("age", sack()).valueMap()
+----
+
+In the above case, the sack is initialized to zero and as each vertex is iterated, the "age" is assigned to the sack
+with `sack(assign).by('age')`. That value in the sack is then incremented by the value `constant(10)` and assigned to
+the "age" property of the same vertex.
+
+This value the sack is incremented by need not be a constant. It could also be derived from the traversal itself.
+Using the same example, the "weight" property on the incident edges will be used as the value to add to the sack:
+
+[gremlin-groovy,modern]
+----
+g.withSack(0).V().has("age").
+  sack(assign).by("age").sack(sum).by(bothE().values("weight").sum()).
+  property("age", sack()).valueMap()
+----

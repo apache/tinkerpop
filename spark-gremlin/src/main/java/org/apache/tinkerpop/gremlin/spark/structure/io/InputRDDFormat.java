@@ -71,9 +71,8 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
             final SparkConf sparkConfiguration = new SparkConf();
             sparkConfiguration.setAppName(UUID.randomUUID().toString());
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
-            final InputRDD inputRDD = (InputRDD) Class.forName(sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD)).newInstance();
-            final JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-            Spark.create(javaSparkContext.sc());
+            final InputRDD inputRDD = (InputRDD) Class.forName(sparkConfiguration.get(Constants.GREMLIN_HADOOP_GRAPH_READER)).newInstance();
+            final JavaSparkContext javaSparkContext = new JavaSparkContext(Spark.create(sparkConfiguration));
             final Iterator<Tuple2<Object, VertexWritable>> iterator = inputRDD.readGraphRDD(ConfUtil.makeApacheConfiguration(taskAttemptContext.getConfiguration()), javaSparkContext).toLocalIterator();
             return new RecordReader<NullWritable, VertexWritable>() {
                 @Override

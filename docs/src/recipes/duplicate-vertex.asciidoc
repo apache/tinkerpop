@@ -1,0 +1,52 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[duplicate-vertex]]
+Duplicate Vertex Detection
+--------------------------
+
+The pattern for finding duplicate vertices is quite similar to the pattern defined in the <<duplicate-edge,Duplicate Edge>>
+section. The idea is to extract the relevant features of the vertex into a comparable list that can then be used to
+group for duplicates.
+
+Consider the following example with some duplicate vertices added to the "modern" graph:
+
+[gremlin-groovy,modern]
+----
+g.addV('person').property('name', 'vadas').property('age', 27)
+g.addV('person').property('name', 'vadas').property('age', 22) // not a duplicate because "age" value
+g.addV('person').property('name', 'marko').property('age', 29)
+g.V().hasLabel("person").
+  group().
+    by(values("name", "age").fold()).
+  unfold()
+----
+
+In the above case, the "name" and "age" properties are the relevant features for identifying duplication. The key in
+the `Map` provided by the `group` is the list of features for comparison and the value is the list of vertices that
+match the feature. To extract just those vertices that contain duplicates an additional filter can be added:
+
+[gremlin-groovy,existing]
+----
+g.V().hasLabel("person").
+  group().
+    by(values("name", "age").fold()).
+  unfold().
+  filter(select(values).count(local).is(gt(1)))
+----
+
+That filter, extracts the values of the `Map` and counts the vertices within each list. If that list contains more than
+one vertex then it is a duplicate.

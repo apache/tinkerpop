@@ -27,7 +27,10 @@ if [ "${USERNAME}" == "" ]; then
   exit 1
 fi
 
-SVN_CMD="svn --no-auth-cache --username=${USERNAME}"
+read -s -p "Password for SVN user ${USERNAME}: " PASSWORD
+echo
+
+SVN_CMD="svn --no-auth-cache --username=${USERNAME} --password=${PASSWORD}"
 VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
 
 rm -rf target/svn
@@ -75,18 +78,10 @@ pushd "javadocs/${VERSION}/"; cat ../../../publish-docs.javadocs | awk '/^A/ {pr
 pushd "docs/${VERSION}/"; cat ../../../publish-docs.docs | awk '/^D/ {print $2}' | xargs --no-run-if-empty svn delete; popd
 pushd "javadocs/${VERSION}/"; cat ../../../publish-docs.javadocs | awk '/^D/ {print $2}' | xargs --no-run-if-empty svn delete; popd
 
-for dir in "docs" "javadocs"
-do
-  CURRENT=$((${SVN_CMD} list "${dir}" ; ls "${dir}") | tr -d '/' | grep -v SNAPSHOT | grep -Fv current | sort -rV | head -n1)
+CHANGES=$(cat ../publish-docs.*docs | grep -v '.graffle$' | wc -l)
 
-  ${SVN_CMD} update --depth empty "${dir}/current"
-  ${SVN_CMD} rm "${dir}/current"
+if [ ${CHANGES} -gt 0 ]; then
+  ${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
+fi
 
-  ${SVN_CMD} update --depth empty "${dir}/${CURRENT}"
-  ln -s "${CURRENT}" "${dir}/current"
-  ${SVN_CMD} update --depth empty "${dir}/current"
-  ${SVN_CMD} add "${dir}/current"
-done
-
-${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
 popd

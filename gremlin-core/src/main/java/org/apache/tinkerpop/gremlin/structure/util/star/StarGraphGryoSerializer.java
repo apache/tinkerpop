@@ -18,36 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
+
 /**
- * Kryo serializer for {@link StarGraph}.  Implements an internal versioning capability for backward compatibility.
- * The single byte at the front of the serialization stream denotes the version.  That version can be used to choose
- * the correct deserialization mechanism.  The limitation is that this versioning won't help with backward
- * compatibility for custom serializers from providers.  Providers should be encouraged to write their serializers
- * with backward compatibility in mind.
+ * A wrapper for {@link StarGraphSerializer} that makes it compatible with TinkerPop's
+ * shaded Kryo.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
+public final class StarGraphGryoSerializer extends ShadedSerializerAdapter<StarGraph>  {
 
     private static final Map<Direction, StarGraphGryoSerializer> CACHE = new HashMap<>();
-
-    private final Direction edgeDirectionToSerialize;
-
-    private final static byte VERSION_1 = Byte.MIN_VALUE;
 
     static {
         CACHE.put(Direction.BOTH, new StarGraphGryoSerializer(Direction.BOTH));
@@ -56,8 +43,12 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
         CACHE.put(null, new StarGraphGryoSerializer(null));
     }
 
+    private StarGraphGryoSerializer(final Direction edgeDirectionToSerialize, final GraphFilter graphFilter) {
+        super(new StarGraphSerializer(edgeDirectionToSerialize, graphFilter));
+    }
+
     private StarGraphGryoSerializer(final Direction edgeDirectionToSerialize) {
-        this.edgeDirectionToSerialize = edgeDirectionToSerialize;
+        this(edgeDirectionToSerialize, new GraphFilter());
     }
 
     /**
@@ -68,88 +59,8 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
         return CACHE.get(direction);
     }
 
-    @Override
-    public void write(final Kryo kryo, final Output output, final StarGraph starGraph) {
-        output.writeByte(VERSION_1);
-        kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
-        kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
-        kryo.writeClassAndObject(output, starGraph.starVertex.id);
-        kryo.writeObject(output, starGraph.starVertex.label);
-        writeEdges(kryo, output, starGraph, Direction.IN);
-        writeEdges(kryo, output, starGraph, Direction.OUT);
-        kryo.writeObject(output, null != starGraph.starVertex.vertexProperties);
-        if (null != starGraph.starVertex.vertexProperties) {
-            kryo.writeObject(output, starGraph.starVertex.vertexProperties.size());
-            for (final Map.Entry<String, List<VertexProperty>> vertexProperties : starGraph.starVertex.vertexProperties.entrySet()) {
-                kryo.writeObject(output, vertexProperties.getKey());
-                kryo.writeObject(output, vertexProperties.getValue().size());
-                for (final VertexProperty vertexProperty : vertexProperties.getValue()) {
-                    kryo.writeClassAndObject(output, vertexProperty.id());
-                    kryo.writeClassAndObject(output, vertexProperty.value());
-                }
-            }
-        }
-    }
-
-    @Override
-    public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
-        final StarGraph starGraph = StarGraph.open();
-        input.readByte();  // version field ignored for now - for future use with backward compatibility
-        starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
-        starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
-        starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));
-        readEdges(kryo, input, starGraph, Direction.IN);
-        readEdges(kryo, input, starGraph, Direction.OUT);
-        if (kryo.readObject(input, Boolean.class)) {
-            final int numberOfUniqueKeys = kryo.readObject(input, Integer.class);
-            for (int i = 0; i < numberOfUniqueKeys; i++) {
-                final String vertexPropertyKey = kryo.readObject(input, String.class);
-                final int numberOfVertexPropertiesWithKey = kryo.readObject(input, Integer.class);
-                for (int j = 0; j < numberOfVertexPropertiesWithKey; j++) {
-                    final Object id = kryo.readClassAndObject(input);
-                    final Object value = kryo.readClassAndObject(input);
-                    starGraph.starVertex.property(VertexProperty.Cardinality.list, vertexPropertyKey, value, T.id, id);
-                }
-            }
-        }
-        return starGraph;
-    }
-
-    private void writeEdges(final Kryo kryo, final Output output, final StarGraph starGraph, final Direction direction) {
-        // only write edges if there are some AND if the user requested them to be serialized AND if they match
-        // the direction being serialized by the format
-        final Map<String, List<Edge>> starEdges = direction.equals(Direction.OUT) ? starGraph.starVertex.outEdges : starGraph.starVertex.inEdges;
-        final boolean writeEdges = null != starEdges && edgeDirectionToSerialize != null
-                && (edgeDirectionToSerialize == direction || edgeDirectionToSerialize == Direction.BOTH);
-        kryo.writeObject(output, writeEdges);
-        if (writeEdges) {
-            kryo.writeObject(output, starEdges.size());
-            for (final Map.Entry<String, List<Edge>> edges : starEdges.entrySet()) {
-                kryo.writeObject(output, edges.getKey());
-                kryo.writeObject(output, edges.getValue().size());
-                for (final Edge edge : edges.getValue()) {
-                    kryo.writeClassAndObject(output, edge.id());
-                    kryo.writeClassAndObject(output, direction.equals(Direction.OUT) ? edge.inVertex().id() : edge.outVertex().id());
-                }
-            }
-        }
-    }
-
-    private static void readEdges(final Kryo kryo, final Input input, final StarGraph starGraph, final Direction direction) {
-        if (kryo.readObject(input, Boolean.class)) {
-            final int numberOfUniqueLabels = kryo.readObject(input, Integer.class);
-            for (int i = 0; i < numberOfUniqueLabels; i++) {
-                final String edgeLabel = kryo.readObject(input, String.class);
-                final int numberOfEdgesWithLabel = kryo.readObject(input, Integer.class);
-                for (int j = 0; j < numberOfEdgesWithLabel; j++) {
-                    final Object edgeId = kryo.readClassAndObject(input);
-                    final Object adjacentVertexId = kryo.readClassAndObject(input);
-                    if (direction.equals(Direction.OUT))
-                        starGraph.starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
-                    else
-                        starGraph.starVertex.addInEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
-                }
-            }
-        }
+    public static StarGraphGryoSerializer withGraphFilter(final GraphFilter graphFilter) {
+        final StarGraphGryoSerializer serializer = new StarGraphGryoSerializer(Direction.BOTH, graphFilter.clone());
+        return serializer;
     }
 }

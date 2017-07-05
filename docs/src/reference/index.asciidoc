@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500]
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -35,7 +35,16 @@ include::gremlin-applications.asciidoc[]
 include::implementations-intro.asciidoc[]
 include::implementations-tinkergraph.asciidoc[]
 include::implementations-neo4j.asciidoc[]
-include::implementations-hadoop.asciidoc[]
+
+// the hadoop section is split into parts because of serialization issues that are encountered when trying
+// to generate graph/spark without restarting the console and currently the only way to force a restart of the
+// console is to have a new asciidoc page.
+include::implementations-hadoop-start.asciidoc[]
+include::implementations-spark.asciidoc[]
+include::implementations-giraph.asciidoc[]
+include::implementations-hadoop-end.asciidoc[]
+
+include::gremlin-variants.asciidoc[]
 
 include::conclusion.asciidoc[]
 

@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
+
+import java.util.Collection;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum Operator implements BinaryOperator<Object> {
-
 
     sum {
         public Object apply(final Object a, Object b) {
@@ -59,6 +62,31 @@ public enum Operator implements BinaryOperator<Object> {
     assign {
         public Object apply(final Object a, final Object b) {
             return b;
+        }
+    },
+    and {
+        public Object apply(final Object a, final Object b) {
+            return ((boolean) a) && ((boolean) b);
+        }
+    },
+    or {
+        public Object apply(final Object a, final Object b) {
+            return ((boolean) a) || ((boolean) b);
+        }
+    },
+    addAll {
+        public Object apply(final Object a, final Object b) {
+            if (a instanceof Map)
+                ((Map) a).putAll((Map) b);
+            else
+                ((Collection) a).addAll((Collection) b);
+            return a;
+        }
+    },
+    //////
+    sumLong {
+        public Object apply(final Object a, final Object b) {
+            return (long) a + (long) b;
         }
     }
 }

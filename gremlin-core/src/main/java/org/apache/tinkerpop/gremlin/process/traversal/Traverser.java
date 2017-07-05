@@ -96,24 +96,24 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
     public long bulk();
 
     /**
-     * Get a particular value from the sideEffects of the traverser.
+     * Get a particular value from the side-effects of the traverser (thus, traversal).
      *
      * @param sideEffectKey the key of the value to get from the sideEffects
      * @param <A>           the type of the returned object
      * @return the object in the sideEffects of the respective key
      */
-    public default <A> A sideEffects(final String sideEffectKey) {
-        return this.asAdmin().getSideEffects().<A>get(sideEffectKey).get();
+    public default <A> A sideEffects(final String sideEffectKey) throws IllegalArgumentException {
+        return this.asAdmin().getSideEffects().<A>get(sideEffectKey);
     }
 
     /**
-     * Set a particular value in the sideEffects of the traverser.
+     * Add a particular value to the respective side-effect of the traverser (thus, traversal).
      *
      * @param sideEffectKey   the key of the value to set int the sideEffects
      * @param sideEffectValue the value to set for the sideEffect key
      */
-    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) {
-        this.asAdmin().getSideEffects().set(sideEffectKey, sideEffectValue);
+    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) throws IllegalArgumentException {
+        this.asAdmin().getSideEffects().add(sideEffectKey, sideEffectValue);
     }
 
     /**
@@ -182,6 +182,28 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public Admin<T> split();
 
         public void addLabels(final Set<String> labels);
+
+        /**
+         * Drop all path information not associated with specified labels.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         *
+         * @param labels the labels to keep path information for.
+         */
+        public void keepLabels(final Set<String> labels);
+
+        /**
+         * Drop all path information associated with specified labels.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         *
+         * @param labels the labels to drop path information for.
+         */
+        public void dropLabels(final Set<String> labels);
+
+        /**
+         * Drop the path of the traverser.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         */
+        public void dropPath();
 
         /**
          * Set the current object location of the traverser.

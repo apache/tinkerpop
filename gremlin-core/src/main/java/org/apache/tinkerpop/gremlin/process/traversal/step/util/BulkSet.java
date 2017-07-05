@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,6 +82,10 @@ public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializ
 
     public void forEach(final BiConsumer<S, Long> consumer) {
         this.map.forEach(consumer);
+    }
+
+    public Map<S, Long> asBulk() {
+        return Collections.unmodifiableMap(map);
     }
 
     public boolean add(final S s, final long bulk) {

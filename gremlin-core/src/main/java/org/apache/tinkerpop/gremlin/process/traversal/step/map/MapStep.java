@@ -32,7 +32,7 @@ public abstract class MapStep<S, E> extends AbstractStep<S, E> {
     }
 
     @Override
-    protected Traverser<E> processNextStart() {
+    protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
         return traverser.split(this.map(traverser), this);
     }

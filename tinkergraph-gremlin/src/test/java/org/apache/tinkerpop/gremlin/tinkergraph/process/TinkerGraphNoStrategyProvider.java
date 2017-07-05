@@ -20,16 +20,21 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A {@link GraphProvider} that constructs a {@link TraversalSource} with no default strategies applied.  This allows
@@ -42,25 +47,15 @@ public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
     private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(
             TinkerGraphStepStrategy.class,
             ProfileStrategy.class,
-            ConnectiveStrategy.class));
+            ConnectiveStrategy.class,
+            SideEffectStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        final GraphTraversalSource.Builder builder = createBuilder(graph);
-        return builder.create(graph);
-    }
-
-    @Override
-    public GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
-        final GraphTraversalSource.Builder builder = createBuilder(graph);
-        Arrays.asList(strategies).forEach(builder::with);
-        return builder.create(graph);
-    }
-
-    private GraphTraversalSource.Builder createBuilder(Graph graph) {
-        final GraphTraversalSource g = super.traversal(graph);
-        final GraphTraversalSource.Builder builder = g.asBuilder();
-        g.getStrategies().stream().map(strategy -> strategy.getClass()).filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz)).forEach(builder::without);
-        return builder;
+        final List<Class> toRemove = TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList().stream()
+                .map(TraversalStrategy::getClass)
+                .filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz))
+                .collect(Collectors.toList());
+        return graph.traversal().withoutStrategies(toRemove.toArray(new Class[toRemove.size()]));
     }
 }

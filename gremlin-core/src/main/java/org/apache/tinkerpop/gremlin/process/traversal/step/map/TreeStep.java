@@ -18,46 +18,39 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements MapReducer, TraversalParent, PathProcessor {
+public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    private Set<String> keepLabels;
 
     public TreeStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) TreeSupplier.instance());
-        this.setBiFunction(new TreeBiFunction(this));
+        this.setReducingBiOperator(TreeBiOperator.instance());
     }
-
 
     @Override
     public List<Traversal.Admin<Object, Object>> getLocalChildren() {
@@ -65,7 +58,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> treeTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> treeTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(treeTraversal));
     }
 
@@ -75,17 +68,32 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> getMapReduce() {
-        return TreeMapReduce.instance();
+    public Tree projectTraverser(final Traverser.Admin<S> traverser) {
+        final Tree topTree = new Tree();
+        Tree depth = topTree;
+        final Path path = traverser.path();
+        for (int i = 0; i < path.size(); i++) {
+            final Object object = TraversalUtil.applyNullable(path.<Object>get(i), this.traversalRing.next());
+            if (!depth.containsKey(object))
+                depth.put(object, new Tree<>());
+            depth = (Tree) depth.get(object);
+        }
+        this.traversalRing.reset();
+        return topTree;
     }
+
 
     @Override
     public TreeStep<S> clone() {
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
-        clone.setBiFunction(new TreeBiFunction<>(clone));
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -104,74 +112,27 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
         this.traversalRing.reset();
     }
 
-    ///////////
-
-    private static class TreeBiFunction<S> implements BiFunction<Tree, Traverser<S>, Tree>, Serializable {
-
-        private final TreeStep<S> treeStep;
-
-        private TreeBiFunction(final TreeStep<S> treeStep) {
-            this.treeStep = treeStep;
-        }
-
-        @Override
-        public Tree apply(final Tree mutatingSeed, final Traverser<S> traverser) {
-            Tree depth = mutatingSeed;
-            final Path path = traverser.path();
-            for (int i = 0; i < path.size(); i++) {
-                final Object object = TraversalUtil.apply(path.<Object>get(i), this.treeStep.traversalRing.next());
-                if (!depth.containsKey(object))
-                    depth.put(object, new Tree<>());
-                depth = (Tree) depth.get(object);
-            }
-            this.treeStep.traversalRing.reset();
-            return mutatingSeed;
-        }
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
     }
 
+    @Override
+    public Set<String> getKeepLabels() { return this.keepLabels; }
+
     ///////////
 
-    public static final class TreeMapReduce extends StaticMapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
+    public static final class TreeBiOperator implements BinaryOperator<Tree>, Serializable {
 
-        private static final TreeMapReduce INSTANCE = new TreeMapReduce();
-
-        private TreeMapReduce() {
-
-        }
+        private static final TreeBiOperator INSTANCE = new TreeBiOperator();
 
         @Override
-        public boolean doStage(final Stage stage) {
-            return true;
+        public Tree apply(final Tree mutatingSeed, final Tree tree) {
+            mutatingSeed.addTree(tree);
+            return mutatingSeed;
         }
 
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, Tree> emitter) {
-            vertex.<TraverserSet<Tree>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get())));
-        }
-
-        @Override
-        public void combine(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
-            this.reduce(key, values, emitter);
-        }
-
-        @Override
-        public void reduce(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
-            final Tree tree = new Tree();
-            values.forEachRemaining(tree::addTree);
-            emitter.emit(tree);
-        }
-
-        @Override
-        public Tree generateFinalResult(final Iterator<KeyValue<NullObject, Tree>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : new Tree();
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return REDUCING;
-        }
-
-        public static final TreeMapReduce instance() {
+        public static final TreeBiOperator instance() {
             return INSTANCE;
         }
     }

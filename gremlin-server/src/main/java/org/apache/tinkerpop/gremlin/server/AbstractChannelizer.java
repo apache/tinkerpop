@@ -18,19 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
-import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -42,7 +43,10 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -62,6 +66,14 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
+    protected static final List<Settings.SerializerSettings> DEFAULT_SERIALIZERS = Arrays.asList(
+            new Settings.SerializerSettings(GryoMessageSerializerV1d0.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GryoMessageSerializerV1d0.class.getName(), new HashMap<String,Object>(){{
+                put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+            }}),
+            new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap())
+    );
+
     protected Settings settings;
     protected GremlinExecutor gremlinExecutor;
     protected Optional<SslContext> sslContext;
@@ -71,7 +83,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected static final String PIPELINE_SSL = "ssl";
     protected static final String PIPELINE_OP_SELECTOR = "op-selector";
-    protected static final String PIPELINE_RESULT_ITERATOR_HANDLER = "result-iterator-handler";
     protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
     protected static final String PIPELINE_AUTHENTICATOR = "authenticator";
 
@@ -79,7 +90,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
-    private IteratorHandler iteratorHandler;
 
     protected Authenticator authenticator;
 
@@ -98,7 +108,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     }
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         settings = serverGremlinExecutor.getSettings();
         gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
         graphManager = serverGremlinExecutor.getGraphManager();
@@ -119,7 +129,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // these handlers don't share any state and can thus be initialized once per pipeline
         opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
         opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
-        iteratorHandler = new IteratorHandler(settings);
     }
 
     @Override
@@ -134,26 +143,47 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         configure(pipeline);
 
         pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
-        pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);
         pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);
     }
 
-    private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
+    protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings.AuthenticationSettings config) {
         try {
-            final Class<?> clazz = Class.forName(config.className);
+            final Class<?> clazz = Class.forName(config.authenticationHandler);
+            final Class[] constructorArgs = new Class[1];
+            constructorArgs[0] = Authenticator.class;
+            return (AbstractAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator);
+        } catch (Exception ex) {
+            logger.warn(ex.getMessage());
+            throw new IllegalStateException(String.format("Could not create/configure AuthenticationHandler %s", config.authenticationHandler), ex);
+        }
+    }
+
+    private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
+        String authenticatorClass = null;
+        if (config.authenticator == null) {
+            authenticatorClass = config.className;
+        } else {
+            authenticatorClass = config.authenticator;
+        }
+        try {
+            final Class<?> clazz = Class.forName(authenticatorClass);
             final Authenticator authenticator = (Authenticator) clazz.newInstance();
             authenticator.setup(config.config);
             return authenticator;
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
-            throw new IllegalStateException(String.format("Could not create/configure Authenticator %s", config.className), ex);
+            throw new IllegalStateException(String.format("Could not create/configure Authenticator %s", authenticator), ex);
         }
     }
 
     private void configureSerializers() {
-        this.settings.serializers.stream().map(config -> {
+        // grab some sensible defaults if no serializers are present in the config
+        final List<Settings.SerializerSettings> serializerSettings =
+                (null == this.settings.serializers || this.settings.serializers.isEmpty()) ? DEFAULT_SERIALIZERS : settings.serializers;
+
+        serializerSettings.stream().map(config -> {
             try {
                 final Class clazz = Class.forName(config.className);
                 if (!MessageSerializer.class.isAssignableFrom(clazz)) {
@@ -162,8 +192,16 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 }
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<String, Graph>();
+                for (String graphName : settings.graphs.keySet()) {
+                    graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
+                }
+
+                if (config.config.containsKey(AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH))
+                    logger.warn("{} utilizes the {} configuration setting which is deprecated - prefer use of {}", config.className, AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH, AbstractGryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES);
+
                 if (config.config != null)
-                    serializer.configure(config.config, graphManager.getGraphs());
+                    serializer.configure(config.config, graphsDefinedAtStartup);
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {
@@ -179,7 +217,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             final String mimeType = pair.getValue0();
             final MessageSerializer serializer = pair.getValue1();
             if (serializers.containsKey(mimeType))
-                logger.warn("{} already has {} configured.  It will not be replaced by {}. Check configuration for serializer duplication or other issues.",
+                logger.info("{} already has {} configured - it will not be replaced by {}.",
                         mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
             else {
                 logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
@@ -225,8 +263,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword)
                     .trustManager(trustCertChainFile);
         }
+        
+        
 
-        builder.sslProvider(provider);
+        builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
 
         try {
             return builder.build();

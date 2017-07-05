@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ public class ExceptionCoverageTest {
                 Element.Exceptions.class,
                 Graph.Exceptions.class,
                 GraphComputer.Exceptions.class,
+                Memory.Exceptions.class,
                 Graph.Variables.Exceptions.class,
                 Property.Exceptions.class,
                 Transaction.Exceptions.class,
@@ -68,10 +70,10 @@ public class ExceptionCoverageTest {
         final Set<String> ignore = new HashSet<String>() {{
             // this is a general exception to be used as needed. it is not explicitly tested:
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
-            add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported");
 
             // deprecated exceptions
             add("org.apache.tinkerpop.gremlin.structure.Element$Exceptions#elementAlreadyRemoved"); // as of 3.1.0
+            add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported"); // as of 3.2.0
 
             // need to write consistency tests for the following items still...........
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#supportsDirectObjects");

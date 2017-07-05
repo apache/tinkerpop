@@ -53,10 +53,9 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
         try {
             this.graph = graph;
             final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-            final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
+            final InputFormat<NullWritable, VertexWritable> inputFormat = ConfUtil.getReaderAsInputFormat(configuration);
             if (inputFormat instanceof FileInputFormat) {
                 final Storage storage = FileSystemStorage.open(configuration);
-
                 if (!this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
                     return; // there is no input location and thus, no data (empty graph)
                 if (!Constants.getSearchGraphLocation(this.graph.configuration().getInputLocation(), storage).isPresent())

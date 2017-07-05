@@ -18,21 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
@@ -61,14 +63,16 @@ import java.util.Set;
  * __.bothE().otherV()     // is replaced by __.both()
  * __.bothE().bothV()      // will not be modified
  * __.outE().inV().path()  // will not be modified
+ * __.outE().inV().tree()  // will not be modified
  * </pre>
  */
 public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
-    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(CyclicPathStep.class,
-            PathStep.class, SimplePathStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
+    private static final String MARKER = Graph.Hidden.hide("gremlin.incidentToAdjacent");
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(
+            PathStep.class, PathFilterStep.class, TreeStep.class, TreeSideEffectStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
     }
@@ -115,10 +119,16 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     }
 
     @Override
-    public void apply(Traversal.Admin<?, ?> traversal) {
-        final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, root))
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        // using a hidden label marker to denote whether the traversal should not be processed by this strategy
+        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), traversal);
+        if (traversal.getStartStep().getLabels().contains(MARKER)) {
+            traversal.getStartStep().removeLabel(MARKER);
             return;
+        }
+        ////////////////////////////////////////////////////////////////////////////
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
         for (final Step curr : traversal.getSteps()) {

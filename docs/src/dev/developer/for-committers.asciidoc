@@ -28,9 +28,9 @@ TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing l
 link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
 it is a good idea to join both.
 
-It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer
-discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for
-regular contributors it may be best to request that an Apache HipChat account be created.
+It would also be helpful to join the public link:https://apache.hipchat.com/chat/room/2013155[TinkerPop HipChat room]
+for developer discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest,
+but for regular contributors it may be best to request that an Apache HipChat account be created.
 
 Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
@@ -68,10 +68,11 @@ TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (bug fixes and documentation updates only)
-* `master` - 3.2.x
+* `tp32` - 3.2.x (bug fixes and documentation updates only)
+* `master` - 3.3.x
 
-Changes to `tp31` should merge to `master`. Please read more about this process in the <<pull-requests, Pull Requests>>
-section.
+Changes to `tp31` should merge to `tp32`, and changes to `tp32` should merge to `master`. Please read more about this
+process in the <<pull-requests, Pull Requests>> section.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -110,7 +111,7 @@ this property set.
 * Issues are not assigned "labels" with two exceptions:
 ** The "breaking" label which marks an issue as one that is representative of a change in the API that might
 affect users or providers.  This label is important when organizing release notes.
-** The "deprecation" label which is assigned to an issue that is about removing a deprecated portion of the API.
+** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
 which that particular issue will completed. This is a field usually only set by committers.
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
@@ -145,11 +146,10 @@ public APIs that might be utilized by users or implemented by providers:
 replaced then the comment can simply read "not replaced".  Additional comments that provide more context are
 encouraged.
 ** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>` - supply a link to the
-JIRA issue for reference.
+JIRA issue for reference - the issue should include the "deprecation" label.
 * Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
 call out this fact.
-* Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
-"breaking" label as well as a "deprecation" label.
+* Create a new JIRA issue to track removal of the deprecation for future evaluation.
 * Update the "upgrade documentation" to reflect the API change and how the reader should resolve it.
 
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
@@ -199,6 +199,36 @@ When writing a test case for a Gremlin step, be sure to use the following conven
 * `AbstractGremlinProcessTest` has various static methods to make writing a test case easy.
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
+
+Developing Benchmarks
+---------------------
+
+Benchmarks are a useful tool to track performance between TinkerPop versions and also as tools to aid development
+decision making. TinkerPop uses link:http://openjdk.java.net/projects/code-tools/jmh/[OpenJDK JMH] for benchmark development.
+The JMH framework provides tools for writing robust benchmarking code that avoid many of the pitfalls inherent in benchmarking
+JIT compiled code on the JVM.  Example JMH benchmarks can be found
+link:http://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/[here].
+
+TinkerPop benchmarks live in the `gremlin-benchmark` module and can either be run from within your IDE or as a standalone
+uber-jar.  The uber-jar is the JMH recommended approach and also makes it easy to distribute artifacts to various environments
+to gather benchmarking numbers.  Having said that, in most cases it should be sufficient to run it from within the IDE.
+
+Benchmarks will not run by default because they are time consuming.  To enable benchmarks during the test phase do
+`-DskipBenchmarks=false`.  To change the number of warmup iterations, measurement iterations, and forks you can do
+`mvn clean test -DskipBenchmarks=false -DdefaultForks=5 -DmeasureIterations=20 -DwarmupIterations=20`.  Benchmark results
+will be output by default to the `benchmarks` directory in JSON format.
+
+Benchmarks may also be run from the command line using the JMH runner.  Build the uber-jar and simply run
+`java -jar gremlin-benchmark-TP-VERSION.jar`.  To see a list of JMH runner options, add the `-h` flag.
+
+The JUnit/JMH integration was inspired by the Netty projects microbenchmarking suite.  Please refer to the Netty
+link:http://netty.io/wiki/microbenchmarks.html[docs] for more details.  Presently there are 3 abstract benchmark classes
+that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`, `AbstractGraphBenchmark`, and
+`AbstractGraphMutateBenchmark`.
+
+* `AbstractBenchmarkBase` - extend when your benchmark does not require a graph instance
+* `AbstractGraphBenchmark` - extend when you are benchmarking read operations against a graph
+* `AbstractGraphMutateBenchmark` - extend when you are benchmarking graph mutation operations eg. `g.addV()`, `graph.addVertex()`
 
 [[rtc]]
 Review then Commit
@@ -409,6 +439,21 @@ uploaded to the server and should preserve the directory structure in git as ref
 
 Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
 documentation.
+
+[[site]]
+Site
+----
+
+The content for the TinkerPop home page and related pages that make up the web site at link://tinkerpop.apache.org[tinkerpop.apache.org]
+is stored in the git repository under `/docs/site`. In this way, it becomes easier for the community to provide content
+presented there, because the content can be accepted via the standard workflow of a pull request. To generate the site
+for local viewing, run `bin/generate-home.sh`, which will build the site in `target/site/`. PMC members can officially
+publish the site with `bin/publish-home.sh <username>`.
+
+"Publishing" does not publish documentation (e.g. reference docs, javadocs, etc) and only publishes what is generated
+from the content in `/docs/site`. Publishing the site can be performed out of band with the release cycle and is no
+way tied to a version. The `master` branch should always be considered the "current" web site and publishing should
+only happen from that branch.
 
 [[logging]]
 Logging

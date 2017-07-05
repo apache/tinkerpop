@@ -18,11 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -143,7 +149,6 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldAwaitFailTheFutureOnMarkError() throws Exception {
-        // not so sure this is good behavior (i.e. flushing whatever has arrived up to the error)
         final CompletableFuture<List<Result>> future = resultQueue.await(4);
         resultQueue.add(new Result("test1"));
         resultQueue.add(new Result("test2"));
@@ -286,5 +291,119 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         } finally {
             t.interrupt();
         }
+    }
+
+    @Test
+    public void shouldHandleBulkSetSideEffects() throws Exception  {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("brian", 2));
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("brian", 2));
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("belinda", 6));
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final BulkSet<String> bulkSet = o.get().get(0).get(BulkSet.class);
+        assertEquals(4, bulkSet.get("brian"));
+        assertEquals(6, bulkSet.get("belinda"));
+    }
+
+    @Test
+    public void shouldHandleListSideEffects() throws Exception {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_LIST, "stephen");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_LIST, "daniel");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_LIST, "dave");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final List<String> list = o.get().get(0).get(ArrayList.class);
+        assertEquals("stephen", list.get(0));
+        assertEquals("daniel", list.get(1));
+        assertEquals("dave", list.get(2));
+    }
+
+    @Test
+    public void shouldHandleSetSideEffects() throws Exception {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "stephen");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "daniel");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "dave");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final Set<String> set = o.get().get(0).get(HashSet.class);
+        assertThat(set.contains("stephen"), is(true));
+        assertThat(set.contains("daniel"), is(true));
+        assertThat(set.contains("dave"), is(true));
+    }
+
+    @Test
+    public void shouldHandleMapSideEffects() throws Exception {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        final Map<String,String> m = new HashMap<>();
+        m.put("s", "stephen");
+        m.put("m", "marko");
+        m.put("d", "daniel");
+
+        m.entrySet().forEach(e -> {
+            resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_MAP, e);
+            assertThat(o.isDone(), is(false));
+        });
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final Map<String, String> list = o.get().get(0).get(HashMap.class);
+        assertEquals("stephen", list.get("s"));
+        assertEquals("daniel", list.get("d"));
+        assertEquals("marko", list.get("m"));
+    }
+
+
+    @Test
+    public void shouldHandleNotAggregateSideEffects() throws Exception  {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        final Map<String,String> m = new HashMap<>();
+        m.put("s", "stephen");
+        m.put("m", "marko");
+        m.put("d", "daniel");
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_NONE, m);
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final Map<String, String> list = o.get().get(0).get(HashMap.class);
+        assertEquals("stephen", list.get("s"));
+        assertEquals("daniel", list.get("d"));
+        assertEquals("marko", list.get("m"));
     }
 }

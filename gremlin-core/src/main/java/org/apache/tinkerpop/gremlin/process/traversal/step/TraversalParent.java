@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -30,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalParent {
+public interface TraversalParent extends AutoCloseable {
 
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();
@@ -73,9 +74,22 @@ public interface TraversalParent {
     }
 
     public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal) {
+        if (null == childTraversal)
+            return null;
         childTraversal.setParent(this);
         childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
         childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
         return (Traversal.Admin<S, E>) childTraversal;
+    }
+
+    @Override
+    default void close() throws Exception {
+        for(final Traversal.Admin<?,?> traversal : this.getLocalChildren()) {
+            traversal.close();
+        }
+
+        for(final Traversal.Admin<?,?> traversal: this.getGlobalChildren()) {
+            traversal.close();
+        }
     }
 }
