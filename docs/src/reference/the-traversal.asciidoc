@@ -2615,6 +2615,59 @@ possible at the current, local vertex. What it can't compute without referencing
 into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the
 messages that are propagated to remote vertices for further processing.
 
+[[a-note-on-scopes]]
+A Note on Scopes
+----------------
+
+The `Scope` enum has two constants: `Scope.local` and `Scope.global`. Scope determines whether the particular step
+being scoped is with respects to the current object (`local`) at that step or to the entire stream of objects up to that
+step (`global`).
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').out('knows').count() <1>
+g.V().has('name','marko').out('knows').fold().count() <2>
+g.V().has('name','marko').out('knows').fold().count(local) <3>
+g.V().has('name','marko').out('knows').fold().count(global) <4>
+----
+
+<1> Marko knows 2 people.
+<2> A list of Marko's friends is created and thus, one object is counted (the single list).
+<3> A list of Marko's friends is created and a `local`-count yields the number of objects in that list.
+<4> `count(global)` is the same as `count()` as the default behavior for most scoped steps is `global`.
+
+The steps that support scoping are:
+
+* <<count-step,`count()`>>: count the local collection or global stream.
+* <<dedup-step, `dedup()`>>: dedup the local collection of global stream.
+* <<max-step, `max()`>>: get the max value in the local collection or global stream.
+* <<mean-step, `mean()`>>: get the mean value in the local collection or global stream.
+* <<min-step, `min()`>>: get the min value in the local collection or global stream.
+* <<order-step,`order()`>>: order the objects in the local collection or global stream.
+* <<range-step, `range()`>>: clip the local collection or global stream.
+* <<limit-step, `limit()`>>: clip the local collection or global stream.
+* <<sample-step, `sample()`>>: sample objects from the local collection or global stream.
+* <<tail-step, `tail()`>>: get the tail of the objects in the local collection or global stream.
+
+A few more examples of the use of `Scope` are provided below:
+
+[gremlin-groovy,modern]
+----
+g.V().both().group().by(label).select('software').dedup(local)
+g.V().groupCount().by(label).select(values).min(local)
+g.V().groupCount().by(label).order(local).by(values,decr)
+g.V().fold().sample(local,2)
+----
+
+Finally, note that <<local-step,`local()`>>-step is a "hard-scoped step" that transforms any internal traversal into a
+locally-scoped operation. A contrived example is provided below:
+
+[gremlin-groovy,modern]
+----
+g.V().fold().local(unfold().count())
+g.V().fold().count(local)
+----
+
 [[a-note-on-lambdas]]
 A Note On Lambdas
 -----------------
