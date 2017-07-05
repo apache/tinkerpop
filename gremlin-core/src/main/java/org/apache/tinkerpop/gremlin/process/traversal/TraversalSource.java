@@ -413,35 +413,4 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         // do nothing
     }
 
-    /**
-     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-     */
-    @Deprecated
-    public interface Builder<C extends TraversalSource> extends Serializable {
-
-        /**
-         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-         */
-        @Deprecated
-        public Builder engine(final TraversalEngine.Builder engine);
-
-        /**
-         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-         */
-        @Deprecated
-        public Builder with(final TraversalStrategy strategy);
-
-        /**
-         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-         */
-        @Deprecated
-        public Builder without(final Class<? extends TraversalStrategy> strategyClass);
-
-        /**
-         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
-         */
-        @Deprecated
-        public C create(final Graph graph);
-    }
-
 }
