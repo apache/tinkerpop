@@ -257,6 +257,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.*`
 ** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#deleteDependenciesFromPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
 ** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#copyDependenciesToPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+* `gremlin-python`
+** `org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngine#()`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.GremlinServer(ServerGremlinExecutor)`
 ** `org.apache.tinkerpop.gremlin.server.Settings#plugins`

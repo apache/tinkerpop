@@ -50,34 +50,6 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
     private final PyScriptEngine pyScriptEngine;
 
-    /**
-     * @deprecated As of release 3.2.4, replaced by {@link #GremlinJythonScriptEngine(Customizer...)}.
-     */
-    @Deprecated
-    public GremlinJythonScriptEngine() {
-        this.pyScriptEngine = (PyScriptEngine) new PyScriptEngineFactory().getScriptEngine();
-        try {
-            // CoreImports
-            for (final Class x : CoreImports.getClassImports()) {
-                if (null == x.getDeclaringClass())
-                    this.pyScriptEngine.eval("from " + x.getPackage().getName() + " import " + x.getSimpleName());
-                else
-                    this.pyScriptEngine.eval("from " + x.getPackage().getName() + "." + x.getDeclaringClass().getSimpleName() + " import " + x.getSimpleName());
-            }
-            for (final Method x : CoreImports.getMethodImports()) {
-                this.pyScriptEngine.eval(SymbolHelper.toPython(x.getName()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.getName());
-            }
-            for (final Enum x : CoreImports.getEnumImports()) {
-                this.pyScriptEngine.eval(SymbolHelper.toPython(x.name()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.name());
-            }
-
-            loadSugar();
-
-        } catch (final ScriptException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
     public GremlinJythonScriptEngine(final Customizer... customizers) {
         this.pyScriptEngine = (PyScriptEngine) new PyScriptEngineFactory().getScriptEngine();
         final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));

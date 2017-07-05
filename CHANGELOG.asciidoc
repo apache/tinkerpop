@@ -32,6 +32,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `TraversalScriptHelper` class.
 * Removed previously deprecated `ScriptEngineCache` class.
 * Removed previously deprecated `CoreImports` class.
+* Removed previously deprecated `GremlinJythonScriptEngine#()` constructor.
 * Removed access to previously deprecated `CoreGremlinPlugin#INSTANCE` field.
 * `gremlin.sh` and `gremln.bat` no longer support the option to pass a script as an argument for execution mode without using the `-i` option.
 * Graphite and Ganglia are no longer packaged with the Gremlin Server distribution.
