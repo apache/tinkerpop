@@ -40,14 +40,6 @@ public final class AndP<V> extends ConnectiveP<V> {
         this.biPredicate = new AndBiPredicate(this);
     }
 
-    @Deprecated
-    /**
-     * @deprecated As of release 3.2.0-incubating, replaced by {@link AndP(List)}
-     */
-    public AndP(final P<V>... predicates) {
-        this(Arrays.asList(predicates));
-    }
-
     @Override
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))

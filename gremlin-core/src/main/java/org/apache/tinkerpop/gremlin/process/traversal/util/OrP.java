@@ -40,14 +40,6 @@ public final class OrP<V> extends ConnectiveP<V> {
         this.biPredicate = new OrBiPredicate(this);
     }
 
-    @Deprecated
-    /**
-     * @deprecated As of release 3.2.0-incubating, replaced by {@link OrP(List)}
-     */
-    public OrP(final P<V>... predicates) {
-        this(Arrays.asList(predicates));
-    }
-
     @Override
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))

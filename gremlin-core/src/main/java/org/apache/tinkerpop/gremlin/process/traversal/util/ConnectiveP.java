@@ -39,14 +39,6 @@ public abstract class ConnectiveP<V> extends P<V> {
             throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.size());
     }
 
-    @Deprecated
-    /**
-     * @deprecated As of release 3.2.0-incubating, replaced by {@link ConnectiveP(List)}
-     */
-    public ConnectiveP(final P<V>... predicates) {
-        this(Arrays.asList(predicates));
-    }
-
     public List<P<V>> getPredicates() {
         return Collections.unmodifiableList(this.predicates);
     }
