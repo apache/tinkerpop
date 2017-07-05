@@ -2592,7 +2592,7 @@ g.V().has('name','marko').out('knows').fold().count(global) <4>
 
 <1> Marko knows 2 people.
 <2> A list of Marko's friends is created and thus, one object is counted (the single list).
-<3> A list of Marko's fiends is created and a `local`-count yields the number of objects in that list.
+<3> A list of Marko's friends is created and a `local`-count yields the number of objects in that list.
 <4> `count(global)` is the same as `count()` as the default behavior for most scoped steps is `global`.
 
 The steps that support scoping are:
@@ -2604,6 +2604,7 @@ The steps that support scoping are:
 * <<min-step, `min()`>>: get the min value in the local collection or global stream.
 * <<order-step,`order()`>>: order the objects in the local collection or global stream.
 * <<range-step, `range()`>>: clip the local collection or global stream.
+* <<limit-step, `limit()`>>: clip the local collection or global stream.
 * <<sample-step, `sample()`>>: sample objects from the local collection or global stream.
 * <<tail-step, `tail()`>>: get the tail of the objects in the local collection or global stream.
 
