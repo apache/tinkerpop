@@ -28,6 +28,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Removed previously deprecated `TraversalSource.Builder` class.
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
+* Removed previously deprecated `TraversalScriptFunction` class.
+* Removed previously deprecated `TraversalScriptHelper` class.
 * Graphite and Ganglia are no longer packaged with the Gremlin Server distribution.
 * `TransactionException` is no longer a class of `AbstractTransaction` and it extends `RuntimeException`.
 * Included an ellipse on long property names that are truncated.
