@@ -201,6 +201,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.UtilitiesGremlinPlugin`
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin#INSTANCE`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager#getInstance()`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
