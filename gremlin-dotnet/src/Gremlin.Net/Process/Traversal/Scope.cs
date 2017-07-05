@@ -28,7 +28,8 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Scope
     {
-        Global,Local
+        Global,
+		Local
     }
     
 #pragma warning restore 1591

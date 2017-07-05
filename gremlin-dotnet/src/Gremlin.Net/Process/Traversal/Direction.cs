@@ -28,7 +28,9 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Direction
     {
-        Both,In,Out
+        Both,
+		In,
+		Out
     }
     
 #pragma warning restore 1591

@@ -28,7 +28,17 @@ namespace Gremlin.Net.Process.Traversal
 
     public enum Operator
     {
-        AddAll,And,Assign,Div,Max,Min,Minus,Mult,Or,Sum,SumLong
+        AddAll,
+		And,
+		Assign,
+		Div,
+		Max,
+		Min,
+		Minus,
+		Mult,
+		Or,
+		Sum,
+		SumLong
     }
     
 #pragma warning restore 1591
