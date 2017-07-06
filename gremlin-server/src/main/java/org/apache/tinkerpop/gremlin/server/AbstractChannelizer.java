@@ -200,16 +200,17 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 }
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
-                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<String, Graph>();
+                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();
                 for (String graphName : settings.graphs.keySet()) {
                     graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
                 }
 
-                if (config.config.containsKey(AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH))
-                    logger.warn("{} utilizes the {} configuration setting which is deprecated - prefer use of {}", config.className, AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH, AbstractGryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES);
+                if (config.config != null) {
+                    if (config.config.containsKey(AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH))
+                        logger.warn("{} utilizes the {} configuration setting which is deprecated - prefer use of {}", config.className, AbstractGryoMessageSerializerV1d0.TOKEN_USE_MAPPER_FROM_GRAPH, AbstractGryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES);
 
-                if (config.config != null)
                     serializer.configure(config.config, graphsDefinedAtStartup);
+                }
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {
