@@ -73,6 +73,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Subgra
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -225,13 +226,14 @@ public final class CoreImports {
         CLASS_IMPORTS.add(MatchAlgorithmStrategy.class);
         CLASS_IMPORTS.add(ProfileStrategy.class);
         CLASS_IMPORTS.add(AdjacentToIncidentStrategy.class);
+        CLASS_IMPORTS.add(ByModulatorOptimizationStrategy.class);
+        CLASS_IMPORTS.add(CountStrategy.class);
         CLASS_IMPORTS.add(FilterRankingStrategy.class);
         CLASS_IMPORTS.add(IdentityRemovalStrategy.class);
         CLASS_IMPORTS.add(IncidentToAdjacentStrategy.class);
         CLASS_IMPORTS.add(MatchPredicateStrategy.class);
         CLASS_IMPORTS.add(OrderLimitStrategy.class);
         CLASS_IMPORTS.add(PathProcessorStrategy.class);
-        CLASS_IMPORTS.add(CountStrategy.class);
         CLASS_IMPORTS.add(ComputerVerificationStrategy.class);
         CLASS_IMPORTS.add(LambdaRestrictionStrategy.class);
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);
