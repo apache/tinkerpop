@@ -192,7 +192,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 }
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
-                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<String, Graph>();
+                final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();
                 for (String graphName : settings.graphs.keySet()) {
                     graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
                 }
