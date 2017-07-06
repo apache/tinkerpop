@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -54,7 +55,9 @@ import java.util.Set;
  */
 public class PythonProvider extends AbstractGraphProvider {
 
+    private static final Random RANDOM = new Random();
     protected static final boolean IMPORT_STATICS = new Random().nextBoolean();
+
 
     static {
         JythonScriptEngineSetup.setup();
@@ -147,7 +150,11 @@ public class PythonProvider extends AbstractGraphProvider {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(PythonTranslator.of("g", IMPORT_STATICS), JavaTranslator.of(g))));
+            return g.withStrategies(new TranslationStrategy(g,
+                    new PythonGraphSONJavaTranslator<>(
+                            PythonTranslator.of("g", IMPORT_STATICS),
+                            JavaTranslator.of(g),
+                            RANDOM.nextBoolean() ? GraphSONVersion.V2_0 : GraphSONVersion.V3_0)));
         }
     }
 }

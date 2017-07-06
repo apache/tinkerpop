@@ -21,7 +21,8 @@ try:
 except ImportError:
     import json
 
-from gremlin_python.structure.io import graphson
+from gremlin_python.structure.io import graphsonV2d0
+from gremlin_python.structure.io import graphsonV3d0
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -85,10 +86,10 @@ class GraphSONMessageSerializer:
 
     def __init__(self, reader=None, writer=None):
         if not reader:
-            reader = graphson.GraphSONReader()
+            reader = graphsonV2d0.GraphSONReader()
         self._graphson_reader = reader
         if not writer:
-            writer = graphson.GraphSONWriter()
+            writer = graphsonV2d0.GraphSONWriter()
         self.standard = Standard(writer)
         self.traversal = Traversal(writer)
 
@@ -127,3 +128,28 @@ class GraphSONMessageSerializer:
 
     def deserialize_message(self, message):
         return self._graphson_reader.toObject(message)
+
+class GraphSONSerializersV2d0(GraphSONMessageSerializer):
+    """Message serializer for GraphSON 2.0"""
+
+    def __init__(self, reader=None, writer=None):
+        GraphSONMessageSerializer.__init__(self, reader, writer, "2.0")
+        if not reader:
+            self._graphson_reader = graphsonV2d0.GraphSONReader()
+        if not writer:
+            self._graphson_writer = graphsonV2d0.GraphSONWriter()
+        self.standard = Standard(self._graphson_writer)
+        self.traversal = Traversal(self._graphson_writer)
+
+
+class GraphSONSerializersV3d0(GraphSONMessageSerializer):
+    """Message serializer for GraphSON 3.0"""
+
+    def __init__(self, reader=None, writer=None):
+        GraphSONMessageSerializer.__init__(self, reader, writer, "3.0")
+        if not reader:
+            self._graphson_reader = graphsonV3d0.GraphSONReader()
+        if not writer:
+            self._graphson_writer = graphsonV3d0.GraphSONWriter()
+        self.standard = Standard(self._graphson_writer)
+        self.traversal = Traversal(self._graphson_writer)

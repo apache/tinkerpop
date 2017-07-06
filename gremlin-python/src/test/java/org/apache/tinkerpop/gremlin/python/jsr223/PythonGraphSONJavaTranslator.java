@@ -52,16 +52,24 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
     private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private final PythonTranslator pythonTranslator;
     private final JavaTranslator<S, T> javaTranslator;
-    private final GraphSONReader reader = GraphSONReader.build().mapper(
-            GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false))
-                    .version(GraphSONVersion.V2_0).create()).create();
-    private final GraphSONWriter writer = GraphSONWriter.build().mapper(
-            GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false))
-                    .version(GraphSONVersion.V2_0).create()).create();
+    private final GraphSONReader reader;
+    private final GraphSONWriter writer;
+    private final GraphSONVersion version;
 
-    public PythonGraphSONJavaTranslator(final PythonTranslator pythonTranslator, final JavaTranslator<S, T> javaTranslator) {
+    public PythonGraphSONJavaTranslator(final PythonTranslator pythonTranslator, final JavaTranslator<S, T> javaTranslator, final GraphSONVersion version) {
         this.pythonTranslator = pythonTranslator;
         this.javaTranslator = javaTranslator;
+        this.version = version;
+        this.reader = GraphSONReader.build().mapper(
+                GraphSONMapper.build().addCustomModule(version.equals(GraphSONVersion.V2_0) ?
+                        GraphSONXModuleV2d0.build().create(false) :
+                        GraphSONXModuleV3d0.build().create(false))
+                        .version(version).create()).create();
+        this.writer = GraphSONWriter.build().mapper(
+                GraphSONMapper.build().addCustomModule(version.equals(GraphSONVersion.V2_0) ?
+                        GraphSONXModuleV2d0.build().create(false) :
+                        GraphSONXModuleV3d0.build().create(false))
+                        .version(version).create()).create();
     }
 
     @Override
@@ -82,7 +90,10 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
             bindings.putAll(jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE));
             bindings.put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("Graph().traversal()"));
             bindings.putAll(bytecode.getBindings());
-            final String translatedGraphSONBytecode = jythonEngine.eval("graphson_writer.writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
+            final String translatedGraphSONBytecode = jythonEngine.eval((this.version.equals(GraphSONVersion.V2_0) ?
+                    "graphsonV2d0_writer" :
+                    "graphsonV3d0_writer") +
+                    ".writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
             if (IS_TESTING) {
                 // verify that the GraphSON sent to Python is the same as the GraphSON returned by Python
                 final ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -91,13 +102,13 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
                 this.writer.writeObject(output, bytecode);
                 final String originalGraphSONBytecode = new String(output.toByteArray());
                 final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                // System.out.println(originalGraphSONBytecode + "\n" + translatedGraphSONBytecode + "\n\n");
                 final Map<String, Object> original = mapper.readValue(originalGraphSONBytecode, Map.class);
                 final Map<String, Object> translated = mapper.readValue(translatedGraphSONBytecode, Map.class);
                 assertEquals(originalGraphSONBytecode.length(), translatedGraphSONBytecode.length());
                 assertEquals(original, translated);
             }
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(translatedGraphSONBytecode.getBytes()), Bytecode.class));
-
 
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);

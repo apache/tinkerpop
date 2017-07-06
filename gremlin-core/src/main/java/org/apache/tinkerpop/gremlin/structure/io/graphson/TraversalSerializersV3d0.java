@@ -38,7 +38,6 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
@@ -160,16 +159,9 @@ final class TraversalSerializersV3d0 {
                     jsonGenerator.writeObject(predicate);
                 }
                 jsonGenerator.writeEndArray();
-            } else {
-                if (p.getValue() instanceof Collection) {
-                    jsonGenerator.writeArrayFieldStart(GraphSONTokens.VALUE);
-                    for (final Object object : (Collection) p.getValue()) {
-                        jsonGenerator.writeObject(object);
-                    }
-                    jsonGenerator.writeEndArray();
-                } else
-                    jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.getValue());
-            }
+            } else
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.getValue());
+
             jsonGenerator.writeEndObject();
         }
 

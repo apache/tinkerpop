@@ -39,9 +39,11 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -51,83 +53,98 @@ import static org.junit.Assert.assertTrue;
  */
 public class GraphSONReaderTest {
 
-    private static final ScriptEngine jythonEngine = JythonScriptEngineSetup.setup((PyScriptEngine) new ScriptEngineManager().getEngineByName("jython"));
-    private static final ObjectMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create().createMapper();
+    private static final Set<GraphSONVersion> VERSIONS = new HashSet<>(Arrays.asList(GraphSONVersion.V2_0, GraphSONVersion.V3_0));
     private static final GraphTraversalSource g = TinkerFactory.createModern().traversal();
-
 
     @Test
     public void shouldDeserializeGraphObjects() throws Exception {
-        final Vertex vertex = g.V(1).next();
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertex));
-        assertEquals(vertex.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Vertex)"));
-        //
-        final Edge edge = g.V(1).outE("created").next();
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(edge));
-        assertEquals(edge.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Edge)"));
-        //
-        final VertexProperty vertexProperty = (VertexProperty) g.V(1).properties("name").next();
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertexProperty));
-        assertEquals(vertexProperty.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),VertexProperty)"));
-        //
-        final Property property = g.V(1).outE("created").properties("weight").next();
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(property));
-        assertEquals(property.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Property)"));
-        //
-        final Traverser<Vertex> traverser = new DefaultRemoteTraverser<>(vertex, 3L);
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(traverser));
-        assertEquals(traverser.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertEquals(BigInteger.valueOf(3L), jythonEngine.eval("graphson_reader.readObject(x).bulk")); // jython uses big integer in Java
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x).object,Vertex)"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Traverser)"));
+        for (final GraphSONVersion version : VERSIONS) {
+            final ScriptEngine jythonEngine = JythonScriptEngineSetup.setup((PyScriptEngine) new ScriptEngineManager().getEngineByName("jython"));
+            jythonEngine.eval("graphson_reader = " + (version.equals(GraphSONVersion.V2_0) ? "graphsonV2d0_reader" : "graphsonV3d0_reader"));
+            final ObjectMapper mapper = GraphSONMapper.build().version(version).create().createMapper();
+            //
+            final Vertex vertex = g.V(1).next();
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertex));
+            assertEquals(vertex.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Vertex)"));
+            //
+            final Edge edge = g.V(1).outE("created").next();
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(edge));
+            assertEquals(edge.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Edge)"));
+            //
+            final VertexProperty vertexProperty = (VertexProperty) g.V(1).properties("name").next();
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertexProperty));
+            assertEquals(vertexProperty.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),VertexProperty)"));
+            //
+            final Property property = g.V(1).outE("created").properties("weight").next();
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(property));
+            assertEquals(property.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Property)"));
+            //
+            final Traverser<Vertex> traverser = new DefaultRemoteTraverser<>(vertex, 3L);
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(traverser));
+            assertEquals(traverser.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertEquals(BigInteger.valueOf(3L), jythonEngine.eval("graphson_reader.readObject(x).bulk")); // jython uses big integer in Java
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x).object,Vertex)"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Traverser)"));
+        }
     }
 
     @Test
     public void shouldDeserializeNumbers() throws Exception {
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1));
-        assertEquals("1", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),int)"));
-        //
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1L));
-        assertEquals("1", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),long)"));
-        //
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1.2f));
-        assertEquals("1.2", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),float)"));
-        //
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1.3d));
-        assertEquals("1.3", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),float)"));
+        for (final GraphSONVersion version : VERSIONS) {
+            final ScriptEngine jythonEngine = JythonScriptEngineSetup.setup((PyScriptEngine) new ScriptEngineManager().getEngineByName("jython"));
+            jythonEngine.eval("graphson_reader = " + (version.equals(GraphSONVersion.V2_0) ? "graphsonV2d0_reader" : "graphsonV3d0_reader"));
+            final ObjectMapper mapper = GraphSONMapper.build().version(version).create().createMapper();
+            //
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1));
+            assertEquals("1", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),int)"));
+            //
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1L));
+            assertEquals("1", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),long)"));
+            //
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1.2f));
+            assertEquals("1.2", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),float)"));
+            //
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(1.3d));
+            assertEquals("1.3", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),float)"));
+        }
     }
 
     @Test
     public void shouldDeserializeCollections() throws Exception {
-        final Map<String, Number> map = new LinkedHashMap<>();
-        map.put("a", 2);
-        map.put("b", 2.3d);
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(map));
-        assertEquals("{u'a': 2, u'b': 2.3}", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertEquals(2, jythonEngine.eval("graphson_reader.readObject(x)['a']"));
-        assertEquals(2.3d, jythonEngine.eval("graphson_reader.readObject(x)['b']")); // jython is smart about double
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)['a'],int)"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)['b'],float)"));
-        //
-        final List<Object> list = Arrays.asList(g.V(1).next(), "hello", map, true);
-        jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(list));
-        assertEquals("[v[1], u'hello', {u'a': 2, u'b': 2.3}, True]", jythonEngine.eval("str(graphson_reader.readObject(x))"));
-        assertEquals(g.V(1).next().toString(), jythonEngine.eval("str(graphson_reader.readObject(x)[0])"));
-        assertEquals("hello", jythonEngine.eval("graphson_reader.readObject(x)[1]"));
-        assertEquals("{u'a': 2, u'b': 2.3}", jythonEngine.eval("str(graphson_reader.readObject(x)[2])"));
-        assertTrue((Boolean) jythonEngine.eval("graphson_reader.readObject(x)[3]"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[0],Vertex)"));
-        // assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[1],str)")); // its python unicode jython object
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[2],dict)"));
-        assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[3],bool)"));
+        for (final GraphSONVersion version : VERSIONS) {
+            final ScriptEngine jythonEngine = JythonScriptEngineSetup.setup((PyScriptEngine) new ScriptEngineManager().getEngineByName("jython"));
+            jythonEngine.eval("graphson_reader = " + (version.equals(GraphSONVersion.V2_0) ? "graphsonV2d0_reader" : "graphsonV3d0_reader"));
+            final ObjectMapper mapper = GraphSONMapper.build().version(version).create().createMapper();
+            //
+            final Map<String, Number> map = new LinkedHashMap<>();
+            map.put("a", 2);
+            map.put("b", 2.3d);
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(map));
+            assertEquals("{u'a': 2, u'b': 2.3}", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertEquals(2, jythonEngine.eval("graphson_reader.readObject(x)['a']"));
+            assertEquals(2.3d, jythonEngine.eval("graphson_reader.readObject(x)['b']")); // jython is smart about double
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)['a'],int)"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)['b'],float)"));
+            //
+            final List<Object> list = Arrays.asList(g.V(1).next(), "hello", map, true);
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(list));
+            assertEquals("[v[1], u'hello', {u'a': 2, u'b': 2.3}, True]", jythonEngine.eval("str(graphson_reader.readObject(x))"));
+            assertEquals(g.V(1).next().toString(), jythonEngine.eval("str(graphson_reader.readObject(x)[0])"));
+            assertEquals("hello", jythonEngine.eval("graphson_reader.readObject(x)[1]"));
+            assertEquals("{u'a': 2, u'b': 2.3}", jythonEngine.eval("str(graphson_reader.readObject(x)[2])"));
+            assertTrue((Boolean) jythonEngine.eval("graphson_reader.readObject(x)[3]"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[0],Vertex)"));
+            // assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[1],str)")); // its python unicode jython object
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[2],dict)"));
+            assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x)[3],bool)"));
+        }
     }
-
 }

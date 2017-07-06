@@ -29,12 +29,18 @@ if six.PY3:
     IntType = int
     LongType = long
     TypeType = type
+    ListType = list
+    DictType = dict
+    SetType = set
 else:
     long = long
+    SetType = set
     from types import FloatType
     from types import IntType
     from types import LongType
     from types import TypeType
+    from types import ListType
+    from types import DictType
 
 staticMethods = {}
 staticEnums = {}

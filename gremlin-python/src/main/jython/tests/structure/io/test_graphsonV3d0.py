@@ -19,7 +19,6 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import sys
 import json
 from mock import Mock
 
@@ -28,12 +27,11 @@ import six
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty
 from gremlin_python.structure.graph import Path
-from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
-import gremlin_python.structure.io.graphson
+from gremlin_python.structure.io.graphsonV3d0 import GraphSONWriter, GraphSONReader, GraphSONUtil
+import gremlin_python.structure.io.graphsonV3d0
 from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
-
 
 class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
@@ -145,7 +143,7 @@ class TestGraphSONReader(object):
         assert type_string in reader.deserializers
 
         # base dicts are not modified
-        assert type_string not in gremlin_python.structure.io.graphson._deserializers
+        assert type_string not in gremlin_python.structure.io.graphsonV3d0._deserializers
 
         x = X()
         o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: x})
@@ -156,7 +154,8 @@ class TestGraphSONReader(object):
         type_string = "g:Int64"
         serdes = Mock()
         reader = GraphSONReader(deserializer_map={type_string: serdes, override_string: serdes})
-        assert gremlin_python.structure.io.graphson._deserializers[type_string] is not reader.deserializers[type_string]
+        assert gremlin_python.structure.io.graphsonV3d0._deserializers[type_string] is not reader.deserializers[
+            type_string]
 
         value = 3
         o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: value})
@@ -165,8 +164,21 @@ class TestGraphSONReader(object):
 
 
 class TestGraphSONWriter(object):
-
     graphson_writer = GraphSONWriter()
+
+    def test_collections(self):
+        assert {"@type": "g:List", "@value": [{"@type": "g:Int32", "@value": 1},
+                                              {"@type": "g:Int32", "@value": 2},
+                                              {"@type": "g:Int32", "@value": 3}]} == json.loads(
+            self.graphson_writer.writeObject([1, 2, 3]))
+        assert {"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
+                                             {"@type": "g:Int32", "@value": 2},
+                                             {"@type": "g:Int32", "@value": 3}]} == json.loads(
+            self.graphson_writer.writeObject(set([1, 2, 3, 3])))
+        assert {"@type": "g:Map",
+                "@value": ['a', {"@type": "g:Int32", "@value": 1},
+                           'b', {"@type": "g:Int32", "@value": 2}]} == json.loads(
+            self.graphson_writer.writeObject({'a': 1, 'b': 2}))
 
     def test_number_output(self):
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
@@ -183,23 +195,26 @@ class TestGraphSONWriter(object):
     def test_P(self):
         result = {'@type': 'g:P',
                   '@value': {
-                     'predicate': 'and',
-                     'value': [{
-                        '@type': 'g:P',
-                        '@value': {
-                            'predicate': 'or',
-                            'value': [{
-                                '@type': 'g:P',
-                                '@value': {'predicate': 'lt', 'value': 'b'}
-                            },
-                            {'@type': 'g:P', '@value': {'predicate': 'gt', 'value': 'c'}}
-                            ]
-                        }
-                    },
-                    {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
+                      'predicate': 'and',
+                      'value': [{
+                          '@type': 'g:P',
+                          '@value': {
+                              'predicate': 'or',
+                              'value': [{
+                                  '@type': 'g:P',
+                                  '@value': {'predicate': 'lt', 'value': 'b'}
+                              },
+                                  {'@type': 'g:P', '@value': {'predicate': 'gt', 'value': 'c'}}
+                              ]
+                          }
+                      },
+                          {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
 
-        assert  result == json.loads(
+        assert result == json.loads(
             self.graphson_writer.writeObject(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
+
+        result = {'@type': 'g:P', '@value': {'predicate':'within','value': {'@type': 'g:List', '@value':[{"@type": "g:Int32", "@value": 1},{"@type": "g:Int32", "@value": 2}]}}}
+        assert result == json.loads(self.graphson_writer.writeObject(P.within([1,2])))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
@@ -211,7 +226,9 @@ class TestGraphSONWriter(object):
 
     def test_graph(self):
         # TODO: this assert is not compatible with python 3 and now that we test with both 2 and 3 it fails
-        assert {"@type": "g:Vertex", "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(self.graphson_writer.writeObject(Vertex(long(12), "person")))
+        assert {"@type": "g:Vertex",
+                "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(
+            self.graphson_writer.writeObject(Vertex(long(12), "person")))
 
         assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
                                               "outV": {"@type": "g:Int32", "@value": 0},
@@ -243,7 +260,7 @@ class TestGraphSONWriter(object):
         assert X in writer.serializers
 
         # base dicts are not modified
-        assert X not in gremlin_python.structure.io.graphson._serializers
+        assert X not in gremlin_python.structure.io.graphsonV3d0._serializers
 
         obj = X()
         d = writer.toDict(obj)
@@ -253,7 +270,7 @@ class TestGraphSONWriter(object):
         # overridden mapping
         serdes = Mock()
         writer = GraphSONWriter(serializer_map={int: serdes})
-        assert gremlin_python.structure.io.graphson._serializers[int] is not writer.serializers[int]
+        assert gremlin_python.structure.io.graphsonV3d0._serializers[int] is not writer.serializers[int]
 
         value = 3
         d = writer.toDict(value)
@@ -261,7 +278,6 @@ class TestGraphSONWriter(object):
         assert d is serdes.dictify()
 
     def test_write_long(self):
-
         mapping = self.graphson_writer.toDict(1)
         assert mapping['@type'] == 'g:Int32'
         assert mapping['@value'] == 1
