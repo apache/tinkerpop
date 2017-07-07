@@ -33,8 +33,34 @@ from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
+
 class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
+
+    def test_collections(self):
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:List", "@value": [{"@type": "g:Int32", "@value": 1},
+                                                      {"@type": "g:Int32", "@value": 2},
+                                                      "3"]}))
+        assert isinstance(x, list)
+        assert x[0] == 1
+        assert x[1] == 2
+        assert x[2] == "3"
+        ##
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
+                                                     {"@type": "g:Int32", "@value": 2},
+                                                     "3"]}))
+        assert isinstance(x, set)
+        assert x == set([1, 2, "3"])
+        ##
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:Map",
+                        "@value": ['a', {"@type": "g:Int32", "@value": 1}, 'b', "marko"]}))
+        assert isinstance(x, dict)
+        assert x['a'] == 1
+        assert x['b'] == "marko"
+        assert len(x) == 2
 
     def test_number_input(self):
         x = self.graphson_reader.readObject(json.dumps({
@@ -212,8 +238,9 @@ class TestGraphSONWriter(object):
         assert result == json.loads(
             self.graphson_writer.writeObject(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
 
-        result = {'@type': 'g:P', '@value': {'predicate':'within','value': {'@type': 'g:List', '@value':[{"@type": "g:Int32", "@value": 1},{"@type": "g:Int32", "@value": 2}]}}}
-        assert result == json.loads(self.graphson_writer.writeObject(P.within([1,2])))
+        result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
+            {"@type": "g:Int32", "@value": 1}, {"@type": "g:Int32", "@value": 2}]}}}
+        assert result == json.loads(self.graphson_writer.writeObject(P.within([1, 2])))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
