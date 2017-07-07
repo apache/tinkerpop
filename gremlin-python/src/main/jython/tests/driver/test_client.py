@@ -21,6 +21,7 @@ import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.structure.graph import Graph
+from gremlin_python.driver import serializer
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -78,7 +79,7 @@ def test_client_async(client):
 
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
-    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
+    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1, message_serializer=serializer.GraphSONSerializersV2d0())
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
@@ -98,6 +99,8 @@ def test_multi_conn_pool(client):
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
+
+    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1, message_serializer=serializer.GraphSONSerializersV2d0())
     future = client.submitAsync(message)
     future2 = client.submitAsync(message)
 

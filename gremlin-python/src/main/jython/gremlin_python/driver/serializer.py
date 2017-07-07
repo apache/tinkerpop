@@ -84,12 +84,13 @@ class Traversal(Processor):
 class GraphSONMessageSerializer:
     """Message serializer for GraphSON"""
 
-    def __init__(self, reader=None, writer=None):
+    def __init__(self, reader=None, writer=None, version=b"application/vnd.gremlin-v3.0+json"):
+        self.version = version
         if not reader:
-            reader = graphsonV2d0.GraphSONReader()
+            reader = graphsonV3d0.GraphSONReader()
         self._graphson_reader = reader
         if not writer:
-            writer = graphsonV2d0.GraphSONWriter()
+            writer = graphsonV3d0.GraphSONWriter()
         self.standard = Standard(writer)
         self.traversal = Traversal(writer)
 
@@ -118,8 +119,7 @@ class GraphSONMessageSerializer:
             'op': op,
             'args': args
         }
-        return self.finalize_message(message, b"\x21",
-                                     b"application/vnd.gremlin-v2.0+json")
+        return self.finalize_message(message, b"\x21", self.version)
 
     def finalize_message(self, message, mime_len, mime_type):
         message = json.dumps(message)
@@ -133,7 +133,7 @@ class GraphSONSerializersV2d0(GraphSONMessageSerializer):
     """Message serializer for GraphSON 2.0"""
 
     def __init__(self, reader=None, writer=None):
-        GraphSONMessageSerializer.__init__(self, reader, writer, "2.0")
+        GraphSONMessageSerializer.__init__(self, reader, writer, b"application/vnd.gremlin-v2.0+json")
         if not reader:
             self._graphson_reader = graphsonV2d0.GraphSONReader()
         if not writer:
@@ -146,7 +146,7 @@ class GraphSONSerializersV3d0(GraphSONMessageSerializer):
     """Message serializer for GraphSON 3.0"""
 
     def __init__(self, reader=None, writer=None):
-        GraphSONMessageSerializer.__init__(self, reader, writer, "3.0")
+        GraphSONMessageSerializer.__init__(self, reader, writer, b"application/vnd.gremlin-v3.0+json")
         if not reader:
             self._graphson_reader = graphsonV3d0.GraphSONReader()
         if not writer:

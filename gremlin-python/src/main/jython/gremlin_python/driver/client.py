@@ -42,7 +42,7 @@ class Client:
         self._url = url
         self._traversal_source = traversal_source
         if message_serializer is None:
-            message_serializer = serializer.GraphSONMessageSerializer()
+            message_serializer = serializer.GraphSONSerializersV3d0()
         self._message_serializer = message_serializer
         self._username = username
         self._password = password

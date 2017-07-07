@@ -86,9 +86,14 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             del results_dict[request_id]
         elif status_code in [200, 206]:
             results = []
-            for msg in data["result"]["data"]:
-                results.append(
-                    self._message_serializer.deserialize_message(msg))
+            # this is a bit of a hack for now. basically the protocol.py picks the json apart and doesn't
+            # account for types too well right now.
+            if self._message_serializer.version == b"application/vnd.gremlin-v2.0+json":
+                for msg in data["result"]["data"]:
+                    results.append(
+                        self._message_serializer.deserialize_message(msg))
+            else:
+                results = self._message_serializer.deserialize_message(data["result"]["data"]["@value"])
             result_set.stream.put_nowait(results)
             if status_code == 206:
                 data = self._transport.read()

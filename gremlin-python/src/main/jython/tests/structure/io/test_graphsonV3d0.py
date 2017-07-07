@@ -176,9 +176,8 @@ class TestGraphSONWriter(object):
                                              {"@type": "g:Int32", "@value": 3}]} == json.loads(
             self.graphson_writer.writeObject(set([1, 2, 3, 3])))
         assert {"@type": "g:Map",
-                "@value": ['a', {"@type": "g:Int32", "@value": 1},
-                           'b', {"@type": "g:Int32", "@value": 2}]} == json.loads(
-            self.graphson_writer.writeObject({'a': 1, 'b': 2}))
+                "@value": ['a', {"@type": "g:Int32", "@value": 1}]} == json.loads(
+            self.graphson_writer.writeObject({'a': 1}))
 
     def test_number_output(self):
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))

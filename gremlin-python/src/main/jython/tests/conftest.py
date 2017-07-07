@@ -23,6 +23,7 @@ from six.moves import queue
 
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
+from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
@@ -66,6 +67,18 @@ def client(request):
 def remote_connection(request):
     try:
         remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+        request.addfinalizer(fin)
+        return remote_conn
+
+@pytest.fixture
+def remote_connection_v2(request):
+    try:
+        remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g', message_serializer=serializer.GraphSONSerializersV2d0())
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
