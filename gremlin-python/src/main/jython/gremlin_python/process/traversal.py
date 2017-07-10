@@ -148,14 +148,10 @@ statics.add_static('or_', Operator.or_)
 statics.add_static('addAll', Operator.addAll)
 statics.add_static('sumLong', Operator.sumLong)
 
-Order = Enum('Order', ' decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
+Order = Enum('Order', ' decr incr shuffle')
 
 statics.add_static('incr', Order.incr)
 statics.add_static('decr', Order.decr)
-statics.add_static('keyIncr', Order.keyIncr)
-statics.add_static('valueIncr', Order.valueIncr)
-statics.add_static('keyDecr', Order.keyDecr)
-statics.add_static('valueDecr', Order.valueDecr)
 statics.add_static('shuffle', Order.shuffle)
 
 Pick = Enum('Pick', ' any none')
