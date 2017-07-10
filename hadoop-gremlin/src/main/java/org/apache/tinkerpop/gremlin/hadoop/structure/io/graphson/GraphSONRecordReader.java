@@ -58,7 +58,7 @@ public final class GraphSONRecordReader extends RecordReader<NullWritable, Verte
         this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES, true);
         this.graphsonReader = GraphSONReader.build().mapper(
                 GraphSONMapper.build().
-                        version(GraphSONVersion.V2_0).
+                        version(GraphSONVersion.valueOf(context.getConfiguration().get(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, "V3_0"))).
                         typeInfo(TypeInfo.PARTIAL_TYPES).
                         addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(context.getConfiguration()))).create()).create();
     }

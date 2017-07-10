@@ -40,6 +40,7 @@ public final class Constants {
     public static final String GREMLIN_HADOOP_GRAPH_FILTER = "gremlin.hadoop.graphFilter";
     public static final String GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER = "gremlin.hadoop.defaultGraphComputer";
     public static final String GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR = "gremlin.hadoop.vertexProgramInterceptor";
+    public static final String GREMLIN_HADOOP_GRAPHSON_VERSION = "gremlin.hadoop.graphSONVersion";
 
     public static final String GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE = "gremlin.hadoop.jarsInDistributedCache";
     public static final String HIDDEN_G = Graph.Hidden.hide("g");

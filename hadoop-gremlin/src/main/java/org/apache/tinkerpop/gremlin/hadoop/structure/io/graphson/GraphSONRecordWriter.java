@@ -60,7 +60,7 @@ public final class GraphSONRecordWriter extends RecordWriter<NullWritable, Verte
         this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true);
         this.graphsonWriter = GraphSONWriter.build().mapper(
                 GraphSONMapper.build().
-                        version(GraphSONVersion.V2_0).
+                        version(GraphSONVersion.valueOf(configuration.get(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, "V3_0"))).
                         typeInfo(TypeInfo.PARTIAL_TYPES).
                         addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
     }

@@ -87,6 +87,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             final List<String> graphsonResources = Arrays.asList(
                     "tinkerpop-modern-v2d0-typed.json",
                     "grateful-dead-v2d0-typed.json",
+                    "grateful-dead-v3d0-typed.json",
                     "tinkerpop-classic-v2d0-typed.json",
                     "tinkerpop-crew-v2d0-typed.json");
             for (final String fileName : graphsonResources) {

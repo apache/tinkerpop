@@ -21,14 +21,20 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.RecordReaderWriterTest;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class GraphSONRecordReaderWriterTest extends RecordReaderWriterTest {
+public class GraphSONV2d0RecordReaderWriterTest extends RecordReaderWriterTest {
+
+    public GraphSONV2d0RecordReaderWriterTest() {
+        super.configuration.set(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, GraphSONVersion.V2_0.name());
+    }
 
     @Override
     protected String getInputFilename() {

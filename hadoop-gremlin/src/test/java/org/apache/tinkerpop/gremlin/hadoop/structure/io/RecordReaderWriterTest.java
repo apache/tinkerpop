@@ -56,6 +56,9 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class RecordReaderWriterTest {
+    // extra configurations that a extending class can add prior to test execution
+    protected Configuration configuration = new Configuration();
+
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderWriterTest.class);
 
     protected abstract String getInputFilename();
@@ -74,6 +77,7 @@ public abstract class RecordReaderWriterTest {
             final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormatClass = getOutputFormat();
             final File outputDirectory = TestHelper.makeTestDataPath(inputFormatClass, "hadoop-record-reader-writer-test");
             final Configuration config = configure(outputDirectory);
+            config.addResource(this.configuration);
             validateFileSplits(splits, config, inputFormatClass, Optional.of(outputFormatClass));
         }
     }
