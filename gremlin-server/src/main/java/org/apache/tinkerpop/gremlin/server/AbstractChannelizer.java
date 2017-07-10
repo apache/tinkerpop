@@ -24,7 +24,6 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
@@ -55,7 +54,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
-import java.util.Iterator;
 
 /**
  * A base implementation for the {@code Channelizer} which does a basic configuration of the pipeline, one that
@@ -198,6 +196,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                     logger.warn("The {} serialization class does not implement {} - it will not be available.", config.className, MessageSerializer.class.getCanonicalName());
                     return Optional.<MessageSerializer>empty();
                 }
+
+                if (clazz.getAnnotation(Deprecated.class) != null)
+                    logger.warn("The {} serialization class is deprecated.", config.className);
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
                 final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();

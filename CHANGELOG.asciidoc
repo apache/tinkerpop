@@ -29,6 +29,7 @@ TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
 * `ReferenceFactory` and `DetachedFactory` now detach elements in collections accordingly.
+* Deprecated `GryoLiteMessageSerializerV1d0` in favor of `HaltedTraverserStrategy`.
 * Deprecated the `useMapperFromGraph` configuration option for Gremlin Server serializers.
 * `JavaTranslator` is now smart about handling `BulkSet` and `Tree`.
 * Added annotations to the traversal metrics pretty print.
