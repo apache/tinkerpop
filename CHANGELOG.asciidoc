@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed previously deprecatd `Order` enums of `keyIncr`, `keyDecr`, `valueIncr`, and `valueDecr.`
 * Removed previously deprecated `TraversalSource.Builder` class.
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
