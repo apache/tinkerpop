@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed previously deprecated `GraphTraversal.mapKeys()` step.
+* Removed previously deprecated `GraphTraversal.mapValues()` step.
 * Removed previously deprecated `TraversalSource.Builder` class.
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
