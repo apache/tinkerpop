@@ -56,12 +56,6 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
 
-    @Deprecated
-    public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum();
-
-    @Deprecated
-    public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
-
     public abstract Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack();
 
     public abstract Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id);
@@ -90,27 +84,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Deprecated
-    public void g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
-        final Traversal<Vertex, Double> traversal = get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum();
-        printTraversalForm(traversal);
-        assertEquals(3.5d, traversal.next(), 0.00001d);
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
         final Traversal<Vertex, Double> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList(2.0d, 1.4d), traversal);
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @Deprecated
-    public void g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-        final Traversal<Vertex, Double> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(2.0d, 1.4d), traversal);
     }
@@ -183,16 +158,6 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
             return g.withSack(0.0d).V().repeat(outE().sack(sum).by("weight").inV()).times(2).sack();
-        }
-
-        @Override
-        public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.withSack(0.0d).V().outE().sack(sum, "weight").inV().sack().sum();
-        }
-
-        @Override
-        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.withSack(0.0d).V().repeat(outE().sack(sum, "weight").inV()).times(2).sack();
         }
 
         @Override
