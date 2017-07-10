@@ -26,7 +26,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
@@ -70,6 +69,9 @@ final class JavaUtilSerializersV3d0 {
         }
     }
 
+    /**
+     * Coerces {@code Map.Entry} to a {@code Map} with a single entry in it.
+     */
     final static class MapEntryJacksonSerializer extends StdSerializer<Map.Entry> {
 
         public MapEntryJacksonSerializer() {
@@ -79,16 +81,15 @@ final class JavaUtilSerializersV3d0 {
         @Override
         public void serialize(final Map.Entry entry, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            jsonGenerator.writeObject(entry.getKey());
-            jsonGenerator.writeObject(entry.getValue());
+            final Map<Object,Object> m = new HashMap<>();
+            if (entry != null) m.put(entry.getKey(), entry.getValue());
+            jsonGenerator.writeObject(m);
         }
 
         @Override
         public void serializeWithType(final Map.Entry entry, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            typeSerializer.writeTypePrefixForObject(entry, jsonGenerator);
             serialize(entry, jsonGenerator, serializerProvider);
-            typeSerializer.writeTypeSuffixForObject(entry, jsonGenerator);
         }
     }
 
@@ -157,27 +158,6 @@ final class JavaUtilSerializersV3d0 {
             }
 
             return m;
-        }
-    }
-
-    static class MapEntryJacksonDeserializer extends StdDeserializer<Map.Entry> {
-
-        protected MapEntryJacksonDeserializer() {
-            super(Map.Entry.class);
-        }
-
-        @Override
-        public Map.Entry deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Map<Object,Object> m = new HashMap<>();
-
-            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                final Object key = deserializationContext.readValue(jsonParser, Object.class);
-                jsonParser.nextToken();
-                final Object val = deserializationContext.readValue(jsonParser, Object.class);
-                m.put(key, val);
-            }
-
-            return m.entrySet().iterator().next();
         }
     }
 

@@ -131,9 +131,10 @@ public class GraphSONMessageSerializerV3d0Test {
         final ResponseMessage response = convert(IteratorUtils.asList(map.entrySet()));
         assertCommon(response);
 
-        final List<Map.Entry<Object, Object>> deserializedEntries = (List<Map.Entry<Object, Object>>) response.getResult().getData();
+        final List<Map<Object, Object>> deserializedEntries = (List<Map<Object, Object>>) response.getResult().getData();
         assertEquals(3, deserializedEntries.size());
-        deserializedEntries.forEach(e -> {
+        deserializedEntries.forEach(m -> {
+            final Map.Entry<Object,Object> e = m.entrySet().iterator().next();
             if (e.getKey().equals("x"))
                 assertEquals(1, e.getValue());
             else if (e.getKey() instanceof Vertex && e.getKey().equals(v1))

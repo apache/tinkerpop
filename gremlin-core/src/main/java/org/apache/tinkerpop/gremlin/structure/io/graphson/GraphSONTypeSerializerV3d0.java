@@ -61,7 +61,7 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public void writeTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof Map || o instanceof Map.Entry) {
+        if (o instanceof Map) {
             writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
             jsonGenerator.writeStartArray();
         } else {
@@ -71,7 +71,7 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public void writeTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof Map || o instanceof Map.Entry) {
+        if (o instanceof Map) {
             jsonGenerator.writeEndArray();
             writeTypeSuffix(jsonGenerator);
         } else {
@@ -108,8 +108,6 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
         final Class mapped;
         if (Map.class.isAssignableFrom(c))
             mapped = Map.class;
-        else if (Map.Entry.class.isAssignableFrom(c))
-            mapped = Map.Entry.class;
         else if (List.class.isAssignableFrom(c))
             mapped = List.class;
         else if (Set.class.isAssignableFrom(c))

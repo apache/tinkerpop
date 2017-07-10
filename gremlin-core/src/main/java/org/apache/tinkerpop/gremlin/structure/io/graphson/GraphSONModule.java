@@ -125,7 +125,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Double.class, "Double");
                     put(Float.class, "Float");
 
-                    put(Map.Entry.class, "Entry");
                     put(Map.class, "Map");
                     put(List.class, "List");
                     put(Set.class, "Set");
@@ -249,7 +248,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Tree.class, new GraphSONSerializersV3d0.TreeJacksonDeserializer());
 
             // java.util
-            addDeserializer(Map.Entry.class, new JavaUtilSerializersV3d0.MapEntryJacksonDeserializer());
             addDeserializer(Map.class, new JavaUtilSerializersV3d0.MapJacksonDeserializer());
             addDeserializer(List.class, new JavaUtilSerializersV3d0.ListJacksonDeserializer());
             addDeserializer(Set.class, new JavaUtilSerializersV3d0.SetJacksonDeserializer());
