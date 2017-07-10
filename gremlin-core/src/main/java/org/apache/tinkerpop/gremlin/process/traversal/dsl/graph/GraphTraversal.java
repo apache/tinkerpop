@@ -2034,15 +2034,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)} with {@link #by(String)}.
-     */
-    @Deprecated
-    public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
-        return this.sack(sackOperator).by(elementPropertyKey);
-    }
-
-    /**
      * Lazily aggregates objects in the stream into a side-effect collection.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregate
