@@ -211,6 +211,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.OrP(P...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction`
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph#groupV3d0(String)`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph#groupV3d0()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
