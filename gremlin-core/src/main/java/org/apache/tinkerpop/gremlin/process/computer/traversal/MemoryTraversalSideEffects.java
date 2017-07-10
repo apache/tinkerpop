@@ -105,18 +105,6 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    @Deprecated
-    public void registerSupplier(final String key, final Supplier supplier) {
-        this.sideEffects.registerSupplier(key, supplier);
-    }
-
-    @Override
-    @Deprecated
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
-        return this.sideEffects.getRegisteredSupplier(key);
-    }
-
-    @Override
     public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         this.sideEffects.setSack(initialValue, splitOperator, mergeOperator);
     }

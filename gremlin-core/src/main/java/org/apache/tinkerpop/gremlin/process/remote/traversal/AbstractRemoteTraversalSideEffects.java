@@ -96,14 +96,4 @@ public abstract class AbstractRemoteTraversalSideEffects implements RemoteTraver
     public void mergeInto(final TraversalSideEffects sideEffects) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
-
-    @Override
-    public void registerSupplier(final String key, final Supplier supplier) {
-        throw new UnsupportedOperationException("Remote traversals do not support this method");
-    }
-
-    @Override
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
-        throw new UnsupportedOperationException("Remote traversals do not support this method");
-    }
 }

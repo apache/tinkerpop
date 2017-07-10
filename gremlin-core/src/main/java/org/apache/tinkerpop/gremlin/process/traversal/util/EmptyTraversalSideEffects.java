@@ -84,17 +84,6 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
         throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
-
-    @Override
-    public void registerSupplier(final String key, final Supplier supplier) {
-
-    }
-
-    @Override
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
-        return Optional.empty();
-    }
-
     @Override
     public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
 
