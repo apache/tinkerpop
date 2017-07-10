@@ -85,6 +85,13 @@ class TestDriverRemoteConnection(object):
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
+        g = Graph().traversal().withRemote(remote_connection). \
+            withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
+        assert 6 == g.V().count().next()
+        assert 4 == g.E().count().next()
+        assert 1 == g.E().label().dedup().count().next()
+        assert "created" == g.E().label().dedup().next()
+        #
         g = g.withoutStrategies(SubgraphStrategy). \
             withComputer(vertices=__.has("name", "marko"), edges=__.limit(0))
         assert 1 == g.V().count().next()
