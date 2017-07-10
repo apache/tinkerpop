@@ -920,14 +920,6 @@ public class __ {
     }
 
     /**
-     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)}.
-     */
-    @Deprecated
-    public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
-        return __.<A>start().sack(sackOperator, elementPropertyKey);
-    }
-
-    /**
      * @see GraphTraversal#store(String)
      */
     public static <A> GraphTraversal<A, A> store(final String sideEffectKey) {
