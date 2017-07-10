@@ -148,7 +148,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         sg.addV().next();
         assertEquals(1, IteratorUtils.count(sg.V()));
 
-        final Vertex v = sg.V().addV(T.id, "STEPHEN", "name", "stephen").next();
+        final Vertex v = sg.V().addV().property(T.id, "STEPHEN").property("name", "stephen").next();
         assertEquals("stephen", v.value("name"));
         assertEquals("STEPHEN", sg.V(v).id().next());
         assertEquals("STEPHEN", sg.V("STEPHEN").id().next());
@@ -160,7 +160,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE("self").to("v").property("test", "value").property(T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
@@ -172,7 +172,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE("self").to("v").property("test", "value").next();
         assertEquals("value", e.value("test"));
         assertNotNull(UUID.fromString(sg.E(e).id().next().toString()));
     }
@@ -183,7 +183,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE("self").to("v").property("test", "value").property(T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
@@ -196,7 +196,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", "name", "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE("self").to("v").property("test", "value").property("name", "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());

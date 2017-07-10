@@ -72,13 +72,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name();
 
-    // 3.0.0 DEPRECATIONS
-    @Deprecated
-    public abstract Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X();
-
-    @Deprecated
-    public abstract Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX();
-
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -253,40 +246,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-    public void g_V_addVXlabel_animal_age_0X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_addVXlabel_animal_age_0X();
-        printTraversalForm(traversal);
-        int count = 0;
-        while (traversal.hasNext()) {
-            final Vertex vertex = traversal.next();
-            assertEquals("animal", vertex.label());
-            assertEquals(0, vertex.<Integer>value("age").intValue());
-            count++;
-        }
-        assertEquals(6, count);
-        assertEquals(12, IteratorUtils.count(g.V()));
-
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-    public void g_addVXlabel_person_name_stephenX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_addVXlabel_person_name_stephenX();
-        printTraversalForm(traversal);
-        final Vertex stephen = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals("person", stephen.label());
-        assertEquals("stephen", stephen.value("name"));
-        assertEquals(1, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(g.V()));
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX();
@@ -360,16 +319,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX() {
             return g.V().addV("animal").property("name", __.values("name")).property("name", "an animal").property(__.values("name"), __.label());
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
-            return g.V().addV(T.label, "animal", "age", 0);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
-            return g.addV(T.label, "person", "name", "stephen");
         }
 
         @Override
