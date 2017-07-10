@@ -320,14 +320,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("map", *args)
         return self
 
-    def mapKeys(self, *args):
-        self.bytecode.add_step("mapKeys", *args)
-        return self
-
-    def mapValues(self, *args):
-        self.bytecode.add_step("mapValues", *args)
-        return self
-
     def match(self, *args):
         self.bytecode.add_step("match", *args)
         return self
@@ -724,14 +716,6 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).map(*args)
 
     @classmethod
-    def mapKeys(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).mapKeys(*args)
-
-    @classmethod
-    def mapValues(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).mapValues(*args)
-
-    @classmethod
     def match(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).match(*args)
 
@@ -1096,14 +1080,6 @@ statics.add_static('loops', loops)
 def map(*args):
     return __.map(*args)
 statics.add_static('map', map)
-
-def mapKeys(*args):
-    return __.mapKeys(*args)
-statics.add_static('mapKeys', mapKeys)
-
-def mapValues(*args):
-    return __.mapValues(*args)
-statics.add_static('mapValues', mapValues)
 
 def match(*args):
     return __.match(*args)
