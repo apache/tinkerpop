@@ -256,8 +256,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LinkedList.class, 116));
             add(GryoTypeReg.of(Types.LINKED_HASH_MAP_ENTRY_CLASS, 15));
             add(GryoTypeReg.of(Locale.class, 22));
-//            add(GryoTypeReg.of(StringBuffer.class, 43));
-//            add(GryoTypeReg.of(StringBuilder.class, 44));
+            add(GryoTypeReg.of(StringBuffer.class, 43));
+            add(GryoTypeReg.of(StringBuilder.class, 44));
             add(GryoTypeReg.of(T.class, 48));
             add(GryoTypeReg.of(TimeZone.class, 42));
             add(GryoTypeReg.of(TreeMap.class, 45));
@@ -341,9 +341,6 @@ public enum GryoVersion {
             add(GryoTypeReg.of(BulkSet.class, 64));
             add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3d0.MetricsSerializer()));
             add(GryoTypeReg.of(TraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalMetricsSerializer()));
-            //add(GryoTypeReg.of(MutableMetrics.class, 69, ));
-            //add(GryoTypeReg.of(ImmutableMetrics.class, 115));
-            //add(GryoTypeReg.of(DefaultTraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalSerializer()));
             add(GryoTypeReg.of(MapMemory.class, 73));
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
