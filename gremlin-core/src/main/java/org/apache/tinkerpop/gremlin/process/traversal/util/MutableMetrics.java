@@ -69,23 +69,31 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.nested.put(metrics.getId(), metrics);
     }
 
+    /**
+     * Starts the timer for this metric. Should not be called again without first calling {@link #stop()}.
+     */
     public void start() {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
-        if (-1 != this.tempTime) {
-            throw new IllegalStateException("Internal Error: Concurrent Metrics start. Stop timer before starting timer.");
-        }
+        if (-1 != this.tempTime) throw new IllegalStateException("Internal Error: Concurrent Metrics start. Stop timer before starting timer.");
+
         this.tempTime = System.nanoTime();
     }
 
+    /**
+     * Stops the timer for this metric and increments the overall duration. Should not be called without first calling
+     * {@link #start()}.
+     */
     public void stop() {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
-        if (-1 == this.tempTime)
-            throw new IllegalStateException("Internal Error: Metrics has not been started. Start timer before stopping timer");
+        if (-1 == this.tempTime) throw new IllegalStateException("Internal Error: Metrics has not been started. Start timer before stopping timer");
         this.durationNs = this.durationNs + (System.nanoTime() - this.tempTime);
         this.tempTime = -1;
     }
 
-    public void incrementCount(final String key, final long incr) {
+    /**
+     * Increments a count metric.
+     */
+    public synchronized void incrementCount(final String key, final long incr) {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         AtomicLong count = this.counts.get(key);
         if (count == null) {
@@ -95,17 +103,26 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         count.addAndGet(incr);
     }
 
+    /**
+     * Directly set the duration for the metric.
+     */
     public void setDuration(final long dur, final TimeUnit unit) {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.durationNs = TimeUnit.NANOSECONDS.convert(dur, unit);
     }
 
+    /**
+     * Directly set the count for the metric.
+     */
     public void setCount(final String key, final long val) {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.counts.put(key, new AtomicLong(val));
     }
 
-    public void aggregate(final MutableMetrics other) {
+    /**
+     * Aggregate one set of metrics into the current body of metrics.
+     */
+    public synchronized void aggregate(final MutableMetrics other) {
         if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.durationNs += other.durationNs;
         for (Map.Entry<String, AtomicLong> otherCount : other.counts.entrySet()) {
