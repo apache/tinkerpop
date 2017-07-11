@@ -70,13 +70,13 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining
                 RANDOM.nextBoolean()) {
-            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
         }
 
         // tests persisted RDDs
         if (test.equals(SparkContextStorageCheck.class)) {
-            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
-            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
+            config.put(Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());

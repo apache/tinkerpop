@@ -52,12 +52,12 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
 
     @Override
     protected void addPropertyDirect(final String key, final Object value) {
-        this.properties.put(convertKey(key), value);
+        this.properties.put(key, value);
     }
 
     @Override
     protected void clearPropertyDirect(final String key) {
-        this.properties.remove(convertKey(key));
+        this.properties.remove(key);
     }
 
     @Override
@@ -67,35 +67,17 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
 
     @Override
     public boolean containsKey(final String key) {
-        return this.properties.containsKey(convertKey(key));
+        return this.properties.containsKey(key);
     }
 
     @Override
     public Object getProperty(final String key) {
-        return this.properties.get(convertKey(key));
+        return this.properties.get(key);
     }
 
     @Override
     public Iterator<String> getKeys() {
         return this.properties.keySet().iterator();
-    }
-
-    @Deprecated
-    private static String convertKey(final String key) {
-        if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT))
-            return Constants.GREMLIN_HADOOP_GRAPH_READER;
-        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))
-            return Constants.GREMLIN_HADOOP_GRAPH_WRITER;
-        else if (key.equals(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD))
-            return Constants.GREMLIN_HADOOP_GRAPH_READER;
-        else if (key.equals(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD))
-            return Constants.GREMLIN_HADOOP_GRAPH_WRITER;
-        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES))
-            return Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES;
-        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES))
-            return Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES;
-        else
-            return key;
     }
 
     ///////
