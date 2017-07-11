@@ -44,13 +44,7 @@ public final class Bindings {
     private static final Bindings INSTANCE = new Bindings();
     private static final ThreadLocal<Map<Object, String>> MAP = new ThreadLocal<>();
 
-    /**
-     * @deprecated As of release 3.2.4, replaced by {@link Bindings#instance()}.
-     */
-    @Deprecated
-    public Bindings() {
-
-    }
+    private Bindings() {}
 
     public <V> V of(final String variable, final V value) {
         Map<Object, String> map = MAP.get();

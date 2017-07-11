@@ -134,12 +134,6 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
-    @Deprecated
-    public GraphTraversalSource withBindings(final Bindings bindings) {
-        return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
-    }
-
-    @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);
     }
