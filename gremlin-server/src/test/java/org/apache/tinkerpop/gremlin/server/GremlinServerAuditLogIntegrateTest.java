@@ -161,6 +161,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             cluster.close();
         }
 
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
+
         // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
         // so no authenticated user log line available
         assertTrue(recordingAppender.logMatchesAny(AUDIT_LOGGER_NAME, INFO, "User with address .*? requested: 1\\+1"));
@@ -193,6 +196,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         m.find();
         final String address = m.group(1);
 
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
+
         assertTrue(recordingAppender.logContainsAny(AUDIT_LOGGER_NAME, INFO,
                 String.format("User %s with address %s authenticated by %s", username, address, simpleAuthenticatorName)));
         assertTrue(recordingAppender.logContainsAny(AUDIT_LOGGER_NAME, INFO,
@@ -215,6 +221,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         } finally {
             cluster.close();
         }
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
         final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
@@ -247,6 +256,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             cluster.close();
         }
 
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
+
         final List<LoggingEvent> log = recordingAppender.getEvents();
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
                 item.getMessage().toString().matches("User .*? with address .*? authenticated by Krb5Authenticator")));
@@ -270,6 +282,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         } finally {
             cluster.close();
         }
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
         final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
@@ -302,6 +317,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get("data").get(0).intValue());
         }
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
         final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
@@ -336,6 +354,10 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             cluster.close();
             cluster2.close();
         }
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        Thread.sleep(1000);
+
         final List<LoggingEvent> log = recordingAppender.getEvents();
         final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
         final Iterator<LoggingEvent> authEvents = auditEvents
