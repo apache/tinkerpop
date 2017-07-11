@@ -144,35 +144,6 @@ public class TinkerGraphPlayTest {
 
     }
 
-    @Test
-    @Ignore
-    public void testPlay() {
-        Graph g = TinkerGraph.open();
-        Vertex v1 = g.addVertex(T.id, "1", "animal", "males");
-        Vertex v2 = g.addVertex(T.id, "2", "animal", "puppy");
-        Vertex v3 = g.addVertex(T.id, "3", "animal", "mama");
-        Vertex v4 = g.addVertex(T.id, "4", "animal", "puppy");
-        Vertex v5 = g.addVertex(T.id, "5", "animal", "chelsea");
-        Vertex v6 = g.addVertex(T.id, "6", "animal", "low");
-        Vertex v7 = g.addVertex(T.id, "7", "animal", "mama");
-        Vertex v8 = g.addVertex(T.id, "8", "animal", "puppy");
-        Vertex v9 = g.addVertex(T.id, "9", "animal", "chula");
-
-        v1.addEdge("link", v2, "weight", 2f);
-        v2.addEdge("link", v3, "weight", 3f);
-        v2.addEdge("link", v4, "weight", 4f);
-        v2.addEdge("link", v5, "weight", 5f);
-        v3.addEdge("link", v6, "weight", 1f);
-        v4.addEdge("link", v6, "weight", 2f);
-        v5.addEdge("link", v6, "weight", 3f);
-        v6.addEdge("link", v7, "weight", 2f);
-        v6.addEdge("link", v8, "weight", 3f);
-        v7.addEdge("link", v9, "weight", 1f);
-        v8.addEdge("link", v9, "weight", 7f);
-
-        g.traversal().withSack(Float.MIN_VALUE).V(v1).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(x -> logger.info(x.toString()));
-    }
-
    /* @Test
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
