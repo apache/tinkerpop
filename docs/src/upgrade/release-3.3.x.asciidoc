@@ -308,7 +308,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700],
+link:https://issues.apache.org/jira/browse/TINKERPOP-832[TINKERPOP-832]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

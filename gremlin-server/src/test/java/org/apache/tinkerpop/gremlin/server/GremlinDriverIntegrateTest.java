@@ -985,7 +985,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         // this line is important because it tests GraphTraversal which has a certain transactional path
-        final Vertex vertexRequest1 = client.submit("g.addV(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        final Vertex vertexRequest1 = client.submit("g.addV().property(\"name\",\"stephen\")").all().get().get(0).getVertex();
         assertEquals("stephen", vertexRequest1.values("name").next());
 
         final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
@@ -1211,7 +1211,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
+            client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" is readonly in this context");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -1222,11 +1222,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // keep the testing here until "rebind" is completely removed
         final Client clientLegacy = client.rebind("g1");
-        final Vertex vLegacy = clientLegacy.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
+        final Vertex vLegacy = clientLegacy.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
         assertEquals("stephen", vLegacy.value("name"));
 
         final Client clientAliased = client.alias("g1");
-        final Vertex v = clientAliased.submit("g.addV('name','jason')").all().get().get(0).getVertex();
+        final Vertex v = clientAliased.submit("g.addV().property('name','jason')").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
 
         cluster.close();
@@ -1267,7 +1267,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect(name.getMethodName());
 
         try {
-            client.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
+            client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" is readonly in this context");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -1279,12 +1279,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // keep the testing here until "rebind" is completely removed
         final Client clientLegacy = client.rebind("g1");
         assertEquals("stephen", clientLegacy.submit("n='stephen'").all().get().get(0).getString());
-        final Vertex vLegacy = clientLegacy.submit("g.addV('name',n)").all().get().get(0).getVertex();
+        final Vertex vLegacy = clientLegacy.submit("g.addV().property('name',n)").all().get().get(0).getVertex();
         assertEquals("stephen", vLegacy.value("name"));
 
         final Client clientAliased = client.alias("g1");
         assertEquals("jason", clientAliased.submit("n='jason'").all().get().get(0).getString());
-        final Vertex v = clientAliased.submit("g.addV('name',n)").all().get().get(0).getVertex();
+        final Vertex v = clientAliased.submit("g.addV().property('name',n)").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
 
         cluster.close();
@@ -1300,7 +1300,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client sessionWithoutManagedTx = cluster.connect(name.getMethodName() + "-not-managed");
 
         // this should auto-commit
-        final Vertex vStephen = sessionWithManagedTx.submit("v = g.addV('name','stephen').next()").all().get().get(0).getVertex();
+        final Vertex vStephen = sessionWithManagedTx.submit("v = g.addV().property('name','stephen').next()").all().get().get(0).getVertex();
         assertEquals("stephen", vStephen.value("name"));
 
         // the other clients should see that change because of auto-commit
@@ -1308,7 +1308,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(sessionWithoutManagedTx.submit("g.V().has('name','stephen').hasNext()").all().get().get(0).getBoolean(), is(true));
 
         // this should NOT auto-commit
-        final Vertex vDaniel = sessionWithoutManagedTx.submit("v = g.addV('name','daniel').next()").all().get().get(0).getVertex();
+        final Vertex vDaniel = sessionWithoutManagedTx.submit("v = g.addV().property('name','daniel').next()").all().get().get(0).getVertex();
         assertEquals("daniel", vDaniel.value("name"));
 
         // the other clients should NOT see that change because of auto-commit
