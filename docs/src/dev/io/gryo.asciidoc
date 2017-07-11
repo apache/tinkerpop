@@ -35,16 +35,6 @@ what the Gryo format looks like in a byte-by-byte perspective will not be discus
 TinkerPop has Kryo-based serializers for certain classes that it supports and that the bytes written or read must be
 Kryo compliant.
 
-While there is only one version of Gryo at the moment, 1.0, the format has generally expanded as new releases of
-TinkerPop have been produced. "Expansion" has generally meant that new types have come to be supported over time. The
-addition of new types means that while Gryo has remained at 1.0, older releases that produced Gryo files will not
-be compatible with newer TinkerPop releases if the newer types are utilized. On the flip side, newer release of
-TinkerPop are fully backward compatible with Gryo produced on older versions of TinkerPop.
-
-The full list of Gryo 1.0 types can be found in the `GryoMapper` source code. Looking at the source code for a specific
-release tag would show what types were compatible for a specific release. For example, the type listing for 3.2.2
-can be found link:https://github.com/apache/tinkerpop/blob/3.2.2/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/io/gryo/GryoMapper.java#L249[here].
-
 One of the key aspects of Gryo is that, by default, it requires that all types expected to be used to be registered
 with the `GryoMapper`. There are two ways to do that:
 
@@ -61,3 +51,16 @@ to be compatible. Calls to `addCustom` will be applied first, prior to calls to 
 
 It is possible to disable registration by setting `registrationRequired` on the `GryoMapper.Builder` to `false`, but
 Gryo is less efficient with this feature is turned off.
+
+Until TinkerPop 3.3.0 there has only been one version of Gryo in 1.0 and the format for that version has generally
+expanded as new releases of TinkerPop have been produced. "Expansion" has generally meant that new types have come to
+be supported over time. The addition of new types means that while Gryo has remained at 1.0, older releases that
+produced Gryo files will not be compatible with newer TinkerPop releases if the newer types are utilized. On the flip
+side, newer release of TinkerPop are fully backward compatible with Gryo produced on older versions of TinkerPop.
+
+As of TinkerPop 3.3.0, there is now a new version of Gryo in 3.0 that is only partially compatible with 1.0. Attempts
+to use 3.0 serializers with 1.0 serializers will likely lead to failure.
+
+Both versions of Gryo support all the types defined by GraphSON as well as others that are bound more specifically
+to the JVM. The link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/io/gryo/GryoVersion.java[GryoVersion]
+class contains a listing of all the default registered classes.
