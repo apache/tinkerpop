@@ -115,14 +115,12 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                             final RequestMessage original = request.get();
                             ctx.fireChannelRead(original);
                         } else {
-                            // not done here - send back the sasl message for next challenge. note that we send back
-                            // the base64 encoded sasl as well as the byte array. the byte array will eventually be
-                            // phased out, but is present now for backward compatibility in 3.2.x
+                            // not done here - send back the sasl message for next challenge.
                             final Map<String,Object> metadata = new HashMap<>();
                             metadata.put(Tokens.ARGS_SASL, BASE64_ENCODER.encodeToString(saslMessage));
                             final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
                                     .statusAttributes(metadata)
-                                    .code(ResponseStatusCode.AUTHENTICATE).result(saslMessage).create();
+                                    .code(ResponseStatusCode.AUTHENTICATE).create();
                             ctx.writeAndFlush(authenticate);
                         }
                     } catch (AuthenticationException ae) {
