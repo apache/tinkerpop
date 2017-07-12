@@ -1150,11 +1150,11 @@ The following table describes the various YAML configuration options that Gremli
 |metrics.csvReporter.fileName |The file to write metrics to. |_none_
 |metrics.csvReporter.interval |Time in milliseconds between reports of metrics to file. |180000
 |metrics.gangliaReporter.addressingMode |Set to `MULTICAST` or `UNICAST`. |_none_
-|metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. |false
+|metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. Additional link:http://tinkerpop.apache.org/docs/3.3.0/reference/#metrics[setup] is required. |false
 |metrics.gangliaReporter.host |Define the Ganglia host to report Metrics to. |localhost
 |metrics.gangliaReporter.interval |Time in milliseconds between reports of metrics for Ganglia. |180000
 |metrics.gangliaReporter.port |Define the Ganglia port to report Metrics to. |8649
-|metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. |false
+|metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. Additional link:http://tinkerpop.apache.org/docs/3.3.0/reference/#metrics[setup] is required. |false
 |metrics.graphiteReporter.host |Define the Graphite host to report Metrics to. |localhost
 |metrics.graphiteReporter.interval |Time in milliseconds between reports of metrics for Graphite. |180000
 |metrics.graphiteReporter.port |Define the Graphite port to report Metrics to. |2003
