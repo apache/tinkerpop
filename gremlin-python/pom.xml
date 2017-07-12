@@ -589,8 +589,6 @@ settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.j
 settings.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])
 settings.port = 45940
 
-println settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files
-
 def server = new GremlinServer(settings)
 server.start().join()
 

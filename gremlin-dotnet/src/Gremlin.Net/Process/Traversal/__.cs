@@ -643,9 +643,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Skip(params object[] args)
+        public static GraphTraversal<object, E2> Skip<E2>(params object[] args)
         {
-            return new GraphTraversal<object, object>().Skip(args);
+            return new GraphTraversal<object, object>().Skip<E2>(args);
         }
 
         /// <summary>
@@ -763,9 +763,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the valueMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, java.util.Map<java.lang.Object, B>> ValueMap(params object[] args)
+        public static GraphTraversal<object, IDictionary<object, E2>> ValueMap<E2>(params object[] args)
         {
-            return new GraphTraversal<object, object>().ValueMap(args);
+            return new GraphTraversal<object, object>().ValueMap<E2>(args);
         }
 
         /// <summary>
