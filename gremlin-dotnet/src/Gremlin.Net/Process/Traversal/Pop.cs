@@ -30,7 +30,8 @@ namespace Gremlin.Net.Process.Traversal
     {
         All,
 		First,
-		Last
+		Last,
+		Mixed
     }
     
 #pragma warning restore 1591

@@ -774,6 +774,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the selectV3d2 step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal< S , IDictionary<string, E2> > SelectV3d2<E2> (params object[] args)
+        {
+            Bytecode.AddStep("selectV3d2", args);
+            return Wrap< S , IDictionary<string, E2> >(this);
+        }
+
+        /// <summary>
         ///     Adds the sideEffect step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal< S , E > SideEffect (params object[] args)
@@ -789,6 +798,15 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("simplePath", args);
             return Wrap< S , E >(this);
+        }
+
+        /// <summary>
+        ///     Adds the skip step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal< S , E2 > Skip<E2> (params object[] args)
+        {
+            Bytecode.AddStep("skip", args);
+            return Wrap< S , E2 >(this);
         }
 
         /// <summary>
@@ -920,10 +938,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the valueMap step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< S , IDictionary<string, E2> > ValueMap<E2> (params object[] args)
+        public GraphTraversal< S , java.util.Map<java.lang.Object, E2> > ValueMap<E2> (params object[] args)
         {
             Bytecode.AddStep("valueMap", args);
-            return Wrap< S , IDictionary<string, E2> >(this);
+            return Wrap< S , java.util.Map<java.lang.Object, E2> >(this);
         }
 
         /// <summary>
