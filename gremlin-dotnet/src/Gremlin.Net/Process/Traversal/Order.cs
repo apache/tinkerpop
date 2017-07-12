@@ -30,11 +30,7 @@ namespace Gremlin.Net.Process.Traversal
     {
         Decr,
 		Incr,
-		KeyDecr,
-		KeyIncr,
-		Shuffle,
-		ValueDecr,
-		ValueIncr
+		Shuffle
     }
     
 #pragma warning restore 1591
