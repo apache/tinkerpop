@@ -108,7 +108,8 @@ def methodsWithSpecificTypes = ["constant": useE2,
                                 "sum": useE2,
                                 "tail": useE2,
                                 "tree": ["object"],
-                                "unfold": useE2]
+                                "unfold": useE2,
+                                "valueMap": ["IDictionary<TKey, TValue>", "TKey, TValue"],]
 
 def getCSharpGenericTypeParam = { typeName ->
     def tParam = ""
@@ -183,6 +184,11 @@ def binding = ["pmethods": P.class.getMethods().
                                             def t1 = toCSharpType(typeNames[0])
                                             def t2 = toCSharpType(typeNames[1])
                                             def tParam = getCSharpGenericTypeParam(t2)
+                                            def specificTypes = methodsWithSpecificTypes.get(javaMethod.name)
+                                            if (specificTypes) {
+                                                t2 = specificTypes[0]
+                                                tParam = specificTypes.size() > 1 ? "<" + specificTypes[1] + ">" : ""
+                                            }
                                             return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam]
                                         },
                "anonStepMethods": __.class.getMethods().

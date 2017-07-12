@@ -763,9 +763,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the valueMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<object, E2>> ValueMap<E2>(params object[] args)
+        public static GraphTraversal<object, IDictionary<TKey, TValue>> ValueMap<TKey, TValue>(params object[] args)
         {
-            return new GraphTraversal<object, object>().ValueMap<E2>(args);
+            return new GraphTraversal<object, object>().ValueMap<TKey, TValue>(args);
         }
 
         /// <summary>

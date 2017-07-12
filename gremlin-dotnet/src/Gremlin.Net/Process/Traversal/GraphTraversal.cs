@@ -893,10 +893,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the tree step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< S , E > Tree (params object[] args)
+        public GraphTraversal< S , object > Tree (params object[] args)
         {
             Bytecode.AddStep("tree", args);
-            return Wrap< S , E >(this);
+            return Wrap< S , object >(this);
         }
 
         /// <summary>
@@ -938,10 +938,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the valueMap step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< S , IDictionary<object, E2> > ValueMap<E2> (params object[] args)
+        public GraphTraversal< S , IDictionary<TKey, TValue> > ValueMap<TKey, TValue> (params object[] args)
         {
             Bytecode.AddStep("valueMap", args);
-            return Wrap< S , IDictionary<object, E2> >(this);
+            return Wrap< S , IDictionary<TKey, TValue> >(this);
         }
 
         /// <summary>
