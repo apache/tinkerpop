@@ -502,38 +502,6 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addV(Object...)
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, Vertex> addV(final Object... propertyKeyValues) {
-        return __.<A>start().addV(propertyKeyValues);
-    }
-
-    /**
-     * @see GraphTraversal#addE(Direction, String, String, Object...)
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return __.<A>start().addE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
-    }
-
-    /**
-     * @see GraphTraversal#addOutE(String, String, Object...)
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return __.<A>start().addOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
-    }
-
-    /**
-     * @see GraphTraversal#addInE(String, String, Object...)
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return __.<A>start().addInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
-    }
-
-    /**
      * @see GraphTraversal#addE(String)
      */
     public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {

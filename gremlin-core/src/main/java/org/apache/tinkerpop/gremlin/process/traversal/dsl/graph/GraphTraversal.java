@@ -1007,19 +1007,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #addV()}
-     */
-    @Deprecated
-    public default GraphTraversal<S, Vertex> addV(final Object... propertyKeyValues) {
-        this.addV();
-        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
-        }
-        return (GraphTraversal<S, Vertex>) this;
-    }
-
-    /**
      * Adds an {@link Edge} with the specified edge label.
      *
      * @param edgeLabel the label of the newly added edge
@@ -1088,59 +1075,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addFrom(fromVertex.asAdmin());
         return this;
-    }
-
-    /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
-     */
-    @Deprecated
-    public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        if (propertyKeyValues.length % 2 == 0) {
-            // addOutE("createdBy", "a")
-            this.addE(firstVertexKeyOrEdgeLabel);
-            if (direction.equals(Direction.OUT))
-                this.to(edgeLabelOrSecondVertexKey);
-            else
-                this.from(edgeLabelOrSecondVertexKey);
-
-            for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-                this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
-            }
-            //((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
-            return (GraphTraversal<S, Edge>) this;
-        } else {
-            // addInE("a", "codeveloper", "b", "year", 2009)
-            this.addE(edgeLabelOrSecondVertexKey);
-            if (direction.equals(Direction.OUT))
-                this.from(firstVertexKeyOrEdgeLabel).to((String) propertyKeyValues[0]);
-            else
-                this.to(firstVertexKeyOrEdgeLabel).from((String) propertyKeyValues[0]);
-
-            for (int i = 1; i < propertyKeyValues.length; i = i + 2) {
-                this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
-            }
-            //((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
-            return (GraphTraversal<S, Edge>) this;
-        }
-    }
-
-    /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
-     */
-    @Deprecated
-    public default GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
-    }
-
-    /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
-     */
-    @Deprecated
-    public default GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

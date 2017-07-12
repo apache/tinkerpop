@@ -128,14 +128,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("addE", *args)
         return self
 
-    def addInE(self, *args):
-        self.bytecode.add_step("addInE", *args)
-        return self
-
-    def addOutE(self, *args):
-        self.bytecode.add_step("addOutE", *args)
-        return self
-
     def addV(self, *args):
         self.bytecode.add_step("addV", *args)
         return self
@@ -532,14 +524,6 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).addE(*args)
 
     @classmethod
-    def addInE(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).addInE(*args)
-
-    @classmethod
-    def addOutE(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).addOutE(*args)
-
-    @classmethod
     def addV(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).addV(*args)
 
@@ -896,14 +880,6 @@ statics.add_static('V', V)
 def addE(*args):
     return __.addE(*args)
 statics.add_static('addE', addE)
-
-def addInE(*args):
-    return __.addInE(*args)
-statics.add_static('addInE', addInE)
-
-def addOutE(*args):
-    return __.addOutE(*args)
-statics.add_static('addOutE', addOutE)
 
 def addV(*args):
     return __.addV(*args)

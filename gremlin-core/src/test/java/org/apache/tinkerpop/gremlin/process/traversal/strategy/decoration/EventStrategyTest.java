@@ -48,7 +48,6 @@ public class EventStrategyTest {
                 {"addE(test).to(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x"), 1},
                 {"addE(test).to(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x").property("this", "that"), 1},
                 {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV(), 1},
-                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "this"), 1},
                 {"addV().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 1},
                 {"properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties().drop(), 1},
                 {"properties(k).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties("test").drop(), 1},
