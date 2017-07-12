@@ -124,6 +124,7 @@ TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
+* `GremlinExecutor` begins timeout of script evaluation at the time the script was submitted and not from the time it began evaluation.
 * `ReferenceFactory` and `DetachedFactory` now detach elements in collections accordingly.
 * Deprecated the `useMapperFromGraph` configuration option for Gremlin Server serializers.
 * `JavaTranslator` is now smart about handling `BulkSet` and `Tree`.
