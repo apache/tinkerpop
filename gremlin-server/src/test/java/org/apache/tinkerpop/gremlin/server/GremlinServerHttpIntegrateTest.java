@@ -307,24 +307,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    @Deprecated
-    public void should200OnPOSTWithAuthorizationHeaderOld() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader("Content-Type", "application/json");
-        httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals("application/json", response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).intValue());
-        }
-    }
-
-    @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithBindingsAndFunction() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=addItUp(Integer.parseInt(x),Integer.parseInt(y))&bindings.x=10&bindings.y=10"));
