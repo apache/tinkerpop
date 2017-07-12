@@ -220,6 +220,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.valueIncr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.keyDecr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.valueIncr`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.GraphTraversal.mapKeys()`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.GraphTraversal.mapValues()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
@@ -314,7 +316,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1142[TINKERPOP-1142]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1142[TINKERPOP-1142],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1291[TINKERPOP-1291]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

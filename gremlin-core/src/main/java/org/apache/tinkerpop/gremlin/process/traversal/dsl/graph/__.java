@@ -282,22 +282,6 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#mapValues()
-     */
-    @Deprecated
-    public static <A, B> GraphTraversal<A, B> mapValues() {
-        return __.<A>start().mapValues();
-    }
-
-    /**
-     * @see GraphTraversal#mapKeys()
-     */
-    @Deprecated
-    public static <A, B> GraphTraversal<A, B> mapKeys() {
-        return __.<A>start().mapKeys();
-    }
-
-    /**
      * @see GraphTraversal#key()
      */
     public static <A extends Property> GraphTraversal<A, String> key() {

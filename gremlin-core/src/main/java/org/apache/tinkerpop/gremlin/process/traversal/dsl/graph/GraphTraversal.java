@@ -573,24 +573,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
-     */
-    @Deprecated
-    public default <E2> GraphTraversal<S, E2> mapValues() {
-        return this.select(Column.values).unfold();
-    }
-
-    /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
-     */
-    @Deprecated
-    public default <E2> GraphTraversal<S, E2> mapKeys() {
-        return this.select(Column.keys).unfold();
-    }
-
-    /**
      * Map the {@link Property} to its {@link Property#key}.
      *
      * @return the traversal with an appended {@link PropertyKeyStep}.

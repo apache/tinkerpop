@@ -30,6 +30,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `GryoVersion` now includes a default `ClassResolver` to supply to the `GryoMapper`.
 * `GryoClassResolver` renamed to `GryoClassResolverV1d0` which has an abstract class that for providers to extend in `AbstractGryoClassResolver`.
 * Removed previously deprecatd `Order` enums of `keyIncr`, `keyDecr`, `valueIncr`, and `valueDecr.`
+* Removed previously deprecated `GraphTraversal.mapKeys()` step.
+* Removed previously deprecated `GraphTraversal.mapValues()` step.
 * Removed previously deprecated `TraversalSource.Builder` class.
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
