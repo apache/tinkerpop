@@ -109,6 +109,16 @@ class AdjacentToIncidentStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self)
 
 
+class ByModulatorOptimizationStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self)
+
+
+class CountStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self)
+
+
 class FilterRankingStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
@@ -150,11 +160,6 @@ class PathProcessorStrategy(TraversalStrategy):
 
 
 class PathRetractionStrategy(TraversalStrategy):
-    def __init__(self):
-        TraversalStrategy.__init__(self)
-
-
-class CountStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 
