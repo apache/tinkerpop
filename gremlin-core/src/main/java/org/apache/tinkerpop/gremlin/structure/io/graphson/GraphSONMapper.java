@@ -182,7 +182,11 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V2_0;
-        // GraphSON 2.0 should have types activated by default, and 1.0 should use no types by default
+
+        /**
+         * GraphSON 2.0/3.0 should have types activated by default (3.0 does not have a typeless option), and 1.0
+         * should use no types by default.
+         */
         private TypeInfo typeInfo = null;
 
         private Builder() {

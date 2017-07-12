@@ -38,7 +38,7 @@ public class GraphSONV2d0RecordReaderWriterTest extends RecordReaderWriterTest {
 
     @Override
     protected String getInputFilename() {
-        return "grateful-dead-v2d0-typed.json";
+        return "grateful-dead-typed-v2d0.json";
     }
 
     @Override

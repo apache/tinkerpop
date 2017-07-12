@@ -112,6 +112,9 @@ limitations under the License.
                                             <excludes>
                                                 <exclude>**/*-normalized*.json</exclude>
                                                 <exclude>**/sample.kryo</exclude>
+                                                <exclude>**/*v1d0*</exclude>
+                                                <exclude>**/*v2d0*</exclude>
+                                                <exclude>**/*v3d0*</exclude>
                                             </excludes>
                                         </resource>
                                     </resources>
@@ -132,11 +135,8 @@ limitations under the License.
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <include>**/*.kryo</include>
+                                                <include>**/*v*d*.kryo</include>
                                             </includes>
-                                            <excludes>
-                                                <exclude>**/sample.kryo</exclude>
-                                            </excludes>
                                         </resource>
                                     </resources>
                                     <nonFilteredFileExtensions>
@@ -183,7 +183,7 @@ limitations under the License.
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <include>**/*.json</include>
+                                                <include>**/*v*d*.json</include>
                                             </includes>
                                         </resource>
                                     </resources>
@@ -215,6 +215,5 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>

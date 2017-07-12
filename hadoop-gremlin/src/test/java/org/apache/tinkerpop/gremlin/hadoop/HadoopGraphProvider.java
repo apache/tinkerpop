@@ -76,20 +76,23 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     static {
         try {
             final List<String> kryoResources = Arrays.asList(
-                    "tinkerpop-modern.kryo",
-                    "grateful-dead.kryo",
-                    "tinkerpop-classic.kryo",
-                    "tinkerpop-crew.kryo");
+                    "tinkerpop-modern-v3d0.kryo",
+                    "grateful-dead-v3d0.kryo",
+                    "tinkerpop-classic-v3d0.kryo",
+                    "tinkerpop-crew-v3d0.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
 
             final List<String> graphsonResources = Arrays.asList(
-                    "tinkerpop-modern-v2d0-typed.json",
-                    "grateful-dead-v2d0-typed.json",
-                    "grateful-dead-v3d0-typed.json",
-                    "tinkerpop-classic-v2d0-typed.json",
-                    "tinkerpop-crew-v2d0-typed.json");
+                    "tinkerpop-modern-typed-v2d0.json",
+                    "tinkerpop-modern-v3d0.json",
+                    "grateful-dead-typed-v2d0.json",
+                    "grateful-dead-v3d0.json",
+                    "tinkerpop-classic-typed-v2d0.json",
+                    "tinkerpop-classic-v3d0.json",
+                    "tinkerpop-crew-typed-v2d0.json",
+                    "tinkerpop-crew-v3d0.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
@@ -138,7 +141,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
-        final String type = this.graphSONInput ? "-v2d0-typed.json" : ".kryo";
+        final String type = this.graphSONInput ? "-v3d0.json" : "-v3d0.kryo";
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead" + type));

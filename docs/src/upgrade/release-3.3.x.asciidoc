@@ -91,6 +91,13 @@ It is possible to bring back the original configuration for `application/json` b
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414]
 
+Packaged Data Files
+^^^^^^^^^^^^^^^^^^^
+
+TinkerPop has always packaged sample graphs with its zip distributions. As of 3.3.0, the distributions will only
+include Gryo 3.0, GraphSON 3.0 and GraphML (which is unversioned) files. Other versions are not included, but could
+obviously be generated using the IO API directly.
+
 GraphTraversal Has-Methods Re-Organized
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

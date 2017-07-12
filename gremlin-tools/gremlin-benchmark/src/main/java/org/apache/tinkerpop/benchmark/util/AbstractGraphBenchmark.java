@@ -64,13 +64,13 @@ public class AbstractGraphBenchmark extends AbstractBenchmarkBase {
         String graphFile;
         if(loadGraphWithData != null) {
             if (loadGraphWithData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-                graphFile = "grateful-dead.kryo";
+                graphFile = "grateful-dead-v3d0.kryo";
             } else if (loadGraphWithData.equals(LoadGraphWith.GraphData.MODERN)) {
-                graphFile = "tinkerpop-modern.kryo";
+                graphFile = "tinkerpop-modern-v3d0.kryo";
             } else if (loadGraphWithData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-                graphFile = "tinkerpop-classic.kryo";
+                graphFile = "tinkerpop-classic-v3d0.kryo";
             } else if (loadGraphWithData.equals(LoadGraphWith.GraphData.CREW)) {
-                graphFile = "tinkerpop-crew.kryo";
+                graphFile = "tinkerpop-crew-v3d0.kryo";
             } else {
                 throw new RuntimeException("Could not load graph with " + loadGraphWithData);
             }

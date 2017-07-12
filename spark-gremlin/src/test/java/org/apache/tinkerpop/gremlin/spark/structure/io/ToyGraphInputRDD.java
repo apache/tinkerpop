@@ -59,7 +59,7 @@ public final class ToyGraphInputRDD implements InputRDD {
             try {
                 final Graph graph = TinkerGraph.open();
                 final GraphReader reader = GryoReader.build().mapper(graph.io(GryoIo.build()).mapper().create()).create();
-                try (final InputStream stream = GryoResourceAccess.class.getResourceAsStream("grateful-dead.kryo")) {
+                try (final InputStream stream = GryoResourceAccess.class.getResourceAsStream("grateful-dead-v3d0.kryo")) {
                     reader.readGraph(stream, graph);
                 }
                 vertices = IteratorUtils.list(IteratorUtils.map(graph.vertices(), VertexWritable::new));

@@ -407,7 +407,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized.json"));
+                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized-v1d0.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
