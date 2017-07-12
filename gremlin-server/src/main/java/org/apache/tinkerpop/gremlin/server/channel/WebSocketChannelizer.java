@@ -79,7 +79,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         logger.debug("HttpRequestDecoder settings - maxInitialLineLength={}, maxHeaderSize={}, maxChunkSize={}",
                 settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize);
-        pipeline.addLast("http-request-decoder", new HttpRequestDecoder(settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize));
+        pipeline.addLast(PIPELINE_HTTP_REQUEST_DECODER, new HttpRequestDecoder(settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize));
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-decoder-aggregator", LogLevel.DEBUG));
@@ -93,8 +93,9 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
-        pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
-        pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin", null, false, settings.maxContentLength));
+        pipeline.addLast(PIPELINE_HTTP_RESPONSE_ENCODER, new HttpResponseEncoder());
+
+        pipeline.addLast(PIPELINE_REQUEST_HANDLER, new WebSocketServerProtocolHandler(GREMLIN_ENDPOINT, null, false, settings.maxContentLength));
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
