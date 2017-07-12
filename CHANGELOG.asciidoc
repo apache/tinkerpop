@@ -32,10 +32,10 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecatd `Order` enums of `keyIncr`, `keyDecr`, `valueIncr`, and `valueDecr.`
 * Removed previously deprecated `GraphTraversal.mapKeys()` step.
 * Removed previously deprecated `GraphTraversal.mapValues()` step.
-* Removed previously deprecated `GraphTraversal#addV(Object...)`
-* Removed previously deprecated `GraphTraversal#addE(Direction, String, String, Object...)`
-* Removed previously deprecated `GraphTraversal#addOutE(String, String, Object...)`
-* Removed previously deprecated `GraphTraversal#addInV(String, String, Object...)`
+* Removed previously deprecated `GraphTraversal#addV(Object...)`.
+* Removed previously deprecated `GraphTraversal#addE(Direction, String, String, Object...)`.
+* Removed previously deprecated `GraphTraversal#addOutE(String, String, Object...)`.
+* Removed previously deprecated `GraphTraversal#addInV(String, String, Object...)`.
 * Removed previously deprecated `TraversalSource.Builder` class.
 * Removed previously deprecated `ConnectiveP`, `AndP`, `OrP` constructors.
 * Removed previously deprecated `TraversalScriptFunction` class.
