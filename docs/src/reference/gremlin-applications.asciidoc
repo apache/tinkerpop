@@ -884,13 +884,16 @@ as the API for the endpoint is very similar to Rexster's link:https://github.com
 
 Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
-To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default
+To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default. The `WsAndHttpChannelizer` may also be configured to enable both WebSockets and the REST endpoint.
 `WebSocketChannelizer`, in the configuration file:
 
 [source,yaml]
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 
-This setting is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
+[source,yaml]
+channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
+
+The `HttpChannelizer` is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
 Server distribution.  To utilize it, start Gremlin Server as follows:
 
 [source,text]
