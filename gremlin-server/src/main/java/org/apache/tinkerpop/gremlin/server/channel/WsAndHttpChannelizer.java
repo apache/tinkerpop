@@ -47,7 +47,7 @@ public class WsAndHttpChannelizer extends AbstractChannelizer {
     private WsAndHttpChannelizerHandler handler;
 
     @Override
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+    public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
         handler = new WsAndHttpChannelizerHandler();
         handler.init(serverGremlinExecutor, new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings));

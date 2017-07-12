@@ -285,7 +285,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     assertEquals("application/json", response.getEntity().getContentType().getValue());
                     final String json = EntityUtils.toString(response.getEntity());
                     final JsonNode node = mapper.readTree(json);
-                    assertEquals(result, node.get("result").get("data").get(0).intValue());
+                    assertEquals(result, node.get("result").get("data").get(0).get("@value").intValue());
                 }
             }
             if (wsBuilder != null) {

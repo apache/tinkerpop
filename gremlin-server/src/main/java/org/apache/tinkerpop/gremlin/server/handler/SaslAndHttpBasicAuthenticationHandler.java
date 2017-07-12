@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpMessage;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WebSocketHandlerUtil;
@@ -38,15 +39,16 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
 
     private final String HTTP_AUTH = "http-authentication";
 
-    public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator) {
-        super(authenticator);
+    public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator, 
+                                                 final Settings.AuthenticationSettings authenticationSettings) {
+        super(authenticator, authenticationSettings);
     }
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object obj) throws Exception {
         if (obj instanceof HttpMessage && !WebSocketHandlerUtil.isWebSocket((HttpMessage)obj)) {
             if (null == ctx.pipeline().get(HTTP_AUTH)) {
-                ctx.pipeline().addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator));
+                ctx.pipeline().addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.authenticationSettings));
             }
             ctx.fireChannelRead(obj);
         } else {

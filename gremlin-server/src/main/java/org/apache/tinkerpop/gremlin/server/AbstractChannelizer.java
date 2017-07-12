@@ -158,9 +158,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings.AuthenticationSettings config) {
         try {
             final Class<?> clazz = Class.forName(config.authenticationHandler);
-            final Class[] constructorArgs = new Class[1];
+            final Class[] constructorArgs = new Class[2];
             constructorArgs[0] = Authenticator.class;
-            return (AbstractAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator);
+            constructorArgs[1] = Settings.AuthenticationSettings.class;
+            return (AbstractAuthenticationHandler) clazz.getDeclaredConstructor(constructorArgs).newInstance(authenticator, config);
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
             throw new IllegalStateException(String.format("Could not create/configure AuthenticationHandler %s", config.authenticationHandler), ex);

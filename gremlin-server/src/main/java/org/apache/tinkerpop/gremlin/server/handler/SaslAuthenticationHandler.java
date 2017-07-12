@@ -60,7 +60,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    private final Settings.AuthenticationSettings authenticationSettings;
+    protected final Settings.AuthenticationSettings authenticationSettings;
 
     public SaslAuthenticationHandler(final Authenticator authenticator, final Settings.AuthenticationSettings authenticationSettings) {
         super(authenticator);
