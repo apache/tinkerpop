@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEf
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -84,8 +83,6 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
             // static fields only
         }
 
-        @Deprecated
-        public static final String withBindings = "withBindings";
         public static final String withSack = "withSack";
         public static final String withStrategies = "withStrategies";
         public static final String withoutStrategies = "withoutStrategies";
@@ -126,19 +123,6 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         clone.getStrategies().removeStrategies(traversalStrategyClasses);
         clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
         return clone;
-    }
-
-    /**
-     * Using the provided {@link Bindings} to create {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding}.
-     * The bindings serve as a relay for ensure bound arguments are encoded as {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding} in {@link Bytecode}.
-     *
-     * @param bindings the bindings instance to use
-     * @return a new traversal source with set bindings
-     * @deprecated As of release 3.2.4, replaced by use of {@link Bindings} without reference to a {@link TraversalSource}.
-     */
-    @Deprecated
-    public default TraversalSource withBindings(final Bindings bindings) {
-        return this;
     }
 
     /**
