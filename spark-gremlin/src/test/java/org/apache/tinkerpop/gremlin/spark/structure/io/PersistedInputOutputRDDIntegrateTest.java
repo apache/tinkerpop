@@ -60,7 +60,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         Spark.create("local[4]");
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final Configuration configuration = super.getBaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
@@ -88,7 +88,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
             counter++;
             final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
             final Configuration configuration = super.getBaseConfiguration();
-            configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+            configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
             configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
             configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
             configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, storageLevel);
@@ -116,7 +116,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         Spark.create("local[4]");
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final Configuration configuration = super.getBaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
@@ -142,7 +142,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final String rddName2 = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final Configuration configuration = super.getBaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
@@ -213,7 +213,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final Configuration readConfiguration = super.getBaseConfiguration();
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
@@ -255,7 +255,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
         final Configuration readConfiguration = super.getBaseConfiguration();
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
@@ -295,7 +295,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final String rddName2 = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, "testComplexChain", "graphRDD2");
         final Configuration configuration = super.getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
