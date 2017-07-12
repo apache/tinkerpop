@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -46,66 +45,6 @@ public enum Order implements Comparator<Object> {
         @Override
         public Order reversed() {
             return incr;
-        }
-    },
-    /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
-     */
-    @Deprecated
-    keyIncr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>naturalOrder().compare(((Map.Entry<Comparable, ?>) first).getKey(), ((Map.Entry<Comparable, ?>) second).getKey());
-        }
-
-        @Override
-        public Order reversed() {
-            return keyDecr;
-        }
-    },
-    /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
-     */
-    @Deprecated
-    valueIncr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>naturalOrder().compare(((Map.Entry<?, Comparable>) first).getValue(), ((Map.Entry<?, Comparable>) second).getValue());
-        }
-
-        @Override
-        public Order reversed() {
-            return valueDecr;
-        }
-    },
-    /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
-     */
-    @Deprecated
-    keyDecr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>reverseOrder().compare(((Map.Entry<Comparable, ?>) first).getKey(), ((Map.Entry<Comparable, ?>) second).getKey());
-        }
-
-        @Override
-        public Order reversed() {
-            return keyIncr;
-        }
-    },
-    /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
-     */
-    @Deprecated
-    valueDecr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>reverseOrder().compare(((Map.Entry<?, Comparable>) first).getValue(), ((Map.Entry<?, Comparable>) second).getValue());
-        }
-
-        @Override
-        public Order reversed() {
-            return valueIncr;
         }
     }, shuffle {
         @Override
