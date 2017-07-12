@@ -77,9 +77,10 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
      */
     public DefaultTraversalMetrics(final long totalStepDurationNs, final List<MutableMetrics> orderedMetrics) {
         totalStepDuration = totalStepDurationNs;
-        for (int ix = 0; ix < orderedMetrics.size(); ix++) {
-            stepIndexedMetrics.put(orderedMetrics.get(ix).getId(), orderedMetrics.get(ix).getImmutableClone());
-            positionIndexedMetrics.put(ix, orderedMetrics.get(ix).getImmutableClone());
+        int ix = 0;
+        for (final MutableMetrics metric : orderedMetrics) {
+            stepIndexedMetrics.put(metric.getId(), metric.getImmutableClone());
+            positionIndexedMetrics.put(ix++, metric.getImmutableClone());
         }
     }
 
