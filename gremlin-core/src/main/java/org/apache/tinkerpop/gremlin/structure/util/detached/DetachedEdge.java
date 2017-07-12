@@ -89,29 +89,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         }
     }
 
-    /**
-     * @deprecated As for release 3.2.5, replaced by {@link #DetachedEdge(Object, String, Map, Object, String, Object, String)}.
-     */
-    @Deprecated
-    public DetachedEdge(final Object id, final String label,
-                        final Map<String, Object> properties,
-                        final Pair<Object, String> outV,
-                        final Pair<Object, String> inV) {
-        super(id, label);
-        this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1(), Collections.emptyMap());
-        this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1(), Collections.emptyMap());
-        if (properties != null && !properties.isEmpty()) {
-            this.properties = new HashMap<>();
-            properties.entrySet().iterator().forEachRemaining(entry -> {
-                if (Property.class.isAssignableFrom(entry.getValue().getClass())) {
-                    this.properties.put(entry.getKey(), Collections.singletonList((Property)entry.getValue()));
-                } else {
-                    this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this)));
-                }
-            });
-        }
-    }
-
     @Override
     public String toString() {
         return StringFactory.edgeString(this);

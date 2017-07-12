@@ -228,6 +228,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#addInV(String, String, Object...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Bindings()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withBindings(Bindings)`
+** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
@@ -236,7 +237,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
 ** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
 ** `org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder#embedTypes(boolean)`
-** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
+** `org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(Object,String,Map,Pair,Pair)`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster$Builder#reconnectIntialDelay(int)`
 ** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`

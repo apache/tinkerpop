@@ -446,9 +446,8 @@ class GraphSONSerializersV3d0 {
                     edgeData.get(GraphSONTokens.ID),
                     edgeData.get(GraphSONTokens.LABEL).toString(),
                     (Map) edgeData.get(GraphSONTokens.PROPERTIES),
-                    Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                    Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString())
-            );
+                    edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString(),
+                    edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString());
         }
     }
 
