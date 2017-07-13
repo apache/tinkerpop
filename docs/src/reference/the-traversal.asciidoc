@@ -425,6 +425,24 @@ g.V().group().by(bothE().count()).by(count())  <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count())` will count the number of elements in each group (*traversal*).
 
+The following steps all support `by()`-modulation. Note that the semantics of such modulation should be understood
+on a step-by-step level and thus, as discussed in their respective section of the documentation.
+
+* <<dedup-step, `dedup()`>>: dedup on the results of a `by()`-modulation.
+* <<cyclicpath-step, `cyclicPath()`>>: filter if the traverser's path is cyclic given `by()`-modulation.
+* <<simplepath-step, `simplePath()`>>: filter if the traverser's path is simple given `by()`-modulation.
+* <<sample-step, `sample()`>>: sample using the value returned by `by()`-modulation.
+* <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
+* <<groupCount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
+* <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
+* <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
+* <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
+* <<project-step, `project()`>>: project a map of results given various `by()`-modulations off the current object.
+* <<select-step, `select()`>>: select path elements and transform them via `by()`-modulation.
+* <<tree-step, `tree()`>>: get a tree of traversers objects where the objects have been `by()`-modulated.
+* <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
+* <<store-step, `store()`>>: store all objects into a set but only store their `by()`-modulated values.
+
 [[cap-step]]
 Cap Step
 ~~~~~~~~
@@ -723,6 +741,9 @@ From Step
 The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
 means by which they are added. The general pattern is `step().from()`. See <<to-step,`to()`>>-step.
+
+The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
+ <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
 [[group-step]]
 Group Step
@@ -1287,7 +1308,7 @@ g.V().hasLabel('person').
 Option Step
 ~~~~~~~~~~~
 
-An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
+An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>.
 
 [[optional-step]]
 Optional Step
@@ -2280,6 +2301,8 @@ The `to()`-step is not an actual step, but instead is a "step-modulator" similar
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `to()` is the
 means by which they are added. The general pattern is `step().to()`. See <<from-step,`from()`>>-step.
 
+The list of steps that support `to()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
+ <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
 [[tree-step]]
 Tree Step
