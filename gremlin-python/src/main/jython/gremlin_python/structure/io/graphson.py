@@ -19,6 +19,7 @@ under the License.
 from aenum import Enum
 import json
 import six
+from collections import OrderedDict
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType
@@ -26,7 +27,10 @@ from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Tr
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 
-_serializers = {}
+# When we fall back to a superclass's serializer, we iterate over this map.
+# We want that iteration order to be consistent, so we use an OrderedDict,
+# not a dict.
+_serializers = OrderedDict()
 _deserializers = {}
 
 
