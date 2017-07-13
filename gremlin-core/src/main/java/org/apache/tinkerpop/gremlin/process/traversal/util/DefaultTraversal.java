@@ -62,7 +62,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
-    protected final Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
+    protected Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
 
 
     private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
@@ -247,6 +247,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies;
+            clone.bytecode = this.bytecode.clone();
             for (final Step<?, ?> step : this.steps) {
                 final Step<?, ?> clonedStep = step.clone();
                 clonedStep.setTraversal(clone);
