@@ -38,11 +38,7 @@ public final class CoreGremlinPlugin implements GremlinPlugin {
 
     private static final Customizer[] customizers = new Customizer[] {gremlinCore};
 
-    /**
-     * @deprecated As of 3.2.4, replaced by {@link #instance()} as this field will later become private.
-     */
-    @Deprecated
-    public static final CoreGremlinPlugin INSTANCE = new CoreGremlinPlugin();
+    private static final CoreGremlinPlugin INSTANCE = new CoreGremlinPlugin();
 
     private CoreGremlinPlugin() {}
 

@@ -214,6 +214,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.console.groovy.plugin.UtilitiesGremlinPlugin`
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinModule`
+** `org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin#INSTANCE`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinModule`
 ** `org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager#getInstance()`
 ** `org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager#addModule(GremlinModule)`
@@ -248,7 +249,10 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_ENVIRONMENT_INTEGRATE`
 ** `org.apache.tinkerpop.gremlin.structure.io.Io.Builder#registry(IoRegistry)`
 ** `org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder#embedTypes(boolean)`
+** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
 ** `org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(Object,String,Map,Pair,Pair)`
+** `org.apache.tinkerpop.gremlin.util.CoreImports`
+** `org.apache.tinkerpop.gremlin.util.ScriptEngineCache`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster$Builder#reconnectIntialDelay(int)`
 ** `org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0(GryoMapper)`
@@ -283,6 +287,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.*`
 ** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#deleteDependenciesFromPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
 ** `org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber#copyDependenciesToPath(org.apache.tinkerpop.gremlin.groovy.plugin.Artifact)`
+* `gremlin-python`
+** `org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngine#()`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.GremlinServer(ServerGremlinExecutor)`
 ** `org.apache.tinkerpop.gremlin.server.Settings#plugins`
@@ -311,18 +317,22 @@ The following deprecated classes, methods or fields have been removed in this ve
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-832[TINKERPOP-832],
+link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833],
+link:https://issues.apache.org/jira/browse/TINKERPOP-834[TINKERPOP-834],
 link:https://issues.apache.org/jira/browse/TINKERPOP-999[TINKERPOP-999],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1010[TINKERPOP-1010],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1028[TINKERPOP-1028],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1046[TINKERPOP-1046],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1049[TINKERPOP-1049],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1142[TINKERPOP-1142],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1169[TINKERPOP-1169],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1171[TINKERPOP-1171],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1275[TINKERPOP-1275],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1289[TINKERPOP-1289],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1291[TINKERPOP-1291],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1421[TINKERPOP-1421],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1465[TINKERPOP-1465],
@@ -334,11 +344,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1622[TINKERPOP-1622],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1142[TINKERPOP-1142],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1291[TINKERPOP-1291],
-link:https://issues.apache.org/jira/browse/TINKERPOP-832[TINKERPOP-832],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1706[TINKERPOP-1706]
 link:https://issues.apache.org/jira/browse/TINKERPOP-1721[TINKERPOP-1721],
-link:https://issues.apache.org/jira/browse/TINKERPOP-834[TINKERPOP-834],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1719[TINKERPOP-1719]
 
 Gremlin-server.sh and Init Scripts
