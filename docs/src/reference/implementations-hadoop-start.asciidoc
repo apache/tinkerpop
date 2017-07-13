@@ -183,12 +183,8 @@ image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to ex
 for the execution of the Gremlin traversal.
 
 A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin
-supports the following three implementations.
+supports the following two implementations.
 
-* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce engine to execute TinkerPop3 OLAP
-computations. (*coming soon*)
-** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is
-coordinated via MapReduce jobs over the on-disk graph (slow traversals).
 * <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop3 OLAP computations.
 ** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via
 Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
