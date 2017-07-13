@@ -1,0 +1,106 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+
+*4.0.0*
+
+:toc-position: left
+
+TinkerPop 4.x Design Ideas
+==========================
+
+TinkerPop 4.x is not a version considered on the immediate horizon, but there are often points in the day to day
+development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that they
+could only be implemented under a major new version. This document is meant to track these concepts as they develop,
+so that at some point in the future they can be referenced in a single place.
+
+There is no particular layout or style to this document. Simple bullet points, open questions posed as single
+sentences, or fully structured document headers and content are all acceptable. The main point is to capture ideas
+for future consideration when 4.x becomes the agenda of the day for The TinkerPop.
+
+image:tp4-think.png[]
+
+Hiding Blueprints
+-----------------
+
+Originally from the link:https://lists.apache.org/thread.html/b4d80072ad36849b4e9cd3308f87115660574e3e7a4abb7ee68e959b@%3Cdev.tinkerpop.apache.org%3E[mailing list]:
+
+Throughout our documentation we show uses of the “Blueprints API” (i.e. Graph/Vertex/Edge/etc. classes & methods) as
+well as the use of the Traversal API (i.e. Gremlin).
+
+Enabling users to have two ways of interacting with the graph system has its problems:
+
+1. The DetachedXXX problem — how much data should a returned vertex/edge/etc. have associated with it?
+2. `graph.addVertex()` and `g.addV()` — which should I use? The first is faster but is not recommended.
+3. `SubgraphStrategy` leaking — I get subgraphs with Gremlin, but can then directly interact with the vertex objects to see more than I should.
+4. `VertexProgram` model — I write traversals with Traversal API, but then develop VertexPrograms with the Blueprints API. That’s weird.
+5. GremlinServer returning fat objects — Serializers are created property-rich vertices and edges. The awkward HaltedTraversalStrategy solution.
+6. … various permutations of these source problems.
+
+In TinkerPop4 the solution might be as follows:
+
+There should be two “Graph APIs.”
+
+1. Provider Graph API: This is the current Blueprints API with `Graph.addVertex()`, `Vertex.edges()`, `Edge.inVertex()`, etc.
+2. User Graph API: This is a ReferenceXXX API.
+
+The first API is well known, but the second bears further discussion. `ReferenceGraph` is simply a reference/dummy/proxy
+to the provider Graph API. `ReferenceGraph` has the following API:
+
+* `ReferenceGraph.open()`
+* `ReferenceGraph.close()`
+* `ReferenceGraph.tx()` // assuming we like the current transaction model (??)
+* `ReferenceGraph.traversal()`
+
+That is it. What does this entail? Assume the following traversal:
+
+[source,java]
+----
+g = ReferenceGraph.open(config).traversal()
+g.V(1).out(‘knows’)
+----
+
+`ReferenceGraph` is almost like a `RemoteGraph` (`RemoteStrategy`) in that it makes a connection (remote or inter-JVM)
+to the provider Graph API. When `g.V(1).out(‘knows’)` executes, it is really sending the bytecode to the provider Graph
+for execution (as specified by the config of `ReferenceGraph.open()`). Thus, once it hits the provider's graph,
+`ProviderVertex`, `ProviderEdge`, etc. are the objects being processed. However, what the traversal’s `Iterator<Vertex>`
+returns is `ReferenceVertex`! That is, it never returns `ProviderVertex`. In this way, regardless if the user is
+going “over the wire” or within the same JVM or against a different provider’s graph database or from
+Gremlin-Python/C#/etc., all the vertices are simply ‘reference vertices’ (id + label). This makes it so that users
+never interact with the graph element objects themselves directly. They can ONLY interact with the graph via
+traversals! At most they can `ReferenceVertex.id()` and `ReferenceVertex.label()`. Thats it, — no mutations, not
+walking edges, nada! And moreover, since ReferenceXXX has enough information to re-attach to the source graph, they
+can always do the following to get more information:
+
+[source,java]
+----
+v = g.V(1).out(‘knows’).next()
+g.V(v).values(‘name’)
+----
+
+This split into two Graph APIs will enables us to make a hard boundary between what the provider (vendor) needs to
+implement and what the user (developer) gets to access.
+
+Comments
+~~~~~~~~
+
+There is a question mark next to `ReferenceGraph.tx()` - Transactions are a bit of an open question for future versions
+of TinkerPop and likely deserve their own section in this document. The model used for last three version of TinkerPop
+now is rooted in the Neo4j approach to transactions and is often more trouble than it should be for us and providers.
+Distributed transactions are a challenge and don't apply to every provider. Transactions are further complicated by
+GLVs. The idea of local subgraphs for mutations and transaction management might be good but that goes against having
+just `ReferenceGraph`.
