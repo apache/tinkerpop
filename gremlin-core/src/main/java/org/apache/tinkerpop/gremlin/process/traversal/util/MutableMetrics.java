@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +27,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * A {@link Metrics} implementation that can be modified.
+ *
  * @author Bob Briody (http://bobbriody.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
     // Note: if you add new members then you probably need to add them to the copy constructor;
 
     private long tempTime = -1L;
+
+    /**
+     * Determines if metrics have been finalized, meaning that no more may be collected.
+     */
+    private volatile boolean finalized = false;
 
     protected MutableMetrics() {
         // necessary for gryo serialization
@@ -54,25 +64,37 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
     }
 
-    public void addNested(final MutableMetrics metrics) {
+    public synchronized void addNested(final MutableMetrics metrics) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.nested.put(metrics.getId(), metrics);
     }
 
+    /**
+     * Starts the timer for this metric. Should not be called again without first calling {@link #stop()}.
+     */
     public void start() {
-        if (-1 != this.tempTime) {
-            throw new IllegalStateException("Internal Error: Concurrent Metrics start. Stop timer before starting timer.");
-        }
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
+        if (-1 != this.tempTime) throw new IllegalStateException("Internal Error: Concurrent Metrics start. Stop timer before starting timer.");
+
         this.tempTime = System.nanoTime();
     }
 
+    /**
+     * Stops the timer for this metric and increments the overall duration. Should not be called without first calling
+     * {@link #start()}.
+     */
     public void stop() {
-        if (-1 == this.tempTime)
-            throw new IllegalStateException("Internal Error: Metrics has not been started. Start timer before stopping timer");
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
+        if (-1 == this.tempTime) throw new IllegalStateException("Internal Error: Metrics has not been started. Start timer before stopping timer");
         this.durationNs = this.durationNs + (System.nanoTime() - this.tempTime);
         this.tempTime = -1;
     }
 
-    public void incrementCount(final String key, final long incr) {
+    /**
+     * Increments a count metric.
+     */
+    public synchronized void incrementCount(final String key, final long incr) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         AtomicLong count = this.counts.get(key);
         if (count == null) {
             count = new AtomicLong();
@@ -81,15 +103,27 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         count.addAndGet(incr);
     }
 
+    /**
+     * Directly set the duration for the metric.
+     */
     public void setDuration(final long dur, final TimeUnit unit) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.durationNs = TimeUnit.NANOSECONDS.convert(dur, unit);
     }
 
+    /**
+     * Directly set the count for the metric.
+     */
     public void setCount(final String key, final long val) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.counts.put(key, new AtomicLong(val));
     }
 
-    public void aggregate(final MutableMetrics other) {
+    /**
+     * Aggregate one set of metrics into the current body of metrics.
+     */
+    public synchronized void aggregate(final MutableMetrics other) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         this.durationNs += other.durationNs;
         for (Map.Entry<String, AtomicLong> otherCount : other.counts.entrySet()) {
             AtomicLong thisCount = this.counts.get(otherCount.getKey());
@@ -114,12 +148,11 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
                     }
                 } else {
                     // Numbers are summed
-                    Number existingNum = (Number) existingVal;
-                    Number otherNum = (Number) p.getValue();
+                    final Number existingNum = (Number) existingVal;
+                    final Number otherNum = (Number) p.getValue();
                     Number newVal;
                     if (existingNum instanceof Double || existingNum instanceof Float) {
-                        newVal =
-                                existingNum.doubleValue() + otherNum.doubleValue();
+                        newVal = existingNum.doubleValue() + otherNum.doubleValue();
                     } else {
                         newVal = existingNum.longValue() + otherNum.longValue();
                     }
@@ -145,11 +178,9 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     /**
      * Set an annotation value. Support exists for Strings and Numbers only. During a merge, Strings are concatenated
      * into a "," (comma) separated list of distinct values (duplicates are ignored), and Numbers are summed.
-     *
-     * @param key
-     * @param value
      */
     public void setAnnotation(final String key, final Object value) {
+        if (finalized) throw new IllegalStateException("Metrics have been finalized and cannot be modified");
         if (!(value instanceof String) && !(value instanceof Number)) {
             throw new IllegalArgumentException("Metrics annotations only support String and Number values.");
         }
@@ -161,7 +192,21 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         return (MutableMetrics) nested.get(metricsId);
     }
 
-    public ImmutableMetrics getImmutableClone() {
+    /**
+     * Once these metrics are used in computing the final metrics to report through {@link TraversalMetrics} they
+     * should no longer be modified and are thus finalized.
+     */
+    public boolean isFinalized() {
+        return finalized;
+    }
+
+    /**
+     * Gets a copy of the metrics that is immutable. Once this clone is made, the {@link MutableMetrics} can no
+     * longer be modified themselves. This prevents custom steps that implement {@link Profiling} from adding to
+     * the metrics after the traversal is complete.
+     */
+    public synchronized ImmutableMetrics getImmutableClone() {
+        finalized = true;
         final ImmutableMetrics clone = new ImmutableMetrics();
         copyMembers(clone);
         this.nested.values().forEach(nested -> clone.nested.put(nested.id, ((MutableMetrics) nested).getImmutableClone()));

@@ -149,6 +149,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -250,11 +251,13 @@ public enum GryoVersion {
             add(GryoTypeReg.of(KryoSerializable.class, 36));
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
+            add(GryoTypeReg.of(ConcurrentHashMap.class, 170));
+            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 171));               // ***LAST ID***
             add(GryoTypeReg.of(LinkedList.class, 116));
             add(GryoTypeReg.of(Types.LINKED_HASH_MAP_ENTRY_CLASS, 15));
             add(GryoTypeReg.of(Locale.class, 22));
-//            add(GryoTypeReg.of(StringBuffer.class, 43));
-//            add(GryoTypeReg.of(StringBuilder.class, 44));
+            add(GryoTypeReg.of(StringBuffer.class, 43));
+            add(GryoTypeReg.of(StringBuilder.class, 44));
             add(GryoTypeReg.of(T.class, 48));
             add(GryoTypeReg.of(TimeZone.class, 42));
             add(GryoTypeReg.of(TreeMap.class, 45));
@@ -338,9 +341,6 @@ public enum GryoVersion {
             add(GryoTypeReg.of(BulkSet.class, 64));
             add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3d0.MetricsSerializer()));
             add(GryoTypeReg.of(TraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalMetricsSerializer()));
-            //add(GryoTypeReg.of(MutableMetrics.class, 69, ));
-            //add(GryoTypeReg.of(ImmutableMetrics.class, 115));
-            //add(GryoTypeReg.of(DefaultTraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalSerializer()));
             add(GryoTypeReg.of(MapMemory.class, 73));
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
@@ -379,7 +379,7 @@ public enum GryoVersion {
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.RequestMessage",
                     "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);  // ***LAST ID***
+                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
         }};
     }
 
@@ -426,6 +426,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
             add(GryoTypeReg.of(LinkedList.class, 116));
+            add(GryoTypeReg.of(ConcurrentHashMap.class, 168));
+            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 169));           // ***LAST ID***
             add(GryoTypeReg.of(Types.LINKED_HASH_MAP_ENTRY_CLASS, 15));
             add(GryoTypeReg.of(Locale.class, 22));
             add(GryoTypeReg.of(StringBuffer.class, 43));
@@ -544,7 +546,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
-            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167)); // ***LAST ID***
+            add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
         }};
     }
 

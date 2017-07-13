@@ -46,15 +46,13 @@ public interface TraversalMetrics {
     /**
      * Get the total duration taken by the Traversal.
      *
-     * @param unit
      * @return total duration taken by the Traversal.
      */
-    public long getDuration(TimeUnit unit);
+    public long getDuration(final TimeUnit unit);
 
     /**
      * Get an individual Metrics object by the index of the profiled Step.
      *
-     * @param stepIndex
      * @return an individual Metrics object.
      */
     public Metrics getMetrics(final int stepIndex);
@@ -62,10 +60,12 @@ public interface TraversalMetrics {
     /**
      * Get an individual Metrics object by the id of the profiled Step.
      *
-     * @param id
      * @return an individual Metrics object.
      */
     public Metrics getMetrics(final String id);
 
+    /**
+     * Gets all the metrics.
+     */
     public Collection<? extends Metrics> getMetrics();
 }
