@@ -217,7 +217,6 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.OrP(P...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction`
 ** `org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper`
-<<<<<<< 849563fe3773d504d6ba2f61ee640547277760de
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.keyIncr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.valueIncr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.keyDecr`
@@ -231,9 +230,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.Bindings()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withBindings(Bindings)`
 ** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
-=======
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#sack(BiFunction,String)`
->>>>>>> removed deprecated sack() function.
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.LazyBarrierStrategy`
+** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects` (various methods)
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
@@ -332,7 +331,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1142[TINKERPOP-1142],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1291[TINKERPOP-1291],
 link:https://issues.apache.org/jira/browse/TINKERPOP-832[TINKERPOP-832],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1721[TINKERPOP-1721],
-link:https://issues.apache.org/jira/browse/TINKERPOP-834[TINKERPOP-834]
+link:https://issues.apache.org/jira/browse/TINKERPOP-834[TINKERPOP-834],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1719[TINKERPOP-1719]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
