@@ -54,12 +54,4 @@ public interface VertexComputing {
      * @return the generated vertex program instance.
      */
     public VertexProgram generateProgram(final Graph graph, final Memory memory);
-
-    /**
-     * @deprecated As of release 3.2.1. Please use {@link VertexComputing#getComputer()}.
-     */
-    @Deprecated
-    public default GraphComputer generateComputer(final Graph graph) {
-        return this.getComputer().apply(graph);
-    }
 }

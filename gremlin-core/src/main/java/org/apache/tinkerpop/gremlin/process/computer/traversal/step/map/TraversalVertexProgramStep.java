@@ -88,14 +88,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public GraphComputer generateComputer(final Graph graph) {
-        final GraphComputer graphComputer = this.computer.apply(graph);
-        if (!this.isEndStep())
-            graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
-        return graphComputer;
-    }
-
-    @Override
     public TraversalVertexProgramStep clone() {
         final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
         clone.computerTraversal = this.computerTraversal.clone();
