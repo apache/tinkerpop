@@ -89,7 +89,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.3-2.3.3
+                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.7-3.2.2-SNAPSHOT
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
@@ -117,16 +117,28 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.3-2.3.3</version>
+                    <version>0.7-3.2.2-SNAPSHOT</version>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
-                            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
-                            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-lang3</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.github.ben-manes.caffeine</groupId>
+                            <artifactId>caffeine</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.neo4j</groupId>
+                            <artifactId>neo4j</artifactId>
                         </exclusion>
                         <exclusion>
                             <groupId>org.scala-lang</groupId>
                             <artifactId>scala-library</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-reflect</artifactId>
                         </exclusion>
                         <exclusion>
                             <groupId>org.slf4j</groupId>
@@ -137,13 +149,25 @@ limitations under the License.
                 <dependency>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
-                    <version>2.11.6</version>
+                    <version>2.11.8</version>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
-                    <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
-                    <artifactId>concurrentlinkedhashmap-lru</artifactId>
-                    <version>1.4.2</version>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                    <version>2.11.8</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.github.ben-manes.caffeine</groupId>
+                    <artifactId>caffeine</artifactId>
+                    <version>2.3.1</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.neo4j</groupId>
+                    <artifactId>neo4j</artifactId>
+                    <version>3.2.2</version>
                     <scope>test</scope>
                 </dependency>
                 <!-- *** WARNING *** -->
