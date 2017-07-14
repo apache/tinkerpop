@@ -242,6 +242,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.LazyBarrierStrategy`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects` (various methods)
 ** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing#generateComputer(Graph)`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#groupV3d0(String)`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#groupV3d0()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#supportsAddProperty()`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures#FEATURE_ADD_PROPERTY`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.OptIn#SUITE_GROOVY_PROCESS_STANDARD`
@@ -355,7 +357,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1700[TINKERPOP-1700],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1706[TINKERPOP-1706],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1721[TINKERPOP-1721],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1719[TINKERPOP-1719],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1720[TINKERPOP-1720]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1720[TINKERPOP-1720],
+link:https://issues.apache.org/jira/browse/TINKERPOP-880[TINKERPOP-880]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

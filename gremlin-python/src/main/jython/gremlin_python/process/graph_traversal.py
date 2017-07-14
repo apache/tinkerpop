@@ -232,10 +232,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("groupCount", *args)
         return self
 
-    def groupV3d0(self, *args):
-        self.bytecode.add_step("groupV3d0", *args)
-        return self
-
     def has(self, *args):
         self.bytecode.add_step("has", *args)
         return self
@@ -620,10 +616,6 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).groupCount(*args)
 
     @classmethod
-    def groupV3d0(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).groupV3d0(*args)
-
-    @classmethod
     def has(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).has(*args)
 
@@ -976,10 +968,6 @@ statics.add_static('group', group)
 def groupCount(*args):
     return __.groupCount(*args)
 statics.add_static('groupCount', groupCount)
-
-def groupV3d0(*args):
-    return __.groupV3d0(*args)
-statics.add_static('groupV3d0', groupV3d0)
 
 def has(*args):
     return __.has(*args)

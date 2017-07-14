@@ -466,14 +466,6 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#groupV3d0()
-     */
-    @Deprecated
-    public static <A, K, V> GraphTraversal<A, Map<K, V>> groupV3d0() {
-        return __.<A>start().groupV3d0();
-    }
-
-    /**
      * @see GraphTraversal#groupCount()
      */
     public static <A, K> GraphTraversal<A, Map<K, Long>> groupCount() {
@@ -881,14 +873,6 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> group(final String sideEffectKey) {
         return __.<A>start().group(sideEffectKey);
-    }
-
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, A> groupV3d0(final String sideEffectKey) {
-        return __.<A>start().groupV3d0(sideEffectKey);
     }
 
     /**

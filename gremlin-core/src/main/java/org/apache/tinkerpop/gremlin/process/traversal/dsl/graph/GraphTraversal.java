@@ -78,7 +78,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
@@ -118,7 +117,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropert
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
@@ -944,16 +942,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
         this.asAdmin().getBytecode().addStep(Symbols.group);
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
-    }
-
-    /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #group()}
-     */
-    @Deprecated
-    public default <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
-        this.asAdmin().getBytecode().addStep(Symbols.groupV3d0);
-        return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
     }
 
     /**
@@ -1901,15 +1889,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
-     */
-    public default GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.groupV3d0, sideEffectKey);
-        return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
-    }
-
-    /**
      * Counts the number of times a particular objects has been part of a traversal, returning a {@code Map} where the
      * object is the key and the value is the count.
      *
@@ -2692,8 +2671,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String min = "min";
         public static final String mean = "mean";
         public static final String group = "group";
-        @Deprecated
-        public static final String groupV3d0 = "groupV3d0";
         public static final String groupCount = "groupCount";
         public static final String tree = "tree";
         public static final String addV = "addV";

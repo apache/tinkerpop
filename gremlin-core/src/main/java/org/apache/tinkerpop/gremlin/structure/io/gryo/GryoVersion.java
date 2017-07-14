@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
@@ -368,7 +367,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
             add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
             add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
-            add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
+            // skip 113
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
@@ -518,7 +517,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
             add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
             add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
-            add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
+            // skip 113
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));

@@ -484,20 +484,6 @@ public final class TraversalHelper {
     }
 
     /**
-     * @deprecated As of release 3.2.3, not replaced - only used by {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0}.
-     */
-    @Deprecated
-    public static <S> void addToCollectionUnrollIterator(final Collection<S> collection, final S s, final long bulk) {
-        if (s instanceof Iterator) {
-            ((Iterator<S>) s).forEachRemaining(r -> addToCollection(collection, r, bulk));
-        } else if (s instanceof Iterable) {
-            ((Iterable<S>) s).forEach(r -> addToCollection(collection, r, bulk));
-        } else {
-            addToCollection(collection, s, bulk);
-        }
-    }
-
-    /**
      * Returns the name of <i>step</i> truncated to <i>maxLength</i>. An ellipses is appended when the name exceeds
      * <i>maxLength</i>.
      *
