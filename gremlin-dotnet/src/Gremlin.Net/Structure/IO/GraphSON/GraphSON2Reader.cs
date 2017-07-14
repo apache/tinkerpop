@@ -21,29 +21,30 @@
 
 #endregion
 
-using System;
-using Gremlin.Net.Structure.IO.GraphSON;
+using System.Collections.Generic;
 
-namespace Gremlin.Net.Driver
+namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ConnectionFactory
+    /// <summary>
+    /// Handles deserialization of GraphSON3 data.
+    /// </summary>
+    public class GraphSON2Reader : GraphSONReader
     {
-        private readonly GraphSONReader _graphSONReader;
-        private readonly GraphSONWriter _graphSONWriter;
-        private readonly GremlinServer _gremlinServer;
-
-        public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter)
+        /// <summary>
+        /// Creates a new instance of <see cref="GraphSON2Reader"/>.
+        /// </summary>
+        public GraphSON2Reader()
         {
-            _gremlinServer = gremlinServer;
-            _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
-            _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
+            
         }
 
-        public Connection CreateConnection()
+        /// <summary>
+        /// Creates a new instance of <see cref="GraphSON2Reader"/>.
+        /// </summary>
+        public GraphSON2Reader(IReadOnlyDictionary<string, IGraphSONDeserializer> deserializerByGraphSONType) : 
+            base(deserializerByGraphSONType)
         {
-            return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                _graphSONWriter);
+            
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Gremlin.Net.Driver
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader = null,
             GraphSONWriter graphSONWriter = null)
         {
-            var reader = graphSONReader ?? new GraphSONReader();
+            var reader = graphSONReader ?? new GraphSON3Reader();
             var writer = graphSONWriter ?? new GraphSONWriter();
             var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer);
             _connectionPool = new ConnectionPool(connectionFactory);

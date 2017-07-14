@@ -21,29 +21,28 @@
 
 #endregion
 
-using System;
-using Gremlin.Net.Structure.IO.GraphSON;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
-namespace Gremlin.Net.Driver
+namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ConnectionFactory
+    internal class SetSerializer : IGraphSONDeserializer, IGraphSONSerializer
     {
-        private readonly GraphSONReader _graphSONReader;
-        private readonly GraphSONWriter _graphSONWriter;
-        private readonly GremlinServer _gremlinServer;
-
-        public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter)
+        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
-            _gremlinServer = gremlinServer;
-            _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
-            _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
+            var jArray = graphsonObject as JArray;
+            if (jArray == null)
+            {
+                return new HashSet<object>();
+            }
+            // ISet<object>
+            return new HashSet<object>(jArray.Select(reader.ToObject));
         }
 
-        public Connection CreateConnection()
+        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                _graphSONWriter);
+            throw new System.NotImplementedException();
         }
     }
 }

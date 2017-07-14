@@ -38,7 +38,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// </summary>
     public class GraphSONWriter
     {
-        private readonly Dictionary<Type, IGraphSONSerializer> _serializerByType = new Dictionary
+        /// <summary>
+        /// Contains the information of serializers by type.
+        /// </summary>
+        protected readonly Dictionary<Type, IGraphSONSerializer> Serializers = new Dictionary
             <Type, IGraphSONSerializer>
             {
                 {typeof(ITraversal), new TraversalSerializer()},
@@ -77,7 +80,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public GraphSONWriter(IReadOnlyDictionary<Type, IGraphSONSerializer> customSerializerByType)
         {
             foreach (var serializerAndType in customSerializerByType)
-                _serializerByType[serializerAndType.Key] = serializerAndType.Value;
+                Serializers[serializerAndType.Key] = serializerAndType.Value;
         }
 
         /// <summary>
@@ -85,7 +88,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// </summary>
         /// <param name="objectData">The object to serialize.</param>
         /// <returns>The serialized GraphSON.</returns>
-        public string WriteObject(dynamic objectData)
+        public virtual string WriteObject(dynamic objectData)
         {
             return JsonConvert.SerializeObject(ToDict(objectData));
         }
@@ -104,15 +107,15 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
         private bool TryGetSerializerFor(out IGraphSONSerializer serializer, Type type)
         {
-            if (_serializerByType.ContainsKey(type))
+            if (Serializers.ContainsKey(type))
             {
-                serializer = _serializerByType[type];
+                serializer = Serializers[type];
                 return true;
             }
-            foreach (var supportedType in _serializerByType.Keys)
+            foreach (var supportedType in Serializers.Keys)
                 if (supportedType.IsAssignableFrom(type))
                 {
-                    serializer = _serializerByType[supportedType];
+                    serializer = Serializers[supportedType];
                     return true;
                 }
             serializer = null;
