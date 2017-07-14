@@ -203,7 +203,7 @@ Deprecation Removal
 The following deprecated classes, methods or fields have been removed in this version:
 
 * `giraph-gremlin`
-** org.apache.tinkerpop.gremlin.giraph.groovy.plugin.GiraphGremlinPlugin
+** `org.apache.tinkerpop.gremlin.giraph.groovy.plugin.GiraphGremlinPlugin`
 * `gremlin-console`
 ** `org.apache.tinkerpop.gremlin.console.Console(String)`
 ** `org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider`
@@ -273,7 +273,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#build(String,List,List,List,Map)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getScriptEngines()`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor#getGlobalBindings()`
-** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#enabledPlugins(Set)
+** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#enabledPlugins(Set)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#addEngineSettings(String,List,List,List,Map)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#engineSettings(Map)`
 ** `org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder#use(List)`
