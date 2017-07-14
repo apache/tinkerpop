@@ -134,6 +134,7 @@ limitations under the License.
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
 import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+import org.apache.tinkerpop.gremlin.server.Settings.SerializerSettings
 
 if (${skipTests}) return
 
@@ -141,6 +142,7 @@ log.info("Starting Gremlin Server instances for native testing of gremlin-dotnet
 def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
 settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settings.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])
 settings.port = 45950
 
 def server = new GremlinServer(settings)
@@ -152,6 +154,7 @@ log.info("Gremlin Server with no authentication started on port 45950")
 def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
 settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
+settingsSecure.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])
 settingsSecure.port = 45951
 settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
 settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties", credentialsDbLocation: "${gremlin.server.dir}/data/credentials.kryo"]
