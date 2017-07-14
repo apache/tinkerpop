@@ -416,10 +416,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("select", *args)
         return self
 
-    def selectV3d2(self, *args):
-        self.bytecode.add_step("selectV3d2", *args)
-        return self
-
     def sideEffect(self, *args):
         self.bytecode.add_step("sideEffect", *args)
         return self
@@ -780,10 +776,6 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).select(*args)
 
     @classmethod
-    def selectV3d2(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).selectV3d2(*args)
-
-    @classmethod
     def sideEffect(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).sideEffect(*args)
 
@@ -1132,10 +1124,6 @@ statics.add_static('sample', sample)
 def select(*args):
     return __.select(*args)
 statics.add_static('select', select)
-
-def selectV3d2(*args):
-    return __.selectV3d2(*args)
-statics.add_static('selectV3d2', selectV3d2)
 
 def sideEffect(*args):
     return __.sideEffect(*args)
