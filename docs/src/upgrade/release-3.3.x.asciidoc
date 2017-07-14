@@ -235,6 +235,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#addE(Direction, String, String, Object...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#addOutE(String, String, Object...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#addInV(String, String, Object...)`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#selectV3d2()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Bindings()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withBindings(Bindings)`
 ** `org.apache.tinkerpop.gremlin.structure.Transaction.submit(Function)`
@@ -360,7 +361,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1721[TINKERPOP-1721],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1719[TINKERPOP-1719],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1720[TINKERPOP-1720],
 link:https://issues.apache.org/jira/browse/TINKERPOP-880[TINKERPOP-880],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1170[TINKERPOP-1170]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1170[TINKERPOP-1170],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1729[TINKERPOP-1729]
 
 Gremlin-server.sh and Init Scripts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
