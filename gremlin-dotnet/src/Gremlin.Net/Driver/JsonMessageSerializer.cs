@@ -28,7 +28,12 @@ namespace Gremlin.Net.Driver
 {
     internal class JsonMessageSerializer
     {
-        private const string MimeType = "application/vnd.gremlin-v2.0+json";
+        private readonly string _mimeType;
+
+        public JsonMessageSerializer(string mimeType)
+        {
+            _mimeType = mimeType;
+        }
 
         public byte[] SerializeMessage(string msg)
         {
@@ -37,7 +42,7 @@ namespace Gremlin.Net.Driver
 
         private string MessageWithHeader(string messageContent)
         {
-            return $"{(char) MimeType.Length}{MimeType}{messageContent}";
+            return $"{(char) _mimeType.Length}{_mimeType}{messageContent}";
         }
 
         public TMessage DeserializeMessage<TMessage>(byte[] message)

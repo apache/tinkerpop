@@ -36,20 +36,21 @@ namespace Gremlin.Net.Driver
     {
         private readonly GraphSONReader _graphSONReader;
         private readonly GraphSONWriter _graphSONWriter;
-        private readonly JsonMessageSerializer _messageSerializer = new JsonMessageSerializer();
+        private readonly JsonMessageSerializer _messageSerializer;
         private readonly Uri _uri;
         private readonly WebSocketConnection _webSocketConnection = new WebSocketConnection();
         private readonly string _username;
         private readonly string _password;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter)
+                          GraphSONWriter graphSONWriter, string mimeType)
         {
             _uri = uri;
             _username = username;
             _password = password;
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
+            _messageSerializer = new JsonMessageSerializer(mimeType);
         }
 
         public async Task<IReadOnlyCollection<T>> SubmitAsync<T>(RequestMessage requestMessage)

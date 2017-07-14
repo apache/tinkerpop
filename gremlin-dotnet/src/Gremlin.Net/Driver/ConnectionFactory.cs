@@ -31,11 +31,13 @@ namespace Gremlin.Net.Driver
         private readonly GraphSONReader _graphSONReader;
         private readonly GraphSONWriter _graphSONWriter;
         private readonly GremlinServer _gremlinServer;
+        private readonly string _mimeType;
 
         public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter)
+                                 GraphSONWriter graphSONWriter, string mimeType)
         {
             _gremlinServer = gremlinServer;
+            _mimeType = mimeType;
             _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
             _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
         }
@@ -43,7 +45,7 @@ namespace Gremlin.Net.Driver
         public Connection CreateConnection()
         {
             return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                _graphSONWriter);
+                                 _graphSONWriter, _mimeType);
         }
     }
 }
