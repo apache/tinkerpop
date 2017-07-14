@@ -27,8 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
  * {@link DetachedVertex} include the label and the properties associated with it which could be more costly for
  * network serialization purposes.
  *
- * @see GryoLiteMessageSerializerV1d0
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GryoMessageSerializerV1d0 extends AbstractGryoMessageSerializerV1d0 {

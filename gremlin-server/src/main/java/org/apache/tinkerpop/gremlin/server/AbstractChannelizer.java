@@ -199,6 +199,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                     return Optional.<MessageSerializer>empty();
                 }
 
+                if (clazz.getAnnotation(Deprecated.class) != null)
+                    logger.warn("The {} serialization class is deprecated.", config.className);
+
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
                 final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();
                 for (String graphName : settings.graphs.keySet()) {
