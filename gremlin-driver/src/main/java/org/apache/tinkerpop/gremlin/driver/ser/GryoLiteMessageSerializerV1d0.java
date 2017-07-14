@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -43,7 +44,9 @@ import java.util.Map;
  * as {@link ReferenceVertex} exclude the label and the properties associated with it and only return the identifier.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.6, not directly replaced - supported through {@link HaltedTraverserStrategy}.
  */
+@Deprecated
 public class GryoLiteMessageSerializerV1d0 extends AbstractGryoMessageSerializerV1d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_LITE_V1D0;
