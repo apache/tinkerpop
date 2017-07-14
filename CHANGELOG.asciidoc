@@ -36,6 +36,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `finalization.LazyBarrierStrategy` (moved to `optimization.LazyBarrierStrategy`).
 * Removed previously deprecated `Constants` in Hadoop.
 * Removed previously deprecated `VertexComputing.generateComputer(Graph)`.
+* Removed previously deprecated `ConfigurationTraversal`.
 * Established the Gryo 3.0 format.
 * `GryoVersion` now includes a default `ClassResolver` to supply to the `GryoMapper`.
 * `GryoClassResolver` renamed to `GryoClassResolverV1d0` which has an abstract class that for providers to extend in `AbstractGryoClassResolver`.
