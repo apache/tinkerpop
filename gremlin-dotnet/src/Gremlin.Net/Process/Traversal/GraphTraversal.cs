@@ -81,24 +81,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the addInE step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , Edge > AddInE (params object[] args)
-        {
-            Bytecode.AddStep("addInE", args);
-            return Wrap< S , Edge >(this);
-        }
-
-        /// <summary>
-        ///     Adds the addOutE step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , Edge > AddOutE (params object[] args)
-        {
-            Bytecode.AddStep("addOutE", args);
-            return Wrap< S , Edge >(this);
-        }
-
-        /// <summary>
         ///     Adds the addV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal< S , Vertex > AddV (params object[] args)
@@ -509,24 +491,6 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< S , E2 > Map<E2> (params object[] args)
         {
             Bytecode.AddStep("map", args);
-            return Wrap< S , E2 >(this);
-        }
-
-        /// <summary>
-        ///     Adds the mapKeys step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , E2 > MapKeys<E2> (params object[] args)
-        {
-            Bytecode.AddStep("mapKeys", args);
-            return Wrap< S , E2 >(this);
-        }
-
-        /// <summary>
-        ///     Adds the mapValues step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , E2 > MapValues<E2> (params object[] args)
-        {
-            Bytecode.AddStep("mapValues", args);
             return Wrap< S , E2 >(this);
         }
 

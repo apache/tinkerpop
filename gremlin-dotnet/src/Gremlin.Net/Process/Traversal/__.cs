@@ -57,22 +57,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addInE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> AddInE(params object[] args)
-        {
-            return new GraphTraversal<object, object>().AddInE(args);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addOutE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> AddOutE(params object[] args)
-        {
-            return new GraphTraversal<object, object>().AddOutE(args);
-        }
-
-        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Vertex> AddV(params object[] args)
@@ -422,22 +406,6 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Map<E2>(params object[] args)
         {
             return new GraphTraversal<object, object>().Map<E2>(args);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mapKeys step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> MapKeys<E2>(params object[] args)
-        {
-            return new GraphTraversal<object, object>().MapKeys<E2>(args);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mapValues step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> MapValues<E2>(params object[] args)
-        {
-            return new GraphTraversal<object, object>().MapValues<E2>(args);
         }
 
         /// <summary>
