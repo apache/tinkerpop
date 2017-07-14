@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
@@ -30,13 +31,26 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 {
     public class BytecodeGraphSONSerializerTests
     {
-        private GraphSONWriter CreateGraphSONWriter()
+        /// <summary>
+        /// Parameters for each test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> Versions => new []
         {
-            return new GraphSONWriter();
+            new object[] { 2 },
+            new object[] { 3 }
+        };
+
+        private GraphSONWriter CreateGraphSONWriter(int version)
+        {
+            if (version == 3)
+            {
+                return new GraphSON3Writer();
+            }
+            return new GraphSON2Writer();
         }
 
-        [Fact]
-        public void ShouldSerializeByteCodeWithNestedTraversal()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeByteCodeWithNestedTraversal(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V");
@@ -44,7 +58,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var nestedTraversal = new TestTraversal(nestedBytecode);
             nestedBytecode.AddStep("out");
             bytecode.AddStep("repeat", nestedTraversal);
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
@@ -53,14 +67,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeBytecodeWithNumbers()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBytecodeWithNumbers(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V", (long) 1);
             bytecode.AddStep("has", "age", 20);
             bytecode.AddStep("has", "height", 6.5);
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
@@ -69,25 +83,25 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerialize_g_V()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerialize_g_V(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V");
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
             Assert.Equal("{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"V\"]]}}", graphSON);
         }
 
-        [Fact]
-        public void ShouldSerialize_g_V_Count()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerialize_g_V_Count(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V");
             bytecode.AddStep("count");
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
@@ -95,14 +109,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerialize_g_V_HasXPerson_Name_GremlinX_Count()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerialize_g_V_HasXPerson_Name_GremlinX_Count(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V");
             bytecode.AddStep("has", "Person", "Name", "Gremlin");
             bytecode.AddStep("count");
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
@@ -111,15 +125,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeBytecodeWithSourcesStep()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBytecodeWithSourcesStep(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddSource("withSideEffect", "a", new List<string> {"josh", "peter"});
             bytecode.AddStep("V", 1);
             bytecode.AddStep("values", "name");
             bytecode.AddStep("where", new TraversalPredicate("within", "a"));
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
@@ -128,12 +142,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeBytecodeWithBindings()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBytecodeWithBindings(int version)
         {
             var bytecode = new Bytecode();
             bytecode.AddStep("V", new Binding("id", 123));
-            var graphsonWriter = CreateGraphSONWriter();
+            var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSon = graphsonWriter.WriteObject(bytecode);
 

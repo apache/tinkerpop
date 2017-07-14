@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
@@ -29,10 +30,19 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal
 {
     public class GraphSONWriterTests
     {
-        [Fact]
-        public void ShouldSerializeLongPredicateCorrectly()
+        /// <summary>
+        /// Parameters for each test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> Versions => new []
         {
-            var writer = CreateStandardGraphSONWriter();
+            new object[] { 2 },
+            new object[] { 3 }
+        };
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeLongPredicateCorrectly(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
             var predicate = P.Lt("b").Or(P.Gt("c")).And(P.Neq("d"));
 
             var graphSon = writer.WriteObject(predicate);
@@ -42,9 +52,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal
             Assert.Equal(expected, graphSon);
         }
 
-        private GraphSONWriter CreateStandardGraphSONWriter()
+        private GraphSONWriter CreateGraphSONWriter(int version)
         {
-            return new GraphSONWriter();
+            if (version == 3)
+            {
+                return new GraphSON3Writer();
+            }
+            return new GraphSON2Writer();
         }
     }
 }

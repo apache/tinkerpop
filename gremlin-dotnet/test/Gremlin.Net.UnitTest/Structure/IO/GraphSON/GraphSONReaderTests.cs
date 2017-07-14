@@ -107,7 +107,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDictionary(int version)
         {
-            Console.WriteLine("Starting");
             var serializedDict = "{\"age\":[{\"@type\":\"g:Int32\",\"@value\":29}],\"name\":[\"marko\"]}";
             var reader = CreateStandardGraphSONReader(version);
 

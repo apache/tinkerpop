@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -30,16 +31,29 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 {
     public class StrategyWriterTests
     {
-        private GraphSONWriter CreateGraphSONWriter()
+        /// <summary>
+        /// Parameters for each test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> Versions => new []
         {
-            return new GraphSONWriter();
+            new object[] { 2 },
+            new object[] { 3 }
+        };
+
+        private GraphSONWriter CreateGraphSONWriter(int version)
+        {
+            if (version == 3)
+            {
+                return new GraphSON3Writer();
+            }
+            return new GraphSON2Writer();
         }
 
-        [Fact]
-        public void ShouldSerializeSubgraphStrategyWithoutValues()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeSubgraphStrategyWithoutValues(int version)
         {
             var subgraphStrategy = new SubgraphStrategy();
-            var writer = CreateGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(subgraphStrategy);
 
@@ -47,14 +61,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSon);
         }
 
-        [Fact]
-        public void ShouldDeserializeSubgraphStrategyWithVertexCriterion()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeSubgraphStrategyWithVertexCriterion(int version)
         {
             var vertexCriterionBytecode = new Bytecode();
             vertexCriterionBytecode.AddStep("has", "name", "marko");
             var vertexCriterion = new TestTraversal(vertexCriterionBytecode);
             var subgraphStrategy = new SubgraphStrategy(vertexCriterion);
-            var writer = CreateGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(subgraphStrategy);
 

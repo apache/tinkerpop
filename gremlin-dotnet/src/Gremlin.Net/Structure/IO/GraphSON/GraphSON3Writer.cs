@@ -27,16 +27,27 @@ using System.Collections.Generic;
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     /// <summary>
-    /// Handles deserialization of GraphSON3 data.
+    /// Handles serialization of GraphSON3 data.
     /// </summary>
     public class GraphSON3Writer : GraphSONWriter
     {
+        private static readonly IDictionary<Type, IGraphSONSerializer> GraphSON3SpecificSerializers =
+            new Dictionary<Type, IGraphSONSerializer>
+            {
+                { typeof(IList<object>), new ListSerializer() },
+                { typeof(ISet<object>), new SetSerializer() },
+                { typeof(IDictionary<object, object>), new MapSerializer() }
+            };
+        
         /// <summary>
         /// Creates a new instance of <see cref="GraphSON3Writer"/>.
         /// </summary>
         public GraphSON3Writer()
         {
-            // TODO: Include GraphSON3 specific serializers
+            foreach (var kv in GraphSON3SpecificSerializers)
+            {
+                Serializers[kv.Key] = kv.Value;
+            }
         }
 
         /// <summary>

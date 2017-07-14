@@ -33,65 +33,86 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 {
     public class GraphSONWriterTests
     {
-        private GraphSONWriter CreateStandardGraphSONWriter()
+        /// <summary>
+        /// Parameters for each test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> Versions => new []
         {
-            return new GraphSONWriter();
+            new object[] { 2 },
+            new object[] { 3 }
+        };
+        
+        /// <summary>
+        /// Parameters for each collections test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> VersionsSupportingCollections => new []
+        {
+            new object[] { 3 }
+        };
+
+        private GraphSONWriter CreateGraphSONWriter(int version)
+        {
+            if (version == 3)
+            {
+                return new GraphSON3Writer();
+            }
+            return new GraphSON2Writer();
         }
 
-        [Fact]
-        public void ShouldSerializeInt()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeInt(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(1);
 
             Assert.Equal("{\"@type\":\"g:Int32\",\"@value\":1}", graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeLong()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeLong(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject((long) 2);
 
             Assert.Equal("{\"@type\":\"g:Int64\",\"@value\":2}", graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeFloat()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeFloat(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject((float) 3.2);
 
             Assert.Equal("{\"@type\":\"g:Float\",\"@value\":3.2}", graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeDouble()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDouble(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(3.2);
 
             Assert.Equal("{\"@type\":\"g:Double\",\"@value\":3.2}", graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeBoolean()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBoolean(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(true);
 
             Assert.Equal("true", graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeArray()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeArray(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var array = new[] {5, 6};
 
             var serializedGraphSON = writer.WriteObject(array);
@@ -100,10 +121,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeBinding()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBinding(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var binding = new Binding("theKey", 123);
 
             var graphSon = writer.WriteObject(binding);
@@ -120,7 +141,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             {
                 {typeof(TestClass), new TestGraphSONSerializer {TestNamespace = "NS"}}
             };
-            var writer = new GraphSONWriter(customSerializerByType);
+            var writer = new GraphSON2Writer(customSerializerByType);
             var testObj = new TestClass {Value = "test"};
 
             var serialized = writer.WriteObject(testObj);
@@ -136,17 +157,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             {
                 {typeof(int), customSerializerMock.Object}
             };
-            var writer = new GraphSONWriter(customSerializerByType);
+            var writer = new GraphSON2Writer(customSerializerByType);
 
             writer.WriteObject(12);
 
             customSerializerMock.Verify(m => m.Dictify(It.Is<int>(v => v == 12), It.IsAny<GraphSONWriter>()));
         }
 
-        [Fact]
-        public void ShouldSerializeDateTime()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDateTime(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var dateTime = TestUtils.FromJavaTime(1475583442552);
 
             var graphSon = writer.WriteObject(dateTime);
@@ -155,10 +176,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeDictionary()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDictionary(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var dictionary = new Dictionary<string, dynamic>
             {
                 {"age", new List<int> {29}},
@@ -171,10 +192,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedDict);
         }
 
-        [Fact]
-        public void ShouldSerializeEdge()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeEdge(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var edge = new Edge(7, new Vertex(0, "person"), "knows", new Vertex(1, "dog"));
 
             var graphSON = writer.WriteObject(edge);
@@ -184,10 +205,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeEnum()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeEnum(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var serializedEnum = writer.WriteObject(Direction.Both);
 
@@ -195,10 +216,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedEnum);
         }
 
-        [Fact]
-        public void ShouldSerializeList()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeList(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var list = new List<int> {5, 6};
 
             var serializedGraphSON = writer.WriteObject(list.ToArray());
@@ -207,10 +228,49 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
 
-        [Fact]
-        public void ShouldSerializePredicateWithTwoValues()
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldSerializeGList(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
+            var list = new List<object> {5, 6};
+
+            var serializedGraphSON = writer.WriteObject(list);
+
+            var expectedGraphSON = "{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Int32\",\"@value\":5}," +
+                                   "{\"@type\":\"g:Int32\",\"@value\":6}]}";
+            Assert.Equal(expectedGraphSON, serializedGraphSON);
+        }
+
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldSerializeGSet(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            ISet<object> set = new HashSet<object> {600L, 700L};
+
+            var serializedGraphSON = writer.WriteObject(set);
+
+            var expectedGraphSON = "{\"@type\":\"g:Set\",\"@value\":[{\"@type\":\"g:Int64\",\"@value\":600}," +
+                                   "{\"@type\":\"g:Int64\",\"@value\":700}]}";
+            Assert.Equal(expectedGraphSON, serializedGraphSON);
+        }
+
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldSerializeGMap(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            IDictionary<object, object> map = new Dictionary<object, object> { { 1L, "a"}, { 200L, "b"}};
+
+            var serializedGraphSON = writer.WriteObject(map);
+
+            var expectedGraphSON = "{\"@type\":\"g:Map\",\"@value\":[{\"@type\":\"g:Int64\",\"@value\":1},\"a\"," +
+                                   "{\"@type\":\"g:Int64\",\"@value\":200},\"b\"]}";
+            Assert.Equal(expectedGraphSON, serializedGraphSON);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePredicateWithTwoValues(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
             var predicate = new TraversalPredicate("within", new List<int> {1, 2});
 
             var serializedPredicate = writer.WriteObject(predicate);
@@ -220,10 +280,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedPredicate);
         }
 
-        [Fact]
-        public void ShouldSerializePredicateWithSingleValue()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePredicateWithSingleValue(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var predicate = new TraversalPredicate("lt", 5);
 
             var serializedPredicate = writer.WriteObject(predicate);
@@ -233,10 +293,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedPredicate);
         }
 
-        [Fact]
-        public void ShouldSerializePropertyWithEdgeElement()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePropertyWithEdgeElement(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var property = new Property("aKey", "aValue", new Edge("anId", new Vertex(1), "edgeLabel", new Vertex(2)));
 
             var graphSON = writer.WriteObject(property);
@@ -246,10 +306,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializePropertyWithVertexPropertyElement()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePropertyWithVertexPropertyElement(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var property = new Property("name", "marko",
                 new VertexProperty("anId", "aKey", 21345, new Vertex("vertexId")));
 
@@ -260,10 +320,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeVertexProperty()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeVertexProperty(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var vertexProperty = new VertexProperty("blah", "keyA", true, new Vertex("stephen"));
 
             var graphSON = writer.WriteObject(vertexProperty);
@@ -273,10 +333,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeGuid()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeGuid(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var guid = Guid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786");
 
             var graphSon = writer.WriteObject(guid);
@@ -285,10 +345,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSon);
         }
 
-        [Fact]
-        public void ShouldSerializeVertex()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeVertex(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var vertex = new Vertex(45.23f);
 
             var graphSON = writer.WriteObject(vertex);
@@ -298,10 +358,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeVertexWithLabel()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeVertexWithLabel(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var vertex = new Vertex((long) 123, "project");
 
             var graphSON = writer.WriteObject(vertex);

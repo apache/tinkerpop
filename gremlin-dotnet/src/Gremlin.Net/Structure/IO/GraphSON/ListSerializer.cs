@@ -21,7 +21,11 @@
 
 #endregion
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -48,7 +52,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            throw new System.NotImplementedException();
+            return GraphSONUtil.ToCollection(objectData, writer, "List");
         }
     }
 }

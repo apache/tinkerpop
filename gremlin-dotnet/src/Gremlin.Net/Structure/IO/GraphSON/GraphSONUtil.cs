@@ -21,6 +21,8 @@
 
 #endregion
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -57,6 +59,25 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public static string FormatTypeName(string namespacePrefix, string typeName)
         {
             return $"{namespacePrefix}:{typeName}";
+        }
+
+        /// <summary>
+        /// Converts a Collection to a representation of g:List or g:Set
+        /// </summary>
+        internal static Dictionary<string, dynamic> ToCollection(dynamic objectData, GraphSONWriter writer,
+                                                               string typename)
+        {
+            var collection = objectData as IEnumerable;
+            if (collection == null)
+            {
+                throw new InvalidOperationException("Object must implement IEnumerable");
+            }
+            var result = new List<object>();
+            foreach (var item in collection)
+            {
+                result.Add(writer.ToDict(item));
+            }
+            return ToTypedValue(typename, result);
         }
     }
 }

@@ -23,27 +23,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class SetSerializer : IGraphSONDeserializer, IGraphSONSerializer
+    /// <summary>
+    /// Handles serialization of GraphSON2 data.
+    /// </summary>
+    public class GraphSON2Writer : GraphSONWriter
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        /// <summary>
+        /// Creates a new instance of <see cref="GraphSON2Writer"/>.
+        /// </summary>
+        public GraphSON2Writer()
         {
-            var jArray = graphsonObject as JArray;
-            if (jArray == null)
-            {
-                return new HashSet<object>();
-            }
-            // ISet<object>
-            return new HashSet<object>(jArray.Select(reader.ToObject));
+            
         }
-
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+        
+        /// <summary>
+        /// Creates a new instance of <see cref="GraphSON2Writer"/>.
+        /// </summary>
+        public GraphSON2Writer(IReadOnlyDictionary<Type, IGraphSONSerializer> customSerializerByType) : 
+            base(customSerializerByType)
         {
-            return GraphSONUtil.ToCollection(objectData, writer, "Set");
+            
         }
     }
 }

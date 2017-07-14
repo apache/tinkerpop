@@ -21,6 +21,8 @@
 
 #endregion
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -46,7 +48,19 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            throw new System.NotImplementedException();
+            var map = objectData as IDictionary;
+            if (map == null)
+            {
+                throw new InvalidOperationException("Object must implement IDictionary");
+            }
+            var result = new object[map.Count * 2];
+            var index = 0;
+            foreach (var key in map.Keys)
+            {
+                result[index++] = writer.ToDict(key);
+                result[index++] = writer.ToDict(map[key]);
+            }
+            return GraphSONUtil.ToTypedValue("Map", result);
         }
     }
 }

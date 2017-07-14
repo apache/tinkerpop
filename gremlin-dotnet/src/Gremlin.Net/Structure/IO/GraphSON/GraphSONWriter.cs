@@ -36,7 +36,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// <summary>
     ///     Allows to serialize objects to GraphSON.
     /// </summary>
-    public class GraphSONWriter
+    public abstract class GraphSONWriter
     {
         /// <summary>
         /// Contains the information of serializers by type.
@@ -66,7 +66,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphSONWriter" /> class.
         /// </summary>
-        public GraphSONWriter()
+        protected GraphSONWriter()
         {
         }
 
@@ -77,7 +77,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         ///     <see cref="IGraphSONSerializer" /> serializers identified by their
         ///     <see cref="Type" />.
         /// </param>
-        public GraphSONWriter(IReadOnlyDictionary<Type, IGraphSONSerializer> customSerializerByType)
+        protected GraphSONWriter(IReadOnlyDictionary<Type, IGraphSONSerializer> customSerializerByType)
         {
             foreach (var serializerAndType in customSerializerByType)
                 Serializers[serializerAndType.Key] = serializerAndType.Value;
