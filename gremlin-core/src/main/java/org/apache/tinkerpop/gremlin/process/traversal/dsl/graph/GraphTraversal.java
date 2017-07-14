@@ -732,29 +732,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String)} with {@link Pop#mixed}.
-     */
-    @Deprecated
-    public default <E2> GraphTraversal<S, E2> selectV3d2(final String selectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.selectV3d2, selectKey);
-        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.mixed, selectKey));
-    }
-
-    /**
-     * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String, String, String...)} with {@link Pop#mixed}.
-     */
-    @Deprecated
-    public default <E2> GraphTraversal<S, Map<String, E2>> selectV3d2(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
-        final String[] selectKeys = new String[otherSelectKeys.length + 2];
-        selectKeys[0] = selectKey1;
-        selectKeys[1] = selectKey2;
-        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getBytecode().addStep(Symbols.selectV3d2, selectKey1, selectKey2, otherSelectKeys);
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.mixed, selectKeys));
-    }
-
-
-    /**
      * A version of {@code select} that allows for the extraction of a {@link Column} from objects in the traversal.
      *
      * @param column the column to extract
