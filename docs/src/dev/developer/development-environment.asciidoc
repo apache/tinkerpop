@@ -102,8 +102,8 @@ integration tests and therefore must be actively switched on with `-DskipIntegra
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
 [[dotnet-environment]]
-.NET Environment
-~~~~~~~~~~~~~~~~
+DotNet Environment
+~~~~~~~~~~~~~~~~~~
 
 The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=1.1.0) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
