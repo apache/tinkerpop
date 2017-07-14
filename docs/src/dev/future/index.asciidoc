@@ -34,6 +34,24 @@ for future consideration when 4.x becomes the agenda of the day for The TinkerPo
 
 image:tp4-think.png[]
 
+The Main Features
+-----------------
+
+TinkerPop4 should focus on the most successful aspects of TinkerPop3 and it should avoid the traps realized in TinkerPop3.
+These items include:
+
+* The concept of Gremlin as both a virtual machine and language.
+** A standard bytecode specification should be provided.
+** A standard machine architecture should be provided.
+* The concept of Gremlin language variants.
+** It should be easy to create Gremlin variants in every major programming language.
+** A standard template should be followed for all languages.
+** Apache TinkerPop should provide variants in all major programming languges.
+* The concept of `Traversal` as the sole means of interacting with the graph.
+** The role of Blueprints should be significantly reduced.
+** The role of Gremlin should be significantly increased.
+
+
 Hiding Blueprints
 -----------------
 
