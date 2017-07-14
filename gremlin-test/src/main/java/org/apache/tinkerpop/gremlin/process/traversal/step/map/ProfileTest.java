@@ -53,11 +53,14 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -105,11 +108,14 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetricsX();
         printTraversalForm(traversal);
         traversal.iterate();
-        validate_g_V_out_out_profile_modern(traversal, traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY));
+        validate_g_V_out_out_profile_modern(traversal, traversal.asAdmin().getSideEffects().get(METRICS_KEY));
     }
 
     private void validate_g_V_out_out_profile_modern(final Traversal traversal, final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        assumeThat("The following assertions apply to TinkerGraph only as provider strategies can alter the steps to not comply with expectations",
+                graph.getClass().getSimpleName(), equalTo("TinkerGraph"));
 
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
@@ -149,12 +155,15 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetricsX();
         printTraversalForm(traversal);
         traversal.iterate();
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_out_out_profile_grateful(traversalMetrics);
     }
 
     private void validate_g_V_out_out_profile_grateful(final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        assumeThat("The following assertions apply to TinkerGraph only as provider strategies can alter the steps to not comply with expectations",
+                graph.getClass().getSimpleName(), equalTo("TinkerGraph"));
 
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(808, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
@@ -202,12 +211,15 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         traversal.iterate();
         assertEquals("There should be 7 steps in this traversal (counting injected profile steps).", 7, traversal.asAdmin().getSteps().size());
-        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
     }
 
     private void validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        assumeThat("The following assertions apply to TinkerGraph only as provider strategies can alter the steps to not comply with expectations",
+                graph.getClass().getSimpleName(), equalTo("TinkerGraph"));
 
         // Grab the second (sideEffect{sleep}) step and check the times.
         Metrics metrics = traversalMetrics.getMetrics(1);
@@ -247,14 +259,17 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profileXmetricsX();
         printTraversalForm(traversal);
         traversal.iterate();
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_repeat_both_modern_profile(traversalMetrics,
                 traversal.asAdmin().getStrategies().toList().contains(RepeatUnrollStrategy.instance()) &&
                         !traversal.asAdmin().getStrategies().toList().contains(ComputerVerificationStrategy.instance()));
     }
 
-    private void validate_g_V_repeat_both_modern_profile(final TraversalMetrics traversalMetrics, boolean withRepeatUnrollStrategy) {
+    private void validate_g_V_repeat_both_modern_profile(final TraversalMetrics traversalMetrics, final boolean withRepeatUnrollStrategy) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        assumeThat("The following assertions apply to TinkerGraph only as provider strategies can alter the steps to not comply with expectations",
+                graph.getClass().getSimpleName(), equalTo("TinkerGraph"));
 
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
@@ -286,8 +301,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     /////////////
 
-    private void validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(final Traversal traversal, TraversalMetrics traversalMetrics) {
+    private void validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(final Traversal traversal, final TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        assumeThat("The following assertions apply to TinkerGraph only as provider strategies can alter the steps to not comply with expectations",
+                graph.getClass().getSimpleName(), equalTo("TinkerGraph"));
 
         assertEquals("There should be 3 top-level metrics.", 3, traversalMetrics.getMetrics().size());
 
@@ -321,7 +339,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_name_profileXmetricsX();
         printTraversalForm(traversal);
         traversal.iterate();
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(traversal, traversalMetrics);
     }
 
@@ -377,7 +395,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertTrue(mockStep.callbackCalled);
 
         if (!onGraphComputer(t.asAdmin())) {
-            final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+            final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().get(METRICS_KEY);
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
     }
