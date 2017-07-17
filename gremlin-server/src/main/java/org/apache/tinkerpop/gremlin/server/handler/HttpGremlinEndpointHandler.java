@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import io.netty.handler.codec.TooLongFrameException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -285,7 +287,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
-        sendError(ctx, INTERNAL_SERVER_ERROR, cause.getCause().getMessage());
+        final Throwable t = null == cause.getCause() ? cause : cause.getCause();
+        if (t instanceof TooLongFrameException) {
+            sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength");
+        } else {
+            sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage());
+        }
         ctx.close();
     }
 
