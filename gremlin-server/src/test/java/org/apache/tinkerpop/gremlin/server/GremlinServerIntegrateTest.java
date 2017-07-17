@@ -155,7 +155,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.writeBufferLowWaterMark = 32;
                 break;
             case "shouldReceiveFailureTimeOutOnScriptEval":
-                settings.scriptEvaluationTimeout = 200;
+                settings.scriptEvaluationTimeout = 1000;
                 break;
             case "shouldReceiveFailureTimeOutOnTotalSerialization":
                 settings.serializedResponseTimeout = 1;
@@ -685,7 +685,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 200 ms"));
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 1000 ms"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
