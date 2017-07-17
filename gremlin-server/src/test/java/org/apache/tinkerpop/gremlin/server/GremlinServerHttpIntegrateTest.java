@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
@@ -66,6 +67,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         settings.channelizer = HttpChannelizer.class.getName();
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
+            case "should413OnPostWithResultTooLarge":
+                settings.maxContentLength = 31;
+                break;
             case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResult":
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases":
@@ -143,6 +147,19 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         authSettings.config = authConfig;
         settings.authentication = authSettings;
+    }
+
+    @Test
+    public void should413OnPostWithResultTooLarge() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        final String bigPost = RandomStringUtils.random(32);
+        httppost.setEntity(new StringEntity("{\"gremlin\":\""+ bigPost + "\", \"bindings\":{\"x\":\"10\"}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(413, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
