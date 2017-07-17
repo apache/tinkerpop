@@ -135,6 +135,7 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
 import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
 import org.apache.tinkerpop.gremlin.server.Settings.SerializerSettings
+import java.util.Properties
 
 if (${skipTests}) return
 
@@ -151,13 +152,22 @@ server.start().join()
 project.setContextValue("gremlin.dotnet.server", server)
 log.info("Gremlin Server with no authentication started on port 45950")
 
+def securePropsFile = new File('${project.basedir}/target/tinkergraph-credentials.properties')
+if (!securePropsFile.exists()) {
+  securePropsFile.createNewFile()
+  securePropsFile << "gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph\n"
+  securePropsFile << "gremlin.tinkergraph.vertexIdManager=LONG\n"
+  securePropsFile << "gremlin.tinkergraph.graphLocation=${gremlin.server.dir}/data/credentials.kryo\n"
+  securePropsFile << "gremlin.tinkergraph.graphFormat=gryo"
+}
+
 def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
 settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
 settingsSecure.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])
 settingsSecure.port = 45951
-settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
-settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties", credentialsDbLocation: "${gremlin.server.dir}/data/credentials.kryo"]
+settingsSecure.authentication.authenticator = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
+settingsSecure.authentication.config = [credentialsDb: "${project.basedir}/target/tinkergraph-credentials.properties"]
 
 def serverSecure = new GremlinServer(settingsSecure)
 serverSecure.start().join()
