@@ -38,6 +38,7 @@ import javax.script.SimpleBindings;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -324,11 +325,12 @@ public class GremlinExecutor implements AutoCloseable {
             return null;
         });
 
-        final Future<?> executionFuture = executorService.submit(evalFuture);
+        final WeakReference<Future<?>> executionFuture = new WeakReference<>(executorService.submit(evalFuture));
         if (scriptEvalTimeOut > 0) {
             // Schedule a timeout in the thread pool for future execution
             scheduledExecutorService.schedule(() -> {
-                if (executionFuture.cancel(true)) {
+                final Future<?> f = executionFuture.get();
+                if (f != null && f.cancel(true)) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, script)));
