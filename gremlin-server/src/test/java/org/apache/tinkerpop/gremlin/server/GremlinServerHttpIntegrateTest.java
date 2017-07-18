@@ -153,19 +153,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         settings.authentication = authSettings;
     }
 
-    @Deprecated
-    private void configureForAuthenticationOld(final Settings settings) {
-        final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
-        authSettings.className = SimpleAuthenticator.class.getName();
-
-        // use a credentials graph with one user in it: stephen/password
-        final Map<String,Object> authConfig = new HashMap<>();
-        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
-
-        authSettings.config = authConfig;
-        settings.authentication = authSettings;
-    }
-
     @Test
     public void should413OnPostWithResultTooLarge() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -584,8 +571,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode data = resultJson.get("result").get("data");
             assertEquals(1, data.get(GraphSONTokens.VALUEPROP).size());
 
-            assertEquals(6, data.get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VERTICES).get(1).size());
-            assertEquals(6, data.get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.EDGES).get(1).size());
+            assertEquals(6, data.get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.VERTICES).size());
+            assertEquals(6, data.get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.EDGES).size());
         }
     }
 
