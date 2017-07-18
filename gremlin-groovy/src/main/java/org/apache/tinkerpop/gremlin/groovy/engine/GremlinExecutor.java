@@ -278,7 +278,7 @@ public class GremlinExecutor implements AutoCloseable {
         // override the timeout if the lifecycle has a value assigned
         final long scriptEvalTimeOut = lifeCycle.getScriptEvaluationTimeoutOverride().orElse(scriptEvaluationTimeout);
 
-        final WeakReference<CompletableFuture<Object>> evaluationFuture = new WeakReference<>(new CompletableFuture<>());
+        final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
             try {
                 lifeCycle.getBeforeEval().orElse(beforeEval).accept(bindings);
@@ -306,36 +306,33 @@ public class GremlinExecutor implements AutoCloseable {
                 // that must raise as an exception to the caller who has the returned evaluationFuture. in other words,
                 // if it occurs before this point, then the handle() method won't be called again if there is an
                 // exception that ends up below trying to completeExceptionally()
-                final CompletableFuture<Object> ef = evaluationFuture.get();
-                if (ef != null) ef.complete(result);
+                evaluationFuture.complete(result);
             } catch (Throwable ex) {
                 final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
                 // check for that situation and convert to TimeoutException
-                final CompletableFuture<Object> ef = evaluationFuture.get();
-                if (ef != null) {
-                    if (root instanceof InterruptedException) {
-                        lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
-                        ef.completeExceptionally(new TimeoutException(
-                                String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
-                    } else {
-                        lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
-                        ef.completeExceptionally(root);
-                    }
+                if (root instanceof InterruptedException) {
+                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
+                    evaluationFuture.completeExceptionally(new TimeoutException(
+                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
+                } else {
+                    lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
+                    evaluationFuture.completeExceptionally(root);
                 }
             }
 
             return null;
         });
 
+        final WeakReference<CompletableFuture<Object>> evaluationFutureRef = new WeakReference<>(evaluationFuture);
         final Future<?> executionFuture = executorService.submit(evalFuture);
         if (scriptEvalTimeOut > 0) {
             // Schedule a timeout in the thread pool for future execution
             scheduledExecutorService.schedule(() -> {
                 if (executionFuture.cancel(true)) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
-                    final CompletableFuture<Object> ef = evaluationFuture.get();
+                    final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
                         ef.completeExceptionally(new TimeoutException(
                                 String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, script)));
@@ -344,7 +341,7 @@ public class GremlinExecutor implements AutoCloseable {
             }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
         }
 
-        return evaluationFuture.get();
+        return evaluationFuture;
     }
 
     /**
