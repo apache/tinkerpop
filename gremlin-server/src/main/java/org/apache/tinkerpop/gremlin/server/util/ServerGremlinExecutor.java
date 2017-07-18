@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.SimpleBindings;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
@@ -134,7 +135,10 @@ public class ServerGremlinExecutor {
         // runs the init scripts when the GremlinScriptEngine is created.
         settings.scriptEngines.keySet().forEach(engineName -> {
             try {
-                gremlinExecutor.eval("1+1", engineName, Collections.emptyMap()).join();
+                // use no timeout on the engine initialization - perhaps this can be a configuration later
+                final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
+                        scriptEvaluationTimeoutOverride(0L).create();
+                gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
                 registerMetrics(engineName);
                 logger.info("Initialized {} GremlinScriptEngine and registered metrics", engineName);
             } catch (Exception ex) {
