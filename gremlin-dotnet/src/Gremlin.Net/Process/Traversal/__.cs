@@ -249,14 +249,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the groupV3d0 step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> GroupV3d0(params object[] args)
-        {
-            return new GraphTraversal<object, object>().GroupV3d0(args);
-        }
-
-        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Has(params object[] args)

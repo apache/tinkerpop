@@ -315,15 +315,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the groupV3d0 step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , E > GroupV3d0 (params object[] args)
-        {
-            Bytecode.AddStep("groupV3d0", args);
-            return Wrap< S , E >(this);
-        }
-
-        /// <summary>
         ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal< S , E > Has (params object[] args)
