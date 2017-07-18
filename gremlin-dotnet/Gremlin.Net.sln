@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{584F838B-DAE2-44F5-868C-1F532949C827}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D4B935A4-93F9-4A58-BC34-E5BFE1D2E2F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net", "src\Gremlin.Net\Gremlin.Net.csproj", "{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.UnitTest", "test\Gremlin.Net.UnitTest\Gremlin.Net.UnitTest.csproj", "{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.IntegrationTest", "test\Gremlin.Net.IntegrationTest\Gremlin.Net.IntegrationTest.csproj", "{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8} = {584F838B-DAE2-44F5-868C-1F532949C827}
+		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
+		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
+	EndGlobalSection
+EndGlobal

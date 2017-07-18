@@ -1,0 +1,219 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.tinkerpop</groupId>
+        <artifactId>gremlin-dotnet</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>gremlin-dotnet-source</artifactId>
+    <name>Apache TinkerPop :: Gremlin.Net - Source</name>
+    <packaging>${packaging.type}</packaging>
+
+    <build>
+        <plugins>
+            <!-- Override the execution from gremlin-dotnet to disable code generation from happening a second time -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-dsl</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>gremlin-dotnet-standard</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <packaging.type>pom</packaging.type>
+            </properties>
+        </profile>
+        <!-- activates the building of .NET components and requires that the .NET Core SDK be installed on the system -->
+        <profile>
+            <id>gremlin-dotnet</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.glv</exists>
+                </file>
+            </activation>
+            <properties>
+                <packaging.type>dotnet-library</packaging.type>
+            </properties>
+            <build>
+                <directory>${basedir}/target</directory>
+                <finalName>${project.artifactId}-${project.version}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eobjects.build</groupId>
+                        <artifactId>dotnet-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <packEnabled>true</packEnabled>
+                            <nugetPushEnabled>false</nugetPushEnabled>
+                            <nugetAddEnabled>false</nugetAddEnabled>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+        Provides a way to deploy the Gremlin.Net GLV to nuget. This cannot be part of the standard maven execution
+        because nuget does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
+        -->
+        <profile>
+            <id>glv-dotnet-deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>nuget</name>
+                </property>
+            </activation>
+            <properties>
+                <packaging.type>dotnet-library</packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <!--
+                      not seeing much point to making this OS agnostic really. as far as it is known, no one who does
+                      deployments will do so from a windows machine. this part of the build requires mono. note that
+                      the "correct" version of nuget is downloaded as part of the process.
+                     -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-nuget</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                        <if>
+                                            <available file="Gremlin.Net/bin/nuget.exe"/>
+                                            <then>
+                                                <echo>nuget.exe already downloaded and at Gremlin.Net/bin/nuget.exe.</echo>
+                                            </then>
+
+                                            <else>
+                                                <!--
+                                                specifically using 3.4.4 given some bug that seems to pin us to this
+                                                version - https://github.com/NuGet/Home/issues/4090 - it might work
+                                                with newer versions but definitely failed with 4.1.0
+                                                -->
+                                                <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
+                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe"/>
+                                                </exec>
+                                            </else>
+                                        </if>
+
+                                        <!--
+                                        until https://github.com/NuGet/Home/issues/4095 we have to have to specify
+                                        the "ConfigFile" option to nuget.
+                                        -->
+                                        <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
+                                            <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>20020829</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-core</artifactId>
+                                <version>${project.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>generate-dsl</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script><![CDATA[
+// revert back the version after a SNAPSHOT deployment
+def versionToUse = '${project.version}'
+def engine = new groovy.text.GStringTemplateEngine()
+def csprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
+def csprojFile = new File('${project.basedir}/Gremlin.Net/Gremlin.Net.csproj')
+csprojFile.newWriter().withWriter{ it << csprojTemplate }
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

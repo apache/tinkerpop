@@ -139,6 +139,7 @@ This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
 * `ProfileTest` is now less stringent about assertions which will reduce burdens on providers.
 * `GremlinExecutor` begins timeout of script evaluation at the time the script was submitted and not from the time it began evaluation.
+* Added Gremlin.Net.
 * `ReferenceFactory` and `DetachedFactory` now detach elements in collections accordingly.
 * Deprecated `GryoLiteMessageSerializerV1d0` in favor of `HaltedTraverserStrategy`.
 * Deprecated the `useMapperFromGraph` configuration option for Gremlin Server serializers.
