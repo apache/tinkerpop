@@ -764,32 +764,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @org.junit.Ignore("Can't seem to make this test pass consistently")
-    public void shouldHandleRequestSentThatNeverReturns() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("Thread.sleep(10000); 'should-not-ever-get-back-coz-we-killed-the-server'");
-
-        stopServer();
-
-        // give the server a chance to kill everything
-        Thread.sleep(1000);
-
-        try {
-            results.all().get(10000, TimeUnit.MILLISECONDS);
-            fail("Server was stopped before the request could execute");
-        } catch (TimeoutException toe) {
-            fail("Should not have tossed a TimeOutException getting the result");
-        } catch (Exception ex) {
-            final Throwable cause = ExceptionUtils.getCause(ex);
-            assertThat(cause.getMessage(), containsString("rejected from java.util.concurrent.ThreadPoolExecutor"));
-        }
-
-        cluster.close();
-    }
-
-    @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
         final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
         final Client client = cluster.connect();
