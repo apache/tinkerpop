@@ -30,6 +30,7 @@ import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
@@ -65,13 +66,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -226,6 +225,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private final long expectedCompilationTime;
 
     /**
+     * There is no need to require type checking infrastructure if type checking is not enabled.
+     */
+    private final boolean typeCheckingEnabled;
+
+    /**
      * Creates a new instance using no {@link Customizer}.
      */
     public GremlinGroovyScriptEngine() {
@@ -233,6 +237,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     public GremlinGroovyScriptEngine(final Customizer... customizers) {
+        // initialize the global scope in case this scriptengine was instantiated outside of the ScriptEngineManager
+        setBindings(new ConcurrentBindings(), ScriptContext.GLOBAL_SCOPE);
+
         final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
 
         // always need this plugin for a scriptengine to be "Gremlin-enabled"
@@ -257,6 +264,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
                 .map(p -> (CompilationOptionsCustomizer) p).findFirst();
         expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
                 compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
+
+        typeCheckingEnabled = listOfCustomizers.stream()
+                .anyMatch(p -> p instanceof TypeCheckedGroovyCustomizer || p instanceof CompileStaticGroovyCustomizer);
 
         // determine if interpreter mode should be enabled
         interpreterModeEnabled = groovyCustomizers.stream()
@@ -683,16 +693,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     private void registerBindingTypes(final ScriptContext context) {
-        final Map<String, ClassNode> variableTypes = new HashMap<>();
-        clearVarTypes();
+        if (typeCheckingEnabled) {
+            final Map<String, ClassNode> variableTypes = new HashMap<>();
+            clearVarTypes();
 
-        // use null for the classtype if the binding value itself is null - not fully sure if that is
-        // a sound way to deal with that.  didn't see a class type for null - maybe it should just be
-        // unknown and be "Object".  at least null is properly being accounted for now.
-        context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) ->
-                variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
+            // use null for the classtype if the binding value itself is null - not fully sure if that is
+            // a sound way to deal with that.  didn't see a class type for null - maybe it should just be
+            // unknown and be "Object".  at least null is properly being accounted for now.
+            context.getBindings(ScriptContext.GLOBAL_SCOPE).forEach((k, v) ->
+                    variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
+            context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) ->
+                    variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
 
-        COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
+            COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
+        }
     }
 
     private static void clearVarTypes() {

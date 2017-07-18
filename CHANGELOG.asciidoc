@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Detected if type checking was required in `GremlinGroovyScriptEngine` and disabled related infrastructure if not.
 * Removed previously deprecated `DetachedEdge(Object,String,Map,Pair,Pair)` constructor.
 * Removed previously deprecated `Bindings` constructor. It is now a private constructor.
 * Removed previously deprecated `TraversalSource.withBindings()`.
