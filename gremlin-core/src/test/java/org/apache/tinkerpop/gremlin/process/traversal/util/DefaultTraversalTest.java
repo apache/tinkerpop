@@ -48,6 +48,7 @@ import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -102,6 +103,7 @@ public class DefaultTraversalTest {
         clone.getSideEffects().set("m", 2);
         assertEquals(1, original.getSideEffects().<Integer>get("m").intValue());
         assertEquals(2, clone.getSideEffects().<Integer>get("m").intValue());
+        assertNotSame(original.bytecode, clone.bytecode);
     }
 
     @Test
