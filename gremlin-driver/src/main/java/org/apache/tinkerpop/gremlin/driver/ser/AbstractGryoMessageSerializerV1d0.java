@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
@@ -86,7 +87,7 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
 
     @Override
     public final void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
-        final GryoMapper.Builder builder = GryoMapper.build();
+        final GryoMapper.Builder builder = GryoMapper.build().version(GryoVersion.V1_0);
         addIoRegistries(config, builder);
         addClassResolverSupplier(config, builder);
         addCustomClasses(config, builder);
