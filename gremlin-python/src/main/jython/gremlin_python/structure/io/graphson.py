@@ -26,7 +26,6 @@ from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, T
 from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
-
 # When we fall back to a superclass's serializer, we iterate over this map.
 # We want that iteration order to be consistent, so we use an OrderedDict,
 # not a dict.
@@ -60,9 +59,9 @@ class GraphSONUtil(object):
     def formatType(cls, prefix, type_name):
         return "%s:%s" % (prefix, type_name)
 
+
 # Read/Write classes split to follow precedence of the Java API
 class GraphSONWriter(object):
-
     def __init__(self, serializer_map=None):
         """
         :param serializer_map: map from Python type to serializer instance implementing `dictify`
@@ -96,7 +95,6 @@ class GraphSONWriter(object):
 
 
 class GraphSONReader(object):
-
     def __init__(self, deserializer_map=None):
         """
         :param deserializer_map: map from GraphSON type tag to deserializer instance implementing `objectify`
@@ -147,7 +145,6 @@ class _GraphSONTypeIO(object):
 
 
 class _BytecodeSerializer(_GraphSONTypeIO):
-
     @classmethod
     def _dictify_instructions(cls, instructions, writer):
         out = []
@@ -167,6 +164,49 @@ class _BytecodeSerializer(_GraphSONTypeIO):
         if bytecode.step_instructions:
             out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
         return GraphSONUtil.typedValue("Bytecode", out)
+
+
+class VertexSerializer(_GraphSONTypeIO):
+    python_type = Vertex
+
+    @classmethod
+    def dictify(cls, vertex, writer):
+        v = {"id": writer.toDict(vertex.id),
+             "label": vertex.label}
+        return GraphSONUtil.typedValue("Vertex", v)
+
+
+class EdgeSerializer(_GraphSONTypeIO):
+    python_type = Edge
+
+    @classmethod
+    def dictify(cls, edge, writer):
+        e = {"id": edge.id,
+             "label": edge.label,
+             "inV": writer.toDict(edge.inV.id),
+             "outV": writer.toDict(edge.outV.id)}
+        return GraphSONUtil.typedValue("Edge", e)
+
+
+class VertexPropertySerializer(_GraphSONTypeIO):
+    python_type = VertexProperty
+
+    @classmethod
+    def dictify(cls, vertex_property, writer):
+        vp = {"id": vertex_property.id,
+              "label": vertex_property.label,
+              "value": writer.toDict(vertex_property.value)}
+        return GraphSONUtil.typedValue("VertexProperty", vp)
+
+
+class PropertySerializer(_GraphSONTypeIO):
+    python_type = Property
+
+    @classmethod
+    def dictify(cls, property, writer):
+        p = {"key": writer.toDict(property.key),
+             "value": writer.toDict(property.value)}
+        return GraphSONUtil.typedValue("Property", p)
 
 
 class TraversalSerializer(_BytecodeSerializer):
@@ -216,7 +256,7 @@ class PSerializer(_GraphSONTypeIO):
     def dictify(cls, p, writer):
         out = {"predicate": p.operator,
                "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
-                        writer.toDict(p.value)}
+               writer.toDict(p.value)}
         return GraphSONUtil.typedValue("P", out)
 
 
@@ -259,7 +299,6 @@ class TypeSerializer(_GraphSONTypeIO):
 
 
 class _NumberIO(_GraphSONTypeIO):
-
     @classmethod
     def dictify(cls, n, writer):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)

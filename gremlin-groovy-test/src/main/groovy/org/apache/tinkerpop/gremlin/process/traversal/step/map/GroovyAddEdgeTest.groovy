@@ -86,5 +86,13 @@ public abstract class GroovyAddEdgeTest {
         public Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.addV().as('first').repeat(addE('next').to(addV()).inV).times(5).addE('next').to(select('first'))")
         }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X() {
+            final Vertex a = g.V().has("name", "marko").next();
+            final Vertex b = g.V().has("name", "peter").next();
+            return new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('b', b).V(a).addE('knows').to('b').property('weight', 0.5d)", "a", a, "b", b)
+        }
+
     }
 }

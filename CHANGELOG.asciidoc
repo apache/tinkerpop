@@ -28,6 +28,7 @@ TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
+* Added graph element GraphSON serializers in Gremlin-Python.
 * Initialization scripts for Gremlin Server will not timeout.
 * Added Gremlin.Net.
 * `ProfileTest` is now less stringent about assertions which will reduce burdens on providers.
