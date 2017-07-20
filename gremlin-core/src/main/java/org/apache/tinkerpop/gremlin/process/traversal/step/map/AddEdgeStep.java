@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.List;
 import java.util.Set;
@@ -93,13 +94,12 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
     protected Edge map(final Traverser.Admin<S> traverser) {
         Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
         Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
-        if (this.getTraversal().getGraph().isPresent()) {
-            final Graph graph = this.getTraversal().getGraph().get();
-            if (toVertex instanceof Attachable)
-                toVertex = ((Attachable<Vertex>) toVertex).attach(Attachable.Method.get(graph));
-            if (fromVertex instanceof Attachable)
-                fromVertex = ((Attachable<Vertex>) fromVertex).attach(Attachable.Method.get(graph));
-        }
+        if (toVertex instanceof Attachable)
+            toVertex = ((Attachable<Vertex>) fromVertex)
+                    .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+        if (fromVertex instanceof Attachable)
+            fromVertex = ((Attachable<Vertex>) fromVertex)
+                    .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));

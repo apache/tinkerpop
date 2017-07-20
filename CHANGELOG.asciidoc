@@ -28,6 +28,7 @@ TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
+* `AddEdgeStep` attaches detached vertices prior to edge creation.
 * Added graph element GraphSON serializers in Gremlin-Python.
 * Initialization scripts for Gremlin Server will not timeout.
 * Added Gremlin.Net.
