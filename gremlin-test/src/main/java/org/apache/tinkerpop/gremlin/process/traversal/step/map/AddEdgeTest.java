@@ -274,8 +274,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals("knows", edge.label());
         assertEquals(1, IteratorUtils.count(edge.properties()));
         assertEquals(0.5d, edge.value("weight"), 0.1d);
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
-        assertEquals(7, IteratorUtils.count(graph.edges()));
+        assertEquals(6L, g.V().count().next().longValue());
+        assertEquals(7L, g.E().count().next().longValue());
     }
 
     @Test
