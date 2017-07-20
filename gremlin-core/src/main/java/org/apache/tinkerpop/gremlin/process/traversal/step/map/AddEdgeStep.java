@@ -95,7 +95,7 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
         Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
         Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
         if (toVertex instanceof Attachable)
-            toVertex = ((Attachable<Vertex>) fromVertex)
+            toVertex = ((Attachable<Vertex>) toVertex)
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         if (fromVertex instanceof Attachable)
             fromVertex = ((Attachable<Vertex>) fromVertex)
