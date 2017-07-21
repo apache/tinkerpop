@@ -32,65 +32,6 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.0/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-GraphSON 2.0
-^^^^^^^^^^^^
-
-TODO - RE-READ THIS WHOLE SECTION - IT MIGHT BE A MESS WITH GRAPHSON 3.0 CHANGES COMING IN
-SHOULD PROBABLY FOLD THESE CHANGES DOWN INTO THE "Changes to IO" SECTION AND ONE SOLID SECTION
-
-Both TinkerGraph and Gremlin Server have been defaulted to work with GraphSON 2.0. For TinkerGraph this means that
-the following commands:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-graph.io(IoCore.graphson()).writeGraph("tinkerpop-modern.json");
-
-final Graph newGraph = TinkerGraph.open();
-newGraph.io(IoCore.graphson()).readGraph("tinkerpop-modern.json");
-----
-
-will write and read GraphSON 2.0 format rather than 1.0. To use 1.0 format simply set the `version()` on the
-appropriate builder methods:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().version(GraphSONVersion.V1_0).create()
-try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
-    graph.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
-}
-
-final Graph newGraph = TinkerGraph.open();
-try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
-    newGraph.io(IoCore.graphson()).reader().mapper(mapper).vertexIdKey("name").create().readGraph(stream, newGraph);
-}
-----
-
-For Gremlin Server, this change means that the `application/json` mime type no longer returns GraphSON 1.0 without
-type embedding. Instead, Gremlin Server will return GraphSON 3.0 with partial types enabled (i.e. which is equivalent
-to `application/vnd.gremlin-v3.0+json`). The `serializers` section the sample Gremlin Server YAML files now typically
-look like this:
-
-[source,yaml]
-----
-serializers:
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}         # application/json
-----
-
-It is possible to bring back the original configuration for `application/json` by changing the last entry as follows:
-
-[source,yaml]
-----
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0]  }}        # application/json
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414]
-
 Packaged Data Files
 ^^^^^^^^^^^^^^^^^^^
 
@@ -123,11 +64,127 @@ Changes to IO
 Gryo 3.0
 ++++++++
 
+With Gryo, TinkerPop skips version 2.0 and goes right to 3.0 (to maintain better parity with GraphSON versioning).
 Gryo 3.0 fixes a number of inconsistencies with Gryo 1.0 and hopefully marks a point where Gryo is better versioned
 over time. Gryo 3.0 is not compatible with Gryo 1.0 and is now the default version of Gryo exposed by TinkerPop in
 Gremlin Server and IO.
 
+It isn't hard to switch back to use of Gryo 1.0 if necessary. Here is the approach for writing an entire graph:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+GryoMapper mapper = graph.io(IoCore.gryo()).mapper().version(GryoVersion.V1_0).create()
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
+    graph.io(IoCore.gryo()).writer().mapper(mapper).create().writeGraph(os, graph)
+}
+
+final Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
+    newGraph.io(IoCore.gryo()).reader().mapper(mapper).create().readGraph(stream, newGraph);
+}
+----
+
+Gremlin Server configurations don't include Gryo 1.0 by default:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}         # application/json
+----
+
+but adding an entry as follows will add it back:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}             # application/vnd.gremlin-v1.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}         # application/json
+----
+
+To use Gryo 1.0 with the Java driver, just specify the 1.0 serializer directly:
+
+[source,java]
+----
+GryoMapper.Builder builder = GryoMapper.build().
+        version(GryoVersion.V1_0).
+        addRegistry(TinkerIoRegistryV1d0.instance());
+Cluster cluster = Cluster.build().serializer(GryoMessageSerializerV1d0(builder));
+----
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1698[TINKERPOP-1698]
+
+GraphSON 3.0
+++++++++++++
+
+GraphSON 3.0 finishes what GraphSON 2.0 began by taking the extra step to include the following types: `g:Map`,
+`g:List` and `g:Set`. With these types it is now possible to get expected Gremlin results in GLVs just as one would
+if using Java. This is especially true of the `g:Map` type, which allows non-string keys values, something not allowed
+in regular JSON maps. This allows for common traversals like `g.V().groupCount()` to work, where the traversal groups
+on a `Vertex` or some other complex object.
+
+Note that GraphSON 3.0 does not have an option to be without types. This was a feature of 1.0 and 2.0, but it is no
+longer supported. There is little point to such a feature as we see more movement toward GLVs, which require types,
+and less usage of scripts with custom parsing of results.
+
+Both TinkerGraph and Gremlin Server have been defaulted to work with GraphSON 3.0. For TinkerGraph this means that
+the following commands:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+graph.io(IoCore.graphson()).writeGraph("tinkerpop-modern.json");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io(IoCore.graphson()).readGraph("tinkerpop-modern.json");
+----
+
+will write and read GraphSON 3.0 format rather than 1.0. To use 1.0 (or 2.0 for that matter) format simply set the
+`version()` on the appropriate builder methods:
+
+[source,java]
+----
+Graph graph = TinkerFactory.createModern();
+GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().version(GraphSONVersion.V1_0).create()
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
+    graph.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
+}
+
+final Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
+    newGraph.io(IoCore.graphson()).reader().mapper(mapper).create().readGraph(stream, newGraph);
+}
+----
+
+For Gremlin Server, this change means that the `application/json` mime type no longer returns GraphSON 1.0 without
+type embedding. Instead, Gremlin Server will return GraphSON 3.0 with partial types enabled (i.e. which is equivalent
+to `application/vnd.gremlin-v3.0+json`). The `serializers` section the sample Gremlin Server YAML files now typically
+look like this:
+
+[source,yaml]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}         # application/json
+----
+
+It is possible to bring back the original configuration for `application/json` by changing the last entry as follows:
+
+[source,yaml]
+----
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}             # application/vnd.gremlin-v3.0+gryo
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}                                                                       # application/vnd.gremlin-v3.0+gryo-stringd
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0]  }}        # application/json
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1427[TINKERPOP-1427],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1574[TINKERPOP-1574]
 
 Graphite and Ganglia
 ^^^^^^^^^^^^^^^^^^^^
