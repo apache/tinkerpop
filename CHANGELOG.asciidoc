@@ -113,7 +113,6 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.
-* Bumped to support Spark 2.0.2 with Scala 2.11.
 * Added `UnshadedKryoShimService` as the new default serializer model for `SparkGraphComputer`.
 * `GryoRegistrator` is more efficient than the previous `GryoSerializer` model in `SparkGraphComputer`.
 * Added support for `IoRegistry` custom serialization in Spark/Giraph and provided a general `hadoop-gremlin` test suite.
