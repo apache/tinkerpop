@@ -200,6 +200,9 @@ public class GryoRegistrator implements KryoRegistrator {
         try {
             m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
             m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
+            m.put(Class.forName("org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage"), new JavaSerializer());
+            m.put(Class.forName("org.apache.spark.internal.io.FileCommitProtocol$EmptyTaskCommitMessage$"), new JavaSerializer());
+
         } catch (final ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
