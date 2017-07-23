@@ -175,9 +175,45 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.scriptEvaluationTimeout = 250;
                 settings.threadPoolWorker = 1;
                 break;
+            case "shouldProcessTraversalInterruption":
+            case "shouldProcessEvalInterruption":
+                settings.scriptEvaluationTimeout = 1500;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldProcessTraversalInterruption() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}").all().get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldProcessEvalInterruption() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("Thread.sleep(5000);'done'").all().get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        }
+
+        cluster.close();
     }
 
     @Test
@@ -1259,7 +1295,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
         // keep the testing here until "rebind" is completely removed
@@ -1315,7 +1351,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
         // keep the testing here until "rebind" is completely removed
