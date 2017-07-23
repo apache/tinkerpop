@@ -331,7 +331,6 @@ public class GremlinExecutor implements AutoCloseable {
             // Schedule a timeout in the thread pool for future execution
             scheduledExecutorService.schedule(() -> {
                 if (executionFuture.cancel(true)) {
-                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
                         ef.completeExceptionally(new TimeoutException(

@@ -266,31 +266,12 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
                     try {
                         handleIterator(context, itty);
-                    } catch (TimeoutException ex) {
-                        // a timeout occurs if serializedResponseTimeout is exceeded, but that setting is deprecated
-                        // and by default disabled. we can remove this handling once we drop that setting all together
-                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
-                        logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(ex).create());
-                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
-                    } catch (InterruptedException ex) {
-                        // interruption occurs if there is a forced timeout during result iteration. this timeout
-                        // is driven by the script evaluation timeout so for consistency the message should be the same
-                        final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
-                        logger.warn(errorMessage, ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(ex.getMessage())
-                                .statusAttributeException(ex).create());
-                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     } catch (Exception ex) {
-                        logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
-                        final String err = ex.getMessage();
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                .statusMessage(null == err || err.isEmpty() ? ex.getClass().getSimpleName() : err)
-                                .statusAttributeException(ex).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+
+                        // wrap up the exception and rethrow. the error will be written to the client by the evalFuture
+                        // as it will completeExceptionally in the GremlinExecutor
+                        throw new RuntimeException(ex);
                     }
                 }).create();
 
@@ -317,7 +298,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                             .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
                             .statusAttributeException(t).create());
                 } else if (t instanceof TimeoutException) {
-                    final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s] - %s", msg, t.getMessage());
+                    final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
                     logger.warn(errorMessage, t);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                             .statusMessage(t.getMessage())
