@@ -729,15 +729,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the selectV3d2 step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal< S , IDictionary<string, E2> > SelectV3d2<E2> (params object[] args)
-        {
-            Bytecode.AddStep("selectV3d2", args);
-            return Wrap< S , IDictionary<string, E2> >(this);
-        }
-
-        /// <summary>
         ///     Adds the sideEffect step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal< S , E > SideEffect (params object[] args)

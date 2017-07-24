@@ -577,14 +577,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the selectV3d2 step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> SelectV3d2<E2>(params object[] args)
-        {
-            return new GraphTraversal<object, object>().SelectV3d2<E2>(args);
-        }
-
-        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sideEffect step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> SideEffect(params object[] args)
