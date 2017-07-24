@@ -121,16 +121,16 @@ limitations under the License.
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
+                            <groupId>org.neo4j</groupId>
+                            <artifactId>neo4j-kernel</artifactId>
+                        </exclusion>
+                        <exclusion>
                             <groupId>org.apache.commons</groupId>
                             <artifactId>commons-lang3</artifactId>
                         </exclusion>
                         <exclusion>
                             <groupId>com.github.ben-manes.caffeine</groupId>
                             <artifactId>caffeine</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.neo4j</groupId>
-                            <artifactId>neo4j</artifactId>
                         </exclusion>
                         <exclusion>
                             <groupId>org.scala-lang</groupId>
@@ -164,9 +164,10 @@ limitations under the License.
                     <version>2.3.1</version>
                     <scope>test</scope>
                 </dependency>
+                <!-- self-conflict with neo4j-graph-matching -->
                 <dependency>
                     <groupId>org.neo4j</groupId>
-                    <artifactId>neo4j</artifactId>
+                    <artifactId>neo4j-kernel</artifactId>
                     <version>3.2.2</version>
                     <scope>test</scope>
                 </dependency>
