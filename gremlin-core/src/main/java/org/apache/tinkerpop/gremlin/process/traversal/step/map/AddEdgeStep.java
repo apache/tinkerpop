@@ -34,11 +34,11 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -81,19 +81,25 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
     }
 
     @Override
-    public void addTo(final Traversal.Admin<?,?> toObject) {
+    public void addTo(final Traversal.Admin<?, ?> toObject) {
         this.parameters.set(this, TO, toObject);
     }
 
     @Override
-    public void addFrom(final Traversal.Admin<?,?> fromObject) {
+    public void addFrom(final Traversal.Admin<?, ?> fromObject) {
         this.parameters.set(this, FROM, fromObject);
     }
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
-        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
+        Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
+        Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
+        if (toVertex instanceof Attachable)
+            toVertex = ((Attachable<Vertex>) toVertex)
+                    .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+        if (fromVertex instanceof Attachable)
+            fromVertex = ((Attachable<Vertex>) fromVertex)
+                    .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));

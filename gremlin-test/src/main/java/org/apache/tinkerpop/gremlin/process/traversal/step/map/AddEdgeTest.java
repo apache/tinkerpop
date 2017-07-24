@@ -63,6 +63,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX();
 
+    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X();
+
     ///////
 
     @Deprecated
@@ -262,6 +264,22 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X() {
+        final Traversal<Vertex, Edge> traversal = get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X();
+        final Edge edge = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
+        assertEquals(edge.inVertex(), convertToVertex(graph, "peter"));
+        assertEquals("knows", edge.label());
+        assertEquals(1, IteratorUtils.count(edge.properties()));
+        assertEquals(0.5d, edge.value("weight"), 0.1d);
+        assertEquals(6L, g.V().count().next().longValue());
+        assertEquals(7L, g.E().count().next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     @Deprecated
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_asXaX_inXcreatedX_addInEXcreatedBy_a_year_2009_acl_publicX() {
@@ -352,6 +370,13 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_inXcreatedX_addEXcreatedByX_fromXaX_propertyXyear_2009X_propertyXacl_publicX() {
             return g.V().as("a").in("created").addE("createdBy").from("a").property("year", 2009).property("acl", "public");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X() {
+            final Vertex a = g.V().has("name", "marko").next();
+            final Vertex b = g.V().has("name", "peter").next();
+            return g.withSideEffect("b", b).V(a).addE("knows").to("b").property("weight", 0.5d);
         }
 
         ///////

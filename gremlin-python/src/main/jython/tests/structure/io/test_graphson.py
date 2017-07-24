@@ -25,7 +25,7 @@ from mock import Mock
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, Edge, VertexProperty, Property
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
@@ -123,13 +123,13 @@ class TestGraphSONReader(object):
 
 
 class TestGraphSONWriter(object):
-
     graphson_writer = GraphSONWriter()
+    graphson_reader = GraphSONReader()
 
     def test_number_output(self):
-        assert {"@type":"g:Int64","@value":2} == json.loads(self.graphson_writer.writeObject(long(2)))
-        assert {"@type":"g:Int32","@value":1} == json.loads(self.graphson_writer.writeObject(1))
-        assert {"@type":"g:Double","@value":3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
+        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_numbers(self):
@@ -141,33 +141,33 @@ class TestGraphSONWriter(object):
     def test_P(self):
         result = {'@type': 'g:P',
                   '@value': {
-                     'predicate': 'and',
-                     'value': [{
-                        '@type': 'g:P',
-                        '@value': {
-                            'predicate': 'or',
-                            'value': [{
-                                '@type': 'g:P',
-                                '@value': {'predicate': 'lt', 'value': 'b'}
-                            },
-                            {'@type': 'g:P', '@value': {'predicate': 'gt', 'value': 'c'}}
-                            ]
-                        }
-                    },
-                    {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
+                      'predicate': 'and',
+                      'value': [{
+                          '@type': 'g:P',
+                          '@value': {
+                              'predicate': 'or',
+                              'value': [{
+                                  '@type': 'g:P',
+                                  '@value': {'predicate': 'lt', 'value': 'b'}
+                              },
+                                  {'@type': 'g:P', '@value': {'predicate': 'gt', 'value': 'c'}}
+                              ]
+                          }
+                      },
+                          {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
 
-        assert  result == json.loads(
+        assert result == json.loads(
             self.graphson_writer.writeObject(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(self.graphson_writer.writeObject(SubgraphStrategy))
+        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
+            self.graphson_writer.writeObject(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
             "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
             self.graphson_writer.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
     def test_custom_mapping(self):
-
         # extended mapping
         class X(object):
             pass
@@ -195,7 +195,6 @@ class TestGraphSONWriter(object):
         assert d is serdes.dictify()
 
     def test_write_long(self):
-
         mapping = self.graphson_writer.toDict(1)
         assert mapping['@type'] == 'g:Int32'
         assert mapping['@value'] == 1
@@ -203,3 +202,25 @@ class TestGraphSONWriter(object):
         mapping = self.graphson_writer.toDict(long(1))
         assert mapping['@type'] == 'g:Int64'
         assert mapping['@value'] == 1
+
+    def test_graph(self):
+        vertex = self.graphson_reader.readObject(self.graphson_writer.writeObject(Vertex(1, "person")))
+        assert 1 == vertex.id
+        assert "person" == vertex.label
+
+        edge = self.graphson_reader.readObject(
+            self.graphson_writer.writeObject(Edge(3, Vertex(1, "person"), "knows", Vertex(2, "dog"))))
+        assert "knows" == edge.label
+        assert 3 == edge.id
+        assert 1 == edge.outV.id
+        assert 2 == edge.inV.id
+
+        vertex_property = self.graphson_reader.readObject(
+            self.graphson_writer.writeObject(VertexProperty(1, "age", 32)))
+        assert 1 == vertex_property.id
+        assert "age" == vertex_property.key
+        assert 32 == vertex_property.value
+
+        property = self.graphson_reader.readObject(self.graphson_writer.writeObject(Property("age", 32.2)))
+        assert "age" == property.key
+        assert 32.2 == property.value
