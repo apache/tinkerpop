@@ -191,6 +191,7 @@ class TestGraphSONReader(object):
 
 class TestGraphSONWriter(object):
     graphson_writer = GraphSONWriter()
+    graphson_reader = GraphSONReader()
 
     def test_collections(self):
         assert {"@type": "g:List", "@value": [{"@type": "g:Int32", "@value": 1},
@@ -275,6 +276,27 @@ class TestGraphSONWriter(object):
                                                                             "label": "aKey"}}}} == json.loads(
             self.graphson_writer.writeObject(
                 Property("name", "marko", VertexProperty(1234, "aKey", 21345, Vertex("vertexId")))))
+
+        vertex = self.graphson_reader.readObject(self.graphson_writer.writeObject(Vertex(1, "person")))
+        assert 1 == vertex.id
+        assert "person" == vertex.label
+
+        edge = self.graphson_reader.readObject(
+            self.graphson_writer.writeObject(Edge(3, Vertex(1, "person"), "knows", Vertex(2, "dog"))))
+        assert "knows" == edge.label
+        assert 3 == edge.id
+        assert 1 == edge.outV.id
+        assert 2 == edge.inV.id
+
+        vertex_property = self.graphson_reader.readObject(
+            self.graphson_writer.writeObject(VertexProperty(1, "age", 32, Vertex(1))))
+        assert 1 == vertex_property.id
+        assert "age" == vertex_property.key
+        assert 32 == vertex_property.value
+
+        property = self.graphson_reader.readObject(self.graphson_writer.writeObject(Property("age", 32.2, Edge(1,Vertex(2),"knows",Vertex(3)))))
+        assert "age" == property.key
+        assert 32.2 == property.value
 
     def test_custom_mapping(self):
         # extended mapping

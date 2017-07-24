@@ -165,7 +165,6 @@ class _BytecodeSerializer(_GraphSONTypeIO):
             out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
         return GraphSONUtil.typedValue("Bytecode", out)
 
-
 class TraversalSerializer(_BytecodeSerializer):
     python_type = Traversal
 

@@ -65,14 +65,6 @@ import java.util.Iterator;
         method = "*",
         reason = "hmmmm")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest",
-        method = "g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX",
-        reason = "Not happy in OLAP.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest",
-        method = "g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX",
-        reason = "Not happy in OLAP.")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "*",
         reason = "The test suite does not support profiling or lambdas and for groovy tests: 'Could not locate method: GraphTraversalSource.withStrategies([{traversalCategory=interface org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy$DecorationStrategy}])'")

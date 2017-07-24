@@ -59,7 +59,8 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # #
-        results = g.withSideEffect('a',['josh','peter']).V(1).out('created').in_('created').values('name').where(within('a')).toList()
+        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
+            within('a')).toList()
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
@@ -153,6 +154,20 @@ class TestDriverRemoteConnection(object):
         with pytest.raises(Exception):
             x = t.side_effects["x"]
 
+        a = g.V().has("name", "marko").next()
+        b = g.V().has("name", "peter").next()
+        edge = g.withSideEffect("b", b).V(a).addE("knows").to("b").next()
+        assert "knows" == edge.label
+        assert a == edge.outV
+        assert b == edge.inV
+        g.V().has("name","marko").outE("knows").where(__.inV().has("name","peter")).drop().iterate()
+        ##
+        edge = g.withSideEffect("a", a).withSideEffect("b", b).V().limit(1).addE("knows").from_("a").to("b").next()
+        assert "knows" == edge.label
+        assert a == edge.outV
+        assert b == edge.inV
+        g.V().has("name","marko").outE("knows").where(__.inV().has("name","peter")).drop().iterate()
+
     def test_side_effect_close(self, remote_connection):
         g = Graph().traversal().withRemote(remote_connection)
         t = g.V().aggregate('a').aggregate('b')
@@ -191,7 +206,7 @@ class TestDriverRemoteConnection(object):
         t = future.result()
         assert len(t.toList()) == 6
         a, = t.side_effects.keys()
-        assert  a == 'a'
+        assert a == 'a'
         results = t.side_effects.get('a')
         assert results
         results = t.side_effects.close()
