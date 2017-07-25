@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.function.BiFunction;
 
 /**
@@ -129,7 +130,20 @@ public class NumberHelper {
             (a, b) -> bigDecimalValue(a).add(bigDecimalValue(b)),
             (a, b) -> bigDecimalValue(a).subtract(bigDecimalValue(b)),
             (a, b) -> bigDecimalValue(a).multiply(bigDecimalValue(b)),
-            (a, b) -> bigDecimalValue(a).divide(bigDecimalValue(b)),
+            (a, b) -> {
+                final BigDecimal ba = bigDecimalValue(a);
+                final BigDecimal bb = bigDecimalValue(b);
+                try {
+                    return ba.divide(bb);
+                } catch (ArithmeticException ignored) {
+                    // set a default precision
+                    final int precision = Math.max(ba.precision(),bb.precision()) + 10;
+                    BigDecimal result = ba.divide(bb, new MathContext(precision));
+                    final int scale = Math.max(Math.max(ba.scale(), bb.scale()), 10);
+                    if (result.scale() > scale) result = result.setScale(scale, BigDecimal.ROUND_HALF_UP);
+                    return result;
+                }
+            },
             (a, b) -> {
                 final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
                 return x.compareTo(y) <= 0 ? x : y;

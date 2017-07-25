@@ -27,6 +27,12 @@ TinkerPop 3.1.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a `MessageScope` bug in `TinkerGraphComputer`.
+* Fixed a bug in `BigDecimal` divisions in `NumberHelper` that potentially threw an `ArithmeticException`.
+
+Bugs
+^^^^
+
+* TINKERPOP-1736 Sack step evaluated by Groovy interprets numbers in an unexpected way
 
 [[release-3-1-7]]
 TinkerPop 3.1.7 (Release Date: June 12, 2017)
