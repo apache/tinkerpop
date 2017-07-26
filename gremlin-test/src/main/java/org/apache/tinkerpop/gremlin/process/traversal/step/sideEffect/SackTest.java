@@ -38,6 +38,7 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
@@ -65,6 +66,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Double> get_g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack(final Object v1Id);
 
     public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
+
+    public abstract Traversal<Vertex, BigDecimal> get_g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -143,6 +146,19 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack() {
+        final Traversal<Vertex, BigDecimal> traversal = get_g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack();
+        printTraversalForm(traversal);
+        final double expected = 2.0 / 3.0;
+        for (int i = 0; i < 6; i++) {
+            assertTrue(traversal.hasNext());
+            assertEquals(expected, traversal.next().doubleValue(), 0.0001);
+        }
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SackTest {
 
         @Override
@@ -186,6 +202,11 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
             return g.withSack(BigInteger.TEN.pow(1000), Operator.assign).V().local(out("knows").barrier(normSack)).in("knows").barrier().sack();
+        }
+
+        @Override
+        public Traversal<Vertex, BigDecimal> get_g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack() {
+            return g.withSack(2).V().sack(Operator.div).by(constant(BigDecimal.valueOf(3))).sack();
         }
     }
 }
