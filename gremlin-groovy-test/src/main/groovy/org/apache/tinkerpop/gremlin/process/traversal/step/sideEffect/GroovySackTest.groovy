@@ -80,5 +80,10 @@ public abstract class GroovySackTest {
         Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(BigInteger.TEN.pow(1000), assign).V.local(out('knows').barrier(normSack)).in('knows').barrier.sack")
         }
+
+        @Override
+        Traversal<Vertex, BigDecimal> get_g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack() {
+            TraversalScriptHelper.compute("g.withSack(2).V.sack(div).by(constant(3.0)).sack", g)
+        }
     }
 }
