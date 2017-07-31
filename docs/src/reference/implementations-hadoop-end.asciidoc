@@ -91,16 +91,15 @@ As such, `ScriptInputFormat` can be used. With `ScriptInputFormat` a script is s
 mapper in the Hadoop job. The script must have the following method defined:
 
 [source,groovy]
-def parse(String line, ScriptElementFactory factory) { ... }
+def parse(String line) { ... }
 
-`ScriptElementFactory` is a legacy from previous versions and, although it's still functional, it should no longer be used.
 In order to create vertices and edges, the `parse()` method gets access to a global variable named `graph`, which holds
 the local `StarGraph` for the current line/vertex.
 
 An appropriate `parse()` for the above adjacency list file is:
 
 [source,groovy]
-def parse(line, factory) {
+def parse(line) {
     def parts = line.split(/ /)
     def (id, label, name, x) = parts[0].split(/:/).toList()
     def v1 = graph.addVertex(T.id, id, T.label, label)

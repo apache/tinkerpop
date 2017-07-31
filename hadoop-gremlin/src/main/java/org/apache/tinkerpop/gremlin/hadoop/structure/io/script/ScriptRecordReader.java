@@ -60,14 +60,12 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
     private final static String GRAPH = "graph";
     private final static String LINE = "line";
-    private final static String FACTORY = "factory";
-    private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";
+    private final static String READ_CALL = "parse(" + LINE + ")";
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
     private final GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
 
     private ScriptEngine engine;
-    private String parse;
     private CompiledScript script;
 
     private GraphFilter graphFilter = new GraphFilter();
@@ -86,8 +84,8 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         final FileSystem fs = FileSystem.get(configuration);
         try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));
              final InputStreamReader reader = new InputStreamReader(stream)) {
-            this.parse = String.join("\n", IOUtils.toString(reader), READ_CALL);
-            script = ((Compilable) engine).compile(this.parse);
+            final String parse = String.join("\n", IOUtils.toString(reader), READ_CALL);
+            script = ((Compilable) engine).compile(parse);
         } catch (ScriptException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -100,10 +98,8 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
             try {
                 final Bindings bindings = this.engine.createBindings();
                 final StarGraph graph = StarGraph.open();
-                final ScriptElementFactory factory = new ScriptElementFactory(graph);
                 bindings.put(GRAPH, graph);
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
-                bindings.put(FACTORY, factory);
                 final StarGraph.StarVertex sv = (StarGraph.StarVertex) script.eval(bindings);
                 if (sv != null) {
                     final Optional<StarGraph.StarVertex> vertex = sv.applyGraphFilter(this.graphFilter);
@@ -136,36 +132,5 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     @Override
     public synchronized void close() throws IOException {
         this.lineRecordReader.close();
-    }
-
-    @Deprecated
-    protected class ScriptElementFactory {
-
-        private final StarGraph graph;
-
-        public ScriptElementFactory() {
-            this(StarGraph.open());
-        }
-
-        public ScriptElementFactory(final StarGraph graph) {
-            this.graph = graph;
-        }
-
-        public Vertex vertex(final Object id) {
-            return vertex(id, Vertex.DEFAULT_LABEL);
-        }
-
-        public Vertex vertex(final Object id, final String label) {
-            final Iterator<Vertex> vertices = graph.vertices(id);
-            return vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, id, T.label, label);
-        }
-
-        public Edge edge(final Vertex out, final Vertex in) {
-            return edge(out, in, Edge.DEFAULT_LABEL);
-        }
-
-        public Edge edge(final Vertex out, final Vertex in, final String label) {
-            return out.addEdge(label, in);
-        }
     }
 }

@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def parse(line, factory) {
-    // "factory" should no longer be used, as ScriptElementFactory is now deprecated
-    // instead use the global "graph" variable which is the local star graph for the current element
+def parse(line) {
     def parts = line.split(/ /)
     def (id, label, name, x) = parts[0].split(/:/).toList()
     def v1 = graph.addVertex(T.id, id, T.label, label)
