@@ -82,7 +82,7 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        Traversal<Vertex, BigDecimal> get_g_withSackX2X_V_sackXdivX_byXconstantXBigDecimal_valueOfX3XXX_sack() {
+        Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack() {
             TraversalScriptHelper.compute("g.withSack(2).V.sack(div).by(constant(3.0)).sack", g)
         }
     }
