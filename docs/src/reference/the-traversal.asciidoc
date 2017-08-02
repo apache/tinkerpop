@@ -208,6 +208,10 @@ g.V().match(
       addE('friendlyCollaborator').from('a').to('b').
         property(id,23).property('project',select('c').values('name')) <5>
 g.E(23).valueMap()
+marko = g.V().has('name','marko').next()
+peter = g.V().has('name','peter').next()
+g.V(marko).addE('knows').to(peter) <6>
+g.addE('knows').from(marko).to(peter) <7>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
@@ -216,6 +220,8 @@ g.E(23).valueMap()
 <4> The newly created edge is a traversable object.
 <5> Two arbitrary bindings in a traversal can be joined `from()`->`to()`, where `id` can be provided for graphs that
 supports user provided ids.
+<6> Add an edge between marko and peter given the directed (detached) vertex references.
+<7> Add an edge between marko and peter given the directed (detached) vertex references.
 
 [[addvertex-step]]
 AddVertex Step

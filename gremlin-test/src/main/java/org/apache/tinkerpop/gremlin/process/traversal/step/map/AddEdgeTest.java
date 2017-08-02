@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +63,10 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX();
 
     public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X();
+
+    public abstract Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X();
+
+    public abstract Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X();
 
     ///////
 
@@ -211,6 +214,41 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(Arrays.asList(1L, 1L, 1L, 1L, 1L, 1L), g.V().map(outE().count()).toList());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X() {
+        final Traversal<Vertex, Edge> traversal = get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X();
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
+        assertEquals(edge.inVertex(), convertToVertex(graph, "peter"));
+        assertEquals("knows", edge.label());
+        assertEquals(1, IteratorUtils.count(edge.properties()));
+        assertEquals(0.1d, edge.value("weight"), 0.1d);
+        assertEquals(6L, g.V().count().next().longValue());
+        assertEquals(7L, g.E().count().next().longValue());
+
+
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X() {
+        final Traversal<Edge, Edge> traversal = get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X();
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
+        assertEquals(edge.inVertex(), convertToVertex(graph, "peter"));
+        assertEquals("knows", edge.label());
+        assertEquals(1, IteratorUtils.count(edge.properties()));
+        assertEquals(0.1d, edge.value("weight"), 0.1d);
+        assertEquals(6L, g.V().count().next().longValue());
+        assertEquals(7L, g.E().count().next().longValue());
+
+
+    }
 
     public static class Traversals extends AddEdgeTest {
 
@@ -249,6 +287,20 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX() {
             return g.addV().as("first").repeat(__.addE("next").to(__.addV()).inV()).times(5).addE("next").to(select("first"));
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X() {
+            final Vertex a = g.V().has("name", "marko").next();
+            final Vertex b = g.V().has("name", "peter").next();
+            return g.V(a).addE("knows").to(b).property("weight", 0.1d);
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X() {
+            final Vertex a = g.V().has("name", "marko").next();
+            final Vertex b = g.V().has("name", "peter").next();
+            return g.addE("knows").from(a).to(b).property("weight", 0.1d);
         }
     }
 }
