@@ -91,6 +91,11 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("V", *args)
         return traversal
 
+    def addE(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("addE", *args)
+        return traversal
+
     def addV(self, *args):
         traversal = self.get_graph_traversal()
         traversal.bytecode.add_step("addV", *args)

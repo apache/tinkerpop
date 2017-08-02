@@ -178,6 +178,17 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal< Edge,Edge > AddE(params object[] args)
+        {
+            var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
+            traversal.Bytecode.AddStep("addE", args);
+            return traversal;
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>

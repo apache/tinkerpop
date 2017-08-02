@@ -2662,7 +2662,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
         public static final String select = "select";
-        public static final String selectV3d2 = "selectV3d2";
         public static final String key = "key";
         public static final String value = "value";
         public static final String path = "path";

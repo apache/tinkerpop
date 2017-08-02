@@ -125,11 +125,6 @@ public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     }
 
     @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
-    }
-
-    @Override
     public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
         if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
         return this.callbackRegistry;
