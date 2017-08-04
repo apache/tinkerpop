@@ -27,6 +27,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed previously deprecated `ScriptElementFactory`.
+* Added `GraphTraversalSource.addE(String)` in support of `g.addE().from().to()`.
+* Added support for `to(Vertex)` and `from(Vertex)` as a shorthand for `to(V(a))` and `from(V(b))`.
 * Bumped to support Giraph 1.2.0.
 * Bumped to support Spark 2.2.0.
 * Detected if type checking was required in `GremlinGroovyScriptEngine` and disabled related infrastructure if not.

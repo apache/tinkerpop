@@ -1042,6 +1042,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+     * incoming vertex of the newly added {@link Edge}.
+     *
+     * @param toVertex the vertex for selecting the incoming vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
+     * @since 3.3.0
+     */
+    public default GraphTraversal<S, E> to(final Vertex toVertex) {
+        this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
+        ((FromToModulating) this.asAdmin().getEndStep()).addTo(__.constant(toVertex).asAdmin());
+        return this;
+    }
+
+    /**
+     * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+     * outgoing vertex of the newly added {@link Edge}.
+     *
+     * @param fromVertex the vertex for selecting the outgoing vertex
+     * @return the traversal with the modified {@link AddEdgeStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
+     * @since 3.3.0
+     */
+    public default GraphTraversal<S, E> from(final Vertex fromVertex) {
+        this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
+        ((FromToModulating) this.asAdmin().getEndStep()).addFrom(__.constant(fromVertex).asAdmin());
+        return this;
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**
@@ -2632,7 +2662,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
         public static final String select = "select";
-        public static final String selectV3d2 = "selectV3d2";
         public static final String key = "key";
         public static final String value = "value";
         public static final String path = "path";
