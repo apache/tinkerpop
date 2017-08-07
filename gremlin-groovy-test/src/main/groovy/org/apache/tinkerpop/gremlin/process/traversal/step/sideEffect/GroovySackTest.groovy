@@ -83,7 +83,7 @@ public abstract class GroovySackTest {
 
         @Override
         Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack() {
-            TraversalScriptHelper.compute("g.withSack(2).V.sack(div).by(constant(3.0)).sack", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(2).V.sack(div).by(constant(3.0)).sack")
         }
     }
 }
