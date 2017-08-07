@@ -47,4 +47,8 @@ public final class InjectStep<S> extends StartStep<S> {
         super.reset();
         this.start = new ArrayIterator<>(this.injections);
     }
+
+    public S[] getInjections() {
+        return this.injections;
+    }
 }
