@@ -145,6 +145,7 @@ This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
 * Registered `HashMap$TreeNode` to Gryo.
 * Fixed a lambda-leak in `SackValueStep` where `BiFunction` must be tested for true lambda status.
+* Fixed a bug in `RangeByIsCountStrategy` that broke any `ConnectiveStep` that included a child traversal with an optimizable pattern.
 * Allowed access to `InjectStep.injections` for `TraversalStrategy` analysis.
 * Exceptions that occur during result iteration in Gremlin Server will now return `SCRIPT_EVALUATION_EXCEPTION` rather than `SERVER_ERROR`.
 * `AddEdgeStep` attaches detached vertices prior to edge creation.

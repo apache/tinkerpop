@@ -27,10 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
@@ -138,7 +135,8 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                         traversal.asAdmin().removeStep(curr); // CountStep
                         size -= 2;
                         if (!dismissCountIs) {
-                            if (traversal.getParent() instanceof FilterStep) {
+                            final TraversalParent p;
+                            if ((p = traversal.getParent()) instanceof FilterStep && !(p instanceof ConnectiveStep)) {
                                 final Step<?, ?> filterStep = parent.asStep();
                                 final Traversal.Admin parentTraversal = filterStep.getTraversal();
                                 final Step notStep = new NotStep<>(parentTraversal,
