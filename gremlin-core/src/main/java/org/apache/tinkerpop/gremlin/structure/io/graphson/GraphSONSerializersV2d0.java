@@ -670,9 +670,9 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class IntegerJackonsDeserializer extends StdDeserializer<Integer> {
+    static class IntegerJacksonDeserializer extends StdDeserializer<Integer> {
 
-        protected IntegerJackonsDeserializer() {
+        protected IntegerJacksonDeserializer() {
             super(Integer.class);
         }
 
@@ -687,9 +687,9 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class DoubleJackonsDeserializer extends StdDeserializer<Double> {
+    static class DoubleJacksonDeserializer extends StdDeserializer<Double> {
 
-        protected DoubleJackonsDeserializer() {
+        protected DoubleJacksonDeserializer() {
             super(Double.class);
         }
 

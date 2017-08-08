@@ -238,8 +238,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Tree.class, new GraphSONSerializersV2d0.TreeJacksonDeserializer());
 
             // numbers
-            addDeserializer(Integer.class, new GraphSONSerializersV2d0.IntegerJackonsDeserializer());
-            addDeserializer(Double.class, new GraphSONSerializersV2d0.DoubleJackonsDeserializer());
+            addDeserializer(Integer.class, new GraphSONSerializersV2d0.IntegerJacksonDeserializer());
+            addDeserializer(Double.class, new GraphSONSerializersV2d0.DoubleJacksonDeserializer());
 
             // traversal
             addDeserializer(Bytecode.class, new TraversalSerializersV2d0.BytecodeJacksonDeserializer());
