@@ -33,6 +33,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -59,6 +60,9 @@ public class LambdaRestrictionStrategyTest {
                 {"order(local).by(values,decr)", __.order(Scope.local).by(Column.values, Order.decr), true},
                 {"order().by(label,decr)", __.order().by(T.label, Order.decr), true},
                 {"groupCount().by(label)", __.groupCount().by(T.label), true},
+                //
+                {"sack(sum).by('age')", __.sack(sum).by("age"), true},
+                {"sack{a,b -> a+b}.by('age')", __.sack((a, b) -> (int) a + (int) b).by("age"), false},
         });
     }
 

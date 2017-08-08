@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.javatuples.Pair;
 
@@ -64,6 +65,8 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
                         throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
             }
+            if (step instanceof SackValueStep && (((SackValueStep) step).getSackFunction().toString().contains("$$Lambda$")))
+                throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
         }
     }
 
