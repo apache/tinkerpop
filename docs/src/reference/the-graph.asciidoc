@@ -378,6 +378,8 @@ methods should produce output that is compatible with the corresponding read met
 `writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as
 input to `readProperty`.
 
+NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
+
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -563,6 +565,8 @@ The following GraphSON example shows the output of `GraphSONWriter.writeVertex()
 
 The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to
 interpret the numeric values.  In coercing those Java values to JSON, such information is lost.
+
+NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
 
 [[graphson-types-embedding]]
 Types embedding
