@@ -24,15 +24,20 @@ TinkerPop Compendium
 
 image::tinkerpop-reading.png[width=800,align="center"]
 
-The primary documentation for Apache TinkerPop is the link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation],
-which provides the most complete guide to TinkerPop usage. All other documentation tends to exist in support of that
-reference guide. Other documentation tends to fall into one of these other categories:
+Apache TinkerPop has an extensive set of documentation that covers virtually all aspects of usage. This documentation
+tends to fall into the following categories:
 
-1. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best practices related
-to TinkerPop.
-2. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
-3. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement TinkerPop's
-interfaces).
+1. link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation] - The primary documentation for
+TinkerPop which provides the most complete guide to TinkerPop usage. All other documentation tends to exist in support
+of this reference guide.
+2. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best
+practices related to TinkerPop.
+3. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
+4. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement
+TinkerPop's interfaces).
+5. link:http://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
+is also an abridged version of the link:http://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
+be more convenient in some cases.
 
 NOTE: Some of the documentation listed here leads to third-party web sites. Such documentation is supplemental to
 Apache TinkerPop. Third-party documentation is marked as such in the listings below.
@@ -68,6 +73,8 @@ Publications
 
 Unless otherwise noted, all "publications" are externally managed:
 
+* Rodriguez, M.A., link:https://www.slideshare.net/slidarko/gremlin-1013-on-your-fm-dial["Gremlin 101.3 On Your FM Dial,"] DataStax Support and Engineering Summits, Carmel California and Las Vegas Nevada, May 2017.
+* Rodriguez, M.A., link:https://www.datastax.com/2017/03/graphoendodonticology["Graphoendodonticology,"] DataStax Engineering Blog, March 2017
 * Rodriguez, M.A., link:http://www.datastax.com/dev/blog/gremlins-time-machine["Gremlin's Time Machine,"] DataStax Engineering Blog, September 2016.
 * Rodriguez, M.A., link:http://www.slideshare.net/slidarko/gremlins-graph-traversal-machinery["Gremlin's Graph Traversal Machinery,"] Cassandra Summit, September 2016.
 * Rodriguez, M.A., link:http://www.datastax.com/dev/blog/the-mechanics-of-gremlin-olap["The Mechanics of Gremlin OLAP,"] DataStax Engineering Blog, April 2016.
