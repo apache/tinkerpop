@@ -27,7 +27,9 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
-from gremlin_python.driver.serializer import GraphSONMessageSerializer
+from gremlin_python.driver.serializer import (
+    GraphSONMessageSerializer, GraphSONSerializersV2d0,
+    GraphSONSerializersV3d0)
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
 
@@ -86,3 +88,13 @@ def remote_connection_v2(request):
             remote_conn.close()
         request.addfinalizer(fin)
         return remote_conn
+
+
+@pytest.fixture
+def graphson_serializer_v2(request):
+    return GraphSONSerializersV2d0()
+
+
+@pytest.fixture
+def graphson_serializer_v3(request):
+    return GraphSONSerializersV3d0()
