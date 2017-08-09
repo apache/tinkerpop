@@ -2060,9 +2060,11 @@ exploration, and analysis platform for graphs. The link:https://gephi.org/plugin
 plugin for Gephi provides an API that can be leveraged to stream graph data to a running Gephi application. The Gephi
 plugin for Gremlin Console utilizes this API to allow for graph and traversal visualization.
 
-The Gephi plugin for Gremlin Console is compatible with Gephi 0.9.x. The following instructions assume that Gephi
-has been download and installed.  It further assumes that the Graph Streaming plugin has been installed
-(`Tools > Plugins`). The following instructions explain how to visualize a `Graph` and `Traversal`.
+IMPORTANT: These instructions have been tested with Gephi 0.9.1 and Graph Streaming plugin 1.0.3.
+
+The following instructions assume that Gephi has been download and installed.  It further assumes that the Graph
+Streaming plugin has been installed (`Tools > Plugins`). The following instructions explain how to visualize a
+`Graph` and `Traversal`.
 
 In Gephi, create a new project with `File > New Project`.  In the lower left view, click the "Streaming" tab, open the
 Master drop down, and right click `Master Server > Start` which starts the Graph Streaming server in Gephi and by
@@ -2075,6 +2077,9 @@ even if there is something already active on that port it wants to connect to (w
 that there is nothing running on the port before Gephi will be using before starting the plugin.  Failing to do
 this produce behavior where the console will appear to submit requests to Gephi successfully but nothing will
 render.
+
+WARNING: Do not skip the `File > New Project` step as it may prevent a newly started Gephi application from fully
+enabling the streaming tab.
 
 Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 
