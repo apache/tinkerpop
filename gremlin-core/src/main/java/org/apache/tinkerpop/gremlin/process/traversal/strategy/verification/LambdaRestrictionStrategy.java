@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.javatuples.Pair;
 
@@ -60,9 +61,15 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
                 throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
             if (step instanceof ComparatorHolder) {
                 for (final Pair<Traversal.Admin<Object, Comparable>, Comparator<Comparable>> comparator : ((ComparatorHolder<Object, Comparable>) step).getComparators()) {
-                    if (comparator.toString().contains("$$Lambda$"))
+                    final String comparatorString = comparator.toString();
+                    if (comparatorString.contains("$") || comparatorString.contains("@"))
                         throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
+            }
+            if (step instanceof SackValueStep) {
+                final String sackString = ((SackValueStep) step).getSackFunction().toString();
+                if (sackString.contains("$") || sackString.contains("@"))
+                    throw new VerificationException("The provided step contains a lambda bi-function: " + step, traversal);
             }
         }
     }
