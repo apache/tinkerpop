@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Remote
 {
@@ -46,7 +47,7 @@ namespace Gremlin.Net.Process.Remote
         /// <inheritdoc />
         public void Apply<S, E>(ITraversal<S, E> traversal)
         {
-            ApplyAsync(traversal).Wait();
+            ApplyAsync(traversal).WaitUnwrap();
         }
 
         /// <inheritdoc />
