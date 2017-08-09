@@ -38,6 +38,9 @@ TinkerPop's interfaces).
 5. link:http://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
 is also an abridged version of the link:http://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
 be more convenient in some cases.
+6. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
+version of TinkerPop to the next. This document describes breaking changes, major new features and other important
+information related to a particular version.
 
 NOTE: Some of the documentation listed here leads to third-party web sites. Such documentation is supplemental to
 Apache TinkerPop. Third-party documentation is marked as such in the listings below.
