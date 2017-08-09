@@ -70,6 +70,10 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
         return super.hashCode() ^ this.sackFunction.hashCode() ^ ((null == this.sackTraversal) ? "null".hashCode() : this.sackTraversal.hashCode());
     }
 
+    public BiFunction<A,B,A> getSackFunction() {
+        return this.sackFunction;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return getSelfAndChildRequirements(TraverserRequirement.SACK);
