@@ -81,18 +81,34 @@ class Traversal(Processor):
         return args
 
 
-class GraphSONMessageSerializer:
-    """Message serializer for GraphSON"""
+class GraphSONMessageSerializer(object):
+    """
+    Message serializer for GraphSON. Allow users to pass custom reader,
+    writer, and version kwargs for custom serialization. Otherwise,
+    use current GraphSON version as default.
+    """
 
-    def __init__(self, reader=None, writer=None, version=b"application/vnd.gremlin-v3.0+json"):
-        self.version = version
+    # KEEP TRACK OF CURRENT DEFAULTS
+    DEFAULT_READER = graphsonV3d0.GraphSONReader()
+    DEFAULT_WRITER = graphsonV3d0.GraphSONWriter()
+    DEFAULT_VERSION = b"application/vnd.gremlin-v3.0+json"
+
+    def __init__(self, reader=None, writer=None, version=None):
+        if not version:
+            version = self.DEFAULT_VERSION
+        self._version = version
         if not reader:
-            reader = graphsonV3d0.GraphSONReader()
+            reader = self.DEFAULT_READER
         self._graphson_reader = reader
         if not writer:
-            writer = graphsonV3d0.GraphSONWriter()
+            writer = self.DEFAULT_WRITER
         self.standard = Standard(writer)
         self.traversal = Traversal(writer)
+
+    @property
+    def version(self):
+        """Read only property"""
+        return self._version
 
     def get_processor(self, processor):
         processor = getattr(self, processor, None)
@@ -129,27 +145,20 @@ class GraphSONMessageSerializer:
     def deserialize_message(self, message):
         return self._graphson_reader.toObject(message)
 
+
 class GraphSONSerializersV2d0(GraphSONMessageSerializer):
     """Message serializer for GraphSON 2.0"""
-
-    def __init__(self, reader=None, writer=None):
-        GraphSONMessageSerializer.__init__(self, reader, writer, b"application/vnd.gremlin-v2.0+json")
-        if not reader:
-            self._graphson_reader = graphsonV2d0.GraphSONReader()
-        if not writer:
-            self._graphson_writer = graphsonV2d0.GraphSONWriter()
-        self.standard = Standard(self._graphson_writer)
-        self.traversal = Traversal(self._graphson_writer)
+    def __init__(self):
+        reader = graphsonV2d0.GraphSONReader()
+        writer = graphsonV2d0.GraphSONWriter()
+        version = b"application/vnd.gremlin-v2.0+json"
+        super(GraphSONSerializersV2d0, self).__init__(reader, writer, version)
 
 
 class GraphSONSerializersV3d0(GraphSONMessageSerializer):
     """Message serializer for GraphSON 3.0"""
-
-    def __init__(self, reader=None, writer=None):
-        GraphSONMessageSerializer.__init__(self, reader, writer, b"application/vnd.gremlin-v3.0+json")
-        if not reader:
-            self._graphson_reader = graphsonV3d0.GraphSONReader()
-        if not writer:
-            self._graphson_writer = graphsonV3d0.GraphSONWriter()
-        self.standard = Standard(self._graphson_writer)
-        self.traversal = Traversal(self._graphson_writer)
+    def __init__(self):
+        reader = graphsonV3d0.GraphSONReader()
+        writer = graphsonV3d0.GraphSONWriter()
+        version = b"application/vnd.gremlin-v3.0+json"
+        super(GraphSONSerializersV3d0, self).__init__(reader, writer, version)
