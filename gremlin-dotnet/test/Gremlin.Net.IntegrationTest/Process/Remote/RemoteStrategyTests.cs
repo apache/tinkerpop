@@ -24,6 +24,7 @@
 using System;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
@@ -49,6 +50,17 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
             var actualResult = testTraversal.Next();
 
             Assert.Equal(expectedResult, actualResult);
+        }
+        
+        [Fact]
+        public void ShouldThrowOriginalExceptionWhenByteCodeIsInvalid()
+        {
+            var testBytecode = new Bytecode();
+            testBytecode.AddStep("V");
+            testBytecode.AddStep("this_step_does_not_exist", "test");
+            var testTraversal = CreateTraversalWithRemoteStrategy(testBytecode);
+
+            Assert.Throws<ResponseException>(() => testTraversal.Next());
         }
 
         [Fact]

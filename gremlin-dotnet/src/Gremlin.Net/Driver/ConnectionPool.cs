@@ -26,6 +26,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Driver
 {
@@ -92,7 +93,7 @@ namespace Gremlin.Net.Driver
                     {
                         if (_connections != null && !_connections.IsEmpty)
                         {
-                            TeardownAsync().Wait();
+                            TeardownAsync().WaitUnwrap();
 
                             foreach (var conn in _connections)
                                 conn.Dispose();
