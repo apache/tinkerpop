@@ -25,7 +25,7 @@ using System;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
-namespace Gremlin.Net.Structure
+namespace Gremlin.Net.Process
 {
     /// <summary>
     /// Contains useful methods that can be reused across the project. 
