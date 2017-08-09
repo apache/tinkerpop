@@ -23,7 +23,6 @@
 
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Remote
 {

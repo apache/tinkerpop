@@ -26,7 +26,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Gremlin.Net.Structure;
+using Gremlin.Net.Process;
 
 namespace Gremlin.Net.Driver
 {

@@ -25,8 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Process;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Driver.Remote
 {
