@@ -46,7 +46,7 @@ namespace Gremlin.Net.Process.Remote
         /// <inheritdoc />
         public void Apply<S, E>(ITraversal<S, E> traversal)
         {
-            ApplyAsync(traversal).Wait();
+            ApplyAsync(traversal).WaitUnwrap();
         }
 
         /// <inheritdoc />

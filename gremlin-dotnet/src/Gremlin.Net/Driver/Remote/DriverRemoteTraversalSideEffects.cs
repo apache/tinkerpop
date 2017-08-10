@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Process;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Driver.Remote
@@ -112,7 +113,7 @@ namespace Gremlin.Net.Driver.Remote
 
         private void CloseSideEffects()
         {
-            _gremlinClient.SubmitAsync<object>(SideEffectCloseMessage()).Wait();
+            _gremlinClient.SubmitAsync<object>(SideEffectCloseMessage()).WaitUnwrap();
         }
 
         private RequestMessage SideEffectCloseMessage()
