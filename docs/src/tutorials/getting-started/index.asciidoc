@@ -580,20 +580,25 @@ $ curl -X POST -d "{\"gremlin\":\"g.V(x).out().values('name')\", \"language\":\"
 [source,json]
 ----
 {
-    "requestId": "abe3be05-1e86-481a-85e0-c59ad8a37c6b",
-    "status": {
-        "message": "",
-        "code": 200,
-        "attributes": {}
-    },
-    "result": {
-        "data": [
-            "lop",
-            "vadas",
-            "josh"
-        ],
-        "meta": {}
-    }
+	"requestId": "f67dbfff-b33a-4ae3-842d-c6e7c97b246b",
+	"status": {
+		"message": "",
+		"code": 200,
+		"attributes": {
+			"@type": "g:Map",
+			"@value": []
+		}
+	},
+	"result": {
+		"data": {
+			"@type": "g:List",
+			"@value": ["lop", "vadas", "josh"]
+		},
+		"meta": {
+			"@type": "g:Map",
+			"@value": []
+		}
+	}
 }
 ----
 
