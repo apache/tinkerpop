@@ -247,11 +247,12 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HashMap.class, 11));
             add(GryoTypeReg.of(HashMap.Entry.class, 16));
             add(GryoTypeReg.of(Types.HASH_MAP_NODE, 92));
+            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 172));                  // ***LAST ID***
             add(GryoTypeReg.of(KryoSerializable.class, 36));
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
             add(GryoTypeReg.of(ConcurrentHashMap.class, 170));
-            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 171));               // ***LAST ID***
+            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 171));
             add(GryoTypeReg.of(LinkedList.class, 116));
             add(GryoTypeReg.of(Types.LINKED_HASH_MAP_ENTRY_CLASS, 15));
             add(GryoTypeReg.of(Locale.class, 22));
@@ -421,12 +422,13 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HashMap.class, 11));
             add(GryoTypeReg.of(HashMap.Entry.class, 16));
             add(GryoTypeReg.of(Types.HASH_MAP_NODE, 92));
+            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 170));                  // ***LAST ID***
             add(GryoTypeReg.of(KryoSerializable.class, 36));
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
             add(GryoTypeReg.of(LinkedList.class, 116));
             add(GryoTypeReg.of(ConcurrentHashMap.class, 168));
-            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 169));           // ***LAST ID***
+            add(GryoTypeReg.of(ConcurrentHashMap.Entry.class, 169));
             add(GryoTypeReg.of(Types.LINKED_HASH_MAP_ENTRY_CLASS, 15));
             add(GryoTypeReg.of(Locale.class, 22));
             add(GryoTypeReg.of(StringBuffer.class, 43));
@@ -584,11 +586,20 @@ public enum GryoVersion {
          */
         private static final Class HASH_MAP_NODE;
 
+        private static final Class HASH_MAP_TREE_NODE;
+
         static {
             // have to instantiate this via reflection because it is a private inner class of HashMap
-            final String className = HashMap.class.getName() + "$Node";
+            String className = HashMap.class.getName() + "$Node";
             try {
                 HASH_MAP_NODE = Class.forName(className);
+            } catch (Exception ex) {
+                throw new RuntimeException("Could not access " + className, ex);
+            }
+
+            className = HashMap.class.getName() + "$TreeNode";
+            try {
+                HASH_MAP_TREE_NODE = Class.forName(className);
             } catch (Exception ex) {
                 throw new RuntimeException("Could not access " + className, ex);
             }
