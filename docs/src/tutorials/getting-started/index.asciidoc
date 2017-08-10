@@ -90,15 +90,21 @@ TIP: TinkerGraph is not just a toy for beginners. It is useful in analyzing subg
 working with a small static graph that doesn't change much, writing unit tests and other use cases where the graph
 can fit in memory.
 
-TIP: Resist the temptation to "get started" with more complex databases like link:http://thinkaurelius.github.io/titan/[Titan]
-or to delve into how to get link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
+TIP: For purposes of "getting started", resist the temptation to dig into more complex databases that have lots of
+configuration options or to delve into how to get link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 working properly. Focusing on the basics, presented in this guide, builds a good foundation for all the other things
 TinkerPop offers.
 
-To make your process even easier, start with one of TinkerPop's "toy" graphs. These are "small" graphs designed to
-provide a quick start into querying. It is good to get familiar with them, as almost all TinkerPop documentation is based
-on them and when you need help and have to come to the link:http://groups.google.com/group/gremlin-users[mailing list],
-a failing example put in the context of the toy graphs can usually get you a fast answer to your problem.
+To make your learning process even easier, start with one of TinkerPop's "toy" graphs. These are "small" graphs
+designed to provide a quick start into querying. It is good to get familiar with them, as almost all TinkerPop
+documentation is based on them and when you need help and have to come to the
+link:http://groups.google.com/group/gremlin-users[mailing list], a failing example put in the context of the toy graphs
+can usually get you a fast answer to your problem.
+
+TIP: When asking questions on the mailing list or StackOverflow about Gremlin, it's is always helpful to include a
+sample graph so that those attempting to answer your question understand exactly what kind of graph you have and can
+focus their energies on a good answer rather than trying to build sample data themselves. The sample graph should just
+be a simple Gremlin script that can be cut and paste into a Gremlin Console session.
 
 For your first graph, use the "Modern" graph which looks like this:
 
@@ -146,12 +152,13 @@ the results of the `g.V()` query.  Rather, that statement assigns an `Iterator` 
 you would then need to iterate through `x`. This understanding is *important* because in the context of the console
 typing `g.V()` instantly returns a value. The console does some magic for you by noticing that `g.V()` returns
 an `Iterator` and then automatically iterates the results. In short, when writing Gremlin outside of the console
-always remember that you must iterate your `Traversal` manually in some way for it to do anything.
+always remember that you must iterate your `Traversal` manually in some way for it to do anything. The concept of
+"iterating your traversal" is described further in link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console Tutorial].
 
 In this first five minutes with Gremlin, you've gotten the Gremlin Console installed, instantiated a `Graph` and
 `TraversalSource`, wrote some traversals and hopefully learned something about TinkerPop in general. You've only
 scratched the surface of what there is to know, but those accomplishments will help enable your understanding of the
-detailed sections to come.
+more detailed sections to come.
 
 The Next Fifteen Minutes
 ------------------------
@@ -367,9 +374,15 @@ are the people that marko develops software with?" To do that, we should first p
 the previous query.  He was standing on the "software" vertex. To find out who "created" that "software", we need to
 have Gremlin traverse back _in_ along the "created" edges to find the "person" vertices tied to it.
 
+TIP: The nature of Gremlin leads to long lines of code. Readability can be greatly improved by using line spacing and
+indentation. See the link:http://tinkerpop.apache.org/docs/x.y.z/recipes/#style-guide[Style Guide] for recommendations
+on what well formatted Gremlin should look like.
+
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').out('created').in('created').values('name')
+g.V().has('name','marko').
+  out('created').in('created').
+  values('name')
 ----
 
 So that's nice, we can see that "peter", "josh" and "marko" are both responsible for creating "lop". Of course, we already
@@ -378,7 +391,10 @@ know about the involvement of "marko" and it seems strange to say that "marko" c
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').as('exclude').out('created').in('created').where(neq('exclude')).values('name')
+g.V().has('name','marko').as('exclude').
+  out('created').in('created').
+  where(neq('exclude')).
+  values('name')
 ----
 
 We made two additions to the traversal to make it exclude "marko" from the results. First, we added the
@@ -397,7 +413,8 @@ You will find many uses of `as()`. Here it is in combination with link:http://ti
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out().as('b').out().as('c').select('a','b','c')
+g.V().as('a').out().as('b').out().as('c').
+  select('a','b','c')
 ----
 
 In the above example, we tell Gremlin to iterate through all vertices and traverse _out_ twice from each. Gremlin
@@ -415,7 +432,7 @@ g.V().group().by(label)
 
 The use of `by()` here provides the mechanism by which to do the grouping. In this case, we've asked Gremlin to
 use the `label` (which, again, is an automatic static import from `T` in the console). We can't really tell much
-about our distribution though because we just have vertex unique identifiers as output. To make that nicer we
+about our distribution though because we just have unique identifiers of vertices as output. To make that nicer we
 could ask Gremlin to get us the value of the "name" property from those vertices, by supplying another `by()`
 modulator to `group()` to transform the values.
 
@@ -580,7 +597,7 @@ As mentioned earlier, Gremlin Server can also be configured with a WebSocket end
 embedded link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_developing_a_driver[subprotocol] that allow a
 compliant driver to communicate with it.  TinkerPop supplies a
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[reference driver] written in Java, but
-there are drivers developed by third-parties for other link:http://tinkerpop.apache.org/#graph-libraries[languages]
+there are drivers developed by both TinkerPop and third-parties for other link:http://tinkerpop.apache.org/#graph-libraries[languages]
 such as Python, Javascript, etc. Gremlin Server therefore represents the method by which non-JVM languages can
 interact with TinkerPop.
 
