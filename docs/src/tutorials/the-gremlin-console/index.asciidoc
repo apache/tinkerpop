@@ -132,7 +132,8 @@ link:http://groups.google.com/group/gremlin-users[Gremlin Users mailing list] ab
 trouble with in your application, try to convert the gist of it to one of the toy graphs.  Taking this step will make it
 easier for advanced Gremlin users to help you, which should lead to a faster response time for your problem. In
 addition, there is the added benefit that the mailing list post will be more relevant to other users, as it is
-not written solely in the context of your domain.
+not written solely in the context of your domain. If the sample data sets don't properly demonstrate your issue, then
+including a Gremlin script that can construct a small body of sample data would be equally helpful.
 
 [[help]]
 As you get familiar with the console, it is good to know what some of the basic commands are. A "command" is not
@@ -182,9 +183,9 @@ sufficient complexity in your traversals where you will need to:
 * Quickly test the traversal over real data to determine if it is correct.
 * Test or debug pieces of the traversal in isolation.
 * Experiment with different ways of expressing the same traversal.
-* Examine the performance of a traversal through link:http://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
-step or by other link:http://tinkerpop.apache.org/docs/x.y.z/reference/#benchmarking-and-profiling[profiling and benchmarking]
-methods.
+* Examine the performance of a traversal through the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
+or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps or by other
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#benchmarking-and-profiling[profiling and benchmarking] methods.
 
 Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
 toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing
@@ -209,7 +210,10 @@ import java.util.Map;
 
 public final class Traversals {
   public static Map<String,List<Vertex>> groupAround(GraphTraversalSource g, long vertexId) {
-    return g.V(vertexId).outE().group().by(label).by(inV()).next()
+    return g.V(vertexId).outE().
+             group().
+               by(label).
+               by(inV()).next()
   }
 }
 ----
@@ -235,7 +239,10 @@ the IDE and execute it in the console and confirm the failure:
 
 [gremlin-groovy,modern]
 ----
-g.V(1).outE().group().by(label).by(inV())
+g.V(1).outE().
+  group().
+    by(label).
+    by(inV())
 ----
 
 Note that `next()` is removed here. The Gremlin Console automatically tries to iterate all results from a line of
@@ -246,7 +253,10 @@ Trying it with the use of `next()` produces the following:
 
 [gremlin-groovy,modern]
 ----
-g.V(1).outE().group().by(label).by(inV()).next()
+g.V(1).outE().
+  group().
+    by(label).
+    by(inV()).next()
 ----
 
 In this case, the line of execution does not return a `Traversal`.  It returns the first item in the `Traversal` with
@@ -256,7 +266,10 @@ when you want to work with a `Traversal` as a variable. You can do this with a c
 
 [gremlin-groovy,modern]
 ----
-t = g.V(1).outE().group().by(label).by(inV());null
+t = g.V(1).outE().
+      group().
+        by(label).
+        by(inV());null
 t.next()
 ----
 
@@ -264,7 +277,7 @@ TIP: In addition to "returning null", you could also return an empty list as in:
 
 image:gremlin-console-ide.png[float=left,width=300] The first line assigns the `Traversal` to `t`, but the line itself
 is actually two lines of code as denoted by the semi-colon. The line of execution actually returns `null`, which is
-what the console actual auto-iterates. At that point you can work with `t` as you desire.
+what the console actual auto-iterates. At that point, you can work with `t` as you desire.
 
 Turning your attention back to the original problem, you can now think about the issue with the `Traversal` not
 containing the appropriate number of vertices in the context of iteration. In the original `Traversal` the second
@@ -287,10 +300,13 @@ can remedy that by adding `fold()` to `inV()` as follows:
 
 [gremlin-groovy,modern]
 ----
-g.V(1).outE().group().by(label).by(inV().fold()).next()
+g.V(1).outE().
+  group().
+    by(label).
+    by(inV().fold()).next()
 ----
 
-You can now see that your result is as expected and can modify your Java class to reflect the change:
+You can now see that your result is as expected and you can modify your Java class to reflect the change:
 
 [source,java]
 ----
@@ -306,7 +322,10 @@ import java.util.Map;
 
 public final class Traversals {
   public static Map<String,List<Vertex>> groupAround(GraphTraversalSource g, long vertexId) {
-    return g.V(vertexId).outE().group().by(label).by(inV().fold()).next()
+    return g.V(vertexId).outE().
+             group().
+               by(label).
+               by(inV().fold()).next()
   }
 }
 ----
@@ -406,8 +425,9 @@ g.V().hasLabel('person').as('person').
 You are pleased.  You like that you have the basic data present to achieve your goal, but you see a couple of problems.
 First, given a quick glance at the data, you can see that the data doesn't uniformly start at a particular time.
 You were hoping to see data presented in such a way that each "person" had data starting and ending in the same years.
-The second problem you can see is that the data really isn't in a format that you need. Ideally, you would like to
-have something that had rows and columns that was easily dumped to CSV for use in other tools. You currently have the
+For example, the first entry for "daniel" is "1982", while the first entry for "marko" is "1997" - where was "marko" in
+"1982"? The second problem you can see is that the data really isn't in a format that you need. Ideally, you would like
+to have something that had rows and columns that was easily dumped to CSV for use in other tools. You currently have the
 data in two separate traversals and the data is nested.
 
 image:graph-to-table.png[align=center]
@@ -422,10 +442,11 @@ firstYear = g.V().hasLabel('person').
                   max().next()
 ----
 
-You store that result in a variable called "firstYear", as you will likely need that later to help filter results in the
-traversal that ultimately gets the data.  It is often helpful to store results from traversals if you intend to work
-with that data later and the traversal itself is expensive to execute. It is only important to keep in mind that you
-will be limited by the memory available to the console.
+You store that result in a variable called "firstYear", as you will need that later to help filter results in the
+traversal that ultimately gets the data. In this way, all "person" vertices can be compared from the same start time.
+It is often helpful to store results from traversals if you intend to work with that data later and the traversal
+itself is expensive to execute. It is only important to keep in mind that you will be limited by the memory available
+to the console.
 
 TIP: You can change the amount of memory allotted to the console by altering its `-Xmx` setting in `bin/gremlin.sh`.
 This setting controls the maximum size of the JVM memory allocation pool. To set this value to 1024 megabytes, you
