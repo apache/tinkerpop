@@ -203,24 +203,26 @@ as an example. First, you need to create this graph:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-v1 = graph.addVertex(id, 1, label, "person", "name", "marko", "age", 29)
-v2 = graph.addVertex(id, 3, label, "software", "name", "lop", "lang", "java")
-v1.addEdge("created", v2, id, 9, "weight", 0.4)
+g = graph.traversal()
+v1 = g.addV("person").property(id, 1).property("name", "marko").property("age", 29).next()
+v2 = g.addV("person").property(id, 3).property("name", "lop").property("lang", "java").next()
+g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
 ----
 
-There are a number of important things to consider in the above code. First, recall that `id` and `label` are
+There are a number of important things to consider in the above code. First, recall that `id` is
 "reserved" for special usage in TinkerPop and are members of the enum, `T`. Those "keys" supplied to the creation
 method are link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imported]
 to the console, which allows you to access them without having to specify their owning enum. Think of it as a
-shorthand form that enables a more fluid code style. You would normally refer to them as `T.id` and `T.label`. Without
+shorthand form that enables a more fluid code style. You would normally refer to it as `T.id`. Without
 that static importing you would instead have to write:
 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-v1 = graph.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29)
-v2 = graph.addVertex(T.id, 3, T.label, "software", "name", "lop", "lang", "java")
-v1.addEdge("created", v2, id, 9, "weight", 0.4)
+g = graph.traversal()
+v1 = g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).next()
+v2 = g.addV("person").property(T.id, 3).property("name", "lop").property("lang", "java").next()
+g.addE("created").from(v1).to(v2).property(T.id, 9).property("weight", 0.4)
 ----
 
 NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important static import
@@ -510,20 +512,27 @@ graph.createIndex('userId', Vertex.class) <1>
 g = graph.traversal()
 
 getOrCreate = { id ->
-  g.V().has('userId', id).tryNext().orElseGet{ g.addV().property('userId', id).next() }
+  g.V().has('userId', id).
+    fold().
+    coalesce(unfold(),
+             addV('user').property('userId', id)).next()  <2>
 }
 
 new File('wiki-Vote.txt').eachLine {
   if (!it.startsWith("#")){
-    (fromVertex, toVertex) = it.split('\t').collect(getOrCreate) <2>
-    fromVertex.addEdge('votesFor', toVertex)
+    (fromVertex, toVertex) = it.split('\t').collect(getOrCreate) <3>
+    g.addE('votesFor').from(fromVertex).to(toVertex).iterate()
   }
 }
 ----
 
 <1> To ensure fast lookups of vertices, we need an index. The `createIndex()` method is a method native to
 TinkerGraph. Please consult your graph databases documentation for their index creation approaches.
-<2> We are iterating each line of the `wiki-Vote.txt` file and this line splits the line on the delimiter, then
+<2> This "get or create" traversal gets a a vertex if it already exists and if not creates it. It uses `coalesce()` in
+a clever way by first determining if the list of vertices produced by the previous `fold()` has anything in it by
+testing the result of `unfold()`. If `unfold()` returns nothing then that vertex doesn't exist and the subsequent
+`addV()` inner traversal can be called to create it.
+<3> We are iterating each line of the `wiki-Vote.txt` file and this line splits the line on the delimiter, then
 uses some neat Groovy syntax to apply the `getOrCreate()` function to each of the two `userId` fields encountered in
 the line and stores those vertices in the `fromVertex` and `toVertex` variables respectively.
 
