@@ -2958,7 +2958,7 @@ graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
 g = graph.traversal().withStrategies(strategy)
-g.addV('name','stephen')
+g.addV().property('name','stephen')
 g.E().drop()
 ----
 
