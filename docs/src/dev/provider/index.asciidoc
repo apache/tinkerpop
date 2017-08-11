@@ -607,25 +607,7 @@ downloaded according and when required by the user. Neo4j's GremlinPlugin is pro
 
 [source,java]
 ----
-public class Neo4jGremlinPlugin implements GremlinPlugin {
-
-    private static final String IMPORT = "import ";
-    private static final String DOT_STAR = ".*";
-
-    private static final Set<String> IMPORTS = new HashSet<String>() {{
-        add(IMPORT + Neo4jGraph.class.getPackage().getName() + DOT_STAR);
-    }};
-
-    @Override
-    public String getName() {
-        return "neo4j";
-    }
-
-    @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
-        pluginAcceptor.addImports(IMPORTS);
-    }
-}
+include::{basedir}/neo4j-gremlin/src/main/java/org/apache/tinkerpop/gremlin/neo4j/jsr223/Neo4jGremlinPlugin.java[]
 ----
 
 With the above plugin implementations, users can now download respective binaries for Gremlin Console, Gremlin Server, etc.
