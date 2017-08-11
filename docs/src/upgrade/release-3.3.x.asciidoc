@@ -479,6 +479,25 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+GremlnPlugin
+++++++++++++
+
+The previously deprecated `GremlinPlugin` system has been removed. The old `GremlinPlugin` interface formerly resided
+in the `org.apache.tinkerpop.gremlin.groovy.plugin` package of `gremlin-groovy`. This interface was replaced by an
+interface of the same name in 3.2.4, which now resides in the `org.apache.tinkerpop.gremlin.jsr223` package in
+`gremlin-core`. Obviously, existing plugins will need to be updated to use this new interface.
+
+The plugin model has changed slightly to be more generic and not specifically bound to Groovy based script engines.
+Under the new model, the plugin simply returns `Customizer` instances that can be applied generically to any
+`ScriptEngine` or specifically to a particular `ScriptEngine`. More details can be found in the
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-plugins[Provider Documentation]
+
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
