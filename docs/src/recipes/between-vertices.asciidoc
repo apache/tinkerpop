@@ -67,30 +67,34 @@ the known person completed an application.
 
 [gremlin-groovy]
 ----
-vBob = graph.addVertex(label, "person", "name", "bob")
-vStephen = graph.addVertex(label, "person", "name", "stephen")
-vBlueprintsInc = graph.addVertex(label, "company", "name", "Blueprints, Inc")
-vRexsterLlc = graph.addVertex(label, "company", "name", "Rexster, LLC")
-vBlueprintsJob1 = graph.addVertex(label, "job", "name", "job1")
-vBlueprintsJob2 = graph.addVertex(label, "job", "name", "job2")
-vBlueprintsJob3 = graph.addVertex(label, "job", "name", "job3")
-vRexsterJob1 = graph.addVertex(label, "job", "name", "job4")
-vAppBob1 = graph.addVertex(label, "application", "name", "application1")
-vAppBob2 = graph.addVertex(label, "application", "name", "application2")
-vAppStephen1 = graph.addVertex(label, "application", "name", "application3")
-vAppStephen2 = graph.addVertex(label, "application", "name", "application4")
-vBob.addEdge("completes", vAppBob1)
-vBob.addEdge("completes", vAppBob2)
-vStephen.addEdge("completes", vAppStephen1)
-vStephen.addEdge("completes", vAppStephen2)
-vAppBob1.addEdge("appliesTo", vBlueprintsJob1)
-vAppBob2.addEdge("appliesTo", vBlueprintsJob2)
-vAppStephen1.addEdge("appliesTo", vRexsterJob1)
-vAppStephen2.addEdge("appliesTo", vBlueprintsJob3)
-vBlueprintsInc.addEdge("created", vBlueprintsJob1, "creationDate", "12/20/2015")
-vBlueprintsInc.addEdge("created", vBlueprintsJob2, "creationDate", "12/15/2015")
-vBlueprintsInc.addEdge("created", vBlueprintsJob3, "creationDate", "12/16/2015")
-vRexsterLlc.addEdge("created", vRexsterJob1, "creationDate", "12/18/2015")
+g.addV("person").property("name", "bob").as("bob").
+  addV("person").property("name", "stephen").as("stephen").
+  addV("company").property("name", "Blueprints, Inc").as("blueprints").
+  addV("company").property("name", "Rexster, LLC").as("rexster").
+  addV("job").property("name", "job1").as("blueprintsJob1").
+  addV("job").property("name", "job2").as("blueprintsJob2").
+  addV("job").property("name", "job3").as("blueprintsJob3").
+  addV("job").property("name", "job4").as("rexsterJob1").
+  addV("application").property("name", "application1").as("appBob1").
+  addV("application").property("name", "application2").as("appBob2").
+  addV("application").property("name", "application3").as("appStephen1").
+  addV("application").property("name", "application4").as("appStephen2").
+  addE("completes").from("bob").to("appBob1").
+  addE("completes").from("bob").to("appBob2").
+  addE("completes").from("stephen").to("appStephen1").
+  addE("completes").from("stephen").to("appStephen2").
+  addE("appliesTo").from("appBob1").to("blueprintsJob1").
+  addE("appliesTo").from("appBob2").to("blueprintsJob2").
+  addE("appliesTo").from("appStephen1").to("rexsterJob1").
+  addE("appliesTo").from("appStephen2").to("blueprintsJob3").
+  addE("created").from("blueprints").to("blueprintsJob1").property("creationDate", "12/20/2015").
+  addE("created").from("blueprints").to("blueprintsJob2").property("creationDate", "12/15/2015").
+  addE("created").from("blueprints").to("blueprintsJob3").property("creationDate", "12/16/2015").
+  addE("created").from("rexster").to("rexsterJob1").property("creationDate", "12/18/2015").iterate()
+vBlueprintsJob1 = g.V().has("job", "name", "job1").next()
+vRexsterJob1 = g.V().has("job", "name", "job4").next()
+vStephen = g.V().has("person", "name", "stephen").next()
+vBob = g.V().has("person", "name", "bob").next()
 g.V(vRexsterJob1).as('job').
   inE('created').as('created').
   outV().as('company').
