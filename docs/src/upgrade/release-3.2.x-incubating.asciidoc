@@ -48,9 +48,6 @@ authentication for both protocols in conjunction with the `SimpleAuthenticator`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-915[TINKERPOP-915]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
-
 TinkerPop 3.2.5
 ---------------
 
@@ -242,6 +239,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
 SimplePathStep and CyclicPathStep now PathFilterStep
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -389,6 +389,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1602[TINKERPOP-1602]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
 
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -657,6 +660,9 @@ See: link:http://tinkerpop.apache.org/docs/3.2.3/dev/io/[IO Reference Documentat
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -871,6 +877,9 @@ This is only a rename to clarify the design of the API. There is no change to th
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1014,6 +1023,9 @@ link:http://tinkerpop.apache.org/docs/3.2.1/reference/#execution-mode[Reference 
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
 
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1320,6 +1332,9 @@ link:http://tinkerpop.apache.org/docs/3.2.0-incubating/reference/#connecting-via
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
 
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
