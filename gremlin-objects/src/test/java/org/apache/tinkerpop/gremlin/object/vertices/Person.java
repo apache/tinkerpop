@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.object.model.OrderingKey;
 import org.apache.tinkerpop.gremlin.object.model.PrimaryKey;
 import org.apache.tinkerpop.gremlin.object.reflect.Label;
 import org.apache.tinkerpop.gremlin.object.structure.Vertex;
+import org.apache.tinkerpop.gremlin.object.traversal.AnyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 
 import java.util.Arrays;
@@ -78,6 +79,17 @@ public class Person extends Vertex {
 
   @OrderingKey
   private int age;
+
+  /**
+   * Since the lambda object below is instance-specific, it needs to either have it's name start
+   * with a {@code $} symbol, or be marked as {@code transient}. If you have a lot of such
+   * instance-specific lambda fields, then you could ignore them all for the purposes of {@link
+   * #equals(Object)} and {@link #hashCode()}, by including {@code of={}} in the {@link
+   * EqualsAndHashCode} annotation above.
+   */
+  public final AnyTraversal $sameAge = g -> g.V()
+      .hasLabel(Label.of(Knows.class))
+      .has("age", age);
 
   /**
    * This is a multi-property of primitive types.

@@ -143,6 +143,16 @@ public class Element implements Comparable<Element> {
     elementCacheSize = numberOfElements;
   }
 
+  /**
+   * Classes that extend the {@link Element} should use the {@code @EqualsAndHashCode(of={},
+   * callSuper=true)} annotation, so that we can ignore any fields marked as {@code Hidden}.
+   *
+   * By including {@code of={}} in that annotation, the derived class essentially excludes all of
+   * it's fields, so as to avoid double-checking each field. If {@code of={}} is not present, and if
+   * the derived class contains any instance-specific {@link SubTraversal}s or {@code
+   * AnyTraversal}s, then they will need to either be marked as {@code transient} or start with a
+   * {@code $} symbol, so that the {@code lombok} processor can ignore those lambda objects.
+   */
   @Override
   public boolean equals(Object other) {
     if (this == other) {

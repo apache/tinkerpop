@@ -16,7 +16,7 @@
 ////
 An Object Graph Mapping Framework For Gremlin
 ---------------------------------------------
-Karthick Sankarachary <http://gihub.com/karthicks>
+Karthick Sankarachary <http://github.com/karthicks>
 [.lead]
 The `gremlin-objects` link:pom.xml[module] defines a framework that puts an object-oriented spin on the gremlin property graph.
 It aims to make it much easier to specify business `domain specific languages` around Gremlin, without any loss of expressive power.
@@ -307,4 +307,4 @@ which translates the object `Graph` and `Query` operations into `DataFrame` tabl
 The link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/AnyTraversal.java[AnyTraversal] and link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/SubTraversal.java[SubTraversal]
 interfaces extend `Formattable` so that the steps defined in it's body can be revealed.
 Let's say that we stored the bytecode of these types of functional fields as a hidden property in the element.
-That could potentially allow us to execute `user defined traversals` using a, say, `traversal.invoke('function-name')` step.
+That could potentially allow us to execute `user defined traversals` using a, say, `traversal.call('function-name')` step.
