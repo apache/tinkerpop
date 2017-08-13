@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `gremlin-objects`, an object graph mapping framework for Gremlin.
 * Removed previously deprecated `ScriptElementFactory`.
 * Added `GraphTraversalSource.addE(String)` in support of `g.addE().from().to()`.
 * Added support for `to(Vertex)` and `from(Vertex)` as a shorthand for `to(V(a))` and `from(V(b))`.
