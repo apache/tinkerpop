@@ -114,7 +114,7 @@ public class ObjectQueryTest {
     when(traversal.toBulkSet()).thenReturn(bulkSet);
 
     Person actual = query
-        .by(g -> g.V().hasLabel(marko.label()).has("name", marko.getName()))
+        .by(g -> g.V().hasLabel(marko.label()).has("name", marko.name()))
         .one(Person.class);
 
     assertEquals(marko, actual);

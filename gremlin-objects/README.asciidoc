@@ -58,11 +58,11 @@ In this section, we go over how gremlin elements may be modeled, and how those m
 ==== Object Model
 
 Let's consider the example of the `person` vertex, taken from the "modern" and "the crew" graphs defined in the link:../tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerFactory.java[TinkerFactory].
-In our object world, it would be defined as a `Person` class that extends link:./src/main/java/org/apache/tinkerpop/gremlin/object/structure/Vertex.java[Vertex].
-By default, the vertex's label matches its simple class name, hence we have to un-capitalize it using the `@Alias` annotation.
+In our object world, it would be defined as a link:./src/test/java/org/apache/tinkerpop/gremlin/object/vertices/Person.java[Person] class that extends link:./src/main/java/org/apache/tinkerpop/gremlin/object/structure/Vertex.java[Vertex].
+By default, the vertex's label matches its simple class name, hence we have to un-capitalize it using the link:./src/main/java/org/apache/tinkerpop/gremlin/object/model/Alias.java[@Alias] annotation.
 
 The person's `name` and `age` properties become primitive fields in the class.
-The `@PrimaryKey` and `@OrderingKey` annotations on them not only indicate that they are mandatory,
+The link:./src/main/java/org/apache/tinkerpop/gremlin/object/model/PrimaryKey.java[@PrimaryKey] and link:./src/main/java/org/apache/tinkerpop/gremlin/object/model/OrderingKey.java[@OrderingKey] annotations on them not only indicate that they are mandatory,
 but also allow the `person` to be found easily through the link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/library/HasKeys.java[HasKeys.of(person)] `SubTraversal`.
 Think of the link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/SubTraversal.java[SubTraversal] as a reusable function that takes a `GraphTraversal`, performs a few steps on it, and returns it back (to allow for chaining).
 The `KnowsPeople` field in this class is an example of an in-line `SubTraversal`, albeit a stronger-typed version of it called `ToVertex`, to indicate that it ends up selecting vertices.
@@ -93,7 +93,7 @@ public class Person extends Vertex {
 Next, we look at its `titles` field, which is defined to be a `Set`.
 As you might expect, the cardinality of the underlying property becomes `set`.
 Similarly, the `locations` field takes on the `list` cardinality.
-Further, each element in the `locations` list has it's own meta-properties, and ergo deserves a `Location` class of it's own.
+Further, each element in the `locations` list has it's own meta-properties, and ergo deserves a link:./src/test/java/org/apache/tinkerpop/gremlin/object/vertices/Location.java[Location] class of it's own.
 
 [source, java]
 ----
@@ -113,7 +113,7 @@ public class Location extends Element {
 NOTE: The value of the `location` is stored in `name`, due to the placement of the `@PropertyValue` annotation.
 Every other field in the `Location` class becomes the `location`'s meta-property.
 
-An edge is defined much like the vertex, except it extends the `Edge` class.
+An edge is defined much like the vertex, except it extends the link:./src/main/java/org/apache/tinkerpop/gremlin/object/structure/Edge.java[Edge] class.
 By default, an edge's label is it's un-capitalized simple class name, and hence no `@Alias` is needed:
 
 [source, java]
@@ -129,7 +129,7 @@ public class Knows extends Edge {
 You can find more examples of gremlin object vertices link:./src/test/java/org/apache/tinkerpop/gremlin/object/vertices/[here] and edges link:./src/test/java/org/apache/tinkerpop/gremlin/object/edges/[here].
 
 ==== Updating Objects
-The `Graph` interface lets you update the graph using `Vertex` or `Edge` objects.
+The link:./src/main/java/org/apache/tinkerpop/gremlin/object/structure/Graph.java[Graph] interface lets you update the graph using `Vertex` or `Edge` objects.
 You can get it via dependency injection:
 
 [source, java]
@@ -138,7 +138,7 @@ You can get it via dependency injection:
 private Graph graph;
 ----
 
-Or, the good old fashioned way, using a `GraphFactory` interface:
+Or, the good old fashioned way, using a link:./src/main/java/org/apache/tinkerpop/gremlin/object/provider/GraphFactory.java[GraphFactory] interface:
 
 [source, java]
 ----
@@ -180,7 +180,7 @@ TIP: Since the object being added may already exist in the graph, we provide lin
 
 ==== Querying Objects
 
-There are two ways to get a handle to the `Query` interface.
+There are two ways to get a handle to the link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/Query.java[Query] interface.
 You can inject it, and get the `TinkerGraph` query, like so:
 
 [source, java]
@@ -207,7 +207,7 @@ List<Person> friends = query
     .list(Person.class);
 ----
 
-Below, we query by an `AnyTraversal` (a function on the `GraphTraversalSource`), and get a single `Person` back.
+Below, we query by an link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/AnyTraversal.java[AnyTraversal] (a function on the `GraphTraversalSource`), and get a single `Person` back.
 
 [source, java]
 ----
@@ -222,7 +222,7 @@ The type of the result may be primitives too, and that is handled as shown below
 [source, java]
 ----
 long count = query
-    .by(HasPrimaryKey.of(crew.marko), Count.of())
+    .by(HasKeys.of(crew.marko), Count.of())
     .one(Long.class);
 ----
 
@@ -249,9 +249,9 @@ To see more examples showcasing how the object `Query` interface may be used, go
 In this section, we talk about how the `gremlin-objects` framework can be adopted by and adapted for a `graph system`.
 
 ==== Service Provider Interface
-A provider that wishes to plug into `gremlin-objects` will need to implement the `GraphSystem`, which simply supplies a `GraphTraversalSource`.
-In addition, it must extend the `ObjectGraph` and `ObjectQuery` abstract classes, constructor injecting its implementation of the `GraphSystem`.
-For users that don't use dependency injection, an implementation of the `GraphFactory` (preferably an extension of the `CachedFactory`) must also be provided.
+A provider that wishes to plug into `gremlin-objects` will need to implement the link:./src/main/java/org/apache/tinkerpop/gremlin/object/provider/GraphSystem.java[GraphSystem], which simply supplies a `GraphTraversalSource`.
+In addition, it must extend the link:./src/main/java/org/apache/tinkerpop/gremlin/object/structure/ObjectGraph.java[ObjectGraph] and link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/ObjectQuery.java[ObjectQuery] abstract classes, constructor injecting its implementation of the `GraphSystem`.
+For users that don't use dependency injection, an implementation of the `GraphFactory` (preferably an extension of the link:./src/main/java/org/apache/tinkerpop/gremlin/object/provider/CachedFactory.java[CachedFactory]) must also be provided.
 
 ==== Registering Native Types
 Typically, gremlin property values are Java primitives.
@@ -270,11 +270,11 @@ We give such providers a way to tell us how to parse such custom elements using 
 While there exist similar frameworks, this one has some key differentiating factors. Now, let's consider the alternatives:
 
 ==== GremlinDsl Traversals
-The `gremlin-core` module defines a `GremlinDsl` annotation that lets you define custom traversals by extending the `GraphTraversal` and `GraphTraversalSource`.
+The `gremlin-core` module defines a link:../gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/dsl/GremlinDsl.java[GremlinDsl] annotation that lets you define custom traversals by extending the `GraphTraversal` and `GraphTraversalSource`.
 However, it requires some familiarity of `gremlin-core` internals.
 
 ==== Peopod for Tinkerpop 3
-Peopod represents elements as annotated interfaces or abstract classes.
+https://github.com/bayofmany/peapod[Peopod] represents elements as annotated interfaces or abstract classes.
 While it generates boilerplate for traversals to adjacent vertices, it doesn't let you co-locate arbitrary traversals.
 This framework is less intrusive and more flexible.
 
@@ -291,20 +291,20 @@ Here, we list a few directions in which we see the framework evolving:
 ==== Language Variants
 The concept of lifting the property graph into objects is language-independent.
 While `gremlin-objects` currently targets the Gremlin-Java variant, it can be ported to any variant that supports basic reflection.
-Case in point, the Gremlin-Python variant could achieve the object mapping through the `dir`, `getattr`  and `setattr` built-in functions.
+Case in point, the Gremlin-Python variant could achieve the object mapping through the https://docs.python.org/2/library/functions.html#dir[dir], https://docs.python.org/2/library/functions.html#getattr[getattr]  and https://docs.python.org/2/library/functions.html#setattr[setattr] built-in functions.
 
 ==== Provider Support
 In reality, it is fairly easy for a provider to plug-into `gremlin-objects` simply by implementing an interface and extending a few classes.
 The ability to register custom primitive types and traversal result parsers allows for customization.
-Since `neo4j` already has it's own TinkerPop module, it's a good candidate to become a provider. While there exists a `DataStax` implementation, it uses an older TinkerPop version, and hence is not included.
+Since `neo4j` already has it's own link:../neo4j-gremlin/pom.xml[TinkerPop module], it's a good candidate to become a provider. While there exists a `DataStax` implementation, it uses an older TinkerPop version, and hence is not included.
 
 ==== DataFrame Support
-Some providers use `GraphFrames` to execute bulk operations and graph algorithms on top of Tinkerpop.
-Assuming they can work with `DataFrames`, one could build a `GraphTraversalSource`,
+Some providers use http://graphframes.github.io/[GraphFrames] to execute bulk operations and graph algorithms on top of Tinkerpop.
+Assuming they can work with https://spark.apache.org/docs/1.6.3/api/java/org/apache/spark/sql/DataFrame.html[DataFrames], one could build a `GraphTraversalSource`,
 which translates the object `Graph` and `Query` operations into `DataFrame` tables,  and adapt's it to the provider's `GraphFrame`.
 
 ==== Traversal Storage
 The link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/AnyTraversal.java[AnyTraversal] and link:./src/main/java/org/apache/tinkerpop/gremlin/object/traversal/SubTraversal.java[SubTraversal]
-interfaces extend `Formattable` so that the steps defined in it's body can be revealed.
+interfaces extend https://docs.oracle.com/javase/7/docs/api/java/util/Formattable.html[Formattable] so that the steps defined in it's body can be revealed.
 Let's say that we stored the bytecode of these types of functional fields as a hidden property in the element.
 That could potentially allow us to execute `user defined traversals` using a, say, `traversal.call('function-name')` step.

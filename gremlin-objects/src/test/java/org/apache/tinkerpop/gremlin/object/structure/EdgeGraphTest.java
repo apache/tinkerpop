@@ -95,7 +95,7 @@ public class EdgeGraphTest extends ElementGraphTest<Develops> {
 
     InOrder inOrder = inOrder(traversal);
     inOrder.verify(traversal, times(1)).hasLabel(develops.label());
-    inOrder.verify(traversal, times(1)).has("since", develops.getSince());
+    inOrder.verify(traversal, times(1)).has("since", develops.since());
   }
 
   @Test
@@ -104,7 +104,7 @@ public class EdgeGraphTest extends ElementGraphTest<Develops> {
 
     edgeGraph.update(traversal, develops, Properties::all);
 
-    verify(traversal, times(1)).property("since", develops.getSince());
+    verify(traversal, times(1)).property("since", develops.since());
   }
 
   @Test
@@ -126,7 +126,7 @@ public class EdgeGraphTest extends ElementGraphTest<Develops> {
         inOrder.verify(traversal, times(1)).addE(develops.label());
         inOrder.verify(traversal, times(1)).as("edge");
         inOrder.verify(traversal, times(1)).from("from");
-        verify(traversal, times(1)).property("since", develops.getSince());
+        verify(traversal, times(1)).property("since", develops.since());
         break;
       case MERGE:
         inOrder.verify(g, times(1)).inject(1);
@@ -160,7 +160,7 @@ public class EdgeGraphTest extends ElementGraphTest<Develops> {
         inOrder.verify(traversal, times(1)).addE(develops.label());
         inOrder.verify(traversal, times(1)).as("edge");
         inOrder.verify(traversal, times(1)).from("from");
-        verify(traversal, times(1)).property("since", develops.getSince());
+        verify(traversal, times(1)).property("since", develops.since());
 
         // coalesce the find and insert
         inOrder.verify(traversal, times(1)).coalesce(traversal, traversal);

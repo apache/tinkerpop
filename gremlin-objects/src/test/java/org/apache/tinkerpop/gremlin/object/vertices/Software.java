@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * The {@link Software} class represents the "software" vertex.
@@ -38,7 +39,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Alias(label = "software")
-@EqualsAndHashCode(callSuper = true)
+@Accessors(fluent = true, chain = true)
+@EqualsAndHashCode(of = {}, callSuper = true)
 public class Software extends Vertex {
 
   @PrimaryKey

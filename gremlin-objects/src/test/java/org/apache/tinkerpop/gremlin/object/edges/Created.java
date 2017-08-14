@@ -30,6 +30,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * The {@link Created} class represents the "created" edge.
@@ -40,7 +41,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@Accessors(fluent = true, chain = true)
+@EqualsAndHashCode(of = {}, callSuper = true)
 public class Created extends Edge {
 
   private double weight;

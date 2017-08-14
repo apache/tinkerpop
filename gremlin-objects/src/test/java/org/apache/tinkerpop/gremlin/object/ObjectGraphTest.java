@@ -99,8 +99,8 @@ public abstract class ObjectGraphTest extends GraphTest {
         .bind("property", "name")
         .list(String.class);
     assertNotNull(names);
-    assertTrue(names.contains(modern.vadas.getName()));
-    assertTrue(names.contains(modern.marko.getName()));
+    assertTrue(names.contains(modern.vadas.name()));
+    assertTrue(names.contains(modern.marko.name()));
   }
 
   @Test
@@ -111,7 +111,7 @@ public abstract class ObjectGraphTest extends GraphTest {
         .list(String.class);
     assertNotNull(names);
     Collections.sort(names);
-    assertEquals(Arrays.asList(modern.josh.getName(), modern.vadas.getName()), names);
+    assertEquals(Arrays.asList(modern.josh.name(), modern.vadas.name()), names);
   }
 
   @Test
@@ -154,7 +154,7 @@ public abstract class ObjectGraphTest extends GraphTest {
         .list(Person.class);
     assertNotNull(friends);
     Collections.sort(friends);
-    friends.forEach(friend -> Collections.sort(friend.getLocations()));
+    friends.forEach(friend -> Collections.sort(friend.locations()));
     assertEquals(Arrays.asList(crew.marko, crew.matthias, crew.stephen), friends);
   }
 
@@ -173,11 +173,11 @@ public abstract class ObjectGraphTest extends GraphTest {
         .select();
     assertNotNull(selections);
     assertEquals(Selections.of(
-        Selection.of().add("a", crew.marko.getName()).add("b", "santa fe").add("c", year(2005)),
-        Selection.of().add("a", crew.stephen.getName()).add("b", "purcellville")
+        Selection.of().add("a", crew.marko.name()).add("b", "santa fe").add("c", year(2005)),
+        Selection.of().add("a", crew.stephen.name()).add("b", "purcellville")
             .add("c", year(2006)),
-        Selection.of().add("a", crew.daniel.getName()).add("b", "aachen").add("c", year(2009)),
-        Selection.of().add("a", crew.matthias.getName()).add("b", "seattle").add("c", year(2014))
+        Selection.of().add("a", crew.daniel.name()).add("b", "aachen").add("c", year(2009)),
+        Selection.of().add("a", crew.matthias.name()).add("b", "seattle").add("c", year(2014))
         ), selections);
   }
 
@@ -196,10 +196,10 @@ public abstract class ObjectGraphTest extends GraphTest {
         .select();
     assertNotNull(selections);
     assertEquals(Selections.of(
-        Selection.of().add("a", Expert).add("b", crew.daniel.getName()),
-        Selection.of().add("a", Proficient).add("b", crew.marko.getName()),
-        Selection.of().add("a", Competent).add("b", crew.matthias.getName()),
-        Selection.of().add("a", Expert).add("b", crew.stephen.getName())), selections);
+        Selection.of().add("a", Expert).add("b", crew.daniel.name()),
+        Selection.of().add("a", Proficient).add("b", crew.marko.name()),
+        Selection.of().add("a", Competent).add("b", crew.matthias.name()),
+        Selection.of().add("a", Expert).add("b", crew.stephen.name())), selections);
   }
 
   @Test
@@ -221,7 +221,7 @@ public abstract class ObjectGraphTest extends GraphTest {
       graph.addVertex(Person.of("marko", "engineer",
           Location.of("los angeles", 1996, 1997)));
       Person marko = query.by(HasKeys.of(crew.marko)).one(Person.class);
-      Collections.sort(marko.getLocations());
+      Collections.sort(marko.locations());
       long count = query
           .by(HasKeys.of(marko), Count.of())
           .one(Long.class);

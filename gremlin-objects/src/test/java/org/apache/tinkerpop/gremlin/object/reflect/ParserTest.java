@@ -93,7 +93,7 @@ public class ParserTest extends ReflectTest {
     assertEquals(develops, as(new DetachedEdge(
         null, Label.of(Develops.class), new HashMap<String, Object>() {
           {
-            put("since", develops.getSince());
+            put("since", develops.since());
           }
         }, null, null, null, null), Develops.class));
   }

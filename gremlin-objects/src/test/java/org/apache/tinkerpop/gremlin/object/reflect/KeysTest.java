@@ -99,14 +99,14 @@ public class KeysTest extends ReflectTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testNullPrimaryKey() {
-    marko.setName(null);
+    marko.name(null);
     id(marko);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testNullOrderingKey() {
     Primitives.allowDefaultKeys = false;
-    marko.setAge(0);
+    marko.age(0);
     id(marko);
   }
 

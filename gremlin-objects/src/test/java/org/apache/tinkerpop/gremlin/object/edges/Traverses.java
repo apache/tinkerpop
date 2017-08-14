@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * The {@link Traverses} class represents the "traverses" edge.
@@ -37,7 +38,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@Accessors(fluent = true, chain = true)
+@EqualsAndHashCode(of = {}, callSuper = true)
 public class Traverses extends Edge {
 
   public static Traverses of() {

@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * The {@link Location} class represents the "locations" vertex property, whose value is kept in the
@@ -47,7 +48,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Alias(label = "location")
-@EqualsAndHashCode(callSuper = true)
+@Accessors(fluent = true, chain = true)
+@EqualsAndHashCode(of = {}, callSuper = true)
 public class Location extends Element {
 
   @OrderingKey

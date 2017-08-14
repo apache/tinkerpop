@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * The {@link Develops} class represents the "develops" edge.
@@ -43,7 +44,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@Accessors(fluent = true, chain = true)
+@EqualsAndHashCode(of = {}, callSuper = true)
 public class Develops extends Edge {
 
   /**

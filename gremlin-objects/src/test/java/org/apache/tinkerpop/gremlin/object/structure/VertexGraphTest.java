@@ -77,7 +77,7 @@ public class VertexGraphTest extends ElementGraphTest<Person> {
 
     InOrder inOrder = inOrder(traversal);
     inOrder.verify(traversal, times(1)).hasLabel(marko.label());
-    inOrder.verify(traversal, times(1)).has("name", marko.getName());
+    inOrder.verify(traversal, times(1)).has("name", marko.name());
   }
 
   @Test
@@ -143,7 +143,7 @@ public class VertexGraphTest extends ElementGraphTest<Person> {
   @Test(expected = IllegalArgumentException.class)
   public void testAddInvalidVertex() {
     Person marko = createElement();
-    marko.setName(null);
+    marko.name(null);
 
     vertexGraph.addVertex(marko);
   }
@@ -157,7 +157,7 @@ public class VertexGraphTest extends ElementGraphTest<Person> {
     InOrder inOrder = inOrder(g, traversal);
     inOrder.verify(g, times(1)).V();
     inOrder.verify(traversal, times(1)).hasLabel(marko.label());
-    inOrder.verify(traversal, times(1)).has("name", marko.getName());
+    inOrder.verify(traversal, times(1)).has("name", marko.name());
     inOrder.verify(traversal, times(1)).drop();
     inOrder.verify(traversal, times(1)).toList();
   }

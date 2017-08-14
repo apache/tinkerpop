@@ -119,8 +119,8 @@ public class ElementGraphTest<O extends Element> extends GraphTest {
 
     InOrder inOrder = inOrder(traversal);
     inOrder.verify(traversal, times(1)).hasLabel(location.label());
-    inOrder.verify(traversal, times(1)).has("name", location.getName());
-    inOrder.verify(traversal, times(1)).has("startTime", location.getStartTime());
+    inOrder.verify(traversal, times(1)).has("name", location.name());
+    inOrder.verify(traversal, times(1)).has("startTime", location.startTime());
   }
 
   @Test
@@ -131,6 +131,6 @@ public class ElementGraphTest<O extends Element> extends GraphTest {
 
     InOrder inOrder = inOrder(traversal);
     inOrder.verify(traversal, times(1)).property("name", "San Francisco");
-    inOrder.verify(traversal, times(1)).property("startTime", location.getStartTime());
+    inOrder.verify(traversal, times(1)).property("startTime", location.startTime());
   }
 }
