@@ -63,6 +63,8 @@ if [ -d "/usr/src/tinkermem" ]; then
   cd /usr/src/tinkermem
 fi
 
+touch gremlin-python/.glv
+
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
   echo "Copying settings.xml"
