@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphMessageCombiner implements org.apache.giraph.combiner.MessageCombiner<ObjectWritable, ObjectWritable>, ImmutableClassesGiraphConfigurable {
+public final class GiraphMessageCombiner extends org.apache.giraph.combiner.MessageCombiner<ObjectWritable, ObjectWritable> implements ImmutableClassesGiraphConfigurable {
 
     private MessageCombiner messageCombiner;
     private ImmutableClassesGiraphConfiguration configuration;
