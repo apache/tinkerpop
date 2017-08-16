@@ -19,13 +19,33 @@
 
 BEGIN {
   firstMatch=1
+  styled=0
 }
 
 /Licensed to the Apache Software Foundation/ {
   isHeader=1
 }
 
-firstMatch || !isHeader
+/<\/style>/ {
+  if (!styled) {
+    print ".invisible {position: absolute; left: 9999px}"
+    styled=1
+  }
+}
+
+!/<span class="comment">/ {
+  if (firstMatch || !isHeader) {
+    print gensub(/(<b class="conum">)\(([0-9]+)\)(<\/b>)/,
+                 "<span class=\"invisible\">//</span>\\1\\2\\3", "g")
+  }
+}
+
+/<span class="comment">/ {
+  if (firstMatch || !isHeader) {
+    print gensub(/<span class="comment">\/\/<\/span>(<b class="conum">)\(([0-9]+)\)(<\/b>)/,
+                 "<span class=\"invisible\">//</span>\\1\\2\\3<span class=\"invisible\">\\\\<\/span>", "g")
+  }
+}
 
 /under the License\./ {
   firstMatch=0
