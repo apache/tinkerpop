@@ -136,5 +136,15 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, String> get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('song').order.by('performances',decr).by('name').range(110, 120).name")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').group.by('name').by(__.outE.weight.sum).order(local).by(values)")
+        }
+
+        @Override
+        public Traversal<Vertex, Map.Entry<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').group.by('name').by(__.outE.weight.sum).unfold.order.by(values, decr)")
+        }
     }
 }

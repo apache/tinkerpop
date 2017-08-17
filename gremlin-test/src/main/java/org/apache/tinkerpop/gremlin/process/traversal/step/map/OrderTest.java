@@ -96,6 +96,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name();
 
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX();
+
+    public abstract Traversal<Vertex, Map.Entry<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -374,6 +378,51 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
                 "KNOCKING ON HEAVENS DOOR", "MEMPHIS BLUES"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Number> m = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, m.size());
+        final Iterator<Map.Entry<String, Number>> iterator = m.entrySet().iterator();
+        Map.Entry<String, Number> entry = iterator.next();
+        assertEquals("vadas", entry.getKey());
+        assertEquals(0.0, entry.getValue().doubleValue(), 0.0001);
+        entry = iterator.next();
+        assertEquals("peter", entry.getKey());
+        assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
+        entry = iterator.next();
+        assertEquals("josh", entry.getKey());
+        assertEquals(1.4, entry.getValue().doubleValue(), 0.0001);
+        entry = iterator.next();
+        assertEquals("marko", entry.getKey());
+        assertEquals(1.9, entry.getValue().doubleValue(), 0.0001);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX() {
+        final Traversal<Vertex, Map.Entry<String, Number>> traversal = get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        Map.Entry<String, Number> entry = traversal.next();
+        assertEquals("marko", entry.getKey());
+        assertEquals(1.9, entry.getValue().doubleValue(), 0.0001);
+        entry = traversal.next();
+        assertEquals("josh", entry.getKey());
+        assertEquals(1.4, entry.getValue().doubleValue(), 0.0001);
+        entry = traversal.next();
+        assertEquals("peter", entry.getKey());
+        assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
+        entry = traversal.next();
+        assertEquals("vadas", entry.getKey());
+        assertEquals(0.0, entry.getValue().doubleValue(), 0.0001);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -483,6 +532,16 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name() {
             return g.V().hasLabel("song").order().by("performances", Order.decr).by("name").range(110, 120).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX() {
+            return g.V().hasLabel("person").<String, Number>group().by("name").by(outE().values("weight").sum()).order(Scope.local).by(Column.values);
+        }
+
+        @Override
+        public Traversal<Vertex, Map.Entry<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX() {
+            return g.V().hasLabel("person").group().by("name").by(outE().values("weight").sum()).<Map.Entry<String, Number>>unfold().order().by(Column.values, Order.decr);
         }
     }
 }
