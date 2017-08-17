@@ -72,11 +72,19 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 <% sourceStepMethods.each{ method -> %>
-        public GraphTraversalSource <%= toCSharpMethodName.call(method) %>(params object[] args)
+        public GraphTraversalSource <%= toCSharpMethodName.call(method.methodName) %>(<%= method.parameters %>)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            source.Bytecode.AddSource("<%= method %>", args);
+            <%  if (method.parameters.contains("params ")) {
+          %>var args = new List<object> {<%= method.paramNames.init().join(", ") %>};
+            args.AddRange(<%= method.paramNames.last() %>);
+            source.Bytecode.AddSource("<%= method.methodName %>", args.ToArray());<%
+            }
+            else {
+          %>source.Bytecode.AddSource("<%= method.methodName %>"<% if (method.parameters) out << ', '+ method.paramNames.join(", ") %>);<%
+            }
+        %>
             return source;
         }
 <% } %>
@@ -119,10 +127,18 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the <%= method.methodName %> step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal< <%= method.typeArguments.join(",") %> > <%= toCSharpMethodName.call(method.methodName) %>(params object[] args)
+        public GraphTraversal< <%= method.typeArguments.join(",") %> > <%= toCSharpMethodName.call(method.methodName) %>(<%= method.parameters %>)
         {
             var traversal = new GraphTraversal< <%= method.typeArguments.join(",") %> >(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("<%= method.methodName %>", args);
+            <%  if (method.parameters.contains("params ")) {
+          %>var args = new List<object> {<%= method.paramNames.init().join(", ") %>};
+            args.AddRange(<%= method.paramNames.last() %>);
+            traversal.Bytecode.AddStep("<%= method.methodName %>", args.ToArray());<%
+            }
+            else {
+      %>    traversal.Bytecode.AddStep("<%= method.methodName %>"<% if (method.parameters) out << ', '+ method.paramNames.join(", ") %>);<%
+            }
+        %>
             return traversal;
         }
 <% } %>

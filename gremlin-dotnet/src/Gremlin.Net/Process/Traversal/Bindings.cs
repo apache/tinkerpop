@@ -21,6 +21,9 @@
 
 #endregion
 
+using System.Collections.Generic;
+using System.Threading;
+
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
@@ -29,14 +32,42 @@ namespace Gremlin.Net.Process.Traversal
     public class Bindings
     {
         /// <summary>
+        ///     Gets an instance of the <see cref="Bindings" /> class.
+        /// </summary>
+        public static Bindings Instance { get; } = new Bindings();
+
+        private static readonly ThreadLocal<Dictionary<object, string>> BoundVariableByValue =
+            new ThreadLocal<Dictionary<object, string>>();
+
+        /// <summary>
         ///     Binds the variable to the specified value.
         /// </summary>
         /// <param name="variable">The variable to bind.</param>
         /// <param name="value">The value to which the variable should be bound.</param>
         /// <returns>The bound value.</returns>
-        public Binding Of(string variable, object value)
+        public TV Of<TV>(string variable, TV value)
         {
-            return new Binding(variable, value);
+            var dict = BoundVariableByValue.Value;
+            if (dict == null)
+            {
+                dict = new Dictionary<object, string>();
+                BoundVariableByValue.Value = dict;
+            }
+            dict[value] = variable;
+            return value;
+        }
+
+        internal static string GetBoundVariable<TV>(TV value)
+        {
+            var dict = BoundVariableByValue.Value;
+            if (dict == null)
+                return null;
+            return !dict.ContainsKey(value) ? null : dict[value];
+        }
+
+        internal static void Clear()
+        {
+            BoundVariableByValue.Value?.Clear();
         }
     }
 }

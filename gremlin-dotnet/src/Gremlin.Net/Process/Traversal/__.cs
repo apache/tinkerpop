@@ -43,729 +43,1275 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the V step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> V(params object[] args)
+        public static GraphTraversal<object, Vertex> V(params object[] vertexIdsOrElements)
         {
-            return new GraphTraversal<object, object>().V(args);
+            return vertexIdsOrElements.Length == 0
+                ? new GraphTraversal<object, Vertex>().V()
+                : new GraphTraversal<object, Vertex>().V(vertexIdsOrElements);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> AddE(params object[] args)
+        public static GraphTraversal<object, Edge> AddE(Direction direction, string firstVertexKeyOrEdgeLabel, string edgeLabelOrSecondVertexKey, params object[] propertyKeyValues)
         {
-            return new GraphTraversal<object, object>().AddE(args);
+            return propertyKeyValues.Length == 0
+                ? new GraphTraversal<object, Edge>().AddE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey)
+                : new GraphTraversal<object, Edge>().AddE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> AddE(string edgeLabel)
+        {
+            return new GraphTraversal<object, Edge>().AddE(edgeLabel);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addInE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> AddInE(params object[] args)
+        public static GraphTraversal<object, Edge> AddInE(string firstVertexKeyOrEdgeLabel, string edgeLabelOrSecondVertexKey, params object[] propertyKeyValues)
         {
-            return new GraphTraversal<object, object>().AddInE(args);
+            return propertyKeyValues.Length == 0
+                ? new GraphTraversal<object, Edge>().AddInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey)
+                : new GraphTraversal<object, Edge>().AddInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addOutE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> AddOutE(params object[] args)
+        public static GraphTraversal<object, Edge> AddOutE(string firstVertexKeyOrEdgeLabel, string edgeLabelOrSecondVertexKey, params object[] propertyKeyValues)
         {
-            return new GraphTraversal<object, object>().AddOutE(args);
+            return propertyKeyValues.Length == 0
+                ? new GraphTraversal<object, Edge>().AddOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey)
+                : new GraphTraversal<object, Edge>().AddOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(params object[] args)
+        public static GraphTraversal<object, Vertex> AddV()
         {
-            return new GraphTraversal<object, object>().AddV(args);
+            return new GraphTraversal<object, Vertex>().AddV();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> AddV(params object[] propertyKeyValues)
+        {
+            return propertyKeyValues.Length == 0
+                ? new GraphTraversal<object, Vertex>().AddV()
+                : new GraphTraversal<object, Vertex>().AddV(propertyKeyValues);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> AddV(string vertexLabel)
+        {
+            return new GraphTraversal<object, Vertex>().AddV(vertexLabel);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the aggregate step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Aggregate(params object[] args)
+        public static GraphTraversal<object, object> Aggregate(string sideEffectKey)
         {
-            return new GraphTraversal<object, object>().Aggregate(args);
+            return new GraphTraversal<object, object>().Aggregate(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the and step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> And(params object[] args)
+        public static GraphTraversal<object, object> And(params ITraversal[] andTraversals)
         {
-            return new GraphTraversal<object, object>().And(args);
+            return andTraversals.Length == 0
+                ? new GraphTraversal<object, object>().And()
+                : new GraphTraversal<object, object>().And(andTraversals);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the as step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> As(params object[] args)
+        public static GraphTraversal<object, object> As(string label, params string[] labels)
         {
-            return new GraphTraversal<object, object>().As(args);
+            return labels.Length == 0
+                ? new GraphTraversal<object, object>().As(label)
+                : new GraphTraversal<object, object>().As(label, labels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Barrier(params object[] args)
+        public static GraphTraversal<object, object> Barrier()
         {
-            return new GraphTraversal<object, object>().Barrier(args);
+            return new GraphTraversal<object, object>().Barrier();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Barrier(object barrierConsumer)
+        {
+            return new GraphTraversal<object, object>().Barrier(barrierConsumer);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Barrier(int maxBarrierSize)
+        {
+            return new GraphTraversal<object, object>().Barrier(maxBarrierSize);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the both step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> Both(params object[] args)
+        public static GraphTraversal<object, Vertex> Both(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().Both(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Vertex>().Both()
+                : new GraphTraversal<object, Vertex>().Both(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the bothE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> BothE(params object[] args)
+        public static GraphTraversal<object, Edge> BothE(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().BothE(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Edge>().BothE()
+                : new GraphTraversal<object, Edge>().BothE(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the bothV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> BothV(params object[] args)
+        public static GraphTraversal<object, Vertex> BothV()
         {
-            return new GraphTraversal<object, object>().BothV(args);
+            return new GraphTraversal<object, Vertex>().BothV();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the branch step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Branch<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Branch<E2>(object function)
         {
-            return new GraphTraversal<object, object>().Branch<E2>(args);
+            return new GraphTraversal<object, E2>().Branch<E2>(function);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the branch step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Branch<E2>(ITraversal traversalFunction)
+        {
+            return new GraphTraversal<object, E2>().Branch<E2>(traversalFunction);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the cap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Cap<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Cap<E2>(string sideEffectKey, params string[] sideEffectKeys)
         {
-            return new GraphTraversal<object, object>().Cap<E2>(args);
+            return sideEffectKeys.Length == 0
+                ? new GraphTraversal<object, E2>().Cap<E2>(sideEffectKey)
+                : new GraphTraversal<object, E2>().Cap<E2>(sideEffectKey, sideEffectKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Choose<E2>(object choiceFunction)
         {
-            return new GraphTraversal<object, object>().Choose<E2>(args);
+            return new GraphTraversal<object, E2>().Choose<E2>(choiceFunction);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Choose<E2>(TraversalPredicate choosePredicate, ITraversal trueChoice)
+        {
+            return new GraphTraversal<object, E2>().Choose<E2>(choosePredicate, trueChoice);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Choose<E2>(TraversalPredicate choosePredicate, ITraversal trueChoice, ITraversal falseChoice)
+        {
+            return new GraphTraversal<object, E2>().Choose<E2>(choosePredicate, trueChoice, falseChoice);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Choose<E2>(ITraversal traversalFunction)
+        {
+            return new GraphTraversal<object, E2>().Choose<E2>(traversalFunction);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Choose<E2>(ITraversal traversalPredicate, ITraversal trueChoice)
+        {
+            return new GraphTraversal<object, E2>().Choose<E2>(traversalPredicate, trueChoice);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Choose<E2>(ITraversal traversalPredicate, ITraversal trueChoice, ITraversal falseChoice)
+        {
+            return new GraphTraversal<object, E2>().Choose<E2>(traversalPredicate, trueChoice, falseChoice);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the coalesce step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Coalesce<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Coalesce<E2>(params ITraversal[] traversals)
         {
-            return new GraphTraversal<object, object>().Coalesce<E2>(args);
+            return traversals.Length == 0
+                ? new GraphTraversal<object, E2>().Coalesce<E2>()
+                : new GraphTraversal<object, E2>().Coalesce<E2>(traversals);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the coin step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Coin(params object[] args)
+        public static GraphTraversal<object, object> Coin(double probability)
         {
-            return new GraphTraversal<object, object>().Coin(args);
+            return new GraphTraversal<object, object>().Coin(probability);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the constant step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Constant<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Constant<E2>(object a)
         {
-            return new GraphTraversal<object, object>().Constant<E2>(args);
+            return new GraphTraversal<object, E2>().Constant<E2>(a);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the count step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, long> Count(params object[] args)
+        public static GraphTraversal<object, long> Count()
         {
-            return new GraphTraversal<object, object>().Count(args);
+            return new GraphTraversal<object, long>().Count();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the count step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, long> Count(Scope scope)
+        {
+            return new GraphTraversal<object, long>().Count(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the cyclicPath step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> CyclicPath(params object[] args)
+        public static GraphTraversal<object, object> CyclicPath()
         {
-            return new GraphTraversal<object, object>().CyclicPath(args);
+            return new GraphTraversal<object, object>().CyclicPath();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dedup step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Dedup(params object[] args)
+        public static GraphTraversal<object, object> Dedup(Scope scope, params string[] dedupLabels)
         {
-            return new GraphTraversal<object, object>().Dedup(args);
+            return dedupLabels.Length == 0
+                ? new GraphTraversal<object, object>().Dedup(scope)
+                : new GraphTraversal<object, object>().Dedup(scope, dedupLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dedup step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Dedup(params string[] dedupLabels)
+        {
+            return dedupLabels.Length == 0
+                ? new GraphTraversal<object, object>().Dedup()
+                : new GraphTraversal<object, object>().Dedup(dedupLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the drop step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Drop(params object[] args)
+        public static GraphTraversal<object, object> Drop()
         {
-            return new GraphTraversal<object, object>().Drop(args);
+            return new GraphTraversal<object, object>().Drop();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the emit step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Emit(params object[] args)
+        public static GraphTraversal<object, object> Emit()
         {
-            return new GraphTraversal<object, object>().Emit(args);
+            return new GraphTraversal<object, object>().Emit();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the emit step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Emit(TraversalPredicate emitPredicate)
+        {
+            return new GraphTraversal<object, object>().Emit(emitPredicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the emit step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Emit(ITraversal emitTraversal)
+        {
+            return new GraphTraversal<object, object>().Emit(emitTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the filter step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Filter(params object[] args)
+        public static GraphTraversal<object, object> Filter(TraversalPredicate predicate)
         {
-            return new GraphTraversal<object, object>().Filter(args);
+            return new GraphTraversal<object, object>().Filter(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the filter step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Filter(ITraversal filterTraversal)
+        {
+            return new GraphTraversal<object, object>().Filter(filterTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the flatMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> FlatMap<E2>(params object[] args)
+        public static GraphTraversal<object, E2> FlatMap<E2>(object function)
         {
-            return new GraphTraversal<object, object>().FlatMap<E2>(args);
+            return new GraphTraversal<object, E2>().FlatMap<E2>(function);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the flatMap step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> FlatMap<E2>(ITraversal flatMapTraversal)
+        {
+            return new GraphTraversal<object, E2>().FlatMap<E2>(flatMapTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the fold step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Fold<E2>(params object[] args)
+        public static GraphTraversal<object, IList<E2>> Fold<E2>()
         {
-            return new GraphTraversal<object, object>().Fold<E2>(args);
+            return new GraphTraversal<object, E2>().Fold();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the fold step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Fold<E2>(object seed, object foldFunction)
+        {
+            return new GraphTraversal<object, E2>().Fold<E2>(seed, foldFunction);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the group step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Group(params object[] args)
+        public static GraphTraversal<object, IDictionary<K, V>> Group<K, V>()
         {
-            return new GraphTraversal<object, object>().Group(args);
+            return new GraphTraversal<object, IDictionary<K, V>>().Group<K, V>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the group step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Group(string sideEffectKey)
+        {
+            return new GraphTraversal<object, object>().Group(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the groupCount step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> GroupCount(params object[] args)
+        public static GraphTraversal<object, IDictionary<K, long>> GroupCount<K>()
         {
-            return new GraphTraversal<object, object>().GroupCount(args);
+            return new GraphTraversal<object, IDictionary<K, long>>().GroupCount<K>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the groupCount step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> GroupCount(string sideEffectKey)
+        {
+            return new GraphTraversal<object, object>().GroupCount(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the groupV3d0 step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> GroupV3d0(params object[] args)
+        public static GraphTraversal<object, IDictionary<K, V>> GroupV3d0<K, V>()
         {
-            return new GraphTraversal<object, object>().GroupV3d0(args);
+            return new GraphTraversal<object, IDictionary<K, V>>().GroupV3d0<K, V>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the groupV3d0 step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> GroupV3d0(string sideEffectKey)
+        {
+            return new GraphTraversal<object, object>().GroupV3d0(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Has(params object[] args)
+        public static GraphTraversal<object, object> Has(string propertyKey)
         {
-            return new GraphTraversal<object, object>().Has(args);
+            return new GraphTraversal<object, object>().Has(propertyKey);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(string propertyKey, object value)
+        {
+            return new GraphTraversal<object, object>().Has(propertyKey, value);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(string propertyKey, TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().Has(propertyKey, predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(string label, string propertyKey, object value)
+        {
+            return new GraphTraversal<object, object>().Has(label, propertyKey, value);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(string label, string propertyKey, TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().Has(label, propertyKey, predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(string propertyKey, ITraversal propertyTraversal)
+        {
+            return new GraphTraversal<object, object>().Has(propertyKey, propertyTraversal);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(T accessor, object value)
+        {
+            return new GraphTraversal<object, object>().Has(accessor, value);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(T accessor, TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().Has(accessor, predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(T accessor, ITraversal propertyTraversal)
+        {
+            return new GraphTraversal<object, object>().Has(accessor, propertyTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasId step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> HasId(params object[] args)
+        public static GraphTraversal<object, object> HasId(object id, params object[] otherIds)
         {
-            return new GraphTraversal<object, object>().HasId(args);
+            return otherIds.Length == 0
+                ? new GraphTraversal<object, object>().HasId(id)
+                : new GraphTraversal<object, object>().HasId(id, otherIds);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasId step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasId(TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().HasId(predicate);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasKey step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> HasKey(params object[] args)
+        public static GraphTraversal<object, object> HasKey(TraversalPredicate predicate)
         {
-            return new GraphTraversal<object, object>().HasKey(args);
+            return new GraphTraversal<object, object>().HasKey(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasKey step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasKey(string label, params string[] otherLabels)
+        {
+            return otherLabels.Length == 0
+                ? new GraphTraversal<object, object>().HasKey(label)
+                : new GraphTraversal<object, object>().HasKey(label, otherLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasLabel step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> HasLabel(params object[] args)
+        public static GraphTraversal<object, object> HasLabel(TraversalPredicate predicate)
         {
-            return new GraphTraversal<object, object>().HasLabel(args);
+            return new GraphTraversal<object, object>().HasLabel(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasLabel(string label, params string[] otherLabels)
+        {
+            return otherLabels.Length == 0
+                ? new GraphTraversal<object, object>().HasLabel(label)
+                : new GraphTraversal<object, object>().HasLabel(label, otherLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasNot step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> HasNot(params object[] args)
+        public static GraphTraversal<object, object> HasNot(string propertyKey)
         {
-            return new GraphTraversal<object, object>().HasNot(args);
+            return new GraphTraversal<object, object>().HasNot(propertyKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasValue step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> HasValue(params object[] args)
+        public static GraphTraversal<object, object> HasValue(object value, params object[] values)
         {
-            return new GraphTraversal<object, object>().HasValue(args);
+            return values.Length == 0
+                ? new GraphTraversal<object, object>().HasValue(value)
+                : new GraphTraversal<object, object>().HasValue(value, values);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasValue step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasValue(TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().HasValue(predicate);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the id step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Id(params object[] args)
+        public static GraphTraversal<object, object> Id()
         {
-            return new GraphTraversal<object, object>().Id(args);
+            return new GraphTraversal<object, object>().Id();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the identity step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Identity(params object[] args)
+        public static GraphTraversal<object, object> Identity()
         {
-            return new GraphTraversal<object, object>().Identity(args);
+            return new GraphTraversal<object, object>().Identity();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the in step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> In(params object[] args)
+        public static GraphTraversal<object, Vertex> In(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().In(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Vertex>().In()
+                : new GraphTraversal<object, Vertex>().In(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> InE(params object[] args)
+        public static GraphTraversal<object, Edge> InE(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().InE(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Edge>().InE()
+                : new GraphTraversal<object, Edge>().InE(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> InV(params object[] args)
+        public static GraphTraversal<object, Vertex> InV()
         {
-            return new GraphTraversal<object, object>().InV(args);
+            return new GraphTraversal<object, Vertex>().InV();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inject step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Inject(params object[] args)
+        public static GraphTraversal<object, object> Inject(params object[] injections)
         {
-            return new GraphTraversal<object, object>().Inject(args);
+            return injections.Length == 0
+                ? new GraphTraversal<object, object>().Inject()
+                : new GraphTraversal<object, object>().Inject(injections);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the is step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Is(params object[] args)
+        public static GraphTraversal<object, object> Is(object value)
         {
-            return new GraphTraversal<object, object>().Is(args);
+            return new GraphTraversal<object, object>().Is(value);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the is step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Is(TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().Is(predicate);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the key step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, string> Key(params object[] args)
+        public static GraphTraversal<object, string> Key()
         {
-            return new GraphTraversal<object, object>().Key(args);
+            return new GraphTraversal<object, string>().Key();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the label step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, string> Label(params object[] args)
+        public static GraphTraversal<object, string> Label()
         {
-            return new GraphTraversal<object, object>().Label(args);
+            return new GraphTraversal<object, string>().Label();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Limit<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Limit<E2>(Scope scope, long limit)
         {
-            return new GraphTraversal<object, object>().Limit<E2>(args);
+            return new GraphTraversal<object, E2>().Limit<E2>(scope, limit);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Limit<E2>(long limit)
+        {
+            return new GraphTraversal<object, E2>().Limit(limit);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the local step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Local<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Local<E2>(ITraversal localTraversal)
         {
-            return new GraphTraversal<object, object>().Local<E2>(args);
+            return new GraphTraversal<object, E2>().Local<E2>(localTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the loops step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, int> Loops(params object[] args)
+        public static GraphTraversal<object, int> Loops()
         {
-            return new GraphTraversal<object, object>().Loops(args);
+            return new GraphTraversal<object, int>().Loops();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the map step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Map<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Map<E2>(object function)
         {
-            return new GraphTraversal<object, object>().Map<E2>(args);
+            return new GraphTraversal<object, E2>().Map<E2>(function);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the map step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Map<E2>(ITraversal mapTraversal)
+        {
+            return new GraphTraversal<object, E2>().Map<E2>(mapTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mapKeys step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> MapKeys<E2>(params object[] args)
+        public static GraphTraversal<object, E2> MapKeys<E2>()
         {
-            return new GraphTraversal<object, object>().MapKeys<E2>(args);
+            return new GraphTraversal<object, E2>().MapKeys<E2>();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mapValues step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> MapValues<E2>(params object[] args)
+        public static GraphTraversal<object, E2> MapValues<E2>()
         {
-            return new GraphTraversal<object, object>().MapValues<E2>(args);
+            return new GraphTraversal<object, E2>().MapValues<E2>();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> Match<E2>(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> Match<E2>(params ITraversal[] matchTraversals)
         {
-            return new GraphTraversal<object, object>().Match<E2>(args);
+            return matchTraversals.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().Match<E2>()
+                : new GraphTraversal<object, IDictionary<string, E2>>().Match<E2>(matchTraversals);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the max step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Max<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Max<E2>()
         {
-            return new GraphTraversal<object, object>().Max<E2>(args);
+            return new GraphTraversal<object, E2>().Max<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the max step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Max<E2>(Scope scope)
+        {
+            return new GraphTraversal<object, E2>().Max<E2>(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mean step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Mean<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Mean<E2>()
         {
-            return new GraphTraversal<object, object>().Mean<E2>(args);
+            return new GraphTraversal<object, E2>().Mean<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mean step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Mean<E2>(Scope scope)
+        {
+            return new GraphTraversal<object, E2>().Mean<E2>(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the min step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Min<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Min<E2>()
         {
-            return new GraphTraversal<object, object>().Min<E2>(args);
+            return new GraphTraversal<object, E2>().Min<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the min step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Min<E2>(Scope scope)
+        {
+            return new GraphTraversal<object, E2>().Min<E2>(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the not step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Not(params object[] args)
+        public static GraphTraversal<object, object> Not(ITraversal notTraversal)
         {
-            return new GraphTraversal<object, object>().Not(args);
+            return new GraphTraversal<object, object>().Not(notTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the optional step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Optional<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Optional<E2>(ITraversal optionalTraversal)
         {
-            return new GraphTraversal<object, object>().Optional<E2>(args);
+            return new GraphTraversal<object, E2>().Optional<E2>(optionalTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the or step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Or(params object[] args)
+        public static GraphTraversal<object, object> Or(params ITraversal[] orTraversals)
         {
-            return new GraphTraversal<object, object>().Or(args);
+            return orTraversals.Length == 0
+                ? new GraphTraversal<object, object>().Or()
+                : new GraphTraversal<object, object>().Or(orTraversals);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the order step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Order(params object[] args)
+        public static GraphTraversal<object, object> Order()
         {
-            return new GraphTraversal<object, object>().Order(args);
+            return new GraphTraversal<object, object>().Order();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the order step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Order(Scope scope)
+        {
+            return new GraphTraversal<object, object>().Order(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the otherV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> OtherV(params object[] args)
+        public static GraphTraversal<object, Vertex> OtherV()
         {
-            return new GraphTraversal<object, object>().OtherV(args);
+            return new GraphTraversal<object, Vertex>().OtherV();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the out step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> Out(params object[] args)
+        public static GraphTraversal<object, Vertex> Out(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().Out(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Vertex>().Out()
+                : new GraphTraversal<object, Vertex>().Out(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the outE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> OutE(params object[] args)
+        public static GraphTraversal<object, Edge> OutE(params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().OutE(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Edge>().OutE()
+                : new GraphTraversal<object, Edge>().OutE(edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the outV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> OutV(params object[] args)
+        public static GraphTraversal<object, Vertex> OutV()
         {
-            return new GraphTraversal<object, object>().OutV(args);
+            return new GraphTraversal<object, Vertex>().OutV();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the path step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Path> Path(params object[] args)
+        public static GraphTraversal<object, Path> Path()
         {
-            return new GraphTraversal<object, object>().Path(args);
+            return new GraphTraversal<object, Path>().Path();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the project step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> Project<E2>(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> Project<E2>(string projectKey, params string[] projectKeys)
         {
-            return new GraphTraversal<object, object>().Project<E2>(args);
+            return projectKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().Project<E2>(projectKey)
+                : new GraphTraversal<object, IDictionary<string, E2>>().Project<E2>(projectKey, projectKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the properties step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Properties<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Properties<E2>(params string[] propertyKeys)
         {
-            return new GraphTraversal<object, object>().Properties<E2>(args);
+            return propertyKeys.Length == 0
+                ? new GraphTraversal<object, E2>().Properties<E2>()
+                : new GraphTraversal<object, E2>().Properties<E2>(propertyKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the property step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Property(params object[] args)
+        public static GraphTraversal<object, object> Property(Cardinality cardinality, object key, object value, params object[] keyValues)
         {
-            return new GraphTraversal<object, object>().Property(args);
+            return keyValues.Length == 0
+                ? new GraphTraversal<object, object>().Property(cardinality, key, value)
+                : new GraphTraversal<object, object>().Property(cardinality, key, value, keyValues);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the property step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Property(object key, object value, params object[] keyValues)
+        {
+            return keyValues.Length == 0
+                ? new GraphTraversal<object, object>().Property(key, value)
+                : new GraphTraversal<object, object>().Property(key, value, keyValues);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the propertyMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> PropertyMap<E2>(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> PropertyMap<E2>(params string[] propertyKeys)
         {
-            return new GraphTraversal<object, object>().PropertyMap<E2>(args);
+            return propertyKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().PropertyMap<E2>()
+                : new GraphTraversal<object, IDictionary<string, E2>>().PropertyMap<E2>(propertyKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Range<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Range<E2>(Scope scope, long low, long high)
         {
-            return new GraphTraversal<object, object>().Range<E2>(args);
+            return new GraphTraversal<object, E2>().Range<E2>(scope, low, high);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Range<E2>(long low, long high)
+        {
+            return new GraphTraversal<object, E2>().Range(low, high);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the repeat step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Repeat(params object[] args)
+        public static GraphTraversal<object, object> Repeat(ITraversal traversal)
         {
-            return new GraphTraversal<object, object>().Repeat(args);
+            return new GraphTraversal<object, object>().Repeat(traversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Sack(params object[] args)
+        public static GraphTraversal<object, E2> Sack<E2>()
         {
-            return new GraphTraversal<object, object>().Sack(args);
+            return new GraphTraversal<object, E2>().Sack<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Sack(object sackOperator)
+        {
+            return new GraphTraversal<object, object>().Sack(sackOperator);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Sack(object sackOperator, string elementPropertyKey)
+        {
+            return new GraphTraversal<object, object>().Sack(sackOperator, elementPropertyKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sample step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Sample(params object[] args)
+        public static GraphTraversal<object, object> Sample(Scope scope, int amountToSample)
         {
-            return new GraphTraversal<object, object>().Sample(args);
+            return new GraphTraversal<object, object>().Sample(scope, amountToSample);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sample step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Sample(int amountToSample)
+        {
+            return new GraphTraversal<object, object>().Sample(amountToSample);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> Select<E2>(params object[] args)
+        public static GraphTraversal<object, ICollection<E2>> Select<E2>(Column column)
         {
-            return new GraphTraversal<object, object>().Select<E2>(args);
+            return new GraphTraversal<object, ICollection<E2>>().Select<E2>(column);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Select<E2>(Pop pop, string selectKey)
+        {
+            return new GraphTraversal<object, E2>().Select<E2>(pop, selectKey);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, IDictionary<string, E2>> Select<E2>(Pop pop, string selectKey1, string selectKey2, params string[] otherSelectKeys)
+        {
+            return otherSelectKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(pop, selectKey1, selectKey2)
+                : new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(pop, selectKey1, selectKey2, otherSelectKeys);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Select<E2>(string selectKey)
+        {
+            return new GraphTraversal<object, E2>().Select<E2>(selectKey);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, IDictionary<string, E2>> Select<E2>(string selectKey1, string selectKey2, params string[] otherSelectKeys)
+        {
+            return otherSelectKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(selectKey1, selectKey2)
+                : new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(selectKey1, selectKey2, otherSelectKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sideEffect step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> SideEffect(params object[] args)
+        public static GraphTraversal<object, object> SideEffect(object consumer)
         {
-            return new GraphTraversal<object, object>().SideEffect(args);
+            return new GraphTraversal<object, object>().SideEffect(consumer);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sideEffect step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> SideEffect(ITraversal sideEffectTraversal)
+        {
+            return new GraphTraversal<object, object>().SideEffect(sideEffectTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the simplePath step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> SimplePath(params object[] args)
+        public static GraphTraversal<object, object> SimplePath()
         {
-            return new GraphTraversal<object, object>().SimplePath(args);
+            return new GraphTraversal<object, object>().SimplePath();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the store step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Store(params object[] args)
+        public static GraphTraversal<object, object> Store(string sideEffectKey)
         {
-            return new GraphTraversal<object, object>().Store(args);
+            return new GraphTraversal<object, object>().Store(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the subgraph step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> Subgraph(params object[] args)
+        public static GraphTraversal<object, Edge> Subgraph(string sideEffectKey)
         {
-            return new GraphTraversal<object, object>().Subgraph(args);
+            return new GraphTraversal<object, Edge>().Subgraph(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sum step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Sum<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Sum<E2>()
         {
-            return new GraphTraversal<object, object>().Sum<E2>(args);
+            return new GraphTraversal<object, E2>().Sum<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sum step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Sum<E2>(Scope scope)
+        {
+            return new GraphTraversal<object, E2>().Sum<E2>(scope);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Tail<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Tail<E2>()
         {
-            return new GraphTraversal<object, object>().Tail<E2>(args);
+            return new GraphTraversal<object, E2>().Tail();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Tail<E2>(Scope scope)
+        {
+            return new GraphTraversal<object, E2>().Tail<E2>(scope);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Tail<E2>(Scope scope, long limit)
+        {
+            return new GraphTraversal<object, E2>().Tail<E2>(scope, limit);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Tail<E2>(long limit)
+        {
+            return new GraphTraversal<object, E2>().Tail(limit);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the timeLimit step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> TimeLimit(params object[] args)
+        public static GraphTraversal<object, object> TimeLimit(long timeLimit)
         {
-            return new GraphTraversal<object, object>().TimeLimit(args);
+            return new GraphTraversal<object, object>().TimeLimit(timeLimit);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the times step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Times(params object[] args)
+        public static GraphTraversal<object, object> Times(int maxLoops)
         {
-            return new GraphTraversal<object, object>().Times(args);
+            return new GraphTraversal<object, object>().Times(maxLoops);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the to step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> To(params object[] args)
+        public static GraphTraversal<object, Vertex> To(Direction direction, params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().To(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Vertex>().To(direction)
+                : new GraphTraversal<object, Vertex>().To(direction, edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> ToE(params object[] args)
+        public static GraphTraversal<object, Edge> ToE(Direction direction, params string[] edgeLabels)
         {
-            return new GraphTraversal<object, object>().ToE(args);
+            return edgeLabels.Length == 0
+                ? new GraphTraversal<object, Edge>().ToE(direction)
+                : new GraphTraversal<object, Edge>().ToE(direction, edgeLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> ToV(params object[] args)
+        public static GraphTraversal<object, Vertex> ToV(Direction direction)
         {
-            return new GraphTraversal<object, object>().ToV(args);
+            return new GraphTraversal<object, Vertex>().ToV(direction);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tree step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Tree(params object[] args)
+        public static GraphTraversal<object, E2> Tree<E2>()
         {
-            return new GraphTraversal<object, object>().Tree(args);
+            return new GraphTraversal<object, E2>().Tree<E2>();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tree step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Tree(string sideEffectKey)
+        {
+            return new GraphTraversal<object, object>().Tree(sideEffectKey);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the unfold step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Unfold<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Unfold<E2>()
         {
-            return new GraphTraversal<object, object>().Unfold<E2>(args);
+            return new GraphTraversal<object, E2>().Unfold<E2>();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the union step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Union<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Union<E2>(params ITraversal[] traversals)
         {
-            return new GraphTraversal<object, object>().Union<E2>(args);
+            return traversals.Length == 0
+                ? new GraphTraversal<object, E2>().Union<E2>()
+                : new GraphTraversal<object, E2>().Union<E2>(traversals);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the until step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Until(params object[] args)
+        public static GraphTraversal<object, object> Until(TraversalPredicate untilPredicate)
         {
-            return new GraphTraversal<object, object>().Until(args);
+            return new GraphTraversal<object, object>().Until(untilPredicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the until step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Until(ITraversal untilTraversal)
+        {
+            return new GraphTraversal<object, object>().Until(untilTraversal);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the value step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Value<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Value<E2>()
         {
-            return new GraphTraversal<object, object>().Value<E2>(args);
+            return new GraphTraversal<object, E2>().Value<E2>();            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the valueMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, IDictionary<string, E2>> ValueMap<E2>(params object[] args)
+        public static GraphTraversal<object, IDictionary<string, E2>> ValueMap<E2>(params string[] propertyKeys)
         {
-            return new GraphTraversal<object, object>().ValueMap<E2>(args);
+            return propertyKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().ValueMap<E2>()
+                : new GraphTraversal<object, IDictionary<string, E2>>().ValueMap<E2>(propertyKeys);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the valueMap step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, IDictionary<string, E2>> ValueMap<E2>(bool includeTokens, params string[] propertyKeys)
+        {
+            return propertyKeys.Length == 0
+                ? new GraphTraversal<object, IDictionary<string, E2>>().ValueMap<E2>(includeTokens)
+                : new GraphTraversal<object, IDictionary<string, E2>>().ValueMap<E2>(includeTokens, propertyKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the values step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Values<E2>(params object[] args)
+        public static GraphTraversal<object, E2> Values<E2>(params string[] propertyKeys)
         {
-            return new GraphTraversal<object, object>().Values<E2>(args);
+            return propertyKeys.Length == 0
+                ? new GraphTraversal<object, E2>().Values<E2>()
+                : new GraphTraversal<object, E2>().Values<E2>(propertyKeys);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the where step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Where(params object[] args)
+        public static GraphTraversal<object, object> Where(TraversalPredicate predicate)
         {
-            return new GraphTraversal<object, object>().Where(args);
+            return new GraphTraversal<object, object>().Where(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the where step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Where(string startKey, TraversalPredicate predicate)
+        {
+            return new GraphTraversal<object, object>().Where(startKey, predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the where step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Where(ITraversal whereTraversal)
+        {
+            return new GraphTraversal<object, object>().Where(whereTraversal);            
         }
 
     }

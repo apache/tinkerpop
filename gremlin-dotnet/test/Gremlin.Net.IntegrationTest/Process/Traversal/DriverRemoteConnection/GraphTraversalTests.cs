@@ -135,24 +135,24 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
 
             var shortestPath =
-                g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<object>(1).Path().Next();
+                g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit(1).Path().Next();
 
             Assert.Equal(4, shortestPath.Count);
             Assert.Equal(new Vertex((long) 6), shortestPath[3]);
         }
 
-        [Fact]
-        public void ShouldUseBindingsInTraversal()
-        {
-            var graph = new Graph();
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+        //[Fact]
+        //public void ShouldUseBindingsInTraversal()
+        //{
+        //    var graph = new Graph();
+        //    var connection = _connectionFactory.CreateRemoteConnection();
+        //    var g = graph.Traversal().WithRemote(connection);
 
-            var b = new Bindings();
-            var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
+        //    var b = new Bindings();
+        //    var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
 
-            Assert.Equal(3, count);
-        }
+        //    Assert.Equal(3, count);
+        //}
 
         [Fact]
         public async Task ShouldExecuteAsynchronouslyWhenPromiseIsCalled()
