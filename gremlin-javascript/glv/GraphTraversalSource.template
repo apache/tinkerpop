@@ -1,0 +1,127 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
+/**
+ * @author Jorge Bay Gondra
+ */
+'use strict';
+
+var t = require('./traversal.js');
+var remote = require('../driver/remote-connection');
+var utils = require('../utils');
+var Bytecode = require('./bytecode');
+var TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
+var inherits = utils.inherits;
+var parseArgs = utils.parseArgs;
+
+/**
+ *
+ * @param {Graph} graph
+ * @param {TraversalStrategies} traversalStrategies
+ * @param {Bytecode} [bytecode]
+ * @constructor
+ */
+function GraphTraversalSource(graph, traversalStrategies, bytecode) {
+  this.graph = graph;
+  this.traversalStrategies = traversalStrategies;
+  this.bytecode = bytecode || new Bytecode();
+}
+
+/**
+ * @param remoteConnection
+ * @returns {GraphTraversalSource}
+ */
+GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
+  var traversalStrategy = new TraversalStrategies(this.traversalStrategies);
+  traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
+  return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
+};
+
+/**
+ * Returns the string representation of the GraphTraversalSource.
+ * @returns {string}
+ */
+GraphTraversalSource.prototype.toString = function () {
+  return 'graphtraversalsource[' + this.graph.toString() + ']';
+};
+<% sourceStepMethods.each{ method -> %>
+/**
+ * Graph Traversal Source <%= method %> method.
+ * @param {...Object} args
+ * @returns {GraphTraversalSource}
+ */
+GraphTraversalSource.prototype.<%= toJs.call(method) %> = function (args) {
+  var b = new Bytecode(this.bytecode).addSource('<%= method %>', parseArgs.apply(null, arguments));
+  return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+};
+<%
+}
+sourceSpawnMethods.each{ method -> %>
+/**
+ * <%= method %> GraphTraversalSource step method.
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+GraphTraversalSource.prototype.<%= toJs.call(method) %> = function (args) {
+  var b = new Bytecode(this.bytecode).addStep('<%= method %>', parseArgs.apply(null, arguments));
+  return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+};
+<% } %>
+/**
+ * Represents a graph traversal.
+ * @extends Traversal
+ * @constructor
+ */
+function GraphTraversal(graph, traversalStrategies, bytecode) {
+  t.Traversal.call(this, graph, traversalStrategies, bytecode);
+}
+
+inherits(GraphTraversal, t.Traversal);
+<% graphStepMethods.each{ method -> %>
+/**
+ * Graph traversal <%= method %> method.
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+GraphTraversal.prototype.<%= toJs.call(method) %> = function (args) {
+  this.bytecode.addStep('<%= method %>', parseArgs.apply(null, arguments));
+  return this;
+};
+<% } %>
+/**
+ * Contains the static method definitions
+ * @type {Object}
+ */
+var statics = {};
+<% anonStepMethods.each{ method -> %>
+/**
+ * <%= method %>() static method
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+statics.<%= toJs.call(method) %> = function (args) {
+  var g = new GraphTraversal(null, null, new Bytecode());
+  return g.<%= toJs.call(method) %>.apply(g, arguments);
+};
+<% } %>
+module.exports = {
+  GraphTraversal: GraphTraversal,
+  GraphTraversalSource: GraphTraversalSource,
+  statics: statics
+};

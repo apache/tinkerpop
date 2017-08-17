@@ -91,7 +91,7 @@ Traversal.prototype._applyStrategies = function () {
 Traversal.prototype.toString = function () {
   return this.bytecode.toString();
 };
-  
+
 /**
  * Represents an operation.
  * @constructor
@@ -227,6 +227,8 @@ module.exports = {
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),
   direction: toEnum('Direction', 'BOTH IN OUT'),
+  graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0'),
+  gryoVersion: toEnum('GryoVersion', 'V1_0'),
   operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
   order: toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr'),
   pick: toEnum('Pick', 'any none'),

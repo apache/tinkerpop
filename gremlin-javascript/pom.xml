@@ -31,12 +31,6 @@ limitations under the License.
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>${groovy.version}</version>
-            <classifier>indy</classifier>
-        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -72,27 +66,18 @@ limitations under the License.
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>generate-javascript</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>org.apache.tinkerpop.gremlin.javascript.GenerateGremlinJavascript</mainClass>
-                            <arguments>
-                                <argument>${project.version}</argument>
-                                <argument>${basedir}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
+                <!--
+                Use gmavenplus-plugin to:
+                    - Generate js sources
+                    - Start and stop gremlin server for integration tests
+                -->
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
                 <dependencies>
@@ -115,6 +100,102 @@ limitations under the License.
                     </dependency>
                 </dependencies>
                 <executions>
+                    <execution>
+                        <id>generate-javascript</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script><![CDATA[
+import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import java.lang.reflect.Modifier
+
+def toJsMap = ["in": "in_",
+               "from": "from_"]
+
+def toJs = { symbol -> toJsMap.getOrDefault(symbol, symbol) }
+
+def decapitalize = {
+    String string = it;
+    if (string == null || string.length() == 0) {
+        return string;
+    }
+    def c = string.toCharArray();
+    c[0] = Character.toLowerCase(c[0]);
+    return new String(c);
+}
+
+def determineVersion = {
+    def env = System.getenv()
+    def mavenVersion = env.containsKey("TP_RELEASE_VERSION") ? env.get("JS_RELEASE_VERSION") : '${project.version}'
+    return mavenVersion.replace("-SNAPSHOT", "-alpha1")
+}
+
+def binding = ["enums": CoreImports.getClassImports()
+                                 .findAll { Enum.class.isAssignableFrom(it) }
+                                 .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() },
+               "pmethods": P.class.getMethods().
+                                 findAll { Modifier.isStatic(it.getModifiers()) }.
+                                 findAll { P.class.isAssignableFrom(it.returnType) }.
+                                 collect { it.name }.
+                                 unique().
+                                 sort { a, b -> a <=> b },
+               "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
+                                        findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                                        findAll {
+                                            !it.name.equals("clone") &&
+                                                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
+                                                    !it.name.equals(TraversalSource.Symbols.withRemote) &&
+                                                    !it.name.equals(TraversalSource.Symbols.withComputer)
+                                        }.
+                                        collect { it.name }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        collect { it.name }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "graphStepMethods": GraphTraversal.getMethods().
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
+                                        collect { it.name }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "anonStepMethods": __.class.getMethods().
+                                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                                        findAll { Modifier.isStatic(it.getModifiers()) }.
+                                        findAll { !it.name.equals("__") && !it.name.equals("start") }.
+                                        collect { it.name }.
+                                        unique().
+                                        sort { a, b -> a <=> b },
+               "toJs": toJs,
+               "version": determineVersion(),
+               "decapitalize": decapitalize]
+
+def engine = new groovy.text.GStringTemplateEngine()
+def graphTraversalTemplate = engine.createTemplate(new File('${project.basedir}/glv/GraphTraversalSource.template')).make(binding)
+def graphTraversalFile = new File('${project.basedir}/src/main/javascript/gremlin-javascript/lib/process/graph-traversal.js')
+graphTraversalFile.newWriter().withWriter{ it << graphTraversalTemplate }
+
+def traversalTemplate = engine.createTemplate(new File('${project.basedir}/glv/TraversalSource.template')).make(binding)
+def traversalFile = new File('${project.basedir}/src/main/javascript/gremlin-javascript/lib/process/traversal.js')
+traversalFile.newWriter().withWriter{ it << traversalTemplate }
+
+def packageJsonTemplate = engine.createTemplate(new File('${project.basedir}/glv/PackageJson.template')).make(binding)
+def packageJsonFile = new File('${project.basedir}/src/main/javascript/gremlin-javascript/package.json')
+packageJsonFile.newWriter().withWriter{ it << packageJsonTemplate }
+]]>                                     </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>gremlin-server-start</id>
                         <phase>pre-integration-test</phase>

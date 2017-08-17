@@ -16,7 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
- 
+
 /**
  * @author Jorge Bay Gondra
  */
@@ -68,16 +68,6 @@ GraphTraversalSource.prototype.toString = function () {
  */
 GraphTraversalSource.prototype.withBulk = function (args) {
   var b = new Bytecode(this.bytecode).addSource('withBulk', parseArgs.apply(null, arguments));
-  return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
-};
-
-/**
- * Graph Traversal Source withComputer method.
- * @param {...Object} args
- * @returns {GraphTraversalSource}
- */
-GraphTraversalSource.prototype.withComputer = function (args) {
-  var b = new Bytecode(this.bytecode).addSource('withComputer', parseArgs.apply(null, arguments));
   return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
 };
 
@@ -1539,6 +1529,16 @@ statics.identity = function (args) {
 };
 
 /**
+ * in() static method
+ * @param {...Object} args
+ * @returns {GraphTraversal}
+ */
+statics.in_ = function (args) {
+  var g = new GraphTraversal(null, null, new Bytecode());
+  return g.in_.apply(g, arguments);
+};
+
+/**
  * inE() static method
  * @param {...Object} args
  * @returns {GraphTraversal}
@@ -1556,16 +1556,6 @@ statics.inE = function (args) {
 statics.inV = function (args) {
   var g = new GraphTraversal(null, null, new Bytecode());
   return g.inV.apply(g, arguments);
-};
-
-/**
- * in_() static method
- * @param {...Object} args
- * @returns {GraphTraversal}
- */
-statics.in_ = function (args) {
-  var g = new GraphTraversal(null, null, new Bytecode());
-  return g.in_.apply(g, arguments);
 };
 
 /**
@@ -1906,16 +1896,6 @@ statics.sideEffect = function (args) {
 statics.simplePath = function (args) {
   var g = new GraphTraversal(null, null, new Bytecode());
   return g.simplePath.apply(g, arguments);
-};
-
-/**
- * start() static method
- * @param {...Object} args
- * @returns {GraphTraversal}
- */
-statics.start = function (args) {
-  var g = new GraphTraversal(null, null, new Bytecode());
-  return g.start.apply(g, arguments);
 };
 
 /**
