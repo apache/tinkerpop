@@ -29,6 +29,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
@@ -414,7 +415,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     public CompiledScript compile(final String scriptSource) throws ScriptException {
         try {
             return new GroovyCompiledScript(this, getScriptClass(scriptSource));
-        } catch (CompilationFailedException e) {
+        } catch (Exception e) {
             throw new ScriptException(e);
         }
     }
@@ -567,11 +568,19 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         return classMap.stats().totalLoadTime();
     }
 
-    Class getScriptClass(final String script) throws CompilationFailedException {
+    Class getScriptClass(final String script) throws Exception {
         try {
             return classMap.get(script).get();
         } catch (ExecutionException e) {
-            throw ((CompilationFailedException)e.getCause());
+            final Throwable t = e.getCause();
+
+            // more often than not the cause is a compilation problem but there might be other failures that can
+            // occur in which case, just throw the ExecutionException as-is and let it bubble up as i'm not sure
+            // what the specific handling should be
+            if (t instanceof CompilationFailedException)
+                throw (CompilationFailedException) t;
+            else
+                throw e;
         } catch (InterruptedException e) {
             //This should never happen as the future should completed before it is returned to the us.
             throw new AssertionError();
