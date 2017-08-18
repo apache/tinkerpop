@@ -81,7 +81,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
             this.parse = String.join("\n", IOUtils.toString(reader), READ_CALL);
             script = ((Compilable) engine).compile(this.parse);
         } catch (ScriptException e) {
-            throw new IOException(e.getMessage(), e);
+            throw new IOException(e.getMessage());
         }
     }
 
@@ -102,7 +102,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                     return true;
                 }
             } catch (final ScriptException e) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e.getMessage());
             }
         }
     }
