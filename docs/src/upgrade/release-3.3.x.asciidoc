@@ -476,6 +476,17 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
 
+ScriptInputFormat
+^^^^^^^^^^^^^^^^^
+
+The API for the script provided to a `ScriptInputFormat` has changed slightly. The signature for `parse(line, factory)`
+is now simply `parse(line)`. The inclusion of `factory` was deprecated in 3.1.2. Instead of using the {{factory}} to
+get the {{StarGraph}} there is a {{graph}} variable in the glocal context of the script. Simply use that directly in
+the script.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1137[TINKERPOP-1137],
+link:http://tinkerpop.apache.org/docs/3.3.0-SNAPSHOT/reference/#script-io-format[Reference Documentation - Script I/O Format]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
