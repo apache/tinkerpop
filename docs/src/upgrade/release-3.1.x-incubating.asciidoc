@@ -25,7 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.8
 ---------------
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: August 21, 2017*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.8/CHANGELOG.asciidoc#tinkerpop-318-release-date-august-21-2017[changelog] for a complete list of all the modifications that are part of this release.
 
 TinkerPop 3.1.7
 ---------------
