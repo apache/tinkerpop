@@ -67,12 +67,11 @@ Branches
 TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
-* `tp31` - 3.1.x (bug fixes and documentation updates only)
+* `tp31` - 3.1.x (no longer maintained)
 * `tp32` - 3.2.x (bug fixes and documentation updates only)
 * `master` - 3.3.x
 
-Changes to `tp31` should merge to `tp32`, and changes to `tp32` should merge to `master`. Please read more about this
-process in the <<pull-requests, Pull Requests>> section.
+Changes to `tp32` should merge to `master`. Please read more about this process in the <<pull-requests, Pull Requests>> section.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -291,22 +290,22 @@ When submitting a pull request to one of the <<branches, release branches>>, be 
 * If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
 
 A pull request will typically be made to a target <<branches, branch>>. Assuming that branch is upstream of other
-release branches (e.g. a pull request made to for the branch containing 3.1.x must merge to the branch that releases
-3.2.x), it is important to be sure that those changes are merged to the downstream release branches. Typicaly,
+release branches (e.g. a pull request made to for the branch containing 3.2.x must merge to the branch that releases
+3.3.x), it is important to be sure that those changes are merged to the downstream release branches. Typically,
 this process is best handled by multiple pull requests: one to each release branch.
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
-the `tp31` branch:
+the `tp32` branch:
 
 [source,bash]
 ----
-`git checkout -b TINKERPOP-1234 tp31`
+`git checkout -b TINKERPOP-1234 tp32`
 // do a bunch of stuff to implement TINKERPOP-1234 and commit/push
 git checkout -b <TINKERPOP-1234-master> master
 git merge TINKERPOP-1234
 ----
 
-At this point, there are two branches, with the same set of commits going to `tp31` and `master`. Voting will occur
+At this point, there are two branches, with the same set of commits going to `tp32` and `master`. Voting will occur
 on both pull requests. After a successful vote, it is time to merge. If there are no conflicts, then simply `git merge`
 both pull requests to their respective branches. If there are conflicts, then there is some added work to do - time to
 rebase:
@@ -314,7 +313,7 @@ rebase:
 [source,bash]
 ----
 git checkout TINKERPOP-1234
-git rebase origin/tp31
+git rebase origin/tp32
 ----
 
 Depending on the conflict, it might be a good idea to re-test before going any further, otherwise:
