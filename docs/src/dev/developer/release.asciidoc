@@ -178,7 +178,7 @@ validity into question.
 `project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
 ... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`.
 This formula can help construct each line item for the CHANGELOG if column `A` is the issue number, `B` is the
-issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking","*(breaking)*",""))`
+issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking"," \*(breaking)*",""))`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
