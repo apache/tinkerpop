@@ -916,16 +916,19 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-8]]
-TinkerPop 3.1.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.1.8 (Release Date: August 21, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a `MessageScope` bug in `TinkerGraphComputer`.
 * Fixed a bug in `BigDecimal` divisions in `NumberHelper` that potentially threw an `ArithmeticException`.
+* Non-deserializable exceptions no longer added to ScriptRecordReader IOExceptions.
 
 Bugs
 ^^^^
 
+* TINKERPOP-1519 TinkerGraphComputer doesn't handle multiple MessageScopes in single iteration
 * TINKERPOP-1736 Sack step evaluated by Groovy interprets numbers in an unexpected way
+* TINKERPOP-1754 Spark can not deserialise some ScriptRecordReader parse exceptions
 
 [[release-3-1-7]]
 TinkerPop 3.1.7 (Release Date: June 12, 2017)
