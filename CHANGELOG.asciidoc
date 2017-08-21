@@ -137,8 +137,8 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-6]]
-TinkerPop 3.2.6 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.2.6 (Release Date: August 21, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This release also includes changes from <<release-3-1-8, 3.1.8>>.
 
@@ -168,6 +168,40 @@ This release also includes changes from <<release-3-1-8, 3.1.8>>.
 * Changed some tests in `EventStrategyProcessTest` which were enforcing some unintended semantics around transaction state.
 * Added WsAndHttpChannelizer and SaslAndHttpBasicAuthenticationHandler to be allow for servicing Http and Websocket requests to the same server
 * Added deep copy of `Bytecode` to `DefaultTraversal.clone()`.
+
+Bugs
+^^^^
+
+* TINKERPOP-1385 Refactor Profiling test cases
+* TINKERPOP-1679 Detached side-effects aren't attached when remoted
+* TINKERPOP-1683 AbstractHadoopGraphComputer on Windows
+* TINKERPOP-1691 Some EventStrategyProcessTest assume element state is synced in memory
+* TINKERPOP-1704 XXXTranslators are not being respective of BulkSet and Tree.
+* TINKERPOP-1727 Bytecode object shallow copied when traversals are cloned
+* TINKERPOP-1742 RangeByIsCountStrategy fails for ConnectiveSteps
+* TINKERPOP-1743 LambdaRestrictionStrategy does not catch lambdas passed to sack()
+* TINKERPOP-1744 Gremlin .NET: Exception from sync execution gets wrapped in AggregateException
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-741 Remove Options For Transaction Retry
+* TINKERPOP-915 Gremlin Server supports REST and Websockets simultanteously
+* TINKERPOP-920 Test case needed for ensuring same cardinality for key.
+* TINKERPOP-1552 C# Gremlin Language Variant
+* TINKERPOP-1669 EdgeVertexStep should be designed for extension
+* TINKERPOP-1676 Improve GraphSON 2.0 Performance  *(breaking)*
+* TINKERPOP-1688 Include TraversalMetrics annotation in pretty print
+* TINKERPOP-1694 Deprecate useMapperFromGraph
+* TINKERPOP-1701 HaltedTraverserStrategy should recurse into collections for detachment.
+* TINKERPOP-1703 Make EdgeOtherVertexStep non-final
+* TINKERPOP-1708 Add a "Note on Scopes" document
+* TINKERPOP-1709 Add a list of all the steps that support by()/from()/to()/as()/option()
+* TINKERPOP-1710 Add a note on tree() by-modulation and uniqueness of tree branches.
+* TINKERPOP-1714 Gremlin Server scriptEvaluationTimeout should take into account request arrival time
+* TINKERPOP-1718 Deprecate GryoLiteMessageSerializerV1d0
+* TINKERPOP-1748 Callout comments break code snippets
+* TINKERPOP-1749 Bump to Netty 4.0.50
 
 [[release-3-2-5]]
 TinkerPop 3.2.5 (Release Date: June 12, 2017)
