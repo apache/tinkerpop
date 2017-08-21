@@ -917,7 +917,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-1-8]]
 TinkerPop 3.1.8 (Release Date: August 21, 2017)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a `MessageScope` bug in `TinkerGraphComputer`.
 * Fixed a bug in `BigDecimal` divisions in `NumberHelper` that potentially threw an `ArithmeticException`.
