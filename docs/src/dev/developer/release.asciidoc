@@ -238,7 +238,7 @@ Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
-. Deploy to link:https://pypi.python.org/pypi[pypi]
+. Deploy the GLVs
 .. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
 .. `mvn clean install -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
