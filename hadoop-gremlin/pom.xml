@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
