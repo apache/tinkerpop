@@ -68,4 +68,15 @@ public abstract class O_Traverser<T> extends AbstractTraverser<T> {
             this.tags.addAll(other.getTags());
         }
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof O_Traverser &&
+                super.equals(object) &&
+                (this.tags == null
+                        ? ((O_Traverser) object).tags == null
+                        : (((O_Traverser) object).tags != null &&
+                            ((O_Traverser) object).tags.containsAll(this.tags) &&
+                            this.tags.containsAll(((O_Traverser) object).tags)));
+    }
 }
