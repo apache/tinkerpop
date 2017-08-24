@@ -52,8 +52,6 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1520[TINKERPOP-1520]
 Changes to IO
 ^^^^^^^^^^^^^
 
-*WILL NEED TO WRITE SOMETHING MORE COHESIVE HERE - JUST LISTING STUFF FOR RIGHT NOW*
-
 * Gryo incompatibilities with 3.2.x:
 ** `RequestMessage`
 ** `ResponseMessage`
