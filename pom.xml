@@ -115,6 +115,7 @@ limitations under the License.
     <modules>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
+        <module>gremlin-objects</module>
         <module>gremlin-test</module>
         <module>gremlin-groovy</module>
         <module>tinkergraph-gremlin</module>

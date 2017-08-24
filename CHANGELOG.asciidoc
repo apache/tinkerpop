@@ -28,6 +28,7 @@ TinkerPop 3.3.0 (Release Date: August 21, 2017)
 
 This release also includes changes from <<release-3-2-6, 3.2.6>>.
 
+* Added `gremlin-objects`, an object graph mapping framework for Gremlin.
 * Removed previously deprecated `ScriptElementFactory`.
 * Added `GraphTraversalSource.addE(String)` in support of `g.addE().from().to()`.
 * Added support for `to(Vertex)` and `from(Vertex)` as a shorthand for `to(V(a))` and `from(V(b))`.
