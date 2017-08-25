@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -69,14 +70,12 @@ public abstract class O_Traverser<T> extends AbstractTraverser<T> {
         }
     }
 
+    protected final boolean equals(final O_Traverser other) {
+        return super.equals(other) && Objects.equals(this.tags, other.tags);
+    }
+
     @Override
     public boolean equals(final Object object) {
-        return object instanceof O_Traverser &&
-                super.equals(object) &&
-                (this.tags == null
-                        ? ((O_Traverser) object).tags == null
-                        : (((O_Traverser) object).tags != null &&
-                            ((O_Traverser) object).tags.containsAll(this.tags) &&
-                            this.tags.containsAll(((O_Traverser) object).tags)));
+        return object instanceof O_Traverser && this.equals((O_Traverser) object);
     }
 }

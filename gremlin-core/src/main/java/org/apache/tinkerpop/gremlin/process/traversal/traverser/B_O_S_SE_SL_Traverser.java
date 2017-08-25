@@ -113,6 +113,7 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     /////////////////
 
     final boolean carriesUnmergeableSack() {
+        // hmmm... serialization in OLAP destroys the transient sideEffects
         return null != this.sack && (null == this.sideEffects || null == this.sideEffects.getSackMerger());
     }
 
@@ -121,11 +122,12 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
         return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops);
     }
 
+    protected final boolean equals(final B_O_S_SE_SL_Traverser other) {
+        return super.equals(other) && other.loops == this.loops && !carriesUnmergeableSack();
+    }
+
     @Override
     public boolean equals(final Object object) {
-        return object instanceof B_O_S_SE_SL_Traverser &&
-                super.equals(object) &&
-                ((B_O_S_SE_SL_Traverser) object).loops == this.loops &&
-                !carriesUnmergeableSack(); // hmmm... serialization in OLAP destroys the transient sideEffects
+        return object instanceof B_O_S_SE_SL_Traverser && this.equals((B_O_S_SE_SL_Traverser) object);
     }
 }

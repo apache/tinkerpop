@@ -83,10 +83,12 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.path.hashCode());
     }
 
+    protected final boolean equals(final B_LP_O_P_S_SE_SL_Traverser other) {
+        return super.equals(other) && other.path.equals(this.path);
+    }
+
     @Override
     public boolean equals(final Object object) {
-        return object instanceof B_LP_O_P_S_SE_SL_Traverser &&
-                super.equals(object) &&
-                ((B_LP_O_P_S_SE_SL_Traverser) object).path.equals(this.path);
+        return object instanceof B_LP_O_P_S_SE_SL_Traverser && this.equals((B_LP_O_P_S_SE_SL_Traverser) object);
     }
 }

@@ -62,10 +62,12 @@ public class B_O_Traverser<T> extends O_Traverser<T> {
         this.future = stepId;
     }
 
+    protected final boolean equals(final B_O_Traverser other) {
+        return super.equals(other) && other.future.equals(this.future);
+    }
+
     @Override
     public boolean equals(final Object object) {
-        return object instanceof B_O_Traverser &&
-                super.equals(object) &&
-                ((B_O_Traverser) object).future.equals(this.future);
+        return object instanceof B_O_Traverser && this.equals((B_O_Traverser) object);
     }
 }
