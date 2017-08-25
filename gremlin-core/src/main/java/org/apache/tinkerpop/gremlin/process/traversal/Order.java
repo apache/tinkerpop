@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.util.Comparator;
 import java.util.Random;
 
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
