@@ -29,7 +29,9 @@ public enum Order implements Comparator<Object> {
     incr {
         @Override
         public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>naturalOrder().compare((Comparable) first, (Comparable) second);
+            return first instanceof Number && second instanceof Number
+                    ? NumberHelper.compare((Number) first, (Number) second)
+                    : Comparator.<Comparable>naturalOrder().compare((Comparable) first, (Comparable) second);
         }
 
         @Override
@@ -39,7 +41,9 @@ public enum Order implements Comparator<Object> {
     }, decr {
         @Override
         public int compare(final Object first, final Object second) {
-            return Comparator.<Comparable>reverseOrder().compare((Comparable) first, (Comparable) second);
+            return first instanceof Number && second instanceof Number
+                    ? NumberHelper.compare((Number) second, (Number) first)
+                    : Comparator.<Comparable>reverseOrder().compare((Comparable) first, (Comparable) second);
         }
 
         @Override

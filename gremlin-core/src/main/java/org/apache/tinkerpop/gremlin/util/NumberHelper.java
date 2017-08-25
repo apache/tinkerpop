@@ -40,7 +40,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final byte x = a.byteValue(), y = b.byteValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Byte.compare(a.byteValue(), b.byteValue()));
+
     static final NumberHelper SHORT_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.shortValue() + b.shortValue(),
             (a, b) -> a.shortValue() - b.shortValue(),
@@ -53,7 +55,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final short x = a.shortValue(), y = b.shortValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Short.compare(a.shortValue(), b.shortValue()));
+
     static final NumberHelper INTEGER_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.intValue() + b.intValue(),
             (a, b) -> a.intValue() - b.intValue(),
@@ -66,7 +70,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final int x = a.intValue(), y = b.intValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Integer.compare(a.intValue(), b.intValue()));
+
     static final NumberHelper LONG_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.longValue() + b.longValue(),
             (a, b) -> a.longValue() - b.longValue(),
@@ -79,7 +85,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final long x = a.longValue(), y = b.longValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Long.compare(a.longValue(), b.longValue()));
+
     static final NumberHelper BIG_INTEGER_NUMBER_HELPER = new NumberHelper(
             (a, b) -> bigIntegerValue(a).add(bigIntegerValue(b)),
             (a, b) -> bigIntegerValue(a).subtract(bigIntegerValue(b)),
@@ -92,7 +100,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
                 return x.compareTo(y) >= 0 ? x : y;
-            });
+            },
+            (a, b) -> bigIntegerValue(a).compareTo(bigIntegerValue(b)));
+
     static final NumberHelper FLOAT_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.floatValue() + b.floatValue(),
             (a, b) -> a.floatValue() - b.floatValue(),
@@ -105,7 +115,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final float x = a.floatValue(), y = b.floatValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Float.compare(a.floatValue(), b.floatValue()));
+
     static final NumberHelper DOUBLE_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.doubleValue() + b.doubleValue(),
             (a, b) -> a.doubleValue() - b.doubleValue(),
@@ -118,7 +130,9 @@ public final class NumberHelper {
             (a, b) -> {
                 final double x = a.doubleValue(), y = b.doubleValue();
                 return x >= y ? x : y;
-            });
+            },
+            (a, b) -> Double.compare(a.doubleValue(), b.doubleValue()));
+
     static final NumberHelper BIG_DECIMAL_NUMBER_HELPER = new NumberHelper(
             (a, b) -> bigDecimalValue(a).add(bigDecimalValue(b)),
             (a, b) -> bigDecimalValue(a).subtract(bigDecimalValue(b)),
@@ -144,20 +158,24 @@ public final class NumberHelper {
             (a, b) -> {
                 final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
                 return x.compareTo(y) >= 0 ? x : y;
-            });
+            },
+            (a, b) -> bigDecimalValue(a).compareTo(bigDecimalValue(b)));
+
     public final BiFunction<Number, Number, Number> add;
     public final BiFunction<Number, Number, Number> sub;
     public final BiFunction<Number, Number, Number> mul;
     public final BiFunction<Number, Number, Number> div;
     public final BiFunction<Number, Number, Number> min;
     public final BiFunction<Number, Number, Number> max;
+    public final BiFunction<Number, Number, Integer> cmp;
 
     private NumberHelper(final BiFunction<Number, Number, Number> add,
                          final BiFunction<Number, Number, Number> sub,
                          final BiFunction<Number, Number, Number> mul,
                          final BiFunction<Number, Number, Number> div,
                          final BiFunction<Number, Number, Number> min,
-                         final BiFunction<Number, Number, Number> max
+                         final BiFunction<Number, Number, Number> max,
+                         final BiFunction<Number, Number, Integer> cmp
     ) {
         this.add = add;
         this.sub = sub;
@@ -165,6 +183,7 @@ public final class NumberHelper {
         this.div = div;
         this.min = min;
         this.max = max;
+        this.cmp = cmp;
     }
 
     public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
@@ -233,6 +252,11 @@ public final class NumberHelper {
     public static Number max(final Number a, final Number b) {
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).max.apply(a, b);
+    }
+
+    public static Integer compare(final Number a, final Number b) {
+        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
+        return getHelper(clazz).cmp.apply(a, b);
     }
 
     private static NumberHelper getHelper(final Class<? extends Number> clazz) {
