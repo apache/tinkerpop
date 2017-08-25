@@ -351,7 +351,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python env"/>
+                                            <arg line="--python=python3 env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
