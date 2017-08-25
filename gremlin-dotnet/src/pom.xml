@@ -150,6 +150,9 @@ limitations under the License.
                                         <!--
                                         until https://github.com/NuGet/Home/issues/4095 we have to have to specify
                                         the "ConfigFile" option to nuget.
+
+                                        Currently set to staging as we don't have an official release yet. For release
+                                        candidates set to https://www.nuget.org/api/v2/package
                                         -->
                                         <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
                                             <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
