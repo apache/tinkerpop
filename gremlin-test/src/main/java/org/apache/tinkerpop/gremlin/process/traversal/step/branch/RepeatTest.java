@@ -43,6 +43,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.loops;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -88,6 +89,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX();
+
+    public abstract Traversal<Vertex, Path> get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -276,6 +279,21 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertEquals(4L, map.get("marko").longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VXX_hasXname_markoX_repeatXoutEXX_inVXX_simplePathXXX_untilXhasXname_rippleXX_limitX1X_pathXX_byXvaluesXnameXX_byXT_labelX() {
+        final Traversal<Vertex, Path> traversal = get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX();
+        printTraversalForm(traversal);
+        final Path path = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(5, path.size());
+        assertEquals("marko", path.get(0));
+        assertEquals("knows", path.get(1));
+        assertEquals("josh", path.get(2));
+        assertEquals("created", path.get(3));
+        assertEquals("ripple", path.get(4));
+    }
+
     public static class Traversals extends RepeatTest {
 
         @Override
@@ -342,5 +360,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX() {
             return g.V().repeat(both()).until(t -> t.get().value("name").equals("lop") || t.loops() > 1).<String>groupCount().by("name");
         }
-    }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX() {
+            return g.V().has("name", "marko").repeat(outE().inV().simplePath()).until(has("name", "ripple")).path().by("name").by(T.label);
+        }
+   }
 }
