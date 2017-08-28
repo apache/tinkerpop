@@ -191,8 +191,9 @@ current release was under development as this new release will have those change
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git diff` and review the updated files
-. `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
+.. This step should update the Gremlin.Net project file with the newly bumped version.
+. `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have a gray background and do not show the results of the commands.
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
 document generation and this step now merely needs to upload what was generated. Note that this step will be responsible
