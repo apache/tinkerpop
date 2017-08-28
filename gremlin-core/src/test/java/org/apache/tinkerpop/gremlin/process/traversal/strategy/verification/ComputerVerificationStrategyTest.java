@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.max;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.min;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
 import static org.junit.Assert.fail;
 
@@ -53,6 +56,7 @@ public class ComputerVerificationStrategyTest {
                 {"__.values(\"age\").union(max(), min(), sum())", __.values("age").union(max(), min(), sum()), true},
                 {"__.count().sum()", __.count().sum(), true},
                 {"__.where(\"a\",eq(\"b\")).out()", __.where("a", P.eq("b")).out(), true},
+                {"__.where(and(outE(\"knows\"),outE(\"created\"))).values(\"name\")", __.where(__.and(outE("knows"), outE("created"))).values("name"), true},
 
         });
     }
