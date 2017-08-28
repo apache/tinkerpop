@@ -62,12 +62,10 @@ class SocialTraversalSource(GraphTraversalSource):
         self.graph_traversal = SocialTraversal
 
     def persons(self, *args):
-        traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("V")
-        traversal.bytecode.add_step("hasLabel", "person")
+        traversal = self.get_graph_traversal().V().hasLabel("person")
 
         if len(args) > 0:
-            traversal.bytecode.add_step("has", "name", P.within(args))
+            traversal = traversal.has("name", P.within(args))
 
         return traversal
 
