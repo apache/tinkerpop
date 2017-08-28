@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `ComputerVerificationStrategy` where child traversals were being analyzed prior to compilation.
 * Fixed a bug that prevented Gremlin from ordering lists and streams made of mixed number types.
 
 
