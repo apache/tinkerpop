@@ -364,9 +364,13 @@ The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
 
-Python artifacts have also been deployed to pypi:
+Python artifacts are available in pypi:
 
 https://pypi.python.org/pypi/gremlinpython/xx.yy.zz
+
+.NET artifacts are available in NuGet:
+
+https://www.nuget.org/packages/Gremlin.Net/xx.yy.zz
 
 [include the release line logo image]
 ----
