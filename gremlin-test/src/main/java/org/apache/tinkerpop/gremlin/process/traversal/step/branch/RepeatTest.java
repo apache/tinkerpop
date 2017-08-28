@@ -363,7 +363,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX() {
-            return g.V().has("name", "marko").repeat(outE().inV().simplePath()).until(has("name", "ripple")).path().by(values("name")).by(T.label);
+            return g.V().has("name", "marko").repeat(outE().inV().simplePath()).until(has("name", "ripple")).path().by("name").by(T.label);
         }
    }
 }

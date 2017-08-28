@@ -100,7 +100,7 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('name', 'marko').repeat(outE().inV().simplePath()).until(has('name', 'ripple')).limit(1).path().by(values('name')).by(T.label)")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('name', 'marko').repeat(outE.inV.simplePath).until(has('name', 'ripple')).path.by('name').by(label)")
         }
     }
 }
