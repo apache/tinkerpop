@@ -252,7 +252,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_capXmX() {
+    public void g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX() {
         final Traversal<Vertex, Map<Integer, Long>> traversal = get_g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final Map<Integer, Long> map = traversal.next();

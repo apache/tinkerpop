@@ -97,7 +97,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX();
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -470,7 +470,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX() {
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX();
+        final Map<String, List<Object>> m = new HashMap<>();
+        m.put("marko", new ArrayList<>(Collections.singleton(666)));
+        m.put("noone", new ArrayList<>(Collections.singleton("blah")));
+
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(m);
         printTraversalForm(traversal);
         final Map<String, List<Object>> map = traversal.next();
         assertEquals(7, map.size());
@@ -587,11 +591,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX() {
-            final Map<String, List<Object>> map = new HashMap<>();
-            map.put("marko", new ArrayList<>(Collections.singleton(666)));
-            map.put("noone", new ArrayList<>(Collections.singleton("blah")));
-            return g.withSideEffect("a", map).V().group("a").by("name").by(outE().label().fold()).cap("a");
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m) {
+            return g.withSideEffect("a", m).V().group("a").by("name").by(outE().label().fold()).cap("a");
         }
     }
 }
