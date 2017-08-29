@@ -250,6 +250,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Ensured that plugins were applied in the order they were configured.
+* Fixed a bug in `Neo4jGremlinPlugin` that prevented it from loading properly in the `GremlinPythonScriptEngine`.
 * Fixed a bug that prevented Gremlin from ordering lists and streams made of mixed number types.
 
 

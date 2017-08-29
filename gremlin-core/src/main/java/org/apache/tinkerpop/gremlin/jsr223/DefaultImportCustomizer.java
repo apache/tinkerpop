@@ -65,31 +65,56 @@ public class DefaultImportCustomizer implements ImportCustomizer {
 
         private Builder() {}
 
+        /**
+         * Adds classes that will be imported to the {@code ScriptEngine}.
+         */
         public Builder addClassImports(final Class... clazz) {
             classImports.addAll(Arrays.asList(clazz));
             return this;
         }
 
+        /**
+         * Overload to {@link #addClassImports(Class[])}.
+         */
         public Builder addClassImports(final Collection<Class> classes) {
             classImports.addAll(classes);
             return this;
         }
 
+        /**
+         * Adds methods that are meant to be imported statically to the engine. When adding methods be sure that
+         * the classes of those methods are added to the {@link #addClassImports(Class[])} or
+         * {@link #addClassImports(Collection)}. If they are not added then the certain {@code ScriptEngine} instances
+         * may have problems importing the methods (e.g. gremlin-python).
+         */
         public Builder addMethodImports(final Method... method) {
             methodImports.addAll(Arrays.asList(method));
             return this;
         }
 
+        /**
+         * Overload to {@link #addMethodImports(Method...)}.
+         */
         public Builder addMethodImports(final Collection<Method> methods) {
             methodImports.addAll(methods);
             return this;
         }
 
+
+        /**
+         * Adds methods that are meant to be imported statically to the engine. When adding methods be sure that
+         * the classes of those methods are added to the {@link #addClassImports(Class[])} or
+         * {@link #addClassImports(Collection)}. If they are not added then the certain {@code ScriptEngine} instances
+         * may have problems importing the methods (e.g. gremlin-python).
+         */
         public Builder addEnumImports(final Enum... e) {
             enumImports.addAll(Arrays.asList(e));
             return this;
         }
 
+        /**
+         * Overload to {@link #addEnumImports(Enum[])}.
+         */
         public Builder addEnumImports(final Collection<Enum> enums) {
             enumImports.addAll(enums);
             return this;
