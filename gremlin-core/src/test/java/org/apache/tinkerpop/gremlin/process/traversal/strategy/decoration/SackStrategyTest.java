@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -40,27 +40,21 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class SackStrategyTest {
 
-    public static class PerformanceTest {
+    public static class SanityCheck {
 
-        /**
-         * Check the traverser's hashcode() implementation if this test fails. hashcode() should
-         * not generate too many hash collisions.
-         */
         @Test
-        public void sacksWithoutMergerShouldBeFast() {
+        public void traversersWithUnmergeableSacksShouldGenerateDiversifiedHashCodes() {
 
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(SackStrategy.build().initialValue(() -> 0).create());
 
             final Integer[] starts = IntStream.range(0, 8192).boxed().toArray(Integer[]::new);
-            final GraphTraversal traversal = __.inject(starts).sack(Operator.mult).sack().barrier();
+            final GraphTraversal<Integer, Long> traversal = __.inject(starts).sack(Operator.mult).sack().
+                    map(Traverser::hashCode).dedup().count();
+
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
-
-            final double runtime = TimeUtil.clock(10,
-                    () -> traversal.asAdmin().clone().iterate());
-
-            assertThat(runtime, is(lessThan(50.0)));
+            assertThat(traversal.next(), is(greaterThan(8100L))); // allow a few hash collisions
         }
     }
 }
