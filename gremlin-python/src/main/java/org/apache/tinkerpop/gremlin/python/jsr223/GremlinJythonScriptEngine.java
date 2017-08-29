@@ -83,7 +83,7 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
         final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
 
         // always need this plugin for a scriptengine to be "Gremlin-enabled"
-        CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
+        CoreGremlinPlugin.instance().getCustomizers("gremlin-jython").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
 
         final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
                 .filter(p -> p instanceof ImportCustomizer)
