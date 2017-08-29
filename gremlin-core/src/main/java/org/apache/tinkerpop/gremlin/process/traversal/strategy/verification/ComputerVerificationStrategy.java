@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
@@ -38,7 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -56,7 +54,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-
         if (!TraversalHelper.onGraphComputer(traversal))
             return;
 
@@ -67,27 +64,20 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 throw new VerificationException("Profiling a multi-VertexProgramStep traversal is currently not supported on GraphComputer", traversal);
         }
 
+        // this is a problem because sideEffect.merge() is transient on the OLAP reduction
+        if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
+            throw new VerificationException("One bulk is currently not supported on GraphComputer: " + traversal, traversal);
+
+        // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
+        if (!TraversalHelper.isGlobalChild(traversal) && !TraversalHelper.isLocalStarGraph(traversal))
+            throw new VerificationException("Local traversals may not traverse past the local star-graph on GraphComputer: " + traversal, traversal);
+
         for (final Step<?, ?> step : traversal.getSteps()) {
-
-            // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
-            if (step instanceof TraversalParent) {
-                final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
-                        .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
-                        .findAny();
-                if (traversalOptional.isPresent())
-                    throw new VerificationException("Local traversals may not traverse past the local star-graph on GraphComputer: " + traversalOptional.get(), traversal);
-            }
-
-            // this is a problem because sideEffect.merge() is transient on the OLAP reduction
-            if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
-                throw new VerificationException("One bulk is currently not supported on GraphComputer: " + step, traversal);
-
             if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
                 throw new VerificationException("It is not possible to access more than a path element's id on GraphComputer: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
                 throw new VerificationException("The following step is currently not supported on GraphComputer: " + step, traversal);
-
         }
 
         Step<?, ?> nextParentStep = traversal.getParent().asStep();
