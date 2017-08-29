@@ -31,9 +31,6 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -53,7 +50,8 @@ public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
                             Neo4jHelper.class,
                             Neo4jProperty.class,
                             Neo4jVertex.class,
-                            Neo4jVertexProperty.class)
+                            Neo4jVertexProperty.class,
+                            LabelP.class)
                     .addMethodImports(LabelP.class.getMethod("of", String.class)).create();
         } catch (Exception ex) {
             throw new RuntimeException(ex);

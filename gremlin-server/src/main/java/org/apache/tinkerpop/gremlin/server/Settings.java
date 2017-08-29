@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -363,8 +364,9 @@ public class Settings {
 
         /**
          * A set of configurations for {@link GremlinPlugin} instances to apply to this {@link GremlinScriptEngine}.
+         * Plugins will be applied in the order they are listed.
          */
-        public Map<String,Map<String,Object>> plugins = new HashMap<>();
+        public Map<String,Map<String,Object>> plugins = new LinkedHashMap<>();
     }
 
     /**
