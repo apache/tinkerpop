@@ -66,6 +66,15 @@ class TestDriverRemoteConnection(object):
         assert 'peter' in results
         # # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
+        # #
+        results = g.V().has('name','peter').as_('a').out('created').as_('b').select('a','b').by(__.valueMap()).toList()
+        assert 1 == len(results)
+        assert 'peter' == results[0]['a']['name'][0]
+        assert 35 == results[0]['a']['age'][0]
+        assert 'lop' == results[0]['b']['name'][0]
+        assert 'java' == results[0]['b']['lang'][0]
+        assert 2 == len(results[0]['a'])
+        assert 2 == len(results[0]['b'])
 
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
