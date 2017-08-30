@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Before
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.decr
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -375,6 +377,16 @@ public abstract class GroovyMatchTest {
              g.V.match(
                     __.as("a").out("followedBy").count.is(gt(10)).as("b"),
                     __.as("a").in("followedBy").count().is(gt(10)).as("b")).count;
+            """)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+             g.V.match(
+                    __.as("a").outE("created").order.by("weight", decr).limit(1).inV.as("b"),
+                    __.as("b").has("lang", "java")).
+                select("a", "b").by("name")
             """)
         }
     }

@@ -42,6 +42,7 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.decr;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
@@ -158,6 +159,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // test inline counts
     public abstract Traversal<Vertex, Long> get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count();
+
+    // test order barriers
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -566,6 +570,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         checkResults(Collections.singletonList(6L), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", "marko", "b", "lop",
+                "a", "peter", "b", "lop",
+                "a", "josh", "b", "ripple"), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -849,6 +864,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match(
                     as("a").out("followedBy").count().is(P.gt(10)).as("b"),
                     as("a").in("followedBy").count().is(P.gt(10)).as("b")).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+            return g.V().match(
+                    as("a").outE("created").order().by("weight", decr).limit(1).inV().as("b"),
+                    as("b").has("lang", "java")).
+                    <String>select("a", "b").by("name");
         }
     }
 }
