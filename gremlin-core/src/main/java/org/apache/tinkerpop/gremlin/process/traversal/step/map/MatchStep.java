@@ -514,10 +514,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
                 final Set<String> endLabels = ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchEndLabels();
-                Stream.concat(
-                        TraversalHelper.getStepsOfAssignableClassRecursively(WherePredicateStep.class, this.getTraversal()).stream(),
-                        TraversalHelper.getStepsOfAssignableClassRecursively(WhereTraversalStep.class, this.getTraversal()).stream()).
-                        flatMap(s -> s.getScopeKeys().stream()).filter(endLabels::contains).forEach(this.scopeKeys::add);
+                TraversalHelper.anyStepRecursively(step -> {
+                    if (step instanceof WherePredicateStep || step instanceof WhereTraversalStep) {
+                        for (final String key : ((Scoping) step).getScopeKeys()) {
+                            if (endLabels.contains(key)) this.scopeKeys.add(key);
+                        }
+                    }
+                    return false;
+                }, this.getTraversal());
                 // this is the old way but it only checked for where() as the next step, not arbitrarily throughout traversal
                 // just going to keep this in case something pops up in the future and this is needed as an original reference.
                 /* if (this.getNextStep() instanceof WhereTraversalStep || this.getNextStep() instanceof WherePredicateStep)
