@@ -154,7 +154,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         matchTraversal.asAdmin().addStep(matchEndStep);
 
         // this turns barrier computations into locally computable traversals
-        if (TraversalHelper.hasStepOfAssignableClass(Barrier.class, matchTraversal)) {
+        if (TraversalHelper.getStepsOfAssignableClass(Barrier.class, matchTraversal).stream().
+                filter(s -> !(s instanceof NoOpBarrierStep)).findAny().isPresent()) { // exclude NoOpBarrierSteps from the determination as they are optimization barriers
             final Traversal.Admin newTraversal = new DefaultTraversal<>();
             TraversalHelper.removeToTraversal(matchTraversal.getStartStep().getNextStep(), matchTraversal.getEndStep(), newTraversal);
             TraversalHelper.insertAfterStep(new TraversalFlatMapStep<>(matchTraversal, newTraversal), matchTraversal.getStartStep(), matchTraversal);
