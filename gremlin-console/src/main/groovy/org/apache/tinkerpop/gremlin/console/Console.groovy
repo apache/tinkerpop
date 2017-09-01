@@ -152,8 +152,11 @@ class Console {
         }
 
         // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
-        // deactivated, and are thus hanging about
-        mediator.writePluginState()
+        // deactivated, and are thus hanging about (e.g. user deleted the plugin directories to uninstall). checking
+        // the number of expected active plugins from the plugins.txt file against the number activated on startup
+        // should be enough to tell if something changed which would justify that the file be re-written
+        if (activePlugins.size() != mediator.activePlugins().size())
+            mediator.writePluginState()
 
         try {
             // if the init script contains :x command it will throw an ExitNotification so init script execution
