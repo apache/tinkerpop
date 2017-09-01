@@ -25,10 +25,24 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.7
 ---------------
 
-*NOT OFFICIALLY RELEASED YET*
+*Release Date: NOT OFFICIALLY RELEASED YET*
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7[changelog] for a complete list of all the modifications that are part of this release.
+
+Embedded Remote Connection
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As Gremlin Language Variants (GLVs) expand their usage and use of `withRemote()` becomes more common, the need to mock
+the "remote" in unit tests increases. To simplify mocking in Java, the new `EmbeddedRemoteConnection` provides a
+simple way to provide a "remote" that is actually local to the same JVM.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1756[TINKERPOP-1756]
+
+Changes to match()
+~~~~~~~~~~~~~~~~~~
 
 The `match()`-step has been generalized to suppor the local scoping of all barrier steps, not just reducing barrier steps.
 Previously, the `order().limit()` clause would have worked globally yielding:
@@ -59,7 +73,6 @@ Note that this is not that intense of a breaking change as all of the reducing b
 This includes steps like `count()`, `min()`, `max()`, `sum()`, `group()`, `groupCount()`, etc. This update has now
 generalized this behavior to all barriers and thus, adds `aggregate()`, `dedup()`, `range()`, `limit()`, `tail()`, and `order()`
 to the list of locally computed clauses.
-
 
 TinkerPop 3.2.6
 ---------------

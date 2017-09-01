@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.remote.EmbeddedRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -30,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -293,10 +296,10 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     public void shouldThrowFastNoSuchElementExceptionInNestedTraversals() {
         //The nested traversal should throw a regular FastNoSuchElementException
 
-        GraphTraversal<Object, Object> nestedTraversal = __.has("name", "foo");
-        GraphTraversal<Vertex, Object> traversal = g.V().has("name", "marko").branch(nestedTraversal);
+        final GraphTraversal<Object, Object> nestedTraversal = __.has("name", "foo");
+        final GraphTraversal<Vertex, Object> traversal = g.V().has("name", "marko").branch(nestedTraversal);
 
-        GraphTraversal.Admin<Object, Object> nestedTraversalAdmin = nestedTraversal.asAdmin();
+        final GraphTraversal.Admin<Object, Object> nestedTraversalAdmin = nestedTraversal.asAdmin();
         nestedTraversalAdmin.reset();
         nestedTraversalAdmin.addStart(nestedTraversalAdmin.getTraverserGenerator().generate(g.V().has("name", "marko").next(), (Step)traversal.asAdmin().getStartStep(), 1l));
 
@@ -306,5 +309,14 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
             assertEquals(FastNoSuchElementException.class, e.getClass());
         }
 
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldAllowEmbeddedRemoteConnectionUsage() {
+        final Graph remote = EmptyGraph.instance();
+        final GraphTraversalSource simulatedRemoteG = remote.traversal().withRemote(new EmbeddedRemoteConnection(g));
+        assertEquals(6, simulatedRemoteG.V().count().next().intValue());
+        assertEquals("marko", simulatedRemoteG.V().has("name", "marko").values("name").next());
     }
 }
