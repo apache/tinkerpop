@@ -89,7 +89,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.7-3.2.2-SNAPSHOT
+                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.7-3.2.3
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
@@ -117,7 +117,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.7-3.2.2-SNAPSHOT</version>
+                    <version>0.7-3.2.3</version>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
@@ -168,7 +168,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-kernel</artifactId>
-                    <version>3.2.2</version>
+                    <version>3.2.3</version>
                     <scope>test</scope>
                 </dependency>
                 <!-- *** WARNING *** -->
