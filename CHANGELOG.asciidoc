@@ -28,6 +28,9 @@ TinkerPop 3.3.1 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-2-7, 3.2.7>>.
 
+* Bumped Neo4j 3.2.3
+
+
 [[release-3-3-0]]
 TinkerPop 3.3.0 (Release Date: August 21, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

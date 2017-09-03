@@ -22,6 +22,32 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
+TinkerPop 3.3.1
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-1[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Upgrade Neo4j
+^^^^^^^^^^^^^
+
+See Neo4j's link:https://neo4j.com/guides/upgrade/[3.2 Upgrade FAQ] for a complete guide on how to upgrade from the previous 2.3.3 version. Also note that many of the configuration settings have link:https://neo4j.com/developer/kb/manually-migrating-configuration-settings-from-neo4j-2x-to-neo4j-3x/[changed from neo4j 2x to 3x]
+
+In particular, these properties referenced in TinkerPop documentation and configuration were renamed:
+
+|=========================================================
+|old (2.3) |new (3.3)
+|node_auto_indexing |dbms.auto_index.nodes.enabled
+|relationship_auto_indexing |dbms.auto_index.relationships.enabled
+|ha.cluster_server |ha.host.coordination
+|ha.server |ha.host.data
+|=========================================================
+
+
 TinkerPop 3.3.0
 ---------------
 
