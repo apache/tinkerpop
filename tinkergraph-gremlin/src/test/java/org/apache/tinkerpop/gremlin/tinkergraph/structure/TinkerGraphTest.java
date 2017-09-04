@@ -68,6 +68,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -591,6 +592,35 @@ public class TinkerGraphTest {
                 assertEquals(102, IteratorUtils.count(readX.edges()));
             }
         }
+    }
+
+    @Test
+    public void shouldClone() {
+        final TinkerGraph g = TinkerGraph.open();
+
+        final Vertex marko = g.addVertex("name", "marko", "age", 29);
+        final Vertex stephen = g.addVertex("name", "stephen", "age", 35);
+        marko.addEdge("knows", stephen);
+
+        final TinkerGraph g2 = g.clone();
+        final Vertex michael = g2.addVertex("name", "michael");
+        michael.addEdge("likes", marko);
+        michael.addEdge("likes", stephen);
+        g2.traversal().V().property("newProperty", "someValue").toList();
+        g2.traversal().E().property("newProperty", "someValue").toList();
+
+        assertEquals("original graph should be unchanged", new Long(2), g.traversal().V().count().next());
+        assertEquals("original graph should be unchanged", new Long(1), g.traversal().E().count().next());
+        assertEquals("original graph should be unchanged", new Long(0), g.traversal().V().has("newProperty").count().next());
+
+        assertEquals("cloned graph should contain new elements", new Long(3), g2.traversal().V().count().next());
+        assertEquals("cloned graph should contain new elements", new Long(3), g2.traversal().E().count().next());
+        assertEquals("cloned graph should contain new property", new Long(3), g2.traversal().V().has("newProperty").count().next());
+        assertEquals("cloned graph should contain new property", new Long(3), g2.traversal().E().has("newProperty").count().next());
+
+        assertNotSame("cloned elements should reference to different objects",
+            g.traversal().V().has("name", "stephen").next(),
+            g2.traversal().V().has("name", "stephen").next());
     }
 
     /**
