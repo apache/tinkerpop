@@ -377,5 +377,17 @@ public abstract class GroovyMatchTest {
                     __.as("a").in("followedBy").count().is(gt(10)).as("b")).count;
             """)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+              g.V().match(
+                  __.as("a").has("song", "name", "HERE COMES SUNSHINE"),
+                  __.as("a").map(inE("followedBy").weight.mean()).as("b"),
+                  __.as("a").inE("followedBy").as("c"),
+                  __.as("c").filter(values("weight").where(gte("b"))).outV.as("d")).
+                select("d").by("name");
+            """)
+        }
     }
 }
