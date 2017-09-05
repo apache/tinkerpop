@@ -447,7 +447,7 @@ very similar to that of Java, it should be very easy to switch between Gremlin-J
 [source,bash]
 npm install gremlin-javascript
 
-In Gremlin-JavaScript there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
+The Gremlin-JavaScript provides `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
 in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implementation in order to communicate with
 <<gremlin-server,GremlinServer>>.
 
