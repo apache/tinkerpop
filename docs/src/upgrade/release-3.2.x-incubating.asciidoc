@@ -22,6 +22,45 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.7
+---------------
+
+*NOT OFFICIALLY RELEASED YET*
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+The `match()`-step has been generalized to suppor the local scoping of all barrier steps, not just reducing barrier steps.
+Previously, the `order().limit()` clause would have worked globally yielding:
+
+[source,groovy]
+----
+gremlin> g.V().match(
+......1>   __.as('a').outE('created').order().by('weight',decr).limit(1).inV().as('b'),
+......2>   __.as('b').has('lang','java')
+......3> ).select('a','b').by('name')
+==>[a:marko,b:lop]
+----
+
+However, now, `order()` (and all other barriers) are treated as local computations to the pattern and thus, the result set is:
+
+[source,groovy]
+----
+gremlin> g.V().match(
+......1>   __.as('a').outE('created').order().by('weight',decr).limit(1).inV().as('b'),
+......2>   __.as('b').has('lang','java')
+......3> ).select('a','b').by('name')
+==>[a:marko,b:lop]
+==>[a:josh,b:ripple]
+==>[a:peter,b:lop]
+----
+
+Note that this is not that intense of a breaking change as all of the reducing barriers behaved in this manner previously.
+This includes steps like `count()`, `min()`, `max()`, `sum()`, `group()`, `groupCount()`, etc. This update has now
+generalized this behavior to all barriers and thus, adds `aggregate()`, `dedup()`, `range()`, `limit()`, `tail()`, and `order()`
+to the list of locally computed clauses.
+
+
 TinkerPop 3.2.6
 ---------------
 

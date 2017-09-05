@@ -252,6 +252,7 @@ TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * The Console's `plugin.txt` file is only updated if there were manually uninstalled plugins.
 * Fixed a bug in `MatchStep` where mid-traversal `where()` variables were not being considered in start-scope.
+* Generalized `MatchStep` to locally compute all clauses with barriers (not just reducing barriers).
 * Ensured that plugins were applied in the order they were configured.
 * Fixed a bug in `Neo4jGremlinPlugin` that prevented it from loading properly in the `GremlinPythonScriptEngine`.
 * Fixed a bug in `ComputerVerificationStrategy` where child traversals were being analyzed prior to compilation.
