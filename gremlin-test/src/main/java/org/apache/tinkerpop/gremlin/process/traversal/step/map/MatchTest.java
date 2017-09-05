@@ -46,11 +46,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -158,6 +160,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // test inline counts
     public abstract Traversal<Vertex, Long> get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count();
+
+    // test mid-clause variables
+    public abstract Traversal<Vertex, String> get_g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX();
+
 
     @Test
     @LoadGraphWith(MODERN)
@@ -566,6 +572,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         checkResults(Collections.singletonList(6L), traversal);
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("THE MUSIC NEVER STOPPED", "PROMISED LAND", "PLAYING IN THE BAND",
+                "CASEY JONES", "BIG RIVER", "EL PASO", "LIBERTY", "LOOKS LIKE RAIN"), traversal);
+    }
+
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -849,6 +865,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match(
                     as("a").out("followedBy").count().is(P.gt(10)).as("b"),
                     as("a").in("followedBy").count().is(P.gt(10)).as("b")).count();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX() {
+            return g.V().match(
+                    as("a").has("song", "name", "HERE COMES SUNSHINE"),
+                    as("a").map(inE("followedBy").values("weight").mean()).as("b"),
+                    as("a").inE("followedBy").as("c"),
+                    as("c").filter(values("weight").where(P.gte("b"))).outV().as("d")).
+                    <String>select("d").by("name");
         }
     }
 }
