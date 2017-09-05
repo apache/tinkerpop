@@ -70,6 +70,11 @@ public abstract class O_Traverser<T> extends AbstractTraverser<T> {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     protected final boolean equals(final O_Traverser other) {
         return super.equals(other) && Objects.equals(this.tags, other.tags);
     }

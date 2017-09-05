@@ -62,6 +62,11 @@ public class B_O_Traverser<T> extends O_Traverser<T> {
         this.future = stepId;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     protected final boolean equals(final B_O_Traverser other) {
         return super.equals(other) && other.future.equals(this.future);
     }
