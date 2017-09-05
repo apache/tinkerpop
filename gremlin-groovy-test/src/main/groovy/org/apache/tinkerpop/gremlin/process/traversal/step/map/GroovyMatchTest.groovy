@@ -387,6 +387,16 @@ public abstract class GroovyMatchTest {
                   __.as("a").inE("followedBy").as("c"),
                   __.as("c").filter(values("weight").where(gte("b"))).outV.as("d")).
                 select("d").by("name");
+                """)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+             g.V.match(
+                    __.as("a").outE("created").order.by("weight", decr).limit(1).inV.as("b"),
+                    __.as("b").has("lang", "java")).
+                select("a", "b").by("name")
             """)
         }
     }
