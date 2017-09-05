@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Random;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -110,17 +112,22 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     /////////////////
 
+    final boolean carriesUnmergeableSack() {
+        // hmmm... serialization in OLAP destroys the transient sideEffects
+        return null != this.sack && (null == this.sideEffects || null == this.sideEffects.getSackMerger());
+    }
+
     @Override
     public int hashCode() {
-        return this.t.hashCode() + this.future.hashCode() + this.loops;
+        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops);
+    }
+
+    protected final boolean equals(final B_O_S_SE_SL_Traverser other) {
+        return super.equals(other) && other.loops == this.loops && !carriesUnmergeableSack();
     }
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof B_O_S_SE_SL_Traverser
-                && ((B_O_S_SE_SL_Traverser) object).t.equals(this.t)
-                && ((B_O_S_SE_SL_Traverser) object).future.equals(this.future)
-                && ((B_O_S_SE_SL_Traverser) object).loops == this.loops
-                && (null == this.sack || (null != this.sideEffects && null != this.sideEffects.getSackMerger())); // hmmm... serialization in OLAP destroys the transient sideEffects
+        return object instanceof B_O_S_SE_SL_Traverser && this.equals((B_O_S_SE_SL_Traverser) object);
     }
 }
