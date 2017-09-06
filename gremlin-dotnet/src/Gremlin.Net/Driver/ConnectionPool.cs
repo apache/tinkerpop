@@ -101,18 +101,15 @@ namespace Gremlin.Net.Driver
 
         private void RemoveAllConnections()
         {
-            while (!_connections.IsEmpty)
+            while (_connections.TryTake(out var connection))
             {
-                _connections.TryTake(out var connection);
                 connection.Dispose();
             }
         }
 
         private async Task TeardownAsync()
         {
-            var closeTasks = new List<Task>(_connections.Count);
-            closeTasks.AddRange(_connections.Select(conn => conn.CloseAsync()));
-            await Task.WhenAll(closeTasks).ConfigureAwait(false);
+            await Task.WhenAll(_connections.Select(c => c.CloseAsync())).ConfigureAwait(false);
         }
 
         #region IDisposable Support
