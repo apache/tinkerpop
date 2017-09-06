@@ -697,5 +697,10 @@ public class TinkerGraphTest {
             calledCreate++;
             return mock(Io.class);
         }
+
+        @Override
+        public boolean requiresVersion(final Object version) {
+            return false;
+        }
     }
 }

@@ -95,10 +95,10 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
     }
 
     /**
-     * Create a new builder using the default version of GraphSON.
+     * Create a new builder using the default version of GraphSON - v3.
      */
     public static Io.Builder<GraphSONIo> build() {
-        return build(GraphSONVersion.V2_0);
+        return build(GraphSONVersion.V3_0);
     }
 
     /**
@@ -128,6 +128,11 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
         public Io.Builder<GraphSONIo> graph(final Graph g) {
             this.graph = g;
             return this;
+        }
+
+        @Override
+        public <V> boolean requiresVersion(final V version) {
+            return this.version == version;
         }
 
         @Override
