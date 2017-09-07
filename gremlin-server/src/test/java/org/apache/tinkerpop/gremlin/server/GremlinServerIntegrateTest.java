@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -51,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
@@ -229,6 +231,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.processors.clear();
                 settings.processors.add(processorSettingsSmall);
                 break;
+            case "shouldTimeOutRemoteTraversal":
+                settings.scriptEvaluationTimeout = 500;
+                break;
         }
 
         return settings;
@@ -286,6 +291,35 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         compilerCustomizerProviderConf.put(ConfigurationCustomizerProvider.class.getName(), keyValues);
         scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldTimeOutRemoteTraversal() throws Exception {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+
+        try {
+            // tests sleeping thread
+            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
     }
 
     @Test

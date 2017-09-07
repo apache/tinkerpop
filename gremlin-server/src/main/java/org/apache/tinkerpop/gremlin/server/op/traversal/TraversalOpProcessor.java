@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -56,6 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.SimpleBindings;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +67,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -347,6 +353,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
+        // timeout override
+        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
+                Long.parseLong(msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : context.getSettings().scriptEvaluationTimeout;
+
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
         final TraversalSource g = graphManager.getTraversalSource(traversalSourceName);
@@ -370,51 +380,54 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }
 
         final Timer.Context timerContext = traversalOpTimer.time();
-        try {
+        final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final Graph graph = g.getGraph();
 
-            context.getGremlinExecutor().getExecutorService().submit(() -> {
-                try {
-                    beforeProcessing(graph, context);
+            try {
+                beforeProcessing(graph, context);
 
-                    try {
-                        // compile the traversal - without it getEndStep() has nothing in it
-                        traversal.applyStrategies();
-                        handleIterator(context, new TraverserIterator(traversal), graph);
-                    } catch (TimeoutException ex) {
-                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
+                try {
+                    // compile the traversal - without it getEndStep() has nothing in it
+                    traversal.applyStrategies();
+                    handleIterator(context, new TraverserIterator(traversal), graph);
+                } catch (Exception ex) {
+                    Throwable t = ex;
+                    if (ex instanceof UndeclaredThrowableException)
+                        t = t.getCause();
+
+                    if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+                        final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to scriptEvaluationTimeout", msg);
                         logger.warn(errorMessage);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                                 .statusMessage(errorMessage)
                                 .statusAttributeException(ex).create());
                         onError(graph, context);
-                        return;
-                    } catch (Exception ex) {
+                    } else {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                                 .statusMessage(ex.getMessage())
                                 .statusAttributeException(ex).create());
                         onError(graph, context);
-                        return;
                     }
-                } catch (Exception ex) {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
-                    onError(graph, context);
-                } finally {
-                    timerContext.stop();
                 }
-            });
+            } catch (Exception ex) {
+                logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                        .statusMessage(ex.getMessage())
+                        .statusAttributeException(ex).create());
+                onError(graph, context);
+            } finally {
+                timerContext.stop();
+            }
 
-        } catch (Exception ex) {
-            timerContext.stop();
-            throw new OpProcessorException("Could not iterate the Traversal instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
+            return null;
+        });
+
+        final Future<?> executionFuture = context.getGremlinExecutor().getExecutorService().submit(evalFuture);
+        if (seto > 0) {
+            // Schedule a timeout in the thread pool for future execution
+            context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -463,7 +476,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         return metaData;
     }
 
-    protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws TimeoutException, InterruptedException {
+    protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws InterruptedException {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -482,10 +495,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     .create());
             return;
         }
-
-        // timer for the total serialization time
-        final StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
 
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
@@ -585,17 +594,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 // this isn't blocking the IO thread - just a worker.
                 TimeUnit.MILLISECONDS.sleep(10);
             }
-
-            stopWatch.split();
-            if (settings.serializedResponseTimeout > 0 && stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
-                final String timeoutMsg = String.format("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s",
-                        warnOnce ? "[Gremlin Server paused writes to client as messages were not being consumed quickly enough]" : "");
-                throw new TimeoutException(timeoutMsg.trim());
-            }
-
-            stopWatch.unsplit();
         }
-
-        stopWatch.stop();
     }
 }
