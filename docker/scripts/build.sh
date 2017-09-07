@@ -71,6 +71,10 @@ touch gremlin-python/.glv
 # touch gremlin-dotnet/src/.glv
 # touch gremlin-dotnet/test/.glv
 
+# remove these until TINKERPOP-1731 is settled
+rm gremlin-dotnet/src/.glv
+rm gremlin-dotnet/test/.glv
+
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
   echo "Copying settings.xml"
