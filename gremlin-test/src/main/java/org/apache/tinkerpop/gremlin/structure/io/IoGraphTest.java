@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,10 +53,11 @@ public class IoGraphTest extends AbstractGremlinTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"graphml", IoCore.graphml(), false, true, ".xml"},
-                {"graphsonv1d0", IoCore.graphson(), true, true, ".json"},
+                {"graphsonv1d0", GraphSONIo.build(GraphSONVersion.V1_0), true, true, ".json"},
                 {"graphsonv2d0", GraphSONIo.build(GraphSONVersion.V2_0), true, true, ".json"},
                 {"graphsonv3d0", GraphSONIo.build(GraphSONVersion.V3_0), true, true, ".json"},
-                {"gryo", IoCore.gryo(), false, false, ".kryo"}
+                {"gryo-v3", GryoIo.build(GryoVersion.V1_0), false, false, ".kryo"},
+                {"gryo-v3", GryoIo.build(GryoVersion.V3_0), false, false, ".kryo"}
         });
     }
 

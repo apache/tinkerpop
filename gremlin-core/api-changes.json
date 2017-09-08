@@ -1,28 +1,16 @@
-// Example:
-// {
-//   "3.3.0": {
-//      "revapi": {
-//       "ignore": [
-//         {
-//           "code": "java.method.addedToInterface",
-//           "new": "method void org.apache.tinkerpop.gremlin.structure.Graph::solveWorldHunger()",
-//           "justification": "Gremlin became sentient and self-aware. This is what it/she/he did first."
-//         }
-//       ]
-//     }
-//   },
-//   "3.3.1": {
-//     "revapi": {
-//       "ignore": [
-//         {
-//           "code": "java.method.removed",
-//           "old": "method void org.apache.tinkerpop.gremlin.structure.Graph::solveWorldHunger()",
-//           "justification": "Gremlin has a strange sense of humour."
-//         }
-//       ]
-//     }
-//   },
-//   ...
-// }
 {
+  "3.3.1": {
+    "revapi": {
+      "ignore": [
+        {
+          "code": "java.method.addedToInterface",
+          "new": "method <V> boolean org.apache.tinkerpop.gremlin.structure.io.Io.Builder<I extends org.apache.tinkerpop.gremlin.structure.io.Io>::requiresVersion(V)",
+          "package": "org.apache.tinkerpop.gremlin.structure.io",
+          "classSimpleName": "Builder",
+          "methodName": "requiresVersion",
+          "justification": "Graph providers may run into problems with the test suite if they do not have a way to detect the version and type of IO being requested of them so that they can provide the right version of their IoRegistry instances."
+        }
+      ]
+    }
+  }
 }

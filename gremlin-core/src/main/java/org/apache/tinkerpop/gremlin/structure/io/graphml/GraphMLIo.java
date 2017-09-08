@@ -114,6 +114,16 @@ public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.
             return this;
         }
 
+        /**
+         * GraphML does not have a version and therefore always returns false. This default return also makes sense
+         * because GraphML does not use custom {@link IoRegistry} instances anyway which is the primary reason for
+         * calling this method by a graph provider.
+         */
+        @Override
+        public <V> boolean requiresVersion(final V version) {
+            return false;
+        }
+
         @Override
         public GraphMLIo create() {
             if (null == graph) throw new IllegalArgumentException("The graph argument was not specified");

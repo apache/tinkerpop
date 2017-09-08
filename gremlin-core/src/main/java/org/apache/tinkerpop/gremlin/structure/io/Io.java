@@ -103,6 +103,12 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
         public Builder<? extends Io> graph(final Graph g);
 
         /**
+         * Determines if the version matches the one configured for this builder. Graph providers can use this in
+         * calls to {@link Graph#io(Builder)} to figure out the correct versions of registries to add.
+         */
+        public <V> boolean requiresVersion(final V version);
+
+        /**
          * Providers call this method in the {@link Graph#io(Io.Builder)} method to construct the {@link Io} instance
          * and return the value.  End-users will typically not call this method.
          */

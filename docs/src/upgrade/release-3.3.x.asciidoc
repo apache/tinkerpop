@@ -22,6 +22,53 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
+TinkerPop 3.3.1
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-1[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+IO Defaults
+^^^^^^^^^^^
+
+While 3.3.0 released Gryo 3.0 and GraphSON 3.0 and these versions were defaulted in a number of places, it seems that
+some key defaults were missed. Specifically, calls to `Graph.io(graphson())` and `Graph.io(gryo())` were still using
+the old versions. The defaults have now been changed to ensure 3.0 is properly referenced in those cases.
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+IO Version Check
+++++++++++++++++
+
+In the `Graph.io()` method, providers are to bootstrap the `Io` instance returned with their own custom serializers
+typically provided through a custom `IoRegistry` instance. Prior to this change it was not possible to easily determine
+the version of `Io` that was expected (nor was it especially necessary as TinkerPop didn't have breaking format changes
+between versions). As of 3.3.0 however, there could be IO test incompatibilities for some providers who need to
+register a different `IoRegistry` instance depending on the version the user wants.
+
+To allow for that check, the `Io` interface now has the following method:
+
+[source,java]
+----
+public <V> boolean requiresVersion(final V version);
+----
+
+which allows the graph provider to check if a specific `GryoVersion` or `GraphSONVersion` is required. Using that
+information, the provider could then assign the right `IoRegistry` to match that.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1767[TINKERPOP-1767]
+
 TinkerPop 3.3.0
 ---------------
 
