@@ -43,7 +43,7 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="labels">The labels associated with the path</param>
         /// <param name="objects">The objects in the <see cref="Path" />.</param>
-        public Path(List<List<string>> labels, List<object> objects)
+        public Path(IList<ISet<string>> labels, IList<object> objects)
         {
             Labels = labels;
             Objects = objects;
@@ -52,12 +52,12 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets an ordered list of the labels associated with the <see cref="Path" />.
         /// </summary>
-        public List<List<string>> Labels { get; }
+        public IList<ISet<string>> Labels { get; }
 
         /// <summary>
         ///     Gets an ordered list of the objects in the <see cref="Path" />.
         /// </summary>
-        public List<object> Objects { get; }
+        public IList<object> Objects { get; }
 
         /// <summary>
         ///     Gets the object associated with the particular label of the path.
@@ -147,21 +147,31 @@ namespace Gremlin.Net.Structure
             return value != null;
         }
 
-        private bool ObjectsEqual(IReadOnlyCollection<object> otherObjects)
+        private bool ObjectsEqual(ICollection<object> otherObjects)
         {
             if (Objects == null)
                 return otherObjects == null;
             return Objects.SequenceEqual(otherObjects);
         }
 
-        private bool LabelsEqual(IReadOnlyList<List<string>> otherLabels)
+        private bool LabelsEqual(ICollection<ISet<string>> otherLabels)
         {
             if (Labels == null)
                 return otherLabels == null;
             if (Labels.Count != otherLabels.Count)
                 return false;
-            var foundUnequalObjLabels = Labels.Where((objLabels, i) => !objLabels.SequenceEqual(otherLabels[i])).Any();
-            return !foundUnequalObjLabels;
+            using (var enumOther = otherLabels.GetEnumerator())
+            using (var enumThis = Labels.GetEnumerator())
+            {
+                while (enumOther.MoveNext() && enumThis.MoveNext())
+                {
+                    if (!enumOther.Current.SequenceEqual(enumThis.Current))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         /// <inheritdoc />

@@ -102,9 +102,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var receivedValueMap = g.V().Has("name", "marko").ValueMap<string, object>().Next();
+            var receivedValueMap = g.V().Has("name", "marko").ValueMap<object, object>().Next();
 
-            var expectedValueMap = new Dictionary<string, object>
+            var expectedValueMap = new Dictionary<object, object>
             {
                 {"age", new List<object> {29}},
                 {"name", new List<object> {"marko"}}

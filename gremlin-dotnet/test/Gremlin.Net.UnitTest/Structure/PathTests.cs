@@ -34,11 +34,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldAssignPropertiesCorrectly()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
 
@@ -51,11 +51,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnTrueForContainsKeyWhenGivenKeyExists()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var path = new Path(labels, new List<object>());
 
@@ -67,11 +67,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnFalseForContainsKeyWhenGivenKeyDoesNotExist()
         {
-            var labels = new List<List<string>>
+        var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var path = new Path(labels, new List<object>());
 
@@ -84,7 +84,7 @@ namespace Gremlin.Net.UnitTest.Structure
         public void ShouldReturnCountOfObjectsForCountProperty()
         {
             var objects = new List<object> {1, new Vertex(1), "hello"};
-            var path = new Path(new List<List<string>>(), objects);
+            var path = new Path(new List<ISet<string>>(), objects);
 
             var count = path.Count;
 
@@ -95,7 +95,7 @@ namespace Gremlin.Net.UnitTest.Structure
         public void ShouldEnumeratorObjectsIntoListWhenToListIsCalled()
         {
             var objects = new List<object> {1, new Vertex(1), "hello"};
-            var path = new Path(new List<List<string>>(), objects);
+            var path = new Path(new List<ISet<string>>(), objects);
 
             var enumeratedObj = path.ToList();
 
@@ -107,19 +107,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {1, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
@@ -132,19 +132,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {1, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
@@ -157,19 +157,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {1, new Vertex(1), "hello"});
             var secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> {3, new Vertex(1), "hello"});
 
             var equals = firstPath.Equals(secondPath);
@@ -182,19 +182,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
@@ -207,19 +207,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
@@ -232,19 +232,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
             object secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 3, new Vertex(1), "hello" });
 
             var equals = firstPath.Equals(secondPath);
@@ -255,7 +255,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnFalseForEqualsWhereOtherIsNull()
         {
-            var path = new Path(new List<List<string>> {new List<string> {"a", "b"},}, new List<object> {1});
+            var path = new Path(new List<ISet<string>> {new HashSet<string> {"a", "b"},}, new List<object> {1});
 
             var equals = path.Equals(null);
 
@@ -267,19 +267,19 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             var firstPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
             var secondPath =
                 new Path(
-                    new List<List<string>>
+                    new List<ISet<string>>
                     {
-                        new List<string> {"a", "b"},
-                        new List<string> {"c", "b"},
-                        new List<string>()
+                        new HashSet<string> {"a", "b"},
+                        new HashSet<string> {"c", "b"},
+                        new HashSet<string>()
                     }, new List<object> { 1, new Vertex(1), "hello" });
 
             var firstHashCode = firstPath.GetHashCode();
@@ -292,7 +292,7 @@ namespace Gremlin.Net.UnitTest.Structure
         public void ShouldThrowWhenInvalidIndexIsAccessed()
         {
             var objects = new List<object> {1, new Vertex(1), "hello"};
-            var path = new Path(new List<List<string>>(), objects);
+            var path = new Path(new List<ISet<string>>(), objects);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => path[3]);
         }
@@ -301,7 +301,7 @@ namespace Gremlin.Net.UnitTest.Structure
         public void ShouldReturnObjectsByTheirIndex()
         {
             var objects = new List<object> {1, new Vertex(1), "hello"};
-            var path = new Path(new List<List<string>>(), objects);
+            var path = new Path(new List<ISet<string>>(), objects);
 
             Assert.Equal(1, path[0]);
             Assert.Equal(new Vertex(1), path[1]);
@@ -311,11 +311,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnAllObjectsWhenTheirKeyIsAccessed()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
@@ -328,11 +328,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnObjectsByTheirKey()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
@@ -345,7 +345,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldThrowWhenUnknownKeyIsAccessed()
         {
-            var path = new Path(new List<List<string>>(), new List<object>());
+            var path = new Path(new List<ISet<string>>(), new List<object>());
 
             Assert.Throws<KeyNotFoundException>(() => path["unknownKey"]);
         }
@@ -353,11 +353,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnCommonStringRepresentationForToString()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
@@ -370,11 +370,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnTrueAndObjectsForTryGetWhenKeyWithMultipleObjectsIsProvided()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a", "b"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a", "b"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
@@ -388,11 +388,11 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnTrueAndCorrectObjectForTryGet()
         {
-            var labels = new List<List<string>>
+            var labels = new List<ISet<string>>
             {
-                new List<string> {"a"},
-                new List<string> {"c", "b"},
-                new List<string>()
+                new HashSet<string> {"a"},
+                new HashSet<string> {"c", "b"},
+                new HashSet<string>()
             };
             var objects = new List<object> {1, new Vertex(1), "hello"};
             var path = new Path(labels, objects);
@@ -406,7 +406,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnFalseForTryGetWhenUnknownKeyIsProvided()
         {
-            var path = new Path(new List<List<string>>(), new List<object>());
+            var path = new Path(new List<ISet<string>>(), new List<object>());
 
             var success = path.TryGetValue("unknownKey", out object _);
 

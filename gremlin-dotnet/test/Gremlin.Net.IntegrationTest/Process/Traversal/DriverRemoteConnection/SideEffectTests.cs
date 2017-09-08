@@ -22,9 +22,11 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
 
@@ -81,12 +83,20 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
             var t = g.V().Out("created").GroupCount("m").By("name").Iterate();
             t.SideEffects.Keys();
-
-            var m = t.SideEffects.Get("m") as Dictionary<string, dynamic>;
+            var m = (IList) t.SideEffects.Get("m");
 
             Assert.Equal(2, m.Count);
-            Assert.Equal((long) 3, m["lop"]);
-            Assert.Equal((long) 1, m["ripple"]);
+            var result = new Dictionary<object, object>();
+            
+            foreach (IDictionary map in m)
+            {
+                foreach (var key in map.Keys)
+                {
+                    result.Add(key, map[key]);
+                }
+            }
+            Assert.Equal((long) 3, result["lop"]);
+            Assert.Equal((long) 1, result["ripple"]);
         }
 
         [Fact]
@@ -129,10 +139,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Equal(2, keys.Count);
             Assert.Contains("m", keys);
             Assert.Contains("n", keys);
-            var n = (Dictionary<object, long>) t.SideEffects.Get("n");
-            Assert.Equal(2, n.Count);
-            Assert.Equal(3, n["lop"]);
-            Assert.Equal(1, n["ripple"]);
+            var n = (IList<object>) t.SideEffects.Get("n");
+            Assert.Equal(n.Select(tr => ((Traverser)tr).Object), new[] {"lop", "ripple"});
         }
 
         [Fact]

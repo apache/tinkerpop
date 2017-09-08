@@ -22,17 +22,24 @@
 #endregion
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace Gremlin.Net.Driver.Messages
+namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ResponseResult<T>
+    internal class Path3Deserializer : IGraphSONDeserializer
     {
-        [JsonProperty(PropertyName = "data")]
-        public JToken Data { get; set; }
-
-        [JsonProperty(PropertyName = "meta")]
-        public Dictionary<string, object> Meta { get; set; }
+        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        {
+            // "labels" is a object[] where each item is ISet<object>
+            var labelProperty = (object[])reader.ToObject(graphsonObject["labels"]);
+            var labels = labelProperty
+                .Select(x => new HashSet<string>(((ISet<object>)x).Cast<string>()))
+                .ToList<ISet<string>>();
+            // "objects" is an object[]
+            object[] objectsProperty = reader.ToObject(graphsonObject["objects"]);
+            var objects = objectsProperty.ToArray();
+            return new Path(labels, objects);
+        }
     }
 }

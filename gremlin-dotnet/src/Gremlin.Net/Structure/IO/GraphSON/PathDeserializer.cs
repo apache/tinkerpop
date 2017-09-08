@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
@@ -32,8 +33,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         {
             var labels =
                 graphsonObject["labels"]
-                    .Select(readObjLabels => readObjLabels.Select(l => (string) l).ToList())
-                    .ToList();
+                    .Select(readObjLabels => new HashSet<string>(readObjLabels.Select(l => (string) l)))
+                    .ToList<ISet<string>>();
             var objects = graphsonObject["objects"].Select(o => reader.ToObject(o)).ToList();
             return new Path(labels, objects);
         }

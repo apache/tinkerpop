@@ -35,7 +35,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             {
                 { "g:List", new ListSerializer() },
                 { "g:Set", new SetSerializer() },
-                { "g:Map", new MapSerializer() }
+                { "g:Map", new MapSerializer() },
+                { "g:Path", new Path3Deserializer() }
             };
         
         /// <summary>
