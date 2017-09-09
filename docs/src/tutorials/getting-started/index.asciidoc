@@ -205,7 +205,7 @@ as an example. First, you need to create this graph:
 graph = TinkerGraph.open()
 g = graph.traversal()
 v1 = g.addV("person").property(id, 1).property("name", "marko").property("age", 29).next()
-v2 = g.addV("person").property(id, 3).property("name", "lop").property("lang", "java").next()
+v2 = g.addV("software").property(id, 3).property("name", "lop").property("lang", "java").next()
 g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
 ----
 
@@ -221,7 +221,7 @@ that static importing you would instead have to write:
 graph = TinkerGraph.open()
 g = graph.traversal()
 v1 = g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).next()
-v2 = g.addV("person").property(T.id, 3).property("name", "lop").property("lang", "java").next()
+v2 = g.addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").next()
 g.addE("created").from(v1).to(v2).property(T.id, 9).property("weight", 0.4)
 ----
 
