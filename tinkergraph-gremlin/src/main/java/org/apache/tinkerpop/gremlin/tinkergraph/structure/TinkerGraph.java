@@ -30,13 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
@@ -74,7 +70,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-public final class TinkerGraph implements Graph, Cloneable {
+public final class TinkerGraph implements Graph {
 
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
@@ -380,17 +376,6 @@ public final class TinkerGraph implements Graph, Cloneable {
             if (id == null || !id.getClass().equals(firstClass))
                 throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
         }
-    }
-
-    /**
-     * make a deep clone of the graph/vertices/edges that preserves ids
-     */
-    @Override
-    public TinkerGraph clone() {
-        final TinkerGraph cloned = new TinkerGraph(configuration);
-        vertices().forEachRemaining(v -> DetachedFactory.detach(v, true).attach(Attachable.Method.create(cloned)));
-        edges().forEachRemaining(e -> DetachedFactory.detach(e, true).attach(Attachable.Method.create(cloned)));
-        return cloned;
     }
 
     public class TinkerGraphFeatures implements Features {
