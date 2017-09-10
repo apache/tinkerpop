@@ -39,6 +39,6 @@ set JAVA_OPTIONS=-Xms32m -Xmx512m -Djline.terminal=none
 
 :: Launch the application
 
-java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.console.Console %*
+java %JAVA_OPTIONS% %JAVA_ARGS% -cp "%LIBDIR%\*;%EXTDIR%;" org.apache.tinkerpop.gremlin.console.Console %*
 
 set CLASSPATH=%OLD_CLASSPATH%
