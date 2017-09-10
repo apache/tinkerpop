@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `GraphHelper.cloneElements(Graph original, Graph clone)` to quickly clone a graph.
 * Bump to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
 * Bump to Jackson 2.8.10.
