@@ -35,6 +35,6 @@ namespace Gremlin.Net.Driver.Messages
         public ResponseStatus Status { get; set; }
 
         [JsonProperty(PropertyName = "result")]
-        public ResponseResult<T> Result { get; set; }
+        public ResponseResult Result { get; set; }
     }
 }

@@ -37,8 +37,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 .Select(x => new HashSet<string>(((ISet<object>)x).Cast<string>()))
                 .ToList<ISet<string>>();
             // "objects" is an object[]
-            object[] objectsProperty = reader.ToObject(graphsonObject["objects"]);
-            var objects = objectsProperty.ToArray();
+            object[] objects = reader.ToObject(graphsonObject["objects"]);
             return new Path(labels, objects);
         }
     }

@@ -27,7 +27,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Driver.Messages
 {
-    internal class ResponseResult<T>
+    internal class ResponseResult
     {
         [JsonProperty(PropertyName = "data")]
         public JToken Data { get; set; }

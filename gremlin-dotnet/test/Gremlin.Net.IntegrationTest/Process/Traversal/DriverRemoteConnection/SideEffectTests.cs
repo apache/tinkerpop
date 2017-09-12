@@ -140,7 +140,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Contains("m", keys);
             Assert.Contains("n", keys);
             var n = (IList<object>) t.SideEffects.Get("n");
-            Assert.Equal(n.Select(tr => ((Traverser)tr).Object), new[] {"lop", "ripple"});
+            Assert.Equal(new[] {"lop", "ripple"}, n.Select(tr => ((Traverser)tr).Object));
         }
 
         [Fact]
