@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
@@ -409,7 +410,7 @@ public class Settings {
          * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
-         * @deprecated As of release 3.2.5, replaced by {@link authenticator}.
+         * @deprecated As of release 3.2.5, replaced by {@link #authenticator}.
          */
         @Deprecated
         public String className = AllowAllAuthenticator.class.getName();
