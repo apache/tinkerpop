@@ -63,7 +63,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX();
 
-    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X();
+    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X(final Vertex a, final Vertex v2);
 
     ///////
 
@@ -266,7 +266,10 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X() {
-        final Traversal<Vertex, Edge> traversal = get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X();
+        final Vertex a = g.V().has("name", "marko").next();
+        final Vertex b = g.V().has("name", "peter").next();
+
+        final Traversal<Vertex, Edge> traversal = get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X(a, b);
         final Edge edge = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
@@ -373,9 +376,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X() {
-            final Vertex a = g.V().has("name", "marko").next();
-            final Vertex b = g.V().has("name", "peter").next();
+        public Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X(final Vertex a, final Vertex b) {
             return g.withSideEffect("b", b).V(a).addE("knows").to("b").property("weight", 0.5d);
         }
 
