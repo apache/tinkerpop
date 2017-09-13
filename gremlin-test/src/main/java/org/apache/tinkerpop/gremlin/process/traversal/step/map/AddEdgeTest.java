@@ -62,11 +62,11 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX();
 
-    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X(final Vertex a, final Vertex v2);
+    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X(final Vertex a, final Vertex b);
 
-    public abstract Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X();
+    public abstract Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b);
 
-    public abstract Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X();
+    public abstract Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b);
 
     ///////
 
@@ -221,7 +221,10 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X() {
-        final Traversal<Vertex, Edge> traversal = get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X();
+        final Vertex a = g.V().has("name", "marko").next();
+        final Vertex b = g.V().has("name", "peter").next();
+
+        final Traversal<Vertex, Edge> traversal = get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X(a, b);
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
@@ -231,15 +234,16 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(0.1d, edge.value("weight"), 0.1d);
         assertEquals(6L, g.V().count().next().longValue());
         assertEquals(7L, g.E().count().next().longValue());
-
-
     }
 
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X() {
-        final Traversal<Edge, Edge> traversal = get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X();
+        final Vertex a = g.V().has("name", "marko").next();
+        final Vertex b = g.V().has("name", "peter").next();
+
+        final Traversal<Edge, Edge> traversal = get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X(a, b);
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
@@ -249,8 +253,6 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(0.1d, edge.value("weight"), 0.1d);
         assertEquals(6L, g.V().count().next().longValue());
         assertEquals(7L, g.E().count().next().longValue());
-
-
     }
 
     public static class Traversals extends AddEdgeTest {
@@ -291,16 +293,12 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X() {
-            final Vertex a = g.V().has("name", "marko").next();
-            final Vertex b = g.V().has("name", "peter").next();
+        public Traversal<Vertex, Edge> get_g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b) {
             return g.V(a).addE("knows").to(b).property("weight", 0.1d);
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X() {
-            final Vertex a = g.V().has("name", "marko").next();
-            final Vertex b = g.V().has("name", "peter").next();
+        public Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b) {
             return g.addE("knows").from(a).to(b).property("weight", 0.1d);
         }
     }
