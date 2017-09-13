@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -94,7 +95,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                     final BiPredicate predicate = p.getBiPredicate();
                     if (value instanceof Number) {
                         final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
-                        final Long highRangeCandidate = ((Number) value).longValue() + highRangeOffset;
+                        final Long highRangeCandidate = (long) Math.ceil(((Number) value).doubleValue()) + highRangeOffset;
                         final boolean update = highRange == null || highRangeCandidate > highRange;
                         if (update) {
                             if (parent instanceof EmptyStep) {
@@ -163,6 +164,13 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                                     TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
                                 else
                                     traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
+                            }
+                        } else if (size == 0) {
+                            final Step parentStep = traversal.getParent().asStep();
+                            if (!(parentStep instanceof EmptyStep)) {
+                                final Traversal.Admin parentTraversal = parentStep.getTraversal();
+                                //parentTraversal.removeStep(parentStep); // this leads to IndexOutOfBoundsExceptions
+                                TraversalHelper.replaceStep(parentStep, new IdentityStep<>(parentTraversal), parentTraversal);
                             }
                         }
                     } else {

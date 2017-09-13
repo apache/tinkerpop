@@ -99,6 +99,9 @@ public class RangeByIsCountStrategyTest {
                 {__.and(__.out().count().is(0), __.in().count().is(1)), __.and(__.not(__.out()), __.in().limit(2).count().is(1))},
                 {__.and(__.out().count().is(1), __.in().count().is(0)), __.and(__.out().limit(2).count().is(1), __.not(__.in()))},
                 {__.or(__.out().count().is(0), __.in().count().is(0)), __.or(__.not(__.out()), __.not(__.in()))},
+                {__.path().filter(__.count().is(gte(0.5))).limit(5), __.path().identity().limit(5)}, // unfortunately we can't just remove the filter step
+                {__.path().filter(__.unfold().count().is(gte(0.5))), __.path().filter(__.unfold())},
+                {__.path().filter(__.unfold().count().is(gte(1.5))), __.path().filter(__.unfold().limit(2).count().is(gte(1.5)))},
         });
     }
 
