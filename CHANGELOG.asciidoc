@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `GraphHelper.cloneElements(Graph original, Graph clone)` to the `gremlin-test` module to quickly clone a graph.
 * Bump to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
+* Fixed a bug in `RangeByIsCountStrategy` that led to unexpected behaviors when predicates were used with floating point numbers.
 * Bump to Jackson 2.8.10.
 * Added an `EmbeddedRemoteConnection` so that it's possible to mimic a remote connection within the same JVM.
 * Supported interruption for remote traversals.
