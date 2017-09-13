@@ -174,6 +174,31 @@ g.withSack(0).V().values("age").sack(sum).sack(sum).sack() // multiply by 2 (sim
 g.withSack(0).V().values("age").sack(sum).sack(mult).by(constant(2)).sack() // multiply by 2 (generally useful for multiplications by n)
 ----
 
+_Method for doing a sum with division._
+
+[gremlin-groovy]
+----
+g.addV().property(id, "a").as("a").
+  addV().property(id, "b").as("b").
+  addE("link").from("a").to("b").
+  addE("link").from("b").to("a").
+  addE("link").from("b").to("a").iterate()
+g.withSack(0d).
+   V("a").as("a").
+   V("b").as("b").
+     project("ab", "ba").
+       by(inE("link").where(outV().as("a")).count()).
+       by(outE("link").where(inV().as("a")).count()).
+     sack(sum).by(select("ab")).
+     sack(div).by(select("ba")).
+     project("a", "b", "#(a,b)", "#(b,a)", "#(a,b) / #(b,a)").
+       by(select("a")).
+       by(select("b")).
+       by(select("ab")).
+       by(select("ba")).
+       by(sack())
+----
+
 [[appendix-g]]
 _Dropping a vertex, as well as the vertices related to that dropped vertex that are connected by a "knows" edge in the
 "modern" graph_
@@ -260,3 +285,37 @@ g.V().as("a").
       by(select(keys).unfold()).
       by(select(values).unfold().unfold().fold()))
 ----
+
+[[appendix-j]]
+_Sum edge weight with a coefficient._
+
+[gremlin-groovy]
+----
+g.addV('person').property('name','alice').as('alice').
+  addV('person').property('name','bobby').as('bobby').
+  addV('person').property('name','cindy').as('cindy').
+  addV('person').property('name','david').as('david').
+  addV('person').property('name','eliza').as('eliza').
+  addE('rates').from('alice').to('bobby').property('tag','ruby').property('value',9).
+  addE('rates').from('bobby').to('cindy').property('tag','ruby').property('value',8).
+  addE('rates').from('cindy').to('david').property('tag','ruby').property('value',7).
+  addE('rates').from('david').to('eliza').property('tag','ruby').property('value',6).
+  addE('rates').from('alice').to('eliza').property('tag','java').property('value',9).iterate()
+ g.withSack(1.0).V().has("name","alice").
+   repeat(outE("rates").has("tag","ruby").
+          project("a","b","c").
+            by(inV()).
+            by(sack()).
+            by("value").as("x").
+          select("a").
+          sack(mult).by(constant(0.5))).
+      times(3).emit().
+    select(all, "x").
+    project("name","score").
+      by(tail(local, 1).select("a").values("name")).
+      by(unfold().
+         sack(assign).by(select("b")).
+         sack(mult).by(select("c")).
+         sack().sum())
+----
+
