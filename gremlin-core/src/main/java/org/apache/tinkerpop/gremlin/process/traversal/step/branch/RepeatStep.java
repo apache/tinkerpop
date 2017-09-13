@@ -91,8 +91,6 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     public Traversal.Admin<S, S> getRepeatTraversal() {
-        if(null == this.repeatTraversal)
-            throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
         return this.repeatTraversal;
     }
 
@@ -183,7 +181,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     protected Iterator<Traverser.Admin<S>> standardAlgorithm() throws NoSuchElementException {
-        if(null == this.repeatTraversal)
+        if (null == this.repeatTraversal)
             throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
 
         while (true) {
@@ -207,7 +205,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
-        if(null == this.repeatTraversal)
+        if (null == this.repeatTraversal)
             throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
 
         final Traverser.Admin<S> start = this.starts.next();
