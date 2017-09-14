@@ -70,7 +70,8 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'mock'
+        'mock',
+        'radish-bdd'
     ],
     install_requires=install_requires,
     classifiers=[

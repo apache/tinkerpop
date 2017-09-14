@@ -343,6 +343,10 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
+                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install radish-bdd"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
@@ -350,6 +354,10 @@ limitations under the License.
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install wheel"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install radish-bdd"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -440,6 +448,17 @@ limitations under the License.
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py test"/>
                                         </exec>
+                                        <!-- radish seems to like all dependencies in place -->
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py install"/>
+                                        </exec>
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="-b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/>
+                                        </exec>                                                                  
                                     </target>
                                 </configuration>
                             </execution>
