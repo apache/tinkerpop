@@ -71,6 +71,8 @@ namespace Gremlin.Net.Driver
             }
         }
 
+        public bool IsOpen => _client.State == WebSocketState.Open;
+
         #region IDisposable Support
 
         private bool _disposed;

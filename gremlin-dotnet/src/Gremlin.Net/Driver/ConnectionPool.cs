@@ -55,7 +55,7 @@ namespace Gremlin.Net.Driver
             if (connection == null)
                 connection = await CreateNewConnectionAsync().ConfigureAwait(false);
 
-            return new ProxyConnection(connection, AddConnection);
+            return new ProxyConnection(connection, AddConnectionIfOpen);
         }
 
         private async Task<Connection> CreateNewConnectionAsync()
@@ -66,12 +66,50 @@ namespace Gremlin.Net.Driver
             return newConnection;
         }
 
+        private void AddConnectionIfOpen(Connection connection)
+        {
+            if (!connection.IsOpen)
+            {
+                ConsiderUnavailable();
+                connection.Dispose();
+                return;
+            }
+            AddConnection(connection);
+        }
+
         private void AddConnection(Connection connection)
         {
             lock (_connectionsLock)
             {
                 _connections.Add(connection);
             }
+        }
+
+        private void ConsiderUnavailable()
+        {
+            CloseAndRemoveAllConnections();
+        }
+
+        private void CloseAndRemoveAllConnections()
+        {
+            lock (_connectionsLock)
+            {
+                TeardownAsync().WaitUnwrap();
+                RemoveAllConnections();
+            }
+        }
+
+        private void RemoveAllConnections()
+        {
+            while (_connections.TryTake(out var connection))
+            {
+                connection.Dispose();
+            }
+        }
+
+        private async Task TeardownAsync()
+        {
+            await Task.WhenAll(_connections.Select(c => c.CloseAsync())).ConfigureAwait(false);
         }
 
         #region IDisposable Support
@@ -89,27 +127,10 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
-                    lock (_connectionsLock)
-                    {
-                        if (_connections != null && !_connections.IsEmpty)
-                        {
-                            TeardownAsync().WaitUnwrap();
-
-                            foreach (var conn in _connections)
-                                conn.Dispose();
-                        }
-                    }
+                    CloseAndRemoveAllConnections();
                 _disposed = true;
             }
         }
-
-        private async Task TeardownAsync()
-        {
-            var closeTasks = new List<Task>(_connections.Count);
-            closeTasks.AddRange(_connections.Select(conn => conn.CloseAsync()));
-            await Task.WhenAll(closeTasks).ConfigureAwait(false);
-        }
-
         #endregion
     }
 }
