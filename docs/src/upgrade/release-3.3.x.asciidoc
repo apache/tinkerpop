@@ -48,7 +48,7 @@ In particular, these properties referenced in TinkerPop documentation and config
 
 [width="50%",cols="2",options="header"]
 |=========================================================
-|old (2.3) |new (3.3)
+|Neo4j 2.3 (TinkerPop <= 3.3.0) |Neo4j 3.2 (TinkerPop 3.3.1)
 |node_auto_indexing |dbms.auto_index.nodes.enabled
 |relationship_auto_indexing |dbms.auto_index.relationships.enabled
 |ha.cluster_server |ha.host.coordination
