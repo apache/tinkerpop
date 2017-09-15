@@ -256,8 +256,8 @@ graph.close()
 
 gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
 gremlin.neo4j.directory=/tmp/neo4j
-gremlin.neo4j.conf.node_auto_indexing=true
-gremlin.neo4j.conf.relationship_auto_indexing=true
+gremlin.neo4j.conf.dbms.auto_index.nodes.enabled=true
+gremlin.neo4j.conf.dbms.auto_index.relationships.enabled=true
 ----
 
 High Availability Configuration
@@ -283,8 +283,8 @@ gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
 gremlin.neo4j.directory=/tmp/neo4j.server1
 gremlin.neo4j.conf.ha.server_id=1
 gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
-gremlin.neo4j.conf.ha.cluster_server=localhost:5001
-gremlin.neo4j.conf.ha.server=localhost:6001
+gremlin.neo4j.conf.ha.host.coordination=localhost:5001
+gremlin.neo4j.conf.ha.host.data=localhost:6001
 ----
 
 Assuming the intent is to configure this cluster completely within TinkerPop (perhaps within three separate Gremlin
@@ -296,8 +296,8 @@ gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
 gremlin.neo4j.directory=/tmp/neo4j.server2
 gremlin.neo4j.conf.ha.server_id=2
 gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
-gremlin.neo4j.conf.ha.cluster_server=localhost:5002
-gremlin.neo4j.conf.ha.server=localhost:6002
+gremlin.neo4j.conf.ha.host.coordination=localhost:5002
+gremlin.neo4j.conf.ha.host.data=localhost:6002
 ----
 
 and the third will be:
@@ -308,8 +308,8 @@ gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
 gremlin.neo4j.directory=/tmp/neo4j.server3
 gremlin.neo4j.conf.ha.server_id=3
 gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
-gremlin.neo4j.conf.ha.cluster_server=localhost:5003
-gremlin.neo4j.conf.ha.server=localhost:6003
+gremlin.neo4j.conf.ha.host.coordination=localhost:5003
+gremlin.neo4j.conf.ha.host.data=localhost:6003
 ----
 
 IMPORTANT: The backslashes in the values provided to `gremlin.neo4j.conf.ha.initial_hosts` prevent that configuration
