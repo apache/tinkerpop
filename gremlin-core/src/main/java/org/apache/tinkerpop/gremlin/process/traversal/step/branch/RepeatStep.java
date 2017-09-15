@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -263,6 +264,8 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public static class RepeatEndStep<S> extends ComputerAwareStep<S, S> {
 
+        final LinkedList<Traverser.Admin<S>> stashedStarts = new LinkedList<>();
+
         public RepeatEndStep(final Traversal.Admin traversal) {
             super(traversal);
         }
@@ -271,7 +274,17 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> standardAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
-                final Traverser.Admin<S> start = this.starts.next();
+                final Traverser.Admin<S> start;
+                if (this.starts.hasNext()) {
+                    start = this.starts.next();
+                } else {
+                    start = this.stashedStarts.pop();
+                }
+                // to make this step depth first search (DFS), we're stashing the remainder for later
+                while (this.starts.hasNext()) {
+                    stashedStarts.add(this.starts.next());
+                }
+
                 start.incrLoops(this.getId());
                 if (repeatStep.doUntil(start, false)) {
                     start.resetLoops();
