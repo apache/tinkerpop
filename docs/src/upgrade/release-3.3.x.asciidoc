@@ -46,9 +46,9 @@ See Neo4j's link:https://neo4j.com/guides/upgrade/[3.2 Upgrade FAQ] for a comple
 
 In particular, these properties referenced in TinkerPop documentation and configuration were renamed:
 
-[width="50%",cols="2",options="header"]
+[width="100%",cols="2",options="header"]
 |=========================================================
-|Neo4j 2.3 (TinkerPop <= 3.3.0) |Neo4j 3.2 (TinkerPop 3.3.1)
+|Neo4j 2.3 (TinkerPop \<= 3.3.0) |Neo4j 3.2 (TinkerPop 3.3.1)
 |node_auto_indexing |dbms.auto_index.nodes.enabled
 |relationship_auto_indexing |dbms.auto_index.relationships.enabled
 |ha.cluster_server |ha.host.coordination
