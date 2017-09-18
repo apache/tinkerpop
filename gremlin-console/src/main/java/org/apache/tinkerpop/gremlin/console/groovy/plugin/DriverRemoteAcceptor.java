@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import javax.security.sasl.SaslException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -86,10 +87,22 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object connect(final List<String> args) throws RemoteException {
-        if (args.size() < 1) throw new RemoteException("Expects the location of a configuration file as an argument");
+        if (args.size() < 1) throw new RemoteException("Expects the location of a configuration file or variable name for a Cluster object as an argument");
 
         try {
-            this.currentCluster = Cluster.open(args.get(0));
+            final String fileOrVar = args.get(0);
+            if (new File(fileOrVar).isFile())
+                this.currentCluster = Cluster.open(fileOrVar);
+            else if (shell.getInterp().getContext().getVariables().containsKey(fileOrVar)) {
+                final Object o = shell.getInterp().getContext().getVariable(fileOrVar);
+                if (o instanceof Cluster) {
+                    this.currentCluster = (Cluster) o;
+                }
+            }
+
+            if (null == currentCluster)
+                throw new RemoteException("Expects the location of a configuration file or variable name for a Cluster object as an argument");
+
             final boolean useSession = args.size() >= 2 && (args.get(1).equals(TOKEN_SESSION) || args.get(1).equals(TOKEN_SESSION_MANAGED));
             if (useSession) {
                 final String sessionName = args.size() == 3 ? args.get(2) : UUID.randomUUID().toString();

@@ -538,6 +538,15 @@ submitting `:> graph` will return a `Graph` instance and in most cases those are
 and will return a serialization error.  It should be noted that `TinkerGraph`, as a convenience for shipping around
 small sub-graphs, is serializable from Gremlin Server.
 
+The alternative syntax to connecting allows for the `Cluster` to be user constructed directly in the console as
+opposed to simply providing a static YAML file.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open()
+:remote connect tinkerpop.server cluster
+----
+
 The Gremlin Server `:remote config` command for the driver has the following configuration options:
 
 [width="100%",cols="3,10a",options="header"]
