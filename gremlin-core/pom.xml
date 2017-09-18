@@ -95,12 +95,6 @@ limitations under the License.
             <artifactId>hamcrest-all</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
         <!-- needed to test GraphFactory and xml based config via optional dependency in apache configurations -->
         <dependency>
             <groupId>commons-collections</groupId>
