@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -82,8 +83,14 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     }
 
     @Test
-    public void shouldConnect() throws Exception {
+    public void shouldConnectWithRemoteYaml() throws Exception {
         assertThat(acceptor.connect(Collections.singletonList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Configured "));
+    }
+
+    @Test
+    public void shouldConnectWithRemoteVariable() throws Exception {
+        groovysh.getInterp().evaluate(Collections.singletonList("cluster = " + Cluster.class.getName() + ".open(\"" + TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath() + "\")"));
+        assertThat(acceptor.connect(Collections.singletonList("cluster")).toString(), startsWith("Configured "));
     }
 
     @Test
