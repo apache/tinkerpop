@@ -180,7 +180,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
             Vertex vertex = (Vertex) map.get("a");
             double pageRank = (Double) map.get("b");
             assertEquals(convertToVertexId("marko"), vertex.id());
-            assertTrue(pageRank > 0.15d);
+            assertTrue(pageRank > 0.10d);
             counter++;
         }
         assertEquals(2, counter);

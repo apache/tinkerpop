@@ -32,6 +32,39 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+PageRankVertexProgram
+^^^^^^^^^^^^^^^^^^^^^
+
+There were two major bugs in the way in which PageRank was being calculated in `PageRankVertexProgram`. First, teleportation
+energy was not being distributed correctly amongst the vertices at each round. Second, terminal vertices (i.e. vertices
+with no outgoing edges) did not have their full gathered energy distributed via teleportation. As a secondary benefit,
+`PageRankVertexProgram` also always calculates the vertex count and no longer requires the user to specify the vertex count.
+
+For users upgrading, note that while the relative rank orders will remain "the same," the actual PageRank values will differ
+from prior TinkerPop versions.
+
+```
+VERTEX  iGRAPH    TINKERPOP
+marko   0.1119788 0.11375485828040575
+vadas   0.1370267 0.14598540145985406
+lop     0.2665600 0.30472082661863686
+josh    0.1620746 0.14598540145985406
+ripple  0.2103812 0.1757986539008437
+peter   0.1119788 0.11375485828040575
+```
+
+Normalization preserved through computation:
+
+```
+0.11375485828040575 +
+0.14598540145985406 +
+0.30472082661863686 +
+0.14598540145985406 +
+0.1757986539008437 +
+0.11375485828040575
+==>1.00000000000000018
+```
+
 IO Defaults
 ^^^^^^^^^^^
 

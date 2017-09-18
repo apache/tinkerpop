@@ -49,17 +49,17 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
                 final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
                 //System.out.println(name + "-----" + pageRank);
                 if (name.equals("marko"))
-                    assertTrue(pageRank > 0.14 && pageRank < 0.16);
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
                 else if (name.equals("vadas"))
-                    assertTrue(pageRank > 0.19 && pageRank < 0.20);
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
                 else if (name.equals("lop"))
-                    assertTrue(pageRank > 0.40 && pageRank < 0.41);
+                    assertTrue(pageRank > 0.29 && pageRank < 0.31);
                 else if (name.equals("josh"))
-                    assertTrue(pageRank > 0.19 && pageRank < 0.20);
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
                 else if (name.equals("ripple"))
-                    assertTrue(pageRank > 0.23 && pageRank < 0.24);
+                    assertTrue(pageRank > 0.16 && pageRank < 0.18);
                 else if (name.equals("peter"))
-                    assertTrue(pageRank > 0.14 && pageRank < 0.16);
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
                 else
                     throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
             });

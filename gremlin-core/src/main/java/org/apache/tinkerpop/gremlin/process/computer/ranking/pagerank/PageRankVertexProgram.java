@@ -61,7 +61,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
     private static final String INITIAL_RANK_TRAVERSAL = "gremlin.pageRankVertexProgram.initialRankTraversal";
-    private static final String TERMINAL_ENERGY = "gremlin.pageRankVertexProgram.terminalEnergy";
+    private static final String TELEPORTATION_ENERGY = "gremlin.pageRankVertexProgram.teleportationEnergy";
 
     private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
@@ -93,7 +93,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
                 VertexComputeKey.of(this.property, false),
                 VertexComputeKey.of(EDGE_COUNT, true)));
         this.memoryComputeKeys = new HashSet<>(Arrays.asList(
-                MemoryComputeKey.of(TERMINAL_ENERGY, Operator.sum, true, true),
+                MemoryComputeKey.of(TELEPORTATION_ENERGY, Operator.sum, true, true),
                 MemoryComputeKey.of(VERTEX_COUNT, Operator.sum, true, true)));
     }
 
@@ -155,47 +155,49 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     @Override
     public void setup(final Memory memory) {
-        memory.set(TERMINAL_ENERGY, 0.0d);
+        memory.set(TELEPORTATION_ENERGY, 0.0d);
         memory.set(VERTEX_COUNT, 0.0d);
     }
 
     @Override
     public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) {
-        System.out.println(memory.get(TERMINAL_ENERGY).toString());
         if (memory.isInitialIteration()) {
             messenger.sendMessage(this.countMessageScope, 1.0d);
             memory.add(VERTEX_COUNT, 1.0d);
         } else if (1 == memory.getIteration()) {
             final double vertexCount = memory.<Double>get(VERTEX_COUNT);
-            final double initialPageRank = (null == this.initialRankTraversal ?
-                    1.0d :
-                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue()) / vertexCount;
-            final double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
+            double initialPageRank = null == this.initialRankTraversal ?
+                    1.0d / vertexCount :
+                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue();
             vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
+            final double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
+            memory.add(TELEPORTATION_ENERGY, (1.0d - this.alpha) * initialPageRank);
+            initialPageRank = this.alpha * initialPageRank;
             if (!this.terminate(memory)) { // don't send messages if this is the last iteration
                 if (edgeCount > 0.0d)
                     messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
                 else
-                    memory.add(TERMINAL_ENERGY, initialPageRank);
+                    memory.add(TELEPORTATION_ENERGY, initialPageRank);
             }
         } else {
             final double vertexCount = memory.<Double>get(VERTEX_COUNT);
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / vertexCount);
-            final double terminalEnergy = memory.get(TERMINAL_ENERGY);
+            final double terminalEnergy = memory.get(TELEPORTATION_ENERGY);
             if (terminalEnergy > 0.0d) {
                 final double localTerminalEnergy = terminalEnergy / vertexCount;
                 newPageRank = newPageRank + localTerminalEnergy;
-                memory.add(TERMINAL_ENERGY, -1.0d * localTerminalEnergy);
+                memory.add(TELEPORTATION_ENERGY, -localTerminalEnergy);
             }
             vertex.property(VertexProperty.Cardinality.single, this.property, newPageRank);
+            memory.add(TELEPORTATION_ENERGY, (1.0d - this.alpha) * newPageRank);
+            newPageRank = this.alpha * newPageRank;
             final double edgeCount = vertex.<Double>value(EDGE_COUNT);
             if (!this.terminate(memory)) { // don't send messages if this is the last iteration
                 if (edgeCount > 0.0d)
                     messenger.sendMessage(this.incidentMessageScope, newPageRank / edgeCount);
                 else
-                    memory.add(TERMINAL_ENERGY, newPageRank);
+                    memory.add(TELEPORTATION_ENERGY, newPageRank);
             }
         }
     }
