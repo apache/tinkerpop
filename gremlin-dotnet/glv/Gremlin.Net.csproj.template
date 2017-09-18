@@ -25,7 +25,9 @@ limitations under the License.
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>${projectVersion}</Version>
+    <Version>$projectVersion</Version>
+    <FileVersion><%= (projectVersion =~ /(\d+\.\d+\.\d+).*/)[0][1] %>.0</FileVersion>
+    <AssemblyVersion><%= (projectVersion =~ /(\d+\.\d+)\.*/)[0][1] %>.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>
@@ -47,6 +49,9 @@ limitations under the License.
       included as part of the Apache TinkerPop project. The 'old' Gremlin.Net driver is however still supported.
       Head to https://github.com/FlorianHockmann/Gremlin.Net for more information.
     </Summary>
+    <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'\$(OS)' != 'Windows_NT'">true</PublicSign>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
