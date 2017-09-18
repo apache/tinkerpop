@@ -29,7 +29,7 @@ Neo4j-Gremlin
 <dependency>
   <groupId>org.neo4j</groupId>
   <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-  <version>0.3-2.3.3</version>
+  <version>0.7-3.2.3</version>
 </dependency>
 ----
 
