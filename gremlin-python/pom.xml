@@ -514,6 +514,10 @@ limitations under the License.
                                             <value>${gremlin.server.dir}</value>
                                         </property>
                                         <property>
+                                            <name>settingsFile</name>
+                                            <value>${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml</value>
+                                        </property>
+                                        <property>
                                             <name>executionName</name>
                                             <value>${project.name}</value>
                                         </property>

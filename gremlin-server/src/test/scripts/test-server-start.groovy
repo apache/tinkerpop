@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
 if (Boolean.parseBoolean(skipTests)) return
 
 log.info("Starting Gremlin Server instances for native testing of ${executionName}")
-def settings = Settings.read("${gremlinServerDir}/conf/gremlin-server-modern-py.yaml")
+def settings = Settings.read("${settingsFile}")
 settings.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/scripts/generate-modern.groovy"]
 settings.port = 45940
@@ -35,7 +35,7 @@ server.start().join()
 project.setContextValue("gremlin.server", server)
 log.info("Gremlin Server with no authentication started on port 45940")
 
-def settingsSecure = Settings.read("${gremlinServerDir}/conf/gremlin-server-modern.yaml")
+def settingsSecure = Settings.read("${settingsFile}")
 settingsSecure.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/scripts/generate-modern.groovy"]
 settingsSecure.port = 45941
