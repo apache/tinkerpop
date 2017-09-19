@@ -438,7 +438,10 @@ public enum MetricManager {
      * {@link GremlinScriptEngine} implementations achieve greater parity these metrics will get expanded.
      */
     public void registerGremlinScriptEngineMetrics(final GremlinScriptEngine engine, final String... prefix) {
-        if (engine instanceof GremlinGroovyScriptEngine) {
+        // only register if metrics aren't already registered. typically only happens in testing where two gremlin
+        // server instances are running in the same jvm. they will share the same metrics if that is the case since
+        // the MetricsManager is static
+        if (engine instanceof GremlinGroovyScriptEngine && getRegistry().getNames().stream().noneMatch(n -> n.endsWith("long-run-compilation-count"))) {
             final GremlinGroovyScriptEngine gremlinGroovyScriptEngine = (GremlinGroovyScriptEngine) engine;
             getRegistry().register(
                     MetricRegistry.name(GremlinServer.class, ArrayUtils.add(prefix, "long-run-compilation-count")),

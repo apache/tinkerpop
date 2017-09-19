@@ -17,17 +17,16 @@
  * under the License.
  */
 
-// an init script that returns a Map allows explicit setting of global bindings.
-def globals = [:]
+if (Boolean.parseBoolean(skipTests)) return
 
-// Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook.
-// Note that the name of the key in the "global" map is unimportant.
-globals << [hook : [
-  onStartUp: { ctx ->
-    ctx.logger.info("Loading 'modern' graph data.")
-    TinkerFactory.generateModern(graph)
-  }
-] as LifeCycleHook]
+log.info("Tests for native ${executionName} complete")
 
-// define the default TraversalSource to bind queries to - this one will be named "g".
-globals << [g : graph.traversal()]
+def server = project.getContextValue("gremlin.server")
+log.info("Shutting down $server")
+server.stop().join()
+
+def serverSecure = project.getContextValue("gremlin.server.secure")
+log.info("Shutting down $serverSecure")
+serverSecure.stop().join()
+
+log.info("All Gremlin Server instances are shutdown for ${executionName}")
