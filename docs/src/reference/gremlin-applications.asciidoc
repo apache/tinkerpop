@@ -400,6 +400,11 @@ on how to develop a driver for Gremlin Server.
 By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSocket] and
 exposes a custom sub-protocol for interacting with the server.
 
+WARNING: Gremlin Server allows for the execution of remotely submitted "scripts" (i.e. arbitrary code sent by a client
+to the server). Developers should consider the security implications involved in running Gremlin Server without the
+appropriate precautions. Please review the <<security,Security Section>> and more specifically, the
+<<script-execution,Script Execution Section>> for more information.
+
 [[starting-gremlin-server]]
 Starting Gremlin Server
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1245,6 +1250,7 @@ The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,Re
 |cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
 |=========================================================
 
+[[security]]
 Security
 ^^^^^^^^
 
@@ -1440,8 +1446,14 @@ some problems would be, `while(true) {}`, which would consume a thread in the Gr
 preventing it from serving other requests.  Sending enough of these kinds of scripts would eventually consume all
 available threads and Gremlin Server would stop responding.
 
-Gremlin Server (more specifically the `GremlinGroovyScriptEngine`) provides methods to protect itself from these
-kinds of troublesome scripts.  A user can configure the script engine with a `GroovyCompilerGremlinPlugin`
+Scripts have access to the full power of their language and the JVM on which they are running. This means that they
+can access certain APIs that have nothing to do with Gremlin itself, such as `java.lang.System` or the `java.io`
+and `java.net` packages. Scripts offer developers a lot of flexibility, but having that flexibility comes at the cost
+of safety. A Gremlin Server instance that is not secured appropriately provides for a big security risk.
+
+The previous sections discussed methods for securing Gremlin Server through authentication and encryption, which is a
+good first step in protection. Another layer of protection comes in the form of specific configurations for the
+`GremlinGroovyScriptEngine`.  A user can configure the script engine with a `GroovyCompilerGremlinPlugin`
 implementation. Consider the basic configuration from the Gremlin Server YAML file:
 
 [source,yaml]
