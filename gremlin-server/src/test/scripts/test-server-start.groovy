@@ -19,12 +19,12 @@
 
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
-import org.apache.tinkerpop.gremlin.server.Settings.SerializerSettings                          
+import org.apache.tinkerpop.gremlin.server.Settings.SerializerSettings
 
 if (Boolean.parseBoolean(skipTests)) return
 
 log.info("Starting Gremlin Server instances for native testing of ${executionName}")
-def settings = Settings.read("${gremlinServerDir}/conf/gremlin-server-modern-py.yaml")
+def settings = Settings.read("${settingsFile}")
 settings.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/scripts/generate-modern.groovy"]
 settings.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])
@@ -45,7 +45,7 @@ if (!securePropsFile.exists()) {
     securePropsFile << "gremlin.tinkergraph.graphFormat=gryo"
 }
 
-def settingsSecure = Settings.read("${gremlinServerDir}/conf/gremlin-server-modern.yaml")
+def settingsSecure = Settings.read("${settingsFile}")
 settingsSecure.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/scripts/generate-modern.groovy"]
 settingsSecure.serializers << new SerializerSettings("org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0", [:])

@@ -124,6 +124,7 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
@@ -266,6 +267,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Gremlin.class);
         CLASS_IMPORTS.add(IteratorUtils.class);
         CLASS_IMPORTS.add(TimeUtil.class);
+        CLASS_IMPORTS.add(Lambda.class);
 
         /////////////
         // METHODS //
@@ -276,6 +278,7 @@ public final class CoreImports {
         uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
         uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(Lambda.class).forEach(METHOD_IMPORTS::add);
 
         ///////////
         // ENUMS //
