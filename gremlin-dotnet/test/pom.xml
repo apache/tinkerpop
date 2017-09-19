@@ -128,41 +128,22 @@ limitations under the License.
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>skipTests</name>
+                                            <value>${skipTests}</value>
+                                        </property>
+                                        <property>
+                                            <name>gremlinServerDir</name>
+                                            <value>${gremlin.server.dir}</value>
+                                        </property>
+                                        <property>
+                                            <name>executionName</name>
+                                            <value>${project.name}</value>
+                                        </property>
+                                    </properties>
                                     <scripts>
-                                        <script>
-                                            <![CDATA[
-import org.apache.tinkerpop.gremlin.server.GremlinServer
-import org.apache.tinkerpop.gremlin.server.Settings
-import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
-
-if (${skipTests}) return
-
-log.info("Starting Gremlin Server instances for native testing of gremlin-dotnet")
-def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
-settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
-settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
-settings.port = 45950
-
-def server = new GremlinServer(settings)
-server.start().join()
-
-project.setContextValue("gremlin.dotnet.server", server)
-log.info("Gremlin Server with no authentication started on port 45950")
-
-def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
-settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
-settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
-settingsSecure.port = 45951
-settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
-settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties", credentialsDbLocation: "${gremlin.server.dir}/data/credentials.kryo"]
-
-def serverSecure = new GremlinServer(settingsSecure)
-serverSecure.start().join()
-
-project.setContextValue("gremlin.dotnet.server.secure", serverSecure)
-log.info("Gremlin Server with authentication started on port 45951")
-]]>
-                                        </script>
+                                        <script>${gremlin.server.dir}/src/test/scripts/test-server-start.groovy</script>
                                     </scripts>
                                 </configuration>
                             </execution>
@@ -173,26 +154,18 @@ log.info("Gremlin Server with authentication started on port 45951")
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>skipTests</name>
+                                            <value>${skipTests}</value>
+                                        </property>
+                                        <property>
+                                            <name>executionName</name>
+                                            <value>${project.name}</value>
+                                        </property>
+                                    </properties>
                                     <scripts>
-                                        <script>
-                                            <![CDATA[
-import org.apache.tinkerpop.gremlin.server.GremlinServer
-
-if (${skipTests}) return
-
-log.info("Tests for native gremlin-dotnet complete")
-
-def server = project.getContextValue("gremlin.dotnet.server")
-log.info("Shutting down $server")
-server.stop().join()
-
-def serverSecure = project.getContextValue("gremlin.dotnet.server.secure")
-log.info("Shutting down $serverSecure")
-serverSecure.stop().join()
-
-log.info("Gremlin Server instance shutdown for gremlin-dotnet")
-]]>
-                                        </script>
+                                        <script>${gremlin.server.dir}/src/test/scripts/test-server-stop.groovy</script>
                                     </scripts>
                                 </configuration>
                             </execution>

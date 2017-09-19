@@ -54,6 +54,7 @@ limitations under the License.
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
+                        <classifier>indy</classifier>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>
@@ -71,211 +72,18 @@ limitations under the License.
                             <goal>execute</goal>
                         </goals>
                         <configuration>
+                            <properties>
+                                <property>
+                                    <name>projectBaseDir</name>
+                                    <value>${project.basedir}</value>
+                                </property>
+                                <property>
+                                    <name>projectVersion</name>
+                                    <value>${project.version}</value>
+                                </property>
+                            </properties>
                             <scripts>
-                                <script><![CDATA[
-import org.apache.tinkerpop.gremlin.jsr223.CoreImports
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.process.traversal.P
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.structure.Direction
-import java.lang.reflect.Modifier
-
-def toCSharpTypeMap = ["Long": "long",
-                       "Integer": "int",
-                       "String": "string",
-                       "Object": "object",
-                       "java.util.Map<java.lang.String, E2>": "IDictionary<string, E2>",
-                       "java.util.Map<java.lang.String, B>": "IDictionary<string, E2>",
-                       "java.util.List<E>": "IList<E>",
-                       "java.util.Map<K, V>": "IDictionary<K, V>",
-                       "java.util.Collection<E2>": "ICollection<E2>",
-                       "java.util.Collection<B>": "ICollection<E2>",
-                       "java.util.Map<K, java.lang.Long>": "IDictionary<K, long>",
-                       "TraversalMetrics": "E2"]
-
-def useE2 = ["E2", "E2"];
-def methodsWithSpecificTypes = ["constant": useE2,
-                                "limit": useE2,
-                                "mean": useE2,
-                                "optional": useE2,
-                                "range": useE2,
-                                "select": ["IDictionary<string, E2>", "E2"],
-                                "sum": useE2,
-                                "tail": useE2,
-                                "tree": ["object"],
-                                "unfold": useE2]
-
-def getCSharpGenericTypeParam = { typeName ->
-    def tParam = ""
-    if (typeName.contains("E2")) {
-        tParam = "<E2>"
-    }
-    else if (typeName.contains("<K, V>")) {
-        tParam = "<K, V>"
-    }
-    else if (typeName.contains("<K, ")) {
-        tParam = "<K>"
-    }
-    return tParam
-}
-
-def toCSharpType = { name ->
-    String typeName = toCSharpTypeMap.getOrDefault(name, name);
-    if (typeName.equals(name) && (typeName.contains("? extends") || typeName.equals("Tree"))) {
-        typeName = "E2"
-    }
-    return typeName;
-}
-
-def toCSharpMethodName = { symbol -> (String) Character.toUpperCase(symbol.charAt(0)) + symbol.substring(1) }
-
-def getJavaParameterTypeNames = { method ->
-    def typeArguments = method.genericReturnType.actualTypeArguments;
-    return typeArguments.
-            collect { (it instanceof Class) ? ((Class)it).simpleName : it.typeName }.
-            collect { name ->
-                if (name.equals("A")) {
-                    name = "object"
-                }
-                else if (name.equals("B")) {
-                    name = "E2";
-                }
-                name
-            }
-}
-
-def binding = ["pmethods": P.class.getMethods().
-                                 findAll { Modifier.isStatic(it.getModifiers()) }.
-                                 findAll { P.class.isAssignableFrom(it.returnType) }.
-                                 collect { it.name }.
-                                 unique().
-                                 sort { a, b -> a <=> b },
-               "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
-                                        findAll { GraphTraversalSource.class.equals(it.returnType) }.
-                                        findAll {
-                                            !it.name.equals("clone") &&
-                                                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
-                                                    !it.name.equals(TraversalSource.Symbols.withRemote) &&
-                                                    !it.name.equals(TraversalSource.Symbols.withComputer)
-                                        }.
-                                        collect { it.name }.
-                                        unique().
-                                        sort { a, b -> a <=> b },
-               "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                                        findAll { GraphTraversal.class.equals(it.returnType) && !it.name.equals('inject')}.
-                                        collect { [methodName: it.name, typeArguments: it.genericReturnType.actualTypeArguments.collect{t -> ((java.lang.Class)t).simpleName}] }.
-                                        unique().
-                                        sort { a, b -> a.methodName <=> b.methodName },
-               "graphStepMethods": GraphTraversal.getMethods().
-                                        findAll { GraphTraversal.class.equals(it.returnType) }.
-                                        findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
-                                        groupBy { it.name }.
-                                        // Select unique by name, with the most amount of parameters
-                                        collect { it.value.sort { a, b -> b.parameterCount <=> a.parameterCount }.first() }.
-                                        sort { a, b -> a.name <=> b.name }.
-                                        collect { javaMethod ->
-                                            def typeNames = getJavaParameterTypeNames(javaMethod)
-                                            def t1 = toCSharpType(typeNames[0])
-                                            def t2 = toCSharpType(typeNames[1])
-                                            def tParam = getCSharpGenericTypeParam(t2)
-                                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam]
-                                        },
-               "anonStepMethods": __.class.getMethods().
-                                        findAll { GraphTraversal.class.equals(it.returnType) }.
-                                        findAll { Modifier.isStatic(it.getModifiers()) }.
-                                        findAll { !it.name.equals("__") && !it.name.equals("start") }.
-                                        groupBy { it.name }.
-                                        // Select unique by name, with the most amount of parameters
-                                        collect { it.value.sort { a, b -> b.parameterCount <=> a.parameterCount }.first() }.
-                                        sort { it.name }.
-                                        collect { javaMethod ->
-                                            def typeNames = getJavaParameterTypeNames(javaMethod)
-                                            def t2 = toCSharpType(typeNames[1])
-                                            def tParam = getCSharpGenericTypeParam(t2)
-                                            def specificTypes = methodsWithSpecificTypes.get(javaMethod.name)
-                                            if (specificTypes) {
-                                                t2 = specificTypes[0]
-                                                tParam = specificTypes.size() > 1 ? "<" + specificTypes[1] + ">" : ""
-                                            }
-                                            return ["methodName": javaMethod.name, "t2":t2, "tParam":tParam]
-                                        },
-               "toCSharpMethodName": toCSharpMethodName]
-
-def engine = new groovy.text.GStringTemplateEngine()
-def traversalTemplate = engine.createTemplate(new File('${project.basedir}/glv/GraphTraversal.template')).make(binding)
-def traversalFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/GraphTraversal.cs')
-traversalFile.newWriter().withWriter{ it << traversalTemplate }
-
-def graphTraversalTemplate = engine.createTemplate(new File('${project.basedir}/glv/GraphTraversalSource.template')).make(binding)
-def graphTraversalFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/GraphTraversalSource.cs')
-graphTraversalFile.newWriter().withWriter{ it << graphTraversalTemplate }
-
-def anonymousTraversalTemplate = engine.createTemplate(new File('${project.basedir}/glv/AnonymousTraversal.template')).make(binding)
-def anonymousTraversalFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/__.cs')
-anonymousTraversalFile.newWriter().withWriter{ it << anonymousTraversalTemplate }
-
-def pTemplate = engine.createTemplate(new File('${project.basedir}/glv/P.template')).make(binding)
-def pFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/P.cs')
-pFile.newWriter().withWriter{ it << pTemplate }
-
-// Process enums
-def toCSharpName = { enumClass, itemName ->
-    if (enumClass.equals(Direction.class)) {
-        itemName = itemName.toLowerCase()
-    }
-
-    return itemName.substring(0, 1).toUpperCase() + itemName.substring(1)
-}
-
-def createEnum = { enumClass, csharpToJava ->
-    def b = ["enumClass": enumClass,
-             "constants": enumClass.getEnumConstants().
-                                    sort { a, b -> a.name() <=> b.name() }.
-                                    collect { value ->
-                                        def csharpName = toCSharpName(enumClass, value.name())
-                                        csharpToJava.put(enumClass.simpleName + "." + csharpName, value.name())
-                                        return csharpName
-                                    }.join(",\n\t\t")]
-
-    def enumTemplate = engine.createTemplate(new File('${project.basedir}/glv/Enum.template')).make(b)
-    def enumFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/' + enumClass.getSimpleName() + '.cs')
-    enumFile.newWriter().withWriter{ it << enumTemplate }
-}
-
-def enumCSharpToJavaNames = [:]
-CoreImports.getClassImports().findAll { Enum.class.isAssignableFrom(it) }.
-                             sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }.
-                             each { createEnum(it, enumCSharpToJavaNames) }
-
-def lastIndex = (enumCSharpToJavaNames.size() - 1);
-def body = new StringBuilder()
-enumCSharpToJavaNames.eachWithIndex{ node, i ->
-    body.append("""{"$node.key", "$node.value"}""")
-    body.append(i == lastIndex ? "\n" : ",\n            ")
-}
-
-def namingConversionsTemplate = engine.createTemplate(new File('${project.basedir}/glv/NamingConversions.template')).make(["body":body])
-def namingConversionsFile = new File('${project.basedir}/src/Gremlin.Net/Process/Traversal/NamingConversions.cs')
-namingConversionsFile.newWriter().withWriter{ it << namingConversionsTemplate }
-
-def determineVersion = {
-    def env = System.getenv()
-    def mavenVersion = env.containsKey("TP_RELEASE_VERSION") ? env.get("DOTNET_RELEASE_VERSION") : '${project.version}'
-
-    // only want to generate a timestamp for the version if this is a nuget deploy
-    if (!mavenVersion.endsWith("-SNAPSHOT") || null == System.getProperty("nuget")) return mavenVersion
-
-    return mavenVersion.replace("-SNAPSHOT", "-dev-" + System.currentTimeMillis())
-}
-
-def versionToUse = determineVersion()
-def csprojTemplate = engine.createTemplate(new File('${project.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
-def csprojFile = new File('${project.basedir}/src/Gremlin.Net/Gremlin.Net.csproj')
-csprojFile.newWriter().withWriter{ it << csprojTemplate }
-]]>
-                                </script>
+                                <script>${project.basedir}/glv/generate.groovy</script>
                             </scripts>
                         </configuration>
                     </execution>

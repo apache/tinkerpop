@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bump to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
 * Bump to Jackson 2.8.10.
 * Added an `EmbeddedRemoteConnection` so that it's possible to mimic a remote connection within the same JVM.
