@@ -442,7 +442,7 @@
                     <archive>
                         <manifestEntries>
                             <Gremlin-Plugin-Dependencies>
-                                org.apache.hadoop:hadoop-client:${hadoop.version};org.apache.hadoop:hadoop-yarn-server-web-proxy:${hadoop.version};org.apache.spark:spark-yarn_2.10:${spark.version}
+                                org.apache.hadoop:hadoop-client:${hadoop.version};org.apache.hadoop:hadoop-yarn-server-web-proxy:${hadoop.version};org.apache.spark:spark-yarn_2.11:${spark.version}
                             </Gremlin-Plugin-Dependencies>
                             <!-- deletes the servlet-api jar from the path after install - causes conflicts -->
                             <Gremlin-Plugin-Paths>servlet-api-2.5.jar=</Gremlin-Plugin-Paths>
