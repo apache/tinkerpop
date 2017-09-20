@@ -206,9 +206,9 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     @Override
     public boolean terminate(final Memory memory) {
-        // System.out.println(memory.<Double>get(CONVERGENCE_ERROR));
+        boolean terminate = memory.<Double>get(CONVERGENCE_ERROR) < this.epsilon || memory.getIteration() >= this.maxIterations;
         memory.set(CONVERGENCE_ERROR, 0.0d);
-        return memory.<Double>get(CONVERGENCE_ERROR) < this.epsilon || memory.getIteration() >= this.maxIterations;
+        return terminate;
     }
 
     @Override
