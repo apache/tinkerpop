@@ -69,6 +69,8 @@ Two other additions to `PageRankVertexProgram` were provided as well.
 1. It now calculates the vertex count and thus, no longer requires the user to specify the vertex count.
 2. It now allows the user to leverage an epsilon-based convergence instead of having to specify the number of iterations to execute.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1783[TINKERPOP-1783]
+
 IO Defaults
 ^^^^^^^^^^^
 
