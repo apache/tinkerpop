@@ -63,9 +63,9 @@ if [ -d "/usr/src/tinkermem" ]; then
   cd /usr/src/tinkermem
 fi
 
-# touch gremlin-python/.glv
-# touch gremlin-dotnet/src/.glv
-# touch gremlin-dotnet/test/.glv
+touch gremlin-python/.glv
+touch gremlin-dotnet/src/.glv
+touch gremlin-dotnet/test/.glv
 
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
