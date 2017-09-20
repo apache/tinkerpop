@@ -34,16 +34,7 @@ def choose_graph(step, graphName):
 @given("the traversal of")
 def translate_traversal(step):
     g = step.context.g
-    if step.text == "g.V().count()":
-        step.context.traversal = g.V().count()
-    elif step.text == "g.V().both().both().count()":
-        step.context.traversal = g.V().both().both().count()
-    elif step.text == "g.V().fold().count(Scope.local)":
-        step.context.traversal = g.V().fold().count(Scope.local)
-    elif step.text == "g.V().has(\"no\").count()":
-        step.context.traversal = g.V().has("no").count()
-    else:
-        raise ValueError("Gremlin translation to python not found - missing: " + step.text)
+    step.context.traversal = eval(step.text, {"g": g, "Scope": Scope})
 
 
 @when("iterating")
