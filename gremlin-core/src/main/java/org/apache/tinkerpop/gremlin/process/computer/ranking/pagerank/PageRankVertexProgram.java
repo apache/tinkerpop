@@ -59,7 +59,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String EPSILON = "gremlin.pageRankVertexProgram.epsilon";
-    private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
+    private static final String MAX_ITERATIONS = "gremlin.pageRankVertexProgram.maxIterations";
     private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
     private static final String INITIAL_RANK_TRAVERSAL = "gremlin.pageRankVertexProgram.initialRankTraversal";
     private static final String TELEPORTATION_ENERGY = "gremlin.pageRankVertexProgram.teleportationEnergy";
@@ -71,7 +71,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private PureTraversal<Vertex, ? extends Number> initialRankTraversal = null;
     private double alpha = 0.85d;
     private double epsilon = 0.00001d;
-    private int totalIterations = -1;
+    private int maxIterations = 20;
     private String property = PAGE_RANK;
     private Set<VertexComputeKey> vertexComputeKeys;
     private Set<MemoryComputeKey> memoryComputeKeys;
@@ -91,7 +91,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
         this.alpha = configuration.getDouble(ALPHA, this.alpha);
         this.epsilon = configuration.getDouble(EPSILON, this.epsilon);
-        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, -1);
+        this.maxIterations = configuration.getInt(MAX_ITERATIONS, 20);
         this.property = configuration.getString(PROPERTY, PAGE_RANK);
         this.vertexComputeKeys = new HashSet<>(Arrays.asList(
                 VertexComputeKey.of(this.property, false),
@@ -108,7 +108,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(EPSILON, this.epsilon);
         configuration.setProperty(PROPERTY, this.property);
-        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         if (null != this.edgeTraversal)
             this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
         if (null != this.initialRankTraversal)
@@ -208,16 +208,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     public boolean terminate(final Memory memory) {
         // System.out.println(memory.<Double>get(CONVERGENCE_ERROR));
         memory.set(CONVERGENCE_ERROR, 0.0d);
-        return -1 == this.totalIterations ?
-                memory.<Double>get(CONVERGENCE_ERROR) < this.epsilon :
-                memory.getIteration() >= this.totalIterations;
+        return memory.<Double>get(CONVERGENCE_ERROR) < this.epsilon || memory.getIteration() >= this.maxIterations;
     }
 
     @Override
     public String toString() {
-        return -1 == this.totalIterations ?
-                StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", epsilon=" + this.epsilon) :
-                StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations);
+        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", epsilon=" + this.epsilon + ", iterations=" + this.maxIterations);
     }
 
     //////////////////////////////
@@ -233,7 +229,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
 
         public Builder iterations(final int iterations) {
-            this.configuration.setProperty(TOTAL_ITERATIONS, iterations);
+            this.configuration.setProperty(MAX_ITERATIONS, iterations);
             return this;
         }
 

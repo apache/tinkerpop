@@ -47,7 +47,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
 
     private PureTraversal<Vertex, Edge> edgeTraversal;
     private String pageRankProperty = PageRankVertexProgram.PAGE_RANK;
-    private int times = -2;
+    private int times = 20;
     private final double alpha;
 
     public PageRankVertexProgramStep(final Traversal.Admin traversal, final double alpha) {

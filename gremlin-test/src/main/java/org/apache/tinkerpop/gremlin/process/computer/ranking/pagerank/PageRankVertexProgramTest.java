@@ -38,7 +38,8 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRank() throws Exception {
         if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
-            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).program(PageRankVertexProgram.build().iterations(30).create(graph)).submit().get();
+            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).
+                    program(PageRankVertexProgram.build().epsilon(0.0d).iterations(30).create(graph)).submit().get(); // by using epsilon 0.0, we guarantee iterations 30
             result.graph().traversal().V().forEachRemaining(v -> {
                 assertEquals(3, v.keys().size()); // name, age/lang, pageRank
                 assertTrue(v.keys().contains("name"));
