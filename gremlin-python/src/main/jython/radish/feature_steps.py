@@ -37,14 +37,41 @@ def translate_traversal(step):
     step.context.traversal = eval(step.text, {"g": g, "Scope": Scope})
 
 
-@when("iterating")
+@when("iterated to list")
 def iterate_the_traversal(step):
     step.context.result = step.context.traversal.toList()
 
 
-@then("the result should be {number:d}")
-def assert_single_result_of_number(step, number):
-    assert len(step.context.result) == 1
-    assert step.context.result[0] == number
+@then("the result should be {characterized_as:w}")
+def assert_result(step, characterized_as):
+    if characterized_as == "empty":
+        assert len(step.context.result) == 0
+    elif characterized_as == "ordered":
+        data = step.table
+    
+        # results from traversal should have the same number of entries as the feature data table
+        assert len(step.context.result) == len(data)
+
+        # assert the results by type where the first column will hold the type and the second column
+        # the data to assert. the contents of the second column will be dependent on the type specified
+        # in te first column
+        for ix, line in enumerate(data):
+            if line[0] == "numeric":
+                assert long(step.context.result[ix]) == long(line[1])
+            elif line[0] == "string":
+                assert str(step.context.result[ix]) == str(line[1])
+            else:
+                assert step.context.result[ix] == line[1]
+    elif characterized_as == "unordered":
+        data = step.table
+
+        # results from traversal should have the same number of entries as the feature data table
+        assert len(step.context.result) == len(data)
+
+
+
+@then("the results should be empty")
+def assert_result(step):
+    assert len(step.context.result) == 0
 
 

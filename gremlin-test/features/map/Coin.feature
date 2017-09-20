@@ -15,44 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-Feature: Step - count()
+Feature: Step - coin()
 
-  Scenario: Count all vertices
+  Scenario: Use coin at 1.0
     Given the modern graph
     And the traversal of
       """
-      g.V().count()
+      g.V().coin(1.0)
       """
     When iterated to list
-    Then the result should be ordered
-      | numeric | 6 |
+    Then the result should be unordered as
+      | vertex | person   |
+      | vertex | person   |
+      | vertex | person   |
+      | vertex | person   |
+      | vertex | software |
+      | vertex | software |
 
-  Scenario: Count vertices after traversing both() twice
+  Scenario: Use coin at 0.0
     Given the modern graph
     And the traversal of
       """
-      g.V().both().both().count()
+      g.V().coin(0.0)
       """
     When iterated to list
-    Then the result should be ordered
-      | numeric | 30 |
-
-  Scenario: Count local
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().fold().count(Scope.local)
-      """
-    When iterated to list
-    Then the result should be ordered
-      | numeric | 6 |
-
-  Scenario: Count no vertices
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().has("no").count()
-      """
-    When iterated to list
-    Then the result should be ordered
-      | numeric | 0 |
+    Then the result should be empty
