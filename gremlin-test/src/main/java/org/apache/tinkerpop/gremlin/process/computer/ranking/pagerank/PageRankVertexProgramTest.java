@@ -107,7 +107,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRankWithEnergyConservation() throws Exception {
-        final ComputerResult result = graph.compute().program(PageRankVertexProgram.build().create(graph)).submit().get();
+        final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).program(PageRankVertexProgram.build().create(graph)).submit().get();
         final double sum = result.graph().traversal().V().values(PageRankVertexProgram.PAGE_RANK).sum().next().doubleValue();
         assertEquals(1.0d, sum, 0.01d);
     }
