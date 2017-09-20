@@ -215,7 +215,9 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations + ", epsilon=" + this.epsilon);
+        return -1 == this.totalIterations ?
+                StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", epsilon=" + this.epsilon) :
+                StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations);
     }
 
     //////////////////////////////
