@@ -196,12 +196,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(new List<object> {5, 6}, deserializedValue);
         }
 
-        [Theory, MemberData(nameof(Versions))]
-        public void ShouldDeserializePath(int version)
+        [Fact]
+        public void ShouldDeserializePathFromGraphSON2()
         {
             var graphSon =
                 "{\"@type\":\"g:Path\",\"@value\":{\"labels\":[[\"a\"],[\"b\",\"c\"],[]],\"objects\":[{\"@type\":\"g:Vertex\",\"@value\":{\"id\":{\"@type\":\"g:Int32\",\"@value\":1},\"label\":\"person\",\"properties\":{\"name\":[{\"@type\":\"g:VertexProperty\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":0},\"value\":\"marko\",\"label\":\"name\"}}],\"age\":[{\"@type\":\"g:VertexProperty\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":1},\"value\":{\"@type\":\"g:Int32\",\"@value\":29},\"label\":\"age\"}}]}}},{\"@type\":\"g:Vertex\",\"@value\":{\"id\":{\"@type\":\"g:Int32\",\"@value\":3},\"label\":\"software\",\"properties\":{\"name\":[{\"@type\":\"g:VertexProperty\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":4},\"value\":\"lop\",\"label\":\"name\"}}],\"lang\":[{\"@type\":\"g:VertexProperty\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":5},\"value\":\"java\",\"label\":\"lang\"}}]}}},\"lop\"]}}";
-            var reader = CreateStandardGraphSONReader(version);
+            var reader = CreateStandardGraphSONReader(2);
 
             Path readPath = reader.ToObject(JObject.Parse(graphSon));
 
@@ -210,6 +210,22 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(new Vertex(1), readPath["a"]);
             Assert.Equal("lop", readPath[2]);
             Assert.Equal(3, readPath.Count);
+        }
+
+        [Fact]
+        public void ShouldDeserializePathFromGraphSON3()
+        {
+            var graphSon = "{\"@type\":\"g:Path\",\"@value\":{" +
+                           "\"labels\":{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Set\",\"@value\":[\"z\"]}]}," +
+                           "\"objects\":{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Vertex\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":5},\"label\":\"\"}}]}}}";
+            var reader = CreateStandardGraphSONReader(3);
+
+            Path readPath = reader.ToObject(JObject.Parse(graphSon));
+
+            Assert.Equal("[v[5]]", readPath.ToString());
+            Assert.Equal(new Vertex(5L), readPath[0]);
+            Assert.Equal(new Vertex(5L), readPath["z"]);
+            Assert.Equal(1, readPath.Count);
         }
 
         [Theory, MemberData(nameof(Versions))]
