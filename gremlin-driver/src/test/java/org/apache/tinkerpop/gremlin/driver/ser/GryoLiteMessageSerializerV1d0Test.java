@@ -82,9 +82,9 @@ public class GryoLiteMessageSerializerV1d0Test {
 
         assertEquals(0, IteratorUtils.count(deserializedEdge.properties()));
         assertEquals(v1.id(), deserializedEdge.outVertex().id());
-        assertEquals("", deserializedEdge.outVertex().label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.outVertex().label());
         assertEquals(v2.id(), deserializedEdge.inVertex().id());
-        assertEquals("", deserializedEdge.inVertex().label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.inVertex().label());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class GryoLiteMessageSerializerV1d0Test {
 
         final ReferenceVertex deserializedVertex = vertexList.get(0);
         assertEquals(0L, deserializedVertex.id());
-        assertEquals("", deserializedVertex.label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
         assertEquals(0, IteratorUtils.count(deserializedVertex.properties()));
     }
@@ -133,7 +133,7 @@ public class GryoLiteMessageSerializerV1d0Test {
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
         assertEquals(0, IteratorUtils.count(deserializedMarko.properties()));
         assertEquals(1, deserializedMarko.id());
-        assertEquals("", deserializedMarko.label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }
