@@ -34,8 +34,6 @@ import java.io.Serializable;
  */
 public abstract class ReferenceElement<E extends Element> implements Element, Serializable, Attachable<E> {
 
-    private final static String EMPTY_STRING = "";
-
     protected Object id;
     protected String label;
 
