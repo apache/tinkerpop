@@ -67,11 +67,14 @@ public class GraphSONReaderTest {
             jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertex));
             assertEquals(vertex.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
             assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Vertex)"));
+            assertEquals("person", jythonEngine.eval("graphson_reader.readObject(x).label"));
+            assertEquals(1, jythonEngine.eval("graphson_reader.readObject(x).id"));
             //
             final Edge edge = g.V(1).outE("created").next();
             jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(edge));
             assertEquals(edge.toString(), jythonEngine.eval("str(graphson_reader.readObject(x))"));
             assertTrue((Boolean) jythonEngine.eval("isinstance(graphson_reader.readObject(x),Edge)"));
+            assertEquals("created", jythonEngine.eval("graphson_reader.readObject(x).label"));
             //
             final VertexProperty vertexProperty = (VertexProperty) g.V(1).properties("name").next();
             jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("x", mapper.writeValueAsString(vertexProperty));
