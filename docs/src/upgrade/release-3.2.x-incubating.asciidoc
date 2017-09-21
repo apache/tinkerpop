@@ -88,9 +88,12 @@ to the list of locally computed clauses.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1764[TINKERPOP-1764]
 
-Clone a graph
+Clone a Graph
 ^^^^^^^^^^^^^
-If you want to quickly clone a graph (e.g. because you have set it up in a test and your traversals manipulate the graph) you can now use `GraphHelper.cloneElements(Graph original, Graph clone)` which is part of the gremlin-test module. 
+
+In `gremlin-test` there is a new `GraphHelper` class that has a `cloneElements()` method. It will clone elements from
+the first graph to the second - `GraphHelper.cloneElements(Graph original, Graph clone)`. This helper method is
+primarily intended for use in tests.
 
 TinkerPop 3.2.6
 ---------------
