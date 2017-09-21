@@ -148,7 +148,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         assertThat(v, instanceOf(ReferenceVertex.class));
 
         assertEquals(1L, v.id());
-        assertEquals("", v.label());
+        assertEquals("person", v.label());
         assertEquals(0, IteratorUtils.count(v.properties()));
     }
 
