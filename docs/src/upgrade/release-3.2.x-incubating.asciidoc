@@ -90,8 +90,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1764[TINKERPOP-1764]
 
 Clone a graph
 ^^^^^^^^^^^^^
-If you want to quickly clone a graph (e.g. because you have set it up in a test and your traversals manipulate the graph) you can now use `GraphHelper.cloneElements(Graph original, Graph clone)`. 
-
+If you want to quickly clone a graph (e.g. because you have set it up in a test and your traversals manipulate the graph) you can now use `GraphHelper.cloneElements(Graph original, Graph clone)` which is part of the gremlin-test module. 
 
 TinkerPop 3.2.6
 ---------------
