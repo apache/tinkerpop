@@ -25,7 +25,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,6 +41,9 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty dvp = ReferenceFactory.detach(vp);
+        assertEquals("test", vp.label());
+        assertEquals("test", vp.key());
+        assertEquals("this", vp.value());
         assertSame(dvp, ReferenceFactory.detach(dvp));
     }
 

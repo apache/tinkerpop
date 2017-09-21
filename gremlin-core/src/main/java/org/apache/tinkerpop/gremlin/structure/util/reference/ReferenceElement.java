@@ -31,9 +31,8 @@ import java.io.Serializable;
  */
 public abstract class ReferenceElement<E extends Element> implements Element, Serializable, Attachable<E> {
 
-    protected static final String EMPTY_STRING = "";
-
     protected Object id;
+    protected String label;
 
     protected ReferenceElement() {
 
@@ -41,6 +40,7 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     public ReferenceElement(final Element element) {
         this.id = element.id();
+        this.label = element.label();
     }
 
     @Override
@@ -50,7 +50,7 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     @Override
     public String label() {
-        return EMPTY_STRING;
+        return this.label;
     }
 
     @Override

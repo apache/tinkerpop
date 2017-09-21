@@ -95,6 +95,19 @@ In `gremlin-test` there is a new `GraphHelper` class that has a `cloneElements()
 the first graph to the second - `GraphHelper.cloneElements(Graph original, Graph clone)`. This helper method is
 primarily intended for use in tests.
 
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+ReferenceVertex Label
+^^^^^^^^^^^^^^^^^^^^^
+
+`ReferenceVertex.label()` was hard coded to return `EMPTY_STRING`. At some point, `ReferenceElements` were support to
+return labels and `ReferenceVertex` was never updated as such. Note that `ReferenceEdge` and `ReferenceVertexProperty`
+work as expected. However, given a general change at `ReferenceElement`, the Gryo serialization of `ReferenceXXX` is
+different.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1789[TINKERPOP-1789]
+
 TinkerPop 3.2.6
 ---------------
 

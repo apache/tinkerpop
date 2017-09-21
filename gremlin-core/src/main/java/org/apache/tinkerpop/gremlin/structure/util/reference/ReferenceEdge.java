@@ -36,7 +36,6 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     private ReferenceVertex inVertex;
     private ReferenceVertex outVertex;
-    private String label;
 
     private ReferenceEdge() {
 
@@ -46,7 +45,6 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
         super(edge);
         this.inVertex = new ReferenceVertex(edge.inVertex());
         this.outVertex = new ReferenceVertex(edge.outVertex());
-        this.label = edge.label();
     }
 
     @Override
@@ -87,10 +85,5 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
     @Override
     public String toString() {
         return StringFactory.edgeString(this);
-    }
-
-    @Override
-    public String label() {
-        return this.label;
     }
 }

@@ -74,6 +74,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
 
         assertEquals(v.id(), referenceVertex.id());
+        assertEquals("test", v.label());
         assertEquals(0, IteratorUtils.count(referenceVertex.properties()));
     }
 
