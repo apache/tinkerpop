@@ -63,7 +63,7 @@ public class ReferenceEdgeTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("test", v);
         final ReferenceEdge re = ReferenceFactory.detach(e);
-        assertEquals("test", e.label());
+        assertEquals("test", re.label());
         assertSame(re, ReferenceFactory.detach(re));
     }
 

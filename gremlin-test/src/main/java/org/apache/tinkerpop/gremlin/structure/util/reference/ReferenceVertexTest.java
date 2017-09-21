@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
@@ -70,11 +71,12 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructReferenceVertex() {
-        final Vertex v = graph.addVertex("test", "123");
+        final Vertex v = graph.addVertex(T.label, "blah", "test", "123");
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
 
         assertEquals(v.id(), referenceVertex.id());
-        assertEquals("test", v.label());
+        assertEquals("blah", referenceVertex.label());
+        assertEquals(v.label(), referenceVertex.label());
         assertEquals(0, IteratorUtils.count(referenceVertex.properties()));
     }
 

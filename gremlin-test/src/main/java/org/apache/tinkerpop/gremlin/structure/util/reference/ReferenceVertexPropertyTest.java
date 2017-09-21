@@ -41,9 +41,9 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty dvp = ReferenceFactory.detach(vp);
-        assertEquals("test", vp.label());
-        assertEquals("test", vp.key());
-        assertEquals("this", vp.value());
+        assertEquals("test", dvp.label());
+        assertEquals("test", dvp.key());
+        assertEquals("this", dvp.value());
         assertSame(dvp, ReferenceFactory.detach(dvp));
     }
 
