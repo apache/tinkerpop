@@ -25,8 +25,6 @@ from gremlin_python.process.traversal import P, Scope, Column
 from radish import given, when, then
 from hamcrest import *
 
-out = __.out
-
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
@@ -40,7 +38,8 @@ def translate_traversal(step):
     step.context.traversal = eval(step.text, {"g": g,
                                               "Column": Column,
                                               "P": P,
-                                              "Scope": Scope})
+                                              "Scope": Scope,
+                                              "bothE": __.bothE})
 
 
 @when("iterated to list")
@@ -49,9 +48,12 @@ def iterate_the_traversal(step):
 
 
 def __convert(m, ctx):
+    # transform string map keys from the test spec to numbers when it encounters the appropriate patterns
     n = {}
     for key, value in m.items():
-        if isinstance(key, str) and re.match("v\[.*\]", key):
+        if re.match("d\[.*\]", key):
+            n[long(key[2:-1])] = value
+        elif re.match("v\[.*\]", key):
             n[ctx.lookup["modern"][key[2:-1]]] = value
         else:
             n[key] = value

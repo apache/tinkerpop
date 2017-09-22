@@ -27,6 +27,16 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | map | {"ripple": 1, "lop": 3} |
 
+  Scenario: Edge count distribution
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().groupCount().by(bothE().count())
+      """
+    When iterated to list
+    Then the result should be ordered
+      | map | {"d[1]": 3, "d[3]": 3} |
+
   Scenario: Group count vertices, cap to retrieve the map and unfold it to group count again
     Given the modern graph
     And the traversal of
