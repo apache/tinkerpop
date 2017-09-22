@@ -41,6 +41,21 @@ simple way to provide a "remote" that is actually local to the same JVM.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1756[TINKERPOP-1756]
 
+Specify a Cluster Object
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `:remote connect` command can now take a pre-defined `Cluster` object as its argument as opposed to a YAML
+configuration file.
+
+[source,text]
+----
+gremlin> cluster = Cluster.open()
+==>localhost/127.0.0.1:8182
+gremlin> :remote connect tinkerpop.server cluster
+==>Configured localhost/127.0.0.1:8182
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1787[TINKERPOP-1787]
 
 Remote Traversal Timeout
 ^^^^^^^^^^^^^^^^^^^^^^^^
