@@ -18,21 +18,25 @@ under the License.
 '''
 
 import json
-from gremlin_python.structure.graph import Graph, Vertex, Edge
+import re
+from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import P, Scope
-from radish import given, when, then, custom_type, register_custom_type, TypeBuilder
+from gremlin_python.process.traversal import P, Scope, Column
+from radish import given, when, then
 from hamcrest import *
 
 out = __.out
 
 
-@custom_type('words', r'\w+')
-def parse_word(text):
-    return str(text)
+def convert(m, ctx):
+    n = {}
+    for key, value in m.items():
+        if isinstance(key, str) and re.match("v\[.*\]", key):
+            n[ctx.lookup["modern"][key[2:-1]]] = value
+        else:
+            n[key] = value
 
-
-register_custom_type(WordList=TypeBuilder.with_many(parse_word, listsep=','))
+    return n
 
 
 @given("the {graph_name:w} graph")
@@ -45,6 +49,7 @@ def choose_graph(step, graph_name):
 def translate_traversal(step):
     g = step.context.g
     step.context.traversal = eval(step.text, {"g": g,
+                                              "Column": Column,
                                               "P": P,
                                               "Scope": Scope})
 
@@ -75,7 +80,7 @@ def assert_result(step, characterized_as):
             elif line[0] == "vertex":
                 assert_that(step.context.result[ix].label, equal_to(line[1]))
             elif line[0] == "map":
-                assert_that(step.context.result[ix], json.loads(line[1]))
+                assert_that(convert(step.context.result[ix], step.context), json.loads(line[1]))
             else:
                 raise ValueError("unknown type of " + line[0])
     elif characterized_as == "unordered":
@@ -86,6 +91,8 @@ def assert_result(step, characterized_as):
 
         results_to_test = list(step.context.result)
 
+        # finds a match in the results for each line of data to assert and then removes that item
+        # from the list - in the end there should be no items left over and each will have been asserted
         for line in data:
             if line[0] == "numeric":
                 val = long(line[1])
@@ -101,7 +108,7 @@ def assert_result(step, characterized_as):
                 assert_that(v, is_in(results_to_test))
                 results_to_test.remove(v)
             elif line[0] == "map":
-                val = json.load(line[1])
+                val = convert(json.load(line[1]), step.context)
                 assert_that(val, is_in(results_to_test))
                 results_to_test.remove(val)
             else:
@@ -111,20 +118,3 @@ def assert_result(step, characterized_as):
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
 
-
-@then("the number of results should be {number:d}")
-def assert_number_of_results(step, number):
-    assert_that(len(step.context.result), equal_to(number))
-
-
-@then("the results should all be {element_type:w}")
-def assert_elements(step, element_type):
-    if element_type == "vertices":
-        t = Vertex
-    elif element_type == "edges":
-        t = Edge
-    else:
-        raise ValueError("unknown element type of " + element_type)
-
-    for r in step.context.result:
-        assert_that(r, instance_of(t))

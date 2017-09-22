@@ -17,7 +17,7 @@
 
 Feature: Step - groupCount()
 
-  Scenario: Use has() with P.gt()
+  Scenario: Group count vertices that have incoming created edges by their name
     Given the modern graph
     And the traversal of
       """
@@ -27,3 +27,12 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | map | {"ripple": 1, "lop": 3} |
 
+  Scenario: Group count vertices, cap to retrieve the map and unfold it to group count again
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | map | {"v[marko]": 6, "v[vadas]": 2, "v[lop]": 6, "v[josh]": 6, "v[ripple]": 2, "v[peter]": 2} |
