@@ -36,9 +36,10 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldExecutePageRank() throws Exception {
+    public void shouldExecutePageRankWithIterationsBreak() throws Exception {
         if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
-            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).program(PageRankVertexProgram.build().create(graph)).submit().get();
+            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).
+                    program(PageRankVertexProgram.build().epsilon(0.0d).iterations(30).create(graph)).submit().get(); // by using epsilon 0.0, we guarantee iterations 30
             result.graph().traversal().V().forEachRemaining(v -> {
                 assertEquals(3, v.keys().size()); // name, age/lang, pageRank
                 assertTrue(v.keys().contains("name"));
@@ -49,17 +50,17 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
                 final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
                 //System.out.println(name + "-----" + pageRank);
                 if (name.equals("marko"))
-                    assertTrue(pageRank > 0.14 && pageRank < 0.16);
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
                 else if (name.equals("vadas"))
-                    assertTrue(pageRank > 0.19 && pageRank < 0.20);
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
                 else if (name.equals("lop"))
-                    assertTrue(pageRank > 0.40 && pageRank < 0.41);
+                    assertTrue(pageRank > 0.29 && pageRank < 0.31);
                 else if (name.equals("josh"))
-                    assertTrue(pageRank > 0.19 && pageRank < 0.20);
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
                 else if (name.equals("ripple"))
-                    assertTrue(pageRank > 0.23 && pageRank < 0.24);
+                    assertTrue(pageRank > 0.16 && pageRank < 0.18);
                 else if (name.equals("peter"))
-                    assertTrue(pageRank > 0.14 && pageRank < 0.16);
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
                 else
                     throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
             });
@@ -68,14 +69,46 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         }
     }
 
-    /*@Test
+    @Test
     @LoadGraphWith(MODERN)
-    public void shouldExecutePageRankWithNormalizedValues() throws Exception {
-        final ComputerResult result = graph.compute().program(PageRankVertexProgram.build().vertexCount(6).create()).submit().get();
-        final double sum = result.graph().traversal().V().values(PageRankVertexProgram.PAGE_RANK).sum().next();
-        System.out.println(sum);
-        assertEquals(1.0d,sum,0.01);
-    }*/
+    public void shouldExecutePageRankWithEpsilonBreak() throws Exception {
+        if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
+            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).
+                    program(PageRankVertexProgram.build().epsilon(0.00001d).iterations(30).create(graph)).submit().get(); // by using epsilon 0.00001, we should get iterations 11
+            result.graph().traversal().V().forEachRemaining(v -> {
+                assertEquals(3, v.keys().size()); // name, age/lang, pageRank
+                assertTrue(v.keys().contains("name"));
+                assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
+                assertEquals(1, IteratorUtils.count(v.values("name")));
+                assertEquals(1, IteratorUtils.count(v.values(PageRankVertexProgram.PAGE_RANK)));
+                final String name = v.value("name");
+                final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
+                //System.out.println(name + "-----" + pageRank);
+                if (name.equals("marko"))
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
+                else if (name.equals("vadas"))
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
+                else if (name.equals("lop"))
+                    assertTrue(pageRank > 0.29 && pageRank < 0.31);
+                else if (name.equals("josh"))
+                    assertTrue(pageRank > 0.13 && pageRank < 0.15);
+                else if (name.equals("ripple"))
+                    assertTrue(pageRank > 0.16 && pageRank < 0.18);
+                else if (name.equals("peter"))
+                    assertTrue(pageRank > 0.10 && pageRank < 0.12);
+                else
+                    throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
+            });
+            assertEquals(result.memory().getIteration(), 11);
+            assertEquals(result.memory().asMap().size(), 0);
+        }
+    }
 
-
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldExecutePageRankWithEnergyConservation() throws Exception {
+        final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).program(PageRankVertexProgram.build().create(graph)).submit().get();
+        final double sum = result.graph().traversal().V().values(PageRankVertexProgram.PAGE_RANK).sum().next().doubleValue();
+        assertEquals(1.0d, sum, 0.01d);
+    }
 }

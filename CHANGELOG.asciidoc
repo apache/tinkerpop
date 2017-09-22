@@ -28,6 +28,9 @@ TinkerPop 3.3.1 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-2-7, 3.2.7>>.
 
+* `PageRankVertexProgram` supports `maxIterations` but will break out early if epsilon-based convergence occurs.
+* Added support for epsilon-based convergence in `PageRankVertexProgram`.
+* Fixed two major bugs in how PageRank was being calculated in `PageRankVertexProgram`.
 * Added `Io.requiresVersion(Object)` to allow graph providers a way to check the `Io` type and version being constructed.
 * Defaulted `IoCore.gryo()` and `IoCore.graphson()` to both use their 3.0 formats which means that `Graph.io()` will use those by default.
 * Bumped Neo4j 3.2.3

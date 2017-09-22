@@ -72,10 +72,10 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
         final Map<Object, Number> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(4, map.size());
-        assertEquals(1.0d, (double) map.get(convertToVertexId("marko")), 0.001d);
-        assertEquals(0.0d, (double) map.get(convertToVertexId("lop")), 0.001d);
-        assertEquals(0.0d, (double) map.get(convertToVertexId("ripple")), 0.001d);
-        assertEquals(0.0d, (double) map.get(convertToVertexId("peter")), 0.001d);
+        assertEquals(0.583d, (double) map.get(convertToVertexId("marko")), 0.001d);
+        assertEquals(0.138d, (double) map.get(convertToVertexId("lop")), 0.001d);
+        assertEquals(0.138d, (double) map.get(convertToVertexId("ripple")), 0.001d);
+        assertEquals(0.138d, (double) map.get(convertToVertexId("peter")), 0.001d);
     }
 
     @Test
