@@ -101,7 +101,7 @@ Upgrading for Providers
 ReferenceVertex Label
 ^^^^^^^^^^^^^^^^^^^^^
 
-`ReferenceVertex.label()` was hard coded to return `EMPTY_STRING`. At some point, `ReferenceElements` were support to
+`ReferenceVertex.label()` was hard coded to return `EMPTY_STRING`. At some point, `ReferenceElements` were suppose to
 return labels and `ReferenceVertex` was never updated as such. Note that `ReferenceEdge` and `ReferenceVertexProperty`
 work as expected. However, given a general change at `ReferenceElement`, the Gryo serialization of `ReferenceXXX` is
 different. If the vertex does not have a label `Vertex.DEFAULT_LABEL` is assumed.
