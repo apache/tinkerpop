@@ -17,15 +17,22 @@ specific language governing permissions and limitations
 under the License.
 '''
 
+from gremlin_python.structure.graph import Graph
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from radish import before, after
 
 
 @before.each_scenario
 def prepare_traversal_source(scenario):
-    scenario.context.remote_conn_modern = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+    scenario.context.remote_conn = {"modern": remote}
+    g = Graph().traversal().withRemote(remote)
+
+    # hold a map of name/vertex for use in asserting results
+    scenario.context.lookup = {"modern": g.V().group().by('name').by(__.tail()).next()}
 
 
 @after.each_scenario
 def close_traversal_source(scenario):
-    scenario.context.remote_conn_modern.close()
+    scenario.context.remote_conn["modern"].close()

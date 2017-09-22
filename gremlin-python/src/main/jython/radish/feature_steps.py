@@ -17,24 +17,36 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-from gremlin_python.structure.graph import Graph
+import json
+from gremlin_python.structure.graph import Graph, Vertex, Edge
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import Scope
-from radish import before, given, when, then
+from gremlin_python.process.traversal import P, Scope
+from radish import given, when, then, custom_type, register_custom_type, TypeBuilder
+from hamcrest import *
 
 out = __.out
 
 
-@given("the {graphName:w} graph")
-def choose_graph(step, graphName):
+@custom_type('words', r'\w+')
+def parse_word(text):
+    return str(text)
+
+
+register_custom_type(WordList=TypeBuilder.with_many(parse_word, listsep=','))
+
+
+@given("the {graph_name:w} graph")
+def choose_graph(step, graph_name):
     # only have modern atm but graphName would be used to select the right one
-    step.context.g = Graph().traversal().withRemote(step.context.remote_conn_modern)
+    step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
 
 
 @given("the traversal of")
 def translate_traversal(step):
     g = step.context.g
-    step.context.traversal = eval(step.text, {"g": g, "Scope": Scope})
+    step.context.traversal = eval(step.text, {"g": g,
+                                              "P": P,
+                                              "Scope": Scope})
 
 
 @when("iterated to list")
@@ -45,33 +57,74 @@ def iterate_the_traversal(step):
 @then("the result should be {characterized_as:w}")
 def assert_result(step, characterized_as):
     if characterized_as == "empty":
-        assert len(step.context.result) == 0
+        assert_that(len(step.context.result), equal_to(0))
     elif characterized_as == "ordered":
         data = step.table
     
         # results from traversal should have the same number of entries as the feature data table
-        assert len(step.context.result) == len(data)
+        assert_that(len(step.context.result), equal_to(len(data)))
 
         # assert the results by type where the first column will hold the type and the second column
         # the data to assert. the contents of the second column will be dependent on the type specified
-        # in te first column
+        # in the first column
         for ix, line in enumerate(data):
             if line[0] == "numeric":
-                assert long(step.context.result[ix]) == long(line[1])
+                assert_that(long(step.context.result[ix]), equal_to(long(line[1])))
             elif line[0] == "string":
-                assert str(step.context.result[ix]) == str(line[1])
+                assert_that(str(step.context.result[ix]), equal_to(str(line[1])))
+            elif line[0] == "vertex":
+                assert_that(step.context.result[ix].label, equal_to(line[1]))
+            elif line[0] == "map":
+                assert_that(step.context.result[ix], json.loads(line[1]))
             else:
-                assert step.context.result[ix] == line[1]
+                raise ValueError("unknown type of " + line[0])
     elif characterized_as == "unordered":
         data = step.table
 
         # results from traversal should have the same number of entries as the feature data table
-        assert len(step.context.result) == len(data)
+        assert_that(len(step.context.result), equal_to(len(data)))
+
+        results_to_test = list(step.context.result)
+
+        for line in data:
+            if line[0] == "numeric":
+                val = long(line[1])
+                assert_that(val, is_in(list(map(long, results_to_test))))
+                results_to_test.remove(val)
+            elif line[0] == "string":
+                val = str(line[1])
+                assert_that(val, is_in(list(map(str, results_to_test))))
+                results_to_test.remove(val)
+            elif line[0] == "vertex":
+                val = str(line[1])
+                v = step.context.lookup["modern"][val]
+                assert_that(v, is_in(results_to_test))
+                results_to_test.remove(v)
+            elif line[0] == "map":
+                val = json.load(line[1])
+                assert_that(val, is_in(results_to_test))
+                results_to_test.remove(val)
+            else:
+                raise ValueError("unknown type of " + line[0])
+
+        assert_that(len(results_to_test), is_(0))
+    else:
+        raise ValueError("unknown data characterization of " + characterized_as)
 
 
+@then("the number of results should be {number:d}")
+def assert_number_of_results(step, number):
+    assert_that(len(step.context.result), equal_to(number))
 
-@then("the results should be empty")
-def assert_result(step):
-    assert len(step.context.result) == 0
 
+@then("the results should all be {element_type:w}")
+def assert_elements(step, element_type):
+    if element_type == "vertices":
+        t = Vertex
+    elif element_type == "edges":
+        t = Edge
+    else:
+        raise ValueError("unknown element type of " + element_type)
 
+    for r in step.context.result:
+        assert_that(r, instance_of(t))

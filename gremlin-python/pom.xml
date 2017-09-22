@@ -341,11 +341,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install radish-bdd"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -353,11 +349,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install radish-bdd"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -457,7 +449,7 @@ limitations under the License.
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="-b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/>
+                                            <arg line="-b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
                                         </exec>                                                                  
                                     </target>
                                 </configuration>

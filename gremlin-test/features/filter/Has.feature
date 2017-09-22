@@ -15,28 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-Feature: Step - coin()
+Feature: Step - has()
 
-  Scenario: Use coin at 1.0
+  Scenario: Use has() with P.gt()
     Given the modern graph
     And the traversal of
       """
-      g.V().coin(1.0)
+      g.V().has("age", P.gt(30))
       """
     When iterated to list
-    Then the result should be unordered as
-      | vertex | person   |
-      | vertex | person   |
-      | vertex | person   |
-      | vertex | person   |
-      | vertex | software |
-      | vertex | software |
+    Then the result should be unordered
+      | vertex | josh   |
+      | vertex | peter  |
 
-  Scenario: Use coin at 0.0
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().coin(0.0)
-      """
-    When iterated to list
-    Then the result should be empty
