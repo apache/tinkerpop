@@ -32,14 +32,27 @@ def choose_graph(step, graph_name):
     step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
 
 
+@given("using the parameter {param_name:w} is {param:QuotedString}")
+def add_parameter(step, param_name, param):
+    if not hasattr(step.context, "traversal_params"):
+        step.context.traversal_params = {}
+
+    step.context.traversal_params[param_name.encode('utf-8')] = __convert(param, step.context)
+
+
 @given("the traversal of")
 def translate_traversal(step):
     g = step.context.g
-    step.context.traversal = eval(step.text, {"g": g,
-                                              "Column": Column,
-                                              "P": P,
-                                              "Scope": Scope,
-                                              "bothE": __.bothE})
+    b = {"g": g,
+         "Column": Column,
+         "P": P,
+         "Scope": Scope,
+         "bothE": __.bothE}
+
+    if hasattr(step.context, "traversal_params"):
+        b.update(step.context.traversal_params)
+
+    step.context.traversal = eval(step.text, b)
 
 
 @when("iterated to list")
@@ -47,18 +60,32 @@ def iterate_the_traversal(step):
     step.context.result = step.context.traversal.toList()
 
 
-def __convert(m, ctx):
-    # transform string map keys from the test spec to numbers when it encounters the appropriate patterns
-    n = {}
-    for key, value in m.items():
-        if re.match("d\[.*\]", key):
-            n[long(key[2:-1])] = value
-        elif re.match("v\[.*\]", key):
-            n[ctx.lookup["modern"][key[2:-1]]] = value
-        else:
-            n[key] = value
+@then("the result should be {characterized_as:w}")
+def assert_result(step, characterized_as):
+    if characterized_as == "empty":
+        assert_that(len(step.context.result), equal_to(0))
+    elif characterized_as == "ordered":
+        __ordered_assertion(step)
+    elif characterized_as == "unordered":
+        __unordered_assertion(step)
+    else:
+        raise ValueError("unknown data characterization of " + characterized_as)
 
-    return n
+
+def __convert(val, ctx):
+    if isinstance(val, dict):
+        n = {}
+        for key, value in val.items():
+            n[__convert(key, ctx)] = __convert(value, ctx)
+        return n
+    elif isinstance(val, (str, unicode)) and re.match("d\[.*\]", val):
+        return long(val[2:-1])
+    elif isinstance(val, (str, unicode)) and re.match("v\[.*\]", val):
+        return ctx.lookup["modern"][val[2:-1]]
+    elif isinstance(val, unicode):
+        return val.encode('utf-8')
+    else:
+        return str(val)
 
 
 def __ordered_assertion(step):
@@ -108,23 +135,10 @@ def __unordered_assertion(step):
             assert_that(v, is_in(results_to_test))
             results_to_test.remove(v)
         elif line[0] == "map":
-            val = __convert(json.load(line[1]), step.context)
+            val = __convert(json.loads(line[1]), step.context)
             assert_that(val, is_in(results_to_test))
             results_to_test.remove(val)
         else:
             raise ValueError("unknown type of " + line[0])
 
     assert_that(len(results_to_test), is_(0))
-
-    
-@then("the result should be {characterized_as:w}")
-def assert_result(step, characterized_as):
-    if characterized_as == "empty":
-        assert_that(len(step.context.result), equal_to(0))
-    elif characterized_as == "ordered":
-        __ordered_assertion(step)
-    elif characterized_as == "unordered":
-        __unordered_assertion(step)
-    else:
-        raise ValueError("unknown data characterization of " + characterized_as)
-
