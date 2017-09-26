@@ -1794,7 +1794,8 @@ All functions created via scripts are global to the server.
 gremlin> :> def subtractIt(int x, int y) { x - y }
 ==>null
 gremlin> :> subtractIt(8,7)
-== ==>1
+==>1
+----
 
 If this behavior is not desirable there are several options.  A first option would be to consider using sessions. Each
 session gets its own `ScriptEngine`, which maintains its own isolated cache of global functions, whereas sessionless
