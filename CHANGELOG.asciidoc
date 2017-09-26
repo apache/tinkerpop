@@ -16,7 +16,6 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-<<<<<<< HEAD
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
@@ -235,9 +234,6 @@ This release also includes changes from <<release-3-2-6, 3.2.6>>.
 * TINKERPOP-1747 Streamline inheritance for gremlin-python GraphSON serializer classes
 
 == TinkerPop 3.2.0 (Nine Inch Gremlins)
-=======
-== TinkerPop 3.2.0 (Nine Inch Gremlins)
->>>>>>> asciidoc-header
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
