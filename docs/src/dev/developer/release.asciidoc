@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Release Process
-===============
+= Release Process
 
 This document describes the steps required to release a version of TinkerPop.  The release is handled by a "release
 manager" (a committer fulfills this role), who ensures that the steps in this document are executed. The process is
@@ -37,8 +36,7 @@ IMPORTANT: The following instructions assume that the release manager's <<develo
 properly for release and includes a `.glv` file in `gremlin-python` as described in the <<python-environment,Python Environment>>
 section, so that the `gremlin-python` module builds in full.
 
-Development Versions
-~~~~~~~~~~~~~~~~~~~~
+=== Development Versions
 
 A "development version" or snapshot (in Java parlance) is not an "official" release. Artifacts produced for a
 snapshot are solely for the convenience of providers and other developers who want to use the latest releases of
@@ -82,8 +80,7 @@ version number when "-SNAPSHOT" is in the `pom.xml`. Use the `staging.nuget.org`
 IMPORTANT: These commands will dynamically edit the `gremlin-dotnet-source/Gremlin.Net.csproj`. Take care to commit
 or not commit changes related to that as necessary.
 
-Release Manager Requirements
-----------------------------
+== Release Manager Requirements
 
 If this is your first time as release manager, you will need to setup keys for signing purposes per the Apache
 release process.  Generally speaking, this will mean that you will need to generate a key-pair and then upload your
@@ -104,8 +101,7 @@ echo -n "  * PGP signature ... "
 echo "OK"
 ----
 
-Pre-flight Check
-----------------
+== Pre-flight Check
 
 The "pre-flight check" is a list of things performed by the release manager during the weeks leading up to a scheduled
 day to release.  These checks will help to ensure that that release day goes smoothly by identifying problems up early
@@ -135,8 +131,7 @@ Resolution may have been assigned).
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
 
-Release Candidate
------------------
+== Release Candidate
 
 A release candidate is an unofficial release that is represented by a tagged version in the Git repository.  It is
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
@@ -158,8 +153,7 @@ might be high.
 . Announce the release candidate to `dev` mailing list and await feedback
 . Repeat as required or proceed to the next phase
 
-PMC Vote
---------
+== PMC Vote
 
 This section describes the process that process that prepares a release for VOTE by the community. If there are multiple
 releases (as there usually are) being prepared, it may be best for downstream releases to wait for upstream releases
@@ -228,8 +222,7 @@ for generating javadoc and without that the binary distributions won't contain t
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
-Release & Promote
------------------
+== Release & Promote
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
 . Deploy to link:https://pypi.python.org/pypi[pypi]
@@ -256,11 +249,9 @@ if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if 
 code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
-Email Templates
----------------
+== Email Templates
 
-Release VOTE
-~~~~~~~~~~~~
+=== Release VOTE
 
 [source,text]
 ----
@@ -303,8 +294,7 @@ Thank you very much,
 <TinkerPop Committer Name>
 ----
 
-Dev Release RESULT VOTE
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Dev Release RESULT VOTE
 
 [source,text]
 ----
@@ -328,8 +318,7 @@ Thank you very much,
 <TinkerPop Committer Name>
 ----
 
-General Release Announcement
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== General Release Announcement
 
 The template below refers to the "name of release line" and the "release line logo". Every release line has a name
 and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown

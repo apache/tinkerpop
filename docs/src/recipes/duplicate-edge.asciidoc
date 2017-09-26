@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[duplicate-edge]]
-Duplicate Edge Detection
-------------------------
+== Duplicate Edge Detection
 
 Whether part of a graph maintenance process or for some other analysis need, it is sometimes necessary to detect
 if there is more than one edge between two vertices. The following examples will assume that an edge with the same

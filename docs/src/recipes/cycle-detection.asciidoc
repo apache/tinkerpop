@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[cycle-detection]]
-Cycle Detection
----------------
+== Cycle Detection
 
 A cycle occurs in a graph where a path loops back on itself to the originating vertex. For example, in the graph
 depticted below Gremlin could be use to detect the cycle among vertices `A-B-C`.

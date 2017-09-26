@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[intro]]
-Introduction to Graph Computing
-===============================
+= Introduction to Graph Computing
 
 image::graph-computing.png[width=350]
 
@@ -84,8 +83,7 @@ then a concise name is provided (e.g. `out()`, `path()`, `repeat()`). If the met
 providers, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`,
 `getElementComputeKeys()`).
 
-The Graph Structure
--------------------
+== The Graph Structure
 
 image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references
 between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if
@@ -124,8 +122,7 @@ WARNING: Many graph systems do not allow the user to specify an element ID and i
 NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This
 functionality did not exist in TinkerPop2. Element ids are still immutable in TinkerPop3 as they were in TinkerPop2.
 
-Mutating the Graph
-~~~~~~~~~~~~~~~~~~
+=== Mutating the Graph
 
 Below is a sequence of basic graph mutation operations represented in Java 8. One of the major differences between
 TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned
@@ -223,8 +220,7 @@ IMPORTANT: TinkerGraph is not a transactional graph. For more information on tra
 systems that support them) see the section dedicated to <<transactions,transactions>>.
 
 [[the-graph-process]]
-The Graph Process
------------------
+== The Graph Process
 
 image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph
 traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a
@@ -303,8 +299,7 @@ g.V(marko).out('knows').values('name') <3>
 <2> Get the vertices that are outgoing adjacent to the marko-vertex via knows-edges.
 <3> Get the names of the marko-vertex's friends.
 
-The Traverser
-~~~~~~~~~~~~~
+=== The Traverser
 
 When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps
 are the middle of the traversal (e.g. `out('knows')` and `values('name')`), and the results are "traversal.next()'d"
@@ -339,8 +334,7 @@ WARNING: A Traversal's result are never ordered unless explicitly by means of <<
 never rely on the iteration order between TinkerPop3 releases and even within a release (as traversal optimizations
 may alter the flow).
 
-On Gremlin Language Variants
-----------------------------
+== On Gremlin Language Variants
 
 Gremlin is written in Java 8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with
 TinkerPop3), Gremlin-Python (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala],
@@ -383,8 +377,7 @@ typecasting is required.
 
 Please see the <<gremlin-variants, Gremlin Variants>> section for more information on this topic.
 
-Graph System Integration
-------------------------
+== Graph System Integration
 
 image:provider-integration.png[width=395,float=right] TinkerPop is a framework composed of various interoperable
 components. At the foundation there is the <<graph,core TinkerPop3 API>> which defines what a `Graph`, `Vertex`,

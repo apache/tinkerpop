@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[between-vertices]]
-Between Vertices
-----------------
+== Between Vertices
 
 It is quite common to have a situation where there are two particular vertices of a graph and a need to execute some
 traversal on the paths found between them. Consider the following examples using the modern toy graph:

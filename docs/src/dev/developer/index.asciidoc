@@ -20,8 +20,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-Developer Documentation
-=======================
+= Developer Documentation
 
 This document contains information for TinkerPop developers, contributors, and community members. It focuses on
 technical information and other internal processes related to the project.
@@ -32,8 +31,7 @@ include::development-environment.asciidoc[]
 
 include::for-committers.asciidoc[]
 
-For Providers
-=============
+= For Providers
 
 Graph Providers are those who develop third-party systems and libraries on top of the various TinkerPop APIs and
 protocols. They manage their projects independently of TinkerPop in separate repositories. Additional details for

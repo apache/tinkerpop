@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[hadoop-gremlin]]
-Hadoop-Gremlin
---------------
+== Hadoop-Gremlin
 
 [source,xml]
 ----
@@ -39,8 +38,7 @@ tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is
 familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark
 (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
 
-Installing Hadoop-Gremlin
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Installing Hadoop-Gremlin
 
 If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that
 Hadoop-Gremlin requires a Gremlin Console restart after installing.
@@ -95,8 +93,7 @@ directory).
 [source,shell]
 export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
 
-Properties Files
-~~~~~~~~~~~~~~~~
+=== Properties Files
 
 `HadoopGraph` makes use of properties files which ultimately get turned into Apache configurations and/or
 Hadoop configurations.
@@ -152,8 +149,7 @@ underlying OLAP engine (e.g. Spark, Giraph, etc.) works and understand the numer
 these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times,
 garbage collection issues, etc.
 
-OLTP Hadoop-Gremlin
-~~~~~~~~~~~~~~~~~~~
+=== OLTP Hadoop-Gremlin
 
 image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over a `HadoopGraph`.
 However, realize that the underlying HDFS files are not random access and thus, to retrieve a vertex, a linear scan
@@ -175,8 +171,7 @@ g.V().out().out().values('name')
 g.V().group().by{it.value('name')[1]}.by('name').next()
 ----
 
-OLAP Hadoop-Gremlin
-~~~~~~~~~~~~~~~~~~~
+=== OLAP Hadoop-Gremlin
 
 image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via
 `GraphComputer`. The OLTP examples presented previously are reproduced below, but using `TraversalVertexProgram`

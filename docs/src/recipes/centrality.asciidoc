@@ -15,16 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[centrality]]
-Centrality
-----------
+== Centrality
 
 There are many measures of link:https://en.wikipedia.org/wiki/Centrality[centrality] which are meant to help identify
 the most important vertices in a graph. As these measures are common in graph theory, this section attempts to
 demonstrate how some of these different indicators can be calculated using Gremlin.
 
 [[degree-centrality]]
-Degree Centrality
-~~~~~~~~~~~~~~~~~
+=== Degree Centrality
 
 link:https://en.wikipedia.org/wiki/Centrality#Degree_centrality[Degree centrality] is a measure of the number of
 edges associated to each vertex. The following examples use the modern toy graph:
@@ -56,8 +54,7 @@ and as a result, the grouping will be on the incoming `Vertex` object itself. Th
 stored in the `Map` for each key.
 
 [[betweeness-centrality]]
-Betweeness Centrality
-~~~~~~~~~~~~~~~~~~~~~
+=== Betweeness Centrality
 
 link:https://en.wikipedia.org/wiki/Betweenness_centrality[Betweeness centrality] is a measure of the number of times
 a vertex is found between the <<shortest-path,shortest path>> of each vertex pair in a graph.  Consider the following
@@ -111,8 +108,7 @@ and 8049 edges already require a massive amount of compute resources to determin
 pairs).
 
 [[closeness-centrality]]
-Closeness Centrality
-~~~~~~~~~~~~~~~~~~~~
+=== Closeness Centrality
 
 link:https://en.wikipedia.org/wiki/Centrality[Closeness centrality] is a measure of the distance of one vertex to all
 other reachable vertices in the graph. The following examples use the modern toy graph:
@@ -151,8 +147,7 @@ and 8049 edges already require a massive amount of compute resources to determin
 pairs).
 
 [[eigenvector-centrality]]
-Eigenvector Centrality
-~~~~~~~~~~~~~~~~~~~~~~
+=== Eigenvector Centrality
 
 A calculation of link:https://en.wikipedia.org/wiki/Centrality#Eigenvector_centrality[eigenvector centrality] uses the
 relative importance of adjacent vertices to help determine their centrality. In other words, unlike

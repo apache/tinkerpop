@@ -15,13 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[graph]]
-The Graph
-=========
+= The Graph
 
 image::gremlin-standing.png[width=125]
 
-Features
---------
+== Features
 
 A `Feature` implementation describes the capabilities of a `Graph` instance. This interface is implemented by graph
 system providers for two purposes:
@@ -53,8 +51,7 @@ WARNING: Assignments of a `GraphStrategy` can alter the base features of a `Grap
 against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
 
 [[vertex-properties]]
-Vertex Properties
------------------
+== Vertex Properties
 
 image:vertex-properties.png[width=215,float=left] TinkerPop3 introduces the concept of a `VertexProperty<V>`. All the
 properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` implements `Property` and as such, it has a
@@ -141,8 +138,7 @@ g.V().has('name','gremlin').inE('uses').
       select('a','b').by('skill').by('name') // rank the users of gremlin by their skill level
 ----
 
-Graph Variables
----------------
+== Graph Variables
 
 TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph
 itself -- in essence, a `Map<String,Object>`. These variables are intended to store metadata about the graph. Example
@@ -171,8 +167,7 @@ IMPORTANT: Graph variables are not intended to be subject to heavy, concurrent m
 computations. The intention is to have a location to store data about the graph for administrative purposes.
 
 [[transactions]]
-Graph Transactions
-------------------
+== Graph Transactions
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
 represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the
@@ -203,8 +198,7 @@ graph system provider to choose the specific aspects of how their implementation
 TinkerPop stack. Be sure to understand the transaction semantics of the specific graph implementation that is being
 utilized as it may present differing functionality than described here.
 
-Configuring
-~~~~~~~~~~~
+=== Configuring
 
 Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the
 `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior
@@ -285,8 +279,7 @@ NOTE: It may be important to consult the documentation of the `Graph` implementa
 specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
 the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
 
-Threaded Transactions
-~~~~~~~~~~~~~~~~~~~~~
+=== Threaded Transactions
 
 Most `Graph` implementations that support transactions do so in a `ThreadLocal` manner, where the current transaction
 is bound to the current thread of execution. Consider the following example to demonstrate:
@@ -349,8 +342,7 @@ In the above case, the call to `graph.tx().createThreadedTx()` creates a new `Gr
 `ThreadLocal` transaction, thus allowing each thread to operate on it in the same context.  In this case, there would
 be three separate vertices persisted to the `Graph`.
 
-Gremlin I/O
------------
+== Gremlin I/O
 
 image:gremlin-io.png[width=250,float=right] The task of getting data in and out of `Graph` instances is the job of
 the Gremlin I/O packages.  Gremlin I/O provides two interfaces for reading and writing `Graph` instances: `GraphReader`
@@ -380,8 +372,7 @@ input to `readProperty`.
 
 NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
 
-GraphML Reader/Writer
-~~~~~~~~~~~~~~~~~~~~~
+=== GraphML Reader/Writer
 
 image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
 common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a
@@ -458,8 +449,7 @@ transformer.transform(source, result);
 ----
 
 [[graphson-reader-writer]]
-GraphSON Reader/Writer
-~~~~~~~~~~~~~~~~~~~~~~
+=== GraphSON Reader/Writer
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
 from earlier versions of TinkerPop. It is important to note that TinkerPop3's GraphSON is not backwards compatible
@@ -569,14 +559,12 @@ interpret the numeric values.  In coercing those Java values to JSON, such infor
 NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
 
 [[graphson-types-embedding]]
-Types embedding
-^^^^^^^^^^^^^^^
+==== Types embedding
 
 With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided.
 
 [[graphson-1-0-types]]
-Types with GraphSON 1.0
-+++++++++++++++++++++++
+===== Types with GraphSON 1.0
 
 GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with
 GraphSON 1.0:
@@ -679,8 +667,7 @@ non-JVM languages won't be able to consume this information automatically, at le
 values should be coerced back into the correct types in the target language.
 
 [[graphson-2-0-types]]
-GraphSON 2.0
-++++++++++++
+===== GraphSON 2.0
 
 GraphSON 2.0 has been introduced to improve the format of the typed values from GraphSON 1.0. It provides non-Java
 centric types information in a consistent format.
@@ -802,8 +789,7 @@ By disabling types, the JSON payload produced will lack the extra information th
 disabling types can be unsafe with regards to the written data in that types can be lost.
 
 [[gryo-reader-writer]]
-Gryo Reader/Writer
-~~~~~~~~~~~~~~~~~~
+=== Gryo Reader/Writer
 
 image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular
 serialization package for the JVM. Gremlin-Kryo is a binary `Graph` serialization format for use on the JVM by JVM
@@ -848,8 +834,7 @@ try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
 
 NOTE: The preferred extension for files names produced by Gryo is `.kryo`.
 
-TinkerPop2 Data Migration
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== TinkerPop2 Data Migration
 
 image:data-migration.png[width=300,float=right] For those using TinkerPop2, migrating to TinkerPop3 will mean a number
 of programming changes, but may also require a migration of the data depending on the graph implementation.  For
@@ -900,8 +885,7 @@ gremlin> g.E()
 ==>e[10][4-created->5]
 ----
 
-Namespace Conventions
----------------------
+== Namespace Conventions
 
 End users, <<implementations,graph system providers>>, <<graphcomputer,`GraphComputer`>> algorithm designers,
 <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are

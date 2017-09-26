@@ -15,16 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[development-environment]]
-Development Environment
-=======================
+= Development Environment
 
 TinkerPop is fairly large body of code spread across many modules and covering multiple programming languages. Despite
 this complexity, it remains relatively straightforward a project to build. This following subsections explain how to
 configure a development environment for TinkerPop.
 
 [[system-configuration]]
-System Configuration
---------------------
+== System Configuration
 
 At a minimum, development of TinkerPop requires link:http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java 1.8.0_40+]
 and link:https://maven.apache.org/download.cgi[Maven 3.0.5+]. Maven is used as the common build system, which even
@@ -44,8 +42,7 @@ NOTE: For those using Windows, efforts have been made to keep the build OS indep
 that TinkerPop's build system will only allow for a minimum build at best.
 
 [[documentation-environment]]
-Documentation Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Documentation Environment
 
 The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
 scripts should work on Mac and Linux.
@@ -75,8 +72,7 @@ bin/generate-home.sh
 The site will be generated to the `target/site/home` directory.
 
 [[python-environment]]
-Python Environment
-~~~~~~~~~~~~~~~~~~
+=== Python Environment
 
 As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python 2.x] to work with the
 `gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
@@ -102,8 +98,7 @@ integration tests and therefore must be actively switched on with `-DskipIntegra
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
 [[dotnet-environment]]
-DotNet Environment
-~~~~~~~~~~~~~~~~~~
+=== DotNet Environment
 
 The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=1.1.0) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
@@ -137,8 +132,7 @@ This should update `~/.config/NuGet/NuGet.Config` a file with an entry containin
 See release documentation for more information on configuration for release.
 
 [[release-environment]]
-Release Environment
-~~~~~~~~~~~~~~~~~~~
+=== Release Environment
 
 This section is only useful to TinkerPop release managers and describes prerequisites related to deploying an official
 release of TinkerPop. All Apache releases must be signed. Please see link:http://www.apache.org/dev/release-signing.html[this guide]
@@ -173,8 +167,7 @@ The release manager shall use the project's pypi credentials, which are availabl
 The `password` should be left blank so the deployment process in Maven will prompt for it at deployment time.
 
 [[building-testing]]
-Building and Testing
---------------------
+== Building and Testing
 
 The following commands are a mix of Maven flags and shell scripts that handle different build operations
 
@@ -209,8 +202,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
 
 [[docker-integration]]
-Docker Integration
-------------------
+== Docker Integration
 
 TinkerPop provides a shell script, that can start several build tasks within a Docker container. The
 required Docker images will be built automatically if they don't exist yet. Thus the first invocation
@@ -251,8 +243,7 @@ is used to host the HTML docs.
 After finishing all tasks, the script will immediately destroy the container.
 
 
-IDE Setup with Intellij
------------------------
+== IDE Setup with Intellij
 
 This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which
 contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure

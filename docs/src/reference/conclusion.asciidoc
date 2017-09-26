@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[conclusion]]
-Conclusion
-==========
+= Conclusion
 
 image:tinkerpop-character.png[width=100,float=left] The world that we know, you and me, is but a subset of the world
 that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that

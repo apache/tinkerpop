@@ -14,15 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Contributing
-============
+= Contributing
 
 Contributions via GitHub pull requests are gladly accepted from their original author. By submitting any copyrighted
 material via pull request, email, or other means you agree to license the material under the project's open source
 license and warrant that you have the legal authority to do so.
 
-Ways to Contribute
-------------------
+== Ways to Contribute
 
 image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
 development work on the code base, there are many other ways outside of coding to contribute to Apache TinkerPop.
@@ -34,8 +32,7 @@ involved in the TinkerPop community.
 NOTE: As a quick acknowledgement, this section was influenced by Apache Spark's well organized
 link:https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark["Contributing to Spark"] document.
 
-Mailing List Participation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Mailing List Participation
 
 TinkerPop has two mailing lists: link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users] and
 pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev</a>]. Subscribing to and
@@ -48,16 +45,14 @@ discussions and other similar communication takes place. Having insight into the
 lot of information about the day-to-day course of TinkerPop and many of the other ways contributors can be involved
 require a subscription to this list.
 
-Testing Releases
-~~~~~~~~~~~~~~~~
+=== Testing Releases
 
 Proposed TinkerPop releases are not official until after they are evaluated by the community. The process of evaluation
 occurs on the dev@tinkerpop.apache.org mailing list where the community is invited to review release artifacts and
 vote if they should be released or not. Anyone is free to comment and provide a vote (+1/+0/-1) on a release. Note
 that votes of non-PMC members are considered non-binding, but are certainly considered in the review process.
 
-Reviewing Changes
-~~~~~~~~~~~~~~~~~
+=== Reviewing Changes
 
 Virtually all changes to TinkerPop's source code are performed via GitHub
 link:https://github.com/apache/tinkerpop/pulls[pull requests]. When a pull request is issue it undergoes a
@@ -65,8 +60,7 @@ link:https://github.com/apache/tinkerpop/pulls[pull requests]. When a pull reque
 on a pull request. Note that votes of non-committers are considered non-binding, but are certainly considered in the
 review process.
 
-Writing Documentation
-~~~~~~~~~~~~~~~~~~~~~
+=== Writing Documentation
 
 Proposing a documentation change is quite similar to providing a source code change, which is described below in more
 detail. Note that there is a difference between project documentation and the TinkerPop web site. The project
@@ -93,8 +87,7 @@ consensus (wait time is 72 hours as usual). At that point, pull requests or dire
 Again, see the <<documentation-environment,Documentation Environment>> section for more information on how to generate
 the site locally.
 
-Reporting Bugs
-~~~~~~~~~~~~~~
+=== Reporting Bugs
 
 Well formed bug reports (especially when accompanied by a pull request that fixes the problem) are welcome
 contributions that ultimately help improve the quality of TinkerPop. Of course, a bug report is only as good as its
@@ -102,8 +95,7 @@ reproduction steps and the surrounding details of the issue. When a bug is encou
 link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA], where it will likely trigger some discussion and
 ultimately a resolution.
 
-TinkerPop Libraries
-~~~~~~~~~~~~~~~~~~~
+=== TinkerPop Libraries
 
 TinkerPop is more than just the core source code repository. It is a rich ecosystem of libraries developed by
 link:http://tinkerpop.apache.org/providers.html[providers], who look to use or extend upon the TinkerPop interfaces.
@@ -115,8 +107,7 @@ TinkerPop web site and promoted there. Please see the current listing of such li
 link:http://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
 from the community.
 
-Considering Code Changes
-------------------------
+== Considering Code Changes
 
 Code changes can take a fair bit of effort from both the contributor doing the work, as well as the people who
 will be reviewing and testing that work. It is beneficial to all involved that some basic considerations be made by
@@ -166,8 +157,7 @@ promoted in link:http://tinkerpop.apache.org/#graph-systems[provider listings]
 * Adds a large amount of code
 * Makes lots of modifications in one "big bang" change
 
-Contributing Code Changes
--------------------------
+== Contributing Code Changes
 
 Generally, TinkerPop uses link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] to track logical issues,
 including bugs and improvements, and uses GitHub pull requests to manage the review and merge of specific code

@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[sparkgraphcomputer]]
-SparkGraphComputer
-^^^^^^^^^^^^^^^^^^
+==== SparkGraphComputer
 
 [source,xml]
 ----
@@ -86,8 +85,7 @@ image::spark-algorithm.png[width=775]
 |gremlin.spark.persistStorageLevel |What `StorageLevel` to use when persisted RDDs via `PersistedOutputRDD` (default `MEMORY_ONLY`).
 |========================================================
 
-InputRDD and OutputRDD
-++++++++++++++++++++++
+===== InputRDD and OutputRDD
 
 If the provider/user does not want to use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
 constructs directly. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise,
@@ -99,16 +97,14 @@ This can save a significant amount of time and space resources. If the `InputRDD
 `SparkGraphComputer` will partition the graph using a `org.apache.spark.HashPartitioner` with the number of partitions
 being either the number of existing partitions in the input (i.e. input splits) or the user specified number of `GraphComputer.workers()`.
 
-Storage Levels
-++++++++++++++
+===== Storage Levels
 
 The `SparkGraphComputer` uses `MEMORY_ONLY` to cache the input graph and the output graph by default. Users should be aware of the impact of
 different storage levels, since the default settings can quickly lead to memory issues on larger graphs. An overview of Spark's persistence
 settings is provided in link:http://spark.apache.org/docs/latest/programming-guide.html#rdd-persistence[Spark's programming guide].
 
 
-Using a Persisted Context
-+++++++++++++++++++++++++
+===== Using a Persisted Context
 
 It is possible to persist the graph RDD between jobs within the `SparkContext` (e.g. SparkServer) by leveraging `PersistedOutputRDD`.
 Note that `gremlin.spark.persistContext` should be set to `true` or else the persisted RDD will be destroyed when the `SparkContext` closes.
@@ -127,8 +123,7 @@ references to that Spark Context. The exception to this rule are those propertie
 Finally, there is a `spark` object that can be used to manage persisted RDDs (see <<interacting-with-spark, Interacting with Spark>>).
 
 [[bulkdumpervertexprogramusingspark]]
-Exporting with BulkDumperVertexProgram
-++++++++++++++++++++++++++++++++++++++
+===== Exporting with BulkDumperVertexProgram
 
 The <<bulkdumpervertexprogram, BulkDumperVertexProgram>> exports a whole graph in any of the supported Hadoop GraphOutputFormats (`GraphSONOutputFormat`,
 `GryoOutputFormat` or `ScriptOutputFormat`). The example below takes a Hadoop graph as the input (in `GryoInputFormat`) and exports it as a GraphSON file
@@ -144,8 +139,7 @@ hdfs.ls('output')
 hdfs.head('output/~g')
 ----
 
-Loading with BulkLoaderVertexProgram
-++++++++++++++++++++++++++++++++++++
+===== Loading with BulkLoaderVertexProgram
 
 The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load large
 amounts of data to and from different `Graph` implementations. The following code demonstrates how to load the

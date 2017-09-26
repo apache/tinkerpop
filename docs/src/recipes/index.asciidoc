@@ -20,8 +20,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-Recipes
-=======
+= Recipes
 
 image:gremlin-chef.png[width=120,float=left] All programming languages tend to have
 link:https://en.wikipedia.org/wiki/Software_design_pattern[patterns of usage] for commonly occurring problems. Gremlin
@@ -33,8 +32,7 @@ Recipes assume general familiarity with Gremlin and the TinkerPop stack. Be sure
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
-Traversal Recipes
-=================
+= Traversal Recipes
 
 include::between-vertices.asciidoc[]
 
@@ -60,16 +58,14 @@ include::traversal-induced-values.asciidoc[]
 
 include::tree.asciidoc[]
 
-Implementation Recipes
-======================
+= Implementation Recipes
 
 include::style-guide.asciidoc[]
 
 include::traversal-component-reuse.asciidoc[]
 
 [[contributing]]
-How to Contribute a Recipe
-==========================
+= How to Contribute a Recipe
 
 Recipes are generated under the same system as all TinkerPop documentation and is stored directly in the source code
 repository. TinkerPop documentation is all link:http://asciidoc.org/[asciidoc] based and can be generated locally with

@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[gryo]]
-Gryo
-====
+= Gryo
 
 image:gremlin-kryo.png[width=400,float=left] Gryo uses the popular link:https://github.com/EsotericSoftware/kryo[Kryo]
 library to handle binary serialization for the JVM. There currently aren't any Kryo implementations in other languages

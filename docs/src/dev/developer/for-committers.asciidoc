@@ -14,15 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-For Committers
-==============
+= For Committers
 
 image::business-gremlin.png[width=400]
 
 The guidelines that follow apply to those with commit access to the main repository:
 
-Communication
--------------
+== Communication
 
 TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
 link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
@@ -38,8 +36,7 @@ On the day of the meeting, the meeting organizer will create a Google Hangout (o
 post to the TinkerPop room in HipChat.  At that point, all who are interested can attend.  Meeting minutes should be
 taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
 
-Release Notes
--------------
+== Release Notes
 
 There is a two-pronged approach to maintaining the change log and preparing the release notes.
 
@@ -61,8 +58,7 @@ Changes that break the public APIs should be marked with a "breaking" label and 
 distinguished from other changes in the release notes.
 
 [[branches]]
-Branches
---------
+== Branches
 
 TinkerPop has several release branches:
 
@@ -83,14 +79,12 @@ a branch name prefix.  This provides a unique namespace, and also a way to accou
 
 Developers should remove their own branches when they are no longer needed.
 
-Tags
-----
+== Tags
 
 Tags are used for milestones, release candidates, and approved releases.  Please refrain from creating arbitrary
 tags, as they produce permanent clutter.
 
-Issue Tracker Conventions
--------------------------
+== Issue Tracker Conventions
 
 TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP[issue tracker].  JIRA is a
 very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across
@@ -118,23 +112,20 @@ which that particular issue will completed. This is a field usually only set by 
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
 
-Code Style
-----------
+== Code Style
 
 Contributors should examine the current code base to determine what the code style patterns are and should match their
 style to what is already present. Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
 be adjusted accordingly to not auto-wildcard the imports.
 
-Build Server
-------------
+== Build Server
 
 TinkerPop uses link:https://travis-ci.com/[Travis] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
 services. The build status can be found link:https://travis-ci.org/apache/tinkerpop[here].  Note that the CI process
 does not run integration tests or include Neo4j-related tests as those tests would likely exceed the allowable times
 for builds on these servers.
 
-Deprecation
------------
+== Deprecation
 
 When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
 deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
@@ -155,8 +146,7 @@ call out this fact.
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
 prudent to schedule them into a release.
 
-Developing Tests
-----------------
+== Developing Tests
 
 TinkerPop has a wide variety of test types that help validate its internal code as well as external provider code.
 There are "unit tests" and "integration tests". Unit tests execute on standard runs of `mvn clean install`.  These
@@ -182,8 +172,7 @@ environments without a `GraphProvider` being initialized by a suite. These types
 `Check` instead. Please see link:https://github.com/apache/tinkerpop/blob/e32a4187e4f25e290aabe14007f9087c48a06521/neo4j-gremlin/src/test/java/org/apache/tinkerpop/gremlin/neo4j/structure/NativeNeo4jStructureCheck.java[NativeNeo4jStructureCheck]
 for an example.
 
-Gremlin Language Test Cases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Gremlin Language Test Cases
 
 When writing a test case for a Gremlin step, be sure to use the following conventions.
 
@@ -200,8 +189,7 @@ When writing a test case for a Gremlin step, be sure to use the following conven
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
 
-Developing Benchmarks
----------------------
+== Developing Benchmarks
 
 Benchmarks are a useful tool to track performance between TinkerPop versions and also as tools to aid development
 decision making. TinkerPop uses link:http://openjdk.java.net/projects/code-tools/jmh/[OpenJDK JMH] for benchmark development.
@@ -231,8 +219,7 @@ that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`
 * `AbstractGraphMutateBenchmark` - extend when you are benchmarking graph mutation operations eg. `g.addV()`, `graph.addVertex()`
 
 [[rtc]]
-Review then Commit
-------------------
+== Review then Commit
 
 Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
 process before being merged into a release branch. All committers should follow the pattern below, where "you" refers
@@ -272,8 +259,7 @@ that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as
 adjustments to text formatting."
 
 [[pull-requests]]
-Pull Requests
-~~~~~~~~~~~~~
+=== Pull Requests
 
 When submitting a pull request to one of the <<branches, release branches>>, be sure it uses the following style:
 
@@ -348,8 +334,7 @@ to the work that was done and that no extraneous commits are present that cannot
 only contains the expected commits is the responsibility of the committer as well as the reviewer.
 
 [[dependencies]]
-Dependencies
-------------
+== Dependencies
 
 There are many dependencies on other open source libraries in TinkerPop modules. When adding dependencies or
 altering the version of a dependency, developers must consider the implications that may apply to the TinkerPop
@@ -379,8 +364,7 @@ link:https://github.com/apache/tinkerpop/blob/master/LICENSE[LICENSE] / link:htt
 ** Gremlin Server link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/LICENSE[LICENSE]
 / link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/NOTICE[NOTICE]
 
-Source LICENSE and NOTICE
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Source LICENSE and NOTICE
 
 As dependencies are not typically added to the source distribution (i.e. the source zip distribution), there is
 typically no need to edit source LICENSE/NOTICE when editing a TinkerPop `pom.xml`. These files only need to be edited
@@ -391,8 +375,7 @@ likely come from the addition of a source file from another library.
 * If the file being bundled is under a different approved license, then add an entry to LICENSE and include a copy of
 that LICENSE in the root `/licenses` directory of the code repository.
 
-Binary LICENSE and NOTICE
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Binary LICENSE and NOTICE
 
 The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `pom.xml` files. After altering the
 `pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
@@ -421,8 +404,7 @@ Please refer to the link:http://www.apache.org/dev/licensing-howto.html#mod-noti
 of the Apache "Licensing How-to" for more information.
 
 [[documentation]]
-Documentation
--------------
+== Documentation
 
 The documentation for TinkerPop is stored in the git repository in `docs/src/` and are then split into several
 subdirectories, each representing a "book" (or its own publishable body of work). If a new AsciiDoc file is added to
@@ -441,8 +423,7 @@ Please see the <<building-testing,Building and Testing>> section for more inform
 documentation.
 
 [[logging]]
-Logging
--------
+== Logging
 
 TinkerPop uses SLF4j for logging and typically leans back on Log4j as the implementation. Configuring log outputs
 for debugging purposes within tests can be altered by editing the `log4j-test.properties` file in each module's test

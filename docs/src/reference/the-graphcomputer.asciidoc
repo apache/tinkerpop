@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[graphcomputer]]
-The GraphComputer
-=================
+= The GraphComputer
 
 image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a
 graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and
@@ -51,8 +50,7 @@ rely heavily on the state of the computing classes (not the structure, but the p
 `Configuration`.
 
 [[vertexprogram]]
-VertexProgram
--------------
+== VertexProgram
 
 image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of
 as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is
@@ -93,8 +91,7 @@ link:https://hama.apache.org/[Hama]. TinkerPop3 extends the
 popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
 [[mapreduce]]
-MapReduce
----------
+== MapReduce
 
 The BSP model proposed by Pregel stores the results of the computation in a distributed manner as properties on the
 elements in the graph. In many situations, it is necessary to aggregate those resultant properties into a single
@@ -163,8 +160,7 @@ MapReduce jobs are executed is irrelevant. This is made apparent when realizing 
 `Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not fed back
 into a `map()`.
 
-A Collection of VertexPrograms
-------------------------------
+== A Collection of VertexPrograms
 
 TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
 
@@ -172,8 +168,7 @@ IMPORTANT: The vertex programs presented are what are provided as of TinkerPop x
 more algorithms will be added.
 
 [[pagerankvertexprogram]]
-PageRankVertexProgram
-~~~~~~~~~~~~~~~~~~~~~
+=== PageRankVertexProgram
 
 image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/wiki/PageRank[PageRank] is perhaps the
 most popular OLAP-oriented graph algorithm. This link:http://en.wikipedia.org/wiki/Centrality[eigenvector centrality]
@@ -350,8 +345,7 @@ g.V().pageRank().by('pageRank').times(5).order().by('pageRank').valueMap()
 ----
 
 [[peerpressurevertexprogram]]
-PeerPressureVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== PeerPressureVertexProgram
 
 The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal value to each vertex in the graph.
 The nominal value represents the vertex's cluster. If two vertices have the same nominal value, then they are in the
@@ -374,8 +368,7 @@ g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
 ----
 
 [[bulkdumpervertexprogram]]
-BulkDumperVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~
+=== BulkDumperVertexProgram
 
 The `BulkDumperVertexProgram` can be used to export a whole graph in any of the provided Hadoop GraphOutputFormats (e.g.
 `GraphSONOutputFormat`, `GryoOutputFormat` or `ScriptOutputFormat`). The input can be any Hadoop GraphInputFormat
@@ -383,8 +376,7 @@ The `BulkDumperVertexProgram` can be used to export a whole graph in any of the 
 is provided in the SparkGraphComputer section.
 
 [[bulkloadervertexprogram]]
-BulkLoaderVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~
+=== BulkLoaderVertexProgram
 
 image:batch-graph.png[width=220,float=left] The `BulkLoaderVertexProgram` provides a generalized way for loading
 graphs of any size into a persistent `Graph`. It is especially useful for large graphs (i.e. hundreds of millions
@@ -443,8 +435,7 @@ graph is a `HadoopGraph`. `BulkLoaderVertexProgram` will likely fail with a `Fas
 edges is missing.
 
 [[traversalvertexprogram]]
-TraversalVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~
+=== TraversalVertexProgram
 
 image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in
 that it can be executed via a `Traversal` and a `GraphComputer`. In Gremlin, it is possible to have
@@ -496,8 +487,7 @@ result.memory().runtime
 ----
 
 [[distributed-gremlin-gotchas]]
-Distributed Gremlin Gotchas
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Distributed Gremlin Gotchas
 
 Gremlin OLTP is not identical to Gremlin OLAP.
 
@@ -534,8 +524,7 @@ to maintain the ordering of `g.V().hasLabel("person").order().by("age").values("
 will rebroadcast traversers across the cluster.
 
 [[graph-filter]]
-Graph Filter
-------------
+== Graph Filter
 
 Most OLAP jobs do not require the entire source graph to faithfully execute their `VertexProgram`. For instance, if
 `PageRankVertexProgram` is only going to compute the centrality of people in the friendship-graph, then the following

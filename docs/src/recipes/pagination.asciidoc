@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[pagination]]
-Pagination
-----------
+== Pagination
 
 image:gremlin-paging.png[float=left,width=330]In most database applications, it is oftentimes desireable to return
 discrete blocks of data for a query rather than all of the data that the total results would contain. This approach to

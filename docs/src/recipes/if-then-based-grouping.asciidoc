@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[if-then-based-grouping]]
-If-Then Based Grouping
-----------------------
+== If-Then Based Grouping
 
 Consider the following traversal over the "modern" toy graph:
 

@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[traversal-component-reuse]]
-Traversal Component Reuse
--------------------------
+== Traversal Component Reuse
 
 Good software development practices require reuse to keep software maintainable. In Gremlin, there are often bits of
 traversal logic that could be represented as components that might be tested independently and utilized

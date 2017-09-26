@@ -14,11 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Administration
-==============
+= Administration
 
-New Committers
---------------
+== New Committers
 
 When a candidate is identified by a PMC member as someone who might be a good official committer to TinkerPop, the
 PMC member should open a DISCUSS thread on the private TinkerPop mailing list.  The thread should provide some
@@ -106,8 +104,7 @@ Finally, new committers should be sent an email that covers some of the administ
 * link:http://tinkerpop.apache.org/docs/current/dev/developer/[TinkerPop Developer Documentation]
 ** Bring specific attention to the "committer" section which describes our general policies.
 
-New PMC Members
----------------
+== New PMC Members
 
 The process for bringing on new PMC members is not so different from the one for new committers. The process begins
 with a DISCUSS thread to the private mailing list for building consensus followed by a VOTE thread to confirm.
@@ -132,8 +129,7 @@ elapsed, the invite may be sent to the new PMC member. If they accept, then the 
 link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for how to
 complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
 
-Board Reports
--------------
+== Board Reports
 
 The PMC Chair is responsible for submitting a link:http://www.apache.org/foundation/board/reporting[report to the board]
 on a quarterly basis. TinkerPop reports on the following months: January, April, July, October. The report has the

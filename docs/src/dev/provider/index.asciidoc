@@ -20,8 +20,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-Provider Documentation
-======================
+= Provider Documentation
 
 TinkerPop exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build libraries
 and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and this
@@ -38,8 +37,7 @@ This document attempts to address the needs of the different providers that have
 * Graph Plugin Provider
 
 [[graph-system-provider-requirements]]
-Graph System Provider Requirements
-----------------------------------
+== Graph System Provider Requirements
 
 image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this
 core API and its validation via the `gremlin-test` suite is all that is required of a graph system provider wishing to
@@ -48,8 +46,7 @@ provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party
 Gremlin-JS, etc.) will integrate properly. Finally, please feel free to use the logo on the left to promote your
 TinkerPop3 implementation.
 
-Implementing Gremlin-Core
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Implementing Gremlin-Core
 
 The classes that a graph system provider should focus on implementing are itemized below. It is a good idea to study
 the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph] (in-memory OLTP and OLAP
@@ -77,8 +74,7 @@ not efficient for the implementation, override them.
 * `ComputerGraph` is a `Wrapper` system that ensure proper semantics during a GraphComputer computation.
 
 [[oltp-implementations]]
-OLTP Implementations
-^^^^^^^^^^^^^^^^^^^^
+==== OLTP Implementations
 
 image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement are in the `structure/`
 package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite`
@@ -87,8 +83,7 @@ classes with static exceptions that should be thrown by the graph system so that
 messages are consistent amongst all TinkerPop3 implementations.
 
 [[olap-implementations]]
-OLAP Implementations
-^^^^^^^^^^^^^^^^^^^^
+==== OLAP Implementations
 
 image:furnace-character-1.png[width=110,float=right] Implementing the OLAP interfaces may be a bit more complicated.
 Note that before OLAP interfaces are implemented, it is necessary for the OLTP interfaces to be, at minimal,
@@ -111,8 +106,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkG
 Given the complexity of the OLAP system, it is good to study and copy many of the patterns used in these reference
 implementations.
 
-Implementing GraphComputer
-++++++++++++++++++++++++++
+===== Implementing GraphComputer
 
 image:furnace-character-3.png[width=150,float=right] The most complex method in GraphComputer is the `submit()`-method. The method must do the following:
 
@@ -129,8 +123,7 @@ image:furnace-character-3.png[width=150,float=right] The most complex method in 
 . Update Memory with runtime information.
 . Construct a new `ComputerResult` containing the compute Graph and Memory.
 
-Implementing Memory
-+++++++++++++++++++
+===== Implementing Memory
 
 image:gremlin-brain.png[width=175,float=left] The Memory object is initially defined by `VertexProgram.setup()`.
 The memory data is available in the first round of the `VertexProgram.execute()` method. Each Vertex, when executing
@@ -138,15 +131,13 @@ the VertexProgram, can update the Memory in its round. However, the update is no
 the next round. At the end of the first round, all the updates are aggregated and the new memory data is available
 on the second round. This process repeats until the VertexProgram terminates.
 
-Implementing Messenger
-++++++++++++++++++++++
+===== Implementing Messenger
 
 The Messenger object is similar to the Memory object in that a vertex can read and write to the Messenger. However,
 the data it reads are the messages sent to the vertex in the previous step and the data it writes are the messages
 that will be readable by the receiving vertices in the subsequent round.
 
-Implementing MapReduce Emitters
-+++++++++++++++++++++++++++++++
+===== Implementing MapReduce Emitters
 
 image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model
 popularized by link:http://hadoop.apache.org[Hadoop]. The primary difference is that all Mappers process the vertices
@@ -290,8 +281,7 @@ for (final MapReduce mapReduce : mapReducers) {
 <2> If there is no reduce stage, the map-stage results are inserted into Memory as specified by the application
 developer's `MapReduce.addResultToMemory()` implementation.
 
-Hadoop-Gremlin Usage
-^^^^^^^^^^^^^^^^^^^^
+==== Hadoop-Gremlin Usage
 
 Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-party graph system provider wishes to
 leverage Hadoop-Gremlin (and its respective `GraphComputer` engines), then they need to provide, at minimum, a
@@ -325,8 +315,7 @@ case, then the `Configuration` provided to `HadoopGraph.open()` should be dynami
 determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphReader` and
 `gremlin.hadoop.graphWriter`.
 
-GraphFilterAware Interface
-++++++++++++++++++++++++++
+===== GraphFilterAware Interface
 
 <<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
@@ -347,8 +336,7 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
   this.graphFilter = VertexProgramHelper.deserialize(configuration, Constants.GREMLIN_HADOOP_GRAPH_FILTER);
 ----
 
-PersistResultGraphAware Interface
-+++++++++++++++++++++++++++++++++
+===== PersistResultGraphAware Interface
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
@@ -358,8 +346,7 @@ data files are not random access and are, in essence, immutable. Thus, these fil
 `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 
 [[io-implementations]]
-IO Implementations
-^^^^^^^^^^^^^^^^^^
+==== IO Implementations
 
 If a `Graph` requires custom serializers for IO to work properly, implement the `Graph.io` method.  A typical example
 of where a `Graph` would require such a custom serializers is if their identifier system uses non-primitive values,
@@ -415,8 +402,7 @@ implementation remotely don't need a full dependency on the entire `Graph` - jus
 classes being serialized.
 
 [[remoteconnection-implementations]]
-RemoteConnection Implementations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[withRemote()] option. A `Traversal`
@@ -452,8 +438,7 @@ similar to Gremlin Server that can accept a serialized `Traversal` instance, the
 reason to implement this interface.
 
 [[validating-with-gremlin-test]]
-Validating with Gremlin-Test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Validating with Gremlin-Test
 
 image:gremlin-edumacated.png[width=225]
 
@@ -597,8 +582,7 @@ environment variable, depending on your project layout. Some tests require this 
 creating temporary files. The value is typically set to the project build directory. For example using the Maven
 SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
 
-Accessibility via GremlinPlugin
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Accessibility via GremlinPlugin
 
 image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop3 do not distribute with
 any graph system implementations besides TinkerGraph. If your implementation is stored in a Maven repository (e.g.
@@ -641,8 +625,7 @@ gremlin> :plugin use tinkerpop.neo4j
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 
-In-Depth Implementations
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== In-Depth Implementations
 
 image:gremlin-painting.png[width=200,float=right] The graph system implementation details presented thus far are
 minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a
@@ -657,8 +640,7 @@ lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ide
 ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph
 system specific step implementation.
 
-Graph Driver Provider Requirements
-----------------------------------
+== Graph Driver Provider Requirements
 
 image::gremlin-server-protocol.png[width=325]
 
@@ -786,14 +768,12 @@ Gremlin Server will send:
 NOTE: Please refer to the link:http://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
 
-OpProcessors Arguments
-~~~~~~~~~~~~~~~~~~~~~~
+=== OpProcessors Arguments
 
 The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors`
 (i.e. ones packaged with Gremlin Server).
 
-Common
-^^^^^^
+==== Common
 
 All `OpProcessor` instances support these arguments.
 
@@ -803,8 +783,7 @@ All `OpProcessor` instances support these arguments.
 |batchSize |Int |When the result is an iterator this value defines the number of iterations each `ResponseMessage` should contain - overrides the `resultIterationBatchSize` server setting.
 |=========================================================
 
-Standard OpProcessor
-^^^^^^^^^^^^^^^^^^^^
+==== Standard OpProcessor
 
 The "standard" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin.
 Requests made to this `OpProcessor` are "sessionless" in the sense that a request must encapsulate the entirety
@@ -846,8 +825,7 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |=========================================================
 
-Session OpProcessor
-^^^^^^^^^^^^^^^^^^^
+==== Session OpProcessor
 
 The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is
 like the "standard" `OpProcessor`, but instead maintains state between sessions and allows the option to leave all
@@ -906,8 +884,7 @@ of resources which can be desirable if Gremlin Server has a long session timeout
 as attempts to close long run jobs can occur more rapidly. If not provided, this value is `false`.
 |=========================================================
 
-Traversal OpProcessor
-^^^^^^^^^^^^^^^^^^^^^
+==== Traversal OpProcessor
 
 Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The
 `TraversalOpProcessor` however allows Gremlin `Bytecode` to be submitted to the server. Supporting this `OpProcessor`
@@ -1029,8 +1006,7 @@ rolled back up into a single object or simply left as-is. There are four values 
 |sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
 |=========================================================
 
-Authentication
-~~~~~~~~~~~~~~
+=== Authentication
 
 Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based]
 authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with
@@ -1050,8 +1026,7 @@ authentication.  If it cannot authenticate given the challenge response from the
 NOTE: Gremlin Server does not support the "authorization identity" as described in link:https://tools.ietf.org/html/rfc4616[RFC4616].
 
 [[gremlin-plugins]]
-Gremlin Plugins
----------------
+== Gremlin Plugins
 
 image:gremlin-plugin.png[width=125]
 

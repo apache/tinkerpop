@@ -20,8 +20,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-IO Reference
-============
+= IO Reference
 
 image:gremlin-io2.png[width=300]
 

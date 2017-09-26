@@ -15,32 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-TinkerPop 3.1.0
-===============
+= TinkerPop 3.1.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
 
 *A 187 On The Undercover Gremlinz*
 
-TinkerPop 3.1.8
----------------
+== TinkerPop 3.1.8
 
 *Release Date: August 21, 2017*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.8/CHANGELOG.asciidoc#tinkerpop-318-release-date-august-21-2017[changelog] for a complete list of all the modifications that are part of this release.
 
-TinkerPop 3.1.7
----------------
+== TinkerPop 3.1.7
 
 *Release Date: June 12, 2017*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.7/CHANGELOG.asciidoc#tinkerpop-317-release-date-june-12-2017[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-GraphML XSLT
-^^^^^^^^^^^^
+==== GraphML XSLT
 
 There were some inconsistencies in the GraphML format supported in TinkerPop 2.x. These issues were corrected on the
 initial release of TinkerPop 3.0.0, but as a result, attempting to read GraphML from 2.x will end with an error. A
@@ -49,21 +44,17 @@ making it possible easily read in legacy GraphML through a 3.x `GraphMLReader`.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1608[TINKERPOP-1608]
 
-TinkerPop 3.1.6
----------------
+== TinkerPop 3.1.6
 
 *Release Date: February 3, 2017*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#tinkerpop-316-release-date-february-3-2017[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+==== Driver Providers
 
-Session Close Confirmation
-++++++++++++++++++++++++++
+===== Session Close Confirmation
 
 When a session is closed, it now returns a confirmation in the form of a single `NO CONTENT` message. When the message
 arrives, it means that the server has already destroyed the session. Prior to this change, the request was somewhat
@@ -73,18 +64,15 @@ to proceed only when the server was fully complete with its work.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1544[TINKERPOP-1544]
 
-TinkerPop 3.1.5
----------------
+== TinkerPop 3.1.5
 
 *Release Date: October 17, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.5/CHANGELOG.asciidoc#tinkerpop-315-release-date-october-17-2016[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Java Driver and close()
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Java Driver and close()
 
 There were a few problems noted around the `close()` of `Cluster` and `Client` instances, including issues that
 presented as system hangs. These issues have been resolved, however, it is worth noting that an unchecked exception
@@ -95,18 +83,15 @@ potential to open additional resources despite the intention of the user to "clo
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1467[TINKERPOP-1467]
 
-TinkerPop 3.1.4
----------------
+== TinkerPop 3.1.4
 
 *Release Date: September 6, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#tinkerpop-314-release-date-september-6-2016[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Gremlin Server Workers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Server Workers
 
 In release 3.1.3, a link:http://tinkerpop.apache.org/docs/3.1.3/upgrade/#_tinkerpop_3_1_3[recommendation] was made to
 ensure that the `threadPoolWorker` setting for Gremlin Server was no less than `2` in cases where Gremlin Server was
@@ -115,18 +100,15 @@ acceptable even in that specific case.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
 
-TinkerPop 3.1.3
----------------
+== TinkerPop 3.1.3
 
 *Release Date: July 18, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-july-18-2016[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Reserved Gremlin Server Keys
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Reserved Gremlin Server Keys
 
 Gremlin Server has always considered certain binding keys (request parameters) as reserved, but that list has now
 expanded to be more inclusive all the static enums that are imported to the script engine. It is possible that those
@@ -135,8 +117,7 @@ terms in previous versions.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1354[TINKERPOP-1354]
 
-Remote Timeout
-^^^^^^^^^^^^^^
+==== Remote Timeout
 
 Disabling the timeout for a `:remote` to Gremlin Server was previously accomplished by setting the timeout to `max` as
 in:
@@ -157,8 +138,7 @@ set to `none`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1267[TINKERPOP-1267]
 
-Gremlin Server Workers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Server Workers
 
 Past configuration recommendations for the `threadPoolWorker` setting on Gremlin Server stated this value could be
 safely set to `1` at the low end. A size of `1` is still valid for most cases, however, if Gremlin Server is being used
@@ -167,22 +147,18 @@ those that block for an extended period of time) may cause Gremlin Server to loc
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-Graph Database Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Database Providers
 
-Property Keys and Hyphens
-+++++++++++++++++++++++++
+===== Property Keys and Hyphens
 
 Graph providers should no longer rely on the test suite to validate that hyphens work for labels and property keys.
 
-Vertex and Edge Counts
-++++++++++++++++++++++
+===== Vertex and Edge Counts
 
 A large number of asserts for vertex and edge counts in the test suite were not being applied. This problem has been
 rectified, but could manifest as test errors for different implementations. The chances of the new assertions
@@ -191,8 +167,7 @@ in other ways. If those were passing previously, then these new asserts should l
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1300[TINKERPOP-1300]
 
-Test Feature Annotations
-++++++++++++++++++++++++
+===== Test Feature Annotations
 
 A large number of `gremlin-test` feature annotations were incorrect which caused test cases to run against graphs that
 did not support those features. The annotations have been fixed, but this opened the possibility that more test cases
@@ -201,20 +176,16 @@ the capabilities of the graph implementation.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1319[TINKERPOP-1319]
 
-Graph Language Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Language Providers
 
-AndTest Renaming
-++++++++++++++++
+===== AndTest Renaming
 
 The `get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name` test in `AndTest` was improperly named and did not match the
 nature of the traversal it was providing. It has been renamed to: `get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name`.
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+==== Driver Providers
 
-SASL Mechanism
-++++++++++++++
+===== SASL Mechanism
 
 Note that the Gremlin Driver for Java now passes a new parameter for SASL authentication called `saslMechanism`. This
 is an optional argument and does not represent a breaking change, but it does make the overall implementation more
@@ -223,26 +194,22 @@ other implementations might, so the drivers should be able to pass it as per the
 
 See: link:https://issues.apache.org/jira/browse/[TINKERPOP-1263]
 
-TinkerPop 3.1.2
----------------
+== TinkerPop 3.1.2
 
 *Release Date: April 8, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Aliasing Sessions
-^^^^^^^^^^^^^^^^^
+==== Aliasing Sessions
 
 Calls to `SessionedClient.alias()` used to throw `UnsupportedOperationException` and it was therefore not possible to
 use that capability with a session. That method is now properly implemented and aliasing is allowed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1096[TINKERPOP-1096]
 
-Remote Console
-^^^^^^^^^^^^^^
+==== Remote Console
 
 The `:remote console` command provides a way to avoid having to prefix the `:>` command to scripts when remoting. This
 mode of console usage can be convenient when working exclusively with a remote like Gremlin Server and there is only a
@@ -250,8 +217,7 @@ desire to view the returned data and not to actually work with it locally in any
 
 See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
 
-Console Remote Sessions
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Console Remote Sessions
 
 The `:remote tinkerpop.server` command now allows for a "session" argument to be passed to `connect`. This argument,
 tells the remote to configure it with a Gremlin Server session. In this way, the console can act as a window to script
@@ -259,8 +225,7 @@ exception on the server and behave more like a standard "local" console when it 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1097[TINKERPOP-1097]
 
-TinkerPop Archetypes
-^^^^^^^^^^^^^^^^^^^^
+==== TinkerPop Archetypes
 
 TinkerPop now offers link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes],
 which provide example project templates to quickly get started with TinkerPop. The available archetypes are as follows:
@@ -272,8 +237,7 @@ how to connect with the Gremlin Driver, and how to embed Gremlin Server in a tes
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1085[TINKERPOP-1085],
 link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#gremlin-archetypes[Reference Documentation - Archetypes]
 
-Session Transaction Management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Session Transaction Management
 
 When connecting to a session with `gremlin-driver`, it is now possible to configure the `Client` instance so as to
 request that the server manage the transaction for each requests.
@@ -290,8 +254,7 @@ in a transaction. With this configuration of `client` there is no need to close 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
 link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
-Session Timeout Setting
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Session Timeout Setting
 
 The `gremlin-driver` now has a setting called `maxWaitForSessionClose` that allows control of how long it will wait for
 an in-session connection to respond to a close request before it simply times-out and moves on.  When that happens,
@@ -299,17 +262,14 @@ the server will either eventually close the connection via at session expiration
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1160[TINKERPOP-1160]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-All Providers
-^^^^^^^^^^^^^
+==== All Providers
 
-Provider Documentation
-++++++++++++++++++++++
+===== Provider Documentation
 
 Documentation related to the lower-level APIs used by a provider, that was formerly in the reference documentation,
 has been moved to its own documentation set that is now referred to as the
@@ -317,11 +277,9 @@ link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-937[TINKERPOP-937]
 
-Graph System Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph System Providers
 
-GraphProvider.clear() Semantics
-+++++++++++++++++++++++++++++++
+===== GraphProvider.clear() Semantics
 
 The semantics of the various `clear()` methods on `GraphProvider` didn't really change, but it would be worth reviewing
 their implementations to ensure that implementations can be called successfully in an idempotent fashion. Multiple
@@ -330,11 +288,9 @@ automated method for clearing graphs at the end of a test and some tests call `c
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1146[TINKERPOP-1146]
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+==== Driver Providers
 
-Session Transaction Management
-++++++++++++++++++++++++++++++
+===== Session Transaction Management
 
 Up until now transaction management has been a feature of sessionless requests only, but the new `manageTransaction`
 request argument for the link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#_session_opprocessor[Session OpProcessor]
@@ -345,18 +301,15 @@ this value as `false`, so there is no change to the protocol for this feature.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
 link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
-scriptEvalTimeout Override
-++++++++++++++++++++++++++
+===== scriptEvalTimeout Override
 
 The Gremlin Server protocol now allows the passing of `scriptEvaluationTimeout` as an argument to the `SessionOpProcessor`
 and the `StandardOpProcessor`. This value will override the setting of the same name provided in the Gremlin Server
 configuration file on a per request basis.
 
-Plugin Providers
-^^^^^^^^^^^^^^^^
+==== Plugin Providers
 
-RemoteAcceptor allowRemoteConsole
-+++++++++++++++++++++++++++++++++
+===== RemoteAcceptor allowRemoteConsole
 
 The `RemoteAcceptor` now has a new method called `allowRemoteConsole()`.  It has a default implementation that
 returns `false` and should thus be a non-breaking change for current implementations.  This value should only be set
@@ -368,18 +321,15 @@ local variable bindings in the console itself. For `tinkerpop.gephi`, this metho
 
 See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
 
-TinkerPop 3.1.1
----------------
+== TinkerPop 3.1.1
 
 *Release Date: February 8, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Storage I/O
-^^^^^^^^^^^
+==== Storage I/O
 
 The `gremlin-core` io-package now has a `Storage` interface. The methods that were available via `hdfs`
 (e.g. `rm()`, `ls()`, `head()`, etc.) are now part of `Storage`. Both HDFS and Spark implement `Storage` via
@@ -404,8 +354,7 @@ Finally, note that the following low-level/internal classes have been removed: `
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1033[TINKERPOP-1033],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023]
 
-Gremlin Server Transaction Management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Server Transaction Management
 
 Gremlin Server now has a setting called `strictTransactionManagement`, which forces the user to pass
 `aliases` for all requests. The aliases are then used to determine which graphs will have their transactions closed
@@ -417,8 +366,7 @@ it provides a more efficient method for transaction management.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#considering-transactions[Reference Documentation - Considering Transactions]
 
-Deprecated credentialsDbLocation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Deprecated credentialsDbLocation
 
 The `credentialsDbLocation` setting was a TinkerGraph only configuration option to the `SimpleAuthenticator` for
 Gremlin Server.  It provided the file system location to a "credentials graph" that TinkerGraph would read from a
@@ -436,8 +384,7 @@ release.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#_security[Reference Documentation - Gremlin Server Security]
 
-TinkerGraph Supports Any I/O
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== TinkerGraph Supports Any I/O
 
 TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now take a fully qualified class name
 of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
@@ -445,8 +392,7 @@ TinkerGraph instances.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-886[TINKERPOP-886]
 
-Authenticator Method Deprecation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Authenticator Method Deprecation
 
 For users who have a custom `Authenticator` implementation for Gremlin Server, there will be a new method present:
 
@@ -459,8 +405,7 @@ calls the old deprecated method.  In this way, existing `Authenticator` implemen
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-995[TINKERPOP-995]
 
-Spark Persistence Updates
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Spark Persistence Updates
 
 Spark RDD persistence is now much safer with a "job server" system that ensures that persisted RDDs are not garbage
 collected by Spark. With this, the user is provider a `spark` object that enables them to manage persisted RDDs
@@ -473,16 +418,14 @@ and no longer required.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1027[TINKERPOP-1027]
 
-Logging
-^^^^^^^
+==== Logging
 
 Logging to Gremlin Server and Gremlin Console can now be consistently controlled by the `log4j-server.properties`
 and `log4j-console.properties` which are in the respective `conf/` directories of the packaged distributions.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-859[TINKERPOP-859]
 
-Gremlin Server Sandboxing
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Server Sandboxing
 
 A number of improvements were made to the sandboxing feature of Gremlin Server (more specifically the
 `GremlinGroovyScriptEngine`).  A new base class for sandboxing was introduce with the `AbstractSandboxExtension`,
@@ -494,24 +437,20 @@ the `AbsstractSandboxExtension` or extending directly from Groovy's `TypeCheckin
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-891[TINKERPOP-891],
 link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#script-execution[Reference Documentation - Script Execution]
 
-Deprecated supportsAddProperty()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Deprecated supportsAddProperty()
 
 It was realized that `VertexPropertyFeatures.supportsAddProperty()` was effectively a duplicate of
 `VertexFeatures.supportsMetaProperties()`.  As a result, `supportsAddProperty()` was deprecated in favor of the other.
 If using `supportsAddProperty()`, simply modify that code to instead utilize `supportsMetaProperties()`.
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-Graph System Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph System Providers
 
-Data Types in Tests
-+++++++++++++++++++
+===== Data Types in Tests
 
 There were a number of fixes related to usage of appropriate types in the test suite. There were cases where tests
 were mixing types, such that a single property key might have two different values.  This mixed typing caused problems
@@ -525,11 +464,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-984[TINKERPOP-984],
 link:https://issues.apache.org/jira/browse/TINKERPOP-990[TINKERPOP-990],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1000[TINKERPOP-1000]
 
-Graph Database Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Database Providers
 
-Custom ClassResolver
-++++++++++++++++++++
+===== Custom ClassResolver
 
 For providers who have built custom serializers in Gryo, there is a new feature open that can be considered.  A
 `GryoMapper` can now take a custom Kryo `ClassResolver`, which means that custom types can be coerced to other types
@@ -543,8 +480,7 @@ identifier).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1064[TINKERPOP-1064]
 
-Feature Consistency
-+++++++++++++++++++
+===== Feature Consistency
 
 There were a number of corrections made around the consistency of `Features` and how they were applied in tests.
 Corrections fell into two groups of changes:
@@ -561,11 +497,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985],
 link:https://issues.apache.org/jira/browse/TINKERPOP-997[TINKERPOP-997],
 link:https://issues.apache.org/jira/browse/TINKERPOP-998[TINKERPOP-998]
 
-Graph Processor Providers
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Processor Providers
 
-InputRDD and OutputRDD Updates
-++++++++++++++++++++++++++++++
+===== InputRDD and OutputRDD Updates
 
 There are two new methods on the Spark-Gremlin RDD interfaces.
 
@@ -577,8 +511,7 @@ need to implement these methods as they are specific to file/RDD management for 
 implement these methods are `PersistedOutputRDD`, `PersistedInputRDD`, `InputFormatRDD`, and `OutputFormatRDD`. For the
 interested provider, study the implementations therein to see the purpose of these two new methods.
 
-TinkerPop 3.1.0
----------------
+== TinkerPop 3.1.0
 
 *Release Date: November 16, 2015*
 
@@ -589,11 +522,9 @@ Additional upgrade information can be found here:
 * <<_tinkerpop_3_0_2,TinkerPop 3.0.2>>
 * <<_tinkerpop_3_0_1,TinkerPop 3.0.1>>
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Shading Jackson
-^^^^^^^^^^^^^^^
+==== Shading Jackson
 
 The Jackson library is now shaded to `gremlin-shaded`, which will allow Jackson to version independently without
 breaking compatibility with dependent libraries or with those who depend on TinkerPop.  The downside is that if a
@@ -606,16 +537,14 @@ Jackson package naming.  They will have to shifted as follows:
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-835[TINKERPOP-835]
 
-PartitionStrategy and VertexProperty
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== PartitionStrategy and VertexProperty
 
 `PartitionStrategy` now supports partitioning within `VertexProperty`.  The `Graph` needs to be able to support
 meta-properties for this feature to work.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-333[TINKERPOP-333]
 
-Gremlin Server and Epoll
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Server and Epoll
 
 Gremlin Server provides a configuration option to turn on support for Netty
 link:http://netty.io/wiki/native-transports.html[native transport] on Linux, which has been shown to help improve
@@ -623,8 +552,7 @@ performance.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-901[TINKERPOP-901]
 
-Rebindings Deprecated
-^^^^^^^^^^^^^^^^^^^^^
+==== Rebindings Deprecated
 
 The notion of "rebindings" has been deprecated in favor of the term "aliases".  Alias is a better and more intuitive
 term than rebindings which should make it easier for newcomers to understand what they are for.
@@ -632,16 +560,14 @@ term than rebindings which should make it easier for newcomers to understand wha
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-913[TINKERPOP-913],
 link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
 
-Configurable Driver Channelizer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Configurable Driver Channelizer
 
 The Gremlin Driver now allows the `Channerlizer` to be supplied as a configuration, which means that custom
 implementations may be supplied.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-680[TINKERPOP-680]
 
-GraphSON and Strict Option
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== GraphSON and Strict Option
 
 The `GraphMLReader` now has a `strict` option on the `Builder` so that if a data type for a value is invalid in some
 way, GraphMLReader will simply skip that problem value. In that way, it is a bit more forgiving than before especially
@@ -649,8 +575,7 @@ with empty data.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-756[TINKERPOP-756]
 
-Transaction.close() Default Behavior
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Transaction.close() Default Behavior
 
 The default behavior of `Transaction.close()` is to rollback the transaction.  This is in contrast to previous versions
 where the default behavior was commit.  Using rollback as the default should be thought of as a like a safer approach
@@ -658,8 +583,7 @@ to closing where a user must now explicitly call `commit()` to persist their mut
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-805[TINKERPOP-805] for more information.
 
-ThreadLocal Transaction Settings
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== ThreadLocal Transaction Settings
 
 The `Transaction.onReadWrite()` and `Transaction.onClose()` settings now need to be set for each thread (if another
 behavior than the default is desired). For gremlin-server users that may be changing these settings via scripts.
@@ -668,8 +592,7 @@ changed for an in-session request they will now only apply to all future request
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-885[TINKERPOP-885]
 
-Hadoop-Gremlin
-^^^^^^^^^^^^^^
+==== Hadoop-Gremlin
 
 * Hadoop1 is no longer supported. Hadoop2 is now the only supported Hadoop version in TinkerPop.
 * Spark and Giraph have been split out of Hadoop-Gremlin into their own respective packages (Spark-Gremlin and Giraph-Gremlin).
@@ -678,8 +601,7 @@ Hadoop-Gremlin
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-616
 
-Spark-Gremlin
-^^^^^^^^^^^^^
+==== Spark-Gremlin
 
 * Providers that wish to reuse a graphRDD can leverage the new `PersistedInputRDD` and `PersistedOutputRDD`.
 ** This allows the graphRDD to avoid serialization into HDFS for reuse. Be sure to enabled persisted `SparkContext` (see documentation).
@@ -687,24 +609,21 @@ Spark-Gremlin
 See link:https://issues.apache.org/jira/browse/TINKERPOP-868,
 link:https://issues.apache.org/jira/browse/TINKERPOP-925
 
-TinkerGraph Serialization
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== TinkerGraph Serialization
 
 TinkerGraph is serializable over Gryo, which means that it can shipped over the wire from Gremlin Server.  This
 feature can be useful when working with remote subgraphs.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-728[TINKERPOP-728]
 
-Deprecation in TinkerGraph
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Deprecation in TinkerGraph
 
 The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
 If the deprecated variables were being used, then convert to the replacements as soon as possible.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-926[TINKERPOP-926]
 
-Deprecation in Gremlin-Groovy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Deprecation in Gremlin-Groovy
 
 The closure wrappers classes `GFunction`, `GSupplier`, `GConsumer` have been deprecated. In Groovy, a closure can be
 specified using `as Function` and thus, these wrappers are not needed. Also, the `GremlinExecutor.promoteBindings()`
@@ -713,8 +632,7 @@ method which was previously deprecated has been removed.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-879[TINKERPOP-879],
 link:https://issues.apache.org/jira/browse/TINKERPOP-897[TINKERPOP-897]
 
-Gephi Traversal Visualization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gephi Traversal Visualization
 
 The process for visualizing a traversal has been simplified.  There is no longer a need to "name" steps that will
 represent visualization points for Gephi.  It is possible to just "configure" a `visualTraversal` in the console:
@@ -727,8 +645,7 @@ to `:submit` to Gephi.
 
 See: link:http://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
 
-Alterations to GraphTraversal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Alterations to GraphTraversal
 
 There were a number of changes to `GraphTraversal`.  Many of the changes came by way of deprecation, but some semantics
 have changed as well:
@@ -749,8 +666,7 @@ have changed as well:
 ** Use `select(keys)` and `select(columns)`. However, note that `select()` will not unroll the keys/values. Thus, `mapKeys()` => `select(keys).unfold()`.
 * The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
 
-Aliasing Remotes in the Console
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Aliasing Remotes in the Console
 
 The `:remote` command in Gremlin Console has a new `alias` configuration option.  This `alias` option allows
 specification of a set of key/value alias/binding pairs to apply to the remote.  In this way, it becomes possible
@@ -767,8 +683,7 @@ would allow "g" on the server to be referred to as "x".
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-914[TINKERPOP-914]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
@@ -777,19 +692,16 @@ All providers should be aware that Jackson is now shaded to `gremlin-shaded` and
 there was usage of the dependency by way of TinkerPop, a direct dependency to Jackson may be required on the
 provider's side.
 
-Graph System Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph System Providers
 
-GraphStep Alterations
-+++++++++++++++++++++
+===== GraphStep Alterations
 
 * `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
 * Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-762
 
-Decomposition of AbstractTransaction
-++++++++++++++++++++++++++++++++++++
+===== Decomposition of AbstractTransaction
 
 The `AbstractTransaction` class has been abstracted into two different classes supporting two different modes of
 operation: `AbstractThreadLocalTransaction` and `AbstractThreadedTransaction`, where the former should be used when
@@ -806,8 +718,7 @@ are supplied in `AbstractThreadLocalTransaction` and `AbstractThreadedTransactio
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-765[TINKERPOP-765],
 link:https://issues.apache.org/jira/browse/TINKERPOP-885[TINKERPOP-885]
 
-Transaction.close() Default Behavior
-++++++++++++++++++++++++++++++++++++
+===== Transaction.close() Default Behavior
 
 The default behavior for `Transaction.close()` is to rollback the transaction and is enforced by tests, which
 previously asserted the opposite (i.e. commit on close).  These tests have been renamed to suite the new semantics:
@@ -819,8 +730,7 @@ If these tests were referenced in an `OptOut`, then their names should be update
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-805[TINKERPOP-805]
 
-Graph Traversal Updates
-+++++++++++++++++++++++
+===== Graph Traversal Updates
 
 There were numerous changes to the `GraphTraversal` API. Nearly all changes are backwards compatible with respective
 "deprecated" annotations. Please review the respective updates specified in the "Graph System Users" section.
@@ -829,35 +739,30 @@ There were numerous changes to the `GraphTraversal` API. Nearly all changes are 
 * Make sure mid-traversal `GraphStep` calls are folding `HasContainers` in for index-lookups.
 * Think about copying `TinkerGraphStepStrategyTest` for your implementation so you know folding is happening correctly.
 
-Element Removal
-+++++++++++++++
+===== Element Removal
 
 `Element.Exceptions.elementAlreadyRemoved` has been deprecated and test enforcement for consistency have been removed.
  Providers are free to deal with deleted elements as they see fit.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-297[TINKERPOP-297]
 
-VendorOptimizationStrategy Rename
-+++++++++++++++++++++++++++++++++
+===== VendorOptimizationStrategy Rename
 
 The `VendorOptimizationStrategy` has been renamed to `ProviderOptimizationStrategy`.  This renaming is consistent
 with revised terminology for what were formerly referred to as "vendors".
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-876[TINKERPOP-876]
 
-GraphComputer Updates
-+++++++++++++++++++++
+===== GraphComputer Updates
 
 `GraphComputer.configure(String key, Object value)` is now a method (with default implementation).
 This allows the user to specify engine-specific parameters to the underlying OLAP system. These parameters are not intended
 to be cross engine supported. Moreover, if there are not parameters that can be altered (beyond the standard `GraphComputer`
 methods), then the provider's `GraphComputer` implementation should simply return and do nothing.
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+==== Driver Providers
 
-Aliases Parameter
-+++++++++++++++++
+===== Aliases Parameter
 
 The "rebindings" argument to the "standard" `OpProcessor` has been renamed to "aliases". While "rebindings" is still
 supported it is recommended that the upgrade to "aliases" be made as soon as possible as support will be removed in
@@ -866,8 +771,7 @@ parameter or the other if either is supplied.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-913[TINKERPOP-913]
 
-ThreadLocal Transaction Settings
-++++++++++++++++++++++++++++++++
+===== ThreadLocal Transaction Settings
 
 If a driver configures the `Transaction.onReadWrite()` or `Transaction.onClose()` settings, note that these settings no
 longer apply to all future requests. If the settings are changed for a sessionless request they will only apply to

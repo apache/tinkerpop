@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[graphml]]
-GraphML
-=======
+= GraphML
 
 image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
 common XML-based representation of a graph. It uses an edge list format where vertices and their properties are listed

@@ -15,25 +15,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-TinkerPop 3.0.0
-===============
+= TinkerPop 3.0.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
 *A Gremlin Rāga in 7/16 Time*
 
-TinkerPop 3.0.2
----------------
+== TinkerPop 3.0.2
 
 *Release Date: October 19, 2015*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-BulkLoaderVertexProgram (BLVP)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== BulkLoaderVertexProgram (BLVP)
 
 `BulkLoaderVertexProgram` now supports arbitrary inputs (i addition to `HadoopGraph`, which was already supported in
 version 3.0.1-incubating). It can now also read from any TP3 enabled graph, like `TinkerGraph`
@@ -42,8 +38,7 @@ or `Neo4jGraph`.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-814[TINKERPOP-319],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#bulkloadervertexprogram[Reference Documentation - BLVP]
 
-TinkerGraph
-^^^^^^^^^^^
+==== TinkerGraph
 
 TinkerGraph can now be configured to support persistence, where TinkerGraph will try to load a graph from a specified
 location and calls to `close()` will save the graph data to that location.
@@ -51,8 +46,7 @@ location and calls to `close()` will save the graph data to that location.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-828[TINKERPOP-828],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_configuration[Reference Documentation - TinkerGraph]
 
-Gremlin Driver and Server
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Driver and Server
 
 There were a number of fixes to `gremlin-driver` that prevent protocol desynchronization when talking to Gremlin
 Server.
@@ -68,14 +62,11 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-855[TINKERPOP-855],
 link:https://issues.apache.org/jira/browse/TINKERPOP-870[TINKERPOP-870],
 link:https://issues.apache.org/jira/browse/TINKERPOP-877[TINKERPOP-877]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
-Graph Driver Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Driver Providers
 
-Gremlin Server close Operation
-++++++++++++++++++++++++++++++
+===== Gremlin Server close Operation
 
 It is important to note that this feature of the sub-protocol applies to the `SessionOpProcessor` (i.e. for
 session-based requests).  Prior to this change, there was no way to explicitly close a session.  Sessions would get
@@ -85,18 +76,15 @@ explicitly and as needed.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-849[TINKERPOP-849],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[Reference Documentation - OpProcessor]
 
-TinkerPop 3.0.1
----------------
+== TinkerPop 3.0.1
 
 *Release Date: September 2, 2015*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Gremlin Server
-^^^^^^^^^^^^^^
+==== Gremlin Server
 
 Gremlin Server now supports a link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based] 
 (Simple Authentication and Security Layer) authentication model and a default `SimpleAuthenticator` which implements 
@@ -111,22 +99,18 @@ for an example.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-576[TINKERPOP-576]
 
-Neo4j
-^^^^^
+==== Neo4j
 
 Problems related to using `:install` to get the Neo4j plugin operating in Gremlin Console on Windows have been 
 resolved.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-804[TINKERPOP-804]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
-Graph System Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph System Providers
 
-GraphFactoryClass Annotation
-++++++++++++++++++++++++++++
+===== GraphFactoryClass Annotation
 
 Providers can consider the use of the new `GraphFactoryClass` annotation to specify the factory class that `GraphFactory` will use to open a new `Graph` instance. This is an optional feature and will generally help implementations that have an interface extending `Graph`.  If that is the case, then this annotation can be used in the following fashion:
 
@@ -141,8 +125,7 @@ public interface MyGraph extends Graph{
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-778[TINKERPOP-778]
 
-GraphProvider.Descriptor Annotation
-+++++++++++++++++++++++++++++++++++
+===== GraphProvider.Descriptor Annotation
 
 There was a change that affected providers who implemented `GraphComputer` related tests such as the `ProcessComputerSuite`.  If the provider runs those tests, then edit the `GraphProvider` implementation for those suites to include the `GraphProvider.Descriptor` annotation as follows:
 
@@ -159,18 +142,15 @@ public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-690[TINKERPOP-690] for more information.
 
-Semantics of Transaction.close()
-++++++++++++++++++++++++++++++++
+===== Semantics of Transaction.close()
 
 There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues there.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-764[TINKERPOP-764] for more information.
 
-Graph Driver Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Driver Providers
 
-Authentication
-++++++++++++++
+===== Authentication
 
 Gremlin Server now supports SASL-based authentication.  By default, Gremlin Server is not configured with
 authentication turned on and authentication is not required, so existing drivers should still work without any

@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[gremlin-variants]]
-Gremlin Variants
-================
+= Gremlin Variants
 
 image::gremlin-house-of-mirrors.png[width=1024]
 
@@ -38,15 +37,13 @@ please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremli
 tutorial.
 
 [[gremlin-java]]
-Gremlin-Java
-------------
+== Gremlin-Java
 
 image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the Java8
 language and can be used by any Java8 compliant virtual machine. Gremlin-Java is considered the canonical, reference
 implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
 
-The Lambda Solution
-~~~~~~~~~~~~~~~~~~~
+=== The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most language do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
@@ -70,8 +67,7 @@ g.V().out("knows").sideEffect(Lambda.consumer("println it"))
 g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
 
 [[gremlin-groovy]]
-Gremlin-Groovy
---------------
+== Gremlin-Groovy
 
 image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
 link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
@@ -83,8 +79,7 @@ statically from the anonymous traversal `__` and therefore, must always be prefi
 `g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
 
 [[gremlin-python]]
-Gremlin-Python
---------------
+== Gremlin-Python
 
 image:gremlin-python-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Python implements Gremlin within
 the link:https://www.python.org/[Python] language and can be used on any Python virtual machine including the popular
@@ -179,8 +174,7 @@ Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e
 IMPORTANT: Gremlin-Python's `Traversal` class supports the standard Gremlin methods such as `next()`, `nextTraverser()`,
 `toSet()`, `toList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
 
-RemoteConnection Submission
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== RemoteConnection Submission
 
 There are various ways to submit a traversal to a `RemoteConnection`. Just as in Gremlin-Java, there are various
 "terminal/action methods" off of `Traversal`.
@@ -191,8 +185,7 @@ There are various ways to submit a traversal to a `RemoteConnection`. Just as in
 * `Traversal.toSet()`
 * `Traversal.iterate()`
 
-Gremlin-Python Sugar
-~~~~~~~~~~~~~~~~~~~~
+=== Gremlin-Python Sugar
 
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
 makes traversals a bit more concise.
@@ -204,8 +197,7 @@ g.V().both()[1].toList()
 g.V().both().name.toList()
 ----
 
-Static Enums and Methods
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== Static Enums and Methods
 
 Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python as Python `Enums`.
 
@@ -248,8 +240,7 @@ That is, without the `__.`-prefix.
 g.V().repeat(out()).times(2).name.fold().toList()
 ----
 
-Bindings
-~~~~~~~~
+=== Bindings
 
 When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
 If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
@@ -264,8 +255,7 @@ g.V(('id',1)).out('created').name.toList()
 g.V(('id',4)).out('created').name.toList()
 ----
 
-Traversal Strategies
-~~~~~~~~~~~~~~~~~~~~
+=== Traversal Strategies
 
 In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
 `TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
@@ -288,8 +278,7 @@ Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Tr
 the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
 re-construction machine-side.
 
-The Lambda Solution
-~~~~~~~~~~~~~~~~~~~
+=== The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most language do not support lambda introspection and thus, code analysis. In Gremlin-Python,
@@ -319,8 +308,7 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
-Custom Serialization
-~~~~~~~~~~~~~~~~~~~~
+=== Custom Serialization
 
 Gremlin-Python provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
 (see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add
@@ -356,8 +344,7 @@ connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
 ----
 
 [[gremlin-DotNet]]
-Gremlin.Net
------------
+== Gremlin.Net
 
 WARNING: Gremlin.Net does not yet have an official release. It is for developers who want to experiment with TinkerPop
 in the .NET ecosystem.
@@ -400,8 +387,7 @@ location (e.g. Gremlin Server).
 IMPORTANT: Gremlin-DotNet’s `ITraversal` interface supports the standard Gremlin methods such as `Next()`, `NextTraverser()`, `ToSet()`,
 `ToList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
 
-RemoteConnection Submission
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== RemoteConnection Submission
 
 Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a `IRemoteConnection` using
 terminal/action methods off of `ITraversal`.
@@ -412,8 +398,7 @@ terminal/action methods off of `ITraversal`.
 * `ITraversal.ToSet()`
 * `ITraversal.Iterate()`
 
-Static Enums and Methods
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== Static Enums and Methods
 
 Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-DotNet as Enums.
 
@@ -440,8 +425,7 @@ Finally, with using static `__`, anonymous traversals like `__.Out()` can be exp
 [source,csharp]
 g.V().Repeat(Out()).Times(2).Values("name").Fold().ToList()
 
-Bindings
-~~~~~~~~
+=== Bindings
 
 When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, 
 and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously 
@@ -458,8 +442,7 @@ g.V(b.Of("id", 1)).Out("created").Values("name").toList()
 g.V(b.Of("id", 4)).Out("created").Values("name").toList()
 ----
 
-Traversal Strategies
-~~~~~~~~~~~~~~~~~~~~
+=== Traversal Strategies
 
 In order to add and remove traversal strategies from a traversal source, Gremlin-DotNet has an `AbstractTraversalStrategy`
 class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
@@ -488,8 +471,7 @@ NOTE: Many of the TraversalStrategy classes in Gremlin-DotNet are proxies to the
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin-DotNet bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
 
-Custom Serialization
-~~~~~~~~~~~~~~~~~~~~
+=== Custom Serialization
 
 Gremlin-DotNet provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
 (see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add new

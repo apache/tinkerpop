@@ -15,13 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[tree]]
-Tree
-----
+== Tree
 
 image:gremlin-tree.png[width=280]
 
-Lowest Common Ancestor
-~~~~~~~~~~~~~~~~~~~~~~
+=== Lowest Common Ancestor
 
 image:tree-lca.png[width=230,float=right] Given a tree, the link:https://en.wikipedia.org/wiki/Lowest_common_ancestor[lowest common ancestor]
 is the deepest vertex that is common to two or more other vertices. The diagram to the right depicts the common
@@ -111,8 +109,7 @@ g.withComputer().
 
 <1> The main difference for OLAP is the use of `aggregate()` over the mid-traversal`V()`.
 
-Maximum Depth
-~~~~~~~~~~~~~
+=== Maximum Depth
 
 Finding the maximum depth of a tree starting from a specified root vertex can be determined as follows:
 
@@ -155,8 +152,7 @@ those without incoming edges). Second, all results save the last one can be igno
 the one at the deepest point in the tree). In this way, the path and path length only need to be calculated for a
 single result.
 
-Time-based Indexing
-~~~~~~~~~~~~~~~~~~~
+=== Time-based Indexing
 
 Trees can be used for modelling time-oriented data in a graph. Modeling time where there are "year", "month" and "day"
 vertices (or lower granularity as needed) allows the structure of the graph to inherently index data tied to them.
