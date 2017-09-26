@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[style-guide]]
-Style Guide
------------
+== Style Guide
 
 Gremlin is a data flow language where each new step concatenation alters the stream accordingly. This aspect of the
 language allows users to easily "build-up" a traversal (literally) step-by-step until the expected results are
@@ -66,8 +65,7 @@ The `unfold()`-step is a data formatting necessity that should not be made too p
 <6> If there is only one `by()`-modulator (or a series of short ones), keep it on one line, else each `by()` is a new line.
 <7> Back to a series `ins().outs().filters().etc()`.
 
-Style Guide Rules
-~~~~~~~~~~~~~~~~~
+=== Style Guide Rules
 
 A generalization of the specifics above are presented below.
 

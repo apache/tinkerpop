@@ -20,8 +20,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-TinkerPop 4.x Design Ideas
-==========================
+= TinkerPop 4.x Design Ideas
 
 TinkerPop 4.x is not a version considered on the immediate horizon, but there are often points in the day to day
 development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that they
@@ -34,8 +33,7 @@ for future consideration when 4.x becomes the agenda of the day for The TinkerPo
 
 image:tp4-think.png[]
 
-The Main Features
------------------
+== The Main Features
 
 TinkerPop4 should focus on the most successful aspects of TinkerPop3 and it should avoid the traps realized in TinkerPop3.
 These items include:
@@ -52,8 +50,7 @@ These items include:
 ** The role of Gremlin should be significantly increased.
 
 
-Hiding Blueprints
------------------
+== Hiding Blueprints
 
 Originally from the link:https://lists.apache.org/thread.html/b4d80072ad36849b4e9cd3308f87115660574e3e7a4abb7ee68e959b@%3Cdev.tinkerpop.apache.org%3E[mailing list]:
 
@@ -113,8 +110,7 @@ g.V(v).values(‘name’)
 This split into two Graph APIs will enables us to make a hard boundary between what the provider (vendor) needs to
 implement and what the user (developer) gets to access.
 
-Comments
-~~~~~~~~
+=== Comments
 
 There is a question mark next to `ReferenceGraph.tx()` - Transactions are a bit of an open question for future versions
 of TinkerPop and likely deserve their own section in this document. The model used for last three version of TinkerPop

@@ -19,8 +19,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 *x.y.z*
 
-Gremlin Language Variants
--------------------------
+== Gremlin Language Variants
 
 Gremlin is an embeddable query language that can be represented using the constructs of a host programming language.
 Any programming language that supports link:https://en.wikipedia.org/wiki/Function_composition[function composition]
@@ -124,15 +123,13 @@ construct a Gremlin language variant. Apache TinkerPop distributes with a full f
 that uses many of the techniques presented in this tutorial.
 
 [[language-drivers-vs-language-variants]]
-Language Drivers vs. Language Variants
---------------------------------------
+== Language Drivers vs. Language Variants
 
 Before discussing how to implement a Gremlin language variant in Python, it is necessary to understand two concepts related to
 Gremlin language development. There is a difference between a _language driver_ and a _language variant_ and it is important
 that these two concepts (and their respective implementations) remain separate.
 
-Language Drivers
-~~~~~~~~~~~~~~~~
+=== Language Drivers
 
 image:language-drivers.png[width=375,float=right] A Gremlin language driver is a software library that is able to
 communicate with a TinkerPop-enabled graph system whether directly via the JVM or indirectly via
@@ -151,8 +148,7 @@ NOTE: `GraphTraversal` is a particular Gremlin domain-specific language (link:ht
 albeit the most popular and foundational DSL. If another DSL is created, then the same techniques discussed in this tutorial
 for `GraphTraversal` apply to `XXXTraversal`.
 
-Language Variants
-~~~~~~~~~~~~~~~~~
+=== Language Variants
 
 image:language-variants.png[width=375,float=right] A Gremlin language variant is a software library that allows a developer
 to write a Gremlin traversal within their native programming language. The language variant is responsible for
@@ -187,12 +183,10 @@ IMPORTANT: The term "Gremlin-Java" denotes the language that is defined by `Grap
 and `__`. These three classes exist in `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph` and form the definitive
 representation of the Gremlin traversal language.
 
-Gremlin-Jython and Gremlin-Python
----------------------------------
+== Gremlin-Jython and Gremlin-Python
 
 [[using-jython-and-the-jvm]]
-Using Jython and the JVM
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== Using Jython and the JVM
 
 image:jython-logo.png[width=200,float=left,link="http://www.jython.org/"] link:http://www.jython.org/[Jython] provides a
 link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] `ScriptEngine` implementation that enables the evaluation of
@@ -245,8 +239,7 @@ link:https://en.wikipedia.org/wiki/Nashorn_(JavaScript_engine)[JavaScript], link
 link:http://www.scala-lang.org/[Scala], Lisp (link:https://clojure.org/[Clojure]), link:http://jruby.org/[Ruby], etc. A
 list of implementations is provided link:https://en.wikipedia.org/wiki/List_of_JVM_languages[here].
 
-Traversal Wrappers
-^^^^^^^^^^^^^^^^^^
+==== Traversal Wrappers
 
 While it is possible to simply interact with Java classes in a `ScriptEngine` implementation, such Gremlin language variants
 will not leverage the unique features of the host language. It is for this reason that JVM-based language variants such as
@@ -284,8 +277,7 @@ is desired, the language variant designer should submit a proposal to link:http:
 to have the extension added to a future release of Gremlin.
 
 [[using-python-and-remoteconnection]]
-Using Python and RemoteConnection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Using Python and RemoteConnection
 
 image:python-logo.png[width=125,float=left,link="https://www.python.org/"] The JVM is a powerful piece of technology that has, over the years,
 become a meeting ground for developers from numerous language communities. However, not all applications will use the JVM.
@@ -585,8 +577,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 IMPORTANT: Learn more about Apache TinkerPop's distribution of Gremlin-Python link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python[here].
 
 [[gremlin-language-variant-conventions]]
-Gremlin Language Variant Conventions
-------------------------------------
+== Gremlin Language Variant Conventions
 
 Every programming language is different and a Gremlin language variant must ride the fine line between leveraging the
 conventions of the host language and ensuring consistency with Gremlin-Java. A collection of conventions for navigating
@@ -597,8 +588,7 @@ this dual-language bridge are provided.
 * If the host language does not use dot-notion for method chaining, then its method chaining convention should be used instead of going the route of operator overloading. For instance, a Gremlin-PHP implementation should do `$g->V()->out()`.
 * If a programming language does not support method overloading, then varargs and type introspection should be used. In Gremlin-Python, `*args` does just that.
 
-Conclusion
-----------
+== Conclusion
 
 Gremlin is a simple language because it uses two fundamental programming language constructs: *function composition*
 and *function nesting*. Because of this foundation, it is relatively easy to implement Gremlin in any modern programming

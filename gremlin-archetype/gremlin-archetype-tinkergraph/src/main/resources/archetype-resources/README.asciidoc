@@ -14,21 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Simple TinkerPop Application
-============================
+= Simple TinkerPop Application
 
 This is a simple starter project that demonstrates how a basic TinkerPop project is structured with Maven. This project
 uses link:http://tinkerpop.apache.org/docs/${project.version}/reference/#tinkergraph-gremlin[TinkerGraph] as an
 embedded graph database, loads it with some data and then executes a shortest path calculation, printing the results.
 
-Prerequisites
--------------
+== Prerequisites
 
 * Java 8 Update 40+
 * link:https://maven.apache.org/[Maven 3.x]
 
-Building and Running
---------------------
+== Building and Running
 
 [source,text]
 mvn clean package

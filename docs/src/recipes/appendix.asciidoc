@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Appendix
-========
+= Appendix
 
 Many of the recipes are based on questions and answers provided on the
 link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users mailing list] or on

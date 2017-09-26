@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Contributing to Apache TinkerPop
---------------------------------
+== Contributing to Apache TinkerPop
 
 Contributions via GitHub pull requests are gladly accepted from their original
 author. By submitting any copyrighted material via pull request, email, or other means

@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[shortest-path]]
-Shortest Path
--------------
+== Shortest Path
 
 image:shortest-path.png[width=300]
 

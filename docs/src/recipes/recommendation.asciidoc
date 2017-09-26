@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[recommendation]]
-Recommendation
---------------
+== Recommendation
 
 image:gremlin-recommendation.png[float=left,width=180]One of the more common use cases for a graph database is the
 development of link:https://en.wikipedia.org/wiki/Recommender_system[recommendation systems] and a simple approach to

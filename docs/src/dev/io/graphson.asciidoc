@@ -236,8 +236,7 @@ mapper = GraphSONMapper.build().
 
 ////
 [[graphson]]
-GraphSON
-========
+= GraphSON
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a JSON-based format that is designed for human readable
 output that is easily supported in any programming language through the wide-array of JSON parsing libraries that
@@ -311,8 +310,7 @@ in the output. Without embedded types, the type system is restricted to standard
 Number, Boolean and that will lead to "lossyness" in the format (i.e. a float will be interpreted as double).
 
 [[graphson-1d0]]
-Version 1.0
------------
+== Version 1.0
 
 Version 1.0 of GraphSON was released with TinkerPop 3.0.0. When types are embedded, GraphSON uses the standard
 link:https://github.com/FasterXML/jackson-databind[Jackson] type embedding approach that writes the full Java class
@@ -323,11 +321,9 @@ This section focuses on non-embedded types and their formats as there was little
 object serialization use cases. The format was simply too cumbersome to parse of non-Jackson enabled libraries and the
 use cases for it were limited. <<graphson-2d0,GraphSON Version 2.0>> attempts to improve upon this limitation.
 
-Graph Structure
-~~~~~~~~~~~~~~~
+=== Graph Structure
 
-Edge
-^^^^
+==== Edge
 
 [source,json]
 ----
@@ -345,8 +341,7 @@ Edge
 }
 ----
 
-Path
-^^^^
+==== Path
 
 [source,json]
 ----
@@ -414,8 +409,7 @@ Path
 }
 ----
 
-Property
-^^^^^^^^
+==== Property
 
 [source,json]
 ----
@@ -425,8 +419,7 @@ Property
 }
 ----
 
-TinkerGraph
-^^^^^^^^^^^
+==== TinkerGraph
 
 `TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.
 
@@ -747,8 +740,7 @@ TinkerGraph
 }
 ----
 
-Vertex
-^^^^^^
+==== Vertex
 
 [source,json]
 ----
@@ -793,8 +785,7 @@ Vertex
 }
 ----
 
-VertexProperty
-^^^^^^^^^^^^^^
+==== VertexProperty
 
 [source,json]
 ----
@@ -806,11 +797,9 @@ VertexProperty
 ----
 
 
-RequestMessage
-~~~~~~~~~~~~~~
+=== RequestMessage
 
-Authentication Response
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Response
 
 The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.
 
@@ -827,8 +816,7 @@ The following `RequestMessage` is an example of the response that should be made
 }
 ----
 
-Session Eval
-^^^^^^^^^^^^
+==== Session Eval
 
 The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.
 
@@ -849,8 +837,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 }
 ----
 
-Session Eval Aliased
-^^^^^^^^^^^^^^^^^^^^
+==== Session Eval Aliased
 
 The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -874,8 +861,7 @@ The following `RequestMessage` is an example of a session request for a script e
 }
 ----
 
-Session Close
-^^^^^^^^^^^^^
+==== Session Close
 
 The following `RequestMessage` is an example of a request to close a session.
 
@@ -891,8 +877,7 @@ The following `RequestMessage` is an example of a request to close a session.
 }
 ----
 
-Sessionless Eval
-^^^^^^^^^^^^^^^^
+==== Sessionless Eval
 
 The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.
 
@@ -912,8 +897,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 }
 ----
 
-Sessionless Eval Aliased
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Sessionless Eval Aliased
 
 The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -937,11 +921,9 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 ----
 
 
-ResponseMessage
-~~~~~~~~~~~~~~~
+=== ResponseMessage
 
-Authentication Challenge
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Challenge
 
 When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
 
@@ -961,8 +943,7 @@ When authentication is enabled, an initial request to the server will result in 
 }
 ----
 
-Standard Result
-^^^^^^^^^^^^^^^
+==== Standard Result
 
 The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
 
@@ -1021,8 +1002,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 [[graphson-2d0]]
-Version 2.0
------------
+== Version 2.0
 
 Version 2.0 of GraphSON was first introduced on TinkerPop 3.2.2. It was designed to be less tied to
 link:https://github.com/FasterXML/jackson-databind[Jackson] (a JVM library) and to be less lossy as it pertained to
@@ -1038,11 +1018,9 @@ composed of two parts: a namespace and a type name, in the format "namespace:typ
 providers and users to categorize custom types that they may implement and avoid collision with existing TinkerPop
 types. By default, TinkerPop types will have the namespace "g" (or "gx" for "extended" types).
 
-Core
-~~~~
+=== Core
 
-Class
-^^^^^
+==== Class
 
 [source,json]
 ----
@@ -1052,8 +1030,7 @@ Class
 }
 ----
 
-Date
-^^^^
+==== Date
 
 [source,json]
 ----
@@ -1063,8 +1040,7 @@ Date
 }
 ----
 
-Double
-^^^^^^
+==== Double
 
 [source,json]
 ----
@@ -1074,8 +1050,7 @@ Double
 }
 ----
 
-Float
-^^^^^
+==== Float
 
 [source,json]
 ----
@@ -1085,8 +1060,7 @@ Float
 }
 ----
 
-Integer
-^^^^^^^
+==== Integer
 
 [source,json]
 ----
@@ -1096,8 +1070,7 @@ Integer
 }
 ----
 
-Long
-^^^^
+==== Long
 
 [source,json]
 ----
@@ -1107,8 +1080,7 @@ Long
 }
 ----
 
-Timestamp
-^^^^^^^^^
+==== Timestamp
 
 [source,json]
 ----
@@ -1118,8 +1090,7 @@ Timestamp
 }
 ----
 
-UUID
-^^^^
+==== UUID
 
 [source,json]
 ----
@@ -1130,11 +1101,9 @@ UUID
 ----
 
 
-Graph Structure
-~~~~~~~~~~~~~~~
+=== Graph Structure
 
-Edge
-^^^^
+==== Edge
 
 [source,json]
 ----
@@ -1166,8 +1135,7 @@ Edge
 }
 ----
 
-Path
-^^^^
+==== Path
 
 [source,json]
 ----
@@ -1242,8 +1210,7 @@ Path
 }
 ----
 
-Property
-^^^^^^^^
+==== Property
 
 [source,json]
 ----
@@ -1277,8 +1244,7 @@ Property
 }
 ----
 
-StarGraph
-^^^^^^^^^
+==== StarGraph
 
 [source,json]
 ----
@@ -1406,8 +1372,7 @@ StarGraph
 }
 ----
 
-TinkerGraph
-^^^^^^^^^^^
+==== TinkerGraph
 
 `TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.
 
@@ -2246,8 +2211,7 @@ TinkerGraph
 }
 ----
 
-Tree
-^^^^
+==== Tree
 
 [source,json]
 ----
@@ -2446,8 +2410,7 @@ Tree
 }
 ----
 
-Vertex
-^^^^^^
+==== Vertex
 
 [source,json]
 ----
@@ -2573,8 +2536,7 @@ Vertex
 }
 ----
 
-VertexProperty
-^^^^^^^^^^^^^^
+==== VertexProperty
 
 [source,json]
 ----
@@ -2596,11 +2558,9 @@ VertexProperty
 ----
 
 
-Graph Process
-~~~~~~~~~~~~~
+=== Graph Process
 
-Barrier
-^^^^^^^
+==== Barrier
 
 [source,json]
 ----
@@ -2610,8 +2570,7 @@ Barrier
 }
 ----
 
-Binding
-^^^^^^^
+==== Binding
 
 A "Binding" refers to a `Bytecode.Binding`.
 
@@ -2629,8 +2588,7 @@ A "Binding" refers to a `Bytecode.Binding`.
 }
 ----
 
-Bytecode
-^^^^^^^^
+==== Bytecode
 
 The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.
 
@@ -2644,8 +2602,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
-Cardinality
-^^^^^^^^^^^
+==== Cardinality
 
 [source,json]
 ----
@@ -2655,8 +2612,7 @@ Cardinality
 }
 ----
 
-Column
-^^^^^^
+==== Column
 
 [source,json]
 ----
@@ -2666,8 +2622,7 @@ Column
 }
 ----
 
-Direction
-^^^^^^^^^
+==== Direction
 
 [source,json]
 ----
@@ -2677,8 +2632,7 @@ Direction
 }
 ----
 
-Operator
-^^^^^^^^
+==== Operator
 
 [source,json]
 ----
@@ -2688,8 +2642,7 @@ Operator
 }
 ----
 
-Order
-^^^^^
+==== Order
 
 [source,json]
 ----
@@ -2699,8 +2652,7 @@ Order
 }
 ----
 
-Pick
-^^^^
+==== Pick
 
 [source,json]
 ----
@@ -2710,8 +2662,7 @@ Pick
 }
 ----
 
-Pop
-^^^
+==== Pop
 
 [source,json]
 ----
@@ -2721,8 +2672,7 @@ Pop
 }
 ----
 
-Lambda
-^^^^^^
+==== Lambda
 
 [source,json]
 ----
@@ -2736,8 +2686,7 @@ Lambda
 }
 ----
 
-Metrics
-^^^^^^^
+==== Metrics
 
 [source,json]
 ----
@@ -2797,8 +2746,7 @@ Metrics
 }
 ----
 
-P
-^
+==== P
 
 [source,json]
 ----
@@ -2814,8 +2762,7 @@ P
 }
 ----
 
-P and
-^^^^^
+==== P and
 
 [source,json]
 ----
@@ -2846,8 +2793,7 @@ P and
 }
 ----
 
-P or
-^^^^
+==== P or
 
 [source,json]
 ----
@@ -2884,8 +2830,7 @@ P or
 }
 ----
 
-Scope
-^^^^^
+==== Scope
 
 [source,json]
 ----
@@ -2895,8 +2840,7 @@ Scope
 }
 ----
 
-T
-^
+==== T
 
 [source,json]
 ----
@@ -2906,8 +2850,7 @@ T
 }
 ----
 
-TraversalMetrics
-^^^^^^^^^^^^^^^^
+==== TraversalMetrics
 
 [source,json]
 ----
@@ -3027,8 +2970,7 @@ TraversalMetrics
 }
 ----
 
-Traverser
-^^^^^^^^^
+==== Traverser
 
 [source,json]
 ----
@@ -3164,11 +3106,9 @@ Traverser
 ----
 
 
-RequestMessage
-~~~~~~~~~~~~~~
+=== RequestMessage
 
-Authentication Response
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Response
 
 The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.
 
@@ -3188,8 +3128,7 @@ The following `RequestMessage` is an example of the response that should be made
 }
 ----
 
-Session Eval
-^^^^^^^^^^^^
+==== Session Eval
 
 The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.
 
@@ -3219,8 +3158,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 }
 ----
 
-Session Eval Aliased
-^^^^^^^^^^^^^^^^^^^^
+==== Session Eval Aliased
 
 The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -3253,8 +3191,7 @@ The following `RequestMessage` is an example of a session request for a script e
 }
 ----
 
-Session Close
-^^^^^^^^^^^^^
+==== Session Close
 
 The following `RequestMessage` is an example of a request to close a session.
 
@@ -3276,8 +3213,7 @@ The following `RequestMessage` is an example of a request to close a session.
 }
 ----
 
-Sessionless Eval
-^^^^^^^^^^^^^^^^
+==== Sessionless Eval
 
 The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.
 
@@ -3303,8 +3239,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 }
 ----
 
-Sessionless Eval Aliased
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Sessionless Eval Aliased
 
 The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -3333,11 +3268,9 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 }
 ----
 
-ResponseMessage
-~~~~~~~~~~~~~~~
+=== ResponseMessage
 
-Authentication Challenge
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Challenge
 
 When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
 
@@ -3357,8 +3290,7 @@ When authentication is enabled, an initial request to the server will result in 
 }
 ----
 
-Standard Result
-^^^^^^^^^^^^^^^
+==== Standard Result
 
 The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
 
@@ -3498,8 +3430,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 
-Extended
-~~~~~~~~
+=== Extended
 
 Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:
 
@@ -3511,8 +3442,7 @@ mapper = GraphSONMapper.build().
                         version(GraphSONVersion.V2_0).create().createMapper()
 ----
 
-BigDecimal
-^^^^^^^^^^
+==== BigDecimal
 
 [source,json]
 ----
@@ -3522,8 +3452,7 @@ BigDecimal
 }
 ----
 
-BigInteger
-^^^^^^^^^^
+==== BigInteger
 
 [source,json]
 ----
@@ -3533,8 +3462,7 @@ BigInteger
 }
 ----
 
-Byte
-^^^^
+==== Byte
 
 [source,json]
 ----
@@ -3544,8 +3472,7 @@ Byte
 }
 ----
 
-ByteBuffer
-^^^^^^^^^^
+==== ByteBuffer
 
 [source,json]
 ----
@@ -3555,8 +3482,7 @@ ByteBuffer
 }
 ----
 
-Char
-^^^^
+==== Char
 
 [source,json]
 ----
@@ -3566,8 +3492,7 @@ Char
 }
 ----
 
-Duration
-^^^^^^^^
+==== Duration
 
 The following example is a `Duration` of five days.
 
@@ -3579,8 +3504,7 @@ The following example is a `Duration` of five days.
 }
 ----
 
-InetAddress
-^^^^^^^^^^^
+==== InetAddress
 
 [source,json]
 ----
@@ -3590,8 +3514,7 @@ InetAddress
 }
 ----
 
-Instant
-^^^^^^^
+==== Instant
 
 [source,json]
 ----
@@ -3601,8 +3524,7 @@ Instant
 }
 ----
 
-LocalDate
-^^^^^^^^^
+==== LocalDate
 
 [source,json]
 ----
@@ -3612,8 +3534,7 @@ LocalDate
 }
 ----
 
-LocalDateTime
-^^^^^^^^^^^^^
+==== LocalDateTime
 
 [source,json]
 ----
@@ -3623,8 +3544,7 @@ LocalDateTime
 }
 ----
 
-LocalTime
-^^^^^^^^^
+==== LocalTime
 
 [source,json]
 ----
@@ -3634,8 +3554,7 @@ LocalTime
 }
 ----
 
-MonthDay
-^^^^^^^^
+==== MonthDay
 
 [source,json]
 ----
@@ -3645,8 +3564,7 @@ MonthDay
 }
 ----
 
-OffsetDateTime
-^^^^^^^^^^^^^^
+==== OffsetDateTime
 
 [source,json]
 ----
@@ -3656,8 +3574,7 @@ OffsetDateTime
 }
 ----
 
-OffsetTime
-^^^^^^^^^^
+==== OffsetTime
 
 [source,json]
 ----
@@ -3667,8 +3584,7 @@ OffsetTime
 }
 ----
 
-Period
-^^^^^^
+==== Period
 
 The following example is a `Period` of one year, six months and fifteen days.
 
@@ -3680,8 +3596,7 @@ The following example is a `Period` of one year, six months and fifteen days.
 }
 ----
 
-Short
-^^^^^
+==== Short
 
 [source,json]
 ----
@@ -3691,8 +3606,7 @@ Short
 }
 ----
 
-Year
-^^^^
+==== Year
 
 The following example is of the `Year` "2016".
 
@@ -3704,8 +3618,7 @@ The following example is of the `Year` "2016".
 }
 ----
 
-YearMonth
-^^^^^^^^^
+==== YearMonth
 
 The following example is a `YearMonth` of "June 2016"
 
@@ -3717,8 +3630,7 @@ The following example is a `YearMonth` of "June 2016"
 }
 ----
 
-ZonedDateTime
-^^^^^^^^^^^^^
+==== ZonedDateTime
 
 [source,json]
 ----
@@ -3728,8 +3640,7 @@ ZonedDateTime
 }
 ----
 
-ZoneOffset
-^^^^^^^^^^
+==== ZoneOffset
 
 The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.
 
@@ -3742,17 +3653,14 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
 ----
 
 [[graphson-3d0]]
-Version 3.0
------------
+== Version 3.0
 
 Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0. It is quite similar to GraphSON 2.0 in many ways in
 terms of features, but it does not have an "untyped" version as previous version of GraphSON had.
 
-Core
-~~~~
+=== Core
 
-Class
-^^^^^
+==== Class
 
 [source,json]
 ----
@@ -3762,8 +3670,7 @@ Class
 }
 ----
 
-Date
-^^^^
+==== Date
 
 [source,json]
 ----
@@ -3773,8 +3680,7 @@ Date
 }
 ----
 
-Double
-^^^^^^
+==== Double
 
 [source,json]
 ----
@@ -3784,8 +3690,7 @@ Double
 }
 ----
 
-Float
-^^^^^
+==== Float
 
 [source,json]
 ----
@@ -3795,8 +3700,7 @@ Float
 }
 ----
 
-Integer
-^^^^^^^
+==== Integer
 
 [source,json]
 ----
@@ -3806,8 +3710,7 @@ Integer
 }
 ----
 
-Long
-^^^^
+==== Long
 
 [source,json]
 ----
@@ -3817,8 +3720,7 @@ Long
 }
 ----
 
-Timestamp
-^^^^^^^^^
+==== Timestamp
 
 [source,json]
 ----
@@ -3828,8 +3730,7 @@ Timestamp
 }
 ----
 
-UUID
-^^^^
+==== UUID
 
 [source,json]
 ----
@@ -3840,11 +3741,9 @@ UUID
 ----
 
 
-Graph Structure
-~~~~~~~~~~~~~~~
+=== Graph Structure
 
-Edge
-^^^^
+==== Edge
 
 [source,json]
 ----
@@ -3876,8 +3775,7 @@ Edge
 }
 ----
 
-Path
-^^^^
+==== Path
 
 [source,json]
 ----
@@ -4005,8 +3903,7 @@ Path
 }
 ----
 
-Property
-^^^^^^^^
+==== Property
 
 [source,json]
 ----
@@ -4037,8 +3934,7 @@ Property
 }
 ----
 
-StarGraph
-^^^^^^^^^
+==== StarGraph
 
 [source,json]
 ----
@@ -4126,8 +4022,7 @@ StarGraph
 }
 ----
 
-TinkerGraph
-^^^^^^^^^^^
+==== TinkerGraph
 
 `TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.
 
@@ -4806,8 +4701,7 @@ TinkerGraph
 }
 ----
 
-Tree
-^^^^
+==== Tree
 
 [source,json]
 ----
@@ -4950,8 +4844,7 @@ Tree
 }
 ----
 
-Vertex
-^^^^^^
+==== Vertex
 
 [source,json]
 ----
@@ -5037,8 +4930,7 @@ Vertex
 }
 ----
 
-VertexProperty
-^^^^^^^^^^^^^^
+==== VertexProperty
 
 [source,json]
 ----
@@ -5060,11 +4952,9 @@ VertexProperty
 ----
 
 
-Graph Process
-~~~~~~~~~~~~~
+=== Graph Process
 
-Barrier
-^^^^^^^
+==== Barrier
 
 [source,json]
 ----
@@ -5074,8 +4964,7 @@ Barrier
 }
 ----
 
-Binding
-^^^^^^^
+==== Binding
 
 A "Binding" refers to a `Bytecode.Binding`.
 
@@ -5093,8 +4982,7 @@ A "Binding" refers to a `Bytecode.Binding`.
 }
 ----
 
-Bytecode
-^^^^^^^^
+==== Bytecode
 
 The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.
 
@@ -5108,8 +4996,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
-Cardinality
-^^^^^^^^^^^
+==== Cardinality
 
 [source,json]
 ----
@@ -5119,8 +5006,7 @@ Cardinality
 }
 ----
 
-Column
-^^^^^^
+==== Column
 
 [source,json]
 ----
@@ -5130,8 +5016,7 @@ Column
 }
 ----
 
-Direction
-^^^^^^^^^
+==== Direction
 
 [source,json]
 ----
@@ -5141,8 +5026,7 @@ Direction
 }
 ----
 
-Operator
-^^^^^^^^
+==== Operator
 
 [source,json]
 ----
@@ -5152,8 +5036,7 @@ Operator
 }
 ----
 
-Order
-^^^^^
+==== Order
 
 [source,json]
 ----
@@ -5163,8 +5046,7 @@ Order
 }
 ----
 
-Pick
-^^^^
+==== Pick
 
 [source,json]
 ----
@@ -5174,8 +5056,7 @@ Pick
 }
 ----
 
-Pop
-^^^
+==== Pop
 
 [source,json]
 ----
@@ -5185,8 +5066,7 @@ Pop
 }
 ----
 
-Lambda
-^^^^^^
+==== Lambda
 
 [source,json]
 ----
@@ -5200,8 +5080,7 @@ Lambda
 }
 ----
 
-Metrics
-^^^^^^^
+==== Metrics
 
 [source,json]
 ----
@@ -5261,8 +5140,7 @@ Metrics
 }
 ----
 
-P
-^
+==== P
 
 [source,json]
 ----
@@ -5278,8 +5156,7 @@ P
 }
 ----
 
-P and
-^^^^^
+==== P and
 
 [source,json]
 ----
@@ -5310,8 +5187,7 @@ P and
 }
 ----
 
-P or
-^^^^
+==== P or
 
 [source,json]
 ----
@@ -5348,8 +5224,7 @@ P or
 }
 ----
 
-Scope
-^^^^^
+==== Scope
 
 [source,json]
 ----
@@ -5359,8 +5234,7 @@ Scope
 }
 ----
 
-T
-^
+==== T
 
 [source,json]
 ----
@@ -5370,8 +5244,7 @@ T
 }
 ----
 
-TraversalMetrics
-^^^^^^^^^^^^^^^^
+==== TraversalMetrics
 
 [source,json]
 ----
@@ -5491,8 +5364,7 @@ TraversalMetrics
 }
 ----
 
-Traverser
-^^^^^^^^^
+==== Traverser
 
 [source,json]
 ----
@@ -5588,11 +5460,9 @@ Traverser
 ----
 
 
-RequestMessage
-~~~~~~~~~~~~~~
+=== RequestMessage
 
-Authentication Response
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Response
 
 The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.
 
@@ -5609,8 +5479,7 @@ The following `RequestMessage` is an example of the response that should be made
 }
 ----
 
-Session Eval
-^^^^^^^^^^^^
+==== Session Eval
 
 The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.
 
@@ -5637,8 +5506,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 }
 ----
 
-Session Eval Aliased
-^^^^^^^^^^^^^^^^^^^^
+==== Session Eval Aliased
 
 The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -5668,8 +5536,7 @@ The following `RequestMessage` is an example of a session request for a script e
 }
 ----
 
-Session Close
-^^^^^^^^^^^^^
+==== Session Close
 
 The following `RequestMessage` is an example of a request to close a session.
 
@@ -5688,8 +5555,7 @@ The following `RequestMessage` is an example of a request to close a session.
 }
 ----
 
-Sessionless Eval
-^^^^^^^^^^^^^^^^
+==== Sessionless Eval
 
 The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.
 
@@ -5712,8 +5578,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 }
 ----
 
-Sessionless Eval Aliased
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Sessionless Eval Aliased
 
 The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of "g" to "social".
 
@@ -5740,11 +5605,9 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 ----
 
 
-ResponseMessage
-~~~~~~~~~~~~~~~
+=== ResponseMessage
 
-Authentication Challenge
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Authentication Challenge
 
 When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
 
@@ -5764,8 +5627,7 @@ When authentication is enabled, an initial request to the server will result in 
 }
 ----
 
-Standard Result
-^^^^^^^^^^^^^^^
+==== Standard Result
 
 The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
 
@@ -5865,8 +5727,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 
-Extended
-~~~~~~~~
+=== Extended
 
 Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:
 
@@ -5878,8 +5739,7 @@ mapper = GraphSONMapper.build().
                         version(GraphSONVersion.V2_0).create().createMapper()
 ----
 
-BigDecimal
-^^^^^^^^^^
+==== BigDecimal
 
 [source,json]
 ----
@@ -5889,8 +5749,7 @@ BigDecimal
 }
 ----
 
-BigInteger
-^^^^^^^^^^
+==== BigInteger
 
 [source,json]
 ----
@@ -5900,8 +5759,7 @@ BigInteger
 }
 ----
 
-Byte
-^^^^
+==== Byte
 
 [source,json]
 ----
@@ -5911,8 +5769,7 @@ Byte
 }
 ----
 
-ByteBuffer
-^^^^^^^^^^
+==== ByteBuffer
 
 [source,json]
 ----
@@ -5922,8 +5779,7 @@ ByteBuffer
 }
 ----
 
-Char
-^^^^
+==== Char
 
 [source,json]
 ----
@@ -5933,8 +5789,7 @@ Char
 }
 ----
 
-Duration
-^^^^^^^^
+==== Duration
 
 The following example is a `Duration` of five days.
 
@@ -5946,8 +5801,7 @@ The following example is a `Duration` of five days.
 }
 ----
 
-InetAddress
-^^^^^^^^^^^
+==== InetAddress
 
 [source,json]
 ----
@@ -5957,8 +5811,7 @@ InetAddress
 }
 ----
 
-Instant
-^^^^^^^
+==== Instant
 
 [source,json]
 ----
@@ -5968,8 +5821,7 @@ Instant
 }
 ----
 
-LocalDate
-^^^^^^^^^
+==== LocalDate
 
 [source,json]
 ----
@@ -5979,8 +5831,7 @@ LocalDate
 }
 ----
 
-LocalDateTime
-^^^^^^^^^^^^^
+==== LocalDateTime
 
 [source,json]
 ----
@@ -5990,8 +5841,7 @@ LocalDateTime
 }
 ----
 
-LocalTime
-^^^^^^^^^
+==== LocalTime
 
 [source,json]
 ----
@@ -6001,8 +5851,7 @@ LocalTime
 }
 ----
 
-MonthDay
-^^^^^^^^
+==== MonthDay
 
 [source,json]
 ----
@@ -6012,8 +5861,7 @@ MonthDay
 }
 ----
 
-OffsetDateTime
-^^^^^^^^^^^^^^
+==== OffsetDateTime
 
 [source,json]
 ----
@@ -6023,8 +5871,7 @@ OffsetDateTime
 }
 ----
 
-OffsetTime
-^^^^^^^^^^
+==== OffsetTime
 
 [source,json]
 ----
@@ -6034,8 +5881,7 @@ OffsetTime
 }
 ----
 
-Period
-^^^^^^
+==== Period
 
 The following example is a `Period` of one year, six months and fifteen days.
 
@@ -6047,8 +5893,7 @@ The following example is a `Period` of one year, six months and fifteen days.
 }
 ----
 
-Short
-^^^^^
+==== Short
 
 [source,json]
 ----
@@ -6058,8 +5903,7 @@ Short
 }
 ----
 
-Year
-^^^^
+==== Year
 
 The following example is of the `Year` "2016".
 
@@ -6071,8 +5915,7 @@ The following example is of the `Year` "2016".
 }
 ----
 
-YearMonth
-^^^^^^^^^
+==== YearMonth
 
 The following example is a `YearMonth` of "June 2016"
 
@@ -6084,8 +5927,7 @@ The following example is a `YearMonth` of "June 2016"
 }
 ----
 
-ZonedDateTime
-^^^^^^^^^^^^^
+==== ZonedDateTime
 
 [source,json]
 ----
@@ -6095,8 +5937,7 @@ ZonedDateTime
 }
 ----
 
-ZoneOffset
-^^^^^^^^^^
+==== ZoneOffset
 
 The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.
 

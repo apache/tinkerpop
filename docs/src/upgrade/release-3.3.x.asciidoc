@@ -15,25 +15,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-TinkerPop 3.3.0
-===============
+= TinkerPop 3.3.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=225]
 
 *Gremlin Symphony #40 in G Minor*
 
-TinkerPop 3.3.1
----------------
+== TinkerPop 3.3.1
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-1[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-PageRankVertexProgram
-^^^^^^^^^^^^^^^^^^^^^
+==== PageRankVertexProgram
 
 There were two major bugs in the way in which PageRank was being calculated in `PageRankVertexProgram`. First, teleportation
 energy was not being distributed correctly amongst the vertices at each round. Second, terminal vertices (i.e. vertices
@@ -71,15 +67,13 @@ Two other additions to `PageRankVertexProgram` were provided as well.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1783[TINKERPOP-1783]
 
-IO Defaults
-^^^^^^^^^^^
+==== IO Defaults
 
 While 3.3.0 released Gryo 3.0 and GraphSON 3.0 and these versions were defaulted in a number of places, it seems that
 some key defaults were missed. Specifically, calls to `Graph.io(graphson())` and `Graph.io(gryo())` were still using
 the old versions. The defaults have now been changed to ensure 3.0 is properly referenced in those cases.
 
-Upgrade Neo4j
-^^^^^^^^^^^^^
+==== Upgrade Neo4j
 
 See Neo4j's link:https://neo4j.com/guides/upgrade/[3.2 Upgrade FAQ] for a complete guide on how to upgrade from the previous 2.3.3 version. Also note that many of the configuration settings have link:https://neo4j.com/developer/kb/manually-migrating-configuration-settings-from-neo4j-2x-to-neo4j-3x/[changed from neo4j 2x to 3x]
 
@@ -95,17 +89,14 @@ In particular, these properties referenced in TinkerPop documentation and config
 |=========================================================
 
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-Graph Database Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Database Providers
 
-IO Version Check
-++++++++++++++++
+===== IO Version Check
 
 In the `Graph.io()` method, providers are to bootstrap the `Io` instance returned with their own custom serializers
 typically provided through a custom `IoRegistry` instance. Prior to this change it was not possible to easily determine
@@ -126,25 +117,21 @@ information, the provider could then assign the right `IoRegistry` to match that
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1767[TINKERPOP-1767]
 
 
-TinkerPop 3.3.0
----------------
+== TinkerPop 3.3.0
 
 *Release Date: August 21, 2017*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.0/CHANGELOG.asciidoc#release-3-3-0[changelog] for a complete list of all the modifications that are part of this release.
 
-Upgrading for Users
-~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Users
 
-Packaged Data Files
-^^^^^^^^^^^^^^^^^^^
+==== Packaged Data Files
 
 TinkerPop has always packaged sample graphs with its zip distributions. As of 3.3.0, the distributions will only
 include Gryo 3.0, GraphSON 3.0 and GraphML (which is unversioned) files. Other versions are not included, but could
 obviously be generated using the IO API directly.
 
-GraphTraversal Has-Methods Re-Organized
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== GraphTraversal Has-Methods Re-Organized
 
 `GraphTraversal.hasXXX()`, where `XXX` is `Id`, `Label`, `Key`, `Value`, was faulty in that they relied on calling an
 intermediate method for flattening `Object[]` arguments and thus, yielding a non 1-to-1 correspondence between `GraphTraversal`
@@ -153,11 +140,9 @@ Java reflection over `GraphTraversal` might have a simple problem.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1520[TINKERPOP-1520]
 
-Changes to IO
-^^^^^^^^^^^^^
+==== Changes to IO
 
-Gryo 3.0
-++++++++
+===== Gryo 3.0
 
 With Gryo, TinkerPop skips version 2.0 and goes right to 3.0 (to maintain better parity with GraphSON versioning).
 Gryo 3.0 fixes a number of inconsistencies with Gryo 1.0 and hopefully marks a point where Gryo is better versioned
@@ -213,8 +198,7 @@ Cluster cluster = Cluster.build().serializer(GryoMessageSerializerV1d0(builder))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1698[TINKERPOP-1698]
 
-GraphSON 3.0
-++++++++++++
+===== GraphSON 3.0
 
 GraphSON 3.0 finishes what GraphSON 2.0 began by taking the extra step to include the following types: `g:Map`,
 `g:List` and `g:Set`. With these types it is now possible to get expected Gremlin results in GLVs just as one would
@@ -281,8 +265,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1414[TINKERPOP-1414],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1427[TINKERPOP-1427],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1574[TINKERPOP-1574]
 
-Graphite and Ganglia
-^^^^^^^^^^^^^^^^^^^^
+==== Graphite and Ganglia
 
 Graphite and Ganglia are no longer packaged with the Gremlin Server distribution. They are considered optional
 dependencies and therefore must be installed manually by the user.
@@ -290,8 +273,7 @@ dependencies and therefore must be installed manually by the user.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1550[TINKERPOP-1550],
 link:http://tinkerpop.apache.org/docs/3.3.0/reference/#metrics[Reference Documentation - Metrics]
 
-SelectStep Defaults to Pop.last
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== SelectStep Defaults to Pop.last
 
 `SelectStep` and `SelectOneStep` (`select()`) are the only `Scoping` steps that default to `Pop.mixed` as their labeled path
 selection criteria. All other steps, like `match()`, `where()` and `dedup()`, use `Pop.last`. In order to better enable optimizations
@@ -307,8 +289,7 @@ If an explicit `Pop` argument is provided, then no changes are required.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1541[TINKERPOP-1541]
 
-OptionalStep and Side-Effects
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== OptionalStep and Side-Effects
 
 The `optional()`-step was previously implemented using `ChooseStep`. However, if the optional branch contained side-effects,
 then unexpected behaviors can emerge. Thus, a potential backwards compatibility issue arises if side-effects were being
@@ -316,8 +297,7 @@ used in `optional()`. However, the behavior would be unpredictable so this backw
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
 
-Gremlin Console Initialization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin Console Initialization
 
 It is no longer possible to intialize the Gremlin Console with a script without use of `-e`. In other words, prior
 versions allowed:
@@ -333,15 +313,13 @@ bin/gremlin.sh -i gremlin.groovy
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1651[TINKERPOP-1651]
 
-GraphTraversal valueMap() Signature Updated
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== GraphTraversal valueMap() Signature Updated
 
 `GraphTraversal.valueMap(includeTokens,propertyKeys...)` now returns a `Map<Object,E>` to account for the presence of `T.id` or `T.label` if you pass `true` to it.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1483]
 
-HADOOP_GREMLIN_LIBS and Spark
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== HADOOP_GREMLIN_LIBS and Spark
 
 The TinkerPop reference documentation has always mentioned that the `gremlin-spark` `/lib` directory needed to be
 added to `HADOOP_GREMLIN_LIBS` environment variable. In reality, that was not truly necessary. With Spark 1.x having
@@ -349,8 +327,7 @@ added to `HADOOP_GREMLIN_LIBS` environment variable. In reality, that was not tr
 on the path which will cause job initialization to fail. As a result, going forward with TinkerPop 3.3.0, the
 `gremlin-spark` `lib` directory should not be included in `HADOOP_GREMLIN_LIBS`.
 
-Deprecation Removal
-^^^^^^^^^^^^^^^^^^^
+==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
 
@@ -516,8 +493,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-880[TINKERPOP-880],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1170[TINKERPOP-1170],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1729[TINKERPOP-1729]
 
-Gremlin-server.sh and Init Scripts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Gremlin-server.sh and Init Scripts
 
 `gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the
 foreground with defaults like previous usage, please use the `console` parameter. Also, `gremlin-server.sh` will
@@ -529,8 +505,7 @@ The switch name has changed for installing dependencies. `-i` has been deprecate
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.3.0/reference/#_configuring_2[Reference Documentation - Server Configuration].
 
-Removal of useMapperFromGraph
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Removal of useMapperFromGraph
 
 The `userMapperFromGraph` serialization configuration option was used to allow the IO configurations of a specific
 graph to be assigned to a specific serializer. This feature has been removed completely now. Please use the
@@ -544,13 +519,11 @@ serializers:
 
 see: link:https://issues.apache.org/jira/browse/TINKERPOP-1699[TINKERPOP-1699]
 
-Gremlin-server.bat
-^^^^^^^^^^^^^^^^^^
+==== Gremlin-server.bat
 
 The switch name has changed for installing dependencies. `-i` has been deprecated and replaced by `install`.
 
-SparkGraphComputer GryoRegistrator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== SparkGraphComputer GryoRegistrator
 
 Historically, `SparkGraphComputer` has  used `GryoSerializer` to handle the serialization of objects in Spark. The reason
 this exists is because TinkerPop uses a shaded version of Kryo and thus, couldn't use the standard `KryoSerializer`-model
@@ -571,8 +544,7 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
 
-ScriptInputFormat
-^^^^^^^^^^^^^^^^^
+==== ScriptInputFormat
 
 The API for the script provided to a `ScriptInputFormat` has changed slightly. The signature for `parse(line, factory)`
 is now simply `parse(line)`. The inclusion of `factory` was deprecated in 3.1.2. Instead of using the {{factory}} to
@@ -582,17 +554,14 @@ the script.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1137[TINKERPOP-1137],
 link:http://tinkerpop.apache.org/docs/3.3.0-SNAPSHOT/reference/#script-io-format[Reference Documentation - Script I/O Format]
 
-Upgrading for Providers
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-Graph System Providers
-^^^^^^^^^^^^^^^^^^^^^^
+==== Graph System Providers
 
-GremlnPlugin
-++++++++++++
+===== GremlnPlugin
 
 The previously deprecated `GremlinPlugin` system has been removed. The old `GremlinPlugin` interface formerly resided
 in the `org.apache.tinkerpop.gremlin.groovy.plugin` package of `gremlin-groovy`. This interface was replaced by an
@@ -604,11 +573,9 @@ Under the new model, the plugin simply returns `Customizer` instances that can b
 `ScriptEngine` or specifically to a particular `ScriptEngine`. More details can be found in the
 link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-plugins[Provider Documentation]
 
-Graph Database Providers
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Graph Database Providers
 
-Test Suite Removal
-++++++++++++++++++
+===== Test Suite Removal
 
 A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
 providers who are implementing TinkerPop. Test suites related to perfrmance based on `junit-benchmarks` have been
@@ -629,8 +596,7 @@ removed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235], link:https://issues.apache.org/jira/browse/TINKERPOP-1612[TINKERPOP-1612]
 
-TransactionException
-++++++++++++++++++++
+===== TransactionException
 
 The `AbstractTransaction.TransactionException` class is now just `TransactionException` which extends `RuntimeExcetpion`
 rather than `Exception`. Providers should consider using this exception to wrap their own on calls to
@@ -639,11 +605,9 @@ to transaction problems and it allows for more common, generalized error handlin
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+==== Driver Providers
 
-SASL Byte Array
-+++++++++++++++
+===== SASL Byte Array
 
 Gremlin Server no longer supports accepting a byte array for the value passed to the "sasl" parameter in
 authentication messages. It only accepts a Base64 encoded string.

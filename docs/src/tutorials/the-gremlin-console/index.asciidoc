@@ -19,8 +19,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 *x.y.z*
 
-The Gremlin Console
--------------------
+== The Gremlin Console
 
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
 of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
@@ -55,8 +54,7 @@ The following points summarize the key features discussed in each use case:
 ** Deciding when to use the <<def-usage,def>> keyword
 
 [[learning-tool]]
-Use Case: A Learning Tool
--------------------------
+== Use Case: A Learning Tool
 
 image:gremlin-grad.png[float=left,width=185] __You are a new user of Apache TinkerPop and perhaps new to graphs as well.
 You're trying to get familiar with how Gremlin works and how it might fit into your project.  You want some "quick
@@ -164,8 +162,7 @@ in the console. Trying these examples for yourself and modifying their execution
 a good way to go about your Gremlin education.
 
 [[application-devs]]
-Use Case: Application Development
----------------------------------
+== Use Case: Application Development
 
 image:gremlin-working-on-tinkerpop.png[width=350,float=right] __You are an application developer and the TinkerPop stack
 will be central to your application architecture. You need to develop a series of services that will execute queries
@@ -386,8 +383,7 @@ only recall the rules of iteration when you move code between them. It is equall
 iteration. Keeping these semantics in mind will save you from many annoying debugging sessions.
 
 [[ad-hoc]]
-Use Case: Ad-hoc Analysis
--------------------------
+== Use Case: Ad-hoc Analysis
 
 __You are doing some general analysis on a graph with Gremlin and decide that you'd like to store those results in
 link:http://cassandra.apache.org/[Apache Cassandra] for additional analysis with other tools.__
@@ -652,8 +648,7 @@ You could just as easily `:install` libraries to read data from link:https://en.
 into a graph, use functions from link:https://commons.apache.org/proper/commons-math/[Commons Math], or do anything
 else you can think of with available JVM libraries.
 
-Summary
--------
+== Summary
 
 These use cases have tried to demonstrate some of the common ways in which you can use the Gremlin Console. In the
 process, they exposed tips and pitfalls to be aware of when working with it. Hopefully, you have gained some new

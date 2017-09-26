@@ -19,8 +19,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 *x.y.z*
 
-Getting Started
----------------
+== Getting Started
 
 link:http://tinkerpop.apache.org[Apache TinkerPop] is an open source Graph Computing Framework. Within itself, TinkerPop
 represents a large collection of capabilities and technologies and, in its wider ecosystem, an additionally extended
@@ -35,8 +34,7 @@ TinkerPop Workout - by Gremlin_!
 
 image::gremlin-gym.png[width=1024]
 
-The First Five Minutes
-----------------------
+== The First Five Minutes
 
 It is quite possible to learn a lot in just five minutes with TinkerPop, but before doing so, a proper introduction of
 your trainer is in order. Meet Gremlin!
@@ -160,8 +158,7 @@ In this first five minutes with Gremlin, you've gotten the Gremlin Console insta
 scratched the surface of what there is to know, but those accomplishments will help enable your understanding of the
 more detailed sections to come.
 
-The Next Fifteen Minutes
-------------------------
+== The Next Fifteen Minutes
 
 In the first five minutes of _The TinkerPop Workout - by Gremlin_, you learned some basics for traversing graphs. Of
 course, there wasn't much discussion about what a graph is. A graph is a collection of vertices (i.e. nodes, dots)
@@ -191,8 +188,7 @@ image:modern-edge-1-to-3-3.png[width=325]
 This model is referred to as a _property graph_ and it provides a flexible and intuitive way in which to model your
 data.
 
-Creating a Graph
-~~~~~~~~~~~~~~~~
+=== Creating a Graph
 
 As intuitive as it is to you, it is perhaps more intuitive to Gremlin himself, as vertices, edges and properties make
 up the very elements of his existence. It is indeed helpful to think of our friend, Gremlin, moving about a graph when
@@ -236,8 +232,7 @@ Finally, the label for an `Edge` is required and is thus part of the method sign
 parameter supplied, followed by the `Vertex` to which `v1` should be connected. Therefore, this usage of `addEdge` is
 creating an edge that goes _out_ of `v1` and into `v2` with a label of "created".
 
-Graph Traversal - Staying Simple
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Graph Traversal - Staying Simple
 
 Now that Gremlin knows where the graph data is, you can ask him to get you some data from it by doing a traversal,
 which you can think of as executing some link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[process]
@@ -327,8 +322,7 @@ You should now be able to see the connection Gremlin has to the structure of the
 vertices to edges and so on. Your ability to string together steps to ask Gremlin to do more complex things, depends
 on your understanding of these basic concepts.
 
-Graph Traversal - Increasing Complexity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Graph Traversal - Increasing Complexity
 
 Armed with the knowledge from the previous section, let's ask Gremlin to perform some more difficult traversal tasks.
 There's not much more that can be done with the "baby" graph we had, so let's return to the "modern" toy graph from
@@ -448,15 +442,13 @@ You also learned how to envision Gremlin moving about a graph and how to use som
 utilized traversal steps. You are now ready to think about TinkerPop in terms of its wider applicability to
 graph computing.
 
-The Final Ten Minutes
----------------------
+== The Final Ten Minutes
 
 In these final ten minutes of _The TinkerPop Workout - by Gremlin_ we'll look at TinkerPop from a higher level and
 introduce different features of the stack in order to orient you with what it offers. In this way, you can
 identify areas of interest and dig into the details from there.
 
-Why TinkerPop?
-~~~~~~~~~~~~~~
+=== Why TinkerPop?
 
 image:provider-integration.png[float=right,width=350] The goal of TinkerPop, as a Graph Computing Framework, is to make it
 easy for developers to create graph applications by providing APIs and tools that simplify their endeavors. One of
@@ -484,8 +476,7 @@ features in this section on link:http://tinkerpop.apache.org/docs/x.y.z/referenc
 TIP: To maintain an abstraction over `Graph` creation use `GraphFactory.open()` to construct new instances. See
 the documentation for individual `Graph` implementations to learn about the configuration options to provide.
 
-Loading Data
-~~~~~~~~~~~~
+=== Loading Data
 
 image:gremlin-to-the-7.png[width=100,float=left] There are many strategies for getting data into your graph. As you are
 just getting started, let's look at the more simple methods aimed at "smaller" graphs. A "small" graph, in this
@@ -549,8 +540,7 @@ To load larger data sets you should read about the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#bulkloadervertexprogram[BulkLoaderVertexProgram] (BLVP), which
 provides a generalized method for loading graphs of virtually any size.
 
-Gremlin Server
-~~~~~~~~~~~~~~
+=== Gremlin Server
 
 image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
@@ -615,8 +605,7 @@ there are drivers developed by both TinkerPop and third-parties for other link:h
 such as Python, Javascript, etc. Gremlin Server therefore represents the method by which non-JVM languages can
 interact with TinkerPop.
 
-Conclusion
-~~~~~~~~~~
+=== Conclusion
 
 ...and that is the end of _The TinkerPop Workout - by Gremlin_. You are hopefully feeling more confident in your
 TinkerPop skills and have a good overview of what the stack has to offer, as well as some entry points to further

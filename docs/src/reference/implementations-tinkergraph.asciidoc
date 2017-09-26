@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[tinkergraph-gremlin]]
-TinkerGraph-Gremlin
--------------------
+== TinkerGraph-Gremlin
 
 [source,xml]
 ----
@@ -82,8 +81,7 @@ data to the graph.
 
 NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
 
-Configuration
-~~~~~~~~~~~~~
+=== Configuration
 
 TinkerGraph has several settings that can be provided on creation via `Configuration` object:
 

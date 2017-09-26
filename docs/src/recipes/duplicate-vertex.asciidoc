@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[duplicate-vertex]]
-Duplicate Vertex Detection
---------------------------
+== Duplicate Vertex Detection
 
 The pattern for finding duplicate vertices is quite similar to the pattern defined in the <<duplicate-edge,Duplicate Edge>>
 section. The idea is to extract the relevant features of the vertex into a comparable list that can then be used to

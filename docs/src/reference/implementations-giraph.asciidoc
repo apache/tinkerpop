@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[giraphgraphcomputer]]
-GiraphGraphComputer
-^^^^^^^^^^^^^^^^^^^
+==== GiraphGraphComputer
 
 [source,xml]
 ----
@@ -84,8 +83,7 @@ then these values will be used by Giraph. However, if these are not specified an
 `GraphComputer.workers()` then `GiraphGraphComputer` will try to compute the number of workers/threads to use based
 on the cluster's profile.
 
-Loading with BulkLoaderVertexProgram
-++++++++++++++++++++++++++++++++++++
+===== Loading with BulkLoaderVertexProgram
 
 The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load
 large amounts of data to and from different `Graph` implementations. The following code demonstrates how to load

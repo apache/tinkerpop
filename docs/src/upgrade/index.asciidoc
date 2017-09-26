@@ -18,8 +18,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 :toc-position: left
 
-TinkerPop Upgrade Information
-=============================
+= TinkerPop Upgrade Information
 
 This document helps users of TinkerPop to understand the changes that come with each software release.  It outlines
 new features, how to resolve breaking changes and other information specific to a release.  This document is useful

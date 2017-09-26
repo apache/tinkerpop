@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[traversal-induced-values]]
-Traversal Induced Values
-------------------------
+== Traversal Induced Values
 
 The parameters of a `Traversal` can be known ahead of time as constants or might otherwise be passed in as dynamic
 arguments.

@@ -14,13 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-TinkerPop3
-----------
+== TinkerPop3
 
 image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="http://tinkerpop.apache.org"]
 
-Documentation
-~~~~~~~~~~~~~
+=== Documentation
 
 TinkerPop3 provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
 
@@ -29,8 +27,7 @@ TinkerPop3 provides graph computing capabilities for both graph databases (OLTP)
 * link:http://tinkerpop.apache.org/javadocs/current/core/[core javadoc]
 * link:http://tinkerpop.apache.org/javadocs/current/full/[full javadoc]
 
-Building and Testing
-~~~~~~~~~~~~~~~~~~~~
+=== Building and Testing
 
 TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 1.8.0_40+` for proper building and proper operations. To build, execute unit tests and package Gremlin Console/Server run:
 
@@ -44,8 +41,7 @@ The zip distributions can be found in the following directories:
 
 Please see the link:http://tinkerpop.apache.org/docs/current/dev/developer/#_contributing[CONTRIBUTING.asciidoc] file for more detailed information and options for building, test running and developing TinkerPop.
 
-Get Started
-~~~~~~~~~~~
+=== Get Started
 
 [source,bash]
 ----

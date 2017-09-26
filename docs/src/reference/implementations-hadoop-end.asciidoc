@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Input/Output Formats
-~~~~~~~~~~~~~~~~~~~~
+=== Input/Output Formats
 
 image:adjacency-list.png[width=300,float=right] Hadoop-Gremlin provides various I/O formats -- i.e. Hadoop
 `InputFormat` and `OutputFormat`. All of the formats make use of an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list]
@@ -25,8 +24,7 @@ outgoing edges.
 {empty} +
 
 [[gryo-io-format]]
-Gryo I/O Format
-^^^^^^^^^^^^^^^
+==== Gryo I/O Format
 
 * **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
 * **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
@@ -38,8 +36,7 @@ savings over text-based representations.
 NOTE: The `GryoInputFormat` is splittable.
 
 [[graphson-io-format]]
-GraphSON I/O Format
-^^^^^^^^^^^^^^^^^^^
+==== GraphSON I/O Format
 
 * **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat`
 * **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat`
@@ -61,8 +58,7 @@ The data below represents an adjacency list representation of the classic Tinker
 ----
 
 [[script-io-format]]
-Script I/O Format
-^^^^^^^^^^^^^^^^^
+==== Script I/O Format
 
 * **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat`
 * **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat`
@@ -71,8 +67,7 @@ Script I/O Format
 `Vertex` objects, respectively. This can be considered the most general `InputFormat`/`OutputFormat` possible in that
 Hadoop-Gremlin uses the user provided script for all reading/writing.
 
-ScriptInputFormat
-+++++++++++++++++
+===== ScriptInputFormat
 
 The data below represents an adjacency list representation of the classic TinkerGraph toy graph. First line reads,
 "vertex `1`, labeled `person` having 2 property values (`marko` and `29`) has 3 outgoing edges; the first edge is
@@ -123,8 +118,7 @@ def parse(line) {
 The resultant `Vertex` denotes whether the line parsed yielded a valid Vertex. As such, if the line is not valid
 (e.g. a comment line, a skip line, etc.), then simply return `null`.
 
-ScriptOutputFormat Support
-++++++++++++++++++++++++++
+===== ScriptOutputFormat Support
 
 The principle above can also be used to convert a vertex to an arbitrary `String` representation that is ultimately
 streamed back to a file in HDFS. This is the role of `ScriptOutputFormat`. `ScriptOutputFormat` requires that the
@@ -147,8 +141,7 @@ def stringify(vertex) {
 
 
 
-Storage Systems
-~~~~~~~~~~~~~~~
+=== Storage Systems
 
 Hadoop-Gremlin provides two implementations of the `Storage` API:
 
@@ -156,8 +149,7 @@ Hadoop-Gremlin provides two implementations of the `Storage` API:
 * `SparkContextStorage`: Access Spark persisted RDD data.
 
 [[interacting-with-hdfs]]
-Interacting with HDFS
-^^^^^^^^^^^^^^^^^^^^^
+==== Interacting with HDFS
 
 The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS].
 The results of any OLAP operation are stored in HDFS accessible via `hdfs`. For local file system access, there is `fs`.
@@ -175,8 +167,7 @@ hdfs.ls()
 ----
 
 [[interacting-with-spark]]
-Interacting with Spark
-^^^^^^^^^^^^^^^^^^^^^^
+==== Interacting with Spark
 
 If a Spark context is persisted, then Spark RDDs will remain the Spark cache and accessible over subsequent jobs.
 RDDs are retrieved and saved to the `SparkContext` via `PersistedInputRDD` and `PersistedOutputRDD` respectivly.
@@ -197,8 +188,7 @@ spark.rm('output')
 spark.ls()
 ----
 
-A Command Line Example
-~~~~~~~~~~~~~~~~~~~~~~
+=== A Command Line Example
 
 image::pagerank-logo.png[width=300]
 

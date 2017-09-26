@@ -19,8 +19,7 @@ image::apache-tinkerpop-logo.png[width=500]
 
 *x.y.z*
 
-TinkerPop Compendium
---------------------
+== TinkerPop Compendium
 
 image::tinkerpop-reading.png[width=800,align="center"]
 
@@ -50,8 +49,7 @@ Note the "+" following the link in each table entry - it forces an asciidoc line
 ////
 
 [[tutorials]]
-Tutorials
-~~~~~~~~~
+=== Tutorials
 
 [width="100%",cols="<.<3,<.^10",grid="none"]
 |=========================================================
@@ -71,8 +69,7 @@ and an overview of Gremlin. (*external*)
 |=========================================================
 
 [[publications]]
-Publications
-~~~~~~~~~~~~
+=== Publications
 
 Unless otherwise noted, all "publications" are externally managed:
 
@@ -91,8 +88,7 @@ Unless otherwise noted, all "publications" are externally managed:
 * Rodriguez, M.A., Kuppitz, D., Yim, K., link:http://www.datastax.com/dev/blog/tales-from-the-tinkerpop["Tales from the TinkerPop,"] DataStax Engineering Blog, July 2015.
 
 [[developer]]
-Developer
-~~~~~~~~~
+=== Developer
 
 [width="100%",cols="<.<3,<.^10",grid="none"]
 |=========================================================

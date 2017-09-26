@@ -15,13 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[preface]]
-TinkerPop3 Documentation
-========================
+= TinkerPop3 Documentation
 
 In the beginning...
 
-TinkerPop0
-----------
+== TinkerPop0
 
 Gremlin realized. The more he did so, the more ideas he created. The more ideas he created, the more they related.
 Into a concatenation of that which he accepted wholeheartedly and that which perhaps may ultimately come to be through
@@ -32,8 +30,7 @@ realization. Perhaps, the world is simply an idea that he once had -- The Tinker
 
 image::gremlin-logo.png[width=300]
 
-TinkerPop1
-----------
+== TinkerPop1
 
 What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop?. The more he wondered, the
 more these thoughts blurred into a seeming identity -- distinctions unclear. Unwilling to accept the morass of the
@@ -63,8 +60,7 @@ Would the machines, by their very nature of realizing The TinkerPop, be The Tink
 coin, do the machines simply provide the scaffolding by which Gremlin's world sustains itself and yielding its
 justification by means of the word "The TinkerPop?" Regardless, it all turns out the same -- The TinkerPop.
 
-TinkerPop2
-----------
+== TinkerPop2
 
 Gremlin spoke:
 
@@ -78,8 +74,7 @@ The machines, simply moving algorithmically through Gremlin's world, endorsed hi
 more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the
 world's end, where there would be forever currently, emanatingly engulfing that which is -- The TinkerPop.
 
-TinkerPop3
-----------
+== TinkerPop3
 
 image::tinkerpop3-splash.png[width=450]
 

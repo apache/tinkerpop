@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[traversal]]
-The Traversal
-=============
+= The Traversal
 
 image::gremlin-running.png[width=125]
 
@@ -38,8 +37,7 @@ and decoration strategies can reason on the underlying traversal sequence. If ne
 traversal strategies may not function properly.
 
 [[graph-traversal-steps]]
-Graph Traversal Steps
----------------------
+== Graph Traversal Steps
 
 image::step-types.png[width=650]
 
@@ -59,8 +57,7 @@ when using anonymous traversals. For example, `in` and `as` are reserved keyword
 the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
 [[general-steps]]
-General Steps
-~~~~~~~~~~~~~
+=== General Steps
 
 There are five general steps, each having a traversal and a lambda representation, by which all other specific steps described later extend.
 
@@ -145,8 +142,7 @@ g.V().choose(has('name','marko'),
 <3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
 [[terminal-steps]]
-Terminal Steps
-~~~~~~~~~~~~~~
+=== Terminal Steps
 
 Typically, when a step is concatenated to a traversal a traversal is returned. In this way, a traversal is built up
 in a link:https://en.wikipedia.org/wiki/Fluent_interface[fluent], link:https://en.wikipedia.org/wiki/Monoid[monadic] fashion.
@@ -178,8 +174,7 @@ g.V().out('created').fill(results) <8>
 Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
 
 [[addedge-step]]
-AddEdge Step
-~~~~~~~~~~~~
+=== AddEdge Step
 
 link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit what is implicit
 in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit
@@ -224,8 +219,7 @@ supports user provided ids.
 <7> Add an edge between marko and peter given the directed (detached) vertex references.
 
 [[addvertex-step]]
-AddVertex Step
-~~~~~~~~~~~~~~
+=== AddVertex Step
 
 The `addV()`-step is used to add vertices to the graph (*map*/*sideEffect*). For every incoming object, a vertex is
 created. Moreover, `GraphTraversalSource` maintains an `addV()` method.
@@ -240,8 +234,7 @@ g.V().has('name','nothing').bothE()
 ----
 
 [[addproperty-step]]
-AddProperty Step
-~~~~~~~~~~~~~~~~
+=== AddProperty Step
 
 The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and
 `addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element
@@ -264,8 +257,7 @@ g.V(1).properties('friendWeight').valueMap() <3>
 
 
 [[aggregate-step]]
-Aggregate Step
-~~~~~~~~~~~~~~
+=== Aggregate Step
 
 image::aggregate-step.png[width=800]
 
@@ -304,8 +296,7 @@ g.V().out('knows').aggregate('x').by('name').cap('x')
 ----
 
 [[and-step]]
-And Step
-~~~~~~~~
+=== And Step
 
 The `and()`-step ensures that all provided traversals yield a result (*filter*). Please see <<or-step,`or()`>> for or-semantics.
 
@@ -329,8 +320,7 @@ g.V().where(outE('created').and().outE('knows')).values('name')
 ----
 
 [[as-step]]
-As Step
-~~~~~~~
+=== As Step
 
 The `as()`-step is not a real step, but a "step modulator" similar to <<by-step,`by()`>> and <<option-step,`option()`>>.
 With `as()`, it is possible to provide a label to the step that can later be accessed by steps and data structures
@@ -357,8 +347,7 @@ g.V().hasLabel('software').as('a','b','c').
 ----
 
 [[barrier-step]]
-Barrier Step
-~~~~~~~~~~~~
+=== Barrier Step
 
 The `barrier()`-step (*barrier*) turns the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
 useful in the following situations:
@@ -412,8 +401,7 @@ g.V().both().both().both().count().iterate().toString()  <2>
 <1> With `LazyBarrierStrategy` activated, `barrier()` steps are automatically inserted where appropriate.
 
 [[by-step]]
-By Step
-~~~~~~~
+=== By Step
 
 The `by()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
 <<option-step,`option()`>>. If a step is able to accept traversals, functions, comparators, etc. then `by()` is the
@@ -450,8 +438,7 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<store-step, `store()`>>: store all objects into a set but only store their `by()`-modulated values.
 
 [[cap-step]]
-Cap Step
-~~~~~~~~
+=== Cap Step
 
 The `cap()`-step (*barrier*) iterates the traversal up to itself and emits the sideEffect referenced by the provided
 key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
@@ -466,8 +453,7 @@ g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b') 
 <2> Same as statement 1, but also emit the side effect labeled 'b' which groups vertices by the number of out edges.
 
 [[choose-step]]
-Choose Step
-~~~~~~~~~~~
+=== Choose Step
 
 image::choose-step.png[width=700]
 
@@ -523,8 +509,7 @@ g.V().hasLabel('person').
 ----
 
 [[coalesce-step]]
-Coalesce Step
-~~~~~~~~~~~~~
+=== Coalesce Step
 
 The `coalesce()`-step evaluates the provided traversals in order and returns the first traversal that emits at
 least one element.
@@ -538,8 +523,7 @@ g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
 ----
 
 [[coin-step]]
-Coin Step
-~~~~~~~~~
+=== Coin Step
 
 To randomly filter out a traverser, use the `coin()`-step (*filter*). The provided double argument biases the "coin toss."
 
@@ -551,8 +535,7 @@ g.V().coin(1.0)
 ----
 
 [[constant-step]]
-Constant Step
-~~~~~~~~~~~~~
+=== Constant Step
 
 To specify a constant value for a traverser, use the `constant()`-step (*map*).  This is often useful with conditional
 steps like <<choose-step,`choose()`-step>> or <<coalesce-step,`coalesce()`-step>>.
@@ -571,8 +554,7 @@ g.V().coalesce(
 <2> Same as statement 1 (unless there is a person vertex with no name).
 
 [[count-step]]
-Count Step
-~~~~~~~~~~
+=== Count Step
 
 image::count-step.png[width=195]
 
@@ -593,8 +575,7 @@ IMPORTANT: `count(local)` counts the current, local object (not the objects in t
 `Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
 
 [[cyclicpath-step]]
-CyclicPath Step
-~~~~~~~~~~~~~~~
+=== CyclicPath Step
 
 image::cyclicpath-step.png[width=400]
 
@@ -619,8 +600,7 @@ g.V(1).as('a').out('created').as('b').
 ----
 
 [[dedup-step]]
-Dedup Step
-~~~~~~~~~~
+=== Dedup Step
 
 With `dedup()`-step (*filter*), repeatedly seen objects are removed from the traversal stream. Note that if a
 traverser's bulk is greater than 1, then it is set to 1 before being emitted.
@@ -655,8 +635,7 @@ g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select
 <1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
 
 [[drop-step]]
-Drop Step
-~~~~~~~~~
+=== Drop Step
 
 The `drop()`-step (*filter*/*sideEffect*) is used to remove element and properties from the graph (i.e. remove). It
 is a filter step because the traversal yields no outgoing objects.
@@ -672,8 +651,7 @@ g.V()
 ----
 
 [[explain-step]]
-Explain Step
-~~~~~~~~~~~~
+=== Explain Step
 
 The `explain()`-step (*terminal*) will return a `TraversalExplanation`. A traversal explanation details how the
 traversal (prior to `explain()`) will be compiled given the registered <<traversalstrategy,traversal strategies>>.
@@ -690,8 +668,7 @@ g.V().hasLabel('person').outE().identity().inV().count().is(gt(5)).explain()
 For traversal profiling information, please see <<profile-step,`profile()`>>-step.
 
 [[fold-step]]
-Fold Step
-~~~~~~~~~
+=== Fold Step
 
 There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation
 that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see
@@ -716,8 +693,7 @@ g.V().values('age').sum() <6>
 <6> The same as before, but using the <<sum-step,`sum()`-step>>.
 
 [[graph-step]]
-Graph Step
-~~~~~~~~~~
+=== Graph Step
 
 The `V()`-step is usually used to start a `GraphTraversal`, but can also be used mid-traversal.
 
@@ -741,8 +717,7 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 <2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
 
 [[from-step]]
-From Step
-~~~~~~~~~
+=== From Step
 
 The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
@@ -752,8 +727,7 @@ The list of steps that support `from()`-modulation are: <<simplepath-step,`simpl
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
 [[group-step]]
-Group Step
-~~~~~~~~~~
+=== Group Step
 
 As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required.
 That is, the actual path taken or the current location of a traverser is not the ultimate output of the computation,
@@ -778,8 +752,7 @@ The two projection parameters available to `group()` via `by()` are:
 . Value-projection: What feature of the group to store in the key-list?
 
 [[groupcount-step]]
-GroupCount Step
-~~~~~~~~~~~~~~~
+=== GroupCount Step
 
 When it is important to know how many times a particular object has been at a particular part of a traversal,
 `groupCount()`-step (*map*/*sideEffect*) is used.
@@ -811,8 +784,7 @@ The above is interesting in that it demonstrates the use of referencing the inte
 it received to its output. Internal to `groupCount()`, the object's count is incremented.
 
 [[has-step]]
-Has Step
-~~~~~~~~
+=== Has Step
 
 image::has-step.png[width=670]
 
@@ -858,8 +830,7 @@ TinkerPop does not support a regular expression predicate, although specific gra
 may provide a partial match extension.
 
 [[id-step]]
-Id Step
-~~~~~~~
+=== Id Step
 
 The `id()`-step (*map*) takes an `Element` and extracts its identifier from it.
 
@@ -872,8 +843,7 @@ g.V(1).properties().id()
 ----
 
 [[inject-step]]
-Inject Step
-~~~~~~~~~~~
+=== Inject Step
 
 image::inject-step.png[width=800]
 
@@ -899,8 +869,7 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 ----
 
 [[is-step]]
-Is Step
-~~~~~~~
+=== Is Step
 
 It is possible to filter scalar values using `is()`-step (*filter*).
 
@@ -920,8 +889,7 @@ g.V().where(__.in('created').values('age').
 <3> Find projects whose contributors average age is between 30 and 35.
 
 [[label-step]]
-Label Step
-~~~~~~~~~~
+=== Label Step
 
 The `label()`-step (*map*) takes an `Element` and extracts its label from it.
 
@@ -933,8 +901,7 @@ g.V(1).properties().label()
 ----
 
 [[key-step]]
-Key Step
-~~~~~~~~
+=== Key Step
 
 The `key()`-step (*map*) takes a `Property` and extracts the key from it.
 
@@ -945,8 +912,7 @@ g.V(1).properties().properties().key()
 ----
 
 [[limit-step]]
-Limit Step
-~~~~~~~~~~
+=== Limit Step
 
 The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the lower end range is set to 0.
 
@@ -969,8 +935,7 @@ g.V().valueMap().limit(local, 1) <2>
 <2> `Map<String, Object>` for each vertex, but containing only the first property value.
 
 [[local-step]]
-Local Step
-~~~~~~~~~~
+=== Local Step
 
 image::local-step.png[width=450]
 
@@ -1011,8 +976,7 @@ of computing is the vertex and its local "star graph," it is important that the 
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[loops-step]]
-Loops Step
-~~~~~~~~~~
+=== Loops Step
 
 The `loops()`-step (*map*) extracts the number of times the `Traverser` has gone through the current loop.
 
@@ -1022,8 +986,7 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 ----
 
 [[match-step]]
-Match Step
-~~~~~~~~~~
+=== Match Step
 
 The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative]
 form of graph querying based on the notion of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching].
@@ -1201,8 +1164,7 @@ g.V().as('a').out().as('b'). <1>
 <8> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
 
 [[using-where-with-match]]
-Using Where with Match
-^^^^^^^^^^^^^^^^^^^^^^
+==== Using Where with Match
 
 Match is typically used in conjunction with both `select()` (demonstrated previously) and `where()` (presented here).
 A `where()`-step allows the user to further constrain the result set provided by `match()`.
@@ -1246,8 +1208,7 @@ IMPORTANT: A `where()`-step is a filter and thus, variables within a `where()` c
 path of the traverser in `match()`. As such, `where()`-steps in `match()` are used for filtering, not binding.
 
 [[max-step]]
-Max Step
-~~~~~~~~
+=== Max Step
 
 The `max()`-step (*map*) operates on a stream of numbers and determines which is the largest number in the stream.
 
@@ -1261,8 +1222,7 @@ IMPORTANT: `max(local)` determines the max of the current, local object (not the
 This works for `Collection` and `Number`-type objects. For any other object, a max of `Double.NaN` is returned.
 
 [[mean-step]]
-Mean Step
-~~~~~~~~~
+=== Mean Step
 
 The `mean()`-step (*map*) operates on a stream of numbers and determines the average of those numbers.
 
@@ -1280,8 +1240,7 @@ IMPORTANT: `mean(local)` determines the mean of the current, local object (not t
 This works for `Collection` and `Number`-type objects. For any other object, a mean of `Double.NaN` is returned.
 
 [[min-step]]
-Min Step
-~~~~~~~~
+=== Min Step
 
 The `min()`-step (*map*) operates on a stream of numbers and determines which is the smallest number in the stream.
 
@@ -1295,8 +1254,7 @@ IMPORTANT: `min(local)` determines the min of the current, local object (not the
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
 [[not-step]]
-Not Step
-~~~~~~~~
+=== Not Step
 
 The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument does
 not return any objects.
@@ -1311,14 +1269,12 @@ g.V().hasLabel('person').
 <1> josh created two projects and vadas none
 
 [[option-step]]
-Option Step
-~~~~~~~~~~~
+=== Option Step
 
 An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>.
 
 [[optional-step]]
-Optional Step
-~~~~~~~~~~~~~
+=== Optional Step
 
 The `optional()`-step (*branch/flatMap*) returns the result of the specified traversal if it yields a result else it returns the calling
 element, i.e. the `identity()`.
@@ -1342,8 +1298,7 @@ g.V().hasLabel('person').optional(out('knows').optional(out('created'))).path() 
 <1> Returns the paths of everybody followed by who they know followed by what they created.
 
 [[or-step]]
-Or Step
-~~~~~~~
+=== Or Step
 
 The `or()`-step ensures that at least one of the provided traversals yield a result (*filter*). Please see
 <<and-step,`and()`>> for and-semantics.
@@ -1368,8 +1323,7 @@ g.V().where(outE('created').or().outE('knows')).values('name')
 ----
 
 [[order-step]]
-Order Step
-~~~~~~~~~~
+=== Order Step
 
 When the objects of the traversal stream need to be sorted, `order()`-step (*map*) can be leveraged.
 
@@ -1430,8 +1384,7 @@ g.V().groupCount().by(inE().count()).order(local).by(keys, incr) <4>
 NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
 [[pagerank-step]]
-PageRank Step
-~~~~~~~~~~~~~
+=== PageRank Step
 
 The `pageRank()`-step (*map*/*sideEffect*) calculates link:http://en.wikipedia.org/wiki/PageRank[PageRank] using <<pagerankvertexprogram,`PageRankVertexProgram`>>.
 
@@ -1461,8 +1414,7 @@ g.V().hasLabel('person').
 ----
 
 [[path-step]]
-Path Step
-~~~~~~~~~
+=== Path Step
 
 A traverser is transformed as it moves through a series of steps within a traversal. The history of the traverser is
 realized by examining its path with `path()`-step (*map*).
@@ -1508,8 +1460,7 @@ In OLAP there are optimizations provided for traverser populations, but when pat
 is unique due to its history), then these optimizations are no longer possible.
 
 [[path-data-structure]]
-Path Data Structure
-^^^^^^^^^^^^^^^^^^^
+==== Path Data Structure
 
 The `Path` data structure is an ordered list of objects, where each object is associated to a `Set<String>` of
 labels. An example is presented below to demonstrate both the `Path` API as well as how a traversal yields labeled paths.
@@ -1532,8 +1483,7 @@ path.d == path.e
 ----
 
 [[peerpressure-step]]
-PeerPressure Step
-~~~~~~~~~~~~~~~~~
+=== PeerPressure Step
 
 The `peerPressure()`-step (*map*/*sideEffect*) clusters vertices using <<peerpressurevertexprogram,`PeerPressureVertexProgram`>>.
 
@@ -1549,8 +1499,7 @@ g.V().hasLabel('person').
 ----
 
 [[profile-step]]
-Profile Step
-~~~~~~~~~~~~
+=== Profile Step
 
 The `profile()`-step (*sideEffect*) exists to allow developers to profile their traversals to determine statistical
 information like step runtime, counts, etc.
@@ -1590,8 +1539,7 @@ metrics = t.getSideEffects().get('metrics')
 For traversal compilation information, please see <<explain-step,`explain()`>>-step.
 
 [[project-step]]
-Project Step
-~~~~~~~~~~~~
+=== Project Step
 
 The `project()`-step (*map*) projects the current object into a `Map<String,Object>` keyed by provided labels. It is similar
 to <<select-step,`select()`>>-step, save that instead of retrieving and modulating historic traverser state, it modulates
@@ -1612,8 +1560,7 @@ g.V().has('name','marko').
 ----
 
 [[program-step]]
-Program Step
-~~~~~~~~~~~~
+=== Program Step
 
 The `program()`-step (*map*/*sideEffect*) is the "lambda" step for `GraphComputer` jobs. The step takes a
 <<vertexprogram,`VertexProgram`>> as an argument and will process the incoming graph accordingly. Thus, the user
@@ -1708,8 +1655,7 @@ g.V().hasLabel('person').
 ----
 
 [properties-step]]
-Properties Step
-~~~~~~~~~~~~~~~
+=== Properties Step
 
 The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
 
@@ -1721,8 +1667,7 @@ g.V(1).properties('location').has('endTime').valueMap()
 ----
 
 [[propertymap-step]]
-PropertyMap Step
-~~~~~~~~~~~~~~~~
+=== PropertyMap Step
 
 The `propertiesMap()`-step yields a Map representation of the properties of an element.
 
@@ -1735,8 +1680,7 @@ g.E().propertyMap()
 ----
 
 [[range-step]]
-Range Step
-~~~~~~~~~~
+=== Range Step
 
 As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through
 with `range()`-step (*filter*). When the low-end of the range is not met, objects are continued to be iterated. When
@@ -1768,8 +1712,7 @@ g.V().valueMap().select('location').range(local, 1, 3)
 ----
 
 [[repeat-step]]
-Repeat Step
-~~~~~~~~~~~
+=== Repeat Step
 
 image::gremlin-fade.png[width=350]
 
@@ -1846,8 +1789,7 @@ anonymous traversals do not leave the confines of the vertex's star graph. In ot
 an adjacent vertex's properties or edges.
 
 [[sack-step]]
-Sack Step
-~~~~~~~~~
+=== Sack Step
 
 image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack".
 The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created
@@ -1927,8 +1869,7 @@ g.withBulk(false).withSack(1.0f).V(1).local(outE('knows').barrier(normSack).inV(
 
 
 [[sample-step]]
-Sample Step
-~~~~~~~~~~~
+=== Sample Step
 
 The `sample()`-step is useful for sampling some number of traversers previous in the traversal.
 
@@ -1959,8 +1900,7 @@ g.V(1).repeat(local(
 ----
 
 [[select-step]]
-Select Step
-~~~~~~~~~~~
+=== Select Step
 
 link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and
 lazy evaluation to create complex computations from primitive operations. This is exactly what `Traversal` does. One
@@ -2045,8 +1985,7 @@ g.V(1).as("a").repeat(out().as("a")).times(2).select(all, "a")
 ----
 
 [[using-where-with-select]]
-Using Where with Select
-^^^^^^^^^^^^^^^^^^^^^^^
+==== Using Where with Select
 
 Like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes
 `Map<String,Object>` streams.
@@ -2071,8 +2010,7 @@ ensure respective `a` and `b` strings are not the same.
 binding is filtered if `a` doesn't know `b`. The second and final `select()` projects the name of the vertices.
 
 [[simplepath-step]]
-SimplePath Step
-~~~~~~~~~~~~~~~
+=== SimplePath Step
 
 image::simplepath-step.png[width=400]
 
@@ -2121,8 +2059,7 @@ g.V('A').as('a').
 cross the vertices from the first path.
 
 [[skip-step]]
-Skip Step
-~~~~~~~~~
+=== Skip Step
 
 The `skip()`-step is analogous to <<range-step,`range()`-step>> save that the higher end range is set to -1.
 
@@ -2150,8 +2087,7 @@ g.V().hasLabel('person').filter(outE('created')).as('p'). <1>
 <3> ...select all other projects as `other`.
 
 [[store-step]]
-Store Step
-~~~~~~~~~~
+=== Store Step
 
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*)
 should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only
@@ -2173,8 +2109,7 @@ g.E().store('x').by('weight').cap('x')
 ----
 
 [[subgraph-step]]
-Subgraph Step
-~~~~~~~~~~~~~
+=== Subgraph Step
 
 image::subgraph-logo.png[width=380]
 
@@ -2219,8 +2154,7 @@ IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplie
 if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
 
 [[sum-step]]
-Sum Step
-~~~~~~~~
+=== Sum Step
 
 The `sum()`-step (*map*) operates on a stream of numbers and sums the numbers together to yield a double. Note that
 the current traverser number is multiplied by the traverser bulk to determine how many such numbers are being
@@ -2236,8 +2170,7 @@ IMPORTANT: `sum(local)` determines the sum of the current, local object (not the
 This works for `Collection`-type objects. For any other object, a sum of `Double.NaN` is returned.
 
 [[tail-step]]
-Tail Step
-~~~~~~~~~
+=== Tail Step
 
 image::tail-step.png[width=530]
 
@@ -2272,8 +2205,7 @@ g.V().valueMap().tail(local) <4>
 <4> `Map<String, Object>` for each vertex, but containing only the last property value.
 
 [[timelimit-step]]
-TimeLimit Step
-~~~~~~~~~~~~~~
+=== TimeLimit Step
 
 In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking.
 A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a
@@ -2300,8 +2232,7 @@ reached, any `next()` evaluation of the step will yield a `NoSuchElementExceptio
 yield `false`.
 
 [[to-step]]
-To Step
-~~~~~~~
+=== To Step
 
 The `to()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `to()` is the
@@ -2311,8 +2242,7 @@ The list of steps that support `to()`-modulation are: <<simplepath-step,`simpleP
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
 [[tree-step]]
-Tree Step
-~~~~~~~~~
+=== Tree Step
 
 From any one element (i.e. vertex or edge), the emanating paths from that element can be aggregated to form a
 link:http://en.wikipedia.org/wiki/Tree_(data_structure)[tree]. Gremlin provides `tree()`-step (*sideEffect*) for such
@@ -2354,8 +2284,7 @@ g.V().has('name','josh').out('created').values('name').
 
 
 [[unfold-step]]
-Unfold Step
-~~~~~~~~~~~
+=== Unfold Step
 
 If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear
 form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`>> step for the inverse behavior.
@@ -2376,8 +2305,7 @@ inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(count(local).is(1)).unfold()
 ----
 
 [[union-step]]
-Union Step
-~~~~~~~~~~
+=== Union Step
 
 image::union-step.png[width=650]
 
@@ -2396,8 +2324,7 @@ g.V(4).union(
 ----
 
 [[value-step]]
-Value Step
-~~~~~~~~~~
+=== Value Step
 
 The `value()`-step (*map*) takes a `Property` and extracts the value from it.
 
@@ -2408,8 +2335,7 @@ g.V(1).properties().properties().value()
 ----
 
 [[valuemap-step]]
-ValueMap Step
-~~~~~~~~~~~~~
+=== ValueMap Step
 
 The `valueMap()`-step yields a Map representation of the properties of an element.
 
@@ -2444,8 +2370,7 @@ g.V().hasLabel('person').properties('location').valueMap(true)
 ----
 
 [values-step]]
-Values Step
-~~~~~~~~~~~
+=== Values Step
 
 The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.
 
@@ -2457,8 +2382,7 @@ g.V(1).properties('location').values()
 ----
 
 [[vertex-steps]]
-Vertex Steps
-~~~~~~~~~~~~
+=== Vertex Steps
 
 image::vertex-steps.png[width=350]
 
@@ -2498,8 +2422,7 @@ g.V(4).inE().bothV()
 <5> Moving forward only touching vertices.
 
 [[where-step]]
-Where Step
-~~~~~~~~~~
+=== Where Step
 
 The `where()`-step filters the current object based on either the object itself (`Scope.local`) or the path history
 of the object (`Scope.global`) (*filter*). This step is typically used in conjuction with either
@@ -2559,8 +2482,7 @@ edges. Note that is only a temporary limitation that will be addressed in a futu
 link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
 
 [[a-note-on-predicates]]
-A Note on Predicates
---------------------
+== A Note on Predicates
 
 A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. The
 provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
@@ -2618,8 +2540,7 @@ NOTE: It is possible for graph system providers and users to extend `P` and prov
 `regex(pattern)` could be a graph system specific `P`.
 
 [[a-note-on-barrier-steps]]
-A Note on Barrier Steps
------------------------
+== A Note on Barrier Steps
 
 image:barrier.png[width=165,float=right] Gremlin is primarily a
 link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy], stream processing language. This means that Gremlin fully
@@ -2645,8 +2566,7 @@ into a barrier collection. When there are no more traversers at the local vertex
 messages that are propagated to remote vertices for further processing.
 
 [[a-note-on-scopes]]
-A Note on Scopes
-----------------
+== A Note on Scopes
 
 The `Scope` enum has two constants: `Scope.local` and `Scope.global`. Scope determines whether the particular step
 being scoped is with respects to the current object (`local`) at that step or to the entire stream of objects up to that
@@ -2698,8 +2618,7 @@ g.V().fold().count(local)
 ----
 
 [[a-note-on-lambdas]]
-A Note On Lambdas
------------------
+== A Note On Lambdas
 
 image:lambda.png[width=150,float=right] A link:http://en.wikipedia.org/wiki/Anonymous_function[lambda] is a function
 that can be referenced by software and thus, passed around like any other piece of data. In Gremlin, lambdas make it
@@ -2741,8 +2660,7 @@ g.V().out().out().path().by('name').
 <2> The length-3 paths have their objects transformed by a lambda-less step and a traversal lambda. (*good*)
 
 [[traversalstrategy]]
-TraversalStrategy
------------------
+== TraversalStrategy
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal
 meets its criteria, can mutate it accordingly. Traversal strategies are executed at compile-time and form the foundation
@@ -2900,8 +2818,7 @@ g.V().hasLabel('person'). <1>
 A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to
 end-users.  The following sub-sections detail these strategies:
 
-ElementIdStrategy
-~~~~~~~~~~~~~~~~~
+=== ElementIdStrategy
 
 `ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as TinkerGraph,
 allow specification of custom identifiers when creating elements:
@@ -2928,8 +2845,7 @@ g.addV().property(id, '42a').id()
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph
 database. If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
 
-EventStrategy
-~~~~~~~~~~~~~
+=== EventStrategy
 
 The purpose of the `EventStrategy` is to raise events to one or more `MutationListener` objects as changes to the
 underlying `Graph` occur within a `Traversal`. Such a strategy is useful for logging changes, triggering certain
@@ -2972,8 +2888,7 @@ WARNING: `EventStrategy` is not meant for usage in tracking global mutations acr
 words, a mutation in one JVM process is not raised as an event in a different JVM process.  In addition, events are
 not raised when mutations occur outside of the `Traversal` context.
 
-PartitionStrategy
-~~~~~~~~~~~~~~~~~
+=== PartitionStrategy
 
 image::partition-graph.png[width=325]
 
@@ -3013,14 +2928,12 @@ By writing elements to particular partitions and then restricting read partition
 multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible
 to merge those multiple graphs (i.e. join partitions).
 
-ReadOnlyStrategy
-~~~~~~~~~~~~~~~~
+=== ReadOnlyStrategy
 
 `ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an
 `IllegalStateException` if the `Traversal` has any mutating steps within it.
 
-SubgraphStrategy
-~~~~~~~~~~~~~~~~
+=== SubgraphStrategy
 
 `SubgraphStrategy` is similar to `PartitionStrategy` in that it constrains a `Traversal` to certain vertices, edges,
  and vertex properties as determined by a `Traversal`-based criterion defined individually for each.
@@ -3065,8 +2978,7 @@ g.V().outE().inV().
 ----
 
 [[dsl]]
-Domain Specific Languages
--------------------------
+== Domain Specific Languages
 
 Gremlin is a link:http://en.wikipedia.org/wiki/Domain-specific_language[domain specific language] (DSL) for traversing
 graphs. It operates in the language of vertices, edges and properties. Typically, applications built with Gremlin are
@@ -3120,8 +3032,7 @@ The following sections explain how to develop application specific DSLs for diff
 using the examples above of the Social DSL as the API for the implementation.
 
 [[gremlin-java-dsl]]
-Gremlin-Java
-~~~~~~~~~~~~
+=== Gremlin-Java
 
 Creating a DSL in Java requires the `@GremlinDsl` Java annotation in `gremlin-core`. This annotation should be applied
 to a "DSL interface" that extends `GraphTraversal.Admin`.
@@ -3243,8 +3154,7 @@ social.persons("marko").knows("josh");
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
-Gremlin-Python
-~~~~~~~~~~~~~~
+=== Gremlin-Python
 
 Writing a Gremlin DSL in Python simply requires direct extension of several classes:
 

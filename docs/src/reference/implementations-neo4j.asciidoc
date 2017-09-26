@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[neo4j-gremlin]]
-Neo4j-Gremlin
--------------
+== Neo4j-Gremlin
 
 [source,xml]
 ----
@@ -61,8 +60,7 @@ copied to the Gremlin Server path. The automated method for doing this would be 
 `bin/gremlin-server.sh install org.apache.tinkerpop neo4j-gremlin x.y.z`. Once installed, the Gremlin Server
 configuration file must be edited to include the `Neo4jGremlinPlugin` as shown in `conf/gremlin-server.neo4j`.
 
-Indices
-~~~~~~~
+=== Indices
 
 Neo4j 2.x indices leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces
 for defining schemas/indices for the underlying graph system. Thus, in order to create indices, it is important to
@@ -116,8 +114,7 @@ graph.close()
 <5> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 <6> Drop the created index.
 
-Multi/Meta-Properties
-~~~~~~~~~~~~~~~~~~~~~
+=== Multi/Meta-Properties
 
 `Neo4jGraph` supports both multi- and meta-properties (see <<vertex-properties,vertex properties>>). These features
 are not native to Neo4j and are implemented using "hidden" Neo4j nodes. For example, when a vertex has multiple
@@ -154,8 +151,7 @@ nodes" adjacent to the vertex. If a vertex property key/value is required for in
 required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)`
 (see <<_indices,Neo4j indices>>).
 
-Cypher
-~~~~~~
+=== Cypher
 
 image::gremlin-loves-cypher.png[width=400]
 
@@ -177,8 +173,7 @@ back into imperative Gremlin.
 TIP: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries
 by simply placing the Cypher string in `graph.cypher(...)` before submission to the server.
 
-Multi-Label
-~~~~~~~~~~~
+=== Multi-Label
 
 TinkerPop3 requires every `Element` to have a single, immutable string label (i.e. a `Vertex`, `Edge`, and
 `VertexProperty`). In Neo4j, a `Node` (vertex) can have an
@@ -229,8 +224,7 @@ IMPORTANT: `LabelP.of()` is only required if multi-labels are leveraged. `LabelP
 filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation
 of `vertex.label()`
 
-Loading with BulkLoaderVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Loading with BulkLoaderVertexProgram
 
 The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load
 large amounts of data to and from Neo4j. The following code demonstrates how to load the modern graph from TinkerGraph
@@ -260,8 +254,7 @@ gremlin.neo4j.conf.dbms.auto_index.nodes.enabled=true
 gremlin.neo4j.conf.dbms.auto_index.relationships.enabled=true
 ----
 
-High Availability Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== High Availability Configuration
 
 image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
 link:http://neo4j.com/docs/operations-manual/current/#_neo4j_cluster_install[High Availability (HA) cluster]. From the
