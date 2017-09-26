@@ -357,7 +357,8 @@ gremlin> promise.join()
 gremlin> promise.isDone()
 ==>true
 gremlin> g.V().out().promise{it.toList()}.thenApply{it.size()}.get()
-== ==>6
+==>6
+----
 
 At this time, this method is only used for traversals that are configured using `withRemote()`.
 
@@ -636,7 +637,8 @@ behavior for single item array arguments was changed:
 [source,text]
 ----
 gremlin> g.V().hasLabel(["software"] as String[]).count()
-== ==>0
+==>0
+----
 
 Prior this change single item arrays were treated like there was only that single item:
 
@@ -645,7 +647,8 @@ Prior this change single item arrays were treated like there was only that singl
 gremlin> g.V().hasLabel(["software"] as String[]).count()
 ==>2
 gremlin> g.V().hasLabel("software").count()
-== ==>2
+==>2
+----
 
 TinkerPop 3.2.3 fixes this misbehavior and all `has()` method overloads behave like before, except that they no longer
 support no arguments.
@@ -1210,7 +1213,8 @@ gremlin> traversal = g.withSideEffect('a',0).V().out().sideEffect{it.sideEffects
 ==>v[3]
 ==>v[3]
 gremlin> traversal.getSideEffects().get('a')
-== ==>1
+==>1
+----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192],
 https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
