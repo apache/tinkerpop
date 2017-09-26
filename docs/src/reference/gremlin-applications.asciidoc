@@ -272,7 +272,8 @@ v[2]
 v[3]
 v[4]
 v[5]
-== v[6]
+v[6]
+----
 
 It is also possible to pass arguments to scripts.  Any parameters following the file name specification are treated
 as arguments to the script. They are collected into a list and passed in as a variable called "args".  The following
@@ -293,7 +294,8 @@ When executed from the command line a parameter can be supplied:
 $ bin/gremlin.sh -e gremlin.groovy marko
 v[1]
 $ bin/gremlin.sh -e gremlin.groovy vadas
-== v[2]
+v[2]
+----
 
 It is also possible to pass multiple scripts by specifying multiple `-e` options. The scripts will execute in the order
 that they are specified. Note that only the arguments from the last script executed will be preserved in the console.
