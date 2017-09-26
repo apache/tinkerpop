@@ -345,7 +345,10 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * Evaluates bytecode with bindings for a specific language into a {@link Traversal}.
+     *
+     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, Bindings, String, String)}
      */
+    @Deprecated
     public Traversal.Admin eval(final Bytecode bytecode, final Bindings boundVars, final String language) throws ScriptException {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
@@ -355,6 +358,26 @@ public class GremlinExecutor implements AutoCloseable {
 
         return useGremlinScriptEngineManager ?
                 gremlinScriptEngineManager.getEngineByName(lang).eval(bytecode, bindings) : scriptEngines.eval(bytecode, bindings, lang);
+    }
+
+    /**
+     * Evaluates bytecode with bindings for a specific language into a {@link Traversal}.
+     *
+     * @param bytecode to execute as a traversal
+     * @param boundVars local bindings
+     * @param language the scripting language to use to process the bytecode
+     * @param traversalSource the specific traversal source to execute the bytecode against
+     */
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings boundVars, final String language, final String traversalSource) throws ScriptException {
+        final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
+
+        final Bindings bindings = new SimpleBindings();
+        bindings.putAll(globalBindings);
+        bindings.putAll(boundVars);
+
+        return useGremlinScriptEngineManager ?
+                gremlinScriptEngineManager.getEngineByName(lang).eval(bytecode, bindings, traversalSource) :
+                scriptEngines.eval(bytecode, bindings, lang, traversalSource);
     }
 
     /**

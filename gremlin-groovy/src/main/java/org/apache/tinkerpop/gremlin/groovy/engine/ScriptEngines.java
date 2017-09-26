@@ -94,6 +94,9 @@ public class ScriptEngines implements AutoCloseable {
         this.initializer.accept(this);
     }
 
+    /**
+     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, Bindings, String, String)}.
+     */
     public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String language) throws ScriptException {
         if (!scriptEngines.containsKey(language))
             throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
@@ -104,6 +107,18 @@ public class ScriptEngines implements AutoCloseable {
         final Bindings all = mergeBindings(bindings, engine);
 
         return engine.eval(bytecode, all);
+    }
+
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String language, final String traversalSource) throws ScriptException {
+        if (!scriptEngines.containsKey(language))
+            throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
+
+        awaitControlOp();
+
+        final GremlinScriptEngine engine = scriptEngines.get(language);
+        final Bindings all = mergeBindings(bindings, engine);
+
+        return engine.eval(bytecode, all, traversalSource);
     }
 
     /**
