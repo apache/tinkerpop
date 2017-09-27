@@ -29,11 +29,34 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Changed Typing on `from()` and `to()`
+
+The `from()` and `to()` steps of `GraphTraversal` have a `Traversal<E,Vertex>` overload. The `E` has been changed to `?`
+in order to reduce `< >`-based coersion in strongly type Gremlin language variants.
+
 ==== addV(traversal) and addE(traversal)
 
 The `GraphTraversal` and `GraphTraversalSource` methods of `addV()` and `addE()` have been extended to support dynamic
 label determination upon element creation. Both these methods can take a `Traversal<?, String>` where the first `String`
 returned by the traversal is used as the label of the respective element.
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.addV(V().has('name','marko').label()).
+           property('name','stephen')
+==>v[13]
+gremlin> g.V().has('name','stephen').valueMap(true)
+==>[name:[stephen],label:person,id:13]
+gremlin> g.V().has('name','stephen').
+           addE(V().hasLabel('software').inE().label()).
+             to(V().has('name','lop'))
+==>e[15][13-created->3]
+gremlin> g.V().has('name','stephen').outE().valueMap(true)
+==>[label:created,id:15]
+gremlin>
+----
 
 ==== PageRankVertexProgram
 
