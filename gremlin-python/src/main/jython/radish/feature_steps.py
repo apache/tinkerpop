@@ -25,6 +25,8 @@ from gremlin_python.process.traversal import P, Scope, Column
 from radish import given, when, then
 from hamcrest import *
 
+regex_as = re.compile(r"\.as\(")
+regex_in = re.compile(r"\.in\(")
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
@@ -52,7 +54,7 @@ def translate_traversal(step):
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
 
-    step.context.traversal = eval(step.text, b)
+    step.context.traversal = eval(__translate(step.text), b)
 
 
 @when("iterated to list")
@@ -78,9 +80,11 @@ def __convert(val, ctx):
         for key, value in val.items():
             n[__convert(key, ctx)] = __convert(value, ctx)
         return n
-    elif isinstance(val, (str, unicode)) and re.match("d\[.*\]", val):
+    elif isinstance(val, (str, unicode)) and re.match("^d\[.*\]$", val):
         return long(val[2:-1])
-    elif isinstance(val, (str, unicode)) and re.match("v\[.*\]", val):
+    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]\.id$", val):
+        return ctx.lookup["modern"][val[2:-4]].id
+    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]$", val):
         return ctx.lookup["modern"][val[2:-1]]
     elif isinstance(val, unicode):
         return val.encode('utf-8')
@@ -142,3 +146,8 @@ def __unordered_assertion(step):
             raise ValueError("unknown type of " + line[0])
 
     assert_that(len(results_to_test), is_(0))
+
+
+def __translate(traversal):
+    replaced = regex_as.sub(".as_(", traversal)
+    return regex_in.sub(".in_(", replaced)

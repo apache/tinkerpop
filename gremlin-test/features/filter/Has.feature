@@ -28,3 +28,16 @@ Feature: Step - has()
       | vertex | josh   |
       | vertex | peter  |
 
+  Scenario: Use hasId() with P
+    Given the modern graph
+    And using the parameter v1 is "v[marko].id"
+    And the traversal of
+    """
+    g.V().in().hasId(P.neq(v1))
+    """
+    When iterated to list
+    Then the result should be unordered
+      | vertex | josh   |
+      | vertex | josh   |
+      | vertex | peter  |
+

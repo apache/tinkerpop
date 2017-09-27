@@ -22,7 +22,7 @@ Feature: Step - select()
     And using the parameter v1 is "v[marko]"
     And the traversal of
       """
-      g.V(v1).as_("a").out("knows").as_("b").select("a", "b")
+      g.V(v1).as("a").out("knows").as("b").select("a", "b")
       """
     When iterated to list
     Then the result should be unordered
