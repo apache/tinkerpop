@@ -125,15 +125,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_filterXfalseX_count() {
-        final Traversal<Vertex, Long> traversal = get_g_V_hasXnoX_count();
-        printTraversalForm(traversal);
-        assertEquals(new Long(0), traversal.next());
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_V_fold_countXlocalX() {
         final Traversal<Vertex, Long> traversal = get_g_V_fold_countXlocalX();
         printTraversalForm(traversal);
