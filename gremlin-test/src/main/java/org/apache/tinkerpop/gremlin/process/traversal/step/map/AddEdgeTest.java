@@ -68,6 +68,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b);
 
+    public abstract Traversal<Vertex,Edge> get_g_V_hasXname_markoX_asXaX_outEXcreatedX_asXbX_inV_addEXselectXbX_labelX_toXaX();
+
     ///////
 
     @Test
@@ -255,6 +257,21 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(7L, g.E().count().next().longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_hasXname_markoX_asXaX_outEXcreatedX_asXbX_inV_addEXselectXbX_labelX_toXaX() {
+        final Traversal<Vertex,Edge> traversal =  get_g_V_hasXname_markoX_asXaX_outEXcreatedX_asXbX_inV_addEXselectXbX_labelX_toXaX();
+        printTraversalForm(traversal);
+        final Edge edge =traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("created",edge.label());
+        assertEquals(convertToVertexId("marko"), edge.inVertex().id());
+        assertEquals(convertToVertexId("lop"), edge.outVertex().id());
+        assertEquals(6L, g.V().count().next().longValue());
+        assertEquals(7L, g.E().count().next().longValue());
+    }
+
     public static class Traversals extends AddEdgeTest {
 
         @Override
@@ -300,6 +317,11 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X(final Vertex a, final Vertex b) {
             return g.addE("knows").from(a).to(b).property("weight", 0.1d);
+        }
+
+        @Override
+        public Traversal<Vertex,Edge> get_g_V_hasXname_markoX_asXaX_outEXcreatedX_asXbX_inV_addEXselectXbX_labelX_toXaX() {
+            return g.V().has("name","marko").as("a").outE("created").as("b").inV().addE(select("b").label()).to("a");
         }
     }
 }

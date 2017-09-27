@@ -471,6 +471,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
+     */
+    public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
+        return __.<A>start().addV(vertexLabelTraversal);
+    }
+
+    /**
      * @see GraphTraversal#addV()
      */
     public static <A> GraphTraversal<A, Vertex> addV() {
@@ -482,6 +489,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {
         return __.<A>start().addE(edgeLabel);
+    }
+
+    /**
+     * @see GraphTraversal#addE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
+     */
+    public static <A> GraphTraversal<A, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
+        return __.<A>start().addE(edgeLabelTraversal);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

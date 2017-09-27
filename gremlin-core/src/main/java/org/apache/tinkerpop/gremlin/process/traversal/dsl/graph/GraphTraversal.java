@@ -961,6 +961,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Adds a {@link Vertex} with a vertex label determined by a {@link Traversal}.
+     *
+     * @return the traversal with the {@link AddVertexStep} added
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
+     * @since 3.3.1
+     */
+    public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.addV);
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
+    }
+
+    /**
      * Adds a {@link Vertex} with a default vertex label.
      *
      * @return the traversal with the {@link AddVertexStep} added
@@ -969,7 +981,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getBytecode().addStep(Symbols.addV);
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null));
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), Vertex.DEFAULT_LABEL));
     }
 
     /**
@@ -983,6 +995,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
         this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabel);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabel));
+    }
+
+    /**
+     * Adds a {@link Edge} with an edge label determined by a {@link Traversal}.
+     *
+     * @return the traversal with the {@link AddEdgeStep} added
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
+     * @since 3.3.1
+     */
+    public default GraphTraversal<S, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.addE);
+        return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabelTraversal.asAdmin()));
     }
 
     /**
@@ -1359,7 +1383,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> has(final String propertyKey) {
         this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey);
-        return this.asAdmin().addStep(new TraversalFilterStep(this.asAdmin(),  __.values(propertyKey)));
+        return this.asAdmin().addStep(new TraversalFilterStep(this.asAdmin(), __.values(propertyKey)));
     }
 
     /**
@@ -1708,8 +1732,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param skip the number of objects to skip
      * @return the traversal with an appended {@link RangeGlobalStep}
-     * @since 3.3.0
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
+     * @since 3.3.0
      */
     public default GraphTraversal<S, E> skip(final long skip) {
         this.asAdmin().getBytecode().addStep(Symbols.skip, skip);
@@ -1720,10 +1744,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Filters out the first {@code n} objects in the traversal.
      *
      * @param scope the scope of how to apply the {@code tail}
-     * @param skip the number of objects to skip
+     * @param skip  the number of objects to skip
      * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
-     * @since 3.3.0
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#skip-step" target="_blank">Reference Documentation - Skip Step</a>
+     * @since 3.3.0
      */
     public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long skip) {
         this.asAdmin().getBytecode().addStep(Symbols.skip, scope, skip);
