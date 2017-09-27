@@ -28,6 +28,7 @@ from hamcrest import *
 regex_as = re.compile(r"\.as\(")
 regex_in = re.compile(r"\.in\(")
 
+
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
     # only have modern atm but graphName would be used to select the right one
@@ -75,17 +76,23 @@ def assert_result(step, characterized_as):
 
 
 def __convert(val, ctx):
-    if isinstance(val, dict):
+    if isinstance(val, dict):                                                    # convert dictionary keys/values
         n = {}
         for key, value in val.items():
             n[__convert(key, ctx)] = __convert(value, ctx)
         return n
-    elif isinstance(val, (str, unicode)) and re.match("^d\[.*\]$", val):
+    elif isinstance(val, (str, unicode)) and re.match("^l\[.*\]$", val):         # parse list
+        return list(map((lambda x: __convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, (str, unicode)) and re.match("^d\[.*\]$", val):         # parse numeric
         return long(val[2:-1])
-    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]\.id$", val):
-        return ctx.lookup["modern"][val[2:-4]].id
-    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]$", val):
-        return ctx.lookup["modern"][val[2:-1]]
+    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
+        return ctx.lookup_v["modern"][val[2:-4]].id
+    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]$", val):         # parse vertex
+        return ctx.lookup_v["modern"][val[2:-1]]
+    elif isinstance(val, (str, unicode)) and re.match("^e\[.*\]\.id$", val):     # parse edge id
+        return ctx.lookup_e["modern"][val[2:-4]].id
+    elif isinstance(val, (str, unicode)) and re.match("^e\[.*\]$", val):         # parse edge
+        return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, unicode):
         return val.encode('utf-8')
     else:
@@ -107,6 +114,8 @@ def __ordered_assertion(step):
         elif line[0] == "string":
             assert_that(str(step.context.result[ix]), equal_to(str(line[1])))
         elif line[0] == "vertex":
+            assert_that(step.context.result[ix].label, equal_to(line[1]))
+        elif line[0] == "edge":
             assert_that(step.context.result[ix].label, equal_to(line[1]))
         elif line[0] == "map":
             assert_that(__convert(step.context.result[ix], step.context), json.loads(line[1]))
@@ -135,9 +144,14 @@ def __unordered_assertion(step):
             results_to_test.remove(val)
         elif line[0] == "vertex":
             val = str(line[1])
-            v = step.context.lookup["modern"][val]
+            v = step.context.lookup_v["modern"][val]
             assert_that(v, is_in(results_to_test))
             results_to_test.remove(v)
+        elif line[0] == "edge":
+            val = str(line[1])
+            e = step.context.lookup_e["modern"][val]
+            assert_that(e, is_in(results_to_test))
+            results_to_test.remove(e)
         elif line[0] == "map":
             val = __convert(json.loads(line[1]), step.context)
             assert_that(val, is_in(results_to_test))
