@@ -17,7 +17,7 @@
 
 Feature: Step - count()
 
-  Scenario: Count all vertices
+  Scenario: g_V_count
     Given the modern graph
     And the traversal of
       """
@@ -27,7 +27,17 @@ Feature: Step - count()
     Then the result should be ordered
       | numeric | 6 |
 
-  Scenario: Count vertices after traversing both() twice
+  Scenario: g_V_out_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | numeric | 6 |
+
+  Scenario: g_V_both_both_count
     Given the modern graph
     And the traversal of
       """
@@ -37,7 +47,7 @@ Feature: Step - count()
     Then the result should be ordered
       | numeric | 30 |
 
-  Scenario: Count local
+  Scenario: g_V_fold_countXlocalX
     Given the modern graph
     And the traversal of
       """
@@ -47,7 +57,7 @@ Feature: Step - count()
     Then the result should be ordered
       | numeric | 6 |
 
-  Scenario: Count no vertices
+  Scenario: g_V_hasXnoX_count
     Given the modern graph
     And the traversal of
       """

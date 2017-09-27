@@ -17,7 +17,7 @@
 
 Feature: Step - coin()
 
-  Scenario: Use coin at 1.0
+  Scenario: g_V_coinX1X
     Given the modern graph
     And the traversal of
       """
@@ -33,7 +33,7 @@ Feature: Step - coin()
       | vertex | peter  |
 
 
-  Scenario: Use coin at 0.0
+  Scenario: g_V_coinX0X
     Given the modern graph
     And the traversal of
       """
