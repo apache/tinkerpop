@@ -66,6 +66,11 @@ public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
         this.parameters.set(this, T.label, edgeLabel);
     }
 
+    public AddEdgeStartStep(final Traversal.Admin traversal, final Traversal<?,String> edgeLabelTraversal) {
+        super(traversal);
+        this.parameters.set(this, T.label, edgeLabelTraversal);
+    }
+
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return this.parameters.getTraversals();

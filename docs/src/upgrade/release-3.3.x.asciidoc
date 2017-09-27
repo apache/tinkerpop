@@ -29,6 +29,12 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== addV(traversal) and addE(traversal)
+
+The `GraphTraversal` and `GraphTraversalSource` methods of `addV()` and `addE()` have been extended to support dynamic
+label determination upon element creation. Both these methods can take a `Traversal<?, String>` where the first `String`
+returned by the traversal is used as the label of the respective element.
+
 ==== PageRankVertexProgram
 
 There were two major bugs in the way in which PageRank was being calculated in `PageRankVertexProgram`. First, teleportation

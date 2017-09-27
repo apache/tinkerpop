@@ -23,14 +23,11 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -39,14 +36,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Requir
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -261,11 +254,18 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddVertexStartStep(traversal, label));
     }
 
+    public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabelTraversal));
+    }
+
     public GraphTraversal<Vertex, Vertex> addV() {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, null));
+        return traversal.addStep(new AddVertexStartStep(traversal, (String)null));
     }
 
     public GraphTraversal<Edge, Edge> addE(final String label) {
@@ -273,6 +273,13 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStep(traversal, label));
+    }
+
+    public GraphTraversal<Edge, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
     }
 
     public <S> GraphTraversal<S, S> inject(S... starts) {

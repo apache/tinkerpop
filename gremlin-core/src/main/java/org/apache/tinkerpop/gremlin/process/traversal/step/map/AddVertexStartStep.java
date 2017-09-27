@@ -57,6 +57,11 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         this.parameters.set(this, T.label, label);
     }
 
+    public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, String> vertexLabelTraversal) {
+        super(traversal);
+        this.parameters.set(this, T.label, vertexLabelTraversal);
+    }
+
     @Override
     public Parameters getParameters() {
         return this.parameters;

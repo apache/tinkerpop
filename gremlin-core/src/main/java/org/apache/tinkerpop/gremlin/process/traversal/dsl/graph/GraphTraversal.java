@@ -981,7 +981,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getBytecode().addStep(Symbols.addV);
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), Vertex.DEFAULT_LABEL));
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), (String) null));
     }
 
     /**
