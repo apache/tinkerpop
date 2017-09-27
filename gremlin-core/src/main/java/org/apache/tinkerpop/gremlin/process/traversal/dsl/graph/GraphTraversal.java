@@ -968,7 +968,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.1
      */
     public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.addV);
+        this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabelTraversal);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
     }
 
@@ -1005,7 +1005,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.1
      */
     public default GraphTraversal<S, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.addE);
+        this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabelTraversal);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabelTraversal.asAdmin()));
     }
 
@@ -1046,7 +1046,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
+    public default GraphTraversal<S, E> to(final Traversal<?, Vertex> toVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addTo(toVertex.asAdmin());
         return this;
@@ -1061,7 +1061,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
+    public default GraphTraversal<S, E> from(final Traversal<?, Vertex> fromVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addFrom(fromVertex.asAdmin());
         return this;
