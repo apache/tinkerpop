@@ -104,6 +104,7 @@ primarily intended for use in tests.
 
 == TinkerPop 3.2.6
 
+
 *Release Date: August 21, 2017*
 
 === Upgrading for Users
@@ -125,6 +126,17 @@ port and gremlin server. The `SaslAndHttpBasicAuthenticationHandler` has also be
 authentication for both protocols in conjunction with the `SimpleAuthenticator`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-915[TINKERPOP-915]
+
+=== Upgrading for Providers
+
+==== ReferenceVertex Label
+
+`ReferenceVertex.label()` was hard coded to return `EMPTY_STRING`. At some point, `ReferenceElements` were suppose to
+return labels and `ReferenceVertex` was never updated as such. Note that `ReferenceEdge` and `ReferenceVertexProperty`
+work as expected. However, given a general change at `ReferenceElement`, the Gryo serialization of `ReferenceXXX` is
+different. If the vertex does not have a label `Vertex.DEFAULT_LABEL` is assumed.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1789[TINKERPOP-1789]
 
 == TinkerPop 3.2.5
 

@@ -34,7 +34,10 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,6 +63,7 @@ public class ReferenceEdgeTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("test", v);
         final ReferenceEdge re = ReferenceFactory.detach(e);
+        assertEquals("test", re.label());
         assertSame(re, ReferenceFactory.detach(re));
     }
 
