@@ -2186,7 +2186,7 @@ NOTE: This plugin is typically only useful to the Gremlin Console and is enabled
 
 The Server Plugin for remoting with the Gremlin Console should not be confused with a plugin of similar name that is
 used by the server. `GremlinServerGremlinPlugin` is typically only configured in Gremlin Server and provides a number
-of imports that are required for writing <<starting-gremlin-server,initialization scripts>.
+of imports that are required for writing <<starting-gremlin-server,initialization scripts>>.
 
 [[spark-plugin]]
 === Spark Plugin
