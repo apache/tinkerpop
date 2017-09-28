@@ -73,10 +73,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_in
     Given the modern graph
-    And using the parameter v1 is "v[vadas]"
+    And using the parameter v2 is "v[vadas]"
     And the traversal of
       """
-      g.V(v1).in()
+      g.V(v2).in()
       """
     When iterated to list
     Then the result should be unordered
@@ -84,10 +84,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_both
     Given the modern graph
-    And using the parameter v1 is "v[josh]"
+    And using the parameter v4 is "v[josh]"
     And the traversal of
       """
-      g.V(v1).both()
+      g.V(v4).both()
       """
     When iterated to list
     Then the result should be unordered
@@ -109,3 +109,63 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | edge | peter-created->lop |
       | edge | josh-created->lop |
       | edge | josh-created->ripple |
+
+  Scenario: g_EX11X
+    Given the modern graph
+    And using the parameter e11 is "e[josh-created->lop]"
+    And the traversal of
+    """
+      g.E(e11)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | edge | josh-created->lop |
+
+  Scenario: g_VX1X_outE
+    Given the modern graph
+    And using the parameter v1 is "v[marko]"
+    And the traversal of
+    """
+      g.V(v1).outE()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | edge | marko-created->lop |
+      | edge | marko-knows->josh |
+      | edge | marko-knows->vadas |
+
+  Scenario: g_VX2X_outE
+    Given the modern graph
+    And using the parameter v2 is "v[vadas]"
+    And the traversal of
+    """
+      g.V(v2).inE()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | edge | marko-knows->vadas |
+
+  Scenario: g_VX4X_bothEXcreatedX
+    Given the modern graph
+    And using the parameter v4 is "v[josh]"
+    And the traversal of
+    """
+      g.V(v4).bothE("created")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | edge | josh-created->lop |
+      | edge | josh-created->ripple |
+
+  Scenario: g_VX4X_bothE
+    Given the modern graph
+    And using the parameter v4 is "v[josh]"
+    And the traversal of
+    """
+      g.V(v4).bothE()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | edge | josh-created->lop |
+      | edge | josh-created->ripple |
+      | edge | marko-knows->josh |
