@@ -25,12 +25,12 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | marko  |
-      | vertex | vadas  |
-      | vertex | lop    |
-      | vertex | josh   |
-      | vertex | ripple |
-      | vertex | peter  |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter]  |
 
 
   Scenario: g_V_coinX0X

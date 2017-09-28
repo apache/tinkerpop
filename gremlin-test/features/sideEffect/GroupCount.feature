@@ -25,24 +25,25 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
-      | map | {"ripple": 1, "lop": 3} |
+      | m[{"ripple": 1, "lop": 3}] |
 
-  Scenario: Edge count distribution
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().groupCount().by(bothE().count())
-      """
-    When iterated to list
-    Then the result should be ordered
-      | map | {"d[1]": 3, "d[3]": 3} |
-
-  Scenario: Group count vertices, cap to retrieve the map and unfold it to group count again
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
-      """
-    When iterated to list
-    Then the result should be ordered
-      | map | {"v[marko]": 6, "v[vadas]": 2, "v[lop]": 6, "v[josh]": 6, "v[ripple]": 2, "v[peter]": 2} |
+# NOT SUPPORTED UNTIL GRAPHSON 3.X WHICH HAS SUPPORT FOR NON-STRING KEYS
+#  Scenario: Edge count distribution
+#    Given the modern graph
+#    And the traversal of
+#      """
+#      g.V().groupCount().by(bothE().count())
+#      """
+#    When iterated to list
+#    Then the result should be ordered
+#      | m[{"d[1]": 3, "d[3]": 3}] |
+#
+#  Scenario: Group count vertices, cap to retrieve the map and unfold it to group count again
+#    Given the modern graph
+#    And the traversal of
+#      """
+#      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
+#      """
+#    When iterated to list
+#    Then the result should be ordered
+#      | m[{"v[marko]": 6, "v[vadas]": 2, "v[lop]": 6, "v[josh]": 6, "v[ripple]": 2, "v[peter]": 2}] |

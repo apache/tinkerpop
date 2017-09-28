@@ -26,9 +26,9 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | string | marko |
-      | string | vadas |
-      | string | lop |
+      | marko |
+      | vadas |
+      | lop |
 
   Scenario: g_VXlistXv1_v2_v3XX_name
     Given the modern graph
@@ -39,9 +39,9 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | string | marko |
-      | string | vadas |
-      | string | lop |
+      | marko |
+      | vadas |
+      | lop |
 
   Scenario: g_V
     Given the modern graph
@@ -51,12 +51,12 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | marko |
-      | vertex | vadas |
-      | vertex | lop |
-      | vertex | josh |
-      | vertex | ripple |
-      | vertex | peter |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
 
   Scenario: g_VX1X_out
     Given the modern graph
@@ -67,9 +67,9 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | vadas |
-      | vertex | lop |
-      | vertex | josh |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
 
   Scenario: g_VX2X_in
     Given the modern graph
@@ -80,7 +80,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | marko |
+      | v[marko] |
 
   Scenario: g_VX4X_both
     Given the modern graph
@@ -91,9 +91,9 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | marko |
-      | vertex | lop |
-      | vertex | ripple |
+      | v[marko] |
+      | v[lop] |
+      | v[ripple] |
 
   Scenario: g_E
     Given the modern graph
@@ -103,12 +103,12 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | marko-created->lop |
-      | edge | marko-knows->josh |
-      | edge | marko-knows->vadas |
-      | edge | peter-created->lop |
-      | edge | josh-created->lop |
-      | edge | josh-created->ripple |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |
+      | e[peter-created->lop] |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
 
   Scenario: g_EX11X
     Given the modern graph
@@ -119,7 +119,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | josh-created->lop |
+      | e[josh-created->lop] |
 
   Scenario: g_VX1X_outE
     Given the modern graph
@@ -130,9 +130,9 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | marko-created->lop |
-      | edge | marko-knows->josh |
-      | edge | marko-knows->vadas |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |
 
   Scenario: g_VX2X_outE
     Given the modern graph
@@ -143,7 +143,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | marko-knows->vadas |
+      | e[marko-knows->vadas] |
 
   Scenario: g_VX4X_bothEXcreatedX
     Given the modern graph
@@ -154,8 +154,8 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | josh-created->lop |
-      | edge | josh-created->ripple |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
 
   Scenario: g_VX4X_bothE
     Given the modern graph
@@ -166,6 +166,6 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | edge | josh-created->lop |
-      | edge | josh-created->ripple |
-      | edge | marko-knows->josh |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+      | e[marko-knows->josh] |

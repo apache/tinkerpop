@@ -25,8 +25,8 @@ Feature: Step - has()
       """
     When iterated to list
     Then the result should be unordered
-      | vertex | josh   |
-      | vertex | peter  |
+      | v[josh] |
+      | v[peter] |
 
   Scenario: Use hasId() with P
     Given the modern graph
@@ -37,7 +37,7 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be unordered
-      | vertex | josh   |
-      | vertex | josh   |
-      | vertex | peter  |
+      | v[josh] |
+      | v[josh] |
+      | v[peter] |
 

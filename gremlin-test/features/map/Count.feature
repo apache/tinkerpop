@@ -25,7 +25,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
-      | numeric | 6 |
+      | d[6] |
 
   Scenario: g_V_out_count
     Given the modern graph
@@ -35,7 +35,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
-      | numeric | 6 |
+      | d[6] |
 
   Scenario: g_V_both_both_count
     Given the modern graph
@@ -45,7 +45,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
-      | numeric | 30 |
+      | d[30] |
 
   Scenario: g_V_fold_countXlocalX
     Given the modern graph
@@ -55,7 +55,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
-      | numeric | 6 |
+      | d[6] |
 
   Scenario: g_V_hasXnoX_count
     Given the modern graph
@@ -65,4 +65,4 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
-      | numeric | 0 |
+      | d[0] |

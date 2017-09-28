@@ -81,22 +81,24 @@ def __convert(val, ctx):
         for key, value in val.items():
             n[__convert(key, ctx)] = __convert(value, ctx)
         return n
-    elif isinstance(val, (str, unicode)) and re.match("^l\[.*\]$", val):         # parse list
-        return list(map((lambda x: __convert(x, ctx)), val[2:-1].split(",")))
-    elif isinstance(val, (str, unicode)) and re.match("^d\[.*\]$", val):         # parse numeric
-        return long(val[2:-1])
-    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
-        return ctx.lookup_v["modern"][val[2:-4]].id
-    elif isinstance(val, (str, unicode)) and re.match("^v\[.*\]$", val):         # parse vertex
-        return ctx.lookup_v["modern"][val[2:-1]]
-    elif isinstance(val, (str, unicode)) and re.match("^e\[.*\]\.id$", val):     # parse edge id
-        return ctx.lookup_e["modern"][val[2:-4]].id
-    elif isinstance(val, (str, unicode)) and re.match("^e\[.*\]$", val):         # parse edge
-        return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, unicode):
-        return val.encode('utf-8')
+        return __convert(val.encode('utf-8'), ctx)
+    elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
+        return list(map((lambda x: __convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match("^d\[.*\]$", val):         # parse numeric
+        return long(val[2:-1])
+    elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
+        return ctx.lookup_v["modern"][val[2:-4]].id
+    elif isinstance(val, str) and re.match("^v\[.*\]$", val):         # parse vertex
+        return ctx.lookup_v["modern"][val[2:-1]]
+    elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):     # parse edge id
+        return ctx.lookup_e["modern"][val[2:-4]].id
+    elif isinstance(val, str) and re.match("^e\[.*\]$", val):         # parse edge
+        return ctx.lookup_e["modern"][val[2:-1]]
+    elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
+        return __convert(json.loads(val[2:-1]), ctx)
     else:
-        return str(val)
+        return val
 
 
 def __ordered_assertion(step):
@@ -109,19 +111,7 @@ def __ordered_assertion(step):
     # the data to assert. the contents of the second column will be dependent on the type specified
     # in the first column
     for ix, line in enumerate(data):
-        if line[0] == "numeric":
-            assert_that(long(step.context.result[ix]), equal_to(long(line[1])))
-        elif line[0] == "string":
-            assert_that(str(step.context.result[ix]), equal_to(str(line[1])))
-        elif line[0] == "vertex":
-            assert_that(step.context.result[ix].label, equal_to(line[1]))
-        elif line[0] == "edge":
-            assert_that(step.context.result[ix].label, equal_to(line[1]))
-        elif line[0] == "map":
-            assert_that(__convert(step.context.result[ix], step.context), json.loads(line[1]))
-        else:
-            raise ValueError("unknown type of " + line[0])
-
+        assert_that(step.context.result[ix], equal_to(__convert(line[0], step.context)))
 
 def __unordered_assertion(step):
     data = step.table
@@ -134,30 +124,9 @@ def __unordered_assertion(step):
     # finds a match in the results for each line of data to assert and then removes that item
     # from the list - in the end there should be no items left over and each will have been asserted
     for line in data:
-        if line[0] == "numeric":
-            val = long(line[1])
-            assert_that(val, is_in(list(map(long, results_to_test))))
-            results_to_test.remove(val)
-        elif line[0] == "string":
-            val = str(line[1])
-            assert_that(val, is_in(list(map(str, results_to_test))))
-            results_to_test.remove(val)
-        elif line[0] == "vertex":
-            val = str(line[1])
-            v = step.context.lookup_v["modern"][val]
-            assert_that(v, is_in(results_to_test))
-            results_to_test.remove(v)
-        elif line[0] == "edge":
-            val = str(line[1])
-            e = step.context.lookup_e["modern"][val]
-            assert_that(e, is_in(results_to_test))
-            results_to_test.remove(e)
-        elif line[0] == "map":
-            val = __convert(json.loads(line[1]), step.context)
-            assert_that(val, is_in(results_to_test))
-            results_to_test.remove(val)
-        else:
-            raise ValueError("unknown type of " + line[0])
+        val = __convert(line[0], step.context)
+        assert_that(val, is_in(results_to_test))
+        results_to_test.remove(val)
 
     assert_that(len(results_to_test), is_(0))
 

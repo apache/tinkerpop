@@ -26,5 +26,5 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
-      | map | {"a": "v[marko]", "b": "v[vadas]"} |
-      | map | {"a": "v[marko]", "b": "v[josh]"} |
+      | m[{"a": "v[marko]", "b": "v[vadas]"}] |
+      | m[{"a": "v[marko]", "b": "v[josh]"}] |
