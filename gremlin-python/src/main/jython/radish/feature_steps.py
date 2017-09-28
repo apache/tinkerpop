@@ -68,9 +68,9 @@ def assert_result(step, characterized_as):
     if characterized_as == "empty":
         assert_that(len(step.context.result), equal_to(0))
     elif characterized_as == "ordered":
-        __ordered_assertion(step)
+        __table_assertion(step.table, step.context.result, step.context, True)
     elif characterized_as == "unordered":
-        __unordered_assertion(step)
+        __table_assertion(step.table, step.context.result, step.context, False)
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
 
@@ -100,32 +100,31 @@ def __convert(val, ctx):
     else:
         return val
 
+#
+# def __ordered_assertion(data, result, ctx):
+#     # results from traversal should have the same number of entries as the feature data table
+#     assert_that(len(result), equal_to(len(data)))
+#
+#     # assert the results in order they are expected in the data from the features file
+#     for ix, line in enumerate(data):
+#         assert_that(result[ix], equal_to(__convert(line[0], ctx)))
+#
 
-def __ordered_assertion(step):
-    data = step.table
 
+def __table_assertion(data, result, ctx, ordered):
     # results from traversal should have the same number of entries as the feature data table
-    assert_that(len(step.context.result), equal_to(len(data)))
+    assert_that(len(result), equal_to(len(data)))
 
-    # assert the results by type where the first column will hold the type and the second column
-    # the data to assert. the contents of the second column will be dependent on the type specified
-    # in the first column
-    for ix, line in enumerate(data):
-        assert_that(step.context.result[ix], equal_to(__convert(line[0], step.context)))
-
-def __unordered_assertion(step):
-    data = step.table
-
-    # results from traversal should have the same number of entries as the feature data table
-    assert_that(len(step.context.result), equal_to(len(data)))
-
-    results_to_test = list(step.context.result)
+    results_to_test = list(result)
 
     # finds a match in the results for each line of data to assert and then removes that item
     # from the list - in the end there should be no items left over and each will have been asserted
-    for line in data:
-        val = __convert(line[0], step.context)
-        assert_that(val, is_in(results_to_test))
+    for ix, line in enumerate(data):
+        val = __convert(line[0], ctx)
+        if ordered:
+            assert_that(results_to_test[ix], equal_to(val))
+        else:
+            assert_that(val, is_in(results_to_test))
         results_to_test.remove(val)
 
     assert_that(len(results_to_test), is_(0))
