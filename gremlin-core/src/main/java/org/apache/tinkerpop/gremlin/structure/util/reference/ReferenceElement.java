@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.io.Serializable;
@@ -31,9 +34,8 @@ import java.io.Serializable;
  */
 public abstract class ReferenceElement<E extends Element> implements Element, Serializable, Attachable<E> {
 
-    protected static final String EMPTY_STRING = "";
-
     protected Object id;
+    protected String label;
 
     protected ReferenceElement() {
 
@@ -41,6 +43,16 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     public ReferenceElement(final Element element) {
         this.id = element.id();
+        try {
+            this.label = element.label();
+        } catch (final UnsupportedOperationException e) {
+            if (element instanceof Vertex)
+                this.label = Vertex.DEFAULT_LABEL;
+            else if (element instanceof Edge)
+                this.label = Edge.DEFAULT_LABEL;
+            else
+                this.label = VertexProperty.DEFAULT_LABEL;
+        }
     }
 
     @Override
@@ -50,7 +62,7 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     @Override
     public String label() {
-        return EMPTY_STRING;
+        return this.label;
     }
 
     @Override

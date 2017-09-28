@@ -243,6 +243,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* `ReferenceVertex` was missing its `label()` string. `ReferenceElement` now supports all label handling.
 * Added `GraphHelper.cloneElements(Graph original, Graph clone)` to the `gremlin-test` module to quickly clone a graph.
 * Bump to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
