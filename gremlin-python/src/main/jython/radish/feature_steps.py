@@ -76,12 +76,12 @@ def assert_result(step, characterized_as):
 
 
 def __convert(val, ctx):
-    if isinstance(val, dict):                                                    # convert dictionary keys/values
+    if isinstance(val, dict):                                         # convert dictionary keys/values
         n = {}
         for key, value in val.items():
             n[__convert(key, ctx)] = __convert(value, ctx)
         return n
-    elif isinstance(val, unicode):
+    elif isinstance(val, unicode):                                    # stupid unicode/string nonsense in py 2/x
         return __convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
         return list(map((lambda x: __convert(x, ctx)), val[2:-1].split(",")))
@@ -99,16 +99,6 @@ def __convert(val, ctx):
         return __convert(json.loads(val[2:-1]), ctx)
     else:
         return val
-
-#
-# def __ordered_assertion(data, result, ctx):
-#     # results from traversal should have the same number of entries as the feature data table
-#     assert_that(len(result), equal_to(len(data)))
-#
-#     # assert the results in order they are expected in the data from the features file
-#     for ix, line in enumerate(data):
-#         assert_that(result[ix], equal_to(__convert(line[0], ctx)))
-#
 
 
 def __table_assertion(data, result, ctx, ordered):
