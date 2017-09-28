@@ -60,6 +60,11 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge>
         this.parameters.set(this, T.label, edgeLabel);
     }
 
+    public AddEdgeStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
+        super(traversal);
+        this.parameters.set(this, T.label, edgeLabelTraversal);
+    }
+
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return this.parameters.getTraversals();

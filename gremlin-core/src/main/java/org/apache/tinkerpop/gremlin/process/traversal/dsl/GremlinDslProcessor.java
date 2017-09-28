@@ -26,10 +26,12 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -245,7 +247,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
                     .addStatement("clone.getBytecode().addStep($T.addV)", GraphTraversal.Symbols.class)
                     .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, null))", ctx.traversalClassName, AddVertexStartStep.class)
+                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, (String) null))", ctx.traversalClassName, AddVertexStartStep.class)
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                     .build());
             traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
@@ -257,6 +259,36 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
                     .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddVertexStartStep.class)
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                    .build());
+            traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addParameter(Traversal.class, "vertexLabelTraversal")
+                    .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                    .addStatement("clone.getBytecode().addStep($T.addV, vertexLabelTraversal)", GraphTraversal.Symbols.class)
+                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, vertexLabelTraversal))", ctx.traversalClassName, AddVertexStartStep.class)
+                    .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
+                    .build());
+            traversalSourceClass.addMethod(MethodSpec.methodBuilder("addE")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addParameter(String.class, "label")
+                    .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                    .addStatement("clone.getBytecode().addStep($T.addV, label)", GraphTraversal.Symbols.class)
+                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddEdgeStartStep.class)
+                    .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
+                    .build());
+            traversalSourceClass.addMethod(MethodSpec.methodBuilder("addE")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addParameter(Traversal.class, "edgeLabelTraversal")
+                    .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                    .addStatement("clone.getBytecode().addStep($T.addV, edgeLabelTraversal)", GraphTraversal.Symbols.class)
+                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, edgeLabelTraversal))", ctx.traversalClassName, AddEdgeStartStep.class)
+                    .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
                     .build());
             traversalSourceClass.addMethod(MethodSpec.methodBuilder("V")
                     .addModifiers(Modifier.PUBLIC)

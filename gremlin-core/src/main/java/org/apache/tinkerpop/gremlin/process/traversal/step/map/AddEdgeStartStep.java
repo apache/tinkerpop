@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -64,6 +63,11 @@ public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     public AddEdgeStartStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
         this.parameters.set(this, T.label, edgeLabel);
+    }
+
+    public AddEdgeStartStep(final Traversal.Admin traversal, final Traversal<?, String> edgeLabelTraversal) {
+        super(traversal);
+        this.parameters.set(this, T.label, edgeLabelTraversal);
     }
 
     @Override
@@ -110,8 +114,7 @@ public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             if (fromVertex instanceof Attachable)
                 fromVertex = ((Attachable<Vertex>) fromVertex)
                         .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-            final String edgeLabel = this.parameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
-
+            final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             if (callbackRegistry != null) {
                 final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));

@@ -52,6 +52,11 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex>
         this.parameters.set(this, T.label, label);
     }
 
+    public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
+        super(traversal);
+        this.parameters.set(this, T.label, vertexLabelTraversal);
+    }
+
     @Override
     public Parameters getParameters() {
         return this.parameters;
