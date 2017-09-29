@@ -40,22 +40,21 @@ One way to detect the various subgraphs would be to do something like this:
 [gremlin-groovy,existing]
 ----
 g.V().emit(cyclicPath().or().not(both())).repeat(both()).until(cyclicPath()).  <1>
-  aggregate("p").by(path()).cap("p").                                          <2>
-  unfold().limit(local, 1).dedup().                                            <3>
+  path().aggregate("p").                                                       <2>
+  unfold().dedup().                                                            <3>
   map(__.as("v").select("p").unfold().                                         <4>
          filter(unfold().where(eq("v"))).
-         unfold().dedup().order().by(id).fold()
-  ).dedup()                                                                    <5>
+         unfold().dedup().order().by(id).fold()).
+  dedup()                                                                      <5>
 ----
 
 <1> Iterate all vertices and repeatedly traverse over both incoming and outgoing edges (TinkerPop doesn't support
 unidirectional graphs directly so it must be simulated by ignoring the direction with `both`). Note the use of `emit`
 prior to `repeat` as this allows for return of a single length path.
-<2> Aggregate the emitted vertices to "p" and get their path information. Calling `cap` at the end will push the
-aggregate path list into the traversal. It is within these paths that the list of connected components will be
-identified. Obviously the paths list are duplicative in the sense that they contains different paths travelled over
-the same vertices.
-<3> Unroll the elements in the path list with `unfold` and grab the first vertex in each path and `dedup`.
+<2> Aggregate the `path()` of the emitted vertices to "p". It is within these paths that the list of connected
+components will be identified. Obviously the paths list are duplicative in the sense that they contains different
+paths travelled over the same vertices.
+<3> Unroll the elements in the path list with `unfold` and `dedup`.
 <4> Use the first vertex in each path to filter against the paths stored in "p". When a path is found that has the
 vertex in it, dedup the vertices in the path, order it by the identifier. Each path output from this `map` step
 represents a connected component.
