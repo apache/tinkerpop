@@ -107,7 +107,7 @@ g.withComputer().
   select(keys).limit(1)
 ----
 
-<1> The main difference for OLAP is the use of `aggregate()` over the mid-traversal`V()`.
+<1> The main difference for OLAP is the use of `aggregate()` over the mid-traversal `V()`.
 
 === Maximum Depth
 
@@ -133,7 +133,7 @@ g.V().has('name','C').repeat(__.in()).emit().path().count(local).max()
 ----
 
 image:gremlin-max-depth.png[float=right,width=350]The traversals shown above are fairly straightforward. The traversal
-beings at a particlar starting vertex, traverse in on the "hasParent" edges emitting all vertices as it goes. It
+beings at a particular starting vertex, traverse in on the "hasParent" edges emitting all vertices as it goes. It
 calculates the path length and then selects the longest one. While this approach is quite direct, there is room for
 improvement:
 
@@ -151,6 +151,20 @@ There are two optimizations at play. First, there is no need to emit all the ver
 those without incoming edges). Second, all results save the last one can be ignored to that point (i.e. the last one is
 the one at the deepest point in the tree). In this way, the path and path length only need to be calculated for a
 single result.
+
+The previous approaches to calculating the maximum depth use path calculations to achieve the answer. Path calculations
+can be expensive and if possible avoided if they are not needed. Another way to express a traversal that calculates
+the maximum depth is to use the `sack()` step:
+
+[gremlin-groovy,existing]
+----
+g.withSack(1).V().has('name','F').
+  repeat(__.in().sack(sum).by(constant(1))).emit().
+  sack().max()
+g.withSack(1).V().has('name','C').
+  repeat(__.in().sack(sum).by(constant(1))).emit().
+  sack().max()
+----
 
 === Time-based Indexing
 
