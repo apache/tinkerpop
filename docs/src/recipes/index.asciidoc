@@ -110,14 +110,7 @@ run of the documentation as it is generating all of the documentation locally (e
 tutorials, etc). To generate just the recipes, follow this process:
 
 [source,shell]
-bin/process-docs.sh --dryRun               <1>
-rm -r target/postprocess-asciidoc/recipes  <2>
-bin/process-docs.sh                        <3>
-
-<1> That command will quickly generate all of the documentation, but it does not do the code example execution (which is
-the "slow" part).
-<2> Delete the recipes directory, which forces a fresh copy of the recipes to be generated.
-<3> Process all of the documentation that is "new" (i.e. the fresh copy of recipes).
+bin/process-docs.sh -f docs/src/recipes
 
 The `bin/process-docs.sh` approach requires that Hadoop is installed. To avoid that prerequisite, try using Docker:
 
