@@ -446,7 +446,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_outXknowsAsStringIdX() {
+    public void g_VX1AsStringX_outXknowsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outXknowsX(convertToVertexId("marko").toString());
         assert_g_v1_outXknowsX(traversal);
     }
