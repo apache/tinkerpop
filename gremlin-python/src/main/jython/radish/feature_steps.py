@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import P, Scope, Column
+from gremlin_python.process.traversal import P, Scope, Column, Direction
 from radish import given, when, then
 from hamcrest import *
 
@@ -33,6 +33,12 @@ regex_in = re.compile(r"\.in\(")
 def choose_graph(step, graph_name):
     # only have modern atm but graphName would be used to select the right one
     step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
+
+
+@given("an unsupported test")
+def unsupported_scenario(step):
+    # this is a do nothing step as the test can't be supported for whatever reason
+    return
 
 
 @given("using the parameter {param_name:w} is {param:QuotedString}")
@@ -48,6 +54,7 @@ def translate_traversal(step):
     g = step.context.g
     b = {"g": g,
          "Column": Column,
+         "Direction": Direction,
          "P": P,
          "Scope": Scope,
          "bothE": __.bothE}
@@ -75,6 +82,11 @@ def assert_result(step, characterized_as):
         raise ValueError("unknown data characterization of " + characterized_as)
 
 
+@then("nothing should happen")
+def nothing_happening(step):
+    return
+
+
 def __convert(val, ctx):
     if isinstance(val, dict):                                         # convert dictionary keys/values
         n = {}
@@ -89,10 +101,14 @@ def __convert(val, ctx):
         return long(val[2:-1])
     elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
         return ctx.lookup_v["modern"][val[2:-4]].id
+    elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):    # parse vertex id as string
+        return ctx.lookup_v["modern"][val[2:-5]].id
     elif isinstance(val, str) and re.match("^v\[.*\]$", val):         # parse vertex
         return ctx.lookup_v["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):     # parse edge id
         return ctx.lookup_e["modern"][val[2:-4]].id
+    elif isinstance(val, str) and re.match("^e\[.*\]\.sid$", val):    # parse edge id as string
+        return ctx.lookup_e["modern"][val[2:-5]].id
     elif isinstance(val, str) and re.match("^e\[.*\]$", val):         # parse edge
         return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map

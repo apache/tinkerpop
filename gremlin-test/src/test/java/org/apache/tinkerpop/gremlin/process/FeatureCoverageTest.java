@@ -16,11 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -54,7 +53,7 @@ public class FeatureCoverageTest {
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
-        final List<Class<?>> temp = Arrays.asList(CoinTest.class);
+        final List<Class<?>> temp = Arrays.asList(CoinTest.class, VertexTest.class);
 
         final Field field = ProcessStandardSuite.class.getDeclaredField("testsToEnforce");
         field.setAccessible(true);
@@ -86,7 +85,9 @@ public class FeatureCoverageTest {
                 line = buf.readLine();
             }
 
-            assertEquals("All test methods are not implemented in the " + featureFileName, testMethods, testsInFeatureFile);
+            testMethods.removeAll(testsInFeatureFile);
+
+            assertEquals("All test methods are not implemented in the " + featureFileName + ": " + testMethods, testMethods.size(), 0);
         }
     }
 }
