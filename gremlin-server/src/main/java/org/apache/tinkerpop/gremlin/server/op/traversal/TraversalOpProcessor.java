@@ -22,7 +22,6 @@ import com.codahale.metrics.Timer;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -55,8 +54,8 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -116,6 +114,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     protected static Cache<UUID, TraversalSideEffects> cache = null;
+
+    private static final Bindings EMPTY_BINDINGS = new SimpleBindings();
 
     public TraversalOpProcessor() {
         super(false);
@@ -365,11 +365,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final Optional<String> lambdaLanguage = BytecodeHelper.getLambdaLanguage(bytecode);
             if (!lambdaLanguage.isPresent())
                 traversal = JavaTranslator.of(g).translate(bytecode);
-            else {
-                final SimpleBindings b = new SimpleBindings();
-                b.put(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS, g);
-                traversal = context.getGremlinExecutor().eval(bytecode, b, lambdaLanguage.get());
-            }
+            else
+                traversal = context.getGremlinExecutor().eval(bytecode, EMPTY_BINDINGS, lambdaLanguage.get(), traversalSourceName);
         } catch (Exception ex) {
             logger.error("Could not deserialize the Traversal instance", context);
             throw new OpProcessorException("Could not deserialize the Traversal instance",

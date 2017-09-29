@@ -32,12 +32,18 @@ import javax.script.ScriptException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GremlinScriptEngine extends ScriptEngine {
+    public static final String HIDDEN_G = "gremlinscriptengine__g";
+
     @Override
     public GremlinScriptEngineFactory getFactory();
 
     /**
-     * Evaluates {@link Traversal} {@link Bytecode}.
+     * Evaluates {@link Traversal} {@link Bytecode}. This method assumes that the traversal source to execute the
+     * bytecode against is in the global bindings and is named "g".
+     *
+     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, String)}.
      */
+    @Deprecated
     public default Traversal.Admin eval(final Bytecode bytecode) throws ScriptException {
         final Bindings bindings = this.createBindings();
         bindings.putAll(bytecode.getBindings());
@@ -46,7 +52,32 @@ public interface GremlinScriptEngine extends ScriptEngine {
 
     /**
      * Evaluates {@link Traversal} {@link Bytecode} with the specified {@code Bindings}. These {@code Bindings}
+     * supplied to this method will be merged with global engine bindings and override them where keys match. This
+     * method assumes that the traversal source to execute against is named "g".
+     *
+     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, Bindings, String)}.
+     */
+    @Deprecated
+    public default Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
+        return eval(bytecode, bindings, "g");
+    }
+
+    /**
+     * Evaluates {@link Traversal} {@link Bytecode} against a traversal source in the global bindings of the
+     * {@code ScriptEngine}.
+     *
+     * @param bytecode of the traversal to execute
+     * @param traversalSource to execute the bytecode against which should be in the available bindings.
+     */
+    public default Traversal.Admin eval(final Bytecode bytecode, final String traversalSource) throws ScriptException {
+        final Bindings bindings = this.createBindings();
+        bindings.putAll(bytecode.getBindings());
+        return eval(bytecode, bindings, traversalSource);
+    }
+
+    /**
+     * Evaluates {@link Traversal} {@link Bytecode} with the specified {@code Bindings}. These {@code Bindings}
      * supplied to this method will be merged with global engine bindings and override them where keys match.
      */
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException;
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException;
 }

@@ -59,17 +59,17 @@ public class GroovyTranslatorTest {
         }})));
         final Bindings bindings = new SimpleBindings();
         bindings.put("g", g);
-        Traversal.Admin<Vertex, Object> traversal = new GremlinGroovyScriptEngine().eval(g.V().values("name").asAdmin().getBytecode(), bindings);
+        Traversal.Admin<Vertex, Object> traversal = new GremlinGroovyScriptEngine().eval(g.V().values("name").asAdmin().getBytecode(), bindings, "g");
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
         //
-        traversal = new GremlinGroovyScriptEngine().eval(g.withoutStrategies(SubgraphStrategy.class).V().count().asAdmin().getBytecode(), bindings);
+        traversal = new GremlinGroovyScriptEngine().eval(g.withoutStrategies(SubgraphStrategy.class).V().count().asAdmin().getBytecode(), bindings, "g");
         assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
         //
         traversal = new GremlinGroovyScriptEngine().eval(g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put(SubgraphStrategy.VERTICES, __.has("name", "marko"));
-        }})), ReadOnlyStrategy.instance()).V().values("name").asAdmin().getBytecode(), bindings);
+        }})), ReadOnlyStrategy.instance()).V().values("name").asAdmin().getBytecode(), bindings, "g");
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
     }

@@ -284,16 +284,29 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
-        bindings.putAll(bytecode.getBindings());
-        String traversalSource = "g";
-        for (final Map.Entry<String, Object> entry : bindings.entrySet()) {
-            if (entry.getValue() instanceof TraversalSource) {
-                traversalSource = entry.getKey();
-                break;
-            }
-        }
-        return (Traversal.Admin) this.eval(GroovyTranslator.of(traversalSource).translate(bytecode), bindings);
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
+        // these validations occur before merging in bytecode bindings which will override existing ones. need to
+        // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
+        // namespace as global bindings (e.g. traversalsources and graphs).
+        if (traversalSource.equals(HIDDEN_G))
+            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G+ " - it is reserved");
+
+        if (bindings.containsKey(HIDDEN_G))
+            throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
+
+        if (!bindings.containsKey(traversalSource))
+            throw new IllegalArgumentException("The bindings available to the ScriptEngine do not contain a traversalSource named: " + traversalSource);
+
+        final Object b = bindings.get(traversalSource);
+        if (!(b instanceof TraversalSource))
+            throw new IllegalArgumentException(traversalSource + " is of type " + b.getClass().getSimpleName() + " and is not an instance of TraversalSource");
+
+        final Bindings inner = new SimpleBindings();
+        inner.putAll(bindings);
+        inner.putAll(bytecode.getBindings());
+        inner.put(HIDDEN_G, b);
+
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G).translate(bytecode), inner);
     }
 
     /**

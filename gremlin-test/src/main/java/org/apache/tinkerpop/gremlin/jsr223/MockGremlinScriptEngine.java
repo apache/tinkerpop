@@ -41,17 +41,17 @@ public class MockGremlinScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
-        return null;
-    }
-
-    @Override
     public Object eval(final String script, final ScriptContext context) throws ScriptException {
         return null;
     }
 
     @Override
     public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
+        return null;
+    }
+
+    @Override
+    public Traversal.Admin eval(Bytecode bytecode, Bindings bindings, String traversalSource) throws ScriptException {
         return null;
     }
 
