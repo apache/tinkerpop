@@ -115,30 +115,22 @@ g.withoutStrategies(LazyBarrierStrategy, PathRetractionStrategy).V().as("ov").  
   inE().
   where(neq("e1")).
   where(outV().as("ov")).as("e2").                                               <2>
-  filter(select("e1","e2").by(label).where("e1", eq("e2")))                      <3>
+  where("e1", eq("e2")).by(label)                                                <3>
 ----
 
 <1> Remove strategies that will optimize for breadth first searches and thus allow Gremlin to go depth first.
 <2> To this point, the traversal is very much like the previous one. Review step 2 in the previous example to see the
 parallels here.
-<3> The final `filter` simply looks for edges that match on label, which would then meet the working definition of
+<3> The final `where` simply looks for edges that match on label, which would then meet the working definition of
 "duplicate".
 
 The basic pattern at play here is to compare the path of the outgoing vertex, its outgoing edge label and the incoming
-vertex. This model can obviously be contracted or expanded as needed to fit different definitions of "duplicate" For
-example, if the definition of "duplicate" was just two vertices with more than one edge of any label between them, then
-the approach might look something like this:
-
-[gremlin-groovy,existing]
-----
-----
-
-Alternatively, a "duplicate" definition could extended to the label and properties of the edge. For purposes of
+vertex. This model can obviously be contracted or expanded as needed to fit different definitions of "duplicate". For
+example, a "duplicate" definition could extended to the label and properties of the edge. For purposes of
 demonstration, an additional edge is added to the "modern" graph:
 
-[gremlin-groovy]
+[gremlin-groovy,modern]
 ----
-g = TinkerFactory.createModern().traversal()
 g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
 g.V(1).as("a").V(3).addE("created").property("weight",0.5d).from("a").iterate()
 g.V(1).outE("created").valueMap(true)
@@ -154,6 +146,6 @@ g.withoutStrategies(LazyBarrierStrategy, PathRetractionStrategy).V().as("ov").
   inE().
   where(neq("e1")).
   where(outV().as("ov")).as("e2").
-  filter(select("e1","e2").by(label).where("e1", eq("e2"))).
-  filter(select("e1","e2").by("weight").where("e1", eq("e2"))).valueMap(true)
+  where("e1", eq("e2")).by(label).
+  where("e1", eq("e2")).by("weight").valueMap(true)
 ----
