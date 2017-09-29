@@ -169,3 +169,108 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
       | e[marko-knows->josh] |
+
+  Scenario: g_VX1X_outE_inV
+    Given the modern graph
+    And using the parameter v1 is "v[marko]"
+    And the traversal of
+      """
+      g.V(v1).both()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX2X_inE_outV
+    Given the modern graph
+    And using the parameter v2 is "v[vadas]"
+    And the traversal of
+      """
+      g.V(v2).inE().outV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[marko] |
+
+  Scenario: g_V_outE_hasXweight_1X_outV
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().has("weight",1.0).outV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[marko] |
+      | v[josh] |
+
+  Scenario: g_V_out_outE_inV_inE_inV_both_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().outE().inV().inE().inV().both().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | marko |
+      | marko |
+      | marko |
+      | josh |
+      | josh |
+      | josh |
+      | josh |
+      | peter |
+      | peter |
+      | peter |
+
+  Scenario: g_VX1X_outEXknowsX_bothV_name
+    Given the modern graph
+    And using the parameter v1 is "v[marko]"
+    And the traversal of
+      """
+      g.V(v1).outE("knows").bothV().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | marko |
+      | marko |
+      | josh |
+      | vadas |
+
+  Scenario: g_VX1X_outE_otherV
+    Given the modern graph
+    And using the parameter v1 is "v[marko]"
+    And the traversal of
+      """
+      g.V(v1).outE().otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX4X_bothE_otherV
+    Given the modern graph
+    And using the parameter v4 is "v[josh]"
+    And the traversal of
+      """
+      g.V(v4).bothE().otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[marko] |
+      | v[ripple] |
+      | v[lop] |
+
+  Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
+    Given the modern graph
+    And using the parameter v4 is "v[josh]"
+    And the traversal of
+      """
+      g.V(v4).bothE().has("weight", P.lt(1.0)).otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[lop] |
