@@ -40,7 +40,7 @@ def add_parameter(step, param_name, param):
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
-    step.context.traversal_params[param_name.encode('utf-8')] = __convert(param, step.context)
+    step.context.traversal_params[param_name] = __convert(param, step.context)
 
 
 @given("the traversal of")

@@ -32,20 +32,42 @@ tail = __.tail
 
 @before.each_scenario
 def prepare_traversal_source(scenario):
-    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
-    scenario.context.remote_conn = {"modern": remote}
+    scenario.context.remote_conn = {}
+    scenario.context.lookup_v = {}
+    scenario.context.lookup_e = {}
+
+    __prepare(scenario, "modern", "gmodern")
+    __prepare(scenario, "classic", "gclassic")
+    __prepare(scenario, "crew", "gcrew")
+
+    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph")
+    scenario.context.remote_conn["empty"] = remote
+    g = Graph().traversal().withRemote(remote)
+    g.V().drop().iterate()
+
+
+@after.each_scenario
+def close_traversal_source(scenario):
+    scenario.context.remote_conn["modern"].close()
+    scenario.context.remote_conn["classic"].close()
+    scenario.context.remote_conn["crew"].close()
+
+
+def __prepare(scenario, graph_name, server_graph_name):
+    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', server_graph_name)
+    scenario.context.remote_conn[graph_name] = remote
     g = Graph().traversal().withRemote(remote)
 
     # hold a map of name/vertex for use in asserting results
-    scenario.context.lookup_v = {"modern": g.V().group().by('name').by(tail()).next()}
+    scenario.context.lookup_v[graph_name] = g.V().group().by('name').by(tail()).next()
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
-    projection_of_edges = g.E().group().\
+    projection_of_edges = g.E().group(). \
         by(project("o", "l", "i").
            by(outV().values("name")).
            by(label()).
-           by(inV().values("name"))).\
+           by(inV().values("name"))). \
         by(tail()).next()
     edges = {}
 
@@ -57,9 +79,4 @@ def prepare_traversal_source(scenario):
         i = re.search("i=(.+?)[,\}]", key).group(1)
         edges[o + "-" + l + "->" + i] = value
 
-    scenario.context.lookup_e = {"modern": edges}
-
-
-@after.each_scenario
-def close_traversal_source(scenario):
-    scenario.context.remote_conn["modern"].close()
+    scenario.context.lookup_e[graph_name] = edges

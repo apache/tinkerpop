@@ -25,8 +25,16 @@ if (Boolean.parseBoolean(skipTests)) return
 
 log.info("Starting Gremlin Server instances for native testing of ${executionName}")
 def settings = Settings.read("${settingsFile}")
-settings.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
-settings.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/scripts/generate-modern.groovy"]
+settings.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
+if (Boolean.parseBoolean(python)) {
+    settings.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
+    settings.scriptEngines["gremlin-jython"] = new Settings.ScriptEngineSettings()
+}
 settings.port = 45940
 
 def server = new GremlinServer(settings)
@@ -36,8 +44,16 @@ project.setContextValue("gremlin.server", server)
 log.info("Gremlin Server with no authentication started on port 45940")
 
 def settingsSecure = Settings.read("${settingsFile}")
-settingsSecure.graphs.graph = gremlinServerDir + "/conf/tinkergraph-empty.properties"
-settingsSecure.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/scripts/generate-modern.groovy"]
+settings.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
+if (Boolean.parseBoolean(python)) {
+    settingsSecure.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
+    settingsSecure.scriptEngines["gremlin-jython"] = new Settings.ScriptEngineSettings()
+}
 settingsSecure.port = 45941
 settingsSecure.authentication.className = SimpleAuthenticator.class.name
 settingsSecure.authentication.config = [credentialsDb: gremlinServerDir + "/conf/tinkergraph-credentials.properties", credentialsDbLocation: gremlinServerDir + "/data/credentials.kryo"]
