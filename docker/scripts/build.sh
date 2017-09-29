@@ -96,7 +96,13 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   mkdir -p ~/.groovy
   cp docker/resources/groovy/grapeConfig.xml ~/.groovy/
   rm -rf /tmp/neo4j
+  grep -l 'http://tinkerpop.apache.org/docs/x.y.z' $(find docs/src -name "*.asciidoc" | grep -v '^.docs/src/upgrade/') | xargs sed -i 's@http://tinkerpop.apache.org/docs/x.y.z@/docs/x.y.z@g'
   bin/process-docs.sh || exit 1
+
+  # emulate published directory structure
+  VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
+  mkdir target/docs/htmlsingle/docs
+  ln -s .. target/docs/htmlsingle/docs/${VERSION}
 
   # start a simple HTTP server
   IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
