@@ -18,7 +18,7 @@ limitations under the License.
 OLAP traversals with Spark on Yarn
 ----------------------------------
 
-Tinkerpop's combination of http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[SparkGraphComputer]
+TinkerPop's combination of http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[SparkGraphComputer]
 and http://tinkerpop.apache.org/docs/current/reference/#_properties_files[HadoopGraph] allows for running
 distributed, analytical graph queries (OLAP) on a computer cluster. The
 http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[reference documentation] covers the cases
@@ -29,15 +29,15 @@ configured differently. This recipe describes this configuration.
 Approach
 ~~~~~~~~
 
-Most configuration problems of Tinkerpop with Spark on Yarn stem from three reasons:
+Most configuration problems of TinkerPop with Spark on Yarn stem from three reasons:
 
 1. `SparkGraphComputer` creates its own `SparkContext` so it does not get any configs from the usual `spark-submit` command.
-2. The Tinkerpop Spark-plugin did not include Spark Yarn runtime dependencies until version 3.2.7/3.3.1.
+2. The TinkerPop Spark plugin did not include Spark on Yarn runtime dependencies until version 3.2.7/3.3.1.
 3. Resolving reason 2 by adding the cluster's `spark-assembly` jar to the classpath creates a host of version
 conflicts, because Spark 1.x dependency versions have remained frozen since 2014.
 
 The current recipe follows a minimalist approach in which no dependencies are added to the dependencies
-included in the Tinkerpop binary distribution. The Hadoop cluster's Spark installation is completely ignored. This
+included in the TinkerPop binary distribution. The Hadoop cluster's Spark installation is completely ignored. This
 approach minimizes the chance of dependency version conflicts.
 
 Prerequisites
@@ -68,7 +68,7 @@ GREMLIN_HOME=/home/yourdir/lib/apache-tinkerpop-gremlin-console-x.y.z-standalone
 export HADOOP_HOME=/usr/local/lib/hadoop-2.7.2
 export HADOOP_CONF_DIR=/usr/local/lib/hadoop-2.7.2/etc/hadoop
 
-# Have Tinkerpop find the hadoop cluster configs and hadoop native libraries
+# Have TinkerPop find the hadoop cluster configs and hadoop native libraries
 export CLASSPATH=$HADOOP_CONF_DIR
 export JAVA_OPTIONS="-Djava.library.path=$HADOOP_HOME/lib/native:$HADOOP_HOME/lib/native/Linux-amd64-64"
 
@@ -137,9 +137,11 @@ also the right moment to take a look at the `spark-defaults.xml` file of your cl
 the Spark History Service, which allows you to access logs of finished jobs via the Yarn resource manager UI.
 
 This recipe uses the gremlin console, but things should not be very different for your own JVM-based application,
-as long as you do not use the `spark-submit` or `spark-shell` commands.
+as long as you do not use the `spark-submit` or `spark-shell` commands. You will also want to check the additional
+runtime dependencies listed in the `Gremlin-Plugin-Dependencies` section of the manifest file in the `spark-gremlin`
+jar.
 
-You may not like the idea that the Hadoop and Spark jars from the Tinkerpop distribution differ from the versions in
-your cluster. If so, just build Tinkerpop from source with the corresponding dependencies changed in the various `pom.xml`
-files (e.g. `spark-core_2.10-1.6.1-some-vendor.jar` instead of `spark-core_2.10-1.6.1.jar`). Of course, Tinkerpop will
+You may not like the idea that the Hadoop and Spark jars from the TinkerPop distribution differ from the versions in
+your cluster. If so, just build TinkerPop from source with the corresponding dependencies changed in the various `pom.xml`
+files (e.g. `spark-core_2.10-1.6.1-some-vendor.jar` instead of `spark-core_2.10-1.6.1.jar`). Of course, TinkerPop will
 only build for exactly matching or slightly differing artifact versions.
