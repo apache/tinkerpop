@@ -17,7 +17,7 @@
 
 Feature: Step - groupCount()
 
-  Scenario: Group count vertices that have incoming created edges by their name
+  Scenario: g_V_outXcreatedX_groupCount_byXnameX
     Given the modern graph
     And the traversal of
       """
@@ -27,23 +27,20 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | m[{"ripple": 1, "lop": 3}] |
 
-# NOT SUPPORTED UNTIL GRAPHSON 3.X WHICH HAS SUPPORT FOR NON-STRING KEYS
-#  Scenario: Edge count distribution
-#    Given the modern graph
-#    And the traversal of
-#      """
-#      g.V().groupCount().by(bothE().count())
-#      """
-#    When iterated to list
-#    Then the result should be ordered
-#      | m[{"d[1]": 3, "d[3]": 3}] |
-#
-#  Scenario: Group count vertices, cap to retrieve the map and unfold it to group count again
-#    Given the modern graph
-#    And the traversal of
-#      """
-#      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
-#      """
-#    When iterated to list
-#    Then the result should be ordered
-#      | m[{"v[marko]": 6, "v[vadas]": 2, "v[lop]": 6, "v[josh]": 6, "v[ripple]": 2, "v[peter]": 2}] |
+  Scenario: g_V_groupCount_byXbothE_countX
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
+      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
+      with GraphSON 3.x.
+      """
+
+  Scenario: g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
+      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
+      with GraphSON 3.x.
+      """

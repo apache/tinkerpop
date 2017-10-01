@@ -420,7 +420,10 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1_2_3_4X_name
     Given an unsupported test
-    Then nothing should happen
+    Then nothing should happen because
+      """
+      the test manipulates a static dataset which is not supported by the language of the feature files"
+      """
 
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph

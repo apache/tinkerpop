@@ -82,7 +82,7 @@ def assert_result(step, characterized_as):
         raise ValueError("unknown data characterization of " + characterized_as)
 
 
-@then("nothing should happen")
+@then("nothing should happen because")
 def nothing_happening(step):
     return
 
