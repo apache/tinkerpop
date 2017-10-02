@@ -66,3 +66,46 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | d[0] |
+
+  Scenario: g_V_whereXinXkknowsX_outXcreatedX_count_is_0XX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(in("knows").out("created").count().is(0)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | marko |
+      | lop  |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_repeatXoutX_timesX8X_count
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().repeat(out()).times(8).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | d[2505037961767380] |
+
+  Scenario: g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | d[24309134024] |
+
+  Scenario: g_V_repeatXoutX_timesX3X_count
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().repeat(out()).times(3).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | d[14465066] |

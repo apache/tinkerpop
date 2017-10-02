@@ -25,8 +25,9 @@ from gremlin_python.process.traversal import P, Scope, Column, Direction
 from radish import given, when, then
 from hamcrest import *
 
-regex_as = re.compile(r"\.as\(")
-regex_in = re.compile(r"\.in\(")
+regex_as = re.compile(r"([(.])as\(")
+regex_in = re.compile(r"([(.])in\(")
+regex_is = re.compile(r"([(.])is\(")
 
 
 @given("the {graph_name:w} graph")
@@ -57,11 +58,14 @@ def translate_traversal(step):
          "Direction": Direction,
          "P": P,
          "Scope": Scope,
-         "bothE": __.bothE}
+         "bothE": __.bothE,
+         "in_": __.in_,
+         "out": __.out}
 
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
 
+    print __translate(step.text)
     step.context.traversal = eval(__translate(step.text), b)
 
 
@@ -137,5 +141,6 @@ def __table_assertion(data, result, ctx, ordered):
 
 
 def __translate(traversal):
-    replaced = regex_as.sub(".as_(", traversal)
-    return regex_in.sub(".in_(", replaced)
+    replaced = regex_as.sub(r"\1as_(", traversal)
+    replaced = regex_is.sub(r"\1is_(", replaced)
+    return regex_in.sub(r"\1in_(", replaced)

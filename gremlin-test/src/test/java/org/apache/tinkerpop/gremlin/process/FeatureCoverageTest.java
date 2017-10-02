@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.junit.Test;
 
@@ -53,7 +54,10 @@ public class FeatureCoverageTest {
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
-        final List<Class<?>> temp = Arrays.asList(CoinTest.class, VertexTest.class);
+        final List<Class<?>> temp = Arrays.asList(
+                CoinTest.class,
+                CountTest.class,
+                VertexTest.class);
 
         final Field field = ProcessStandardSuite.class.getDeclaredField("testsToEnforce");
         field.setAccessible(true);
