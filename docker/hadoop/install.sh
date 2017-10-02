@@ -24,9 +24,10 @@ HADOOP_BASENAME="hadoop-${HADOOP_VERSION}"
 
 APACHE_MIRROR=$(curl -s http://www.apache.org/dyn/closer.cgi | grep -o '<a href=".*"><strong>' | cut -f2 -d '"' | head -n1)
 HADOOP_DOWNLOAD_URL="${APACHE_MIRROR}hadoop/common/${HADOOP_BASENAME}/${HADOOP_BASENAME}.tar.gz"
+ALT_HADOOP_DOWNLOAD_URL="https://archive.apache.org/dist/hadoop/common/${HADOOP_BASENAME}/${HADOOP_BASENAME}.tar.gz"
 
 pushd /usr/local/lib > /dev/null
-curl ${HADOOP_DOWNLOAD_URL} | tar xz
+(curl -f ${HADOOP_DOWNLOAD_URL} || curl ${ALT_HADOOP_DOWNLOAD_URL}) | tar xz
 popd > /dev/null
 
 cat >> ~/.bashrc <<EOF
