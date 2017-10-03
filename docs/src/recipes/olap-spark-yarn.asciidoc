@@ -104,6 +104,7 @@ conf.setProperty('spark.yarn.appMasterEnv.CLASSPATH', "./$archive/*:$hadoopConfD
 conf.setProperty('spark.executor.extraClassPath', "./$archive/*:$hadoopConfDir")
 conf.setProperty('spark.driver.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
 conf.setProperty('spark.executor.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
+conf.setProperty('gremlin.spark.persistContext', 'true')
 graph = GraphFactory.open(conf)
 g = graph.traversal().withComputer(SparkGraphComputer)
 g.V().group().by(values('name')).by(both().count())
@@ -125,8 +126,13 @@ as the directory named `spark-gremlin.zip` in the Yarn containers. The `spark.ex
 `spark.yarn.appMasterEnv.CLASSPATH` properties point to the files inside this archive.
 This is why they contain the `./spark-gremlin.zip/*` item. Just because a Spark executor got the archive with
 jars loaded into its container, does not mean it knows how to access them.
+
 Also the `HADOOP_GREMLIN_LIBS` mechanism is not used because it can not work for Spark on Yarn as implemented (jars
 added to the `SparkContext` are not available to the Yarn application master).
+
+The `gremlin.spark.persistContext` property is explained in the reference documentation of
+http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
+follow-up OLAP queries answered faster, because you skip the overhead for getting resources from Yarn.
 
 Additional configuration options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
