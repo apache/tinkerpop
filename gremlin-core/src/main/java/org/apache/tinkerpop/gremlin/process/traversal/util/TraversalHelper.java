@@ -560,7 +560,7 @@ public final class TraversalHelper {
     }
 
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.getLabels(new HashSet<>(), traversal);
+        return TraversalHelper.getLabels(new LinkedHashSet<>(), traversal);
     }
 
     private static Set<String> getLabels(final Set<String> labels, final Traversal.Admin<?, ?> traversal) {

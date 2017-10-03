@@ -50,6 +50,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
@@ -70,47 +71,8 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-
-        final Traversal<?, ?> traversal = g.V().repeat(out()).times(2).groupCount().by("name").select(Column.keys).order().by(Order.decr);
-        final Bytecode bytecode = traversal.asAdmin().getBytecode();
-        //final JavaTranslator translator = JavaTranslator.of(g);
-        final Map<Bytecode, Traversal.Admin<?, ?>> cache = new HashMap<>();
-        cache.put(bytecode, traversal.asAdmin());
-        final HashSet<?> result = new LinkedHashSet<>(Arrays.asList("ripple", "lop"));
-
-        System.out.println("BYTECODE: " + bytecode + "\n");
-        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
-            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
-            final Traversal t = JavaTranslator.of(g).translate(bytecode);
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("\n==Second test with reversed execution==\n");
-
-        System.out.println("BYTECODE: " + bytecode + "\n");
-        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
-            final Traversal t = JavaTranslator.of(g).translate(bytecode);
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
-            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
-            //assertEquals(result, t.next());
-        }));
+        System.out.println(g.V().as("a").out("knows").math("((a ^ _) / a)").by("age").by(bothE().count()).toList());
     }
-
-   /* @Test
-    public void testTraversalDSL() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEachRemaining(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
-        assertEquals(1, g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEachRemaining(name -> assertEquals("lop", name));
-    }*/
 
     @Test
     @Ignore

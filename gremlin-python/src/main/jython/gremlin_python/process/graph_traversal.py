@@ -317,6 +317,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("match", *args)
         return self
 
+    def math(self, *args):
+        self.bytecode.add_step("math", *args)
+        return self
+
     def max(self, *args):
         self.bytecode.add_step("max", *args)
         return self
@@ -697,6 +701,10 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).match(*args)
 
     @classmethod
+    def math(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).math(*args)
+
+    @classmethod
     def max(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).max(*args)
 
@@ -1045,6 +1053,10 @@ statics.add_static('map', map)
 def match(*args):
     return __.match(*args)
 statics.add_static('match', match)
+
+def math(*args):
+    return __.math(*args)
+statics.add_static('math', math)
 
 def max(*args):
     return __.max(*args)
