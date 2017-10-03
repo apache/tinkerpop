@@ -159,7 +159,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_filterXfalseX_groupCount() {
+    public void g_V_hasXnoX_groupCount() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_hasXnoX_groupCount();
         printTraversalForm(traversal);
         assertCommonC(traversal);
