@@ -27,6 +27,16 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | m[{"ripple": 1, "lop": 3}] |
 
+  Scenario: g_V_outXcreatedX_name_groupCount
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").values("name").groupCount()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{"ripple": 1, "lop": 3}] |
+
   Scenario: g_V_groupCount_byXbothE_countX
     Given an unsupported test
     Then nothing should happen because
