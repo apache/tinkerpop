@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import P, Scope, Column, Direction
+from gremlin_python.process.traversal import P, Scope, Column, Direction, T
 from radish import given, when, then
 from hamcrest import *
 
@@ -54,13 +54,17 @@ def add_parameter(step, param_name, param):
 def translate_traversal(step):
     g = step.context.g
     b = {"g": g,
+         "__": __,
          "Column": Column,
          "Direction": Direction,
          "P": P,
+         "gt": P.gt,
          "Scope": Scope,
+         "T": T,
          "bothE": __.bothE,
          "in_": __.in_,
-         "out": __.out}
+         "out": __.out,
+         "repeat": __.repeat}
 
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)

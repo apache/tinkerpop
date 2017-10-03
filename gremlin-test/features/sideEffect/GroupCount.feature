@@ -37,6 +37,106 @@ Feature: Step - groupCount()
     Then the result should be ordered
       | m[{"ripple": 1, "lop": 3}] |
 
+  Scenario: g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").groupCount("a").by("name").cap("a")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{"ripple": 1, "lop": 3}] |
+
+  Scenario: g_V_outXcreatedX_name_groupCountXaX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").values("name").groupCount("a").cap("a")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{"ripple": 1, "lop": 3}] |
+
+  Scenario: g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(out().groupCount("a").by("name")).times(2).cap("a")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{"ripple":2, "lop": 4, "josh": 1, "vadas": 1}] |
+
+  Scenario: g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(gt(2))).select("b").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | lop |
+      | lop |
+      | lop |
+      | peter |
+      | marko |
+      | marko |
+      | marko |
+      | ripple |
+      | vadas |
+      | josh |
+      | josh |
+      | josh |
+
+  Scenario: g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().union(out("knows"), out("created").in("created")).groupCount().select(Column.values).unfold().sum()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | d[12] |
+
+  Scenario: g_V_hasXnoX_groupCount
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("no").groupCount()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{}] |
+
+  Scenario: g_V_hasXnoX_groupCountXaX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("no").groupCount("a").cap("a")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{}] |
+
+  Scenario: g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().union(repeat(out()).times(2).groupCount("m").by("lang"),repeat(in()).times(2).groupCount("m").by("name")).cap("m")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | m[{"marko": 2, "java": 2}] |
+
+  Scenario: g_V_outXcreatedX_groupCountXxX_capXxX
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
+      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
+      with GraphSON 3.x.
+      """
+
   Scenario: g_V_groupCount_byXbothE_countX
     Given an unsupported test
     Then nothing should happen because
