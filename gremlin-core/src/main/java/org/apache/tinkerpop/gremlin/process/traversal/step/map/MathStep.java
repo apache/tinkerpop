@@ -48,7 +48,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     private static final String CURRENT = "_";
     private final String equation;
     private final Set<String> variables;
-    private TraversalRing<Object, Number> traversalRing = new TraversalRing<>();
+    private TraversalRing<S, Number> traversalRing = new TraversalRing<>();
     private Set<String> keepLabels;
 
     public MathStep(final Traversal.Admin traversal, final String equation) {
@@ -70,11 +70,10 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
                 .implicitMultiplication(false)
                 .build();
         for (final String var : this.variables) {
-            expression.setVariable(var, TraversalUtil.applyNullable(
+            expression.setVariable(var,
                     var.equals(CURRENT) ?
-                            traverser.get() :
-                            this.getNullableScopeValue(Pop.last, var, traverser),
-                    this.traversalRing.next()).doubleValue());
+                            TraversalUtil.applyNullable(traverser, this.traversalRing.next()).doubleValue() :
+                            TraversalUtil.applyNullable((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next()).doubleValue());
         }
         this.traversalRing.reset();
         return expression.evaluate();
@@ -96,7 +95,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     }
 
     @Override
-    public List<Traversal.Admin<Object, Number>> getLocalChildren() {
+    public List<Traversal.Admin<S, Number>> getLocalChildren() {
         return this.traversalRing.getTraversals();
     }
 
