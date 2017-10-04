@@ -54,6 +54,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
@@ -141,6 +142,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.Traversals.class,
             MatchTest.CountMatchTraversals.class,
             MatchTest.GreedyMatchTraversals.class,
+            MathTest.Traversals.class,
             MaxTest.Traversals.class,
             MeanTest.Traversals.class,
             MinTest.Traversals.class,
@@ -223,6 +225,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             LoopsTest.class,
             MapTest.class,
             MatchTest.class,
+            MathTest.class,
             MaxTest.class,
             MeanTest.class,
             MinTest.class,

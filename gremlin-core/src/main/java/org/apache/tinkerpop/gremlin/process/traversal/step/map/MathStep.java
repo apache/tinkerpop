@@ -53,6 +53,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
         this.variables = MathStep.getVariables(this.equation);
         this.expression = new ExpressionBuilder(this.equation)
                 .variables(this.variables)
+                .implicitMultiplication(false)
                 .build();
     }
 
