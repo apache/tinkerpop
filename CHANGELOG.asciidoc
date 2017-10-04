@@ -245,6 +245,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Truncate the script in error logs and error return messages for "Method code too large" errors in Gremlin Server.
+* Fixed a bug in `LambdaRestrictionStrategy` where named steps with `@` were being considered lambdas.
 * `ReferenceVertex` was missing its `label()` string. `ReferenceElement` now supports all label handling.
 * Fixed a bug where bytecode containing lambdas would randomly select a traversal source from bindings.
 * Deprecated `GremlinScriptEngine.eval()` methods and replaced them with new overloads that include the specific `TraversalSource` to bind to.
