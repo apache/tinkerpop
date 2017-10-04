@@ -1207,6 +1207,50 @@ system to leverage the filter for index lookups.
 IMPORTANT: A `where()`-step is a filter and thus, variables within a `where()` clause are not globally bound to the
 path of the traverser in `match()`. As such, `where()`-steps in `match()` are used for filtering, not binding.
 
+[[math-step]]
+=== Math Step
+
+The `math()`-step (*math*) enables scientific calculator functionality within Gremlin. This step deviates from the common
+function composition and nesting formalisms to provide an easy to read string-based math processor. Variables within the
+equation map to scopes in Gremlin -- e.g. path labels, side-effects, or incoming map keys. This step supports
+`by()`-modulation where the `by()`-modulators are applied in the order in which the variables are first referenced
+within the equation. Note that the reserved variable `_` refers to the current numeric traverser object incoming to the
+`math()`-step.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('knows').as('b').math('a + b').by('age')
+g.V().as('a').out('created').as('b').
+  math('b + a').
+    by(both().count().math('_ + 100')).
+    by('age')
+g.withSideEffect('x',10).V().values('age').math('_ / x')
+g.withSack(1).V(1).repeat(sack(sum).by(constant(1))).times(10).emit().sack().math('sin _')
+----
+
+The operators supported by the calculator include: `*`, `+`, `\`, `^`, and `%`.
+Furthermore, the following built in functions are provided:
+
+* `abs`: absolute value
+* `acos`: arc cosine
+* `asin`: arc sine
+* `atan`: arc tangent
+* `cbrt`: cubic root
+* `ceil`: nearest upper integer
+* `cos`: cosine
+* `cosh`: hyperbolic cosine
+* `exp`: euler's number raised to the power (`e^x`)
+* `floor`: nearest lower integer
+* `log`: logarithmus naturalis (base e)
+* `log10`: logarithm (base 10)
+* `log2`: logarithm (base 2)
+* `sin`: sine
+* `sinh`: hyperbolic sine
+* `sqrt`: square root
+* `tan`: tangent
+* `tanh`: hyperbolic tangent
+* `signum`: signum function
+
 [[max-step]]
 === Max Step
 

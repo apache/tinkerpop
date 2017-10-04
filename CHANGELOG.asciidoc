@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-7, 3.2.7>>.
 
+* Added `math()`-step which supports scientific calculator capabilities for numbers within a traversal.
 * Added missing `GraphTraversalSource.addE()`-method to `GremlinDslProcessor`.
 * Changed `to()` and `from()` traversal-based steps to take a wildcard `?` instead of of `E`.
 * Added `addV(traversal)` and `addE(traversal)` so that created element labels can be determined dynamically.
