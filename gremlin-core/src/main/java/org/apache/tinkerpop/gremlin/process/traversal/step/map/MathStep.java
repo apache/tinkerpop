@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -38,6 +37,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -133,32 +134,6 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
             return this.variables;
     }
 
-    protected static final Set<String> getVariables(final String equation) {
-        final StringBuilder builder = new StringBuilder();
-        final char[] chars = equation.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            if ('+' == chars[i] || '-' == chars[i] || '*' == chars[i] ||
-                    '/' == chars[i] || '^' == chars[i] || '%' == chars[i] ||
-                    '(' == chars[i] || ')' == chars[i])
-                builder.append(" ");
-            else
-                builder.append(chars[i]);
-        }
-        final Set<String> variables = new LinkedHashSet<>();
-        for (final String slot : builder.toString().split(" ")) {
-            if (!slot.trim().isEmpty() && !StringUtils.isNumeric(slot) &&
-                    !slot.equals("abs") && !slot.equals("acos") &&
-                    !slot.equals("asin") && !slot.equals("atan") && !slot.equals("cbrt") &&
-                    !slot.equals("ceil") && !slot.equals("cos") && !slot.equals("cosh") &&
-                    !slot.equals("exp") && !slot.equals("floor") && !slot.equals("log") &&
-                    !slot.equals("log10") && !slot.equals("log2") && !slot.equals("sin") &&
-                    !slot.equals("sinh") && !slot.equals("sqrt") && !slot.equals("tan") &&
-                    !slot.equals("tanh") && !slot.equals("signum"))
-                variables.add(slot);
-        }
-        return variables;
-    }
-
     @Override
     public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
@@ -168,4 +143,29 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     public Set<String> getKeepLabels() {
         return this.keepLabels;
     }
+
+    ///
+
+    private static final String[] FUNCTIONS = new String[]{
+            "abs", "acos", "asin", "atan",
+            "cbrt", "ceil", "cos", "cosh",
+            "exp",
+            "floor",
+            "log", "log10", "log2",
+            "signum", "sin", "sinh", "sqrt",
+            "tan", "tanh"
+    };
+
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\b(?!" +
+            String.join("|", FUNCTIONS) + "|([0-9]+))([a-zA-Z_][a-zA-Z0-9_]*)\\b");
+
+    protected static final Set<String> getVariables(final String equation) {
+        final Matcher matcher = VARIABLE_PATTERN.matcher(equation);
+        final Set<String> variables = new LinkedHashSet<>();
+        while (matcher.find()) {
+            variables.add(matcher.group());
+        }
+        return variables;
+    }
+
 }
