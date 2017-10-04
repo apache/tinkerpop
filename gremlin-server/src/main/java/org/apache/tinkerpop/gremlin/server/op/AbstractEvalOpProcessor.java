@@ -289,7 +289,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     // up being favorable for this problem
                     if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method code too large!") &&
                             ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
-                        final String errorMessage = String.format("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", msg);
+                        final String errorMessage = String.format("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
                         logger.warn(errorMessage);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
                                 .statusMessage(errorMessage)
@@ -305,6 +305,18 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
             return null;
         });
+    }
+
+    /**
+     * Used to decrease the size of a Gremlin script that triggered a "method code too large" exception so that it
+     * doesn't log a massive text string nor return a large error message.
+     */
+    private RequestMessage trimMessage(final RequestMessage msg) {
+        final RequestMessage trimmedMsg = RequestMessage.from(msg).create();
+        if (trimmedMsg.getArgs().containsKey(Tokens.ARGS_GREMLIN))
+            trimmedMsg.getArgs().put(Tokens.ARGS_GREMLIN, trimmedMsg.getArgs().get(Tokens.ARGS_GREMLIN).toString().substring(0, 1021) + "...");
+
+        return trimmedMsg;
     }
 
     @FunctionalInterface
