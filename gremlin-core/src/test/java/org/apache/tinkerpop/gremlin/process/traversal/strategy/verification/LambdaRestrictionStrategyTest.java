@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +36,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -63,6 +66,8 @@ public class LambdaRestrictionStrategyTest {
                 //
                 {"sack(sum).by('age')", __.sack(sum).by("age"), true},
                 {"sack{a,b -> a+b}.by('age')", __.sack((a, b) -> (int) a + (int) b).by("age"), false},
+                //
+                {"order().by(outE('rating').values('stars').mean()).profile()", __.order().by(outE("ratings").values("stars").mean()).profile(), true}
         });
     }
 
@@ -78,6 +83,7 @@ public class LambdaRestrictionStrategyTest {
     @Test
     public void shouldBeVerifiedIllegal() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(ProfileStrategy.instance());
         strategies.addStrategies(LambdaRestrictionStrategy.instance());
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {

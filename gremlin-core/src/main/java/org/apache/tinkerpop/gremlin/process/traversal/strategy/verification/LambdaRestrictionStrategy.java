@@ -61,17 +61,17 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
                 throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
             if (step instanceof ComparatorHolder) {
                 for (final Pair<Traversal.Admin<Object, Comparable>, Comparator<Comparable>> comparator : ((ComparatorHolder<Object, Comparable>) step).getComparators()) {
-                    final String comparatorString = comparator.toString();
-                    if (comparatorString.contains("$") || comparatorString.contains("@"))
+                    if (hasLambda(comparator.toString()))
                         throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
             }
-            if (step instanceof SackValueStep) {
-                final String sackString = ((SackValueStep) step).getSackFunction().toString();
-                if (sackString.contains("$") || sackString.contains("@"))
-                    throw new VerificationException("The provided step contains a lambda bi-function: " + step, traversal);
-            }
+            if (step instanceof SackValueStep && hasLambda(((SackValueStep) step).getSackFunction().toString()))
+                throw new VerificationException("The provided step contains a lambda bi-function: " + step, traversal);
         }
+    }
+
+    private final boolean hasLambda(final String objectString) {
+        return objectString.contains("$") || objectString.toLowerCase().contains("lambda");
     }
 
     public static LambdaRestrictionStrategy instance() {
