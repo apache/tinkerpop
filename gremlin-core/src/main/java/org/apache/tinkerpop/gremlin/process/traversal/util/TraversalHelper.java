@@ -52,7 +52,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -560,7 +559,7 @@ public final class TraversalHelper {
     }
 
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.getLabels(new LinkedHashSet<>(), traversal);
+        return TraversalHelper.getLabels(new HashSet<>(), traversal);
     }
 
     private static Set<String> getLabels(final Set<String> labels, final Traversal.Admin<?, ?> traversal) {
