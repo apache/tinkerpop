@@ -71,7 +71,7 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-        System.out.println(g.V().as("a").out("knows").math("((a ^ _) / a)").by("age").by(bothE().count()).toList());
+        System.out.println(g.withSideEffect("x",10.1d).V().as("a").out("knows").math("((a ^ _) / a) + x").by("age").by(bothE().count()).by().toList());
     }
 
     @Test

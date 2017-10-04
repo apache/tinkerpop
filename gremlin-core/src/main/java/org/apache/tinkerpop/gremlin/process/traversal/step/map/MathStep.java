@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -51,14 +50,7 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     public MathStep(final Traversal.Admin traversal, final String equation) {
         super(traversal);
         this.equation = equation;
-        final Set<String> labels = TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.getTraversal()));
-        this.variables = new LinkedHashSet<>();
-        for (final String label : labels) {
-            if (this.equation.contains(label))
-                this.variables.add(label);
-        }
-        if (this.equation.contains(CURRENT))
-            this.variables.add(CURRENT);
+        this.variables = MathStep.getVariables(this.equation);
         this.expression = new ExpressionBuilder(this.equation)
                 .variables(this.variables)
                 .build();
@@ -124,5 +116,30 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     @Override
     public Set<String> getScopeKeys() {
         return this.variables;
+    }
+
+    private static final Set<String> getVariables(final String equation) {
+        final StringBuilder builder = new StringBuilder();
+        final char[] chars = equation.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if ('+' == chars[i] || '-' == chars[i] || '*' == chars[i] ||
+                    '/' == chars[i] || '^' == chars[i] || '%' == chars[i] ||
+                    '(' == chars[i] || ')' == chars[i])
+                builder.append(" ");
+            else
+                builder.append(chars[i]);
+        }
+        final Set<String> variables = new LinkedHashSet<>();
+        for (final String slot : builder.toString().split(" ")) {
+            if (!slot.trim().isEmpty() && !slot.equals("abs") && !slot.equals("acos") &&
+                    !slot.equals("asin") && !slot.equals("atan") && !slot.equals("cbrt") &&
+                    !slot.equals("ceil") && !slot.equals("cos") && !slot.equals("cosh") &&
+                    !slot.equals("exp") && !slot.equals("floor") && !slot.equals("log") &&
+                    !slot.equals("log10") && !slot.equals("log2") && !slot.equals("sin") &&
+                    !slot.equals("sinh") && !slot.equals("sqrt") && !slot.equals("tan") &&
+                    !slot.equals("tanh") && !slot.equals("signum"))
+                variables.add(slot);
+        }
+        return variables;
     }
 }
