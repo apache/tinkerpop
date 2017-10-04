@@ -54,7 +54,7 @@ public class MathStepTest extends StepTest {
         assertEquals(Arrays.asList("a", "b", "_", "x", "z"), new ArrayList<>(MathStep.getVariables("(a + b / _) + log2 (x^3)^z")));
         assertEquals(Arrays.asList("a", "b", "_", "x", "z"), new ArrayList<>(MathStep.getVariables("(a + b / _) + log2 (x^3)^z + b + a")));
         assertEquals(Arrays.asList("a_ASDF", "b", "_", "x", "z", "a"), new ArrayList<>(MathStep.getVariables("(a_ASDF + b / _) + log2 (x^3)^z + b + a")));
-        assertEquals(Arrays.asList("a_ASDF", "b", "_", "x", "z", "a"), new ArrayList<>(MathStep.getVariables("(a_ASDF + b / _) + log2 (x^3)^z + b + a")));
+        assertEquals(Arrays.asList("a_ASDF", "bzz_", "_", "x", "z", "a_var", "d"), new ArrayList<>(MathStep.getVariables("((a_ASDF + bzz_ / _) + log2 (x^3)^z + bzz_ + (sinh (a_var + 10))) / (2.0265 * d)")));
         assertEquals(Arrays.asList("ac", "b", "_", "x", "z2"), new ArrayList<>(MathStep.getVariables("(ac + b / _) + log2 (x^3)^z2 + b + (tan (log10 ac / sqrt b))")));
     }
 
