@@ -132,7 +132,7 @@ namespace Gremlin.Net.Process.Traversal
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            var args = new List<object> {};
+            var args = new List<object>(0 + traversalStrategies.Length) {};
             args.AddRange(traversalStrategies);
             source.Bytecode.AddSource("withStrategies", args.ToArray());
             return source;
@@ -142,7 +142,7 @@ namespace Gremlin.Net.Process.Traversal
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
-            var args = new List<object> {};
+            var args = new List<object>(0 + traversalStrategyClasses.Length) {};
             args.AddRange(traversalStrategyClasses);
             source.Bytecode.AddSource("withoutStrategies", args.ToArray());
             return source;
@@ -190,7 +190,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Edge,Edge > E(params object[] edgesIds)
         {
             var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object> {};
+            var args = new List<object>(0 + edgesIds.Length) {};
             args.AddRange(edgesIds);
             traversal.Bytecode.AddStep("E", args.ToArray());
             return traversal;
@@ -203,7 +203,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Vertex,Vertex > V(params object[] vertexIds)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object> {};
+            var args = new List<object>(0 + vertexIds.Length) {};
             args.AddRange(vertexIds);
             traversal.Bytecode.AddStep("V", args.ToArray());
             return traversal;
@@ -227,7 +227,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Vertex,Vertex > AddV(params object[] keyValues)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object> {};
+            var args = new List<object>(0 + keyValues.Length) {};
             args.AddRange(keyValues);
             traversal.Bytecode.AddStep("addV", args.ToArray());
             return traversal;

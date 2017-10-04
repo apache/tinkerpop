@@ -62,7 +62,8 @@ namespace Gremlin.Net.Process.Traversal
             var dict = BoundVariableByValue.Value;
             if (dict == null)
                 return null;
-            return !dict.ContainsKey(value) ? null : dict[value];
+            dict.TryGetValue(value, out var variable);
+            return variable;
         }
 
         internal static void Clear()
