@@ -21,10 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -32,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,35 +42,41 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping {
+public final class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
     private static final String CURRENT = "_";
     private final String equation;
     private final Set<String> variables;
-    private final Expression expression;
     private TraversalRing<Object, Number> traversalRing = new TraversalRing<>();
+    private Set<String> keepLabels;
 
     public MathStep(final Traversal.Admin traversal, final String equation) {
         super(traversal);
         this.equation = equation;
         this.variables = MathStep.getVariables(this.equation);
-        this.expression = new ExpressionBuilder(this.equation)
-                .variables(this.variables)
-                .implicitMultiplication(false)
-                .build();
+
+    }
+
+    @Override
+    protected Traverser.Admin<Double> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
+        final Expression expression = new ExpressionBuilder(this.equation)
+                .variables(this.variables)
+                .implicitMultiplication(false)
+                .build();
         for (final String var : this.variables) {
-            this.expression.setVariable(var, TraversalUtil.applyNullable(
+            expression.setVariable(var, TraversalUtil.applyNullable(
                     var.equals(CURRENT) ?
                             traverser.get() :
                             this.getNullableScopeValue(Pop.last, var, traverser),
                     this.traversalRing.next()).doubleValue());
         }
         this.traversalRing.reset();
-        return this.expression.evaluate();
+        return expression.evaluate();
     }
 
     @Override
@@ -116,10 +125,15 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.variables;
+        if (this.variables.contains(CURRENT)) {
+            final Set<String> temp = new HashSet<>(this.variables);
+            temp.remove(CURRENT);
+            return temp;
+        } else
+            return this.variables;
     }
 
-    private static final Set<String> getVariables(final String equation) {
+    protected static final Set<String> getVariables(final String equation) {
         final StringBuilder builder = new StringBuilder();
         final char[] chars = equation.toCharArray();
         for (int i = 0; i < chars.length; i++) {
@@ -132,7 +146,8 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
         }
         final Set<String> variables = new LinkedHashSet<>();
         for (final String slot : builder.toString().split(" ")) {
-            if (!slot.trim().isEmpty() && !slot.equals("abs") && !slot.equals("acos") &&
+            if (!slot.trim().isEmpty() && !StringUtils.isNumeric(slot) &&
+                    !slot.equals("abs") && !slot.equals("acos") &&
                     !slot.equals("asin") && !slot.equals("atan") && !slot.equals("cbrt") &&
                     !slot.equals("ceil") && !slot.equals("cos") && !slot.equals("cosh") &&
                     !slot.equals("exp") && !slot.equals("floor") && !slot.equals("log") &&
@@ -142,5 +157,15 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
                 variables.add(slot);
         }
         return variables;
+    }
+
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
     }
 }

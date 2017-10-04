@@ -71,7 +71,7 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-        System.out.println(g.V().values("age").toList());
+        System.out.println(g.V().values("age").math("sin _").toList());
     }
 
     @Test
