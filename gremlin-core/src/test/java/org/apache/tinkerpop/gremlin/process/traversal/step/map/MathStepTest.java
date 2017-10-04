@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
@@ -49,8 +50,10 @@ public class MathStepTest extends StepTest {
 
     @Test
     public void shouldParseVariablesCorrectly() {
+        assertEquals(Collections.emptyList(), new ArrayList<>(MathStep.getVariables("1 + 2")));
         assertEquals(Arrays.asList("a", "b"), new ArrayList<>(MathStep.getVariables("a + b / 2")));
         assertEquals(Arrays.asList("a", "b"), new ArrayList<>(MathStep.getVariables("a + b / sin 2")));
+        assertEquals(Arrays.asList("a", "b"), new ArrayList<>(MathStep.getVariables("a + b / sin (2 + 6.67e−11)")));
         assertEquals(Arrays.asList("a", "b", "_", "x", "z"), new ArrayList<>(MathStep.getVariables("(a + b / _) + log2 (x^3)^z")));
         assertEquals(Arrays.asList("a", "b", "_", "x", "z"), new ArrayList<>(MathStep.getVariables("(a + b / _) + log2 (x^3)^z + b + a")));
         assertEquals(Arrays.asList("a_ASDF", "b", "_", "x", "z", "a"), new ArrayList<>(MathStep.getVariables("(a_ASDF + b / _) + log2 (x^3)^z + b + a")));
