@@ -21,13 +21,13 @@ import json
 import re
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import P, Scope, Column, Direction, T
+from gremlin_python.process.traversal import P, Scope, Column, Order, Direction, T
 from radish import given, when, then
 from hamcrest import *
 
-regex_as = re.compile(r"([(.])as\(")
-regex_in = re.compile(r"([(.])in\(")
-regex_is = re.compile(r"([(.])is\(")
+regex_as = re.compile(r"([(.,\s])as\(")
+regex_in = re.compile(r"([(.,\s])in\(")
+regex_is = re.compile(r"([(.,\s])is\(")
 
 
 @given("the {graph_name:w} graph")
@@ -57,10 +57,12 @@ def translate_traversal(step):
          "__": __,
          "Column": Column,
          "Direction": Direction,
+         "Order": Order,
          "P": P,
          "gt": P.gt,
          "Scope": Scope,
          "T": T,
+         "as_": __.as_,
          "bothE": __.bothE,
          "in_": __.in_,
          "out": __.out,
