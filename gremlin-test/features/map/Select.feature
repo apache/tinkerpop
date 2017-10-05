@@ -17,14 +17,95 @@
 
 Feature: Step - select()
 
-  Scenario: Select vertices
+  Scenario: get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
     Given the modern graph
-    And using the parameter v1 is "v[marko]"
+    And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1).as("a").out("knows").as("b").select("a", "b")
+      g.V(v1Id).as("a").out("knows").as("b").select("a", "b")
       """
     When iterated to list
     Then the result should be unordered
       | m[{"a": "v[marko]", "b": "v[vadas]"}] |
       | m[{"a": "v[marko]", "b": "v[josh]"}] |
+
+  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX
+    Given the modern graph
+    And using the parameter v1Id is "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("knows").as("b").select("a", "b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | m[{"a": "marko", "b": "vadas"}] |
+      | m[{"a": "marko", "b": "josh"}] |
+
+  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX
+    Given the modern graph
+    And using the parameter v1Id is "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("knows").as("b").select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | v[marko] |
+      | v[marko] |
+
+  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX
+    Given the modern graph
+    And using the parameter v1Id is "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("knows").as("b").select("a").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | marko |
+      | marko |
+
+  Scenario: g_V_asXaX_out_asXbX_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().as("b").select("a", "b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | m[{"a": "marko", "b": "lop"}] |
+      | m[{"a": "marko", "b": "vadas"}] |
+      | m[{"a": "marko", "b": "josh"}] |
+      | m[{"a": "josh", "b": "ripple"}] |
+      | m[{"a": "josh", "b": "lop"}] |
+      | m[{"a": "peter", "b": "lop"}] |
+
+  Scenario: g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().aggregate("x").as("b").select("a", "b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | m[{"a": "marko", "b": "lop"}] |
+      | m[{"a": "marko", "b": "vadas"}] |
+      | m[{"a": "marko", "b": "josh"}] |
+      | m[{"a": "josh", "b": "ripple"}] |
+      | m[{"a": "josh", "b": "lop"}] |
+      | m[{"a": "peter", "b": "lop"}] |
+
+  Scenario: g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").values("name").order().as("b").select("a", "b").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | m[{"a": "marko", "b": "marko"}] |
+      | m[{"a": "vadas", "b": "vadas"}] |
+      | m[{"a": "josh", "b": "josh"}] |
+      | m[{"a": "ripple", "b": "ripple"}] |
+      | m[{"a": "lop", "b": "lop"}] |
+      | m[{"a": "peter", "b": "peter"}] |
