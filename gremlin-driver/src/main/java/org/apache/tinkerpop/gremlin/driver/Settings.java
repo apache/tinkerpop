@@ -169,6 +169,15 @@ final class Settings {
             if (connectionPoolConf.containsKey("enableSsl"))
                 cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
 
+            if (connectionPoolConf.containsKey("keyCertChainFile"))
+                cpSettings.keyCertChainFile = connectionPoolConf.getString("keyCertChainFile");
+
+            if (connectionPoolConf.containsKey("keyFile"))
+                cpSettings.keyFile = connectionPoolConf.getString("keyFile");
+
+            if (connectionPoolConf.containsKey("keyPassword"))
+                cpSettings.keyPassword = connectionPoolConf.getString("keyPassword");
+
             if (connectionPoolConf.containsKey("trustCertChainFile"))
                 cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
 
