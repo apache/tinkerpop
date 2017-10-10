@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -45,6 +45,9 @@ public class SettingsTest {
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("connectionPool.enableSsl", true);
+        conf.setProperty("connectionPool.keyCertChainFile", "X.509");
+        conf.setProperty("connectionPool.keyFile", "PKCS#8");
+        conf.setProperty("connectionPool.keyPassword", "password1");
         conf.setProperty("connectionPool.trustCertChainFile", "pem");
         conf.setProperty("connectionPool.minSize", 100);
         conf.setProperty("connectionPool.maxSize", 200);
@@ -70,6 +73,9 @@ public class SettingsTest {
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
         assertEquals(true, settings.connectionPool.enableSsl);
+        assertEquals("X.509", settings.connectionPool.keyCertChainFile);
+        assertEquals("PKCS#8", settings.connectionPool.keyFile);
+        assertEquals("password1", settings.connectionPool.keyPassword);
         assertEquals("pem", settings.connectionPool.trustCertChainFile);
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
