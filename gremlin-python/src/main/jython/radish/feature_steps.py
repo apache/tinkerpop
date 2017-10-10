@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import P, Scope, Column, Order, Direction, T
+from gremlin_python.process.traversal import P, Scope, Column, Order, Direction, T, Pick
 from radish import given, when, then
 from hamcrest import *
 
@@ -58,15 +58,17 @@ def translate_traversal(step):
          "Column": Column,
          "Direction": Direction,
          "Order": Order,
-         "P": P,
-         "gt": P.gt,
+         "P": P, "gt": P.gt,
+         "Pick": Pick, "any": Pick.any,
          "Scope": Scope,
          "T": T,
          "as_": __.as_,
          "bothE": __.bothE,
          "in_": __.in_,
+         "label": __.label,
          "out": __.out,
-         "repeat": __.repeat}
+         "repeat": __.repeat,
+         "values": __.values}
 
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
@@ -123,6 +125,8 @@ def __convert(val, ctx):
         return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
         return __convert(json.loads(val[2:-1]), ctx)
+    elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda
+        return lambda: (val[2:-1], "gremlin-groovy")
     else:
         return val
 
