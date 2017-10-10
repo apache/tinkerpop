@@ -71,7 +71,7 @@ Feature: Step - count()
     Given the modern graph
     And the traversal of
       """
-      g.V().where(in("knows").out("created").count().is(0)).values("name")
+      g.V().where(__.in("knows").out("created").count().is(0)).values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -84,7 +84,7 @@ Feature: Step - count()
     Given the grateful graph
     And the traversal of
       """
-      g.V().repeat(out()).times(8).count()
+      g.V().repeat(__.out()).times(8).count()
       """
     When iterated to list
     Then the result should be ordered
@@ -94,7 +94,7 @@ Feature: Step - count()
     Given the grateful graph
     And the traversal of
       """
-      g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count()
+      g.V().repeat(__.out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count()
       """
     When iterated to list
     Then the result should be ordered
@@ -104,7 +104,7 @@ Feature: Step - count()
     Given the grateful graph
     And the traversal of
       """
-      g.V().repeat(out()).times(3).count()
+      g.V().repeat(__.out()).times(3).count()
       """
     When iterated to list
     Then the result should be ordered

@@ -58,17 +58,10 @@ def translate_traversal(step):
          "Column": Column,
          "Direction": Direction,
          "Order": Order,
-         "P": P, "gt": P.gt,
-         "Pick": Pick, "any": Pick.any,
+         "P": P,
+         "Pick": Pick,
          "Scope": Scope,
-         "T": T,
-         "as_": __.as_,
-         "bothE": __.bothE,
-         "in_": __.in_,
-         "label": __.label,
-         "out": __.out,
-         "repeat": __.repeat,
-         "values": __.values}
+         "T": T}
 
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)

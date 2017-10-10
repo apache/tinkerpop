@@ -61,7 +61,7 @@ Feature: Step - groupCount()
     Given the modern graph
     And the traversal of
       """
-      g.V().repeat(out().groupCount("a").by("name")).times(2).cap("a")
+      g.V().repeat(__.out().groupCount("a").by("name")).times(2).cap("a")
       """
     When iterated to list
     Then the result should be ordered
@@ -71,7 +71,7 @@ Feature: Step - groupCount()
     Given the modern graph
     And the traversal of
       """
-      g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(gt(2))).select("b").values("name")
+      g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(P.gt(2))).select("b").values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -92,7 +92,7 @@ Feature: Step - groupCount()
     Given the modern graph
     And the traversal of
       """
-      g.V().union(out("knows"), out("created").in("created")).groupCount().select(Column.values).unfold().sum()
+      g.V().union(__.out("knows"), __.out("created").in("created")).groupCount().select(Column.values).unfold().sum()
       """
     When iterated to list
     Then the result should be ordered
@@ -122,7 +122,7 @@ Feature: Step - groupCount()
     Given the modern graph
     And the traversal of
       """
-      g.V().union(repeat(out()).times(2).groupCount("m").by("lang"),repeat(in()).times(2).groupCount("m").by("name")).cap("m")
+      g.V().union(__.repeat(__.out()).times(2).groupCount("m").by("lang"),__.repeat(__.in()).times(2).groupCount("m").by("name")).cap("m")
       """
     When iterated to list
     Then the result should be ordered

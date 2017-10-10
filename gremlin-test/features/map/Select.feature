@@ -260,7 +260,7 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().out("created").union(as("project").in("created").has("name", "marko").select("project"),as("project").in("created").in("knows").has("name", "marko").select("project")).groupCount().by("name")
+      g.V().out("created").union(__.as("project").in("created").has("name", "marko").select("project"), __.as("project").in("created").in("knows").has("name", "marko").select("project")).groupCount().by("name")
       """
     When iterated to list
     Then the result should be unordered

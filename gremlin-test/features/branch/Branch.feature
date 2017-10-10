@@ -22,7 +22,7 @@ Feature: Step - branch()
     And using the parameter l1 is "c[it.get().label() == 'person' ? 'a' : 'b']"
     And the traversal of
       """
-      g.V().branch(l1).option("a", values("age")).option("b", values("lang")).option("b", values("name"))
+      g.V().branch(l1).option("a", __.values("age")).option("b", __.values("lang")).option("b", __.values("name"))
       """
     When iterated to list
     Then the result should be unordered
@@ -39,7 +39,7 @@ Feature: Step - branch()
     Given the modern graph
     And the traversal of
       """
-      g.V().branch(label().is("person").count()).option(1L, values("age")).option(0L, values("lang")).option(0L, values("name"))
+      g.V().branch(__.label().is("person").count()).option(1L, __.values("age")).option(0L, __.values("lang")).option(0L, __.values("name"))
       """
     When iterated to list
     Then the result should be unordered
@@ -56,7 +56,7 @@ Feature: Step - branch()
     Given the modern graph
     And the traversal of
       """
-      g.V().branch(label().is("person").count()).option(1L, values("age")).option(0L, values("lang")).option(0L, values("name")).option(any, label())
+      g.V().branch(__.label().is("person").count()).option(1L, __.values("age")).option(0L, __.values("lang")).option(0L, __.values("name")).option(Pick.any, __.label())
       """
     When iterated to list
     Then the result should be unordered
