@@ -34,7 +34,8 @@ Feature: Step - select()
     And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").select("a", "b").by("name")
+      g.V(v1Id).as("a").out("knows").as("b").
+        select("a", "b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -58,7 +59,8 @@ Feature: Step - select()
     And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("knows").as("b").select("a").by("name")
+      g.V(v1Id).as("a").out("knows").as("b").
+        select("a").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -69,7 +71,8 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().as("b").select("a", "b").by("name")
+      g.V().as("a").out().as("b").
+        select("a", "b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -84,7 +87,8 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().aggregate("x").as("b").select("a", "b").by("name")
+      g.V().as("a").out().aggregate("x").as("b").
+        select("a", "b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -99,7 +103,11 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").values("name").order().as("b").select("a", "b").by("name").by()
+      g.V().as("a").
+        values("name").
+        order().as("b").
+        select("a", "b").
+          by("name").by()
       """
     When iterated to list
     Then the result should be unordered
@@ -114,7 +122,13 @@ Feature: Step - select()
     Given the crew graph
     And the traversal of
       """
-      g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select("a", "b").by("skill").by("name")
+      g.V().has("name", "gremlin").
+        inE("uses").
+        order().by("skill", Order.incr).as("a").
+        outV().as("b").
+        select("a", "b").
+          by("skill").
+          by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -147,7 +161,9 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").as("p").map(__.bothE().label().groupCount()).as("r").select("p", "r")
+      g.V().hasLabel("person").as("p").
+        map(__.bothE().label().groupCount()).as("r").
+        select("p", "r")
       """
     When iterated to list
     Then the result should be unordered
@@ -160,7 +176,12 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().choose(__.outE().count().is(0L), __.as("a"), __.as("b")).choose(__.select("a"), __.select("a"), __.select("b"))
+      g.V().choose(__.outE().count().is(0L),
+                   __.as("a"),
+                   __.as("b")).
+            choose(__.select("a"),
+                   __.select("a"),
+                   __.select("b"))
       """
     When iterated to list
     Then the result should be unordered
@@ -201,7 +222,9 @@ Feature: Step - select()
     And using the parameter v4Id is "v[josh].id"
     And the traversal of
       """
-      g.V(v4Id).out().as("here").has("lang", "java").select("here").values("name")
+      g.V(v4Id).out().as("here").
+        has("lang", "java").
+        select("here").values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -213,7 +236,9 @@ Feature: Step - select()
     And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE().as("here").inV().has("name", "vadas").select("here")
+      g.V(v1Id).outE().as("here").
+        inV().has("name", "vadas").
+        select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -224,7 +249,10 @@ Feature: Step - select()
     And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").has("weight", 1.0).as("here").inV().has("name", "josh").select("here")
+      g.V(v1Id).outE("knows").
+        has("weight", 1.0).as("here").
+        inV().has("name", "josh").
+        select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -235,7 +263,10 @@ Feature: Step - select()
     And using the parameter v1Id is "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).outE("knows").as("here").has("weight", 1.0).as("fake").inV().has("name", "josh").select("here")
+      g.V(v1Id).outE("knows").as("here").
+        has("weight", 1.0).as("fake").
+        inV().has("name", "josh").
+        select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -245,7 +276,9 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().as("here").out().values("name").select("here")
+      g.V().as("here").
+        out().values("name").
+        select("here")
       """
     When iterated to list
     Then the result should be unordered
@@ -260,7 +293,11 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().out("created").union(__.as("project").in("created").has("name", "marko").select("project"), __.as("project").in("created").in("knows").has("name", "marko").select("project")).groupCount().by("name")
+      g.V().out("created").
+        union(__.as("project").in("created").has("name", "marko").select("project"),
+              __.as("project").in("created").in("knows").has("name", "marko").select("project")).
+        groupCount().
+          by("name")
       """
     When iterated to list
     Then the result should be unordered

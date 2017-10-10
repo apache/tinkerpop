@@ -144,6 +144,7 @@ def __table_assertion(data, result, ctx, ordered):
 
 
 def __translate(traversal):
-    replaced = regex_as.sub(r"\1as_(", traversal)
+    replaced = traversal.replace("\n", "")
+    replaced = regex_as.sub(r"\1as_(", replaced)
     replaced = regex_is.sub(r"\1is_(", replaced)
     return regex_in.sub(r"\1in_(", replaced)

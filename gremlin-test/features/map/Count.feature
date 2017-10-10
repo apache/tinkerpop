@@ -94,7 +94,12 @@ Feature: Step - count()
     Given the grateful graph
     And the traversal of
       """
-      g.V().repeat(__.out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count()
+      g.V().
+        repeat(__.out()).
+          times(5).as("a").
+        out("writtenBy").as("b").
+        select("a", "b").
+        count()
       """
     When iterated to list
     Then the result should be ordered
