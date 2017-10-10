@@ -120,7 +120,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
                 } else {
                     if (pathProcessor.getKeepLabels() == null)
-                        pathProcessor.setKeepLabels(new HashSet<>(keepLabels));
+                        pathProcessor.setKeepLabels(keepLabels);
                     else
                         pathProcessor.getKeepLabels().addAll(new HashSet<>(keepLabels));
                 }
@@ -242,10 +242,11 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     }
 
     private void addLabels(final PathProcessor s, final Set<String> keepLabels) {
+        final Set<String> labelsCopy = new HashSet<>(keepLabels);
         if (null == s.getKeepLabels())
-            s.setKeepLabels(new HashSet<>(keepLabels));
+            s.setKeepLabels(labelsCopy);
         else
-            s.getKeepLabels().addAll(new HashSet<>(keepLabels));
+            s.getKeepLabels().addAll(labelsCopy);
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -123,8 +124,8 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
     }
 
     @Override
-    public void setKeepLabels(final Set<String> labels) {
-        this.keepLabels = labels;
+    public void setKeepLabels(final Set<String> keepLabels) {
+        this.keepLabels = new HashSet<>(keepLabels);
     }
 
     @Override

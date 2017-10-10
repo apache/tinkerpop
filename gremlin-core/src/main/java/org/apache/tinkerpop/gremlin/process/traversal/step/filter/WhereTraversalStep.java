@@ -139,7 +139,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     @Override
     public void setKeepLabels(final Set<String> keepLabels) {
-        this.keepLabels = keepLabels;
+        this.keepLabels = new HashSet<>(keepLabels);
     }
 
     @Override
