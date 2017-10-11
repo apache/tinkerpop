@@ -25,6 +25,7 @@ from gremlin_python.process.traversal import P, Scope, Column, Order, Direction,
 from radish import given, when, then
 from hamcrest import *
 
+regex_and = re.compile(r"([(.,\s])and\(")
 regex_as = re.compile(r"([(.,\s])as\(")
 regex_in = re.compile(r"([(.,\s])in\(")
 regex_is = re.compile(r"([(.,\s])is\(")
@@ -66,7 +67,7 @@ def translate_traversal(step):
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
 
-    print __translate(step.text)
+    print __translate(step.text + " - " + str(b))
     step.context.traversal = eval(__translate(step.text), b)
 
 
@@ -118,7 +119,7 @@ def __convert(val, ctx):
         return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
         return __convert(json.loads(val[2:-1]), ctx)
-    elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda
+    elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
     else:
         return val
@@ -145,6 +146,7 @@ def __table_assertion(data, result, ctx, ordered):
 
 def __translate(traversal):
     replaced = traversal.replace("\n", "")
+    replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_as.sub(r"\1as_(", replaced)
     replaced = regex_is.sub(r"\1is_(", replaced)
     return regex_in.sub(r"\1in_(", replaced)

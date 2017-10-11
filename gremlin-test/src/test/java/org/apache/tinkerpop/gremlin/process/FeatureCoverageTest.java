@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
@@ -58,6 +59,7 @@ public class FeatureCoverageTest {
         // TEMPORARY while test framework is under development - all tests should ultimately be included
         final List<Class<?>> temp = Arrays.asList(
                 BranchTest.class,
+                ChooseTest.class,
                 CoinTest.class,
                 CountTest.class,
                 GroupCountTest.class,
