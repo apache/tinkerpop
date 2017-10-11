@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -113,8 +114,8 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     }
 
     @Override
-    public void setKeepLabels(final Set<String> labels) {
-        this.keepLabels = labels;
+    public void setKeepLabels(final Set<String> keepLabels) {
+        this.keepLabels = new HashSet<>(keepLabels);
     }
 
     @Override

@@ -60,7 +60,7 @@ public interface PathProcessor {
         return max;
     }
 
-    public void setKeepLabels(final Set<String> labels);
+    public void setKeepLabels(final Set<String> keepLabels);
 
     public Set<String> getKeepLabels();
 
