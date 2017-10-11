@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -108,8 +109,8 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     }
 
     @Override
-    public void setKeepLabels(final Set<String> labels) {
-        this.keepLabels = labels;
+    public void setKeepLabels(final Set<String> keepLabels) {
+        this.keepLabels = new HashSet<>(keepLabels);
     }
 
     @Override

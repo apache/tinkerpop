@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -210,7 +211,10 @@ public class PathRetractionStrategyTest {
                         "[[[a, b]], [[a, b]], [[[a, b]]], [[a, b]]]", null},
                 {__.V().as("a").out().where(neq("a")).program(labeledPathVertexProgram), PATH_RETRACTION_STRATEGY_DISABLED, null},
                 {__.V().as("a").out().where(neq("a")).program(pathVertexProgram).select("a"), PATH_RETRACTION_STRATEGY_DISABLED, null},
-                {__.V().as("a").out().program(emptyRequirementsVertexProgram).select("a"), "[[]]", null}
+                {__.V().as("a").out().program(emptyRequirementsVertexProgram).select("a"), "[[]]", null},
+                {__.V().as("a").out().as("b").where(__.as("b").in().count().is(eq(3)).or().where(
+                        __.as("b").out("created").and().as("b").has(T.label, "person"))).select("a", "b"),
+                        "[[a, b], [[[a, b]]], []]", null}
         });
     }
 }

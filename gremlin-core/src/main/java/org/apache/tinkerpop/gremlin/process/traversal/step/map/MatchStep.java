@@ -183,8 +183,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    public void setKeepLabels(final Set<String> labels) {
-        this.keepLabels = new HashSet<>(labels);
+    public void setKeepLabels(final Set<String> keepLabels) {
+        this.keepLabels = new HashSet<>(keepLabels);
         if (null != this.dedupLabels)
             this.keepLabels.addAll(this.dedupLabels);
     }
