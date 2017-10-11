@@ -449,7 +449,7 @@ limitations under the License.
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="-b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
+                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
                                         </exec>                                                                  
                                     </target>
                                 </configuration>

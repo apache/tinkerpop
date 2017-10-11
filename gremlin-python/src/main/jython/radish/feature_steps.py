@@ -19,7 +19,7 @@ under the License.
 
 import json
 import re
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import Graph, Path
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import P, Scope, Column, Order, Direction, T, Pick
 from radish import given, when, then
@@ -48,7 +48,7 @@ def add_parameter(step, param_name, param):
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
-    step.context.traversal_params[param_name] = __convert(param, step.context)
+    step.context.traversal_params[param_name] = _convert(param, step.context)
 
 
 @given("the traversal of")
@@ -67,8 +67,8 @@ def translate_traversal(step):
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
 
-    print __translate(step.text + " - " + str(b))
-    step.context.traversal = eval(__translate(step.text), b)
+    print _translate(step.text + " - " + str(b))
+    step.context.traversal = eval(_translate(step.text), b)
 
 
 @when("iterated to list")
@@ -81,9 +81,9 @@ def assert_result(step, characterized_as):
     if characterized_as == "empty":
         assert_that(len(step.context.result), equal_to(0))
     elif characterized_as == "ordered":
-        __table_assertion(step.table, step.context.result, step.context, True)
+        _table_assertion(step.table, step.context.result, step.context, True)
     elif characterized_as == "unordered":
-        __table_assertion(step.table, step.context.result, step.context, False)
+        _table_assertion(step.table, step.context.result, step.context, False)
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
 
@@ -93,16 +93,16 @@ def nothing_happening(step):
     return
 
 
-def __convert(val, ctx):
+def _convert(val, ctx):
     if isinstance(val, dict):                                         # convert dictionary keys/values
         n = {}
         for key, value in val.items():
-            n[__convert(key, ctx)] = __convert(value, ctx)
+            n[_convert(key, ctx)] = _convert(value, ctx)
         return n
     elif isinstance(val, unicode):                                    # stupid unicode/string nonsense in py 2/x
-        return __convert(val.encode('utf-8'), ctx)
+        return _convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
-        return list(map((lambda x: __convert(x, ctx)), val[2:-1].split(",")))
+        return list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^d\[.*\]$", val):         # parse numeric
         return long(val[2:-1])
     elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
@@ -118,14 +118,18 @@ def __convert(val, ctx):
     elif isinstance(val, str) and re.match("^e\[.*\]$", val):         # parse edge
         return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
-        return __convert(json.loads(val[2:-1]), ctx)
+        return _convert(json.loads(val[2:-1]), ctx)
+    elif isinstance(val, str) and re.match("^p\[.*\]$", val):         # parse path
+        path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+        labels = [set([]) for i in range(len(path_objects))]
+        return Path(labels, path_objects)
     elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
     else:
         return val
 
 
-def __table_assertion(data, result, ctx, ordered):
+def _table_assertion(data, result, ctx, ordered):
     # results from traversal should have the same number of entries as the feature data table
     assert_that(len(result), equal_to(len(data)))
 
@@ -134,17 +138,18 @@ def __table_assertion(data, result, ctx, ordered):
     # finds a match in the results for each line of data to assert and then removes that item
     # from the list - in the end there should be no items left over and each will have been asserted
     for ix, line in enumerate(data):
-        val = __convert(line[0], ctx)
+        val = _convert(line[0], ctx)
         if ordered:
             assert_that(results_to_test[ix], equal_to(val))
         else:
+            print str(type(val)) + "---------" + str(type(results_to_test[0]))
             assert_that(val, is_in(results_to_test))
         results_to_test.remove(val)
 
     assert_that(len(results_to_test), is_(0))
 
 
-def __translate(traversal):
+def _translate(traversal):
     replaced = traversal.replace("\n", "")
     replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_as.sub(r"\1as_(", replaced)
