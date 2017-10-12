@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
 
 def toCSharpTypeMap = ["Long": "long",
+                       "Double": "double",
                        "Integer": "int",
                        "String": "string",
                        "Object": "object",

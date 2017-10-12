@@ -411,7 +411,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the math step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Double> Math(params object[] args)
+        public static GraphTraversal<object, double> Math(params object[] args)
         {
             return new GraphTraversal<object, object>().Math(args);
         }
