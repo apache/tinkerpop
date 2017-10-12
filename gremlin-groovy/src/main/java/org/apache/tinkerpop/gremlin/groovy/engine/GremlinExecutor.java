@@ -56,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -329,7 +330,7 @@ public class GremlinExecutor implements AutoCloseable {
         final Future<?> executionFuture = executorService.submit(evalFuture);
         if (scriptEvalTimeOut > 0) {
             // Schedule a timeout in the thread pool for future execution
-            scheduledExecutorService.schedule(() -> {
+            final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
                 if (executionFuture.cancel(true)) {
                     final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
@@ -338,6 +339,17 @@ public class GremlinExecutor implements AutoCloseable {
                     }
                 }
             }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
+
+            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed with exception
+            evaluationFuture.handleAsync((v, t) -> {
+                if (!sf.isDone()) {
+                    logger.debug("Killing scheduled timeout on script evaluation - {} - as the eval completed (possibly with exception).", script);
+                    sf.cancel(true);
+                }
+
+                // no return is necessary - nothing downstream is concerned with what happens in here
+                return null;
+            }, scheduledExecutorService);
         }
 
         return evaluationFuture;
