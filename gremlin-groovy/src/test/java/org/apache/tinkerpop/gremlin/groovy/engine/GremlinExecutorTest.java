@@ -401,6 +401,19 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    public void shouldCancelTimeoutOnSuccessfulEval() throws Exception {
+        final long scriptEvaluationTimeout = 5_000;
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .scriptEvaluationTimeout(scriptEvaluationTimeout)
+                .create();
+
+        final long now = System.currentTimeMillis();
+        assertEquals(2, gremlinExecutor.eval("1+1").get());
+        gremlinExecutor.close();
+        assertTrue(System.currentTimeMillis() - now < scriptEvaluationTimeout);
+    }
+
+    @Test
     public void shouldEvalInMultipleThreads() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
 
