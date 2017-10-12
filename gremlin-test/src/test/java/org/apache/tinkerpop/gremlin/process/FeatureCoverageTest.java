@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
 import org.junit.Test;
@@ -59,13 +60,18 @@ public class FeatureCoverageTest {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
         final List<Class<?>> temp = Arrays.asList(
+                // branch
                 BranchTest.class,
                 ChooseTest.class,
                 OptionalTest.class,
+                // filter
                 CoinTest.class,
+                // map
                 CountTest.class,
-                GroupCountTest.class,
-                VertexTest.class);
+                PathTest.class,
+                VertexTest.class,
+                // sideEffect
+                GroupCountTest.class);
 
         final Field field = ProcessStandardSuite.class.getDeclaredField("testsToEnforce");
         field.setAccessible(true);

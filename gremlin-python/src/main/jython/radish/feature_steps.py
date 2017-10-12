@@ -27,8 +27,11 @@ from hamcrest import *
 
 regex_and = re.compile(r"([(.,\s])and\(")
 regex_as = re.compile(r"([(.,\s])as\(")
+regex_from = re.compile(r"([(.,\s])from\(")
 regex_in = re.compile(r"([(.,\s])in\(")
 regex_is = re.compile(r"([(.,\s])is\(")
+regex_not = re.compile(r"([(.,\s])not\(")
+regex_or = re.compile(r"([(.,\s])or\(")
 
 
 @given("the {graph_name:w} graph")
@@ -67,13 +70,13 @@ def translate_traversal(step):
     if hasattr(step.context, "traversal_params"):
         b.update(step.context.traversal_params)
 
-    print _translate(step.text + " - " + str(b))
+    # print _translate(step.text + " - " + str(b))
     step.context.traversal = eval(_translate(step.text), b)
 
 
 @when("iterated to list")
 def iterate_the_traversal(step):
-    step.context.result = step.context.traversal.toList()
+    step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 
 @then("the result should be {characterized_as:w}")
@@ -99,7 +102,7 @@ def _convert(val, ctx):
         for key, value in val.items():
             n[_convert(key, ctx)] = _convert(value, ctx)
         return n
-    elif isinstance(val, unicode):                                    # stupid unicode/string nonsense in py 2/x
+    elif isinstance(val, unicode):                                    # convert annoying python 2.x unicode nonsense
         return _convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
         return list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
@@ -121,10 +124,17 @@ def _convert(val, ctx):
         return _convert(json.loads(val[2:-1]), ctx)
     elif isinstance(val, str) and re.match("^p\[.*\]$", val):         # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
-        labels = [set([]) for i in range(len(path_objects))]
-        return Path(labels, path_objects)
+        return Path([set([])], path_objects)
     elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
+    else:
+        return val
+
+
+def _convert_results(val):
+    if isinstance(val, Path):
+        # kill out labels as they aren't in the assertion logic
+        return Path([set([])], map(lambda p: p.encode("utf-8") if isinstance(p, unicode) else p, val.objects))
     else:
         return val
 
@@ -139,10 +149,14 @@ def _table_assertion(data, result, ctx, ordered):
     # from the list - in the end there should be no items left over and each will have been asserted
     for ix, line in enumerate(data):
         val = _convert(line[0], ctx)
+
+        # clear the labels since we don't define them in .feature files
+        if isinstance(val, Path):
+            val.labels = [set([])]
+
         if ordered:
             assert_that(results_to_test[ix], equal_to(val))
         else:
-            print str(type(val)) + "---------" + str(type(results_to_test[0]))
             assert_that(val, is_in(results_to_test))
         results_to_test.remove(val)
 
@@ -152,6 +166,9 @@ def _table_assertion(data, result, ctx, ordered):
 def _translate(traversal):
     replaced = traversal.replace("\n", "")
     replaced = regex_and.sub(r"\1and_(", replaced)
+    replaced = regex_from.sub(r"\1from_(", replaced)
     replaced = regex_as.sub(r"\1as_(", replaced)
     replaced = regex_is.sub(r"\1is_(", replaced)
+    replaced = regex_not.sub(r"\1not_(", replaced)
+    replaced = regex_or.sub(r"\1or_(", replaced)
     return regex_in.sub(r"\1in_(", replaced)
