@@ -45,13 +45,13 @@ from gremlin_python import __version__
 version = __version__.version
 
 install_requires = [
-    'aenum==1.4.5',
-    'tornado==4.4.1',
-    'six==1.10.0'
+    'aenum>=1.4.5',
+    'tornado>=4.4.1',
+    'six>=1.10.0'
 ]
 
 if sys.version_info < (3,2):
-    install_requires += ['futures==3.0.5']
+    install_requires += ['futures>=3.0.5']
 
 setup(
     name='gremlinpython',
