@@ -25,23 +25,33 @@ mapper = GraphSONMapper.build().
 graph = TinkerFactory.createTheCrew()
 g = graph.traversal()
 
-toJson = { o, type, comment = "" ->
+new File("io-output/test-case-data/graphson/").mkdirs()
+
+toJson = { o, type, comment = "", suffix = "v1d0" ->
   println "Writing ${type}"
-  "${type}\n" +
-  "^".multiply(type.length()) + "\n\n" +
+
+  def jsonSample = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(o)
+
+  def fileToWriteTo = new File("io-output/test-case-data/graphson/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".json")
+  if (fileToWriteTo.exists())
+    fileToWriteTo.delete()
+
+  fileToWriteTo.withWriter{ it.write(jsonSample) }
+
+  "==== ${type}\n\n" +
   (comment.isEmpty() ? "" : comment + "\n\n") +
   "[source,json]\n" +
   "----\n" +
-  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(o) + "\n" +
+  jsonSample + "\n" +
   "----\n" +
   "\n"
 }
 
-file = new File("out-graphson-1d0.txt")
+
+file = new File("io-output/out-graphson-1d0.txt")
 file.withWriter { writer ->
 
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== Graph Structure\n\n")
   writer.write(toJson(graph.edges().next(), "Edge"))
   writer.write(toJson(g.V().out().out().path().next(), "Path"))
   writer.write(toJson(graph.edges().next().properties().next(), "Property"))
@@ -52,31 +62,35 @@ file.withWriter { writer ->
   writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty"))
 
   writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
+  writer.write("=== RequestMessage\n\n")
   def msg = null
   msg = RequestMessage.build("authentication").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                        add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
   writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge."))
   msg = RequestMessage.build("eval").processor("session").
-                           add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
   writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters."))
   msg = RequestMessage.build("eval").processor("session").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                        add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-  writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+  writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
   msg = RequestMessage.build("close").processor("session").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                        add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
   writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session."))
   msg = RequestMessage.build("eval").
-                           add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy").create()
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy").create()
   writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters."))
   msg = RequestMessage.build("eval").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
                        add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
-  writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+  writer.write(toJson(msg, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
 
   writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
   writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
@@ -84,23 +98,6 @@ file.withWriter { writer ->
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                         result(Arrays.asList(graph.vertices().next())).create()
   writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
-
-  writer.write("\n")
-  writer.write("Time\n")
-  writer.write("~~~~\n\n")
-  writer.write(toJson(Duration.ofDays(5), "Duration", "The following example is a `Duration` of five days."))
-  writer.write(toJson(Instant.now(), "Instant"))
-  writer.write(toJson(LocalDate.of(2016, 1, 1), "LocalDate"))
-  writer.write(toJson(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime"))
-  writer.write(toJson(LocalTime.of(12, 30, 45), "LocalTime"))
-  writer.write(toJson(MonthDay.of(1, 1), "MonthDay"))
-  writer.write(toJson(OffsetDateTime.now(), "OffsetDateTime"))
-  writer.write(toJson(OffsetTime.now(), "OffsetTime"))
-  writer.write(toJson(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days."))
-  writer.write(toJson(Year.of(2016), "Year", "The following example is of the `Year` \"2016\"."))
-  writer.write(toJson(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\""))
-  writer.write(toJson(ZonedDateTime.now(), "ZonedDateTime"))
-  writer.write(toJson(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds."))
 
 }
 
@@ -111,95 +108,94 @@ mapper = GraphSONMapper.build().
                         addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
                         version(GraphSONVersion.V2_0).create().createMapper()
 
-file = new File("out-graphson-2d0.txt")
+file = new File("io-output/out-graphson-2d0-partial.txt")
 file.withWriter { writer ->
 
-  writer.write("Core\n")
-  writer.write("~~~~\n\n")
-  writer.write(toJson(File, "Class"))
-  writer.write(toJson(new Date(), "Date"))
-  writer.write(toJson(100.00d, "Double"))
-  writer.write(toJson(100.00f, "Float"))
-  writer.write(toJson(100, "Integer"))
-  writer.write(toJson(100L, "Long"))
-  writer.write(toJson(new java.sql.Timestamp(System.currentTimeMillis()), "Timestamp"))
-  writer.write(toJson(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID"))
+  writer.write("=== Core\n\n")
+  writer.write(toJson(File, "Class", "", "v2d0-partial"))
+  writer.write(toJson(new Date(1481750076295L), "Date", "", "v2d0-partial"))
+  writer.write(toJson(100.00d, "Double", "", "v2d0-partial"))
+  writer.write(toJson(100.00f, "Float", "", "v2d0-partial"))
+  writer.write(toJson(100, "Integer", "", "v2d0-partial"))
+  writer.write(toJson(100L, "Long", "", "v2d0-partial"))
+  writer.write(toJson(new java.sql.Timestamp(1481750076295L), "Timestamp", "", "v2d0-partial"))
+  writer.write(toJson(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID", "", "v2d0-partial"))
 
   writer.write("\n")
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
-  writer.write(toJson(graph.edges().next(), "Edge"))
-  writer.write(toJson(g.V().out().out().path().next(), "Path"))
-  writer.write(toJson(graph.edges().next().properties().next(), "Property"))
-  writer.write(toJson(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph"))
-  writer.write(toJson(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`."))
-  writer.write(toJson(g.V().out().out().tree().next(), "Tree"))
-  writer.write(toJson(graph.vertices().next(), "Vertex"))
-  writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty"))
+  writer.write("=== Graph Structure\n\n")
+  writer.write(toJson(graph.edges().next(), "Edge", "", "v2d0-partial"))
+  writer.write(toJson(g.V().out().out().path().next(), "Path", "", "v2d0-partial"))
+  writer.write(toJson(graph.edges().next().properties().next(), "Property", "", "v2d0-partial"))
+  writer.write(toJson(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph", "", "v2d0-partial"))
+  writer.write(toJson(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.", "v2d0-partial"))
+  writer.write(toJson(g.V().out().out().tree().next(), "Tree", "", "v2d0-partial"))
+  writer.write(toJson(graph.vertices().next(), "Vertex", "", "v2d0-partial"))
+  writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty", "", "v2d0-partial"))
 
   writer.write("\n")
-  writer.write("Graph Process\n")
-  writer.write("~~~~~~~~~~~~~\n\n")
-  writer.write(toJson(SackFunctions.Barrier.normSack, "Barrier"))
-  writer.write(toJson(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`."))
-  writer.write(toJson(g.V().hasLabel('person').out().in().tree(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language."))
-  writer.write(toJson(VertexProperty.Cardinality.list, "Cardinality"))
-  writer.write(toJson(Column.keys, "Column"))
-  writer.write(toJson(Direction.OUT, "Direction"))
-  writer.write(toJson(Operator.sum, "Operator"))
-  writer.write(toJson(Order.incr, "Order"))
-  writer.write(toJson(Pop.all, "Pop"))
-  writer.write(toJson(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick"))
-  writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda"))
+  writer.write("=== Graph Process\n\n")
+  writer.write(toJson(SackFunctions.Barrier.normSack, "Barrier", "", "v2d0-partial"))
+  writer.write(toJson(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", "v2d0-partial"))
+  writer.write(toJson(g.V().hasLabel('person').out().in().tree(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` would be quite different for the endless variations of commands that could be used together in the Gremlin language.", "v2d0-partial"))
+  writer.write(toJson(VertexProperty.Cardinality.list, "Cardinality", "", "v2d0-partial"))
+  writer.write(toJson(Column.keys, "Column", "", "v2d0-partial"))
+  writer.write(toJson(Direction.OUT, "Direction", "", "v2d0-partial"))
+  writer.write(toJson(Operator.sum, "Operator", "", "v2d0-partial"))
+  writer.write(toJson(Order.incr, "Order", "", "v2d0-partial"))
+  writer.write(toJson(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", "", "v2d0-partial"))
+  writer.write(toJson(Pop.all, "Pop", "", "v2d0-partial"))
+  writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", "v2d0-partial"))
   tm = g.V().hasLabel('person').out().out().tree().profile().next()
   metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
-  writer.write(toJson(metrics, "Metrics"))
-  writer.write(toJson(P.gt(0), "P"))
-  writer.write(toJson(P.gt(0).and(P.lt(10)), "P and"))
-  writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or"))
-  writer.write(toJson(Scope.local, "Scope"))
-  writer.write(toJson(T.label, "T"))
-  writer.write(toJson(g.V().hasLabel('person').out().out().tree().profile().next(), "TraversalMetrics"))
-  writer.write(toJson(g.V().hasLabel('person').nextTraverser(), "Traverser"))
+  writer.write(toJson(metrics, "Metrics", "", "v2d0-partial"))
+  writer.write(toJson(P.gt(0), "P", "", "v2d0-partial"))
+  writer.write(toJson(P.gt(0).and(P.lt(10)), "P and", "", "v2d0-partial"))
+  writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", "v2d0-partial"))
+  writer.write(toJson(Scope.local, "Scope", "", "v2d0-partial"))
+  writer.write(toJson(T.label, "T", "", "v2d0-partial"))
+  writer.write(toJson(g.V().hasLabel('person').out().out().tree().profile().next(), "TraversalMetrics", "", "v2d0-partial"))
+  writer.write(toJson(g.V().hasLabel('person').nextTraverser(), "Traverser", "", "v2d0-partial"))
 
   writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
-  def msg = null
+  writer.write("=== RequestMessage\n\n")
   msg = RequestMessage.build("authentication").
-                       add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
-  writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
+  writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.", "v2d0-partial"))
   msg = RequestMessage.build("eval").processor("session").
-                           add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-  writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.", "v2d0-partial"))
   msg = RequestMessage.build("eval").processor("session").
-                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-  writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-partial"))
   msg = RequestMessage.build("close").processor("session").
-                       add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
-  writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session.", "v2d0-partial"))
   msg = RequestMessage.build("eval").
-                           add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy").create()
-  writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy").create()
+  writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.", "v2d0-partial"))
   msg = RequestMessage.build("eval").
-                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
-  writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
+                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
+  writer.write(toJson(msg, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-partial"))
 
   writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
-  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
+  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).", "v2d0-partial"))
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                         result(Arrays.asList(graph.vertices().next())).create()
-  writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
+  writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.", "v2d0-partial"))
 
   writer.write("\n")
-  writer.write("Extended\n")
-  writer.write("~~~~~~~~\n\n")
+  writer.write("=== Extended\n\n")
   writer.write("""Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:\n
 [source,java]
 ----
@@ -209,26 +205,152 @@ mapper = GraphSONMapper.build().
                         version(GraphSONVersion.V2_0).create().createMapper()
 ----\n
 """)
-  writer.write(toJson(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal"))
-  writer.write(toJson(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger"))
-  writer.write(toJson(new Byte("1"), "Byte"))
-  writer.write(toJson(java.nio.ByteBuffer.wrap([1,2,3,4,5] as byte[]), "ByteBuffer"))
-  writer.write(toJson("x".charAt(0), "Char"))
-  writer.write(toJson(Duration.ofDays(5), "Duration", "The following example is a `Duration` of five days."))
-  writer.write(toJson(java.net.InetAddress.getByName("localhost"), "InetAddress"))
-  writer.write(toJson(Instant.now(), "Instant"))
-  writer.write(toJson(LocalDate.of(2016, 1, 1), "LocalDate"))
-  writer.write(toJson(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime"))
-  writer.write(toJson(LocalTime.of(12, 30, 45), "LocalTime"))
-  writer.write(toJson(MonthDay.of(1, 1), "MonthDay"))
-  writer.write(toJson(OffsetDateTime.now(), "OffsetDateTime"))
-  writer.write(toJson(OffsetTime.now(), "OffsetTime"))
-  writer.write(toJson(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days."))
-  writer.write(toJson(new Short("100"), "Short"))
-  writer.write(toJson(Year.of(2016), "Year", "The following example is of the `Year` \"2016\"."))
-  writer.write(toJson(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\""))
-  writer.write(toJson(ZonedDateTime.now(), "ZonedDateTime"))
-  writer.write(toJson(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds."))
+  writer.write(toJson(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", "v2d0-partial"))
+  writer.write(toJson(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger", "", "v2d0-partial"))
+  writer.write(toJson(new Byte("1"), "Byte", "", "v2d0-partial"))
+  writer.write(toJson(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "", "v2d0-partial"))
+  writer.write(toJson("x".charAt(0), "Char", "", "v2d0-partial"))
+  writer.write(toJson(Duration.ofDays(5), "Duration", "The following example is a `Duration` of five days.", "v2d0-partial"))
+  writer.write(toJson(java.net.InetAddress.getByName("localhost"), "InetAddress", "", "v2d0-partial"))
+  writer.write(toJson(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", "", "v2d0-partial"))
+  writer.write(toJson(LocalDate.of(2016, 1, 1), "LocalDate", "", "v2d0-partial"))
+  writer.write(toJson(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", "", "v2d0-partial"))
+  writer.write(toJson(LocalTime.of(12, 30, 45), "LocalTime", "", "v2d0-partial"))
+  writer.write(toJson(MonthDay.of(1, 1), "MonthDay", "", "v2d0-partial"))
+  writer.write(toJson(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", "", "v2d0-partial"))
+  writer.write(toJson(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", "", "v2d0-partial"))
+  writer.write(toJson(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.", "v2d0-partial"))
+  writer.write(toJson(new Short("100"), "Short", "", "v2d0-partial"))
+  writer.write(toJson(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".", "v2d0-partial"))
+  writer.write(toJson(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"", "v2d0-partial"))
+  writer.write(toJson(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "", "v2d0-partial"))
+  writer.write(toJson(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.", "v2d0-partial"))
+
+}
+
+mapper = GraphSONMapper.build().
+                        addRegistry(TinkerIoRegistryV2d0.instance()).
+                        typeInfo(TypeInfo.NO_TYPES).
+                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
+                        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
+                        version(GraphSONVersion.V2_0).create().createMapper()
+
+file = new File("io-output/out-graphson-2d0-no-types.txt")
+file.withWriter { writer ->
+
+  writer.write("=== Core\n\n")
+  writer.write(toJson(File, "Class", "", "v2d0-no-types"))
+  writer.write(toJson(new Date(1481750076295L), "Date", "", "v2d0-no-types"))
+  writer.write(toJson(100.00d, "Double", "", "v2d0-no-types"))
+  writer.write(toJson(100.00f, "Float", "", "v2d0-no-types"))
+  writer.write(toJson(100, "Integer", "", "v2d0-no-types"))
+  writer.write(toJson(100L, "Long", "", "v2d0-no-types"))
+  writer.write(toJson(new java.sql.Timestamp(1481750076295L), "Timestamp", "", "v2d0-no-types"))
+  writer.write(toJson(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID", "", "v2d0-no-types"))
+
+  writer.write("\n")
+  writer.write("=== Graph Structure\n\n")
+  writer.write(toJson(graph.edges().next(), "Edge", "", "v2d0-no-types"))
+  writer.write(toJson(graph.edges().next().properties().next(), "Property", "", "v2d0-no-types"))
+  writer.write(toJson(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph", "", "v2d0-no-types"))
+  writer.write(toJson(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.", "v2d0-no-types"))
+  writer.write(toJson(g.V().out().out().tree().next(), "Tree", "", "v2d0-no-types"))
+  writer.write(toJson(graph.vertices().next(), "Vertex", "", "v2d0-no-types"))
+  writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty", "", "v2d0-no-types"))
+
+  writer.write("\n")
+  writer.write("=== Graph Process\n\n")
+  writer.write(toJson(SackFunctions.Barrier.normSack, "Barrier", "", "v2d0-no-types"))
+  writer.write(toJson(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", "v2d0-no-types"))
+  writer.write(toJson(g.V().hasLabel('person').out().in().tree(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` would be quite different for the endless variations of commands that could be used together in the Gremlin language.", "v2d0-no-types"))
+  writer.write(toJson(VertexProperty.Cardinality.list, "Cardinality", "", "v2d0-no-types"))
+  writer.write(toJson(Column.keys, "Column", "", "v2d0-no-types"))
+  writer.write(toJson(Direction.OUT, "Direction", "", "v2d0-no-types"))
+  writer.write(toJson(Operator.sum, "Operator", "", "v2d0-no-types"))
+  writer.write(toJson(Order.incr, "Order", "", "v2d0-no-types"))
+  writer.write(toJson(Pop.all, "Pop", "", "v2d0-no-types"))
+  writer.write(toJson(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", "", "v2d0-no-types"))
+  writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", "v2d0-no-types"))
+  tm = g.V().hasLabel('person').out().out().tree().profile().next()
+  metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
+  metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
+  writer.write(toJson(metrics, "Metrics", "", "v2d0-no-types"))
+  writer.write(toJson(P.gt(0), "P", "", "v2d0-no-types"))
+  writer.write(toJson(P.gt(0).and(P.lt(10)), "P and", "", "v2d0-no-types"))
+  writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", "v2d0-no-types"))
+  writer.write(toJson(Scope.local, "Scope", "", "v2d0-no-types"))
+  writer.write(toJson(T.label, "T", "", "v2d0-no-types"))
+  writer.write(toJson(g.V().hasLabel('person').out().out().tree().profile().next(), "TraversalMetrics", "", "v2d0-no-types"))
+  writer.write(toJson(g.V().hasLabel('person').nextTraverser(), "Traverser", "", "v2d0-no-types"))
+
+  writer.write("\n")
+  writer.write("=== RequestMessage\n\n")
+  msg = RequestMessage.build("authentication").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
+  writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.", "v2d0-no-types"))
+  msg = RequestMessage.build("eval").processor("session").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.", "v2d0-no-types"))
+  msg = RequestMessage.build("eval").processor("session").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-no-types"))
+  msg = RequestMessage.build("close").processor("session").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+  writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session.", "v2d0-no-types"))
+  msg = RequestMessage.build("eval").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy").create()
+  writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.", "v2d0-no-types"))
+  msg = RequestMessage.build("eval").
+                       overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
+                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"]).create()
+  writer.write(toJson(msg, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-no-types"))
+
+  writer.write("\n")
+  writer.write("=== ResponseMessage\n\n")
+  msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
+                        code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
+  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).", "v2d0-no-types"))
+  msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
+                        code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
+                        result(Arrays.asList(graph.vertices().next())).create()
+  writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.", "v2d0-no-types"))
+
+  writer.write("\n")
+  writer.write("=== Extended\n\n")
+  writer.write("""Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:\n
+[source,java]
+----
+mapper = GraphSONMapper.build().
+                        typeInfo(TypeInfo.NO_TYPES).
+                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
+                        version(GraphSONVersion.V2_0).create().createMapper()
+----\n
+""")
+  writer.write(toJson(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", "", "v2d0-partial"))
+  writer.write(toJson(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger", "", "v2d0-partial"))
+  writer.write(toJson(new Byte("1"), "Byte", "", "v2d0-partial"))
+  writer.write(toJson(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "", "v2d0-partial"))
+  writer.write(toJson("x".charAt(0), "Char", "", "v2d0-partial"))
+  writer.write(toJson(Duration.ofDays(5), "Duration", "The following example is a `Duration` of five days.", "v2d0-partial"))
+  writer.write(toJson(java.net.InetAddress.getByName("localhost"), "InetAddress", "", "v2d0-partial"))
+  writer.write(toJson(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", "", "v2d0-partial"))
+  writer.write(toJson(LocalDate.of(2016, 1, 1), "LocalDate", "", "v2d0-partial"))
+  writer.write(toJson(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", "", "v2d0-partial"))
+  writer.write(toJson(LocalTime.of(12, 30, 45), "LocalTime", "", "v2d0-partial"))
+  writer.write(toJson(MonthDay.of(1, 1), "MonthDay", "", "v2d0-partial"))
+  writer.write(toJson(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", "", "v2d0-partial"))
+  writer.write(toJson(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", "", "v2d0-partial"))
+  writer.write(toJson(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.", "v2d0-partial"))
+  writer.write(toJson(new Short("100"), "Short", "", "v2d0-partial"))
+  writer.write(toJson(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".", "v2d0-partial"))
+  writer.write(toJson(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"", "v2d0-partial"))
+  writer.write(toJson(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "", "v2d0-partial"))
+  writer.write(toJson(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.", "v2d0-partial"))
 
 }
 *******************************************************************************

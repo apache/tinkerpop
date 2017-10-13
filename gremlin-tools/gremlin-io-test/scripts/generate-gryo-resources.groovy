@@ -39,7 +39,7 @@ toGryo = { o, type, mapper, suffix = "" ->
     def fileToWriteTo = new File("${projectBuildDir}/test-case-data/io/gryo/" + type.title.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
     if (fileToWriteTo.exists()) fileToWriteTo.delete()
     try {
-        final Output out = new Output(new FileOutputStream(fileToWriteTo))
+        out = new Output(new FileOutputStream(fileToWriteTo))
         mapper.writeObject(out, o)
         out.close()
     } catch (Exception ex) {

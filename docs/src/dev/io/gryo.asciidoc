@@ -13,6 +13,102 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+*******************************************************************************
+* The following groovy script generates the data samples for Gryo.
+*******************************************************************************
+import org.apache.tinkerpop.shaded.kryo.io.Output
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
+import org.apache.tinkerpop.gremlin.structure.*
+import org.apache.tinkerpop.gremlin.structure.io.gryo.*
+import org.apache.tinkerpop.gremlin.structure.io.*
+import org.apache.commons.configuration.BaseConfiguration
+
+new File("io-output/dev-docs/").mkdirs()
+new File("io-output/test-case-data/gryo").mkdirs()
+
+conf = new BaseConfiguration()
+conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
+graph = TinkerGraph.open(conf)
+TinkerFactory.generateTheCrew(graph)
+g = graph.traversal()
+
+toGryo = { o, type, mapper, suffix = "" ->
+    def fileToWriteTo = new File("io-output/test-case-data/gryo/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
+    if (fileToWriteTo.exists()) fileToWriteTo.delete()
+    out = new Output(new FileOutputStream(fileToWriteTo))
+    mapper.writeObject(out, o)
+    out.close()
+}
+
+mapper = GryoMapper.build().
+        version(GryoVersion.V1_0).
+        addRegistry(TinkerIoRegistryV2d0.instance()).
+        create().createMapper()
+
+toGryo(File, "Class", mapper, "v1d0")
+toGryo(new Date(1481750076295L), "Date", mapper, "v1d0")
+toGryo(100.00d, "Double", mapper, "v1d0")
+toGryo(100.00f, "Float", mapper, "v1d0")
+toGryo(100, "Integer", mapper, "v1d0")
+toGryo(100L, "Long", mapper, "v1d0")
+toGryo(new java.sql.Timestamp(1481750076295L), "Timestamp", mapper, "v1d0")
+toGryo(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID", mapper, "v1d0")
+
+toGryo(graph.edges().next(), "Edge", mapper, "v1d0")
+toGryo(g.V().out().out().path().next(), "Path", mapper, "v1d0")
+toGryo(graph.edges().next().properties().next(), "Property", mapper, "v1d0")
+toGryo(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH).getStarGraphToSerialize(), "StarGraph", mapper, "v1d0")
+toGryo(graph, "TinkerGraph", mapper, "v1d0")
+toGryo(g.V(1).out().out().tree().next(), "Tree", mapper, "v1d0")
+toGryo(graph.vertices().next(), "Vertex", mapper, "v1d0")
+toGryo(graph.vertices().next().properties().next(), "VertexProperty", mapper, "v1d0")
+
+toGryo(SackFunctions.Barrier.normSack, "Barrier", mapper, "v1d0")
+toGryo(new Bytecode.Binding("x", 1), "Binding", mapper, "v1d0")
+toGryo(g.V().hasLabel('person').out().in().tree().asAdmin().getBytecode(), "Bytecode", mapper, "v1d0")
+toGryo(VertexProperty.Cardinality.list, "Cardinality", mapper, "v1d0")
+toGryo(Column.keys, "Column", mapper, "v1d0")
+toGryo(Direction.OUT, "Direction", mapper, "v1d0")
+toGryo(Operator.sum, "Operator", mapper, "v1d0")
+toGryo(Order.incr, "Order", mapper, "v1d0")
+toGryo(Pop.all, "Pop", mapper, "v1d0")
+toGryo(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", mapper, "v1d0")
+toGryo(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", mapper, "v1d0")
+tm = g.V().hasLabel('person').out().out().tree().profile().next()
+metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
+metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
+toGryo(metrics, "Metrics", mapper, "v1d0")
+toGryo(P.gt(0), "P", mapper, "v1d0")
+toGryo(P.gt(0).and(P.lt(10)), "P and", mapper, "v1d0")
+toGryo(P.gt(0).or(P.within(-1, -10, -100)), "P or", mapper, "v1d0")
+toGryo(Scope.local, "Scope", mapper, "v1d0")
+toGryo(T.label, "T", mapper, "v1d0")
+toGryo(g.V().hasLabel('person').out().out().tree().profile().next(), "TraversalMetrics", mapper, "v1d0")
+toGryo(g.V().hasLabel('person').nextTraverser(), "Traverser", mapper, "v1d0")
+
+toGryo(new java.math.BigDecimal(new java.math.BigInteger("123456789987654321123456789987654321")), "BigDecimal", mapper, "v1d0")
+toGryo(new java.math.BigInteger("123456789987654321123456789987654321"), "BigInteger", mapper, "v1d0")
+toGryo(new Byte("1"), "Byte", mapper, "v1d0")
+toGryo(java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", mapper, "v1d0")
+toGryo("x".charAt(0), "Char", mapper, "v1d0")
+toGryo(Duration.ofDays(5), "Duration", mapper, "v1d0")
+toGryo(java.net.InetAddress.getByName("localhost"), "InetAddress", mapper, "v1d0")
+toGryo(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", mapper, "v1d0")
+toGryo(LocalDate.of(2016, 1, 1), "LocalDate", mapper, "v1d0")
+toGryo(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", mapper, "v1d0")
+toGryo(LocalTime.of(12, 30, 45), "LocalTime", mapper, "v1d0")
+toGryo(MonthDay.of(1, 1), "MonthDay", mapper, "v1d0")
+toGryo(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", mapper, "v1d0")
+toGryo(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", mapper, "v1d0")
+toGryo(Period.of(1, 6, 15), "Period", mapper, "v1d0")
+toGryo(new Short("100"), "Short", mapper, "v1d0")
+toGryo(Year.of(2016), "Year", mapper, "v1d0")
+toGryo(YearMonth.of(2016, 6), "YearMonth", mapper, "v1d0")
+toGryo(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", mapper, "v1d0")
+toGryo(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", mapper, "v1d0")
+*******************************************************************************
 ////
 [[gryo]]
 = Gryo

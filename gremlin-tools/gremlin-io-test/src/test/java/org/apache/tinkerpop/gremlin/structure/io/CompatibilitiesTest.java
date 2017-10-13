@@ -34,7 +34,7 @@ public class CompatibilitiesTest {
     /**
      * Need to bump this each time we get a new release on the 3.2.x line.
      */
-    private static final String LAST_OF_3_2_x = "3.2.5";
+    private static final String LAST_OF_3_2_x = "3.2.6";
 
     @Test
     public void shouldFindGryoVersionsBeforeRelease3_2_4() {
@@ -47,7 +47,9 @@ public class CompatibilitiesTest {
     public void shouldFindGryoVersionsAfterRelease3_2_x() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .afterRelease(LAST_OF_3_2_x).match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V3D0_3_3_0));
+        assertThat(compatibilityList, containsInAnyOrder(
+                GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V1D0_3_3_1,
+                GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
     }
 
     @Test
@@ -62,14 +64,15 @@ public class CompatibilitiesTest {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0").match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_3,
-                GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_2_5, GryoCompatibility.V1D0_3_3_0));
+                GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_2_5,
+                GryoCompatibility.V1D0_3_2_6, GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V1D0_3_3_1));
     }
 
     @Test
     public void shouldFindGryoVersionsAfter1_0() {
         final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .after("1.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0));
+        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
     }
 
     @Test
@@ -78,7 +81,7 @@ public class CompatibilitiesTest {
                 .afterRelease(LAST_OF_3_2_x)
                 .after("1.0")
                 .match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0));
+        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
     }
 
     @Test
@@ -87,7 +90,8 @@ public class CompatibilitiesTest {
                 .configuredAs(".*partial.*").match();
         assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_2_3,
                 GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_2_5,
-                GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_6, GraphSONCompatibility.V2D0_PARTIAL_3_3_0,
+                GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
     }
 
     @Test
@@ -95,7 +99,8 @@ public class CompatibilitiesTest {
         final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
                 .afterRelease(LAST_OF_3_2_x)
                 .configuredAs(".*partial.*").match();
-        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0,
+                GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
     }
 
     @Test
@@ -107,7 +112,9 @@ public class CompatibilitiesTest {
                         .configuredAs(".*partial.*"))
                 .match();
         assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0,
+                GryoCompatibility.V3D0_3_3_1, 
                 GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4,
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_5, GraphSONCompatibility.V2D0_PARTIAL_3_3_0));
+                GraphSONCompatibility.V2D0_PARTIAL_3_2_5,GraphSONCompatibility.V2D0_PARTIAL_3_2_6,
+                GraphSONCompatibility.V2D0_PARTIAL_3_3_0, GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
     }
 }

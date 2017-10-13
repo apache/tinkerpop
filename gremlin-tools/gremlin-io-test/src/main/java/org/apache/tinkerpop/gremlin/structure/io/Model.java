@@ -105,7 +105,7 @@ public class Model {
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
         final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
-        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").matchToArray();
+        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
