@@ -3710,6 +3710,21 @@ terms of features, but it does not have an "untyped" version as previous version
 }
 ----
 
+==== List
+
+List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.
+
+[source,json]
+----
+{
+  "@type" : "g:List",
+  "@value" : [ {
+    "@type" : "g:Int32",
+    "@value" : 1
+  }, "person", true ]
+}
+----
+
 ==== Long
 
 [source,json]
@@ -3717,6 +3732,54 @@ terms of features, but it does not have an "untyped" version as previous version
 {
   "@type" : "g:Int64",
   "@value" : 100
+}
+----
+
+==== Map
+
+Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.
+
+[source,json]
+----
+{
+  "@type" : "g:Map",
+  "@value" : [ {
+    "@type" : "g:Date",
+    "@value" : 1481750076295
+  }, "red", {
+    "@type" : "g:List",
+    "@value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 3
+    } ]
+  }, {
+    "@type" : "g:Date",
+    "@value" : 1481750076295
+  }, "test", {
+    "@type" : "g:Int32",
+    "@value" : 123
+  } ]
+}
+----
+
+==== Set
+
+Allows a JSON collection to behave as a Set.
+
+[source,json]
+----
+{
+  "@type" : "g:Set",
+  "@value" : [ {
+    "@type" : "g:Int32",
+    "@value" : 1
+  }, "person", true ]
 }
 ----
 
@@ -3767,8 +3830,14 @@ terms of features, but it does not have an "untyped" version as previous version
     },
     "properties" : {
       "since" : {
-        "@type" : "g:Int32",
-        "@value" : 2009
+        "@type" : "g:Property",
+        "@value" : {
+          "key" : "since",
+          "value" : {
+            "@type" : "g:Int32",
+            "@value" : 2009
+          }
+        }
       }
     }
   }
@@ -3782,123 +3851,50 @@ terms of features, but it does not have an "untyped" version as previous version
 {
   "@type" : "g:Path",
   "@value" : {
-    "labels" : [ [ ], [ ], [ ] ],
-    "objects" : [ {
-      "@type" : "g:Vertex",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 1
-        },
-        "label" : "person",
-        "properties" : {
-          "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
-          } ],
-          "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
-              }
-            }
-          } ]
+    "labels" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Set",
+        "@value" : [ ]
+      }, {
+        "@type" : "g:Set",
+        "@value" : [ ]
+      }, {
+        "@type" : "g:Set",
+        "@value" : [ ]
+      } ]
+    },
+    "objects" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Vertex",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : "person"
         }
-      }
-    }, {
-      "@type" : "g:Vertex",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 10
-        },
-        "label" : "software",
-        "properties" : {
-          "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 4
-            },
-            "value" : "gremlin"
-          } ]
+      }, {
+        "@type" : "g:Vertex",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : "software"
         }
-      }
-    }, {
-      "@type" : "g:Vertex",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 11
-        },
-        "label" : "software",
-        "properties" : {
-          "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 5
-            },
-            "value" : "tinkergraph"
-          } ]
+      }, {
+        "@type" : "g:Vertex",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : "software"
         }
-      }
-    } ]
+      } ]
+    }
   }
 }
 ----
@@ -3914,109 +3910,6 @@ terms of features, but it does not have an "untyped" version as previous version
     "value" : {
       "@type" : "g:Int32",
       "@value" : 2009
-    },
-    "edge" : {
-      "id" : {
-        "@type" : "g:Int32",
-        "@value" : 13
-      },
-      "label" : "develops",
-      "inV" : {
-        "@type" : "g:Int32",
-        "@value" : 10
-      },
-      "outV" : {
-        "@type" : "g:Int32",
-        "@value" : 1
-      }
-    }
-  }
-}
-----
-
-==== StarGraph
-
-[source,json]
-----
-{
-  "starVertex" : {
-    "@type" : "g:Vertex",
-    "@value" : {
-      "id" : {
-        "@type" : "g:Int32",
-        "@value" : 1
-      },
-      "label" : "person",
-      "properties" : {
-        "name" : [ {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 0
-          },
-          "value" : "marko"
-        } ],
-        "location" : [ {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 6
-          },
-          "value" : "san diego",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 1997
-            },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2001
-            }
-          }
-        }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          },
-          "value" : "santa cruz",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2001
-            },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2004
-            }
-          }
-        }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 8
-          },
-          "value" : "brussels",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2004
-            },
-            "endTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2005
-            }
-          }
-        }, {
-          "id" : {
-            "@type" : "g:Int64",
-            "@value" : 9
-          },
-          "value" : "santa fe",
-          "properties" : {
-            "startTime" : {
-              "@type" : "g:Int32",
-              "@value" : 2005
-            }
-          }
-        } ]
-      }
     }
   }
 }
@@ -4041,70 +3934,90 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 0
+              },
+              "value" : "marko",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 6
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+              "value" : "san diego",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1997
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 7
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+              "value" : "santa cruz",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 8
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+              "value" : "brussels",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 9
+              },
+              "value" : "santa fe",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           } ]
@@ -4120,54 +4033,70 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 1
-            },
-            "value" : "stephen"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 1
+              },
+              "value" : "stephen",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 10
-            },
-            "value" : "centreville",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1990
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 10
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2000
+              "value" : "centreville",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1990
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 11
-            },
-            "value" : "dulles",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2000
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 11
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2006
+              "value" : "dulles",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2000
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 12
-            },
-            "value" : "purcellville",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2006
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 12
+              },
+              "value" : "purcellville",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2006
+                }
               }
             }
           } ]
@@ -4183,70 +4112,90 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 2
-            },
-            "value" : "matthias"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 2
+              },
+              "value" : "matthias",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 13
-            },
-            "value" : "bremen",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 13
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2007
+              "value" : "bremen",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 14
-            },
-            "value" : "baltimore",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2007
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 14
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2011
+              "value" : "baltimore",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2007
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 15
-            },
-            "value" : "oakland",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2011
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 15
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2014
+              "value" : "oakland",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2011
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 16
-            },
-            "value" : "seattle",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2014
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 16
+              },
+              "value" : "seattle",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2014
+                }
               }
             }
           } ]
@@ -4262,54 +4211,70 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 3
-            },
-            "value" : "daniel"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 3
+              },
+              "value" : "daniel",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 17
-            },
-            "value" : "spremberg",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1982
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 17
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+              "value" : "spremberg",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1982
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 18
-            },
-            "value" : "kaiserslautern",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 18
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2009
+              "value" : "kaiserslautern",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 19
-            },
-            "value" : "aachen",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2009
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 19
+              },
+              "value" : "aachen",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2009
+                }
               }
             }
           } ]
@@ -4325,11 +4290,15 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "software",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 4
-            },
-            "value" : "gremlin"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 4
+              },
+              "value" : "gremlin",
+              "label" : "name"
+            }
           } ]
         }
       }
@@ -4343,11 +4312,15 @@ terms of features, but it does not have an "untyped" version as previous version
         "label" : "software",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 5
-            },
-            "value" : "tinkergraph"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 5
+              },
+              "value" : "tinkergraph",
+              "label" : "name"
+            }
           } ]
         }
       }
@@ -4372,8 +4345,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2009
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2009
+              }
+            }
           }
         }
       }
@@ -4397,8 +4376,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2010
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2010
+              }
+            }
           }
         }
       }
@@ -4422,8 +4407,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 4
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 4
+              }
+            }
           }
         }
       }
@@ -4447,8 +4438,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -4472,8 +4469,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2010
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2010
+              }
+            }
           }
         }
       }
@@ -4497,8 +4500,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2011
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2011
+              }
+            }
           }
         }
       }
@@ -4522,8 +4531,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -4547,8 +4562,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 4
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 4
+              }
+            }
           }
         }
       }
@@ -4572,8 +4593,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "since" : {
-            "@type" : "g:Int32",
-            "@value" : 2012
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "since",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 2012
+              }
+            }
           }
         }
       }
@@ -4597,8 +4624,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }
@@ -4622,8 +4655,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }
@@ -4647,8 +4686,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 5
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 5
+              }
+            }
           }
         }
       }
@@ -4672,8 +4717,14 @@ terms of features, but it does not have an "untyped" version as previous version
         },
         "properties" : {
           "skill" : {
-            "@type" : "g:Int32",
-            "@value" : 3
+            "@type" : "g:Property",
+            "@value" : {
+              "key" : "skill",
+              "value" : {
+                "@type" : "g:Int32",
+                "@value" : 3
+              }
+            }
           }
         }
       }
@@ -4701,149 +4752,6 @@ terms of features, but it does not have an "untyped" version as previous version
 }
 ----
 
-==== Tree
-
-[source,json]
-----
-{
-  "@type" : "g:Tree",
-  "@value" : [ {
-    "key" : {
-      "@type" : "g:Vertex",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 1
-        },
-        "label" : "person",
-        "properties" : {
-          "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
-          } ],
-          "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
-              }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
-              }
-            }
-          } ]
-        }
-      }
-    },
-    "value" : {
-      "@type" : "g:Tree",
-      "@value" : [ {
-        "key" : {
-          "@type" : "g:Vertex",
-          "@value" : {
-            "id" : {
-              "@type" : "g:Int32",
-              "@value" : 10
-            },
-            "label" : "software",
-            "properties" : {
-              "name" : [ {
-                "id" : {
-                  "@type" : "g:Int64",
-                  "@value" : 4
-                },
-                "value" : "gremlin"
-              } ]
-            }
-          }
-        },
-        "value" : {
-          "@type" : "g:Tree",
-          "@value" : [ {
-            "key" : {
-              "@type" : "g:Vertex",
-              "@value" : {
-                "id" : {
-                  "@type" : "g:Int32",
-                  "@value" : 11
-                },
-                "label" : "software",
-                "properties" : {
-                  "name" : [ {
-                    "id" : {
-                      "@type" : "g:Int64",
-                      "@value" : 5
-                    },
-                    "value" : "tinkergraph"
-                  } ]
-                }
-              }
-            },
-            "value" : {
-              "@type" : "g:Tree",
-              "@value" : [ ]
-            }
-          } ]
-        }
-      } ]
-    }
-  } ]
-}
-----
-
 ==== Vertex
 
 [source,json]
@@ -4858,70 +4766,90 @@ terms of features, but it does not have an "untyped" version as previous version
     "label" : "person",
     "properties" : {
       "name" : [ {
-        "id" : {
-          "@type" : "g:Int64",
-          "@value" : 0
-        },
-        "value" : "marko"
+        "@type" : "g:VertexProperty",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 0
+          },
+          "value" : "marko",
+          "label" : "name"
+        }
       } ],
       "location" : [ {
-        "id" : {
-          "@type" : "g:Int64",
-          "@value" : 6
-        },
-        "value" : "san diego",
-        "properties" : {
-          "startTime" : {
-            "@type" : "g:Int32",
-            "@value" : 1997
+        "@type" : "g:VertexProperty",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 6
           },
-          "endTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2001
+          "value" : "san diego",
+          "label" : "location",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 1997
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2001
+            }
           }
         }
       }, {
-        "id" : {
-          "@type" : "g:Int64",
-          "@value" : 7
-        },
-        "value" : "santa cruz",
-        "properties" : {
-          "startTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2001
+        "@type" : "g:VertexProperty",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 7
           },
-          "endTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2004
+          "value" : "santa cruz",
+          "label" : "location",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2001
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2004
+            }
           }
         }
       }, {
-        "id" : {
-          "@type" : "g:Int64",
-          "@value" : 8
-        },
-        "value" : "brussels",
-        "properties" : {
-          "startTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2004
+        "@type" : "g:VertexProperty",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 8
           },
-          "endTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2005
+          "value" : "brussels",
+          "label" : "location",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2004
+            },
+            "endTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2005
+            }
           }
         }
       }, {
-        "id" : {
-          "@type" : "g:Int64",
-          "@value" : 9
-        },
-        "value" : "santa fe",
-        "properties" : {
-          "startTime" : {
-            "@type" : "g:Int32",
-            "@value" : 2005
+        "@type" : "g:VertexProperty",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int64",
+            "@value" : 9
+          },
+          "value" : "santa fe",
+          "label" : "location",
+          "properties" : {
+            "startTime" : {
+              "@type" : "g:Int32",
+              "@value" : 2005
+            }
           }
         }
       } ]
@@ -4942,10 +4870,6 @@ terms of features, but it does not have an "untyped" version as previous version
       "@value" : 0
     },
     "value" : "marko",
-    "vertex" : {
-      "@type" : "g:Int32",
-      "@value" : 1
-    },
     "label" : "name"
   }
 }
@@ -5087,54 +5011,52 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:Metrics",
   "@value" : {
-    "dur" : {
+    "@type" : "g:Map",
+    "@value" : [ "dur", {
       "@type" : "g:Double",
       "@value" : 100.0
-    },
-    "counts" : {
-      "traverserCount" : {
+    }, "counts", {
+      "@type" : "g:Map",
+      "@value" : [ "traverserCount", {
         "@type" : "g:Int64",
         "@value" : 4
-      },
-      "elementCount" : {
+      }, "elementCount", {
         "@type" : "g:Int64",
         "@value" : 4
-      }
-    },
-    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
-    "annotations" : {
-      "percentDur" : {
+      } ]
+    }, "name", "TinkerGraphStep(vertex,[~label.eq(person)])", "annotations", {
+      "@type" : "g:Map",
+      "@value" : [ "percentDur", {
         "@type" : "g:Double",
         "@value" : 25.0
-      }
-    },
-    "id" : "7.0.0()",
-    "metrics" : [ {
-      "@type" : "g:Metrics",
-      "@value" : {
-        "dur" : {
-          "@type" : "g:Double",
-          "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          },
-          "elementCount" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          }
-        },
-        "name" : "VertexStep(OUT,vertex)",
-        "annotations" : {
-          "percentDur" : {
+      } ]
+    }, "id", "7.0.0()", "metrics", {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Metrics",
+        "@value" : {
+          "@type" : "g:Map",
+          "@value" : [ "dur", {
             "@type" : "g:Double",
-            "@value" : 25.0
-          }
-        },
-        "id" : "3.0.0()"
-      }
+            "@value" : 100.0
+          }, "counts", {
+            "@type" : "g:Map",
+            "@value" : [ "traverserCount", {
+              "@type" : "g:Int64",
+              "@value" : 7
+            }, "elementCount", {
+              "@type" : "g:Int64",
+              "@value" : 7
+            } ]
+          }, "name", "VertexStep(OUT,vertex)", "annotations", {
+            "@type" : "g:Map",
+            "@value" : [ "percentDur", {
+              "@type" : "g:Double",
+              "@value" : 25.0
+            } ]
+          }, "id", "3.0.0()" ]
+        }
+      } ]
     } ]
   }
 }
@@ -5208,16 +5130,19 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       "@type" : "g:P",
       "@value" : {
         "predicate" : "within",
-        "value" : [ {
-          "@type" : "g:Int32",
-          "@value" : -1
-        }, {
-          "@type" : "g:Int32",
-          "@value" : -10
-        }, {
-          "@type" : "g:Int32",
-          "@value" : -100
-        } ]
+        "value" : {
+          "@type" : "g:List",
+          "@value" : [ {
+            "@type" : "g:Int32",
+            "@value" : -1
+          }, {
+            "@type" : "g:Int32",
+            "@value" : -10
+          }, {
+            "@type" : "g:Int32",
+            "@value" : -100
+          } ]
+        }
       }
     } ]
   }
@@ -5251,114 +5176,109 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:TraversalMetrics",
   "@value" : {
-    "dur" : {
+    "@type" : "g:Map",
+    "@value" : [ "dur", {
       "@type" : "g:Double",
       "@value" : 0.004
-    },
-    "metrics" : [ {
-      "@type" : "g:Metrics",
-      "@value" : {
-        "dur" : {
-          "@type" : "g:Double",
-          "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
-            "@type" : "g:Int64",
-            "@value" : 4
-          },
-          "elementCount" : {
-            "@type" : "g:Int64",
-            "@value" : 4
-          }
-        },
-        "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
-        "annotations" : {
-          "percentDur" : {
+    }, "metrics", {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Metrics",
+        "@value" : {
+          "@type" : "g:Map",
+          "@value" : [ "dur", {
             "@type" : "g:Double",
-            "@value" : 25.0
-          }
-        },
-        "id" : "7.0.0()"
-      }
-    }, {
-      "@type" : "g:Metrics",
-      "@value" : {
-        "dur" : {
-          "@type" : "g:Double",
-          "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
-            "@type" : "g:Int64",
-            "@value" : 13
-          },
-          "elementCount" : {
-            "@type" : "g:Int64",
-            "@value" : 13
-          }
-        },
-        "name" : "VertexStep(OUT,vertex)",
-        "annotations" : {
-          "percentDur" : {
+            "@value" : 100.0
+          }, "counts", {
+            "@type" : "g:Map",
+            "@value" : [ "traverserCount", {
+              "@type" : "g:Int64",
+              "@value" : 4
+            }, "elementCount", {
+              "@type" : "g:Int64",
+              "@value" : 4
+            } ]
+          }, "name", "TinkerGraphStep(vertex,[~label.eq(person)])", "annotations", {
+            "@type" : "g:Map",
+            "@value" : [ "percentDur", {
+              "@type" : "g:Double",
+              "@value" : 25.0
+            } ]
+          }, "id", "7.0.0()" ]
+        }
+      }, {
+        "@type" : "g:Metrics",
+        "@value" : {
+          "@type" : "g:Map",
+          "@value" : [ "dur", {
             "@type" : "g:Double",
-            "@value" : 25.0
-          }
-        },
-        "id" : "2.0.0()"
-      }
-    }, {
-      "@type" : "g:Metrics",
-      "@value" : {
-        "dur" : {
-          "@type" : "g:Double",
-          "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          },
-          "elementCount" : {
-            "@type" : "g:Int64",
-            "@value" : 7
-          }
-        },
-        "name" : "VertexStep(OUT,vertex)",
-        "annotations" : {
-          "percentDur" : {
+            "@value" : 100.0
+          }, "counts", {
+            "@type" : "g:Map",
+            "@value" : [ "traverserCount", {
+              "@type" : "g:Int64",
+              "@value" : 13
+            }, "elementCount", {
+              "@type" : "g:Int64",
+              "@value" : 13
+            } ]
+          }, "name", "VertexStep(OUT,vertex)", "annotations", {
+            "@type" : "g:Map",
+            "@value" : [ "percentDur", {
+              "@type" : "g:Double",
+              "@value" : 25.0
+            } ]
+          }, "id", "2.0.0()" ]
+        }
+      }, {
+        "@type" : "g:Metrics",
+        "@value" : {
+          "@type" : "g:Map",
+          "@value" : [ "dur", {
             "@type" : "g:Double",
-            "@value" : 25.0
-          }
-        },
-        "id" : "3.0.0()"
-      }
-    }, {
-      "@type" : "g:Metrics",
-      "@value" : {
-        "dur" : {
-          "@type" : "g:Double",
-          "@value" : 100.0
-        },
-        "counts" : {
-          "traverserCount" : {
-            "@type" : "g:Int64",
-            "@value" : 1
-          },
-          "elementCount" : {
-            "@type" : "g:Int64",
-            "@value" : 1
-          }
-        },
-        "name" : "TreeStep",
-        "annotations" : {
-          "percentDur" : {
+            "@value" : 100.0
+          }, "counts", {
+            "@type" : "g:Map",
+            "@value" : [ "traverserCount", {
+              "@type" : "g:Int64",
+              "@value" : 7
+            }, "elementCount", {
+              "@type" : "g:Int64",
+              "@value" : 7
+            } ]
+          }, "name", "VertexStep(OUT,vertex)", "annotations", {
+            "@type" : "g:Map",
+            "@value" : [ "percentDur", {
+              "@type" : "g:Double",
+              "@value" : 25.0
+            } ]
+          }, "id", "3.0.0()" ]
+        }
+      }, {
+        "@type" : "g:Metrics",
+        "@value" : {
+          "@type" : "g:Map",
+          "@value" : [ "dur", {
             "@type" : "g:Double",
-            "@value" : 25.0
-          }
-        },
-        "id" : "4.0.0()"
-      }
+            "@value" : 100.0
+          }, "counts", {
+            "@type" : "g:Map",
+            "@value" : [ "traverserCount", {
+              "@type" : "g:Int64",
+              "@value" : 1
+            }, "elementCount", {
+              "@type" : "g:Int64",
+              "@value" : 1
+            } ]
+          }, "name", "TreeStep", "annotations", {
+            "@type" : "g:Map",
+            "@value" : [ "percentDur", {
+              "@type" : "g:Double",
+              "@value" : 25.0
+            } ]
+          }, "id", "4.0.0()" ]
+        }
+      } ]
     } ]
   }
 }
@@ -5385,70 +5305,90 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "label" : "person",
         "properties" : {
           "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 0
+              },
+              "value" : "marko",
+              "label" : "name"
+            }
           } ],
           "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 6
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+              "value" : "san diego",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 1997
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 7
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+              "value" : "santa cruz",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2001
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 8
               },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+              "value" : "brussels",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2004
+                },
+                "endTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 9
+              },
+              "value" : "santa fe",
+              "label" : "location",
+              "properties" : {
+                "startTime" : {
+                  "@type" : "g:Int32",
+                  "@value" : 2005
+                }
               }
             }
           } ]
@@ -5473,8 +5413,8 @@ The following `RequestMessage` is an example of the response that should be made
   "op" : "authentication",
   "processor" : "",
   "args" : {
-    "saslMechanism" : "PLAIN",
-    "sasl" : "AHN0ZXBocGhlbgBwYXNzd29yZA=="
+    "@type" : "g:Map",
+    "@value" : [ "saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==" ]
   }
 }
 ----
@@ -5490,18 +5430,17 @@ The following `RequestMessage` is an example of a simple session request for a s
   "op" : "eval",
   "processor" : "session",
   "args" : {
-    "gremlin" : "g.V(x)",
-    "language" : "gremlin-groovy",
-    "session" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "session", {
       "@type" : "g:UUID",
       "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    },
-    "bindings" : {
-      "x" : {
+    }, "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }
 ----
@@ -5517,21 +5456,20 @@ The following `RequestMessage` is an example of a session request for a script e
   "op" : "eval",
   "processor" : "session",
   "args" : {
-    "gremlin" : "social.V(x)",
-    "language" : "gremlin-groovy",
-    "aliases" : {
-      "g" : "social"
-    },
-    "session" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "social.V(x)", "language", "gremlin-groovy", "aliases", {
+      "@type" : "g:Map",
+      "@value" : [ "g", "social" ]
+    }, "session", {
       "@type" : "g:UUID",
       "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    },
-    "bindings" : {
-      "x" : {
+    }, "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }
 ----
@@ -5547,10 +5485,11 @@ The following `RequestMessage` is an example of a request to close a session.
   "op" : "close",
   "processor" : "session",
   "args" : {
-    "session" : {
+    "@type" : "g:Map",
+    "@value" : [ "session", {
       "@type" : "g:UUID",
       "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    }
+    } ]
   }
 }
 ----
@@ -5566,14 +5505,14 @@ The following `RequestMessage` is an example of a simple sessionless request for
   "op" : "eval",
   "processor" : "",
   "args" : {
-    "gremlin" : "g.V(x)",
-    "language" : "gremlin-groovy",
-    "bindings" : {
-      "x" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }
 ----
@@ -5589,17 +5528,17 @@ The following `RequestMessage` is an example of a sessionless request for a scri
   "op" : "eval",
   "processor" : "",
   "args" : {
-    "gremlin" : "social.V(x)",
-    "language" : "gremlin-groovy",
-    "aliases" : {
-      "g" : "social"
-    },
-    "bindings" : {
-      "x" : {
+    "@type" : "g:Map",
+    "@value" : [ "gremlin", "social.V(x)", "language", "gremlin-groovy", "aliases", {
+      "@type" : "g:Map",
+      "@value" : [ "g", "social" ]
+    }, "bindings", {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
         "@type" : "g:Int32",
         "@value" : 1
-      }
-    }
+      } ]
+    } ]
   }
 }
 ----
@@ -5609,7 +5548,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -5618,11 +5557,17 @@ When authentication is enabled, an initial request to the server will result in 
   "status" : {
     "message" : "",
     "code" : 407,
-    "attributes" : { }
+    "attributes" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   },
   "result" : {
     "data" : null,
-    "meta" : { }
+    "meta" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   }
 }
 ----
@@ -5638,90 +5583,119 @@ The following `ResponseMessage` is a typical example of the typical successful r
   "status" : {
     "message" : "",
     "code" : 200,
-    "attributes" : { }
+    "attributes" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   },
   "result" : {
-    "data" : [ {
-      "@type" : "g:Vertex",
-      "@value" : {
-        "id" : {
-          "@type" : "g:Int32",
-          "@value" : 1
-        },
-        "label" : "person",
-        "properties" : {
-          "name" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 0
-            },
-            "value" : "marko"
-          } ],
-          "location" : [ {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 6
-            },
-            "value" : "san diego",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 1997
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
+    "data" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Vertex",
+        "@value" : {
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : "person",
+          "properties" : {
+            "name" : [ {
+              "@type" : "g:VertexProperty",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 0
+                },
+                "value" : "marko",
+                "label" : "name"
               }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 7
-            },
-            "value" : "santa cruz",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2001
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
+            } ],
+            "location" : [ {
+              "@type" : "g:VertexProperty",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 6
+                },
+                "value" : "san diego",
+                "label" : "location",
+                "properties" : {
+                  "startTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 1997
+                  },
+                  "endTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2001
+                  }
+                }
               }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 8
-            },
-            "value" : "brussels",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2004
-              },
-              "endTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            }, {
+              "@type" : "g:VertexProperty",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 7
+                },
+                "value" : "santa cruz",
+                "label" : "location",
+                "properties" : {
+                  "startTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2001
+                  },
+                  "endTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2004
+                  }
+                }
               }
-            }
-          }, {
-            "id" : {
-              "@type" : "g:Int64",
-              "@value" : 9
-            },
-            "value" : "santa fe",
-            "properties" : {
-              "startTime" : {
-                "@type" : "g:Int32",
-                "@value" : 2005
+            }, {
+              "@type" : "g:VertexProperty",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 8
+                },
+                "value" : "brussels",
+                "label" : "location",
+                "properties" : {
+                  "startTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2004
+                  },
+                  "endTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2005
+                  }
+                }
               }
-            }
-          } ]
+            }, {
+              "@type" : "g:VertexProperty",
+              "@value" : {
+                "id" : {
+                  "@type" : "g:Int64",
+                  "@value" : 9
+                },
+                "value" : "santa fe",
+                "label" : "location",
+                "properties" : {
+                  "startTime" : {
+                    "@type" : "g:Int32",
+                    "@value" : 2005
+                  }
+                }
+              }
+            } ]
+          }
         }
-      }
-    } ],
-    "meta" : { }
+      } ]
+    },
+    "meta" : {
+      "@type" : "g:Map",
+      "@value" : [ ]
+    }
   }
 }
 ----
@@ -5729,14 +5703,14 @@ The following `ResponseMessage` is a typical example of the typical successful r
 
 === Extended
 
-Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:
+Note that the "extended" types require the addition of the separate `GraphSONXModuleV3d0` module as follows:
 
 [source,java]
 ----
 mapper = GraphSONMapper.build().
                         typeInfo(TypeInfo.PARTIAL_TYPES).
-                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-                        version(GraphSONVersion.V2_0).create().createMapper()
+                        addCustomModule(GraphSONXModuleV3d0.build().create(false)).
+                        version(GraphSONVersion.V3_0).create().createMapper()
 ----
 
 ==== BigDecimal

@@ -96,194 +96,22 @@
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>projectBuildDir</name>
+                                            <value>${project.build.directory}</value>
+                                        </property>
+                                        <property>
+                                            <name>projectBaseDir</name>
+                                            <value>${project.build.directory}</value>
+                                        </property>
+                                        <property>
+                                            <name>projectVersion</name>
+                                            <value>${project.version}</value>
+                                        </property>
+                                    </properties>
                                     <scripts>
-                                        <script>
-                                            <![CDATA[
-import java.time.*
-import java.nio.files.*
-import org.apache.tinkerpop.gremlin.driver.ser.*
-import org.apache.tinkerpop.gremlin.process.traversal.*
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
-import org.apache.tinkerpop.gremlin.structure.*
-import org.apache.tinkerpop.gremlin.structure.io.graphson.*
-import org.apache.tinkerpop.gremlin.driver.message.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.*
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick
-import org.apache.tinkerpop.gremlin.structure.io.Model
-import org.apache.commons.configuration.BaseConfiguration
-
-new File("${project.build.directory}/dev-docs/").mkdirs()
-new File("${project.build.directory}/test-case-data/io/graphson/").mkdirs()
-new File("${project.build.directory}/test-case-data/io/gryo/").mkdirs()
-
-conf = new BaseConfiguration()
-conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
-graph = TinkerGraph.open(conf)
-TinkerFactory.generateTheCrew(graph)
-g = graph.traversal()
-
-model = Model.instance()
-
-toJsonV1d0NoTypes = { o, type, mapper, comment = "" ->
-  toJson(o, type, mapper, comment, "v1d0")
-}
-
-toJson = { o, type, mapper, comment = "", suffix = "" ->
-  def jsonSample = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(o)
-
-  def fileToWriteTo = new File("${project.build.directory}/test-case-data/io/graphson/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".json")
-  if (fileToWriteTo.exists()) fileToWriteTo.delete()
-  fileToWriteTo.withWriter{ it.write(jsonSample) }
-
-  return type + "\n" +
-  "^".multiply(type.length()) + "\n\n" +
-  (comment.isEmpty() ? "" : comment + "\n\n") +
-  "[source,json]\n" +
-  "----\n" +
-  jsonSample + "\n" +
-  "----\n" +
-  "\n"
-}
-
-writeSupportedV1Objects = { writer, mapper ->
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
-  model.entries("Graph Structure").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
-    writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
-  model.entries("RequestMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
-    writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
-    model.entries("ResponseMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
-    writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-}
-
-mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistryV1d0.instance()).
-                        addCustomModule(new AbstractGraphSONMessageSerializerV1d0.GremlinServerModule()).
-                        version(GraphSONVersion.V1_0).create().createMapper()
-
-v1GraphSONFile = new File("${project.build.directory}/dev-docs/out-graphson-1d0.txt")
-if (v1GraphSONFile.exists()) v1GraphSONFile.delete()
-new File("${project.build.directory}/dev-docs/out-graphson-1d0.txt").withWriter { writeSupportedV1Objects(it, mapper) }
-
-toJsonV2d0PartialTypes = { o, type, mapper, comment = "" ->
-  toJson(o, type, mapper, comment, "v2d0-partial")
-}
-
-toJsonV2d0NoTypes = { o, type, mapper, comment = "" ->
-  toJson(o, type, mapper, comment, "v2d0-no-types")
-}
-
-toJsonV3d0 = { o, type, mapper, comment = "" ->
-  toJson(o, type, mapper, comment, "v3d0")
-}
-
-writeSupportedV2V3Objects = { writer, mapper, toJsonFunction ->
-  writer.write("Core\n")
-  writer.write("~~~~\n\n")
-  model.entries("Core").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
-  model.entries("Graph Structure").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("Graph Process\n")
-  writer.write("~~~~~~~~~~~~~\n\n")
-  model.entries("Graph Process").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
-  model.entries("RequestMessage").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
-  model.entries("ResponseMessage").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-
-  writer.write("\n")
-  writer.write("Extended\n")
-  writer.write("~~~~~~~~\n\n")
-  writer.write("""Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:\n
-[source,java]
-----
-mapper = GraphSONMapper.build().
-                        typeInfo(TypeInfo.PARTIAL_TYPES).
-                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-                        version(GraphSONVersion.V2_0).create().createMapper()
-----\n
-""")
-  model.entries("Extended").each {
-    writer.write(toJsonFunction(it.getObject(), it.getTitle(), mapper, it.getDescription()))
-  }
-}
-
-mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistryV2d0.instance()).
-                        typeInfo(TypeInfo.PARTIAL_TYPES).
-                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-                        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
-                        version(GraphSONVersion.V2_0).create().createMapper()
-
-file = new File("${project.build.directory}/dev-docs/out-graphson-2d0-partial.txt")
-if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0PartialTypes) }
-
-mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistryV2d0.instance()).
-                        typeInfo(TypeInfo.NO_TYPES).
-                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-                        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
-                        version(GraphSONVersion.V2_0).create().createMapper()
-
-file = new File("${project.build.directory}/dev-docs/out-graphson-2d0-no-type.txt")
-if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0NoTypes) }
-
-mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistryV2d0.instance()).
-                        addCustomModule(GraphSONXModuleV2d0.build().create(false)).
-                        addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).
-                        version(GraphSONVersion.V3_0).create().createMapper()
-
-file = new File("${project.build.directory}/dev-docs/out-graphson-3d0.txt")
-if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV3d0) }
-
-def ver = "_" + "${project.version}".replace(".","_").replace("-SNAPSHOT","")
-def target = "${project.basedir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/graphson/" + ver
-def targetDir = new File(target)
-if (!targetDir.exists()) targetDir.mkdirs()
-new File("${project.build.directory}/test-case-data/io/graphson/").listFiles().each {
-  def copyTo = new File(target + "/" + it.name)
-  if (copyTo.exists()) copyTo.delete()
-  java.nio.file.Files.copy(it.toPath(), new File(target + "/" + it.name).toPath())
-}
-
-]]>
-                                        </script>
+                                        <script>${project.basedir}/scripts/generate-graphson-resources.groovy</script>
                                     </scripts>
                                 </configuration>
                             </execution>
@@ -294,87 +122,22 @@ new File("${project.build.directory}/test-case-data/io/graphson/").listFiles().e
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <properties>
+                                        <property>
+                                            <name>projectBuildDir</name>
+                                            <value>${project.build.directory}</value>
+                                        </property>
+                                        <property>
+                                            <name>projectBaseDir</name>
+                                            <value>${project.build.directory}</value>
+                                        </property>
+                                        <property>
+                                            <name>projectVersion</name>
+                                            <value>${project.version}</value>
+                                        </property>
+                                    </properties>
                                     <scripts>
-                                        <script>
-                                            <![CDATA[
-import java.time.*
-import java.nio.file.*
-import org.apache.tinkerpop.shaded.kryo.io.Output
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
-import org.apache.tinkerpop.gremlin.structure.*
-import org.apache.tinkerpop.gremlin.structure.io.gryo.*
-import org.apache.tinkerpop.gremlin.structure.io.*
-import org.apache.tinkerpop.gremlin.process.traversal.*
-import org.apache.commons.configuration.BaseConfiguration
-
-new File("${project.build.directory}/dev-docs/").mkdirs()
-new File("${project.build.directory}/test-case-data/io/gryo").mkdirs()
-
-conf = new BaseConfiguration()
-conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name())
-graph = TinkerGraph.open(conf)
-TinkerFactory.generateTheCrew(graph)
-g = graph.traversal()
-
-model = Model.instance()
-
-toGryo = { o, type, mapper, suffix = "" ->
-  def fileToWriteTo = new File("${project.build.directory}/test-case-data/io/gryo/" + type.title.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
-  if (fileToWriteTo.exists()) fileToWriteTo.delete()
-  try {
-    final Output out = new Output(new FileOutputStream(fileToWriteTo))
-    mapper.writeObject(out, o)
-    out.close()
-  } catch (Exception ex) {
-    // some v1 gryo is not easily testable (i.e. RequestMessage) because it is has external serializers that
-    // don' get registered with GryoMapper. those cases can be ignored.
-    if (type.isCompatibleWith(GryoCompatibility.V1D0_3_3_0))
-      throw ex
-    else
-      fileToWriteTo.delete()
-  }
-}
-
-toGryoV1d0 = { o, type, mapper ->
-  toGryo(o, type, mapper, "v1d0")
-}
-
-toGryoV3d0 = { o, type, mapper ->
-  toGryo(o, type, mapper, "v3d0")
-}
-
-writeSupportedObjects = { mapper, toGryoFunction ->
-  model.entries().findAll{it.hasGryoCompatibility()}.each {
-    toGryoFunction(it.getObject(), it, mapper)
-  }
-}
-
-mapper = GryoMapper.build().
-                    version(GryoVersion.V1_0).
-                    addRegistry(TinkerIoRegistryV2d0.instance()).
-                    create().createMapper()
-
-writeSupportedObjects(mapper, toGryoV1d0)
-
-mapper = GryoMapper.build().
-                    version(GryoVersion.V3_0).
-                    addRegistry(TinkerIoRegistryV2d0.instance()).
-                    create().createMapper()
-
-writeSupportedObjects(mapper, toGryoV3d0)
-
-def ver = "_" + "${project.version}".replace(".","_").replace("-SNAPSHOT","")
-def target = "${project.basedir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/gryo/" + ver
-def targetDir = new File(target)
-if (!targetDir.exists()) targetDir.mkdirs()
-new File("${project.build.directory}/test-case-data/io/gryo/").listFiles().each {
-  def copyTo = new File(target + "/" + it.name)
-  if (copyTo.exists()) copyTo.delete()
-  java.nio.file.Files.copy(it.toPath(), new File(target + "/" + it.name).toPath())
-}
-
-]]>
-                                        </script>
+                                        <script>${project.basedir}/scripts/generate-gryo-resources.groovy</script>
                                     </scripts>
                                 </configuration>
                             </execution>

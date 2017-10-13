@@ -62,11 +62,15 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -461,6 +465,32 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteList() throws Exception {
+        final String resourceName = "list";
+        assumeCompatibility(resourceName);
+
+        final List resource = findModelEntryObject(resourceName);
+        final List fromStatic = read(getCompatibility().readFromResource(resourceName), List.class);
+        final List recycled = read(write(fromStatic, List.class), List.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMap() throws Exception {
+        final String resourceName = "map";
+        assumeCompatibility(resourceName);
+
+        final Map resource = findModelEntryObject(resourceName);
+        final Map fromStatic = read(getCompatibility().readFromResource(resourceName), Map.class);
+        final Map recycled = read(write(fromStatic, Map.class), Map.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
     public void shouldReadWriteMetrics() throws Exception {
         final String resourceName = "metrics";
         assumeCompatibility(resourceName);
@@ -742,6 +772,19 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
         assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) fromStatic.getArgs().get("aliases")).get("g"));
         assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
+    }
+
+    @Test
+    public void shouldReadWriteSet() throws Exception {
+        final String resourceName = "set";
+        assumeCompatibility(resourceName);
+
+        final Set resource = findModelEntryObject(resourceName);
+        final Set fromStatic = read(getCompatibility().readFromResource(resourceName), Set.class);
+        final Set recycled = read(write(fromStatic, Set.class), Set.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
     }
 
     @Test

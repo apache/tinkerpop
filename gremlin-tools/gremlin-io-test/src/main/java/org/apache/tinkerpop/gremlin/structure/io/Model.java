@@ -69,6 +69,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,6 +105,7 @@ public class Model {
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
         final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
+        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
@@ -113,7 +115,14 @@ public class Model {
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(100, "Integer");
+        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3);
         addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        final Map<Object,Object> map = new HashMap<>();
+        map.put("test", 123);
+        map.put(new Date(1481750076295L), "red");
+        map.put(Arrays.asList(1,2,3), new Date(1481750076295L));
+        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3);
+        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3);
         // Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
