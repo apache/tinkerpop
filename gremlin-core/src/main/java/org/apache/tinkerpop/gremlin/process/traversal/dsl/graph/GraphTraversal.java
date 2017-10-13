@@ -86,6 +86,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
@@ -1095,6 +1096,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addFrom(__.constant(fromVertex).asAdmin());
         return this;
+    }
+
+    /**
+     * Map the {@link Traverser} to a {@link Double} according to the mathematical expression provided in the argument.
+     *
+     * @param expression the mathematical expression with variables refering to scope variables.
+     * @return the traversal with the {@link MathStep} added.
+     * @since 3.3.1
+     */
+    public default GraphTraversal<S, Double> math(final String expression) {
+        this.asAdmin().getBytecode().addStep(Symbols.math, expression);
+        return this.asAdmin().addStep(new MathStep<>(this.asAdmin(), expression));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -2691,6 +2704,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String value = "value";
         public static final String path = "path";
         public static final String match = "match";
+        public static final String math = "math";
         public static final String sack = "sack";
         public static final String loops = "loops";
         public static final String project = "project";

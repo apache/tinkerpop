@@ -498,6 +498,13 @@ public class __ {
         return __.<A>start().addE(edgeLabelTraversal);
     }
 
+    /**
+     * @see GraphTraversal#math(String)
+     */
+    public static <A> GraphTraversal<A, Double> math(final String expression) {
+        return __.<A>start().math(expression);
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**

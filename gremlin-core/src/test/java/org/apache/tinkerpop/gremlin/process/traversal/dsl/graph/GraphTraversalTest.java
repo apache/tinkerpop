@@ -112,6 +112,8 @@ public class GraphTraversalTest {
                         list.add(arguments[0] = (long) (Math.abs(random.nextInt(10))));
                         list.add(arguments[1] = (long) (Math.abs(random.nextInt(10) + 100)));
                     }
+                } else if (stepMethod.getName().equals("math")) {
+                    list.add(arguments[0] = random.nextInt(100) + " + " + random.nextInt(100));
                 } else {
                     for (int i = 0; i < stepMethod.getParameterTypes().length; i++) {
                         final Class<?> type = stepMethod.getParameterTypes()[i];

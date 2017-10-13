@@ -18,16 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
-import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -39,13 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
@@ -55,6 +50,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
@@ -70,47 +66,8 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-
-        final Traversal<?, ?> traversal = g.V().repeat(out()).times(2).groupCount().by("name").select(Column.keys).order().by(Order.decr);
-        final Bytecode bytecode = traversal.asAdmin().getBytecode();
-        //final JavaTranslator translator = JavaTranslator.of(g);
-        final Map<Bytecode, Traversal.Admin<?, ?>> cache = new HashMap<>();
-        cache.put(bytecode, traversal.asAdmin());
-        final HashSet<?> result = new LinkedHashSet<>(Arrays.asList("ripple", "lop"));
-
-        System.out.println("BYTECODE: " + bytecode + "\n");
-        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
-            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
-            final Traversal t = JavaTranslator.of(g).translate(bytecode);
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("\n==Second test with reversed execution==\n");
-
-        System.out.println("BYTECODE: " + bytecode + "\n");
-        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
-            final Traversal t = JavaTranslator.of(g).translate(bytecode);
-            //assertEquals(result, t.next());
-        }));
-
-        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
-            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
-            //assertEquals(result, t.next());
-        }));
+        System.out.println(g.withSack(1).inject(1).repeat(__.sack((BiFunction)sum).by(__.constant(1))).times(10).emit().math("sin _").by(sack()).toList());
     }
-
-   /* @Test
-    public void testTraversalDSL() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEachRemaining(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
-        assertEquals(1, g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEachRemaining(name -> assertEquals("lop", name));
-    }*/
 
     @Test
     @Ignore

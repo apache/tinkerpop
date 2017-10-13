@@ -495,6 +495,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the math step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal< S , Double > Math (params object[] args)
+        {
+            Bytecode.AddStep("math", args);
+            return Wrap< S , Double >(this);
+        }
+
+        /// <summary>
         ///     Adds the max step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal< S , E2 > Max<E2> (params object[] args)
