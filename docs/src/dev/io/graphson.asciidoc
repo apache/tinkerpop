@@ -405,7 +405,7 @@ that vertex. The GraphSON 3.0 representation looks like this for the Modern toy 
 
 At a glance, one can see that this is not a valid JSON document. While that form may seem incorrect, there is a reason.
 The "graph" format is designed by default to be splittable, such that distributed systems like Spark can easily divide
-the a GraphSON file for processing. If this data were represented as an "array of vertices" with square brackets at the
+the GraphSON file for processing. If this data were represented as an "array of vertices" with square brackets at the
 beginning and end of the file, the format would be less conducive to fit that purpose. It is possible to change this
 behavior by building the `GraphSONWriter` with the `wrapAdjacencyList` setting set to `true`, in which case the output
 will be a valid JSON document that looks like this:
