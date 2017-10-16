@@ -15,24 +15,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[olap-spark-yarn]]
-OLAP traversals with Spark on Yarn
+OLAP traversals with Spark on YARN
 ----------------------------------
 
-TinkerPop's combination of http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[SparkGraphComputer]
-and http://tinkerpop.apache.org/docs/current/reference/#_properties_files[HadoopGraph] allows for running
+TinkerPop's combination of http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]
+and http://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_files[HadoopGraph] allows for running
 distributed, analytical graph queries (OLAP) on a computer cluster. The
-http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[reference documentation] covers the cases
+http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] covers the cases
 where Spark runs locally or where the cluster is managed by a Spark server. However, many users can only run OLAP jobs
-via the http://hadoop.apache.org/[Hadoop 2.x] Resource Manager (Yarn), which requires `SparkGraphComputer` to be
+via the http://hadoop.apache.org/[Hadoop 2.x] Resource Manager (YARN), which requires `SparkGraphComputer` to be
 configured differently. This recipe describes this configuration.
 
 Approach
 ~~~~~~~~
 
-Most configuration problems of TinkerPop with Spark on Yarn stem from three reasons:
+Most configuration problems of TinkerPop with Spark on YARN stem from three reasons:
 
 1. `SparkGraphComputer` creates its own `SparkContext` so it does not get any configs from the usual `spark-submit` command.
-2. The TinkerPop Spark plugin did not include Spark on Yarn runtime dependencies until version 3.2.7/3.3.1.
+2. The TinkerPop Spark plugin did not include Spark on YARN runtime dependencies until version 3.2.7/3.3.1.
 3. Resolving reason 2 by adding the cluster's Spark jars to the classpath may create all kinds of version
 conflicts with the Tinkerpop dependencies.
 
@@ -50,13 +50,13 @@ If you want to try the recipe on a local Hadoop pseudo-cluster, the easiest way 
 it is to look at the install script at https://github.com/apache/tinkerpop/blob/x.y.z/docker/hadoop/install.sh
 and the `start hadoop` section of https://github.com/apache/tinkerpop/blob/x.y.z/docker/scripts/build.sh.
 
-This recipe assumes that you installed the gremlin console with the
-http://tinkerpop.apache.org/docs/x.y.z/reference/#spark-plugin[spark plugin] (the
-http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-plugin[hadoop plugin] is optional). Your Hadoop cluster
-may have been configured to use file compression, e.g. lzo compression. If so, you need to copy the relevant
-jar (e.g. `hadoop-lzo-*.jar`) to gremlin console's `ext/spark-gremlin/lib` folder.
+This recipe assumes that you installed the Gremlin Console with the
+http://tinkerpop.apache.org/docs/x.y.z/reference/#spark-plugin[Spark plugin] (the
+http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-plugin[Hadoop plugin] is optional). Your Hadoop cluster
+may have been configured to use file compression, e.g. LZO compression. If so, you need to copy the relevant
+jar (e.g. `hadoop-lzo-*.jar`) to Gremlin Console's `ext/spark-gremlin/lib` folder.
 
-For starting the gremlin console in the right environment, create a shell script (e.g. `bin/spark-yarn.sh`) with the
+For starting the Gremlin Console in the right environment, create a shell script (e.g. `bin/spark-yarn.sh`) with the
 contents below. Of course, actual values for `GREMLIN_HOME`, `HADOOP_HOME` and `HADOOP_CONF_DIR` need to be adapted to
 your particular environment.
 
@@ -82,7 +82,7 @@ bin/gremlin.sh
 Running the job
 ~~~~~~~~~~~~~~~
 
-You can now run a gremlin OLAP query with Spark on Yarn:
+You can now run a gremlin OLAP query with Spark on YARN:
 
 [source]
 ----
@@ -110,39 +110,44 @@ g = graph.traversal().withComputer(SparkGraphComputer)
 g.V().group().by(values('name')).by(both().count())
 ----
 
-If you run into exceptions, the best way to see what is going on is to look into the Yarn Resource Manager UI
-(e.g. http://rm.your.domain:8088/cluster) to find the `applicationId` and get the logs using
-`yarn logs -applicationId application_1498627870374_0008` from the command shell.
+If you run into exceptions, you will have to dig into the logs. You can do this from the command line with
+`yarn application -list -appStates ALL` to find the `applicationId`, while the logs are available with
+`yarn logs -applicationId application_1498627870374_0008`. Alternatively, you can inspect the logs via
+the YARN Resource Manager UI (e.g. http://rm.your.domain:8088/cluster), provided that YARN was configured with the
+`yarn.log-aggregation-enable` property set to `true`. See the Spark documentation for
+https://spark.apache.org/docs/latest/running-on-yarn.html#debugging-your-application[additional hints].
 
 Explanation
 ~~~~~~~~~~~
 
 This recipe does not require running the `bin/hadoop/init-tp-spark.sh` script described in the
-http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[reference documentation] and thus is also
+http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] and thus is also
 valid for cluster users without access permissions to do so.
+
 Rather, it exploits the `spark.yarn.archive` property, which points to an archive with jars on the local file
-system and is loaded into the various Yarn containers. As a result the `spark-gremlin.zip` archive becomes available
-as the directory named `+__spark_libs__+` in the Yarn containers. The `spark.executor.extraClassPath` and
+system and is loaded into the various YARN containers. As a result the `spark-gremlin.zip` archive becomes available
+as the directory named `+__spark_libs__+` in the YARN containers. The `spark.executor.extraClassPath` and
 `spark.yarn.appMasterEnv.CLASSPATH` properties point to the jars inside this directory.
 This is why they contain the `+./__spark_lib__/*+` item. Just because a Spark executor got the archive with
 jars loaded into its container, does not mean it knows how to access them.
 
-Also the `HADOOP_GREMLIN_LIBS` mechanism is not used because it can not work for Spark on Yarn as implemented (jars
-added to the `SparkContext` are not available to the Yarn application master).
+Also the `HADOOP_GREMLIN_LIBS` mechanism is not used because it can not work for Spark on YARN as implemented (jars
+added to the `SparkContext` are not available to the YARN application master).
 
 The `gremlin.spark.persistContext` property is explained in the reference documentation of
-http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
-follow-up OLAP queries answered faster, because you skip the overhead for getting resources from Yarn.
+http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
+follow-up OLAP queries answered faster, because you skip the overhead for getting resources from YARN.
 
 Additional configuration options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This recipe does most of the graph configuration in the gremlin console so that environment variables can be used and
+This recipe does most of the graph configuration in the Gremlin Console so that environment variables can be used and
 the chance of configuration mistakes is minimal. Once you have your setup working, it is probably easier to make a copy
 of the `conf/hadoop/hadoop-gryo.properties` file and put the property values specific to your environment there. This is
 also the right moment to take a look at the `spark-defaults.xml` file of your cluster, in particular the settings for
-the Spark History Service, which allows you to access logs of finished jobs via the Yarn resource manager UI.
+the https://spark.apache.org/docs/latest/monitoring.html[Spark History Service], which allows you to access logs of
+finished applications via the YARN resource manager UI.
 
-This recipe uses the gremlin console, but things should not be very different for your own JVM-based application,
+This recipe uses the Gremlin Console, but things should not be very different for your own JVM-based application,
 as long as you do not use the `spark-submit` or `spark-shell` commands. You will also want to check the additional
 runtime dependencies listed in the `Gremlin-Plugin-Dependencies` section of the manifest file in the `spark-gremlin`
 jar.
