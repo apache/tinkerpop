@@ -19,7 +19,7 @@ Feature: Step - count()
 
   Scenario: g_VX1X_name_path
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).values("name").path()
@@ -30,7 +30,7 @@ Feature: Step - count()
 
   Scenario: g_VX1X_out_path_byXageX_byXnameX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).out().path().by("age").by("name")
@@ -75,7 +75,7 @@ Feature: Step - count()
 
   Scenario: g_VX1X_outEXcreatedX_inV_inE_outV_path
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).outE("created").inV().inE().outV().path()

@@ -19,7 +19,7 @@ Feature: Step - choose()
 
   Scenario: g_VX2X_optionalXoutXknowsXX
     Given the modern graph
-    And using the parameter v2Id is "v[vadas].id"
+    And using the parameter v2Id defined as "v[vadas].id"
     And the traversal of
       """
       g.V(v2Id).optional(__.out("knows"))
@@ -30,7 +30,7 @@ Feature: Step - choose()
 
   Scenario: g_VX2X_optionalXinXknowsXX
     Given the modern graph
-    And using the parameter v2Id is "v[vadas].id"
+    And using the parameter v2Id defined as "v[vadas].id"
     And the traversal of
       """
       g.V(v2Id).optional(__.in("knows"))

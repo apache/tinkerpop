@@ -32,7 +32,7 @@ Feature: Step - choose()
 
   Scenario: g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name
     Given the modern graph
-    And using the parameter l1 is "c[it.label() == 'person']"
+    And using the parameter l1 defined as "c[it.label() == 'person']"
     And the traversal of
       """
       g.V().choose(l1, __.out("knows"), __.in("created")).values("name")

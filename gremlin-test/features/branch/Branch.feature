@@ -19,7 +19,7 @@ Feature: Step - branch()
 
   Scenario: g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX
     Given the modern graph
-    And using the parameter l1 is "c[it.get().label() == 'person' ? 'a' : 'b']"
+    And using the parameter l1 defined as "c[it.get().label() == 'person' ? 'a' : 'b']"
     And the traversal of
       """
       g.V().

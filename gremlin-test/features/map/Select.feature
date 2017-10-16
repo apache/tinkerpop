@@ -19,7 +19,7 @@ Feature: Step - select()
 
   Scenario: get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).as("a").out("knows").as("b").select("a", "b")
@@ -31,7 +31,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).as("a").out("knows").as("b").
@@ -44,7 +44,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).as("a").out("knows").as("b").select("a")
@@ -56,7 +56,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).as("a").out("knows").as("b").
@@ -194,7 +194,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_asXhereX_out_selectXhereX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).as("here").out().select("here")
@@ -207,7 +207,7 @@ Feature: Step - select()
 
   Scenario: g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX
     Given the modern graph
-    And using the parameter v4Id is "v[josh].id"
+    And using the parameter v4Id defined as "v[josh].id"
     And the traversal of
       """
       g.V(v4Id).as("here").out().select("here")
@@ -219,7 +219,7 @@ Feature: Step - select()
 
   Scenario: g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name
     Given the modern graph
-    And using the parameter v4Id is "v[josh].id"
+    And using the parameter v4Id defined as "v[josh].id"
     And the traversal of
       """
       g.V(v4Id).out().as("here").
@@ -233,7 +233,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).outE().as("here").
@@ -246,7 +246,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).outE("knows").
@@ -260,7 +260,7 @@ Feature: Step - select()
 
   Scenario: g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX
     Given the modern graph
-    And using the parameter v1Id is "v[marko].id"
+    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V(v1Id).outE("knows").as("here").

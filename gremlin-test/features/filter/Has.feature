@@ -30,7 +30,7 @@ Feature: Step - has()
 
   Scenario: Use hasId() with P
     Given the modern graph
-    And using the parameter v1 is "v[marko].id"
+    And using the parameter v1 defined as "v[marko].id"
     And the traversal of
     """
     g.V().in().hasId(P.neq(v1))
