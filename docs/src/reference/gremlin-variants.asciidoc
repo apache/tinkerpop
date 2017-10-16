@@ -116,7 +116,7 @@ IMPORTANT: For developers wishing to provide another *driver implementation*, be
 When Gremlin Server is running, Gremlin-Python can communicate with Gremlin Server. The `conf/gremlin-server-modern-py.yaml`
 configuration maintains a `GremlinJythonScriptEngine` as well as the appropriate serializers for communicating `Bytecode`.
 
-IMPORTANT: Gremlin-Python is compatible with GraphSON 2.0 only, so this serializer must be configured in Gremlin Server.
+IMPORTANT: Gremlin-Python is not compatible with GraphSON 1.0.
 
 [source,bash]
 ----
@@ -308,41 +308,6 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
-=== Custom Serialization
-
-Gremlin-Python provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
-(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add
-new types by creating serializers and deserializers in Python and registering them with the `RemoteConnection`.
-
-[source,python]
-----
-class MyType(object):
-  GRAPHSON_PREFIX = "providerx"
-  GRAPHSON_BASE_TYPE = "MyType"
-  GRAPHSON_TYPE = GraphSONUtil.formatType(GRAPHSON_PREFIX, GRAPHSON_BASE_TYPE)
-
-  def __init__(self, x, y):
-    self.x = x
-    self.y = y
-
-  @classmethod
-  def objectify(cls, value, reader):
-    return cls(value['x'], value['y'])
-
-  @classmethod
-  def dictify(cls, value, writer):
-    return GraphSONUtil.typedValue(cls.GRAPHSON_BASE_TYPE,
-                                  {'x': value.x, 'y': value.y},
-                                  cls.GRAPHSON_PREFIX)
-
-graphson_reader = GraphSONReader({MyType.GRAPHSON_TYPE: MyType})
-graphson_writer = GraphSONWriter({MyType: MyType})
-
-connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
-                                     graphson_reader=graphson_reader,
-                                     graphson_writer=graphson_writer)
-----
-
 [[gremlin-DotNet]]
 == Gremlin.Net
 
@@ -369,7 +334,7 @@ IMPORTANT: For developers wishing to provide another driver implementation, be s
 
 When Gremlin Server is running, Gremlin-DotNet can communicate with Gremlin Server by sending traversals serialized as `Bytecode`.
 
-IMPORTANT: Gremlin-DotNet is compatible with GraphSON 2.0 only, so this serializer must be configured in Gremlin Server.
+IMPORTANT: Gremlin-DotNet is not compatible with GraphSON 1.0.
 
 A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
 
@@ -470,59 +435,3 @@ edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
 NOTE: Many of the TraversalStrategy classes in Gremlin-DotNet are proxies to the respective strategy on Apache TinkerPop’s
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin-DotNet bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
-
-=== Custom Serialization
-
-Gremlin-DotNet provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
-(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add new
-types by creating serializers and deserializers in C# (or any other .NET language) and registering them with the `GremlinClient`.
-
-[source,csharp]
-----
-internal class MyType
-{
-    public static string GraphsonPrefix = "providerx";
-    public static string GraphsonBaseType = "MyType";
-    public static string GraphsonType = GraphSONUtil.FormatTypeName(GraphsonPrefix, GraphsonBaseType);
-
-    public MyType(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public int X { get; }
-    public int Y { get; }
-}
-
-internal class MyClassWriter : IGraphSONSerializer
-{
-    public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-    {
-        MyType myType = objectData;
-        var valueDict = new Dictionary<string, object>
-        {
-            {"x", myType.X},
-            {"y", myType.Y}
-        };
-        return GraphSONUtil.ToTypedValue(nameof(TestClass), valueDict, MyType.GraphsonPrefix);
-    }
-}
-
-internal class MyTypeReader : IGraphSONDeserializer
-{
-    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-    {
-        var x = reader.ToObject(graphsonObject["x"]);
-        var y = reader.ToObject(graphsonObject["y"]);
-        return new MyType(x, y);
-    }
-}
-
-var graphsonReader = new GraphSONReader(
-    new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
-var graphsonWriter = new GraphSONWriter(
-    new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
-
-var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
-----

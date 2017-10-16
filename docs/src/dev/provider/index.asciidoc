@@ -401,6 +401,109 @@ TIP: Consider separating serializer code into its own module, if possible, so th
 implementation remotely don't need a full dependency on the entire `Graph` - just the IO components and related
 classes being serialized.
 
+There is an important implication to consider when the addition of a custom serializer. Presumably, the custom
+serializer was written for the JVM to be deployed with a `Graph` instance. For example, a graph may expose a
+geographical type like a `Point` or something similar. The library that contains `Point` assuming users expected to
+deserialize back to a `Point` would need to have the library with `Point` and the "`PointSerializer`" class available
+to them. In cases where that deployment approach is not desirable, it is possible to coerce a class like `Point` to
+a type that is already in the list of types supported in TinkerPop. For example, `Point` could be coerced one-way to
+`Map` of keys "x" and "y". Of course, on the client side, users would have to construct a `Map` for a `Point` which
+isn't quite as user-friendly.
+
+If doing a type coercion is not desired, then it is important to remember that writing a `Point` class and related
+serializer in Java is not sufficient for full support of Gremlin, as users of non-JVM Gremlin Language Variants (GLV)
+will not be able to consume them. Getting full support would mean writing similar classes for each GLV. While
+developing  those classes is not hard, it also means more code to support.
+
+===== Supporting Gremlin-Python IO
+
+The serialization system of Gremlin-Python provides ways to add new types by creating serializers and deserializers in
+Python and registering them with the `RemoteConnection`.
+
+[source,python]
+----
+class MyType(object):
+  GRAPHSON_PREFIX = "providerx"
+  GRAPHSON_BASE_TYPE = "MyType"
+  GRAPHSON_TYPE = GraphSONUtil.formatType(GRAPHSON_PREFIX, GRAPHSON_BASE_TYPE)
+
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+  @classmethod
+  def objectify(cls, value, reader):
+    return cls(value['x'], value['y'])
+
+  @classmethod
+  def dictify(cls, value, writer):
+    return GraphSONUtil.typedValue(cls.GRAPHSON_BASE_TYPE,
+                                  {'x': value.x, 'y': value.y},
+                                  cls.GRAPHSON_PREFIX)
+
+graphson_reader = GraphSONReader({MyType.GRAPHSON_TYPE: MyType})
+graphson_writer = GraphSONWriter({MyType: MyType})
+
+connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
+                                     graphson_reader=graphson_reader,
+                                     graphson_writer=graphson_writer)
+----
+
+===== Supporting Gremlin-DotNet IO
+
+The serialization system of Gremlin-DotNet provides ways to add new types by creating serializers and deserializers in
+any .NET language and registering them with the `GremlinClient`.
+
+[source,csharp]
+----
+internal class MyType
+{
+    public static string GraphsonPrefix = "providerx";
+    public static string GraphsonBaseType = "MyType";
+    public static string GraphsonType = GraphSONUtil.FormatTypeName(GraphsonPrefix, GraphsonBaseType);
+
+    public MyType(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+
+    public int X { get; }
+    public int Y { get; }
+}
+
+internal class MyClassWriter : IGraphSONSerializer
+{
+    public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+    {
+        MyType myType = objectData;
+        var valueDict = new Dictionary<string, object>
+        {
+            {"x", myType.X},
+            {"y", myType.Y}
+        };
+        return GraphSONUtil.ToTypedValue(nameof(TestClass), valueDict, MyType.GraphsonPrefix);
+    }
+}
+
+internal class MyTypeReader : IGraphSONDeserializer
+{
+    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+    {
+        var x = reader.ToObject(graphsonObject["x"]);
+        var y = reader.ToObject(graphsonObject["y"]);
+        return new MyType(x, y);
+    }
+}
+
+var graphsonReader = new GraphSONReader(
+    new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
+var graphsonWriter = new GraphSONWriter(
+    new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
+
+var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
+----
+
 [[remoteconnection-implementations]]
 ==== RemoteConnection Implementations
 
