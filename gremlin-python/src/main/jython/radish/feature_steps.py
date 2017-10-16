@@ -79,6 +79,11 @@ def iterate_the_traversal(step):
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 
+@when("iterated next")
+def next_the_traversal(step):
+    step.context.result = map(lambda x: _convert_results(x), step.context.traversal.next())
+
+
 @then("the result should be {characterized_as:w}")
 def assert_result(step, characterized_as):
     if characterized_as == "empty":

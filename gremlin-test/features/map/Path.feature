@@ -41,7 +41,7 @@ Feature: Step - count()
       | p[d[29],vadas] |
       | p[d[29],josh] |
 
-  Scenario: g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX
+  Scenario: g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX
     Given the modern graph
     And the traversal of
       """
