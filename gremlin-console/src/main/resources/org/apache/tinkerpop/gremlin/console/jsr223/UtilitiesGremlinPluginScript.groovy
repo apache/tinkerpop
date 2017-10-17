@@ -38,7 +38,7 @@ describeGraph = { Class<? extends org.apache.tinkerpop.gremlin.structure.Graph> 
     return "${lf}" +
 "IMPLEMENTATION - ${c.getCanonicalName()} ${lf}" +
 "TINKERPOP TEST SUITE ${lf}" +
-"- Compliant with ($optInCount of 10 suites) ${lf}" +
+"- Compliant with ($optInCount of 4 suites) ${lf}" +
 "$suitesSupported ${lf}" +
 "- Opts out of $optOutCount individual tests ${lf}" +
 "$testsOptedOut ${lf}" +
