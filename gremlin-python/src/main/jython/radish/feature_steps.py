@@ -36,8 +36,17 @@ regex_or = re.compile(r"([(.,\s])or\(")
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
-    # only have modern atm but graphName would be used to select the right one
     step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
+
+
+@given("the graph initializer of")
+def initialize_graph(step):
+    traversal = _make_traversal(step.context.g, step.text, {})
+
+    # just be sure that the traversal returns something to prove that it worked to some degree. probably
+    # is overkill to try to assert the complete success of this init operation. presumably the test
+    # suite would fail elsewhere if this didn't work which would help identify a problem.
+    assert len(traversal.toList()) > 0
 
 
 @given("an unsupported test")
@@ -56,22 +65,9 @@ def add_parameter(step, param_name, param):
 
 @given("the traversal of")
 def translate_traversal(step):
-    g = step.context.g
-    b = {"g": g,
-         "__": __,
-         "Column": Column,
-         "Direction": Direction,
-         "Order": Order,
-         "P": P,
-         "Pick": Pick,
-         "Scope": Scope,
-         "T": T}
-
-    if hasattr(step.context, "traversal_params"):
-        b.update(step.context.traversal_params)
-
-    # print _translate(step.text + " - " + str(b))
-    step.context.traversal = eval(_translate(step.text), b)
+    step.context.traversal = _make_traversal(
+        step.context.g, step.text,
+        step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
 
 
 @when("iterated to list")
@@ -94,6 +90,12 @@ def assert_result(step, characterized_as):
         _table_assertion(step.table, step.context.result, step.context, False)
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
+
+
+@then("the graph should return {count:d} for count of {traversal_string:QuotedString}")
+def assert_side_effects(step, count, traversal_string):
+    t = _make_traversal(step.context.g, traversal_string, {})
+    assert_that(count, equal_to(t.count().next()))
 
 
 @then("nothing should happen because")
@@ -177,3 +179,20 @@ def _translate(traversal):
     replaced = regex_not.sub(r"\1not_(", replaced)
     replaced = regex_or.sub(r"\1or_(", replaced)
     return regex_in.sub(r"\1in_(", replaced)
+
+
+def _make_traversal(g, traversal_string, params):
+    b = {"g": g,
+         "__": __,
+         "Column": Column,
+         "Direction": Direction,
+         "Order": Order,
+         "P": P,
+         "Pick": Pick,
+         "Scope": Scope,
+         "T": T}
+
+    b.update(params)
+
+    # print _translate(step.text + " - " + str(b))
+    return eval(_translate(traversal_string), b)
