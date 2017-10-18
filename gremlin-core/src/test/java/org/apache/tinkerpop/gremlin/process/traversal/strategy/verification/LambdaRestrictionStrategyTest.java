@@ -37,6 +37,7 @@ import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -54,14 +55,16 @@ public class LambdaRestrictionStrategyTest {
                 {"sideEffect(x -> {int i = 1+1;})", __.sideEffect(x -> {
                     int i = 1 + 1;
                 }), false},
+                {"select('a').by(values)", __.select("a").by(values), true},
                 {"select('a','b').by(Object::toString)", __.select("a", "b").by(Object::toString), false},
                 {"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b)), false},
                 {"order(local).by((a,b)->a.compareTo(b))", __.order(Scope.local).by((a, b) -> ((Integer) a).compareTo((Integer) b)), false},
                 {"__.choose(v->v.toString().equals(\"marko\"),__.out(),__.in())", __.choose(v -> v.toString().equals("marko"), __.out(), __.in()), false},
-                {"order(local).by(values,decr)", __.order(Scope.local).by(Column.values, (a, b) -> ((Double) a).compareTo((Double) b)), false},
-                //
-                {"order(local).by(values,decr)", __.order(Scope.local).by(Column.values, Order.decr), true},
                 {"order().by(label,decr)", __.order().by(T.label, Order.decr), true},
+                {"order(local).by(values)", __.order(Scope.local).by(values), true},
+                {"order(local).by(values,decr)", __.order(Scope.local).by(values,Order.decr), true},
+                {"order(local).by(values,(a,b) -> a.compareTo(b))", __.order(Scope.local).by(values, (a, b) -> ((Double) a).compareTo((Double) b)), false},
+                //
                 {"groupCount().by(label)", __.groupCount().by(T.label), true},
                 //
                 {"sack(sum).by('age')", __.sack(sum).by("age"), true},
