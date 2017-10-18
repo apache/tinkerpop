@@ -221,7 +221,7 @@ public final class StringFactory {
                 })
                 .map(o -> {
                     final String string = o.toString();
-                    return string.contains("$") ? "lambda" : string;
+                    return hasLambda(string) ? "lambda" : string;
                 }).collect(Collectors.toList());
         if (!strings.isEmpty()) {
             builder.append('(');
@@ -231,6 +231,12 @@ public final class StringFactory {
         if (!step.getLabels().isEmpty()) builder.append('@').append(step.getLabels());
         //builder.append("^").append(step.getId());
         return builder.toString();
+    }
+
+    private static boolean hasLambda(final String objectString) {
+        return objectString.contains("$Lambda$") || // JAVA (org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphPlayTest$$Lambda$1/1711574013@61a52fb)
+                objectString.contains("$_run_closure") || // GROOVY (groovysh_evaluate$_run_closure1@db44aa2)
+                objectString.contains("<lambda>");  // PYTHON (<function <lambda> at 0x10dfaec80>)
     }
 
     public static String traversalString(final Traversal.Admin<?, ?> traversal) {

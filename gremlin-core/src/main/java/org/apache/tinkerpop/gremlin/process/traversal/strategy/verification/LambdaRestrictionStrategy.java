@@ -23,11 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.javatuples.Pair;
-
-import java.util.Comparator;
 
 /**
  * {@code LambdaRestrictionStrategy} does not allow lambdas to be used in a {@link Traversal}. The contents of a lambda
@@ -54,24 +50,10 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal instanceof LambdaHolder)
-            throw new VerificationException("The provided traversal is a lambda traversal: ", traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof LambdaHolder)
+            if ((step instanceof LambdaHolder || step instanceof ComparatorHolder) && step.toString().contains("lambda"))
                 throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
-            if (step instanceof ComparatorHolder) {
-                for (final Pair<Traversal.Admin<Object, Comparable>, Comparator<Comparable>> comparator : ((ComparatorHolder<Object, Comparable>) step).getComparators()) {
-                    if (hasLambda(comparator.toString()))
-                        throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
-                }
-            }
-            if (step instanceof SackValueStep && hasLambda(((SackValueStep) step).getSackFunction().toString()))
-                throw new VerificationException("The provided step contains a lambda bi-function: " + step, traversal);
         }
-    }
-
-    private final boolean hasLambda(final String objectString) {
-        return objectString.contains("$") || objectString.toLowerCase().contains("lambda");
     }
 
     public static LambdaRestrictionStrategy instance() {
