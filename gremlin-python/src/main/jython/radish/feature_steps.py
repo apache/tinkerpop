@@ -124,8 +124,10 @@ def _convert(val, ctx):
         return _convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
         return list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match("^s\[.*\]$", val):         # parse set
+        return set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^d\[.*\]$", val):         # parse numeric
-        return long(val[2:-1])
+        return float(val[2:-1]) if val[2:-1].__contains__(".") else long(val[2:-1])
     elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
         return ctx.lookup_v["modern"][val[2:-4]].id
     elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):    # parse vertex id as string
