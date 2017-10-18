@@ -67,7 +67,8 @@ class TestDriverRemoteConnection(object):
         # # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
         # #
-        results = g.V().has('name','peter').as_('a').out('created').as_('b').select('a','b').by(__.valueMap()).toList()
+        results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
+            __.valueMap()).toList()
         assert 1 == len(results)
         assert 'peter' == results[0]['a']['name'][0]
         assert 35 == results[0]['a']['age'][0]
@@ -75,6 +76,11 @@ class TestDriverRemoteConnection(object):
         assert 'java' == results[0]['b']['lang'][0]
         assert 2 == len(results[0]['a'])
         assert 2 == len(results[0]['b'])
+        # #
+        results = g.V(1).inject(g.V(2).next()).values('name').toList()
+        assert 2 == len(results)
+        assert 'marko' in results
+        assert 'vadas' in results
 
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
@@ -169,13 +175,13 @@ class TestDriverRemoteConnection(object):
         assert "knows" == edge.label
         assert a == edge.outV
         assert b == edge.inV
-        g.V().has("name","marko").outE("knows").where(__.inV().has("name","peter")).drop().iterate()
+        g.V().has("name", "marko").outE("knows").where(__.inV().has("name", "peter")).drop().iterate()
         ##
         edge = g.withSideEffect("a", a).withSideEffect("b", b).V().limit(1).addE("knows").from_("a").to("b").next()
         assert "knows" == edge.label
         assert a == edge.outV
         assert b == edge.inV
-        g.V().has("name","marko").outE("knows").where(__.inV().has("name","peter")).drop().iterate()
+        g.V().has("name", "marko").outE("knows").where(__.inV().has("name", "peter")).drop().iterate()
 
     def test_side_effect_close(self, remote_connection):
         g = Graph().traversal().withRemote(remote_connection)

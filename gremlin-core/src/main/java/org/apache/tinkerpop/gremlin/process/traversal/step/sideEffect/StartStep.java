@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -65,7 +66,11 @@ public class StartStep<S> extends AbstractStep<S, S> {
             }
             this.first = false;
         }
-        return this.starts.next();
+        ///
+        final Traverser.Admin<S> start = this.starts.next();
+        if (start.get() instanceof Attachable && this.getTraversal().getGraph().isPresent())
+            start.set(((Attachable<S>) start.get()).attach(Attachable.Method.get(this.getTraversal().getGraph().get())));
+        return start;
     }
 
     @Override
