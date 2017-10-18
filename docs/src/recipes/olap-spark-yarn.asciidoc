@@ -113,7 +113,7 @@ g.V().group().by(values('name')).by(both().count())
 If you run into exceptions, you will have to dig into the logs. You can do this from the command line with
 `yarn application -list -appStates ALL` to find the `applicationId`, while the logs are available with
 `yarn logs -applicationId application_1498627870374_0008`. Alternatively, you can inspect the logs via
-the YARN Resource Manager UI (e.g. http://rm.your.domain:8088/cluster), provided that YARN was configured with the
+the YARN Resource Manager UI (e.g. \http://rm.your.domain:8088/cluster), provided that YARN was configured with the
 `yarn.log-aggregation-enable` property set to `true`. See the Spark documentation for
 https://spark.apache.org/docs/latest/running-on-yarn.html#debugging-your-application[additional hints].
 
