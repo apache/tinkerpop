@@ -21,6 +21,10 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Gremlin.Net.Process.Traversal.Strategy;
 using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
@@ -92,6 +96,33 @@ namespace Gremlin.Net.UnitTest.Process.Traversal.Strategy
             var strategyStr = testStrategy.ToString();
 
             Assert.Equal("TestStrategy", strategyStr);
+        }
+
+        [Fact]
+        public void AllStrategiesShouldHaveADefaultConstructor()
+        {
+            // We need a default constructor as the ClassWriter needs that for serialization
+            foreach (var type in _allStrategyTypes)
+            {
+                Assert.True(HasParameterlessConstructor(type), $"{type} has no parameterless constructor");
+            }
+        }
+
+        private readonly IEnumerable<Type> _allStrategyTypes = typeof(AbstractTraversalStrategy).GetTypeInfo().Assembly
+            .GetTypes().Where(t => typeof(AbstractTraversalStrategy).IsAssignableFrom(t))
+            .Where(t => t != typeof(AbstractTraversalStrategy));
+
+        private bool HasParameterlessConstructor(Type type)
+        {
+            try
+            {
+                Activator.CreateInstance(type);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 

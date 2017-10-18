@@ -141,18 +141,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Equal(new Vertex((long) 6), shortestPath[3]);
         }
 
-        //[Fact]
-        //public void ShouldUseBindingsInTraversal()
-        //{
-        //    var graph = new Graph();
-        //    var connection = _connectionFactory.CreateRemoteConnection();
-        //    var g = graph.Traversal().WithRemote(connection);
+        [Fact]
+        public void ShouldUseBindingsInTraversal()
+        {
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = graph.Traversal().WithRemote(connection);
 
-        //    var b = new Bindings();
-        //    var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
+            var b = new Bindings();
+            var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
 
-        //    Assert.Equal(3, count);
-        //}
+            Assert.Equal(3, count);
+        }
 
         [Fact]
         public async Task ShouldExecuteAsynchronouslyWhenPromiseIsCalled()
