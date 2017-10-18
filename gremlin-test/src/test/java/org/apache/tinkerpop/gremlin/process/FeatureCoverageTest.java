@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -77,7 +78,8 @@ public class FeatureCoverageTest {
                 VertexTest.class,
                 // sideEffect
                 AggregateTest.class,
-                GroupCountTest.class);
+                GroupCountTest.class,
+                InjectTest.class);
 
         final Field field = ProcessStandardSuite.class.getDeclaredField("testsToEnforce");
         field.setAccessible(true);

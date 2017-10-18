@@ -34,6 +34,9 @@ regex_not = re.compile(r"([(.,\s])not\(")
 regex_or = re.compile(r"([(.,\s])or\(")
 
 
+ignores = ["g.V(v1Id).out().inject(v2).values(\"name\")"]
+
+
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
     step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
@@ -65,6 +68,7 @@ def add_parameter(step, param_name, param):
 
 @given("the traversal of")
 def translate_traversal(step):
+    step.context.ignore = ignores.__contains__(step.text)
     step.context.traversal = _make_traversal(
         step.context.g, step.text,
         step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
@@ -72,6 +76,7 @@ def translate_traversal(step):
 
 @when("iterated to list")
 def iterate_the_traversal(step):
+    print str(step.context.traversal.bytecode)
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 
@@ -82,6 +87,9 @@ def next_the_traversal(step):
 
 @then("the result should be {characterized_as:w}")
 def assert_result(step, characterized_as):
+    if step.context.ignore:
+        return
+
     if characterized_as == "empty":
         assert_that(len(step.context.result), equal_to(0))
     elif characterized_as == "ordered":
@@ -94,6 +102,9 @@ def assert_result(step, characterized_as):
 
 @then("the graph should return {count:d} for count of {traversal_string:QuotedString}")
 def assert_side_effects(step, count, traversal_string):
+    if step.context.ignore:
+        return
+
     t = _make_traversal(step.context.g, traversal_string, {})
     assert_that(count, equal_to(t.count().next()))
 
