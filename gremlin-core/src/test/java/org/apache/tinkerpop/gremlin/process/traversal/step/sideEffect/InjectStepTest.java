@@ -33,7 +33,10 @@ public class InjectStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.identity()
+                __.identity(),
+                __.inject("a", "b"),
+                __.inject("a"),
+                __.inject("b")
         );
     }
 }

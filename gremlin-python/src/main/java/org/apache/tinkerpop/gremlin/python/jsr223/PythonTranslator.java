@@ -191,18 +191,20 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element) {
-            final String id = convertToString(((Element) object).id());
-            if (object instanceof Vertex)
-                return "Vertex(" + id + "," + convertToString(((Vertex) object).label()) + ")";
-            else if (object instanceof Edge) {
+            if (object instanceof Vertex) {
+                final Vertex vertex = (Vertex) object;
+                return "Vertex(" + convertToString(vertex.id()) + "," + convertToString(vertex.label()) + ")";
+            } else if (object instanceof Edge) {
                 final Edge edge = (Edge) object;
-                return "Edge(" + id + "," +
-                        convertToString(edge.outVertex()) + "," +
-                        convertToString(edge.label()) + "," +
-                        convertToString(edge.inVertex()) + ")";
-            } else {
+                return "Edge(" + convertToString(edge.id()) + ", " +
+                        "Vertex(" + convertToString(edge.outVertex().id()) + ")," +
+                        convertToString(edge.label()) +
+                        ",Vertex(" + convertToString(edge.inVertex().id()) + "))";
+            } else { // VertexProperty
                 final VertexProperty vertexProperty = (VertexProperty) object;
-                return "VertexProperty(" + id + "," + convertToString(vertexProperty.label()) + "," + convertToString(vertexProperty.value()) + "," + convertToString(vertexProperty.element()) + ")";
+                return "VertexProperty(" + convertToString(vertexProperty.id()) + "," +
+                        convertToString(vertexProperty.label()) + "," +
+                        convertToString(vertexProperty.value()) + ")";
             }
         } else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);

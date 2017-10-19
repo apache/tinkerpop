@@ -154,17 +154,30 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element) {
-            final String id = convertToString(((Element) object).id());
-            String temp = this.traversalSource.equals("__") ? "g" : this.traversalSource;
-            if (object instanceof Vertex)
-                temp = temp + ".V(" + id + ").next()";
-            else if (object instanceof Edge)
-                temp = temp + ".E(" + id + ").next()";
-            else {
+            if (object instanceof Vertex) {
+                final Vertex vertex = (Vertex) object;
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+                        convertToString(vertex.id()) + "," +
+                        convertToString(vertex.label()) + ", Collections.emptyMap())";
+            } else if (object instanceof Edge) {
+                final Edge edge = (Edge) object;
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
+                        convertToString(edge.id()) + "," +
+                        convertToString(edge.label()) + "," +
+                        "Collections.emptyMap()," +
+                        convertToString(edge.outVertex().id()) + "," +
+                        convertToString(edge.outVertex().label()) + "," +
+                        convertToString(edge.inVertex().id()) + "," +
+                        convertToString(edge.inVertex().label()) + ")";
+            } else {// VertexProperty
                 final VertexProperty vertexProperty = (VertexProperty) object;
-                temp = temp + ".V(" + convertToString(vertexProperty.element().id()) + ").properties(" + convertToString(vertexProperty.key()) + ").hasId(" + id + ").next()";
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty(" +
+                        convertToString(vertexProperty.id()) + "," +
+                        convertToString(vertexProperty.label()) + "," +
+                        convertToString(vertexProperty.value()) + "," +
+                        "Collections.emptyMap()," +
+                        convertToString(vertexProperty.element()) + ")";
             }
-            return temp;
         } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
