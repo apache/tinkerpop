@@ -38,5 +38,10 @@ public abstract class GroovyInjectTest {
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path", "v1Id", v1Id);
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).inject(g.V(v4Id).next()).out.name", "v1Id", v1Id, "v4Id", v4Id)
+        }
     }
 }

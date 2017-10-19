@@ -31,7 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -157,9 +159,32 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "TraversalOptionParent.Pick." + object.toString();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
-        else if (object instanceof Element)
-            return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Lambda) {
+        else if (object instanceof Element) {
+            if (object instanceof Vertex) {
+                final Vertex vertex = (Vertex) object;
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+                        convertToString(vertex.id()) + "," +
+                        convertToString(vertex.label()) + ", Collections.emptyMap())";
+            } else if (object instanceof Edge) {
+                final Edge edge = (Edge) object;
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
+                        convertToString(edge.id()) + "," +
+                        convertToString(edge.label()) + "," +
+                        "Collections.emptyMap()," +
+                        convertToString(edge.outVertex().id()) + "," +
+                        convertToString(edge.outVertex().label()) + "," +
+                        convertToString(edge.inVertex().id()) + "," +
+                        convertToString(edge.inVertex().label()) + ")";
+            } else {// VertexProperty
+                final VertexProperty vertexProperty = (VertexProperty) object;
+                return "new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty(" +
+                        convertToString(vertexProperty.id()) + "," +
+                        convertToString(vertexProperty.label()) + "," +
+                        convertToString(vertexProperty.value()) + "," +
+                        "Collections.emptyMap()," +
+                        convertToString(vertexProperty.element()) + ")";
+            }
+        } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof TraversalStrategyProxy) {

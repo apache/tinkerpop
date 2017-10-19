@@ -33,8 +33,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -190,9 +192,23 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
-        else if (object instanceof Element)
-            return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Lambda)
+        else if (object instanceof Element) {
+            if (object instanceof Vertex) {
+                final Vertex vertex = (Vertex) object;
+                return "Vertex(" + convertToString(vertex.id()) + "," + convertToString(vertex.label()) + ")";
+            } else if (object instanceof Edge) {
+                final Edge edge = (Edge) object;
+                return "Edge(" + convertToString(edge.id()) + ", " +
+                        "Vertex(" + convertToString(edge.outVertex().id()) + ")," +
+                        convertToString(edge.label()) +
+                        ",Vertex(" + convertToString(edge.inVertex().id()) + "))";
+            } else { // VertexProperty
+                final VertexProperty vertexProperty = (VertexProperty) object;
+                return "VertexProperty(" + convertToString(vertexProperty.id()) + "," +
+                        convertToString(vertexProperty.label()) + "," +
+                        convertToString(vertexProperty.value()) + ")";
+            }
+        } else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else
             return null == object ? "None" : object.toString();
