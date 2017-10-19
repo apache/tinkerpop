@@ -198,10 +198,10 @@ public class PythonTranslator implements Translator.ScriptTranslator {
                 return "Vertex(" + convertToString(vertex.id()) + "," + convertToString(vertex.label()) + ")";
             } else if (object instanceof Edge) {
                 final Edge edge = (Edge) object;
-                return "Edge(" + convertToString(edge.id()) + ", " +
-                        "Vertex(" + convertToString(edge.outVertex().id()) + ")," +
-                        convertToString(edge.label()) +
-                        ",Vertex(" + convertToString(edge.inVertex().id()) + "))";
+                return "Edge(" + convertToString(edge.id()) + "," +
+                        convertToString(edge.outVertex()) + "," +
+                        convertToString(edge.label()) + "," +
+                        convertToString(edge.inVertex()) + ")";
             } else { // VertexProperty
                 final VertexProperty vertexProperty = (VertexProperty) object;
                 return "VertexProperty(" + convertToString(vertexProperty.id()) + "," +
