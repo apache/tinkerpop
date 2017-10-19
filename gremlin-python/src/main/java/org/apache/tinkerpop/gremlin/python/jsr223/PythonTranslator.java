@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
@@ -196,11 +195,11 @@ public class PythonTranslator implements Translator.ScriptTranslator {
                 return "Vertex(" + convertToString(vertex.id()) + "," + convertToString(vertex.label()) + ")";
             } else if (object instanceof Edge) {
                 final Edge edge = (Edge) object;
-                return "Edge(" + convertToString(edge.id()) + ", " +
-                        "Vertex(" + convertToString(edge.outVertex().id()) + ")," +
-                        convertToString(edge.label()) +
-                        ",Vertex(" + convertToString(edge.inVertex().id()) + "))";
-            } else { // VertexProperty
+                return "Edge(" + convertToString(edge.id()) + "," +
+                        convertToString(edge.outVertex()) + "," +
+                        convertToString(edge.label()) + "," +
+                        convertToString(edge.inVertex()) + ")";
+            } else {
                 final VertexProperty vertexProperty = (VertexProperty) object;
                 return "VertexProperty(" + convertToString(vertexProperty.id()) + "," +
                         convertToString(vertexProperty.label()) + "," +
