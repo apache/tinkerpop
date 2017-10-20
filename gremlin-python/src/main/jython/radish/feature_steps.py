@@ -76,7 +76,6 @@ def translate_traversal(step):
 
 @when("iterated to list")
 def iterate_the_traversal(step):
-    print str(step.context.traversal.bytecode)
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 

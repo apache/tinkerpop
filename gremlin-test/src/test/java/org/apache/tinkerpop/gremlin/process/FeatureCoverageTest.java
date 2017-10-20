@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
@@ -76,6 +77,7 @@ public class FeatureCoverageTest {
                 // map
                 CountTest.class,
                 PathTest.class,
+                ProjectTest.class,
                 VertexTest.class,
                 // sideEffect
                 AggregateTest.class,
