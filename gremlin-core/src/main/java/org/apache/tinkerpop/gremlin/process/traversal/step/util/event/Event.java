@@ -139,7 +139,7 @@ public interface Event {
 
         @Override
         void fire(final MutationListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
-            listener.vertexPropertyChanged((Vertex) element, oldValue, newValue, vertexPropertyKeyValues);
+            listener.vertexPropertyChanged((Vertex) element, (VertexProperty) oldValue, newValue, vertexPropertyKeyValues);
         }
     }
 

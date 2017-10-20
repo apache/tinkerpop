@@ -102,6 +102,17 @@ In `gremlin-test` there is a new `GraphHelper` class that has a `cloneElements()
 the first graph to the second - `GraphHelper.cloneElements(Graph original, Graph clone)`. This helper method is
 primarily intended for use in tests.
 
+==== MutationListener Changes
+
+The `MutationListener` has a method called `vertexPropertyChanged` which gathered callbacks when a property on a vertex
+was modified. The method had an incorrect signature though using `Property` instead of `VertexProperty`. The old method
+that used `Property` has now been deprecated and a new method added that uses `VertexProperty`. This new method has a
+default implementation that calls the old method, so this change should not cause breaks in compilation on upgrade.
+Internally, TinkerPop no longer calls the old method except by way of that proxy. Users who have `MutationListener`
+implementations can simply add the new method and override its behavior. The old method can thus be ignored completely.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1798[TINKERPOP-1798]
+
 == TinkerPop 3.2.6
 
 

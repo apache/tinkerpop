@@ -35,6 +35,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added better error message for illegal use of `repeat()`-step.
 * Fixed a bug in `RangeByIsCountStrategy` that led to unexpected behaviors when predicates were used with floating point numbers.
 * Bump to Jackson 2.8.10.
+* Deprecated `MutationListener.vertexPropertyChanged()` method that did not use `VertexProperty` and added a new method that does.
 * Added an `EmbeddedRemoteConnection` so that it's possible to mimic a remote connection within the same JVM.
 * Supported interruption for remote traversals.
 * Allow the `:remote` command to accept a `Cluster` object defined in the console itself.
