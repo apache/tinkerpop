@@ -29,6 +29,14 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gremlin Python path()
+
+There was a bug in GraphSON 3.0 serialization that prevented proper handling of results contain `Path` object. As a
+result, traversals that used and returned results from the `path()` step in Python would return unusable results,
+but did not actually cause an exception condition. This problem is now resolved.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1799[TINKERPOP-1799]
+
 ==== Added `math()`-step for Scientific Traversal Computing
 
 `GraphTraversal.math(String)` was added. This step provides scientific calculator capabilities to a Gremlin traversal.

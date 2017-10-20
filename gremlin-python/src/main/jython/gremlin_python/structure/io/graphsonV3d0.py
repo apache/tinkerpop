@@ -465,6 +465,4 @@ class PathDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        labels = [set(label) for label in d["labels"]]
-        objects = [reader.toObject(o) for o in d["objects"]]
-        return Path(labels, objects)
+        return Path(reader.toObject(d["labels"]), reader.toObject(d["objects"]))
