@@ -34,7 +34,9 @@ regex_not = re.compile(r"([(.,\s])not\(")
 regex_or = re.compile(r"([(.,\s])or\(")
 
 
-ignores = ["g.V(v1Id).out().inject(v2).values(\"name\")"]
+ignores = [
+    "g.V(v1Id).out().inject(v2).values(\"name\")"  # bug in attachment won't connect v2
+           ]
 
 
 @given("the {graph_name:w} graph")
@@ -89,12 +91,14 @@ def assert_result(step, characterized_as):
     if step.context.ignore:
         return
 
-    if characterized_as == "empty":
+    if characterized_as == "empty":        # no results
         assert_that(len(step.context.result), equal_to(0))
-    elif characterized_as == "ordered":
+    elif characterized_as == "ordered":    # results asserted in the order of the data table
         _table_assertion(step.table, step.context.result, step.context, True)
-    elif characterized_as == "unordered":
+    elif characterized_as == "unordered":  # results asserted in any order
         _table_assertion(step.table, step.context.result, step.context, False)
+    elif characterized_as == "of":         # results may be of any of the specified items in the data table
+        _any_assertion(step.table, step.context.result, step.context)
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
 
@@ -106,6 +110,11 @@ def assert_side_effects(step, count, traversal_string):
 
     t = _make_traversal(step.context.g, traversal_string, {})
     assert_that(count, equal_to(t.count().next()))
+
+
+@then("only have a result count of {count:d}")
+def assert_count(step, count):
+    assert_that(count, equal_to(len(step.context.result)))
 
 
 @then("nothing should happen because")
@@ -156,6 +165,12 @@ def _convert_results(val):
         return Path([set([])], map(lambda p: p.encode("utf-8") if isinstance(p, unicode) else p, val.objects))
     else:
         return val
+
+
+def _any_assertion(data, result, ctx):
+    converted = [_convert(line[0], ctx) for line in data]
+    for r in result:
+        assert_that(r, is_in(converted))
 
 
 def _table_assertion(data, result, ctx, ordered):
