@@ -112,7 +112,7 @@ def assert_side_effects(step, count, traversal_string):
     assert_that(count, equal_to(t.count().next()))
 
 
-@then("only have a result count of {count:d}")
+@then("should have a result count of {count:d}")
 def assert_count(step, count):
     assert_that(count, equal_to(len(step.context.result)))
 
