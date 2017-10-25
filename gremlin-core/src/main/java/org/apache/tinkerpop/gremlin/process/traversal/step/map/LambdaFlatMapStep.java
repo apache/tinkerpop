@@ -38,6 +38,10 @@ public final class LambdaFlatMapStep<S, E> extends FlatMapStep<S, E> implements 
         this.function = function;
     }
 
+    public Function<Traverser<S>, Iterator<E>> getFunction() {
+        return function;
+    }
+
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
         return this.function.apply(traverser);

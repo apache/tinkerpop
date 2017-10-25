@@ -52,6 +52,10 @@ public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<
         this.barrierConsumer = barrierConsumer;
     }
 
+    public Consumer<TraverserSet<S>> getBarrierConsumer() {
+        return barrierConsumer;
+    }
+
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
         this.barrierConsumer.accept(traverserSet);
