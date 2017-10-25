@@ -246,6 +246,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added getters for the lambdas held by `LambdaCollectingBarrierStep`, `LambdaFlatMapStep` and `LambdaSideEffectStep`.
 * Fixed an old hack in `GroovyTranslator` and `PythonTranslator` where `Elements` were being mapped to their id only.
 * Fixed an "attachement"-bug in `InjectStep` with a solution generalized to `StartStep`.
 * Truncate the script in error logs and error return messages for "Method code too large" errors in Gremlin Server.

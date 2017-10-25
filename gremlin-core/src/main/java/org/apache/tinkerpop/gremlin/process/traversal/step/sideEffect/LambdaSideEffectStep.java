@@ -37,6 +37,10 @@ public final class LambdaSideEffectStep<S> extends SideEffectStep<S> implements 
         this.consumer = consumer;
     }
 
+    public Consumer<Traverser<S>> getConsumer() {
+        return consumer;
+    }
+
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         this.consumer.accept(traverser);
