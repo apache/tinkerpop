@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
+import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
@@ -45,9 +46,10 @@ class PluginCommand extends ComplexCommandSupport {
         mediator.showShellEvaluationOutput(false)
         mediator.availablePlugins.values().find { it.plugin.name == pluginName }.activate()
         mediator.showShellEvaluationOutput(true)
-        mediator.writePluginState()
-
-        return "$pluginName activated"
+        if (mediator.writePluginState())
+            return "$pluginName activated"
+        else
+            return "$pluginName activated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
     }
 
     def Object do_unuse = { List<String> arguments ->
@@ -58,9 +60,10 @@ class PluginCommand extends ComplexCommandSupport {
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
         mediator.availablePlugins.values().find { it.plugin.name == pluginName }.deactivate()
-        mediator.writePluginState()
-
-        return "$pluginName deactivated - restart your console for this to take effect"
+        if (mediator.writePluginState())
+            return "$pluginName deactivated - restart your console for this to take effect"
+        else
+            return "$pluginName deactivated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
     }
 
     def do_list = { List<String> arguments ->
