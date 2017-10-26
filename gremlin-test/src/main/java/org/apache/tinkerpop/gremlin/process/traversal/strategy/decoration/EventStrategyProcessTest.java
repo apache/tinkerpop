@@ -869,8 +869,10 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.property("to-change", "blah");
 
         final MutationListener listener = new AbstractMutationListener() {
+
+
             @Override
-            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
                 assertEquals("to-change", oldValue.key());
@@ -897,6 +899,41 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldDetachVertexPropertyWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("old","blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("new", oldValue.key());
+                assertEquals(null, oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldDetachVertexPropertyWhenNewDeprecated() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final String label = v.label();
@@ -1133,6 +1170,11 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         @Override
         public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+            // do nothing - deprecated
+        }
+
+        @Override
+        public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
             vertexPropertyChangedEvent.incrementAndGet();
             order.add("v-property-changed-" + element.id());
         }

@@ -454,9 +454,15 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         }
 
         @Override
-        public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue,
+        public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue,
                                           final Object... vertexPropertyKeyValues) {
             this.counter++;
+        }
+
+        @Override
+        public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue,
+                                          final Object... vertexPropertyKeyValues) {
+            // do nothing - deprecated
         }
 
         @Override

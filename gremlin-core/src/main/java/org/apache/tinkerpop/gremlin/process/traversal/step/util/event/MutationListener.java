@@ -52,10 +52,19 @@ public interface MutationListener {
     /**
      * Raised after the property of a {@link Vertex} changed.
      *
+     * @deprecated As of release 3.2.7, replaced by {@link #vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)}.
+     */
+    public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues);
+
+    /**
+     * Raised after the property of a {@link Vertex} changed.
+     *
      * @param element  the {@link Vertex} that changed
      * @param setValue the new value of the property
      */
-    public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues);
+    public default void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+        vertexPropertyChanged(element, (Property) oldValue, setValue, vertexPropertyKeyValues);
+    }
 
     /**
      * Raised after a {@link VertexProperty} was removed from the graph.
