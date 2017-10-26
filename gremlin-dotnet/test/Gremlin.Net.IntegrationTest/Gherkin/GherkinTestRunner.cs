@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -146,8 +147,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     WriteOutput($"  Scenario: {resultScenario.Key.Name}");
                     foreach (var step in resultScenario.Key.Steps)
                     {
-                        Exception failure;
-                        resultScenario.Value.TryGetValue(step, out failure);
+                        resultScenario.Value.TryGetValue(step, out var failure);
                         if (failure == null)
                         {
                             WriteOutput($"    {step.Keyword} {step.Text}");
@@ -295,11 +295,42 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private IEnumerable<Feature> GetFeatures()
         {
-            // TODO: go through all the .feature files
-            const string gherkinFile = "/Users/jorge/workspace/temp/count.feature";
-            var parser = new Parser();
-            var doc = parser.Parse(gherkinFile);
-            yield return doc.Feature;
+            var rootPath = GetRootPath();
+            var path = Path.Combine(rootPath, "gremlin-test", "features");
+            WriteOutput(path);
+            WriteOutput("------");
+
+            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
+            //var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
+            foreach (var gherkinFile in files)
+            {
+                var parser = new Parser();
+                WriteOutput("Parsing " + gherkinFile);
+                var doc = parser.Parse(gherkinFile);
+                yield return doc.Feature;   
+            }
+        }
+
+        private string GetRootPath()
+        {
+            var codeBaseUrl = new Uri(GetType().GetTypeInfo().Assembly.CodeBase);
+            var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
+            DirectoryInfo rootDir = null;
+            for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath));
+                dir.Parent != null;
+                dir = dir.Parent)
+            {
+                if (dir.Name == "gremlin-dotnet" && dir.Parent?.Name == "tinkerpop")
+                {
+                    rootDir = dir.Parent;
+                    break;
+                }   
+            }
+            if (rootDir == null)
+            {
+                throw new FileNotFoundException("tinkerpop root not found in path");
+            }
+            return rootDir.FullName;
         }
 
         private void PrintGherkin()

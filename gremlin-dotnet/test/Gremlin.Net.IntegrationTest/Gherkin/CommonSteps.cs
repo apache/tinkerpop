@@ -29,6 +29,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
+using Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Newtonsoft.Json;
@@ -67,6 +68,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _result = enumerable.Cast<object>().ToArray();
         }
 
+        [When("iterated next")]
+        public void IterateNext()
+        {
+            if (!(_traversal is ITraversal))
+            {
+                throw new InvalidOperationException("Traversal should be set before iterating");
+            }
+            _result = _traversal.Next();
+        }
+
         [Given("the traversal of")]
         public void TranslateTraversal(string traversalText)
         {
@@ -74,7 +85,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException("g should be a traversal source");
             }
-            _traversal = TraversalTranslations.GetTraversal(traversalText, _g);
+            _traversal = TraversalParser.GetTraversal(traversalText, _g);
         }
 
         [Then("the result should be (\\w+)")]
