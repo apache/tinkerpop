@@ -63,9 +63,11 @@ import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A custom Java annotation processor for the {@link GremlinDsl} annotation that helps to generate DSLs classes.
@@ -137,24 +139,39 @@ public class GremlinDslProcessor extends AbstractProcessor {
 
         // process the methods of the GremlinDsl annotated class
         for (ExecutableElement templateMethod : findMethodsOfElement(ctx.annotatedDslType, null)) {
+            final Optional<GremlinDsl.AnonymousMethod> methodAnnotation = Optional.ofNullable(templateMethod.getAnnotation(GremlinDsl.AnonymousMethod.class));
+
             final String methodName = templateMethod.getSimpleName().toString();
 
-            final TypeName returnType = getReturnTypeDefinition(ctx.traversalClassName, templateMethod);
+            // either use the direct return type of the DSL specification or override it with specification from
+            // GremlinDsl.AnonymousMethod
+            final TypeName returnType = methodAnnotation.isPresent() && methodAnnotation.get().returnTypeParameters().length > 0 ?
+                    getOverridenReturnTypeDefinition(ctx.traversalClassName, methodAnnotation.get().returnTypeParameters()) :
+                    getReturnTypeDefinition(ctx.traversalClassName, templateMethod);
+            
             final MethodSpec.Builder methodToAdd = MethodSpec.methodBuilder(methodName)
                     .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
                     .addExceptions(templateMethod.getThrownTypes().stream().map(TypeName::get).collect(Collectors.toList()))
                     .returns(returnType);
 
-            templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
+            // either use the method type parameter specified from the GremlinDsl.AnonymousMethod or just infer them
+            // from the DSL specification. "inferring" relies on convention and sometimes doesn't work for all cases.
+            final String startGeneric = methodAnnotation.isPresent() && methodAnnotation.get().methodTypeParameters().length > 0 ?
+                    methodAnnotation.get().methodTypeParameters()[0] : "S";
+            if (methodAnnotation.isPresent() && methodAnnotation.get().methodTypeParameters().length > 0)
+                Stream.of(methodAnnotation.get().methodTypeParameters()).map(TypeVariableName::get).forEach(methodToAdd::addTypeVariable);
+            else {
+                templateMethod.getTypeParameters().forEach(tp -> methodToAdd.addTypeVariable(TypeVariableName.get(tp)));
 
-            // might have to deal with an "S" (in __ it's usually an "A") - how to make this less bound to that convention?
-            final List<? extends TypeMirror> returnTypeArguments = getTypeArguments(templateMethod);
-            returnTypeArguments.stream().filter(rtm -> rtm instanceof TypeVariable).forEach(rtm -> {
-                if (((TypeVariable) rtm).asElement().getSimpleName().contentEquals("S"))
-                    methodToAdd.addTypeVariable(TypeVariableName.get(((TypeVariable) rtm).asElement().getSimpleName().toString()));
-            });
+                // might have to deal with an "S" (in __ it's usually an "A") - how to make this less bound to that convention?
+                final List<? extends TypeMirror> returnTypeArguments = getTypeArguments(templateMethod);
+                returnTypeArguments.stream().filter(rtm -> rtm instanceof TypeVariable).forEach(rtm -> {
+                    if (((TypeVariable) rtm).asElement().getSimpleName().contentEquals("S"))
+                        methodToAdd.addTypeVariable(TypeVariableName.get(((TypeVariable) rtm).asElement().getSimpleName().toString()));
+                });
+            }
 
-            addMethodBody(methodToAdd, templateMethod, "return __.<S>start().$L(", ")", methodName);
+            addMethodBody(methodToAdd, templateMethod, "return __.<" + startGeneric + ">start().$L(", ")", methodName);
             anonymousClass.addMethod(methodToAdd.build());
         }
 
@@ -455,6 +472,27 @@ public class GremlinDslProcessor extends AbstractProcessor {
             methodToAdd.varargs(true);
 
         methodToAdd.addStatement(body, statementArgs);
+    }
+
+    private TypeName getOverridenReturnTypeDefinition(final ClassName returnClazz, final String[] typeValues) {
+        return ParameterizedTypeName.get(returnClazz, Stream.of(typeValues).map(tv -> {
+            try {
+                return ClassName.get(Class.forName(tv));
+            } catch (ClassNotFoundException cnfe) {
+                if (tv.contains("extends")) {
+                    final String[] sides = tv.toString().split(" extends ");
+                    final TypeVariableName name = TypeVariableName.get(sides[0]);
+                    try {
+                        name.withBounds(ClassName.get(Class.forName(sides[1])));
+                    } catch (Exception ex) {
+                        name.withBounds(TypeVariableName.get(sides[1]));
+                    }
+                    return name;
+                } else {
+                    return TypeVariableName.get(tv);
+                }
+            }
+        }).collect(Collectors.toList()).toArray(new TypeName[typeValues.length]));
     }
 
     private TypeName getReturnTypeDefinition(final ClassName returnClazz, final ExecutableElement templateMethod) {

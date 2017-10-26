@@ -255,6 +255,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug where bytecode containing lambdas would randomly select a traversal source from bindings.
 * Deprecated `GremlinScriptEngine.eval()` methods and replaced them with new overloads that include the specific `TraversalSource` to bind to.
 * Added `GraphHelper.cloneElements(Graph original, Graph clone)` to the `gremlin-test` module to quickly clone a graph.
+* Added `GremlinDsl.AnonymousMethod` annotation to help provide explicit types for anonymous methods when the types are not easily inferred.
 * Bump to GMavenPlus 1.6.
 * Added better error message for illegal use of `repeat()`-step.
 * Fixed a bug in `RangeByIsCountStrategy` that led to unexpected behaviors when predicates were used with floating point numbers.

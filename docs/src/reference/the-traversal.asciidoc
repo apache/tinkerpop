@@ -3112,7 +3112,10 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
 ----
 
 IMPORTANT: Follow the TinkerPop convention of using `<S,E>` in naming generics as those conventions are taken into
-account when generating the anonymous traversal class.
+account when generating the anonymous traversal class. The processor attempts to infer the appropriate type parameters
+when generating the anonymous traversal class. If it cannot do it correctly, it is possible to avoid the inference by
+using the `GremlinDsl.AnonymousMethod` annotation on the DSL method. It allows explicit specification of the types to
+use.
 
 The `@GremlinDsl` annotation is used by the link:https://docs.oracle.com/javase/8/docs/api/index.html?javax/annotation/processing/Processor.html[Java Annotation Processor]
 to generate the boilerplate class structure required to properly use the DSL within the TinkerPop framework. These

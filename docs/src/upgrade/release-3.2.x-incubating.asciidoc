@@ -29,13 +29,67 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7[changelog] for a complete list of all the modifications that are part of this release.
 
-=== Embedded Remote Connection
+==== Embedded Remote Connection
 
 As Gremlin Language Variants (GLVs) expand their usage and use of `withRemote()` becomes more common, the need to mock
 the "remote" in unit tests increases. To simplify mocking in Java, the new `EmbeddedRemoteConnection` provides a
 simple way to provide a "remote" that is actually local to the same JVM.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1756[TINKERPOP-1756]
+
+==== DSL Type Specification
+
+Prior to this version, the Java annotation processor for Gremlin DSLs has tried to infer the appropriate type
+specifications when generating anonymous methods. It largely performed this inference on simple conventions in the
+DSL method's template specification and there were times where it would fail. For example, a method like this:
+
+[source,java]
+----
+public default GraphTraversal<S, E> person() {
+    return hasLabel("person");
+}
+----
+
+would generate an anonymous method like:
+
+[source,java]
+----
+public static <S> SocialGraphTraversal<S, E> person() {
+    return hasLabel("person");
+}
+----
+
+and, of course, generate a compile error and `E` was not recognized as a symbol. The preferred generation would likely
+be:
+
+[source,java]
+----
+public static <S> SocialGraphTraversal<S, S> person() {
+    return hasLabel("person");
+}
+----
+
+To remedy this situation, a new annotation has been added which allows the user to control the type specifications
+more directly providing a way to avoid/override the inference system:
+
+[source,java]
+----
+@GremlinDsl.AnonymousMethod(returnTypeParameters = {"A", "A"}, methodTypeParameters = {"A"})
+public default GraphTraversal<S, E> person() {
+    return hasLabel("person");
+}
+----
+
+which will then generate:
+
+[source,java]
+----
+public static <A> SocialGraphTraversal<A, A> person() {
+    return hasLabel("person");
+}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1791[TINKERPOP-1791]
 
 ==== Specify a Cluster Object
 
