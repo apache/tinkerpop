@@ -74,15 +74,21 @@ class Mediator {
     def writePluginState() {
         def file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
 
-        // ensure that the directories exist to hold the file.
-        file.mkdirs()
+        def canWrite = file.canWrite()
+        if (canWrite) {
 
-        if (file.exists())
-            file.delete()
+            // ensure that the directories exist to hold the file.
+            file.mkdirs()
 
-        new File(ConsoleFs.PLUGIN_CONFIG_FILE).withWriter { out ->
-            activePlugins().each { k, v -> out << (k + LINE_SEP) }
+            if (file.exists())
+                file.delete()
+
+            new File(ConsoleFs.PLUGIN_CONFIG_FILE).withWriter { out ->
+                activePlugins().each { k, v -> out << (k + LINE_SEP) }
+            }
         }
+
+        return canWrite
     }
 
     def activePlugins() {
