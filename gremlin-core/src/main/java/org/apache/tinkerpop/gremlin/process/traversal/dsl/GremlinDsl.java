@@ -74,4 +74,24 @@ public @interface GremlinDsl {
      * </ul>
      */
     public boolean generateDefaultMethods() default true;
+
+    /**
+     * Annotation that allows the user to directly override the type parameters on generated anonymous methods. If this
+     * annotation is not specified then the processor will attempt to infer the correct type parameters to use when
+     * generating the anonymous method representations of the DSL methods.
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.CLASS)
+    public @interface AnonymousMethod {
+
+        /**
+         * The type parameters to apply to the return type of the method applied in the order that they are specified.
+         */
+        public String[] returnTypeParameters() default {};
+
+        /**
+         * The type parameters to apply to the method in the order that they are specified.
+         */
+        public String[] methodTypeParameters() default {};
+    }
 }

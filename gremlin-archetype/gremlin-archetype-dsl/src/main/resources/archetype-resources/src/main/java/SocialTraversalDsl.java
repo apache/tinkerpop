@@ -19,6 +19,7 @@
 package ${package};
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl.AnonymousMethod;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -45,7 +46,7 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
      * @param personName the name of the person to filter on
      */
     public default GraphTraversal<S, Vertex> knows(String personName) {
-        return out("knows").hasLabel("person").has("name", personName);
+        return ((SocialTraversalDsl) out("knows")).person().has("name", personName);
     }
 
     /**
@@ -53,7 +54,7 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
      * those persons.
      */
     public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
-        return out("knows").hasLabel("person").values("age").min();
+        return ((SocialTraversalDsl) out("knows")).person().values("age").min();
     }
 
     /**
@@ -63,5 +64,13 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
      */
     public default GraphTraversal<S, Long> createdAtLeast(int number) {
         return outE("created").count().is(P.gte(number));
+    }
+
+    /**
+     * Filters objects by the "person" label. This step is designed to work with incoming vertices.
+     */
+    @GremlinDsl.AnonymousMethod(returnTypeParameters = {"A", "A"}, methodTypeParameters = {"A"})
+    public default GraphTraversal<S, E> person() {
+        return hasLabel("person");
     }
 }
