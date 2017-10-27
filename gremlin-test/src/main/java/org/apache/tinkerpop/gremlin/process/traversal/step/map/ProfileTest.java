@@ -198,8 +198,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
         printTraversalForm(traversal);
-        TraversalMetrics traversalMetrics = traversal.next();
-        assertEquals("There should be 8 steps in this traversal (counting injected profile steps).", 8, traversal.asAdmin().getSteps().size());
+
+        // This assertion is really only meant for tinkergraph
+        if (graph.getClass().getSimpleName().equals("TinkerGraph"))
+            assertEquals("There should be 8 steps in this traversal (counting injected profile steps).", 8, traversal.asAdmin().getSteps().size());
+
+        final TraversalMetrics traversalMetrics = traversal.next();
         validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
     }
 
@@ -210,8 +214,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetricsX();
         printTraversalForm(traversal);
         traversal.iterate();
-        assertEquals("There should be 7 steps in this traversal (counting injected profile steps).", 7, traversal.asAdmin().getSteps().size());
-        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
+
+        // This assertion is really only meant for tinkergraph
+        if (graph.getClass().getSimpleName().equals("TinkerGraph"))
+            assertEquals("There should be 7 steps in this traversal (counting injected profile steps).", 7, traversal.asAdmin().getSteps().size());
+
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
     }
 
