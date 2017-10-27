@@ -23,13 +23,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     internal class Token : IEquatable<Token>
     {
-        private static readonly IList<ITokenParameter> EmptyParameters = new ITokenParameter[0];
+        private static readonly IList<ITokenParameter> EmptyParameters =
+            new ReadOnlyCollection<ITokenParameter>(new ITokenParameter[0]);
         
         public bool Equals(Token other)
         {
@@ -37,7 +39,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 return false;
             }
-            return  (Parameters ?? EmptyParameters).SequenceEqual(other.Parameters ?? EmptyParameters);
+            return  (Parameters).SequenceEqual(other.Parameters);
         }
 
         public override bool Equals(object obj)
@@ -59,12 +61,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public string Name { get; }
 
-        public ICollection<ITokenParameter> Parameters { get; }
+        /// <summary>
+        /// Returns the collection of parameters, can not be null.
+        /// </summary>
+        public IList<ITokenParameter> Parameters { get; }
             
-        public Token(string name, ICollection<ITokenParameter> parameters = null)
+        public Token(string name, IList<ITokenParameter> parameters = null)
         {
             Name = name;
-            Parameters = parameters;
+            Parameters = parameters ?? EmptyParameters;
         }
             
         public Token(string name, ITokenParameter parameter)

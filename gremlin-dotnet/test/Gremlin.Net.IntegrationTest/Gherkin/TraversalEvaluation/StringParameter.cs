@@ -65,5 +65,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         {
             return $"{GetType().Name}({Value})";
         }
+
+        public object GetValue()
+        {
+            return Value;
+        }
+
+        public Type GetParameterType()
+        {
+            return typeof(string);
+        }
     }
 }

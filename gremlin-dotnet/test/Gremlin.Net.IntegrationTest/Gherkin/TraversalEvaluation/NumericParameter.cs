@@ -56,6 +56,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         {
             return $"NumericParameter<{typeof(T).Name}>({Value})";
         }
+
+        public object GetValue()
+        {
+            return Value;
+        }
+
+        public Type GetParameterType()
+        {
+            return typeof(T);
+        }
     }
 
     internal static class NumericParameter

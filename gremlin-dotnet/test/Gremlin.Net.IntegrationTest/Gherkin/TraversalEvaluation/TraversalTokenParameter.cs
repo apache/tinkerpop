@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TEnum = Gremlin.Net.Process.Traversal.T;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -48,6 +49,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         public override int GetHashCode()
         {
             return Parts != null ? Parts.GetHashCode() : 0;
+        }
+
+        public object GetValue()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Type GetParameterType()
+        {
+            return typeof(TEnum);
         }
 
         public IList<Token> Parts { get; }

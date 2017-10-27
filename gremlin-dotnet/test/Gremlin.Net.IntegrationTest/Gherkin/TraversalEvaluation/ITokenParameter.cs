@@ -21,10 +21,21 @@
 
 #endregion
 
+using System;
+
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     public interface ITokenParameter
     {
-        
+        /// <summary>
+        /// Gets the value of the parameter 
+        /// </summary>
+        object GetValue();
+
+        /// <summary>
+        /// Gets the type of the parameter
+        /// </summary>
+        /// <returns></returns>
+        Type GetParameterType();
     }
 }

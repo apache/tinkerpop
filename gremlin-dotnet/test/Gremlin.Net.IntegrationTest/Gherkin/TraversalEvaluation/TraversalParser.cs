@@ -56,49 +56,103 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         private static ITraversal BuildFromMethods(string traversalText, GraphTraversalSource g)
         {
-            var parts = traversalText.Split('.');
-            if (parts[0] != "g")
+            var parts = ParseTraversal(traversalText);
+            if (parts[0].Name != "g")
             {
                 throw BuildException(traversalText);
             }
             ITraversal traversal;
-            switch (parts[1])
+            switch (parts[1].Name)
             {
-                case "V()":
+                case "V":
+                    //TODO: support V() parameters
                     traversal = g.V();
                     break;
-                case "E()":
+                case "E":
                     traversal = g.E();
                     break;
                 default:
                     throw BuildException(traversalText);
             }
-            for (var i = 2; i < parts.Length; i++)
+            for (var i = 2; i < parts.Count; i++)
             {
-                var name = GetCsharpName(parts[i], traversalText);
+                var token = parts[i];
+                var name = GetCsharpName(token.Name);
                 var method = traversal.GetType().GetMethod(name);
                 if (method == null)
                 {
                     throw new InvalidOperationException($"Traversal method '{parts[i]}' not found for testing");
                 }
-                if (method.IsGenericMethod)
-                {
-                    throw new InvalidOperationException(
-                        $"Can not build traversal to test as '{name}()' method is generic");
-                }
-                traversal = (ITraversal) method.Invoke(traversal, new object[] { new object[0]});
+                var parameters = BuildParameters(method, token, out var genericParameters);
+                method = BuildGenericMethod(method, genericParameters);
+                traversal = (ITraversal) method.Invoke(traversal, parameters);
             }
             return traversal;
         }
 
-        private static string GetCsharpName(string part, string traversalText)
+        private static MethodInfo BuildGenericMethod(MethodInfo method, IDictionary<string, Type> genericParameters)
         {
-            if (!part.EndsWith("()"))
+            if (!method.IsGenericMethod)
             {
-                throw BuildException(traversalText);
+                return method;
             }
+            var genericArgs = method.GetGenericArguments();
+            var types = new Type[genericArgs.Length];
+            for (var i = 0; i < genericArgs.Length; i++)
+            {
+                var name = genericArgs[i].Name;
+                if (genericParameters.TryGetValue(name, out var type))
+                {
+                    types[i] = type;
+                }
+                //TODO: Try to infer it from the name based on modern schema
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Can not build traversal to test as '{method.Name}()' method is generic and type '{name}'" +
+                        $" can not be inferred");
+                }
+            }
+            return method.MakeGenericMethod(types);
+        }
+
+        private static object[] BuildParameters(MethodInfo method, Token token,
+                                                out IDictionary<string, Type> genericParameterTypes)
+        {
+            var paramsInfo = method.GetParameters();
+            var parameters = new object[paramsInfo.Length];
+            genericParameterTypes = new Dictionary<string, Type>();
+            for (var i = 0; i < paramsInfo.Length; i++)
+            {
+                var info = paramsInfo[i];
+                object value = null;
+                if (token.Parameters.Count > i)
+                {
+                    var tokenParameter = token.Parameters[i];
+                    value =  tokenParameter.GetValue();
+                    if (info.ParameterType.IsGenericParameter)
+                    {
+                        // We've provided a value for parameter of a generic type, we can infer the
+                        // type of the generic argument based on the parameter.
+                        // For example, in the case of `Constant<E2>(E2 value)`
+                        // if we have the type of value we have the type of E2. 
+                        genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
+                    }
+                }
+                parameters[i] = value ?? GetDefault(info.ParameterType);
+            }
+            return parameters;
+        }
+
+        public static object GetDefault(Type type)
+        {
+            return type.GetTypeInfo().IsValueType ? Activator.CreateInstance(type) : null;
+        }
+
+        private static string GetCsharpName(string part)
+        {
             // Transform to PascalCasing and remove the parenthesis
-            return char.ToUpper(part[0]) + part.Substring(1, part.Length - 3);
+            return char.ToUpper(part[0]) + part.Substring(1);
         }
 
         private static Exception BuildException(string traversalText)
@@ -106,7 +160,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return new InvalidOperationException($"Can not build a traversal to test from '{traversalText}'");
         }
 
-        internal static IList<Token> ParseParts(string traversalText)
+        internal static IList<Token> ParseTraversal(string traversalText)
         {
             var index = 0;
             return ParseTokens(traversalText, ref index);

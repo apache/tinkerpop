@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -45,6 +46,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         public override int GetHashCode()
         {
             return Parts != null ? Parts.GetHashCode() : 0;
+        }
+
+        public object GetValue()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Type GetParameterType()
+        {
+            return typeof(ITraversal);
         }
 
         public IList<Token> Parts { get; }

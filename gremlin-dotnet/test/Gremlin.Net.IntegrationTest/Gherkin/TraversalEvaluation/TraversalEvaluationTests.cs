@@ -22,12 +22,10 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using Gremlin.Net.Structure;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -41,7 +39,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         }
         
         [Fact]
-        public void Traversal_Parser_Should_Parse_Parts()
+        public void Traversal_Parser_Should_Parse_Into_Tokens()
         {
             var items = new[]
             {
@@ -64,7 +62,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             };
             foreach (var item in items)
             {
-                var parts = TraversalParser.ParseParts(item.Item1);
+                var parts = TraversalParser.ParseTraversal(item.Item1);
                 _output.WriteLine("Parsing " + item.Item1);
                 if (parts[parts.Count-1].Parameters != null)
                 {
@@ -73,6 +71,21 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                                       string.Join(", ", parts[parts.Count - 1].Parameters.Select(p => p.ToString())));
                 }
                 Assert.Equal(new[] {new Token("g"), new Token("V")}.Concat(item.Item2), parts);
+            }
+        }
+
+        [Fact]
+        public void GetTraversal_Should_Invoke_Traversal_Methods()
+        {
+            var traversalTexts = new string[]
+            {
+                "g.V().count()",
+                "g.V().constant(123)"
+            };
+            var g = new Graph().Traversal();
+            foreach (var text in traversalTexts)
+            {
+                TraversalParser.GetTraversal(text, g);
             }
         }
     }
