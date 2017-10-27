@@ -264,6 +264,7 @@ limitations under the License.
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
+                    <!--
                     <plugin>
                         <groupId>net.sf.mavenjython</groupId>
                         <artifactId>jython-compile-maven-plugin</artifactId>
@@ -276,15 +277,16 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <libraries>
-                                        <param>aenum==1.4.5</param>
-                                        <param>tornado==4.4.1</param>
-                                        <param>six==1.10.0</param>
-                                        <param>futures==3.0.5</param>
+                                        <param>aenum>=1.4.5</param>
+                                        <param>tornado>=4.4.1</param>
+                                        <param>six>=1.10.0</param>
+                                        <param>futures>=3.0.5</param>
                                     </libraries>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
+                    -->
                     <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

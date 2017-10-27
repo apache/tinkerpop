@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.python.jsr223.PyScriptEngine;
 
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Ignore
 public class GraphSONWriterTest {
 
     private static final Set<GraphSONVersion> VERSIONS = new HashSet<>(Arrays.asList(GraphSONVersion.V2_0, GraphSONVersion.V3_0));

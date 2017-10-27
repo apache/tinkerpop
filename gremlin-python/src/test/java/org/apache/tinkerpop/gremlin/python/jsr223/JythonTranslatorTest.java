@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Transl
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Ignore
 public class JythonTranslatorTest {
 
     /*@Test

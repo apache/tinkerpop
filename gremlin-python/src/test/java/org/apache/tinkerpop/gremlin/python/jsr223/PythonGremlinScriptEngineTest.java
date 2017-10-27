@@ -20,11 +20,13 @@ package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptEngineToTest;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Ignore
 @RunWith(GremlinScriptEngineSuite.class)
 @ScriptEngineToTest(scriptEngineName = "gremlin-jython")
 public class PythonGremlinScriptEngineTest {
