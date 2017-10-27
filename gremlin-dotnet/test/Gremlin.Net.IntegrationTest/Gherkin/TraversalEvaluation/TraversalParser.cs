@@ -34,7 +34,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly IDictionary<string, Func<GraphTraversalSource, ITraversal>> FixedTranslations = 
             new Dictionary<string, Func<GraphTraversalSource, ITraversal>>
             {
-                { "g.V().has(\"no\").count()", g => g.V().Has("no").Count() },
                 { "g.V().fold().count(Scope.local)", g => g.V().Fold<object>().Count(Scope.Local)}
             };
         
@@ -83,14 +82,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 {
                     throw new InvalidOperationException($"Traversal method '{parts[i]}' not found for testing");
                 }
-                var parameters = BuildParameters(method, token, out var genericParameters);
-                method = BuildGenericMethod(method, genericParameters);
-                traversal = (ITraversal) method.Invoke(traversal, parameters);
+                var parameterValues = BuildParameters(method, token, out var genericParameters);
+                method = BuildGenericMethod(method, genericParameters, parameterValues);
+                traversal = (ITraversal) method.Invoke(traversal, parameterValues);
             }
             return traversal;
         }
 
-        private static MethodInfo BuildGenericMethod(MethodInfo method, IDictionary<string, Type> genericParameters)
+        private static MethodInfo BuildGenericMethod(MethodInfo method, IDictionary<string, Type> genericParameters,
+                                                     object[] parameterValues)
         {
             if (!method.IsGenericMethod)
             {
@@ -101,17 +101,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             for (var i = 0; i < genericArgs.Length; i++)
             {
                 var name = genericArgs[i].Name;
-                if (genericParameters.TryGetValue(name, out var type))
+                Type type;
+                if (!genericParameters.TryGetValue(name, out type))
                 {
-                    types[i] = type;
+                    // Try to infer it from the name based on modern graph
+                    type = ModernGraphTypeInformation.GetTypeArguments(method, parameterValues);
                 }
-                //TODO: Try to infer it from the name based on modern schema
-                else
+                if (type == null)
                 {
                     throw new InvalidOperationException(
                         $"Can not build traversal to test as '{method.Name}()' method is generic and type '{name}'" +
                         $" can not be inferred");
                 }
+                types[i] = type;
             }
             return method.MakeGenericMethod(types);
         }
@@ -137,6 +139,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // For example, in the case of `Constant<E2>(E2 value)`
                         // if we have the type of value we have the type of E2. 
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
+                    }
+                    else if (info.ParameterType == typeof(object[]))
+                    {
+                        value = new [] {value};
                     }
                 }
                 parameters[i] = value ?? GetDefault(info.ParameterType);

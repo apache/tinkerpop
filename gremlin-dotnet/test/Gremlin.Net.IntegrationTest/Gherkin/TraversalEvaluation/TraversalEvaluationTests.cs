@@ -77,15 +77,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         [Fact]
         public void GetTraversal_Should_Invoke_Traversal_Methods()
         {
-            var traversalTexts = new string[]
+            var traversalTexts = new []
             {
                 "g.V().count()",
-                "g.V().constant(123)"
+                "g.V().constant(123)",
+                "g.V().has(\"no\").count()",
+                "g.V().values(\"age\")",
+                "g.V().valueMap(\"name\", \"age\")",
+                "g.V().repeat(__.both()).times(5)"
             };
             var g = new Graph().Traversal();
             foreach (var text in traversalTexts)
             {
-                TraversalParser.GetTraversal(text, g);
+                Assert.NotNull(TraversalParser.GetTraversal(text, g));
             }
         }
     }
