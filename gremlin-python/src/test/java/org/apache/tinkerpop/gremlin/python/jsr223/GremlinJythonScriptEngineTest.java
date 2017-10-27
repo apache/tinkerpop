@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.script.ScriptContext;
@@ -45,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Ignore
 public class GremlinJythonScriptEngineTest {
 
     @Test

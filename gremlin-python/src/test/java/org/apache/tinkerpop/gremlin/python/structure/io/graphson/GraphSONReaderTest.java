@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.python.jsr223.PyScriptEngine;
 
@@ -49,6 +50,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Ignore
 public class GraphSONReaderTest {
 
     private static final ScriptEngine jythonEngine = JythonScriptEngineSetup.setup((PyScriptEngine) new ScriptEngineManager().getEngineByName("jython"));

@@ -22,11 +22,13 @@ package org.apache.tinkerpop.gremlin.python.jsr223;
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Ignore
 @RunWith(ProcessStandardSuite.class)
 @GraphProviderClass(provider = PythonProvider.class, graph = TinkerGraph.class)
 public class PythonProcessStandardTest {
