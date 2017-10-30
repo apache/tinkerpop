@@ -183,5 +183,15 @@ public abstract class GroovyVertexTest {
         public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').V.hasLabel('software').name")
         }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_bothEXselfX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().bothE('self')")
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_bothXselfX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().both('self')")
+        }
     }
 }
