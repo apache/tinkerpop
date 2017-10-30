@@ -6,9 +6,6 @@ jdk:
 sudo: required
 dist: trusty
 
-env:
-  - MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
 install:
   # include glvs
   - touch gremlin-python/.glv
@@ -25,4 +22,4 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install dotnet-dev-1.0.4
 script: 
-  - "mvn clean install -Dci"
+  - "mvn clean install -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dci"
