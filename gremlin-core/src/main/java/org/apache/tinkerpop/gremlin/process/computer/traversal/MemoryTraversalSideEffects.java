@@ -169,6 +169,11 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
         memoryTraversalSideEffects.phase = phase;
     }
 
+    public static ProgramPhase getMemorySideEffectsPhase(final Traversal.Admin<?, ?> traversal) {
+        return traversal.getSideEffects() instanceof MemoryTraversalSideEffects ?
+                ((MemoryTraversalSideEffects)traversal.getSideEffects()).phase:null;
+    }
+
     public static Set<MemoryComputeKey> getMemoryComputeKeys(final Traversal.Admin<?, ?> traversal) {
         final Set<MemoryComputeKey> keys = new HashSet<>();
         final TraversalSideEffects sideEffects =

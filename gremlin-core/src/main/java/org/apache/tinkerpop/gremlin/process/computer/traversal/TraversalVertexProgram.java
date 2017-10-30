@@ -376,7 +376,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             iterationMetrics.finish(0);
             // reset counts
             iterationMetrics.setCount(TraversalMetrics.TRAVERSER_COUNT_ID,0);
-            this.traversal.get().getSideEffects().add(profileSteps.get(profileStepIndex).getId(), iterationMetrics);
+            if (null != MemoryTraversalSideEffects.getMemorySideEffectsPhase(this.traversal.get())) {
+                this.traversal.get().getSideEffects().add(profileSteps.get(profileStepIndex).getId(), iterationMetrics);
+            }
             iterationMetrics = null;
         }
     }
