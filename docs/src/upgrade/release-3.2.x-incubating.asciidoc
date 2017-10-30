@@ -167,6 +167,16 @@ implementations can simply add the new method and override its behavior. The old
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1798[TINKERPOP-1798]
 
+=== Upgrading for Providers
+
+==== Direction.BOTH Requires Duplication of Self-Edges
+
+Prior to this release, there was no semantic check to determine whether a self-edge (e.g. `e[1][2-self->2]`) would be returned
+twice on a `BOTH`. The semantics have been specified now in the test suite where the edge should be returned twice as it
+is both an incoming edge and an outgoing edge.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1821[TINKERPOP-1821]
+
 == TinkerPop 3.2.6
 
 

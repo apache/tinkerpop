@@ -575,6 +575,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_bothEXselfX() {
         g.addV().as("a").addE("self").to("a").iterate();
         final Traversal<Vertex, Edge> traversal = get_g_V_bothEXselfX();
@@ -586,6 +587,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_bothXselfX() {
         g.addV().as("a").addE("self").to("a").iterate();
         final Traversal<Vertex, Vertex> traversal = get_g_V_bothXselfX();
