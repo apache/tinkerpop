@@ -52,7 +52,7 @@ Given that graph, the following traversal will get the lowest common ancestor fo
 g.V('A').
   repeat(out('hasParent')).emit().as('x').
   repeat(__.in('hasParent')).emit(hasId('D')).
-  select('x').limit(1).values('name')
+  select('x').limit(1)
 ----
 
 The above traversal is reasonably straightforward to follow in that it simply traverses up the tree from the A vertex
