@@ -107,10 +107,9 @@ g.V().filter(label().is('person')) <2>
 g.V().hasLabel('person') <3>
 ----
 
-<1> A filter that only allows the vertex to pass if it has an age-property.
+<1> A filter that only allows the vertex to pass if it has the "person" label
 <2> The same operation, but using the traversal represention of `filter()`.
 <3> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
-
 
 image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
