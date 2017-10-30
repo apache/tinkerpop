@@ -54,11 +54,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     new[] {new Token("has", new[] {new StringParameter("lang"), new StringParameter("java")})}),
                 Tuple.Create("g.V().where(__.in(\"knows\"))",
                     new[] {new Token("where", new[] {new StaticTraversalParameter(
-                        new[] {new Token("__"), new Token("in", new StringParameter("knows"))})})}),
+                        new[] {new Token("__"), new Token("in", new StringParameter("knows"))}, "__.in(\"knows\")")})}),
                 Tuple.Create("g.V().has(\"age\", P.gt(27)", 
                     new[] {new Token("has", new ITokenParameter[] { new StringParameter("age"),
                         new TraversalPredicateParameter(
-                            new[] { new Token("P"), new Token("gt", NumericParameter.Create(27)) }) })})
+                            new[] { new Token("P"), new Token("gt", NumericParameter.Create(27)) }) })}),
+                Tuple.Create("g.V().count(Scope.local)", 
+                    new[] { new Token("count", new TraversalEnumParameter("Scope.local"))})
             };
             foreach (var item in items)
             {
@@ -80,16 +82,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var traversalTexts = new []
             {
                 "g.V().count()",
-                "g.V().constant(123)",
+                //"g.V().constant(123L)", Can be parsed using the new type-safe API
                 "g.V().has(\"no\").count()",
                 "g.V().values(\"age\")",
                 "g.V().valueMap(\"name\", \"age\")",
-                "g.V().repeat(__.both()).times(5)"
+                "g.V().where(__.in(\"created\").count().is(1)).values(\"name\")",
+                "g.V().count(Scope.local)",
+                "g.V().values(\"age\").is(P.lte(30))"
             };
             var g = new Graph().Traversal();
             foreach (var text in traversalTexts)
             {
-                Assert.NotNull(TraversalParser.GetTraversal(text, g));
+                var traversal = TraversalParser.GetTraversal(text, g);
+                Assert.NotNull(traversal);
+                Assert.True(traversal.Bytecode.StepInstructions.Count > 0);
             }
         }
     }

@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
@@ -35,7 +36,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
     {
         public bool Equals(TraversalPredicateParameter other)
         {
-            return Parts.SequenceEqual(other.Parts);
+            return Tokens.SequenceEqual(other.Tokens);
         }
 
         public override bool Equals(object obj)
@@ -48,12 +49,25 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public override int GetHashCode()
         {
-            return Parts != null ? Parts.GetHashCode() : 0;
+            return Tokens != null ? Tokens.GetHashCode() : 0;
         }
 
         public object GetValue()
         {
-            throw new NotImplementedException();
+            var type = typeof(P);
+            object instance = null;
+            for (var i = 1; i < Tokens.Count; i++)
+            {
+                var token = Tokens[i];
+                var method = type.GetMethod(TraversalParser.GetCsharpName(token.Name),
+                    BindingFlags.Static | BindingFlags.Public);
+                if (method == null)
+                {
+                    throw new InvalidOperationException($"Predicate (P) method '{token}' not found for testing");
+                }
+                instance = method.Invoke(instance, new object[] {token.Parameters.Select(p => p.GetValue()).ToArray()});
+            }
+            return instance;
         }
 
         public Type GetParameterType()
@@ -61,11 +75,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return typeof(TraversalPredicate);
         }
 
-        public IList<Token> Parts { get; }
+        public IList<Token> Tokens { get; }
         
-        public TraversalPredicateParameter(IList<Token> parts)
+        public TraversalPredicateParameter(IList<Token> tokens)
         {
-            Parts = parts;
+            Tokens = tokens;
         }
     }
 }

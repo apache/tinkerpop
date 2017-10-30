@@ -42,49 +42,63 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly Regex RegexFloat =
             new Regex(@"\d+\.\d+f", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex RegexLong = new Regex(@"\d+l", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RegexEnum = new Regex(@"\w+\.\w+", RegexOptions.Compiled);
 
         internal static ITraversal GetTraversal(string traversalText, GraphTraversalSource g)
         {
-            Func<GraphTraversalSource, ITraversal> traversalBuilder;
-            if (!FixedTranslations.TryGetValue(traversalText, out traversalBuilder))
+            if (!FixedTranslations.TryGetValue(traversalText, out var traversalBuilder))
             {
-                return BuildFromMethods(traversalText, g);
+                var tokens = ParseTraversal(traversalText);
+                return GetTraversalFromTokens(tokens, g, traversalText);
             }
             return traversalBuilder(g);
         }
 
-        private static ITraversal BuildFromMethods(string traversalText, GraphTraversalSource g)
+        internal static ITraversal GetTraversalFromTokens(IList<Token> tokens, GraphTraversalSource g,
+                                                         string traversalText)
         {
-            var parts = ParseTraversal(traversalText);
-            if (parts[0].Name != "g")
+            ITraversal traversal;
+            Type traversalType;
+            var initialIndex = 2;
+            if (tokens[0].Name == "g")
+            {
+                switch (tokens[1].Name)
+                {
+                    case "V":
+                        //TODO: support V() parameters
+                        traversal = g.V();
+                        break;
+                    case "E":
+                        traversal = g.E();
+                        break;
+                    default:
+                        throw BuildException(traversalText);
+                }
+                traversalType = traversal.GetType();
+            }
+            else if (tokens[0].Name == "__")
+            {
+                traversal = null;
+                traversalType = typeof(__);
+                initialIndex = 1;
+            }
+            else
             {
                 throw BuildException(traversalText);
             }
-            ITraversal traversal;
-            switch (parts[1].Name)
+            for (var i = initialIndex; i < tokens.Count; i++)
             {
-                case "V":
-                    //TODO: support V() parameters
-                    traversal = g.V();
-                    break;
-                case "E":
-                    traversal = g.E();
-                    break;
-                default:
-                    throw BuildException(traversalText);
-            }
-            for (var i = 2; i < parts.Count; i++)
-            {
-                var token = parts[i];
+                var token = tokens[i];
                 var name = GetCsharpName(token.Name);
-                var method = traversal.GetType().GetMethod(name);
+                var method = traversalType.GetMethod(name);
                 if (method == null)
                 {
-                    throw new InvalidOperationException($"Traversal method '{parts[i]}' not found for testing");
+                    throw new InvalidOperationException($"Traversal method '{tokens[i]}' not found for testing");
                 }
                 var parameterValues = BuildParameters(method, token, out var genericParameters);
                 method = BuildGenericMethod(method, genericParameters, parameterValues);
                 traversal = (ITraversal) method.Invoke(traversal, parameterValues);
+                traversalType = traversal.GetType();
             }
             return traversal;
         }
@@ -155,7 +169,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return type.GetTypeInfo().IsValueType ? Activator.CreateInstance(type) : null;
         }
 
-        private static string GetCsharpName(string part)
+        internal static string GetCsharpName(string part)
         {
             // Transform to PascalCasing and remove the parenthesis
             return char.ToUpper(part[0]) + part.Substring(1);
@@ -268,17 +282,24 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             }
             if (text.Substring(i, 3).StartsWith("__."))
             {
-                return new StaticTraversalParameter(ParseTokens(text, ref i));
-            }
-            if (text.Substring(i, 2).StartsWith("T."))
-            {
-                return new TraversalTokenParameter(ParseTokens(text, ref i));
+                var startIndex = i;
+                var tokens = ParseTokens(text, ref i);
+                return new StaticTraversalParameter(tokens, text.Substring(startIndex, i - startIndex));
             }
             if (text.Substring(i, 2).StartsWith("P."))
             {
                 return new TraversalPredicateParameter(ParseTokens(text, ref i));
             }
-            return null;
+            var parameterText = text.Substring(i, text.IndexOf(')', i) - i);
+            if (string.IsNullOrWhiteSpace(parameterText))
+            {
+                return null;
+            }
+            if (RegexEnum.IsMatch(parameterText))
+            {
+                return new TraversalEnumParameter(parameterText);
+            }
+            throw new NotSupportedException($"Parameter {parameterText} not supported");
         }
         
         private static ITokenParameter ParseNumber(string text, ref int i)

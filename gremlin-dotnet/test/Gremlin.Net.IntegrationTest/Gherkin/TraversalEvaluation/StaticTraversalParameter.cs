@@ -30,9 +30,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     internal class StaticTraversalParameter : ITokenParameter, IEquatable<StaticTraversalParameter>
     {
+        private readonly string _traversalText;
+
         public bool Equals(StaticTraversalParameter other)
         {
-            return Parts.SequenceEqual(other.Parts);
+            return Tokens.SequenceEqual(other.Tokens);
         }
 
         public override bool Equals(object obj)
@@ -45,12 +47,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public override int GetHashCode()
         {
-            return Parts != null ? Parts.GetHashCode() : 0;
+            return Tokens != null ? Tokens.GetHashCode() : 0;
         }
 
         public object GetValue()
         {
-            throw new NotImplementedException();
+            return TraversalParser.GetTraversalFromTokens(Tokens, null, _traversalText);
         }
 
         public Type GetParameterType()
@@ -58,11 +60,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return typeof(ITraversal);
         }
 
-        public IList<Token> Parts { get; }
+        public IList<Token> Tokens { get; }
         
-        public StaticTraversalParameter(IList<Token> parts)
+        public StaticTraversalParameter(IList<Token> tokens, string traversalText)
         {
-            Parts = parts;
+            _traversalText = traversalText;
+            Tokens = tokens;
         }
     }
 }
