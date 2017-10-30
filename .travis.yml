@@ -5,6 +5,13 @@ jdk:
   - oraclejdk8
 sudo: required
 dist: trusty
+
+install:
+  # include glvs
+  - touch gremlin-python/.glv
+  - touch gremlin-dotnet/src/.glv
+  - touch gremlin-dotnet/test/.glv
+
 addons:
   apt:
     packages:
@@ -16,10 +23,3 @@ before_install:
   - sudo apt-get install dotnet-dev-1.0.4
 script: 
   - "mvn clean install -Dci"
-#notifications:
-#  email:
-#    recipients:
-#      - me@gremlin.guru
-#      - robdale@gmail.com
-#    on_success: change # default: change
-#    on_failure: always # default: always
