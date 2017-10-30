@@ -22,4 +22,4 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install dotnet-dev-1.0.4
 script: 
-  - "mvn clean install -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dci"
+  - "mvn clean install -q -Dci"
