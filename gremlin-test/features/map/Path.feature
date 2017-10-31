@@ -26,6 +26,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],marko] |
 
   Scenario: g_VX1X_out_path_byXageX_byXnameX
@@ -37,6 +38,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[d[29],lop] |
       | p[d[29],vadas] |
       | p[d[29],josh] |
@@ -49,6 +51,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],josh,java] |
       | p[v[marko],josh,java] |
 
@@ -60,6 +63,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[marko,d[32],ripple] |
       | p[marko,d[32],lop] |
 
@@ -71,6 +75,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko]] |
 
   Scenario: g_VX1X_outEXcreatedX_inV_inE_outV_path
@@ -82,6 +87,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],e[marko-created->lop],v[lop],e[marko-created->lop],v[marko]] |
       | p[v[marko],e[marko-created->lop],v[lop],e[josh-created->lop],v[josh]] |
       | p[v[marko],e[marko-created->lop],v[lop],e[peter-created->lop],v[peter]] |
@@ -94,5 +100,6 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[josh,ripple] |
       | p[josh,lop] |

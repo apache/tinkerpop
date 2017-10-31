@@ -27,6 +27,7 @@ Feature: Step - inject()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | vadas |
       | lop   |
       | vadas |
@@ -43,6 +44,7 @@ Feature: Step - inject()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[daniel,d[6]] |
       | p[v[marko],v[lop],lop,d[3]] |
       | p[v[marko],v[vadas],vadas,d[5]] |

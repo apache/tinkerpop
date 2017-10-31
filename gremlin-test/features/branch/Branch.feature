@@ -30,6 +30,7 @@ Feature: Step - branch()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | java |
       | java |
       | lop |
@@ -51,6 +52,7 @@ Feature: Step - branch()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | java |
       | java |
       | lop |
@@ -73,6 +75,7 @@ Feature: Step - branch()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | java |
       | java |
       | lop |

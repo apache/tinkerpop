@@ -25,6 +25,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[6] |
 
   Scenario: g_V_out_count
@@ -35,6 +36,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[6] |
 
   Scenario: g_V_both_both_count
@@ -45,6 +47,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[30] |
 
   Scenario: g_V_fold_countXlocalX
@@ -55,6 +58,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[6] |
 
   Scenario: g_V_hasXnoX_count
@@ -65,6 +69,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[0] |
 
   Scenario: g_V_whereXinXkknowsX_outXcreatedX_count_is_0XX_name
@@ -75,6 +80,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | lop  |
       | ripple |
@@ -88,6 +94,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[2505037961767380] |
 
   Scenario: g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count
@@ -103,6 +110,7 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[24309134024] |
 
   Scenario: g_V_repeatXoutX_timesX3X_count
@@ -113,4 +121,5 @@ Feature: Step - count()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[14465066] |

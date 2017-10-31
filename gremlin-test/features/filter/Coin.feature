@@ -25,6 +25,7 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |

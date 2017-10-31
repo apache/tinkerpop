@@ -25,6 +25,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"ripple": 1, "lop": 3}] |
 
   Scenario: g_V_outXcreatedX_name_groupCount
@@ -35,6 +36,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"ripple": 1, "lop": 3}] |
 
   Scenario: g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX
@@ -48,6 +50,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"ripple": 1, "lop": 3}] |
 
   Scenario: g_V_outXcreatedX_name_groupCountXaX_capXaX
@@ -60,6 +63,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"ripple": 1, "lop": 3}] |
 
   Scenario: g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX
@@ -73,6 +77,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"ripple":2, "lop": 4, "josh": 1, "vadas": 1}] |
 
   Scenario: g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name
@@ -90,6 +95,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | lop |
       | lop |
@@ -116,6 +122,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[12] |
 
   Scenario: g_V_hasXnoX_groupCount
@@ -126,6 +133,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{}] |
 
   Scenario: g_V_hasXnoX_groupCountXaX_capXaX
@@ -136,6 +144,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{}] |
 
   Scenario: g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX
@@ -147,6 +156,7 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | m[{"marko": 2, "java": 2}] |
 
   Scenario: g_V_outXcreatedX_groupCountXxX_capXxX

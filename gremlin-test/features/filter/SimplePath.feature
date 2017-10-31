@@ -26,10 +26,11 @@ Feature: Step - simplePath()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
       | v[peter] |
 
-  Scenario: get_g_V_repeatXboth_simplePathX_timesX3X_path
+  Scenario: g_V_repeatXboth_simplePathX_timesX3X_path
     Given the modern graph
     And the traversal of
       """
@@ -37,6 +38,7 @@ Feature: Step - simplePath()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop],v[josh],v[ripple]] |
       | p[v[marko],v[josh],v[lop],v[peter]] |
       | p[v[vadas],v[marko],v[lop],v[josh]] |
@@ -56,7 +58,7 @@ Feature: Step - simplePath()
       | p[v[peter],v[lop],v[josh],v[ripple]] |
       | p[v[peter],v[lop],v[josh],v[marko]] |
 
-  Scenario: get_g_V_asXaX_out_asXbX_out_asXcX_simplePath_byXlabelX_fromXbX_toXcX_path_byXnameX
+  Scenario: g_V_asXaX_out_asXbX_out_asXcX_simplePath_byXlabelX_fromXbX_toXcX_path_byXnameX
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
@@ -65,5 +67,6 @@ Feature: Step - simplePath()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[marko,josh,ripple] |
       | p[marko,josh,lop]    |

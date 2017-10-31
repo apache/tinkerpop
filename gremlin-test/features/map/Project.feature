@@ -28,6 +28,7 @@ Feature: Step - project()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a":3, "b":29}] |
       | m[{"a":0, "b":27}] |
       | m[{"a":2, "b":32}] |
@@ -47,6 +48,7 @@ Feature: Step - project()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | lop |
       | lop |

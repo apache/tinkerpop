@@ -25,6 +25,7 @@ Feature: Step - has()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
       | v[peter] |
 
@@ -37,6 +38,7 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
       | v[josh] |
       | v[peter] |

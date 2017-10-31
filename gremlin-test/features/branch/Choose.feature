@@ -27,6 +27,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"name":["marko"], "age":[29]}] |
       | josh |
 
@@ -39,6 +40,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | josh |
       | vadas |
       | josh |
@@ -57,6 +59,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | ripple |
       | josh |
@@ -75,6 +78,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | peter |
@@ -92,6 +96,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | vadas |
       | josh |
       | vadas |
@@ -111,6 +116,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"p1":"marko", "p2":"vadas"}] |
       | m[{"p1":"marko", "p2":"josh"}] |
       | m[{"p1":"vadas", "p2":"vadas"}] |

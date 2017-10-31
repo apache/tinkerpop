@@ -25,6 +25,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | brussels       |
       | san diego      |
       | centreville    |
@@ -42,6 +43,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a":"marko","b":3}] |
       | m[{"a":"josh","b":5}]  |
       | m[{"a":"josh","b":3}]  |
@@ -55,6 +57,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[3] |
       | d[0] |
       | d[0] |
@@ -71,6 +74,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | vadas |
       | josh  |
     And should have a result count of 1
@@ -83,6 +87,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | marko  |
       | lop    |
       | ripple |
@@ -99,6 +104,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | e[josh-created->lop]    |
       | e[josh-created->ripple] |
     And should have a result count of 1
@@ -112,6 +118,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | e[marko-knows->josh]    |
       | e[josh-created->lop]    |
       | e[josh-created->ripple] |
@@ -126,6 +133,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | marko  |
       | ripple |
       | lop    |
@@ -140,6 +148,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | marko  |
       | ripple |
       | lop    |
@@ -153,6 +162,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | marko |
 
@@ -166,6 +176,7 @@ Feature: Step - local()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"name":"marko","project":"lop"}]   |
       | m[{"name":"josh","project":"lop"}]    |
       | m[{"name":"peter","project":"lop"}]   |

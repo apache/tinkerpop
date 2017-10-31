@@ -26,6 +26,7 @@ Feature: Step - cyclicPath()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path
@@ -37,6 +38,7 @@ Feature: Step - cyclicPath()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop],v[marko]] |
 
   Scenario: g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path

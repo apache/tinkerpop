@@ -25,6 +25,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | vadas |
       | josh |
@@ -47,6 +48,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | ripple |
       | lop |
       | lop   |
@@ -61,6 +63,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | java   |
       | lop    |
       | vadas  |
@@ -84,6 +87,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"java":4,"ripple":1,"person":4,"vadas":1,"josh":1,"lop":3}] |
 
   Scenario: g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount
@@ -99,6 +103,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"software":12,"person":20}] |
 
   Scenario: g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX
@@ -111,6 +116,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[3]   |
       | d[1.9] |
       | d[1]   |
@@ -125,6 +131,7 @@ Feature: Step - union()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[3]   |
       | d[0]   |
       | d[1.9] |

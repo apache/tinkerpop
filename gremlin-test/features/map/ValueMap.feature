@@ -25,6 +25,7 @@ Feature: Step - valueMap()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"name": ["marko"], "age": [29]}] |
       | m[{"name": ["josh"], "age": [32]}] |
       | m[{"name": ["peter"], "age": [35]}] |
@@ -40,6 +41,7 @@ Feature: Step - valueMap()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"name": ["marko"], "age": [29]}] |
       | m[{"name": ["josh"], "age": [32]}] |
       | m[{"name": ["peter"], "age": [35]}] |
@@ -56,4 +58,5 @@ Feature: Step - valueMap()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"name": ["lop"], "lang": ["java"]}] |

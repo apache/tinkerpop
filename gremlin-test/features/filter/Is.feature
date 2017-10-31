@@ -25,6 +25,7 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[32] |
 
   Scenario: g_V_valuesXageX_isXlte_30X
@@ -35,6 +36,7 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[27] |
       | d[29] |
 
@@ -46,6 +48,7 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[29] |
       | d[32] |
 
@@ -57,6 +60,7 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | ripple |
 
   Scenario: g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX
@@ -67,4 +71,5 @@ Feature: Step - coin()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |

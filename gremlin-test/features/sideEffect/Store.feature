@@ -25,6 +25,7 @@ Feature: Step - store()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | lop |
@@ -41,6 +42,7 @@ Feature: Step - store()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | lop |
@@ -74,6 +76,7 @@ Feature: Step - store()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | d[1] |
       | d[1] |
       | d[0] |

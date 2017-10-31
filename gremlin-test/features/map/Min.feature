@@ -25,6 +25,7 @@ Feature: Step - min()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[27] |
 
   Scenario: g_V_repeatXbothX_timesX5X_age_min
@@ -35,6 +36,7 @@ Feature: Step - min()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[27] |
 
   Scenario: get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX
@@ -45,4 +47,5 @@ Feature: Step - min()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"ripple":1.0,"lop":0.2}] |

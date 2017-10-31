@@ -36,6 +36,7 @@ Feature: Step - filter()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |
@@ -52,6 +53,7 @@ Feature: Step - filter()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[ripple] |
       | v[lop]  |
 
@@ -65,6 +67,7 @@ Feature: Step - filter()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
 
   Scenario: g_V_filterXname_startsWith_m_OR_name_startsWith_pX
@@ -76,6 +79,7 @@ Feature: Step - filter()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[peter]  |
 
@@ -98,6 +102,7 @@ Feature: Step - filter()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-created->lop] |
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |

@@ -25,6 +25,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop]] |
       | p[v[marko],v[vadas]] |
       | p[v[marko],v[josh]] |
@@ -42,6 +43,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | marko |
 
@@ -53,6 +55,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[ripple] |
       | v[lop] |
 
@@ -64,6 +67,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[ripple] |
       | v[lop] |
       | v[josh] |
@@ -79,6 +83,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | ripple |
       | lop |
 
@@ -90,6 +95,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko]] |
       | p[v[marko],v[lop]] |
       | p[v[marko],v[vadas]] |
@@ -113,6 +119,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko]] |
       | p[v[marko],v[lop]] |
       | p[v[marko],v[vadas]] |
@@ -137,6 +144,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | josh  |
@@ -149,6 +157,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"ripple":2,"peter":1,"vadas":2,"josh":2,"lop":4,"marko":1}] |
 
   Scenario: g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX
@@ -174,6 +183,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be ordered
+      | result |
       | d[43958] |
 
   Scenario: g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name
@@ -185,6 +195,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | vadas |
       | ripple  |
@@ -200,6 +211,7 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"ripple":3,"vadas":3,"josh":4,"lop":10,"marko":4}] |
 
   Scenario: g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX
@@ -210,6 +222,7 @@ Feature: Step - repeat()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | marko |
       | knows |
       | josh  |

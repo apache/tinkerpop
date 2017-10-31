@@ -26,6 +26,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": "v[marko]", "b": "v[vadas]"}] |
       | m[{"a": "v[marko]", "b": "v[josh]"}] |
 
@@ -39,6 +40,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": "marko", "b": "vadas"}] |
       | m[{"a": "marko", "b": "josh"}] |
 
@@ -51,6 +53,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[marko] |
 
@@ -64,6 +67,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | marko |
 
@@ -76,6 +80,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": "marko", "b": "lop"}] |
       | m[{"a": "marko", "b": "vadas"}] |
       | m[{"a": "marko", "b": "josh"}] |
@@ -92,6 +97,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": "marko", "b": "lop"}] |
       | m[{"a": "marko", "b": "vadas"}] |
       | m[{"a": "marko", "b": "josh"}] |
@@ -111,6 +117,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": "marko", "b": "marko"}] |
       | m[{"a": "vadas", "b": "vadas"}] |
       | m[{"a": "josh", "b": "josh"}] |
@@ -132,6 +139,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a": 3, "b": "matthias"}] |
       | m[{"a": 4, "b": "marko"}] |
       | m[{"a": 5, "b": "stephen"}] |
@@ -145,6 +153,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_V_label_groupCount_asXxX_selectXxX
@@ -155,6 +164,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"software": 2, "person": 4}] |
 
   Scenario: g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX
@@ -167,6 +177,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"p": "v[marko]", "r": {"created": 1, "knows": 2}}] |
       | m[{"p": "v[vadas]", "r": {"knows": 1}}] |
       | m[{"p": "v[josh]", "r": {"created": 2, "knows": 1}}] |
@@ -185,6 +196,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |
@@ -201,6 +213,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[marko] |
       | v[marko] |
@@ -214,6 +227,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
       | v[josh] |
 
@@ -228,6 +242,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | ripple |
       | lop |
 
@@ -242,6 +257,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-knows->vadas] |
 
   Scenario: g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX
@@ -256,6 +272,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-knows->josh] |
 
   Scenario: g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX
@@ -270,6 +287,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-knows->josh] |
 
   Scenario: g_V_asXhereXout_name_selectXhereX
@@ -282,6 +300,7 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[marko] |
       | v[marko] |
@@ -301,4 +320,5 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"ripple": 1, "lop": 6}] |

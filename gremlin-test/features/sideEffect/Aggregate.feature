@@ -25,6 +25,7 @@ Feature: Step - aggregate()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | marko |
       | josh |
       | peter |
@@ -40,6 +41,7 @@ Feature: Step - aggregate()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | marko |
       | josh |
       | peter |
@@ -55,6 +57,7 @@ Feature: Step - aggregate()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop]] |
       | p[v[marko],v[vadas]] |
       | p[v[marko],v[josh]] |
@@ -70,6 +73,7 @@ Feature: Step - aggregate()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | d[29] |
       | d[27] |
       | d[32] |

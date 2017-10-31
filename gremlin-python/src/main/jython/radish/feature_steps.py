@@ -168,7 +168,7 @@ def _convert_results(val):
 
 
 def _any_assertion(data, result, ctx):
-    converted = [_convert(line[0], ctx) for line in data]
+    converted = [_convert(line['result'], ctx) for line in data]
     for r in result:
         assert_that(r, is_in(converted))
 
@@ -182,7 +182,7 @@ def _table_assertion(data, result, ctx, ordered):
     # finds a match in the results for each line of data to assert and then removes that item
     # from the list - in the end there should be no items left over and each will have been asserted
     for ix, line in enumerate(data):
-        val = _convert(line[0], ctx)
+        val = _convert(line['result'], ctx)
 
         # clear the labels since we don't define them in .feature files
         if isinstance(val, Path):

@@ -26,6 +26,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | lop |
@@ -39,6 +40,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | vadas |
       | lop |
@@ -51,6 +53,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |
@@ -67,6 +70,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[lop] |
       | v[josh] |
@@ -80,6 +84,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_VX4X_both
@@ -91,6 +96,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[lop] |
       | v[ripple] |
@@ -103,6 +109,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-created->lop] |
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
@@ -119,6 +126,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
 
   Scenario: g_EX11AsStringX
@@ -130,6 +138,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
 
   Scenario: g_VX1X_outE
@@ -141,6 +150,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-created->lop] |
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
@@ -154,6 +164,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-knows->vadas] |
 
   Scenario: g_VX4X_bothEXcreatedX
@@ -165,6 +176,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
@@ -177,6 +189,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
       | e[marko-knows->josh] |
@@ -190,6 +203,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
       | v[lop] |
@@ -203,6 +217,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_V_outE_hasXweight_1X_outV
@@ -213,6 +228,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[josh] |
 
@@ -224,6 +240,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | marko |
       | marko |
@@ -244,6 +261,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | marko |
       | josh |
@@ -258,6 +276,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
       | v[lop] |
@@ -271,6 +290,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[ripple] |
       | v[lop] |
@@ -284,6 +304,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[lop] |
 
   Scenario: g_VX2X_inE
@@ -295,6 +316,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | e[marko-knows->vadas] |
 
   Scenario: get_g_VX1X_outE_otherV
@@ -306,7 +328,8 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
-      | v[vadas] |                               
+      | result |
+      | v[vadas] |
       | v[josh] |
       | v[lop] |
 
@@ -319,6 +342,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
 
@@ -331,6 +355,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
 
@@ -343,6 +368,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
       | v[lop] |
@@ -356,6 +382,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
 
@@ -368,6 +395,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
       | v[lop] |
@@ -380,6 +408,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[ripple] |
       | v[lop] |
 
@@ -402,6 +431,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | vadas |
       | josh |
       | lop |
@@ -415,6 +445,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
       | v[josh] |
 
@@ -433,6 +464,7 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | lop |
       | lop |

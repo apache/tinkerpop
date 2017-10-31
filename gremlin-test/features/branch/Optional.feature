@@ -26,6 +26,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[vadas] |
 
   Scenario: g_VX2X_optionalXinXknowsXX
@@ -37,6 +38,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path
@@ -50,6 +52,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[vadas]] |
       | p[v[marko],v[josh],v[ripple]] |
       | p[v[marko],v[josh],v[lop]] |
@@ -65,6 +68,7 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop]] |
       | p[v[marko],v[vadas]] |
       | p[v[marko],v[josh],v[ripple]] |

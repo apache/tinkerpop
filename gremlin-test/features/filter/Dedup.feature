@@ -25,6 +25,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | josh  |
       | peter |
@@ -37,6 +38,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"x":"lop","y":"marko"}] |
       | m[{"x":"lop","y":"josh"}] |
       | m[{"x":"lop","y":"peter"}] |
@@ -52,6 +54,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | vadas |
       | josh  |
@@ -67,6 +70,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
 
   Scenario: g_V_both_name_order_byXa_bX_dedup_value
@@ -78,6 +82,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | josh |
       | lop  |
       | marko |
@@ -93,6 +98,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | josh |
       | lop  |
       | marko |
@@ -108,6 +114,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[josh] |
       | v[lop]  |
       | v[marko] |
@@ -132,6 +139,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"software":[1.0,0.4,0.2],"person":[0.5,1.0,0.4,0.2]}] |
 
   Scenario: g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX
@@ -142,6 +150,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a":"v[marko]","b":"v[lop]"}] |
       | m[{"a":"v[marko]","b":"v[vadas]"}] |
       | m[{"a":"v[lop]","b":"v[marko]"}] |
@@ -154,6 +163,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | p[v[marko],v[lop],v[marko]] |
       | p[v[josh],v[ripple],v[josh]] |
       | p[v[josh],v[lop],v[marko]] |
@@ -167,6 +177,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | vadas |
       | josh |
@@ -180,6 +191,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | josh |
       | peter |
@@ -193,6 +205,7 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[1] |
 
   Scenario: g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup
@@ -203,6 +216,7 @@ Feature: Step - dedup()
       """
     When iterated next
     Then the result should be unordered
+      | result |
       | josh |
       | lop  |
       | marko |
@@ -218,5 +232,6 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | d[0] |
 

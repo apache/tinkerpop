@@ -25,6 +25,7 @@ Feature: Step - or()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | josh  |
       | peter |
@@ -37,6 +38,7 @@ Feature: Step - or()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | ripple |
       | lop  |
@@ -50,6 +52,7 @@ Feature: Step - or()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |

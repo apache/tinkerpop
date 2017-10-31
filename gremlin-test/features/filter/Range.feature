@@ -26,6 +26,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[josh] |
       | v[vadas] |
       | v[lop] |
@@ -39,6 +40,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[josh] |
       | v[vadas] |
       | v[lop] |
@@ -54,6 +56,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[lop] |
       | v[ripple] |
     And should have a result count of 1
@@ -67,6 +70,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[lop] |
       | v[ripple] |
     And should have a result count of 1
@@ -80,6 +84,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[marko] |
       | v[josh] |
       | v[peter] |
@@ -94,6 +99,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[marko] |
       | v[josh] |
       | v[peter] |
@@ -107,6 +113,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be of
+      | result |
       | v[marko] |
       | v[josh] |
       | v[peter] |
@@ -123,6 +130,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | l[lop,josh] |
       | l[ripple,josh] |
 
@@ -134,6 +142,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | lop |
       | ripple |
 
@@ -145,6 +154,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | l[josh,ripple] |
       | l[josh,lop] |
 
@@ -156,6 +166,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | josh |
       | josh |
 
@@ -176,6 +187,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a":"lop","b":"josh"}] |
       | m[{"a":"ripple","b":"josh"}] |
 
@@ -187,6 +199,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"a":"lop"}] |
       | m[{"a":"ripple"}] |
 
@@ -198,6 +211,7 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"b":"josh","c":"lop"}] |
       | m[{"b":"josh","c":"ripple"}] |
 
@@ -209,5 +223,6 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | m[{"b":"josh"}] |
       | m[{"b":"josh"}] |

@@ -25,6 +25,7 @@ Feature: Step - and()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | marko |
       | josh |
 
@@ -36,6 +37,7 @@ Feature: Step - and()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | josh |
       | peter  |
 
@@ -47,6 +49,7 @@ Feature: Step - and()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
 
   Scenario: g_V_asXaX_andXselectXaX_selectXaXX
@@ -57,6 +60,7 @@ Feature: Step - and()
       """
     When iterated to list
     Then the result should be unordered
+      | result |
       | v[marko] |
       | v[vadas] |
       | v[lop] |
