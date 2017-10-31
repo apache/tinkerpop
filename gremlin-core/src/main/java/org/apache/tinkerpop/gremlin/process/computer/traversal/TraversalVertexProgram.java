@@ -358,9 +358,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void workerIterationStart(final Memory memory) {
         // start collecting profile metrics
         if (this.profile) {
-            iterationMetrics = new MutableMetrics("iteration" + memory.getIteration(),
-                    "Worker Iteration " + memory.getIteration());
-            iterationMetrics.start();
+            this.iterationMetrics = new MutableMetrics("iteration" + memory.getIteration(), "Worker Iteration " + memory.getIteration());
+            this.iterationMetrics.start();
         }
     }
 
@@ -373,13 +372,13 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             int profileStepIndex = memory.getIteration();
             // if we guess wrongly write timing into last step
             profileStepIndex = profileStepIndex >= profileSteps.size() ? profileSteps.size() - 1 : profileStepIndex;
-            iterationMetrics.finish(0);
+            this.iterationMetrics.finish(0);
             // reset counts
-            iterationMetrics.setCount(TraversalMetrics.TRAVERSER_COUNT_ID,0);
+            this.iterationMetrics.setCount(TraversalMetrics.TRAVERSER_COUNT_ID,0);
             if (null != MemoryTraversalSideEffects.getMemorySideEffectsPhase(this.traversal.get())) {
-                this.traversal.get().getSideEffects().add(profileSteps.get(profileStepIndex).getId(), iterationMetrics);
+                this.traversal.get().getSideEffects().add(profileSteps.get(profileStepIndex).getId(), this.iterationMetrics);
             }
-            iterationMetrics = null;
+            this.iterationMetrics = null;
         }
     }
 
