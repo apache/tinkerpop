@@ -55,10 +55,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Halted
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -75,6 +77,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -111,6 +114,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private TraverserSet<Object> haltedTraversers;
     private boolean returnHaltedTraversers = false;
     private HaltedTraverserStrategy haltedTraverserStrategy;
+    private boolean profile = false;
+    // handle current profile metrics if profile is true
+    private MutableMetrics iterationMetrics;
+
 
     private TraversalVertexProgram() {
     }
@@ -194,6 +201,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.memoryComputeKeys.add(MemoryComputeKey.of(ACTIVE_TRAVERSERS, Operator.addAll, true, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.addAll, false, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(COMPLETED_BARRIERS, Operator.addAll, true, true));
+
+        // does the traversal need profile information
+        this.profile = !TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get()).isEmpty();
     }
 
     @Override
@@ -229,6 +239,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
         // local variable will no longer be used so null it for GC
         this.haltedTraversers = null;
+        // does the traversal need profile information
+        this.profile = !TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get()).isEmpty();
     }
 
     @Override
@@ -339,6 +351,34 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             }
         } else {
             return false;
+        }
+    }
+
+    @Override
+    public void workerIterationStart(final Memory memory) {
+        // start collecting profile metrics
+        if (this.profile) {
+            this.iterationMetrics = new MutableMetrics("iteration" + memory.getIteration(), "Worker Iteration " + memory.getIteration());
+            this.iterationMetrics.start();
+        }
+    }
+
+    @Override
+    public void workerIterationEnd(final Memory memory) {
+        // store profile metrics in proper ProfileStep metrics
+        if (this.profile) {
+            List<ProfileStep> profileSteps = TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get());
+            // guess the profile step to store data
+            int profileStepIndex = memory.getIteration();
+            // if we guess wrongly write timing into last step
+            profileStepIndex = profileStepIndex >= profileSteps.size() ? profileSteps.size() - 1 : profileStepIndex;
+            this.iterationMetrics.finish(0);
+            // reset counts
+            this.iterationMetrics.setCount(TraversalMetrics.TRAVERSER_COUNT_ID,0);
+            if (null != MemoryTraversalSideEffects.getMemorySideEffectsPhase(this.traversal.get())) {
+                this.traversal.get().getSideEffects().add(profileSteps.get(profileStepIndex).getId(), this.iterationMetrics);
+            }
+            this.iterationMetrics = null;
         }
     }
 

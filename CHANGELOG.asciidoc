@@ -246,6 +246,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* `TraversalVertexProgram` ``profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Better respected permissions on the `plugins.txt` file and prevented writing if marked as read-only.
 * Added getters for the lambdas held by `LambdaCollectingBarrierStep`, `LambdaFlatMapStep` and `LambdaSideEffectStep`.
 * Fixed an old hack in `GroovyTranslator` and `PythonTranslator` where `Elements` were being mapped to their id only.
