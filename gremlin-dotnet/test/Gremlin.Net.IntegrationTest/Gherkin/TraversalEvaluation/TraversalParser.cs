@@ -36,71 +36,60 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 { "g.V().fold().count(Scope.local)", g => g.V().Fold<object>().Count(Scope.Local)}
             };
-        
-        private static readonly Regex RegexInteger = new Regex(@"\d+", RegexOptions.Compiled);
-        private static readonly Regex RegexDouble = new Regex(@"\d+\.\d+", RegexOptions.Compiled);
-        private static readonly Regex RegexFloat =
-            new Regex(@"\d+\.\d+f", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex RegexLong = new Regex(@"\d+l", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex RegexNumeric =
+            new Regex(@"\d+(\.\d+)?(?:l|f)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private static readonly Regex RegexEnum = new Regex(@"\w+\.\w+", RegexOptions.Compiled);
 
-        internal static ITraversal GetTraversal(string traversalText, GraphTraversalSource g)
+        private static readonly Regex RegexParam = new Regex(@"\w+", RegexOptions.Compiled);
+
+        internal static ITraversal GetTraversal(string traversalText, GraphTraversalSource g,
+                                                IDictionary<string, object> contextParameterValues)
         {
             if (!FixedTranslations.TryGetValue(traversalText, out var traversalBuilder))
             {
                 var tokens = ParseTraversal(traversalText);
-                return GetTraversalFromTokens(tokens, g, traversalText);
+                return GetTraversalFromTokens(tokens, g, contextParameterValues, traversalText);
             }
             return traversalBuilder(g);
         }
 
         internal static ITraversal GetTraversalFromTokens(IList<Token> tokens, GraphTraversalSource g,
-                                                         string traversalText)
+                                                          IDictionary<string, object> contextParameterValues,
+                                                          string traversalText)
         {
-            ITraversal traversal;
-            Type traversalType;
-            var initialIndex = 2;
+            object instance;
+            Type instanceType;
             if (tokens[0].Name == "g")
             {
-                switch (tokens[1].Name)
-                {
-                    case "V":
-                        //TODO: support V() parameters
-                        traversal = g.V();
-                        break;
-                    case "E":
-                        traversal = g.E();
-                        break;
-                    default:
-                        throw BuildException(traversalText);
-                }
-                traversalType = traversal.GetType();
+                instance = g;
+                instanceType = g.GetType();
             }
             else if (tokens[0].Name == "__")
             {
-                traversal = null;
-                traversalType = typeof(__);
-                initialIndex = 1;
+                instance = null;
+                instanceType = typeof(__);
             }
             else
             {
                 throw BuildException(traversalText);
             }
-            for (var i = initialIndex; i < tokens.Count; i++)
+            for (var i = 1; i < tokens.Count; i++)
             {
                 var token = tokens[i];
                 var name = GetCsharpName(token.Name);
-                var method = traversalType.GetMethod(name);
+                var method = instanceType.GetMethod(name);
                 if (method == null)
                 {
                     throw new InvalidOperationException($"Traversal method '{tokens[i]}' not found for testing");
                 }
-                var parameterValues = BuildParameters(method, token, out var genericParameters);
+                var parameterValues = BuildParameters(method, token, contextParameterValues, out var genericParameters);
                 method = BuildGenericMethod(method, genericParameters, parameterValues);
-                traversal = (ITraversal) method.Invoke(traversal, parameterValues);
-                traversalType = traversal.GetType();
+                instance = method.Invoke(instance, parameterValues);
+                instanceType = instance.GetType();
             }
-            return traversal;
+            return (ITraversal) instance;
         }
 
         private static MethodInfo BuildGenericMethod(MethodInfo method, IDictionary<string, Type> genericParameters,
@@ -133,6 +122,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         }
 
         private static object[] BuildParameters(MethodInfo method, Token token,
+                                                IDictionary<string, object> contextParameterValues,
                                                 out IDictionary<string, Type> genericParameterTypes)
         {
             var paramsInfo = method.GetParameters();
@@ -145,7 +135,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 if (token.Parameters.Count > i)
                 {
                     var tokenParameter = token.Parameters[i];
-                    value =  tokenParameter.GetValue();
+                    value =  tokenParameter.GetValue(contextParameterValues);
                     if (info.ParameterType.IsGenericParameter)
                     {
                         // We've provided a value for parameter of a generic type, we can infer the
@@ -191,41 +181,40 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var result = new List<Token>();
             var startIndex = i;
             var parsing = ParsingPart.Name;
-            string name = null;
             var parameters = new List<ITokenParameter>();
+            string name = null;
             while (i < text.Length)
             {
                 switch (text[i])
                 {
                     case '.':
-                        if (name == null)
+                        if (parsing == ParsingPart.Name)
                         {
-                            name = text.Substring(startIndex, i - startIndex);
+                            // The previous token was an object property, not a method
+                            result.Add(new Token(text.Substring(startIndex, i - startIndex)));
                         }
                         startIndex = i + 1;
-                        result.Add(new Token(name, parameters));
-                        name = null;
                         parameters = new List<ITokenParameter>();
                         parsing = ParsingPart.Name;
                         break;
                     case '(':
                     {
                         name = text.Substring(startIndex, i - startIndex);
-                        i++;
                         parsing = ParsingPart.StartParameters;
+                        // Start parsing from the next index
+                        i++;
                         var param = ParseParameter(text, ref i);
                         if (param == null)
                         {
-                            parsing = ParsingPart.EndParameters;
+                            // The next character was a ')', empty params
+                            // Evaluate the current position
+                            continue;
                         }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
+                        parameters.Add(param);
                         break;
                     }
                     case ',' when text[i+1] != ' ':
-                    case ' ' when text[i+1] != ' ':
+                    case ' ' when text[i+1] != ' ' && text[i+1] != ')':
                     {
                         if (parsing != ParsingPart.StartParameters)
                         {
@@ -236,31 +225,33 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         var param = ParseParameter(text, ref i);
                         if (param == null)
                         {
-                            parsing = ParsingPart.EndParameters;
+                            // The next character was a ')', empty params
+                            // Evaluate the current position
+                            continue;
                         }
-                        else
-                        {
-                            parameters.Add(param);
-                        }
+                        parameters.Add(param);
                         break;
                     }
                     case ')' when parsing != ParsingPart.StartParameters:
-                        // The traversal already ended
-                        i--;
-                        if (name != null)
+                        // The current nested object already ended
+                        if (parsing == ParsingPart.Name)
                         {
-                            result.Add(new Token(name, parameters));
+                            // The previous token was an object property, not a method and finished
+                            result.Add(new Token(text.Substring(startIndex, i - startIndex)));
                         }
+                        i--;
                         return result;
                     case ')':
                         parsing = ParsingPart.EndParameters;
+                        result.Add(new Token(name, parameters));
                         break;
                 }
                 i++;
             }
-            if (name != null)
+            if (parsing == ParsingPart.Name)
             {
-                result.Add(new Token(name, parameters));
+                // The previous token was an object property, not a method and finished
+                result.Add(new Token(text.Substring(startIndex, i - startIndex)));
             }
             return result;
         }
@@ -297,38 +288,40 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             }
             if (RegexEnum.IsMatch(parameterText))
             {
+                i += parameterText.Length - 1;
                 return new TraversalEnumParameter(parameterText);
+            }
+            if (RegexParam.IsMatch(parameterText))
+            {
+                i += parameterText.Length - 1;
+                return new ContextBasedParameter(parameterText);
             }
             throw new NotSupportedException($"Parameter {parameterText} not supported");
         }
         
         private static ITokenParameter ParseNumber(string text, ref int i)
         {
-            var match = RegexLong.Match(text.Substring(i));
-            if (match.Success)
-            {
-                i += match.Value.Length - 1;
-                return NumericParameter.Create(Convert.ToInt64(match.Value.Substring(0, match.Value.Length-1)));
-            }
-            match = RegexFloat.Match(text.Substring(i));
-            if (match.Success)
-            {
-                i += match.Value.Length - 1;
-                return NumericParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length-1)));
-            }
-            match = RegexDouble.Match(text.Substring(i));
-            if (match.Success)
-            {
-                i += match.Value.Length;
-                return NumericParameter.Create(Convert.ToSingle(match.Value));
-            }
-            match = RegexInteger.Match(text.Substring(i));
+            var match = RegexNumeric.Match(text, i);
             if (!match.Success)
             {
                 throw new InvalidOperationException(
                     $"Could not parse numeric value from the beginning of {text.Substring(i)}");
             }
-            i += match.Value.Length;
+            var numericText = match.Value.ToUpper();
+            i += match.Value.Length - 1;
+            if (numericText.EndsWith("L"))
+            {
+                return NumericParameter.Create(Convert.ToInt64(match.Value.Substring(0, match.Value.Length - 1)));
+            }
+            if (numericText.EndsWith("F"))
+            {
+                return NumericParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length-1)));
+            }
+            if (match.Groups[1].Value != "")
+            {
+                // Captured text with the decimal separator
+                return NumericParameter.Create(Convert.ToDouble(match.Value));
+            }
             return NumericParameter.Create(Convert.ToInt32(match.Value));
         }
         

@@ -31,13 +31,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     public class TraversalEvaluationTests
     {
-        private readonly ITestOutputHelper _output;
-
-        public TraversalEvaluationTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-        
         [Fact]
         public void Traversal_Parser_Should_Parse_Into_Tokens()
         {
@@ -48,6 +41,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     new[] {new Token("values", new StringParameter("name"))}),
                 Tuple.Create("g.V().constant(123l)", 
                     new[] {new Token("constant", new[] {NumericParameter.Create(123L)})}),
+                Tuple.Create("g.V().constant(123)", 
+                    new[] {new Token("constant", new[] {NumericParameter.Create(123)})}),
+                Tuple.Create("g.V().constant(123.1)", 
+                    new[] {new Token("constant", new[] {NumericParameter.Create(123.1)})}),
+                Tuple.Create("g.V().constant(123.1f)", 
+                    new[] {new Token("constant", new[] {NumericParameter.Create(123.1f)})}),
                 Tuple.Create("g.V().has(\"no\").count()",
                     new[] {new Token("has", new StringParameter("no")), new Token("count")}),
                 Tuple.Create("g.V().has(\"lang\", \"java\")",
@@ -55,7 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().where(__.in(\"knows\"))",
                     new[] {new Token("where", new[] {new StaticTraversalParameter(
                         new[] {new Token("__"), new Token("in", new StringParameter("knows"))}, "__.in(\"knows\")")})}),
-                Tuple.Create("g.V().has(\"age\", P.gt(27)", 
+                Tuple.Create("g.V().has(\"age\",P.gt(27))", 
                     new[] {new Token("has", new ITokenParameter[] { new StringParameter("age"),
                         new TraversalPredicateParameter(
                             new[] { new Token("P"), new Token("gt", NumericParameter.Create(27)) }) })}),
@@ -65,14 +64,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             foreach (var item in items)
             {
                 var parts = TraversalParser.ParseTraversal(item.Item1);
-                _output.WriteLine("Parsing " + item.Item1);
-                if (parts[parts.Count-1].Parameters != null)
-                {
-                    _output.WriteLine("{0}", parts[parts.Count-1].Parameters.Count);
-                    _output.WriteLine("Values: " +
-                                      string.Join(", ", parts[parts.Count - 1].Parameters.Select(p => p.ToString())));
-                }
-                Assert.Equal(new[] {new Token("g"), new Token("V")}.Concat(item.Item2), parts);
+                Assert.Equal(item.Item2, parts.Skip(2));
             }
         }
 
@@ -81,21 +73,21 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         {
             var traversalTexts = new []
             {
-                "g.V().count()",
-                //"g.V().constant(123L)", Can be parsed using the new type-safe API
-                "g.V().has(\"no\").count()",
-                "g.V().values(\"age\")",
-                "g.V().valueMap(\"name\", \"age\")",
-                "g.V().where(__.in(\"created\").count().is(1)).values(\"name\")",
-                "g.V().count(Scope.local)",
-                "g.V().values(\"age\").is(P.lte(30))"
+                Tuple.Create("g.V().count()", 2),
+//                //"g.V().constant(123L)", Can be parsed using the new type-safe API
+                Tuple.Create("g.V().has(\"no\").count()", 3),
+                Tuple.Create("g.V().values(\"age\")", 2),
+                Tuple.Create("g.V().valueMap(\"name\", \"age\")", 2),
+                Tuple.Create("g.V().where(__.in(\"created\").count().is(1)).values(\"name\")", 3),
+                Tuple.Create("g.V().count(Scope.local)", 2),
+                Tuple.Create("g.V().values(\"age\").is(P.lte(30))", 3)
             };
             var g = new Graph().Traversal();
-            foreach (var text in traversalTexts)
+            foreach (var tuple in traversalTexts)
             {
-                var traversal = TraversalParser.GetTraversal(text, g);
+                var traversal = TraversalParser.GetTraversal(tuple.Item1, g, null);
                 Assert.NotNull(traversal);
-                Assert.True(traversal.Bytecode.StepInstructions.Count > 0);
+                Assert.Equal(tuple.Item2, traversal.Bytecode.StepInstructions.Count);
             }
         }
     }

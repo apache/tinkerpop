@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -30,7 +31,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         /// <summary>
         /// Gets the value of the parameter 
         /// </summary>
-        object GetValue();
+        object GetValue(IDictionary<string, object> contextParameterValues);
 
         /// <summary>
         /// Gets the type of the parameter

@@ -50,9 +50,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return Tokens != null ? Tokens.GetHashCode() : 0;
         }
 
-        public object GetValue()
+        public object GetValue(IDictionary<string, object> contextParameterValues)
         {
-            return TraversalParser.GetTraversalFromTokens(Tokens, null, _traversalText);
+            return TraversalParser.GetTraversalFromTokens(Tokens, null, contextParameterValues, _traversalText);
         }
 
         public Type GetParameterType()

@@ -28,6 +28,8 @@ namespace Gremlin.Net.Process.Traversal
     /// </summary>
     public class Instruction
     {
+        private static readonly object[] EmptyArgs = new object[0];
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="Instruction" /> class.
         /// </summary>
@@ -36,7 +38,7 @@ namespace Gremlin.Net.Process.Traversal
         public Instruction(string operatorName, params dynamic[] arguments)
         {
             OperatorName = operatorName;
-            Arguments = arguments;
+            Arguments = arguments ??  EmptyArgs;
         }
 
         /// <summary>

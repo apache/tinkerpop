@@ -52,7 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return Tokens != null ? Tokens.GetHashCode() : 0;
         }
 
-        public object GetValue()
+        public object GetValue(IDictionary<string, object> contextParameterValues)
         {
             var type = typeof(P);
             object instance = null;
@@ -65,7 +65,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 {
                     throw new InvalidOperationException($"Predicate (P) method '{token}' not found for testing");
                 }
-                instance = method.Invoke(instance, new object[] {token.Parameters.Select(p => p.GetValue()).ToArray()});
+                instance = method.Invoke(instance,
+                    new object[] {token.Parameters.Select(p => p.GetValue(contextParameterValues)).ToArray()});
             }
             return instance;
         }

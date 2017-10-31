@@ -85,7 +85,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return _text.GetHashCode();
         }
 
-        public object GetValue()
+        public object GetValue(IDictionary<string, object> contextParameterValues)
         {
             return _value;
         }

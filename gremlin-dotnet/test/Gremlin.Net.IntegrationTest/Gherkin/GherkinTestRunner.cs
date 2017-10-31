@@ -307,7 +307,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 var parser = new Parser();
                 WriteOutput("Parsing " + gherkinFile);
                 var doc = parser.Parse(gherkinFile);
-                yield return doc.Feature;   
+                yield return doc.Feature;
             }
         }
 
@@ -331,36 +331,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 throw new FileNotFoundException("tinkerpop root not found in path");
             }
             return rootDir.FullName;
-        }
-
-        private void PrintGherkin()
-        {
-            var gherkinFile = "/Users/jorge/workspace/temp/count.feature";
-            var parser = new Parser();
-            GherkinDocument doc = parser.Parse(gherkinFile);
-            foreach (var scenario in doc.Feature.Children)
-            {
-                WriteOutput("--------");
-                WriteOutput("Scenario: " + scenario.Name);
-                foreach (var step in scenario.Steps)
-                {
-                    WriteOutput("  Step");
-                    WriteOutput("    Keyword: " + step.Keyword);
-                    WriteOutput("    Text: " + step.Text);
-                    WriteOutput("    Argument: " + step.Argument);
-                    if (step.Argument is DocString)
-                    {
-                        WriteOutput("      " + ((DocString)step.Argument).Content);
-                    }
-                    if (step.Argument is DataTable)
-                    {
-                        foreach (var row in ((DataTable)step.Argument).Rows)
-                        {
-                            WriteOutput("      Row: " + string.Join(", ", row.Cells.Select(x => x.Value)));   
-                        }
-                    }
-                }
-            }
         }
     }
 }

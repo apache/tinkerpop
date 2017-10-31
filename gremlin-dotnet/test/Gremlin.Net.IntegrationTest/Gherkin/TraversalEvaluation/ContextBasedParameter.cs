@@ -26,11 +26,11 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
-    internal class StringParameter : ITokenParameter, IEquatable<StringParameter>
+    public class ContextBasedParameter : ITokenParameter, IEquatable<ContextBasedParameter>
     {
-        public bool Equals(StringParameter other)
+        public bool Equals(ContextBasedParameter other)
         {
-            return string.Equals(Value, other.Value);
+            return string.Equals(_name, other._name) && Equals(_value, other._value);
         }
 
         public override bool Equals(object obj)
@@ -38,43 +38,47 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((StringParameter) obj);
+            return Equals((ContextBasedParameter) obj);
         }
 
         public override int GetHashCode()
         {
-            return (Value != null ? Value.GetHashCode() : 0);
+            unchecked
+            {
+                return ((_name != null ? _name.GetHashCode() : 0) * 397) ^ (_value != null ? _value.GetHashCode() : 0);
+            }
         }
 
-        public string Value { get; }
+        private readonly string _name;
+        private object _value;
 
-        public StringParameter(string value)
+        public ContextBasedParameter(string name)
         {
-            Value = value;
+            _name = name;
         }
 
-        public static StringParameter Parse(string text, ref int i)
+        private void SetValue(IDictionary<string, object> parameterValues)
         {
-            i++;
-            var endIndex = text.IndexOf('"', i);
-            var result = new StringParameter(text.Substring(i, endIndex - i));
-            i = endIndex;
-            return result;
+            if (parameterValues == null || !parameterValues.TryGetValue(_name, out var value))
+            {
+                throw new InvalidOperationException($"Parameter \"{_name}\" was not provided");
+            }
+            _value = value;
         }
-
-        public override string ToString()
-        {
-            return $"{GetType().Name}({Value})";
-        }
-
+        
         public object GetValue(IDictionary<string, object> contextParameterValues)
         {
-            return Value;
+            SetValue(contextParameterValues);
+            return _value;
         }
 
         public Type GetParameterType()
         {
-            return typeof(string);
+            if (_value == null)
+            {
+                throw new NullReferenceException($"Value for parameter \"{_name}\" was not set");
+            }
+            return _value.GetType();
         }
     }
 }

@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -57,7 +58,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return $"NumericParameter<{typeof(T).Name}>({Value})";
         }
 
-        public object GetValue()
+        public object GetValue(IDictionary<string, object> contextParameterValues)
         {
             return Value;
         }
@@ -73,6 +74,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         public static NumericParameter<TType> Create<TType>(TType value) where TType : struct
         {
             return new NumericParameter<TType>(value);
+        }
+
+        public static NumericParameter<long> CreateLong(string value)
+        {
+            return NumericParameter.Create(Convert.ToInt64(value.Substring(0, value.Length - 1)));
         }
     }
 }

@@ -25,15 +25,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
@@ -41,20 +38,48 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     internal class GeneralDefinitions : StepDefinition
     {
         private GraphTraversalSource _g;
+        private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
         private dynamic _traversal;
         private object[] _result;
 
-        private static readonly IDictionary<string, Func<GraphTraversalSource, ITraversal>> FixedTranslations = 
-            new Dictionary<string, Func<GraphTraversalSource, ITraversal>>
+        private static readonly IDictionary<Regex, Func<string, object>> Parsers =
+            new Dictionary<string, Func<string, object>>
             {
-                { "g.V().has(\"no\").count()", g => g.V().Has("no").Count() }
-            };
+                {@"d\[(\d+)\]", x => Convert.ToInt64(x)},
+                {@"d\[(\d+(?:\.\d+)?)\]", x => Convert.ToDouble(x)},
+                {@"v\[(.+)\]", ToVertex},
+                {@"v\[(.+)\]\.id", x => ToVertex(x).Id},
+                {@"v\[(.+)\]\.sid", x => ToVertex(x).Id.ToString()},
+                {@"e\[(.+)\]", ToEdge},
+                {@"e\[(.+)\].id", s => ToEdge(s).Id},
+                {@"e\[(.+)\].sid", s => ToEdge(s).Id.ToString()},
+                {@"p\[(.+)\]", ToPath},
+                {@"l\[(.+)\]", ToList},
+                {@"s\[(.+)\]", ToSet},
+                {@"m\[(.+)\]", ToMap},
+            }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
         
         [Given("the modern graph")]
         public void ChooseModernGraph()
         {
             var connection = ConnectionFactory.CreateRemoteConnection();
             _g = new Graph().Traversal().WithRemote(connection);
+        }
+
+        [Given("using the parameter (\\w+) defined as \"(.*)\"")]
+        public void UsingParameter(string name, string value)
+        {
+            _parameters.Add(name, ParseValue(value));
+        }
+
+        [Given("the traversal of")]
+        public void TranslateTraversal(string traversalText)
+        {
+            if (_g == null)
+            {
+                throw new InvalidOperationException("g should be a traversal source");
+            }
+            _traversal = TraversalParser.GetTraversal(traversalText, _g, _parameters);
         }
 
         [When("iterated to list")]
@@ -78,16 +103,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _result = _traversal.Next();
         }
 
-        [Given("the traversal of")]
-        public void TranslateTraversal(string traversalText)
-        {
-            if (_g == null)
-            {
-                throw new InvalidOperationException("g should be a traversal source");
-            }
-            _traversal = TraversalParser.GetTraversal(traversalText, _g);
-        }
-
         [Then("the result should be (\\w+)")]
         public void AssertResult(string characterizedAs, DataTable table)
         {
@@ -104,9 +119,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     {
                         var row = rows[i];
                         var cells = row.Cells.ToArray();
-                        var typeName = cells[0].Value;
-                        var expectedValue = ConvertExpectedToType(typeName, cells[1].Value);
-                        var resultItem = ConvertResultItem(typeName, _result[i]);
+                        var expectedValue = ParseValue(cells[0].Value);
+                        var resultItem = ConvertResultItem(null, _result[i]);
                         Assert.Equal(expectedValue, resultItem);
                     }
                     break;
@@ -116,10 +130,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     foreach (var row in rows)
                     {
                         var cells = row.Cells.ToArray();
-                        var typeName = cells[0].Value;
-                        var expectedValue = ConvertExpectedToType(typeName, cells[1].Value);
+                        var expectedValue = ParseValue(cells[0].Value);
                         // Convert all the values in the result to the type
-                        var convertedResult = _result.Select(item => ConvertResultItem(typeName, item));
+                        var convertedResult = _result.Select(item => ConvertResultItem(null, item));
                         Assert.Contains(expectedValue, convertedResult);
                     }
                     break;
@@ -149,19 +162,51 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return result;
         }
 
-        private object ConvertExpectedToType(string typeName, string stringValue)
+        private static IDictionary ToMap(string arg)
         {
-            switch (typeName)
+            throw new NotImplementedException();
+        }
+
+        private static ICollection ToSet(string arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static IList ToList(string arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static Vertex ToVertex(string name)
+        {
+            return ScenarioData.Instance.ModernVertices[name];
+        }
+
+        private static Edge ToEdge(string s)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static Path ToPath(string arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static object ParseValue(string stringValue)
+        {
+            Func<string, object> parser = null;
+            string extractedValue = null;
+            foreach (var kv in Parsers)
             {
-                case "numeric":
-                    return Convert.ToInt64(stringValue);
-                case "string":
-                    return stringValue;
-                case "map":
-                    IDictionary<string, JToken> jsonObject = JObject.Parse(stringValue);
-                    return jsonObject.ToDictionary(item => item.Key, item => item.Value.ToString());
+                var match = kv.Key.Match(stringValue);
+                if (match.Success)
+                {
+                    parser = kv.Value;
+                    extractedValue = match.Groups[1].Value;
+                    break;
+                }
             }
-            throw new NotSupportedException($"Data table result with subtype of {typeName} not supported");
+            return parser != null ? parser(extractedValue) : stringValue;
         }
     }
 }
