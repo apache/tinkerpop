@@ -149,7 +149,7 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match("^e\[.*\]$", val):         # parse edge
         return ctx.lookup_e["modern"][val[2:-1]]
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
-        return _convert(json.loads(val[2:-1]), ctx)
+        return _convert(json.loads(val[2:-1].replace('\\"', '"')), ctx)
     elif isinstance(val, str) and re.match("^p\[.*\]$", val):         # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
         return Path([set([])], path_objects)
