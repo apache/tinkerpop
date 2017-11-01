@@ -77,7 +77,7 @@ Feature: Step - local()
       | result |
       | vadas |
       | josh  |
-    And should have a result count of 1
+    And the result should have a count of 1
 
   Scenario: g_V_localXbothEXcreatedX_limitX1XX_otherV_name
     Given the modern graph
@@ -93,7 +93,7 @@ Feature: Step - local()
       | ripple |
       | josh   |
       | peter  |
-    And should have a result count of 5
+    And the result should have a count of 5
 
   Scenario: g_VX4X_localXbothEX1_createdX_limitX1XX
     Given the modern graph
@@ -107,7 +107,7 @@ Feature: Step - local()
       | result |
       | e[josh-created->lop]    |
       | e[josh-created->ripple] |
-    And should have a result count of 1
+    And the result should have a count of 1
 
   Scenario: g_VX4X_localXbothEXknows_createdX_limitX1XX
     Given the modern graph
@@ -122,7 +122,7 @@ Feature: Step - local()
       | e[marko-knows->josh]    |
       | e[josh-created->lop]    |
       | e[josh-created->ripple] |
-    And should have a result count of 1
+    And the result should have a count of 1
 
   Scenario: g_VX4X_localXbothE_limitX1XX_otherV_name
     Given the modern graph
@@ -137,7 +137,7 @@ Feature: Step - local()
       | marko  |
       | ripple |
       | lop    |
-    And should have a result count of 1
+    And the result should have a count of 1
 
   Scenario: g_VX4X_localXbothE_limitX2XX_otherV_name
     Given the modern graph
@@ -152,7 +152,7 @@ Feature: Step - local()
       | marko  |
       | ripple |
       | lop    |
-    And should have a result count of 2
+    And the result should have a count of 2
 
   Scenario: g_V_localXinEXknowsX_limitX2XX_outV_name
     Given the modern graph

@@ -72,7 +72,7 @@ Feature: Step - repeat()
       | v[lop] |
       | v[josh] |
       | v[vadas] |
-    And should have a result count of 8
+    And the result should have a count of 8
 
   Scenario: g_VX1X_timesX2X_repeatXoutX_name
     Given the modern graph

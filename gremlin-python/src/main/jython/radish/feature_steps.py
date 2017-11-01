@@ -108,13 +108,14 @@ def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
         return
 
-    t = _make_traversal(step.context.g, traversal_string, {})
+    t = _make_traversal(step.context.g, traversal_string.replace('\\"', '"'),
+                        step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
     assert_that(count, equal_to(t.count().next()))
 
 
-@then("should have a result count of {count:d}")
+@then("the result should have a count of {count:d}")
 def assert_count(step, count):
-    assert_that(count, equal_to(len(step.context.result)))
+    assert_that(len(step.context.result), equal_to(count))
 
 
 @then("nothing should happen because")

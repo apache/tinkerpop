@@ -24,7 +24,7 @@ Feature: Step - sample()
       g.E().sample(1)
       """
     When iterated to list
-    Then should have a result count of 1
+    Then the result should have a count of 1
 
   Scenario: g_E_sampleX2X_byXweightX
     Given the modern graph
@@ -34,7 +34,7 @@ Feature: Step - sample()
       g.E().sample(2).by("weight")
       """
     When iterated to list
-    Then should have a result count of 2
+    Then the result should have a count of 2
 
   Scenario: g_V_localXoutE_sampleX1X_byXweightXX
     Given the modern graph
@@ -43,7 +43,7 @@ Feature: Step - sample()
       g.V().local(__.outE().sample(1).by("weight"))
       """
     When iterated to list
-    Then should have a result count of 3
+    Then the result should have a count of 3
 
   Scenario: g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX
     Given the modern graph

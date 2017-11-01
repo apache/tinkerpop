@@ -169,7 +169,7 @@ Feature: Step - group()
       g.V().hasLabel("song").group().by("name").by(__.properties().groupCount().by(T.label))
       """
     When iterated next
-    Then should have a result count of 584
+    Then the result should have a count of 584
 
   Scenario: g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX
     Given the grateful graph
@@ -178,7 +178,7 @@ Feature: Step - group()
       g.V().hasLabel("song").group("a").by("name").by(__.properties().groupCount().by(T.label)).out().cap("a")
       """
     When iterated next
-    Then should have a result count of 584
+    Then the result should have a count of 584
 
   Scenario: g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX
     Given an unsupported test

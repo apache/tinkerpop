@@ -129,7 +129,7 @@ Feature: Step - dedup()
       g.V().both().both().dedup().by(T.label)
       """
     When iterated to list
-    Then should have a result count of 2
+    Then the result should have a count of 2
 
   Scenario: g_V_group_byXlabelX_byXbothE_weight_dedup_foldX
     Given the modern graph
