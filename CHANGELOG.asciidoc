@@ -276,6 +276,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug that prevented Gremlin from ordering lists and streams made of mixed number types.
 * Fixed a bug where `keepLabels` were being corrupted because a defensive copy was not being made when they were being set by `PathRetractionStrategy`.
 * Cancel script evaluation timeout in `GremlinExecutor` when script evaluation finished.
+* Added a recipe for OLAP traversals with Spark on YARN.
+* Added `spark-yarn` dependencies to the manifest of `spark-gremlin`.
 
 [[release-3-2-6]]
 === TinkerPop 3.2.6 (Release Date: August 21, 2017)
