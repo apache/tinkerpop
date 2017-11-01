@@ -21,20 +21,17 @@
 
 #endregion
 
-namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
-{
-#pragma warning disable 1591
-    public class MatchAlgorithmStrategy : AbstractTraversalStrategy
-    {
-        public MatchAlgorithmStrategy()
-        {
-        }
+using System;
+using System.Collections.Generic;
 
-        public MatchAlgorithmStrategy(string matchAlgorithm = null)
+namespace Gremlin.Net.Structure.IO.GraphSON
+{
+    internal class ClassSerializer : IGraphSONSerializer
+    {
+        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            if (matchAlgorithm != null)
-                Configuration["matchAlgorithm"] = matchAlgorithm;
+            var type = (Type) objectData;
+            return writer.ToDict(Activator.CreateInstance(type));
         }
     }
-#pragma warning restore 1591
 }

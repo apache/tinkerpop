@@ -54,6 +54,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(double), new DoubleConverter()},
                 {typeof(Guid), new UuidSerializer()},
                 {typeof(DateTime), new DateSerializer()},
+                {typeof(Type), new ClassSerializer()},
                 {typeof(Enum), new EnumSerializer()},
                 {typeof(TraversalPredicate), new TraversalPredicateSerializer()},
                 {typeof(Vertex), new VertexSerializer()},

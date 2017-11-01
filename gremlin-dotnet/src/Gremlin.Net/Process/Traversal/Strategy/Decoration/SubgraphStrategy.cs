@@ -31,6 +31,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <summary>
         ///     Initializes a new instance of the <see cref="SubgraphStrategy" /> class.
         /// </summary>
+        public SubgraphStrategy()
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="SubgraphStrategy" /> class.
+        /// </summary>
         /// <param name="vertexCriterion">Constrains vertices for the <see cref="ITraversal" />.</param>
         /// <param name="edgeCriterion">Constrains edges for the <see cref="ITraversal" />.</param>
         /// <param name="vertexPropertyCriterion">Constrains vertex properties for the <see cref="ITraversal" />.</param>

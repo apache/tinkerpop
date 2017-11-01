@@ -33,6 +33,13 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <summary>
         ///     Initializes a new instance of the <see cref="PartitionStrategy" /> class.
         /// </summary>
+        public PartitionStrategy()
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PartitionStrategy" /> class.
+        /// </summary>
         /// <param name="partitionKey">Specifies the partition key name.</param>
         /// <param name="writePartition">
         ///     Specifies the name of the partition to write when adding vertices, edges and vertex

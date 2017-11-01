@@ -189,5 +189,19 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
             await Assert.ThrowsAsync<ResponseException>(async () => await g.AddV("person").Promise(t => t.Next()));
         }
+
+        [Fact]
+        public void WithoutStrategiesShouldNeutralizeWithStrategy()
+        {
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = graph.Traversal().WithRemote(connection)
+                .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person")))
+                .WithoutStrategies(typeof(SubgraphStrategy));
+
+            var count = g.V().Count().Next();
+
+            Assert.Equal(6, count);
+        }
     }
 }

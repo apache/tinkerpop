@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Moq;
@@ -369,6 +370,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             const string expected =
                 "{\"@type\":\"g:Vertex\",\"@value\":{\"id\":{\"@type\":\"g:Int64\",\"@value\":123},\"label\":\"project\"}}";
             Assert.Equal(expected, graphSON);
+        }
+
+        [Fact]
+        public void ShouldSerializeTypeToItsObject()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var type = typeof(SubgraphStrategy);
+
+            var graphSon = writer.WriteObject(type);
+
+            const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{}}";
+            Assert.Equal(expected, graphSon);
         }
     }
 
