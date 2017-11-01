@@ -135,7 +135,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
 
             var shortestPath =
-                g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<object>(1).Path().Next();
+                g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit(1).Path().Next();
 
             Assert.Equal(4, shortestPath.Count);
             Assert.Equal(new Vertex((long) 6), shortestPath[3]);

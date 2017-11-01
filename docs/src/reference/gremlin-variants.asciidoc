@@ -418,7 +418,7 @@ g = g.WithStrategies(new SubgraphStrategy(vertexCriterion: HasLabel("person"),
     edgeCriterion: Has("weight", Gt(0.5))));
 var names = g.V().Values("name").ToList();  // names: [marko, vadas, josh, peter]
 
-g = g.WithoutStrategies(new SubgraphStrategy());
+g = g.WithoutStrategies(typeof(SubgraphStrategy));
 names = g.V().Values("name").ToList(); // names: [marko, vadas, lop, josh, ripple, peter]
 
 var edgeValueMaps = g.V().OutE().ValueMap(true).ToList();

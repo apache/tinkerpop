@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             var graph = new Graph();
             var g = graph.Traversal().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
-            var bytecode = g.WithoutStrategies(new ReadOnlyStrategy()).Bytecode;
+            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
             Assert.Equal(2, bytecode.SourceInstructions.Count);
             Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
@@ -50,7 +50,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 
             Assert.Equal("withoutStrategies", bytecode.SourceInstructions[1].OperatorName);
             Assert.Equal(1, bytecode.SourceInstructions[1].Arguments.Length);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[1].Arguments[0]);
+            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[1].Arguments[0]);
         }
 
         [Fact]
@@ -59,13 +59,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             var graph = new Graph();
             var g = graph.Traversal();
 
-            var bytecode = g.WithoutStrategies(new ReadOnlyStrategy(), new LazyBarrierStrategy()).Bytecode;
+            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(LazyBarrierStrategy)).Bytecode;
 
             Assert.Equal(1, bytecode.SourceInstructions.Count);
             Assert.Equal(2, bytecode.SourceInstructions[0].Arguments.Length);
             Assert.Equal("withoutStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(new LazyBarrierStrategy(), bytecode.SourceInstructions[0].Arguments[1]);
+            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[0].Arguments[0]);
+            Assert.Equal(typeof(LazyBarrierStrategy), bytecode.SourceInstructions[0].Arguments[1]);
         }
 
         [Fact]
@@ -74,12 +74,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             var graph = new Graph();
             var g = graph.Traversal();
 
-            var bytecode = g.WithoutStrategies(new ReadOnlyStrategy()).Bytecode;
+            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
             Assert.Equal(1, bytecode.SourceInstructions.Count);
             Assert.Equal(1, bytecode.SourceInstructions[0].Arguments.Length);
             Assert.Equal("withoutStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
+            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[0].Arguments[0]);
         }
 
         [Fact]

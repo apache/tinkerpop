@@ -21,7 +21,10 @@
 
 #endregion
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gremlin.Net.Process.Traversal
 {
@@ -35,6 +38,8 @@ namespace Gremlin.Net.Process.Traversal
     /// </remarks>
     public class Bytecode
     {
+        private static readonly object[] EmptyArray = new object[0];
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="Bytecode" /> class.
         /// </summary>
@@ -69,7 +74,8 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="args">The traversal source method arguments.</param>
         public void AddSource(string sourceName, params object[] args)
         {
-            SourceInstructions.Add(new Instruction(sourceName, args));
+            SourceInstructions.Add(new Instruction(sourceName, FlattenArguments(args)));
+            Bindings.Clear();
         }
 
         /// <summary>
@@ -79,7 +85,77 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="args">The traversal method arguments.</param>
         public void AddStep(string stepName, params object[] args)
         {
-            StepInstructions.Add(new Instruction(stepName, args));
+            StepInstructions.Add(new Instruction(stepName, FlattenArguments(args)));
+            Bindings.Clear();
+        }
+
+        private object[] FlattenArguments(object[] arguments)
+        {
+            if (arguments.Length == 0)
+                return EmptyArray;
+            var flatArguments = new List<object>();
+            foreach (var arg in arguments)
+            {
+                if (arg is object[] objects)
+                {
+                    flatArguments.AddRange(objects.Select(nestObject => ConvertArgument(nestObject, true)));
+                }
+                else
+                {
+                    flatArguments.Add(ConvertArgument(arg, true));
+                }
+            }
+            return flatArguments.ToArray();
+        }
+
+        private object ConvertArgument(object argument, bool searchBindings)
+        {
+            if (searchBindings)
+            {
+                var variable = Bindings.GetBoundVariable(argument);
+                if (variable != null)
+                    return new Binding(variable, ConvertArgument(argument, false));
+            }
+            if (IsDictionaryType(argument.GetType()))
+            {
+                var dict = new Dictionary<object, object>();
+                foreach (DictionaryEntry item in (IDictionary)argument)
+                {
+                    dict[ConvertArgument(item.Key, true)] = ConvertArgument(item.Value, true);
+                }
+                return dict;
+            }
+            if (IsListType(argument.GetType()))
+            {
+                var list = new List<object>(((IList) argument).Count);
+                list.AddRange(from object item in (IList) argument select ConvertArgument(item, true));
+                return list;
+            }
+            if (IsHashSetType(argument.GetType()))
+            {
+                var set = new HashSet<object>();
+                foreach (var item in (IEnumerable)argument)
+                {
+                    set.Add(ConvertArgument(item, true));
+                }
+                return set;
+            }
+            return argument;
+        }
+
+        private bool IsDictionaryType(Type type)
+        {
+            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+        }
+
+        private bool IsListType(Type type)
+        {
+            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
+        }
+
+        private bool IsHashSetType(Type type)
+        {
+            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>);
         }
     }
 }
