@@ -58,6 +58,8 @@ include::traversal-induced-values.asciidoc[]
 
 include::tree.asciidoc[]
 
+include::olap-spark-yarn.asciidoc[]
+
 = Implementation Recipes
 
 include::style-guide.asciidoc[]
