@@ -107,7 +107,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
       mv ext/spark-gremlin .ext/
       cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'SparkGremlinPlugin' > .ext/plugins.txt
       ;;
-    "implementations-hadoop-start" | "implementations-hadoop-end" | "implementations-spark" | "implementations-giraph")
+    "implementations-hadoop-start" | "implementations-hadoop-end" | "implementations-spark" | "implementations-giraph" | "olap-spark-yarn")
       # deactivate Neo4j plugin to prevent version conflicts between TinkerPop's Spark jars and Neo4j's Spark jars
       mkdir .ext
       mv ext/neo4j-gremlin .ext/
