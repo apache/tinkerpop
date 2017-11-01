@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -132,8 +131,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
-            assertEquals(1, IteratorUtils.count(edge.properties()));
+            assertEquals(2.0d, g.E(edge).<Double>values("weight").next(), 0.00001d);
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
             count++;
 
 
@@ -153,8 +152,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
-            assertEquals(1, IteratorUtils.count(edge.properties()));
+            assertEquals(2.0d, g.E(edge).<Double>values("weight").next(), 0.00001d);
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
             count++;
 
 
@@ -175,15 +174,15 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("existsWith", edge.label());
-            assertEquals("now", edge.value("time"));
-            assertEquals(1, IteratorUtils.count(edge.properties()));
+            assertEquals("now", g.E(edge).values("time").next());
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
             count++;
         }
         assertEquals(36, count);
         assertEquals(42, IteratorUtils.count(g.E()));
         for (final Vertex vertex : IteratorUtils.list(g.V())) {
-            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
-            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
+            assertEquals(6, g.V(vertex).out("existsWith").count().next().intValue());
+            assertEquals(6, g.V(vertex).in("existsWith").count().next().intValue());
         }
         assertEquals(6, IteratorUtils.count(g.V()));
     }
@@ -198,15 +197,15 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("existsWith", edge.label());
-            assertEquals("now", edge.value("time"));
-            assertEquals(1, IteratorUtils.count(edge.properties()));
+            assertEquals("now", g.E(edge).values("time").next());
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
             count++;
         }
         assertEquals(36, count);
         assertEquals(42, IteratorUtils.count(g.E()));
         for (final Vertex vertex : IteratorUtils.list(g.V())) {
-            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
-            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
+            assertEquals(6, g.V(vertex).out("existsWith").count().next().intValue());
+            assertEquals(6, g.V(vertex).in("existsWith").count().next().intValue());
         }
         assertEquals(6, IteratorUtils.count(g.V()));
     }
@@ -222,13 +221,13 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("codeveloper", edge.label());
-            assertEquals(2009, (int) edge.value("year"));
-            assertEquals(1, IteratorUtils.count(edge.properties()));
-            assertEquals("person", edge.inVertex().label());
-            assertEquals("person", edge.outVertex().label());
-            assertFalse(edge.inVertex().value("name").equals("vadas"));
-            assertFalse(edge.outVertex().value("name").equals("vadas"));
-            assertFalse(edge.inVertex().equals(edge.outVertex()));
+            assertEquals(2009, g.E(edge).values("year").next());
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
+            assertEquals("person", g.E(edge).inV().label().next());
+            assertEquals("person", g.E(edge).outV().label().next());
+            assertFalse(g.E(edge).inV().values("name").next().equals("vadas"));
+            assertFalse(g.E(edge).outV().values("name").next().equals("vadas"));
+            assertFalse(g.E(edge).inV().next().equals(g.E(edge).outV().next()));
             count++;
 
         }
@@ -247,13 +246,13 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("codeveloper", edge.label());
-            assertEquals(2009, (int) edge.value("year"));
-            assertEquals(1, IteratorUtils.count(edge.properties()));
-            assertEquals("person", edge.inVertex().label());
-            assertEquals("person", edge.outVertex().label());
-            assertFalse(edge.inVertex().value("name").equals("vadas"));
-            assertFalse(edge.outVertex().value("name").equals("vadas"));
-            assertFalse(edge.inVertex().equals(edge.outVertex()));
+            assertEquals(2009, g.E(edge).values("year").next());
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
+            assertEquals("person", g.E(edge).inV().label().next());
+            assertEquals("person", g.E(edge).outV().label().next());
+            assertFalse(g.E(edge).inV().values("name").next().equals("vadas"));
+            assertFalse(g.E(edge).outV().values("name").next().equals("vadas"));
+            assertFalse(g.E(edge).inV().next().equals(g.E(edge).outV().next()));
             count++;
 
         }
@@ -275,8 +274,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(edge.outVertex(), convertToVertex(graph, "marko"));
         assertEquals(edge.inVertex(), convertToVertex(graph, "peter"));
         assertEquals("knows", edge.label());
-        assertEquals(1, IteratorUtils.count(edge.properties()));
-        assertEquals(0.5d, edge.value("weight"), 0.1d);
+        assertEquals(1, g.E(edge).properties().count().next().intValue());
+        assertEquals(0.5d, g.E(edge).<Double>values("weight").next(), 0.1d);
         assertEquals(6L, g.V().count().next().longValue());
         assertEquals(7L, g.E().count().next().longValue());
     }
@@ -292,13 +291,13 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2009, (int) edge.value("year"));
-            assertEquals("public", edge.value("acl"));
-            assertEquals(2, IteratorUtils.count(edge.properties()));
-            assertEquals("person", edge.inVertex().label());
-            assertEquals("software", edge.outVertex().label());
-            if (edge.outVertex().value("name").equals("ripple"))
-                assertEquals("josh", edge.inVertex().value("name"));
+            assertEquals(2009, g.E(edge).values("year").next());
+            assertEquals("public", g.E(edge).values("acl").next());
+            assertEquals(2, g.E(edge).properties().count().next().intValue());
+            assertEquals("person", g.E(edge).inV().label().next());
+            assertEquals("software", g.E(edge).outV().label().next());
+            if (g.E(edge).outV().values("name").next().equals("ripple"))
+                assertEquals("josh", g.E(edge).inV().values("name").next());
             count++;
 
         }
@@ -317,13 +316,13 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2009, (int) edge.value("year"));
-            assertEquals("public", edge.value("acl"));
-            assertEquals(2, IteratorUtils.count(edge.properties()));
-            assertEquals("person", edge.inVertex().label());
-            assertEquals("software", edge.outVertex().label());
-            if (edge.outVertex().value("name").equals("ripple"))
-                assertEquals("josh", edge.inVertex().value("name"));
+            assertEquals(2009, g.E(edge).values("year").next());
+            assertEquals("public", g.E(edge).values("acl").next());
+            assertEquals(2, g.E(edge).properties().count().next().intValue());
+            assertEquals("person", g.E(edge).inV().label().next());
+            assertEquals("software", g.E(edge).outV().label().next());
+            if (g.E(edge).outV().values("name").next().equals("ripple"))
+                assertEquals("josh", g.E(edge).inV().values("name").next());
             count++;
 
         }

@@ -207,47 +207,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldAddStartsProperly() {
-        final Traversal<Object, Vertex> traversal = out().out();
-        assertFalse(traversal.hasNext());
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        assertTrue(traversal.hasNext());
-        assertEquals(2, IteratorUtils.count(traversal));
-
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        assertEquals(4, IteratorUtils.count(traversal));
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void shouldTraversalResetProperly() {
-        final Traversal<Object, Vertex> traversal = as("a").out().out().has("name", P.within("ripple", "lop")).as("b");
-        if (new Random().nextBoolean()) traversal.asAdmin().reset();
-        assertFalse(traversal.hasNext());
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        assertTrue(traversal.hasNext());
-        assertEquals(2, IteratorUtils.count(traversal));
-
-        if (new Random().nextBoolean()) traversal.asAdmin().reset();
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        assertTrue(traversal.hasNext());
-        traversal.next();
-        assertTrue(traversal.hasNext());
-        traversal.asAdmin().reset();
-        assertFalse(traversal.hasNext());
-
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        assertEquals(2, IteratorUtils.count(traversal));
-
-        assertFalse(traversal.hasNext());
-        if (new Random().nextBoolean()) traversal.asAdmin().reset();
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     public void shouldTraverseIfAutoTxEnabledAndOriginalTxIsClosed() {
         // this should be the default, but manually set in just in case the implementation has other ideas
