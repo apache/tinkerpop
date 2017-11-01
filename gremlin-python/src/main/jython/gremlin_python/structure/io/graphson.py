@@ -16,10 +16,14 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from aenum import Enum
+import datetime
 import json
-import six
+import time
+import uuid
 from collections import OrderedDict
+
+import six
+from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType
@@ -296,6 +300,69 @@ class TypeSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, typ, writer):
         return writer.toDict(typ())
+
+
+class UUIDIO(_GraphSONTypeIO):
+    python_type = uuid.UUID
+    graphson_type = "g:UUID"
+    graphson_base_type = "UUID"
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, str(obj))
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return cls.python_type(d)
+
+
+class DateIO(_GraphSONTypeIO):
+    python_type = datetime.datetime
+    graphson_type = "g:Date"
+    graphson_base_type = "Date"
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        # Java timestamp expects miliseconds
+        if six.PY3:
+            pts = obj.timestamp()
+        else:
+            # Hack for legacy Python
+            # Taken from:
+            # https://github.com/jaraco/backports.datetime_timestamp/blob/master/backports/datetime_timestamp/__init__.py
+            pts = time.mktime((obj.year, obj.month, obj.day,
+			                   obj.hour, obj.minute, obj.second,
+			                   -1, -1, -1)) + obj.microsecond / 1e6
+
+        # Have to use int because of legacy Python
+        ts = int(round(pts * 1000))
+        return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
+
+    @classmethod
+    def objectify(cls, ts, reader):
+        # Python timestamp expects seconds
+        return datetime.datetime.fromtimestamp(ts / 1000.0)
+
+
+# Based on current implementation, this class must always be declared before FloatIO.
+# Seems pretty fragile for future maintainers. Maybe look into this.
+class TimestampIO(_GraphSONTypeIO):
+    """A timestamp in Python is type float"""
+    python_type = statics.timestamp
+    graphson_type = "g:Timestamp"
+    graphson_base_type = "Timestamp"
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        # Java timestamp expects milliseconds integer
+        # Have to use int because of legacy Python
+        ts = int(round(obj * 1000))
+        return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
+
+    @classmethod
+    def objectify(cls, ts, reader):
+        # Python timestamp expects seconds
+        return cls.python_type(ts / 1000.0)
 
 
 class _NumberIO(_GraphSONTypeIO):
