@@ -113,6 +113,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name();
 
+    public abstract Traversal<Vertex, Edge> get_g_V_bothEXselfX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_bothXselfX();
+
     // GRAPH VERTEX/EDGE
 
     @Test
@@ -570,6 +574,30 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("lop", "lop", "lop", "lop", "ripple", "ripple", "ripple", "ripple"), traversal);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_bothEXselfX() {
+        g.addV().as("a").addE("self").to("a").iterate();
+        final Traversal<Vertex, Edge> traversal = get_g_V_bothEXselfX();
+        printTraversalForm(traversal);
+
+        List<Edge> edges = traversal.toList();
+        assertEquals(2, edges.size());
+        assertEquals(edges.get(0), edges.get(1));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_bothXselfX() {
+        g.addV().as("a").addE("self").to("a").iterate();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_bothXselfX();
+        printTraversalForm(traversal);
+
+        List<Vertex> vertices = traversal.toList();
+        assertEquals(2, vertices.size());
+        assertEquals(vertices.get(0), vertices.get(1));
+    }
+
     public static class Traversals extends VertexTest {
 
         @Override
@@ -720,6 +748,16 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name() {
             return g.V().hasLabel("person").V().hasLabel("software").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_bothEXselfX() {
+            return g.V().bothE("self");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_bothXselfX() {
+            return g.V().both("self");
         }
     }
 }
