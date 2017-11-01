@@ -33,8 +33,8 @@ Most configuration problems of TinkerPop with Spark on YARN stem from three reas
 
 1. `SparkGraphComputer` creates its own `SparkContext` so it does not get any configs from the usual `spark-submit` command.
 2. The TinkerPop Spark plugin did not include Spark on YARN runtime dependencies until version 3.2.7/3.3.1.
-3. Resolving reason 2 by adding the cluster's `spark-assembly` jar to the classpath creates a host of version
-conflicts, because Spark 1.x dependency versions have remained frozen since 2014.
+3. Resolving reason 2 by adding the cluster's Spark jars to the classpath may create all kinds of version
+conflicts with the Tinkerpop dependencies.
 
 The current recipe follows a minimalist approach in which no dependencies are added to the dependencies
 included in the TinkerPop binary distribution. The Hadoop cluster's Spark installation is completely ignored. This
@@ -94,14 +94,14 @@ $ . bin/spark-yarn.sh
 ----
 hadoop = System.getenv('HADOOP_HOME')
 hadoopConfDir = System.getenv('HADOOP_CONF_DIR')
-archive = 'spark-gremlin.zip'
-archivePath = "/tmp/$archive"
+archivePath = "/tmp/spark-gremlin.zip"
 ['bash', '-c', "rm $archivePath 2>/dev/null; cd ext/spark-gremlin/lib && zip $archivePath *.jar"].execute()
 conf = new PropertiesConfiguration('conf/hadoop/hadoop-gryo.properties')
-conf.setProperty('spark.master', 'yarn-client')
-conf.setProperty('spark.yarn.dist.archives', "$archivePath")
-conf.setProperty('spark.yarn.appMasterEnv.CLASSPATH', "./$archive/*:$hadoopConfDir")
-conf.setProperty('spark.executor.extraClassPath', "./$archive/*:$hadoopConfDir")
+conf.setProperty('spark.master', 'yarn')
+conf.setProperty('spark.submit.deployMode', 'client')
+conf.setProperty('spark.yarn.archive', "$archivePath")
+conf.setProperty('spark.yarn.appMasterEnv.CLASSPATH', "./__spark_libs__/*:$hadoopConfDir")
+conf.setProperty('spark.executor.extraClassPath', "./__spark_libs__/*:$hadoopConfDir")
 conf.setProperty('spark.driver.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
 conf.setProperty('spark.executor.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
 conf.setProperty('gremlin.spark.persistContext', 'true')
@@ -123,11 +123,12 @@ Explanation
 This recipe does not require running the `bin/hadoop/init-tp-spark.sh` script described in the
 http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] and thus is also
 valid for cluster users without access permissions to do so.
-Rather, it exploits the `spark.yarn.dist.archives` property, which points to an archive with jars on the local file
+
+Rather, it exploits the `spark.yarn.archive` property, which points to an archive with jars on the local file
 system and is loaded into the various YARN containers. As a result the `spark-gremlin.zip` archive becomes available
-as the directory named `spark-gremlin.zip` in the YARN containers. The `spark.executor.extraClassPath` and
-`spark.yarn.appMasterEnv.CLASSPATH` properties point to the files inside this archive.
-This is why they contain the `./spark-gremlin.zip/*` item. Just because a Spark executor got the archive with
+as the directory named `+__spark_libs__+` in the YARN containers. The `spark.executor.extraClassPath` and
+`spark.yarn.appMasterEnv.CLASSPATH` properties point to the jars inside this directory.
+This is why they contain the `+./__spark_lib__/*+` item. Just because a Spark executor got the archive with
 jars loaded into its container, does not mean it knows how to access them.
 
 Also the `HADOOP_GREMLIN_LIBS` mechanism is not used because it can not work for Spark on YARN as implemented (jars
@@ -151,7 +152,7 @@ as long as you do not use the `spark-submit` or `spark-shell` commands. You will
 runtime dependencies listed in the `Gremlin-Plugin-Dependencies` section of the manifest file in the `spark-gremlin`
 jar.
 
-You may not like the idea that the Hadoop and Spark jars from the TinkerPop distribution differ from the versions in
+You may not like the idea that the Hadoop and Spark jars from the Tinkerpop distribution differ from the versions in
 your cluster. If so, just build TinkerPop from source with the corresponding dependencies changed in the various `pom.xml`
-files (e.g. `spark-core_2.10-1.6.1-some-vendor.jar` instead of `spark-core_2.10-1.6.1.jar`). Of course, TinkerPop will
+files (e.g. `spark-core_2.11-2.2.0-some-vendor.jar` instead of `spark-core_2.11-2.2.0.jar`). Of course, TinkerPop will
 only build for exactly matching or slightly differing artifact versions.
