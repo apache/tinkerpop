@@ -71,6 +71,7 @@ def methodsWithSpecificTypes = ["constant": useE2,
                                 "skip": useE2,
                                 "sum": useE2,
                                 "tail": useE2,
+                                "unfold": useE2,
                                 "valueMap": ["IDictionary<TKey, TValue>", "TKey, TValue"],]
 
 def getCSharpGenericTypeParam = { typeName ->
@@ -165,24 +166,6 @@ def hasMethodNoGenericCounterPartInGraphTraversal = { method ->
     if (method.name.equals("fold")) {
         return parameterTypeNames.size() == 0
     }
-    if (method.name.equals("limit")) {
-        if (parameterTypeNames.size() == 1) {
-            return parameterTypeNames[0].equals("long")
-        }
-    }
-    if (method.name.equals("range")) {
-        if (parameterTypeNames.size() == 2) {
-            return parameterTypeNames[0].equals("long") && parameterTypeNames[1].equals("long")
-        }
-    }
-    if (method.name.equals("tail")) {
-        if (parameterTypeNames.size() == 0) {
-            return true
-        }
-        if (parameterTypeNames.size() == 1) {
-            return parameterTypeNames[0].equals("long")
-        }
-    }
     return false
 }
 
@@ -205,7 +188,6 @@ def binding = ["pmethods": P.class.getMethods().
                         findAll { GraphTraversalSource.class.equals(it.returnType) }.
                         findAll {
                             !it.name.equals("clone") &&
-                                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
                                     !it.name.equals(TraversalSource.Symbols.withRemote) &&
                                     !it.name.equals(TraversalSource.Symbols.withComputer)
                         }.
@@ -239,6 +221,11 @@ def binding = ["pmethods": P.class.getMethods().
                             def t1 = toCSharpType(typeNames[0])
                             def t2 = toCSharpType(typeNames[1])
                             def tParam = getCSharpGenericTypeParam(t2)
+                            def specificTypes = methodsWithSpecificTypes.get(javaMethod.name)
+                            if (specificTypes) {
+                                t2 = specificTypes[0]
+                                tParam = specificTypes.size() > 1 ? "<" + specificTypes[1] + ">" : ""
+                            }
                             def parameters = getCSharpParamString(javaMethod)
                             def paramNames = getParamNames(javaMethod.parameters)
                             return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames]

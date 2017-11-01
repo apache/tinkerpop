@@ -372,10 +372,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expected, graphSON);
         }
 
-        [Fact]
-        public void ShouldSerializeTypeToItsObject()
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeTypeToItsObject(int version)
         {
-            var writer = CreateStandardGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
             var type = typeof(SubgraphStrategy);
 
             var graphSon = writer.WriteObject(type);

@@ -210,6 +210,28 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal< Edge,Edge > AddE(string label)
+        {
+            var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("addE", label);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal< Edge,Edge > AddE(ITraversal edgeLabelTraversal)
+        {
+            var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("addE", edgeLabelTraversal);
+            return traversal;
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
@@ -224,23 +246,10 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal< Vertex,Vertex > AddV(params object[] keyValues)
+        public GraphTraversal< Vertex,Vertex > AddV(string label)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + keyValues.Length) {};
-            args.AddRange(keyValues);
-            traversal.Bytecode.AddStep("addV", args.ToArray());
-            return traversal;
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
-        ///     traversal.
-        /// </summary>
-        public GraphTraversal< Edge,Edge > AddE(params object[] args)
-        {
-            var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
-            traversal.Bytecode.AddStep("addE", args);
+                traversal.Bytecode.AddStep("addV", label);
             return traversal;
         }
 
@@ -248,10 +257,10 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal< Vertex,Vertex > AddV(string label)
+        public GraphTraversal< Vertex,Vertex > AddV(ITraversal vertexLabelTraversal)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-                traversal.Bytecode.AddStep("addV", label);
+                traversal.Bytecode.AddStep("addV", vertexLabelTraversal);
             return traversal;
         }
 

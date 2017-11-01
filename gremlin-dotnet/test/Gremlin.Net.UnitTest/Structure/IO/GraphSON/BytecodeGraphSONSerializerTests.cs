@@ -129,7 +129,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializeBytecodeWithSourcesStep(int version)
         {
             var bytecode = new Bytecode();
-            bytecode.AddSource("withSideEffect", "a", new List<string> {"josh", "peter"});
+            bytecode.AddSource("withSideEffect", "a", "josh");
             bytecode.AddStep("V", 1);
             bytecode.AddStep("values", "name");
             bytecode.AddStep("where", new TraversalPredicate("within", "a"));
@@ -138,7 +138,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var graphSON = graphsonWriter.WriteObject(bytecode);
 
             var expectedGraphSon =
-                "{\"@type\":\"g:Bytecode\",\"@value\":{\"source\":[[\"withSideEffect\",\"a\",[\"josh\",\"peter\"]]],\"step\":[[\"V\",{\"@type\":\"g:Int32\",\"@value\":1}],[\"values\",\"name\"],[\"where\",{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":\"a\"}}]]}}";
+                "{\"@type\":\"g:Bytecode\",\"@value\":{\"source\":[[\"withSideEffect\",\"a\",\"josh\"]],\"step\":[[\"V\",{\"@type\":\"g:Int32\",\"@value\":1}],[\"values\",\"name\"],[\"where\",{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":\"a\"}}]]}}";
             Assert.Equal(expectedGraphSon, graphSON);
         }
 
