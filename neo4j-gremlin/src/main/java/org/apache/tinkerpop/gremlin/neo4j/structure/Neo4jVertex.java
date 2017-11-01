@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -35,6 +34,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static org.apache.tinkerpop.gremlin.structure.Direction.BOTH;
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -110,8 +113,14 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
         this.graph.tx().readWrite();
         return new Iterator<Vertex>() {
             final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
+                    BOTH == direction ?
+                            IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT)).iterator(),
+                                    getBaseVertex().relationships(Neo4jHelper.mapDirection(IN)).iterator()) :
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    BOTH == direction ?
+                            IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT), (edgeLabels)).iterator(),
+                                    getBaseVertex().relationships(Neo4jHelper.mapDirection(IN), (edgeLabels)).iterator()) :
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
 
             @Override
             public boolean hasNext() {
@@ -130,8 +139,14 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
         this.graph.tx().readWrite();
         return new Iterator<Edge>() {
             final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
+                    BOTH == direction ?
+                            IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT)).iterator(),
+                                    getBaseVertex().relationships(Neo4jHelper.mapDirection(IN)).iterator()) :
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    BOTH == direction ?
+                            IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT), (edgeLabels)).iterator(),
+                                    getBaseVertex().relationships(Neo4jHelper.mapDirection(IN), (edgeLabels)).iterator()) :
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
 
             @Override
             public boolean hasNext() {
