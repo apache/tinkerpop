@@ -18,7 +18,7 @@ This product includes software from the Spring Framework,
 under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 
 ------------------------------------------------------------------------
-Apache Groovy 2.4.7 (AL ASF)
+Apache Groovy 2.4.11 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -54,7 +54,7 @@ JavaTuples 1.2
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty 4.0.34
+Netty 4.0.50
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
