@@ -26,9 +26,12 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
-    public class NumericParameter<T> : ITokenParameter, IEquatable<NumericParameter<T>> where T : struct
+    /// <summary>
+    /// Represents a literal (number / boolean) that is allowed as a gremlin parameter.
+    /// </summary>
+    public class LiteralParameter<T> : ITokenParameter, IEquatable<LiteralParameter<T>> where T : struct
     {
-        public bool Equals(NumericParameter<T> other)
+        public bool Equals(LiteralParameter<T> other)
         {
             return Value.Equals(other.Value);
         }
@@ -38,7 +41,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((NumericParameter<T>) obj);
+            return Equals((LiteralParameter<T>) obj);
         }
 
         public override int GetHashCode()
@@ -48,7 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public T Value { get; }
         
-        public NumericParameter(T value)
+        public LiteralParameter(T value)
         {
             Value = value;
         }
@@ -58,7 +61,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return $"NumericParameter<{typeof(T).Name}>({Value})";
         }
 
-        public object GetValue(IDictionary<string, object> contextParameterValues)
+        public object GetValue()
         {
             return Value;
         }
@@ -67,18 +70,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         {
             return typeof(T);
         }
+
+        public void SetContextParameterValues(IDictionary<string, object> parameterValues)
+        {
+
+        }
     }
 
-    internal static class NumericParameter
+    internal static class LiteralParameter
     {
-        public static NumericParameter<TType> Create<TType>(TType value) where TType : struct
+        public static LiteralParameter<TType> Create<TType>(TType value) where TType : struct
         {
-            return new NumericParameter<TType>(value);
-        }
-
-        public static NumericParameter<long> CreateLong(string value)
-        {
-            return NumericParameter.Create(Convert.ToInt64(value.Substring(0, value.Length - 1)));
+            return new LiteralParameter<TType>(value);
         }
     }
 }

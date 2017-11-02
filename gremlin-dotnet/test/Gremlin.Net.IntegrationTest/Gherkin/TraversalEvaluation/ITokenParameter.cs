@@ -31,12 +31,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         /// <summary>
         /// Gets the value of the parameter 
         /// </summary>
-        object GetValue(IDictionary<string, object> contextParameterValues);
+        object GetValue();
 
         /// <summary>
         /// Gets the type of the parameter
         /// </summary>
-        /// <returns></returns>
         Type GetParameterType();
+
+        /// <summary>
+        /// Sets the context parameter values by a given name, ie: "v1Id" = 1
+        /// </summary>
+        void SetContextParameterValues(IDictionary<string, object> values);
     }
 }

@@ -67,7 +67,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return $"{GetType().Name}({Value})";
         }
 
-        public object GetValue(IDictionary<string, object> contextParameterValues)
+        public object GetValue()
         {
             return Value;
         }
@@ -75,6 +75,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         public Type GetParameterType()
         {
             return typeof(string);
+        }
+
+        public void SetContextParameterValues(IDictionary<string, object> parameterValues)
+        {
+
         }
     }
 }

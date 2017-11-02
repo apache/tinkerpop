@@ -34,6 +34,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
     /// </summary>
     internal class TraversalPredicateParameter : ITokenParameter, IEquatable<TraversalPredicateParameter>
     {
+        private IDictionary<string, object> _contextParameterValues;
+        public IList<Token> Tokens { get; }
+        
+        public TraversalPredicateParameter(IList<Token> tokens)
+        {
+            Tokens = tokens;
+        }
+
         public bool Equals(TraversalPredicateParameter other)
         {
             return Tokens.SequenceEqual(other.Tokens);
@@ -52,13 +60,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return Tokens != null ? Tokens.GetHashCode() : 0;
         }
 
-        public object GetValue(IDictionary<string, object> contextParameterValues)
+        public object GetValue()
         {
             var type = typeof(P);
             object instance = null;
             for (var i = 1; i < Tokens.Count; i++)
             {
                 var token = Tokens[i];
+                token.SetContextParameterValues(_contextParameterValues);
                 var method = type.GetMethod(TraversalParser.GetCsharpName(token.Name),
                     BindingFlags.Static | BindingFlags.Public);
                 if (method == null)
@@ -66,7 +75,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     throw new InvalidOperationException($"Predicate (P) method '{token}' not found for testing");
                 }
                 instance = method.Invoke(instance,
-                    new object[] {token.Parameters.Select(p => p.GetValue(contextParameterValues)).ToArray()});
+                    new object[] {token.Parameters.Select(p => p.GetValue()).ToArray()});
             }
             return instance;
         }
@@ -76,11 +85,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return typeof(TraversalPredicate);
         }
 
-        public IList<Token> Tokens { get; }
-        
-        public TraversalPredicateParameter(IList<Token> tokens)
+        public void SetContextParameterValues(IDictionary<string, object> parameterValues)
         {
-            Tokens = tokens;
+            _contextParameterValues = parameterValues;
         }
     }
 }

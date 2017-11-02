@@ -77,5 +77,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             Name = name;
             Parameters = new[] {parameter};
         }
+
+        /// <summary>
+        /// Sets the context parameter values by a given name, ie: "v1Id" = 1
+        /// </summary>
+        public void SetContextParameterValues(IDictionary<string, object> values)
+        {
+            foreach (var tokenParameter in Parameters)
+            {
+                tokenParameter.SetContextParameterValues(values);
+            }
+        }
     }
 }

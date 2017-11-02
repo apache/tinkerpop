@@ -57,7 +57,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             _name = name;
         }
 
-        private void SetValue(IDictionary<string, object> parameterValues)
+        public void SetContextParameterValues(IDictionary<string, object> parameterValues)
         {
             if (parameterValues == null || !parameterValues.TryGetValue(_name, out var value))
             {
@@ -66,9 +66,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             _value = value;
         }
         
-        public object GetValue(IDictionary<string, object> contextParameterValues)
+        public object GetValue()
         {
-            SetValue(contextParameterValues);
             return _value;
         }
 

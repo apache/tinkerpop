@@ -23,6 +23,7 @@
 
 using System;
 using System.Linq;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,13 +41,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().values(\"name\")",
                     new[] {new Token("values", new StringParameter("name"))}),
                 Tuple.Create("g.V().constant(123l)", 
-                    new[] {new Token("constant", new[] {NumericParameter.Create(123L)})}),
+                    new[] {new Token("constant", new[] {LiteralParameter.Create(123L)})}),
                 Tuple.Create("g.V().constant(123)", 
-                    new[] {new Token("constant", new[] {NumericParameter.Create(123)})}),
+                    new[] {new Token("constant", new[] {LiteralParameter.Create(123)})}),
                 Tuple.Create("g.V().constant(123.1)", 
-                    new[] {new Token("constant", new[] {NumericParameter.Create(123.1)})}),
+                    new[] {new Token("constant", new[] {LiteralParameter.Create(123.1)})}),
                 Tuple.Create("g.V().constant(123.1f)", 
-                    new[] {new Token("constant", new[] {NumericParameter.Create(123.1f)})}),
+                    new[] {new Token("constant", new[] {LiteralParameter.Create(123.1f)})}),
                 Tuple.Create("g.V().has(\"no\").count()",
                     new[] {new Token("has", new StringParameter("no")), new Token("count")}),
                 Tuple.Create("g.V().has(\"lang\", \"java\")",
@@ -57,7 +58,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().has(\"age\",P.gt(27))", 
                     new[] {new Token("has", new ITokenParameter[] { new StringParameter("age"),
                         new TraversalPredicateParameter(
-                            new[] { new Token("P"), new Token("gt", NumericParameter.Create(27)) }) })}),
+                            new[] { new Token("P"), new Token("gt", LiteralParameter.Create(27)) }) })}),
                 Tuple.Create("g.V().count(Scope.local)", 
                     new[] { new Token("count", new TraversalEnumParameter("Scope.local"))})
             };
@@ -74,10 +75,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var traversalTexts = new []
             {
                 Tuple.Create("g.V().count()", 2),
-//                //"g.V().constant(123L)", Can be parsed using the new type-safe API
+//                Tuple.Create("g.V().constant(123L)", 2), // Can be parsed using the new type-safe API
                 Tuple.Create("g.V().has(\"no\").count()", 3),
                 Tuple.Create("g.V().values(\"age\")", 2),
-                Tuple.Create("g.V().valueMap(\"name\", \"age\")", 2),
+                Tuple.Create("g.V().valueMap(true, \"name\", \"age\")", 2),
                 Tuple.Create("g.V().where(__.in(\"created\").count().is(1)).values(\"name\")", 3),
                 Tuple.Create("g.V().count(Scope.local)", 2),
                 Tuple.Create("g.V().values(\"age\").is(P.lte(30))", 3)

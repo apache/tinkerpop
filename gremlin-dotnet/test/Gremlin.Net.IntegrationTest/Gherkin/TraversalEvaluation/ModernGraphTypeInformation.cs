@@ -47,7 +47,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         {
             switch (method.Name)
             {
-                case nameof(GraphTraversal<object,object>.ValueMap):
                 case nameof(GraphTraversal<object,object>.Values) when parameterValues.Length == 1:
                     // The parameter contains the element property names
                     var properties = ((IEnumerable) parameterValues[parameterValues.Length - 1]).Cast<string>();
@@ -56,6 +55,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     {
                         return types[0];
                     }
+                    return typeof(object);
+                case nameof(GraphTraversal<object,object>.ValueMap):
+                    // Use IDictionary<string, object> for value maps
                     return typeof(object);
             }
             return null;

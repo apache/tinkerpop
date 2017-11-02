@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Gremlin.Net.Process.Traversal;
@@ -78,18 +79,99 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             for (var i = 1; i < tokens.Count; i++)
             {
                 var token = tokens[i];
+                token.SetContextParameterValues(contextParameterValues);
                 var name = GetCsharpName(token.Name);
-                var method = instanceType.GetMethod(name);
+                var methods = instanceType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                    .Where(m => m.Name == name).ToList();
+                var method = GetClosestMethod(methods, token.Parameters);
                 if (method == null)
                 {
-                    throw new InvalidOperationException($"Traversal method '{tokens[i]}' not found for testing");
+                    throw new InvalidOperationException($"Traversal method '{tokens[i].Name}' not found for testing");
                 }
-                var parameterValues = BuildParameters(method, token, contextParameterValues, out var genericParameters);
+                var parameterValues = BuildParameters(method, token, out var genericParameters);
                 method = BuildGenericMethod(method, genericParameters, parameterValues);
                 instance = method.Invoke(instance, parameterValues);
                 instanceType = instance.GetType();
             }
             return (ITraversal) instance;
+        }
+
+        /// <summary>
+        /// Find the method that supports the amount of parameters provided
+        /// </summary>
+        private static MethodInfo GetClosestMethod(IList<MethodInfo> methods, IList<ITokenParameter> tokenParameters)
+        {
+            if (methods.Count == 0)
+            {
+                return null;
+            }
+            if (methods.Count == 1)
+            {
+                return methods[0];
+            }
+            var ordered = methods.OrderBy(m => m.GetParameters().Length);
+            if (tokenParameters.Count == 0)
+            {
+                return ordered.First();
+            }
+            MethodInfo lastMethod = null;
+            var compatibleMethods = new Dictionary<int, MethodInfo>();
+            foreach (var method in ordered)
+            {
+                lastMethod = method;
+                var parameters = method.GetParameters();
+                if (tokenParameters.Count < parameters.Length)
+                {
+                    continue;
+                }
+                var matched = true;
+                var exactMatches = 0;
+                for (var i = 0; i < tokenParameters.Count; i++)
+                {
+                    if (parameters.Length <= i)
+                    {
+                        // The method contains less parameters (and no params array) than provided
+                        matched = false;
+                        break;
+                    }
+                    var methodParameter = parameters[i];
+                    var tokenParameterType = tokenParameters[i].GetParameterType();
+                    // Match either the same parameter type
+                    matched = methodParameter.ParameterType == tokenParameterType;
+                    if (matched)
+                    {
+                        exactMatches++;
+                    }
+                    else if (IsParamsArray(methodParameter))
+                    {
+                        matched = methodParameter.ParameterType == typeof(object[]) ||
+                                  methodParameter.ParameterType.GetElementType() == tokenParameterType;
+                        // The method has params array, no further parameters are going to be defined
+                        break;
+                    }
+                    else
+                    {
+                        if (!methodParameter.ParameterType.GetTypeInfo().IsAssignableFrom(tokenParameterType))
+                        {
+                            break;   
+                        }
+                        // Is assignable to the parameter type
+                        matched = true;
+                    }
+                }
+                if (matched)
+                {
+                    compatibleMethods[exactMatches] = method;
+                }
+            }
+            // Attempt to use the method with the higher number of matches or the last one
+            return compatibleMethods.OrderByDescending(kv => kv.Key).Select(kv => kv.Value).FirstOrDefault() ??
+                   lastMethod;
+        }
+
+        private static bool IsParamsArray(ParameterInfo methodParameter)
+        {
+            return methodParameter.IsDefined(typeof(ParamArrayAttribute), false);
         }
 
         private static MethodInfo BuildGenericMethod(MethodInfo method, IDictionary<string, Type> genericParameters,
@@ -114,7 +196,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 {
                     throw new InvalidOperationException(
                         $"Can not build traversal to test as '{method.Name}()' method is generic and type '{name}'" +
-                        $" can not be inferred");
+                         " can not be inferred");
                 }
                 types[i] = type;
             }
@@ -122,7 +204,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         }
 
         private static object[] BuildParameters(MethodInfo method, Token token,
-                                                IDictionary<string, object> contextParameterValues,
                                                 out IDictionary<string, Type> genericParameterTypes)
         {
             var paramsInfo = method.GetParameters();
@@ -135,7 +216,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 if (token.Parameters.Count > i)
                 {
                     var tokenParameter = token.Parameters[i];
-                    value =  tokenParameter.GetValue(contextParameterValues);
+                    value =  tokenParameter.GetValue();
                     if (info.ParameterType.IsGenericParameter)
                     {
                         // We've provided a value for parameter of a generic type, we can infer the
@@ -144,9 +225,26 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // if we have the type of value we have the type of E2. 
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
                     }
-                    else if (info.ParameterType == typeof(object[]))
+                }
+                if (IsParamsArray(info))
+                {
+                    // For `params type[] value` we should provide an empty array
+                    if (value == null)
                     {
-                        value = new [] {value};
+                        // An empty array
+                        value = Array.CreateInstance(info.ParameterType.GetElementType(), 0);
+                    }
+                    else if (!value.GetType().IsArray)
+                    {
+                        // An array with the parameter values
+                        // No more method parameters after this one
+                        var arr = Array.CreateInstance(info.ParameterType.GetElementType(), token.Parameters.Count - i);
+                        arr.SetValue(value, 0);
+                        for (var j = 1; j < token.Parameters.Count - i; j++)
+                        {
+                            arr.SetValue(token.Parameters[i + j].GetValue(), j);   
+                        }
+                        value = arr;
                     }
                 }
                 parameters[i] = value ?? GetDefault(info.ParameterType);
@@ -282,9 +380,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 return new TraversalPredicateParameter(ParseTokens(text, ref i));
             }
             var parameterText = text.Substring(i, text.IndexOf(')', i) - i);
-            if (string.IsNullOrWhiteSpace(parameterText))
+            var separatorIndex = parameterText.IndexOf(',');
+            if (separatorIndex >= 0)
+            {
+                parameterText = parameterText.Substring(0, separatorIndex);
+            }
+            parameterText = parameterText.Trim();
+            if (parameterText == "")
             {
                 return null;
+            }
+            if (parameterText == "true" || parameterText == "false")
+            {
+                i += parameterText.Length - 1;
+                return LiteralParameter.Create(Convert.ToBoolean(parameterText));
             }
             if (RegexEnum.IsMatch(parameterText))
             {
@@ -311,18 +420,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             i += match.Value.Length - 1;
             if (numericText.EndsWith("L"))
             {
-                return NumericParameter.Create(Convert.ToInt64(match.Value.Substring(0, match.Value.Length - 1)));
+                return LiteralParameter.Create(Convert.ToInt64(match.Value.Substring(0, match.Value.Length - 1)));
             }
             if (numericText.EndsWith("F"))
             {
-                return NumericParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length-1)));
+                return LiteralParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length-1)));
             }
             if (match.Groups[1].Value != "")
             {
                 // Captured text with the decimal separator
-                return NumericParameter.Create(Convert.ToDouble(match.Value));
+                return LiteralParameter.Create(Convert.ToDouble(match.Value));
             }
-            return NumericParameter.Create(Convert.ToInt32(match.Value));
+            return LiteralParameter.Create(Convert.ToInt32(match.Value));
         }
         
         private enum ParsingPart
