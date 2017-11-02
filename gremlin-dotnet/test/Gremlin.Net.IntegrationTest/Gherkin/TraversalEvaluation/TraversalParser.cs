@@ -34,7 +34,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly IDictionary<string, Func<GraphTraversalSource, ITraversal>> FixedTranslations = 
             new Dictionary<string, Func<GraphTraversalSource, ITraversal>>
             {
-                { "g.V().fold().count(Scope.local)", g => g.V().Fold<object>().Count(Scope.Local)}
+                { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)}
             };
 
         private static readonly Regex RegexNumeric =

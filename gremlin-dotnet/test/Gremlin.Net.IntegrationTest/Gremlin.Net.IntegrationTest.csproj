@@ -5,9 +5,6 @@
     <AssemblyName>Gremlin.Net.IntegrationTest</AssemblyName>
     <PackageId>Gremlin.Net.IntegrationTest</PackageId>
     <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
-    <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
   </PropertyGroup>
   <ItemGroup>
     <None Update="appsettings.json">
