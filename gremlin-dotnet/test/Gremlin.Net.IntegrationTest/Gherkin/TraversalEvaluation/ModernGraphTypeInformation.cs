@@ -59,6 +59,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.ValueMap):
                     // Use IDictionary<string, object> for value maps
                     return typeof(object);
+                case nameof(GraphTraversal<object,object>.Limit):
+                case nameof(GraphTraversal<object,object>.Optional):
+                    // Maintain the same type
+                    return method.DeclaringType.GetGenericArguments()[1];
             }
             return null;
         }

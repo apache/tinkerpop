@@ -44,6 +44,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly Regex RegexEnum = new Regex(@"\w+\.\w+", RegexOptions.Compiled);
 
         private static readonly Regex RegexParam = new Regex(@"\w+", RegexOptions.Compiled);
+        
+        private static readonly HashSet<Type> NumericTypes = new HashSet<Type>
+        {
+            typeof(int), typeof(long), typeof(double), typeof(float), typeof(short), typeof(decimal), typeof(byte)
+        };
 
         internal static ITraversal GetTraversal(string traversalText, GraphTraversalSource g,
                                                 IDictionary<string, object> contextParameterValues)
@@ -151,9 +156,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     }
                     else
                     {
-                        if (!methodParameter.ParameterType.GetTypeInfo().IsAssignableFrom(tokenParameterType))
+                        if (IsNumeric(methodParameter.ParameterType) && IsNumeric(tokenParameterType))
                         {
-                            break;   
+                            // Acount for implicit conversion of numeric values as an exact match 
+                            exactMatches++;
+                        }
+                        else if (!methodParameter.ParameterType.GetTypeInfo().IsAssignableFrom(tokenParameterType))
+                        {
+                            // Not a match
+                            break;
                         }
                         // Is assignable to the parameter type
                         matched = true;
@@ -168,6 +179,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             return compatibleMethods.OrderByDescending(kv => kv.Key).Select(kv => kv.Value).FirstOrDefault() ??
                    lastMethod;
         }
+
+        private static bool IsNumeric(Type t) => NumericTypes.Contains(t);
 
         private static bool IsParamsArray(ParameterInfo methodParameter)
         {

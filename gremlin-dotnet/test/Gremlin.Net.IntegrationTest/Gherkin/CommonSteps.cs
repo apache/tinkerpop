@@ -182,14 +182,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return ScenarioData.Instance.ModernVertices[name];
         }
 
-        private static Edge ToEdge(string s)
+        private static Edge ToEdge(string name)
         {
-            throw new NotImplementedException();
+            return ScenarioData.Instance.ModernEdges[name];
         }
 
-        private static Path ToPath(string arg)
+        private static Path ToPath(string value)
         {
-            throw new NotImplementedException();
+            return new Path(new List<List<string>>(0), value.Split(',').Select(ParseValue).ToList());
         }
 
         private static object ParseValue(string stringValue)
