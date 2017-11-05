@@ -53,7 +53,7 @@ greater than one means that there is more than one edge for that edge label betw
 key).
 <3> Unroll the key-value pairs in the `Map` of paths-edges.
 <4> Only the values from the `Map` are needed and as mentioned earlier, those lists with more than one edge would
-containa  duplicate.
+contain  duplicate.
 
 This method find the duplicates, but does require more memory than other approaches. A slightly more complex approach
 that uses less memory might look like this:
@@ -74,12 +74,12 @@ g.V().as("ov").
   where(count(local).is(gt(1)))
 ----
 
-<1> To this point in the traversal, the outgoing edges of a vertex are being iterated with the current edge labelled
+<1> To this point in the traversal, the outgoing edges of a vertex are being iterated with the current edge labeled
 as "e". For "e", Gremlin traverses to the incoming vertex and back on in edges of that vertex.
 <2> Those incoming edges are filtered with the following `where` steps. The first ensures that it does not traverse
 back over "e" (i.e. the current edge). The second determines if the edge label is equivalent (i.e. the test for the
 working definition of "duplicate"). The third determines if the outgoing vertex matches the one that started the
-path labelled as "ov".
+path labeled as "ov".
 <3> This line is quite similar to the output achieved in the previous example at step 2. A `Map` is produced that uses
 the outgoing vertex, the edge label, and the incoming vertex as the key, with the list of edges for that path as the
 value.

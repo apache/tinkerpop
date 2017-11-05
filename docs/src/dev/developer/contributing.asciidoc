@@ -29,7 +29,7 @@ contributions to the project that help improve the TinkerPop. This section of th
 provide some structure for potential contributors and to give them ideas for how they could get started becoming more
 involved in the TinkerPop community.
 
-NOTE: As a quick acknowledgement, this section was influenced by Apache Spark's well organized
+NOTE: As a quick acknowledgment, this section was influenced by Apache Spark's well organized
 link:https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark["Contributing to Spark"] document.
 
 === Mailing List Participation
@@ -189,7 +189,7 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
 .. Consider which release branch (e.g. `master`, `tp31` etc) to create the development branch from in the first place.
-In other words, is the change to be targetted at a specific TinkerPop version (e.g. a patch to an older version)? When
+In other words, is the change to be targeted at a specific TinkerPop version (e.g. a patch to an older version)? When
 in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.

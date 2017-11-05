@@ -278,7 +278,7 @@ When submitting a pull request to one of the <<branches, release branches>>, be 
 
 A pull request will typically be made to a target <<branches, branch>>. Assuming that branch is upstream of other
 release branches (e.g. a pull request made to for the branch containing 3.1.x must merge to the branch that releases
-3.2.x), it is important to be sure that those changes are merged to the downstream release branches. Typicaly,
+3.2.x), it is important to be sure that those changes are merged to the downstream release branches. Typically,
 this process is best handled by multiple pull requests: one to each release branch.
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for

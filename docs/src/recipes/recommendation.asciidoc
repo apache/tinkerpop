@@ -59,7 +59,7 @@ g.addV("person").property("name","alice").
 }; []
 ----
 
-The first step to making a recommedation to "alice" using collaborative filtering is to understand what she bought:
+The first step to making a recommendation to "alice" using collaborative filtering is to understand what she bought:
 
 [gremlin-groovy,existing]
 ----
@@ -109,7 +109,7 @@ g.V().has('name','alice').as('her').
 image:recommendation-alice-3.png[width=800]
 
 This set of products could be the basis for recommendation, but it is important to remember that "alice" may have
-already purchased some of these products and it would be better to not pester her with recommedations for products
+already purchased some of these products and it would be better to not pester her with recommendations for products
 that she already owns. Those products she already purchased can be excluded as follows:
 
 [gremlin-groovy,existing]
@@ -247,7 +247,7 @@ g.V().has("person","name","alice").as("alice").
 ----
 
 In considering the practical applications of this recipe, it is worth revisiting the earlier "basic" version of the
-reccomendation algorithm:
+recommendation algorithm:
 
 [gremlin-groovy,existing]
 ----

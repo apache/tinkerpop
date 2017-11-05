@@ -525,9 +525,9 @@ except for the important one `getSideEffects()`.
 [source,java]
 public RemoteTraversalSideEffects getSideEffects();
 
-This method has been overriden from `Traversal` to return `RemoteTraversalSideEffects` and this interface allows a user
+This method has been overridden from `Traversal` to return `RemoteTraversalSideEffects` and this interface allows a user
 to do a retrieval of any side-effects produced by the `Traversal`. The assumption, of course, is that the
-`RemoteConnection` is communicating with a server that supports side-effect retreival (as Gremlin Server does).
+`RemoteConnection` is communicating with a server that supports side-effect retrieval (as Gremlin Server does).
 
 TinkerPop provides the `DriverRemoteConnection` as a useful and
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/remote[example implementation].
@@ -1024,7 +1024,7 @@ and that there are only six results.
 request would have sent back thirty traversers.
 <4> Note that the sum of the bulk of each `Traverser` is thirty.
 
-The full iteration of aa `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
+The full iteration of a `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
 unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
 directly within TinkerPop's `RemoteGraph` implementations.
 

@@ -196,7 +196,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1694[TINKERPOP-1694]
 
 ==== WsAndHttpChannelizer
 
-The `WsAndHttpChannelizer` has been added to allow for processing both WebSocket and Http requests on the same
+The `WsAndHttpChannelizer` has been added to allow for processing both WebSocket and HTTP requests on the same
 port and gremlin server. The `SaslAndHttpBasicAuthenticationHandler` has also been added to service
 authentication for both protocols in conjunction with the `SimpleAuthenticator`.
 
@@ -235,7 +235,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1676[TINKERPOP-1676]
 ==== DSL Support
 
 It has always been possible to construct Domain Specific Languages (DSLs) with Gremlin, but the approach has required
-a somewhat deep understanding of the TinkerPop code base and it is not something that has had a recommeded method
+a somewhat deep understanding of the TinkerPop code base and it is not something that has had a recommended method
 for implementation. With this release, TinkerPop simplifies DSL development and provides the best practices for their
 implementation.
 
@@ -329,7 +329,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1044[TINKERPOP-1044]
 
 The `gremlin.sh` command has two flags, `-i` and `-e`, which are used to pass a script and arguments into the Gremlin
 Console for execution. Those flags now allow for passing multiple scripts and related arguments to be supplied which
-can yield greater flexibilty in automation tasks.
+can yield greater flexibility in automation tasks.
 
 [source,bash]
 ----
@@ -351,13 +351,13 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1387[TINKERPOP-1387]
 Gremlin Server previously implemented its own final `GraphManager` class. Now, the `GraphManager` has been changed to
 an interface, and users can supply their own `GraphManager` implementations in their YAML. The previous `GraphManager`
 class was meant be used by classes internal to Gremlin Server, but it was public so if it was used for some reason by
-usrs then then a compile error can be expected. To correct this problem, which will likely manifest as a compile error
+users then then a compile error can be expected. To correct this problem, which will likely manifest as a compile error
 when trying to create a `new GraphManager()` instance, simply change the code to `new DefaultGraphManager(Settings)`.
 
 In addition to the change mentioned above, several methods on `GraphManager` were deprecated:
 
 * `getGraphs()` should be replaced by the combination of `getGraphNames()` and then `getGraph(String)`
-* `getTraversalSources()` is similarly replaced and should instead use a combinatio of `getTraversalSourceNames()` and
+* `getTraversalSources()` is similarly replaced and should instead use a combination of `getTraversalSourceNames()` and
 `getTraversalSource(String)`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1438[TINKERPOP-1438]
@@ -365,7 +365,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1438[TINKERPOP-1438]
 ==== Gremlin-Python Driver
 Gremlin-Python now offers a more complete driver implementation that uses connection pooling and
 the Python `concurrent.futures` module to provide asynchronous I/0 using threading. The default underlying
-websocket client implementation is still provided by Tornado, but it is trivial to plug in another client by
+WebSocket client implementation is still provided by Tornado, but it is trivial to plug in another client by
 defining the `Transport` interface.
 
 Using the `DriverRemoteConnection` class is the exact same as in previous versions; however,
@@ -404,7 +404,7 @@ Furthermore, `PathFilterStep` also support `from()`-, `to()`-, and `by()`-modula
 
 `LazyBarrierStrategy` was trying to do to much by considering `Traverser` effects on network I/O by appending an
 `NoOpBarrierStrategy` to the end of the root traversal. This should not be accomplished by `LazyBarrierStrategy`,
-but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoninig logic in
+but instead by `RemoteStrategy`. `RemoteStrategy` now tries to barrier-append. This may effect the reasoning logic in
 some `ProviderStrategies`. Most likely not, but just be aware.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1627[TINKERPOP-1627]
@@ -626,7 +626,7 @@ a long run job (e.g. an OLAP-based traversal) executing, as that job will block 
 By exercising the option to a do a "forced close" the session will skip trying to close the transactions and just
 attempt to interrupt the long run job. By not closing transactions, the session leaves it up to the underlying graph
 database to sort out how it will deal with those orphaned transactions. On the positive side though (for those graphs
-which do that well) , long run jobs have the opporunity to be cancelled without waiting for a timeout of the job itself
+which do that well) , long run jobs have the opportunity to be cancelled without waiting for a timeout of the job itself
 which will allow resources to be released earlier.
 
 The "force" argument is passed on the "close" message and is a boolean value. This is an optional argument to "close"
@@ -718,7 +718,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
 
 ==== Change In has() Method Signatures
 
-The TinkerPop 3.2.2 release unintentionally intoduced a breaking change for some `has()` method overloads. In particular the
+The TinkerPop 3.2.2 release unintentionally introduced a breaking change for some `has()` method overloads. In particular the
 behavior for single item array arguments was changed:
 
 [source,text]
@@ -878,7 +878,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1455[TINKERPOP-1455]
 
 Both `Graph.Exceptions.elementNotFound()` methods have been deprecated. These exceptions were being asserted in the
 test suite but were not being used anywhere in `gremlin-core` itself. The assertions have been modified to simply
-assert that `NoSuchElementException` was thrown, which is precisely the behavior that was being indirected asserted
+assert that `NoSuchElementException` was thrown, which is precisely the behavior that was being indirectly asserted
 when `Graph.Exceptions.elementNotFound()` were being used.
 
 Providers should not need to take any action in this case for their tests to pass, however, it would be wise to remove

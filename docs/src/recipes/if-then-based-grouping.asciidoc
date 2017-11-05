@@ -55,7 +55,7 @@ if (age < 28) {
 }
 ----
 
-The use of `choose` is a good intutive choice for this `Traversal` as it is a natural mapping to `if-then-else`, but
+The use of `choose` is a good intuitive choice for this `Traversal` as it is a natural mapping to `if-then-else`, but
 there is another option to consider with `coalesce`:
 
 [gremlin-groovy,modern]

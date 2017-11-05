@@ -271,7 +271,7 @@ that:
 
 . `File | Settings | Compiler | Annotation Processors` has the checkbox with the "Enable annotation processing" checked.
 Intellij should be able to detect the processor automatically on build.
-. The `gremlin-core/target` directory should not be hidden and `target/classes`, `target/gneerated-sources` and
+. The `gremlin-core/target` directory should not be hidden and `target/classes`, `target/generated-sources` and
 `target/generated-test-sources should be marked as "Generated Sources Root". If they are not setup that way by
 Intellij by default then simply right-click on them use the "Mark Directory with" option to make the appropriate
 selections.

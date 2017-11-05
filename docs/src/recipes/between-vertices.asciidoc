@@ -35,7 +35,7 @@ g.V(1).out().where(__.in().hasId(6))             <6>
 <1> There are three edges from the vertex with the identifier of "1".
 <2> Filter those three edges using the `where()` step using the identifier of the vertex returned by `otherV()` to
 ensure it matches on the vertex of concern, which is the one with an identifier of "2".
-<3> Note that the same traversal will work if there are actual `Vertex` instances rather than just vertex identiers.
+<3> Note that the same traversal will work if there are actual `Vertex` instances rather than just vertex identifiers.
 <4> The vertex with identifier "1" has all outgoing edges, so it would also be acceptable to use the directional steps
 of `outE()` and `inV()` since the schema allows it.
 <5> There is also no problem with filtering the terminating side of the traversal on multiple vertices, in this case,
