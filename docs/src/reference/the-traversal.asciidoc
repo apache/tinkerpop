@@ -108,7 +108,7 @@ g.V().hasLabel('person') <3>
 ----
 
 <1> A filter that only allows the vertex to pass if it has the "person" label
-<2> The same operation, but using the traversal represention of `filter()`.
+<2> The same operation, but using the traversal representation of `filter()`.
 <3> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
 
 image:side-effect-lambda.png[width=175,float=right]
@@ -137,7 +137,7 @@ g.V().choose(has('name','marko'),
 ----
 
 <1> If the vertex is "marko", get his age, else get the name of the vertex.
-<2> The same operation, but using the traversal represention of `branch()`.
+<2> The same operation, but using the traversal representing of `branch()`.
 <3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
 [[terminal-steps]]
@@ -448,7 +448,7 @@ g.V().groupCount('a').by(label).cap('a')      <1>
 g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b')   <2>
 ----
 
-<1> Group and count verticies by their label.  Emit the side effect labeled 'a', which is the group count by label.
+<1> Group and count vertices by their label.  Emit the side effect labeled 'a', which is the group count by label.
 <2> Same as statement 1, but also emit the side effect labeled 'b' which groups vertices by the number of out edges.
 
 [[choose-step]]
@@ -819,7 +819,7 @@ g.V().hasNot('age').values('name') <7>
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
 <3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
-the key,value pairs for those verticies.
+the key,value pairs for those vertices.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
 <5> Same as the prior example save using `not` on `within` to yield `without`.
 <6> Find all age-properties and emit their value.
@@ -2468,7 +2468,7 @@ g.V(4).inE().bothV()
 === Where Step
 
 The `where()`-step filters the current object based on either the object itself (`Scope.local`) or the path history
-of the object (`Scope.global`) (*filter*). This step is typically used in conjuction with either
+of the object (`Scope.global`) (*filter*). This step is typically used in conjunction with either
 <<match-step,`match()`>>-step or <<select-step,`select()`>>-step, but can be used in isolation.
 
 [gremlin-groovy,modern]
@@ -2874,7 +2874,7 @@ g.V('42a')
 ----
 
 Other `Graph` implementations, such as Neo4j, generate element identifiers automatically and cannot be assigned.
-As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indicies
+As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indices
 under the hood.
 
 [gremlin-groovy]

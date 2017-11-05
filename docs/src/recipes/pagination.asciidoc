@@ -17,7 +17,7 @@ limitations under the License.
 [[pagination]]
 == Pagination
 
-image:gremlin-paging.png[float=left,width=330]In most database applications, it is oftentimes desireable to return
+image:gremlin-paging.png[float=left,width=330]In most database applications, it is oftentimes desirable to return
 discrete blocks of data for a query rather than all of the data that the total results would contain. This approach to
 returning data is referred to as "pagination" and typically involves a situation where the client executing the query
 can specify the start position and end position (or the amount of data to return in lieu of the end position)
@@ -63,7 +63,7 @@ NOTE: The first traversal above could also be written as `g.V().hasLabel('person
 
 In this case, there is no way to know the total count so the only way to know if the end of the results have been
 reached is to count the results from each paged result to see if there's less than the number expected or simply zero
-results. In that case, further requests for additional pages would be uncessary. Of course, this approach is not
+results. In that case, further requests for additional pages would be unnecessary. Of course, this approach is not
 free of problems either. Most graph databases will not optimize the `range()` step, meaning that the second traversal
 will repeat the iteration of the first two vertices to get to the second set of two vertices. In other words, for the
 second traversal, the graph will still read four vertices even though there was only a request for two.

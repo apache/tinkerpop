@@ -53,7 +53,7 @@ unidirectional graphs directly so it must be simulated by ignoring the direction
 prior to `repeat` as this allows for return of a single length path.
 <2> Aggregate the `path()` of the emitted vertices to "p". It is within these paths that the list of connected
 components will be identified. Obviously the paths list are duplicative in the sense that they contains different
-paths travelled over the same vertices.
+paths traveled over the same vertices.
 <3> Unroll the elements in the path list with `unfold` and `dedup`.
 <4> Use the first vertex in each path to filter against the paths stored in "p". When a path is found that has the
 vertex in it, dedup the vertices in the path, order it by the identifier. Each path output from this `map` step

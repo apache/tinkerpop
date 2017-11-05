@@ -42,7 +42,7 @@ g.V().project("v","degree").by().by(bothE().count()). <5>
 incoming and outgoing.
 <2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
 <3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
-<4> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
+<4> The previous examples all produce a single `Map` as their output. While that is a desirable output, producing a
 stream of `Map` objects can allow some greater flexibility.
 <5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
 OLAP traversals.

@@ -168,13 +168,13 @@ g.withSack(1).V().has('name','C').
 
 === Time-based Indexing
 
-Trees can be used for modelling time-oriented data in a graph. Modeling time where there are "year", "month" and "day"
+Trees can be used for modeling time-oriented data in a graph. Modeling time where there are "year", "month" and "day"
 vertices (or lower granularity as needed) allows the structure of the graph to inherently index data tied to them.
 
 image:gremlin-index-time.png[width=800]
 
 NOTE: This model is discussed further in this Neo4j link:https://neo4j.com/blog/modeling-a-multilevel-index-in-neoj4/[blog post].
-Also, there can be other versions of this model that utilize different edge/vertex labelling and property naming
+Also, there can be other versions of this model that utilize different edge/vertex labeling and property naming
 strategies. The schema depicted here is designed for simplicity.
 
 The Gremlin script below creates the graph depicted in the graph above:

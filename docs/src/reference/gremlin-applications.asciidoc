@@ -316,7 +316,7 @@ v[2]
 It is also possible to pass multiple scripts by specifying multiple `-e` options. The scripts will execute in the order
 that they are specified. Note that only the arguments from the last script executed will be preserved in the console.
 Finally, if the arguments conflict with the reserved flags that `gremlin.sh` responds double quotes can be used to
-wrap all the arugments to the option:
+wrap all the arguments to the option:
 
 [source,bash]
 ----
@@ -367,7 +367,7 @@ Note that the user can now reference `g` (and `graph` for that matter) at startu
 variable initialization code into the console.
 
 Like, execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
-<<execution-mode, Execution Mode Section>> for more information on the specfics of that capability.
+<<execution-mode, Execution Mode Section>> for more information on the specifics of that capability.
 
 [[gremlin-server]]
 == Gremlin Server
@@ -645,7 +645,7 @@ x + y
 ----
 
 In the above example, the `:remote console` command is executed. It places the console in a state where the `:>` is
-no longer required. Each script line is actually automatically submitted to Gremlin Server for evalaution. The
+no longer required. Each script line is actually automatically submitted to Gremlin Server for evaluation. The
 variables `x` and `y` that were defined actually don't exist locally - they only exist on the server! In this sense,
 putting the console in this mode is basically like creating a window to a session on Gremlin Server.
 
@@ -1124,7 +1124,7 @@ The following table describes the various YAML configuration options that Gremli
 |authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |authentication.enableAuditLog |The available authenticators can issue audit logging messages, binding the authenticated user to his remote socket address and binding requests with a gremlin query to the remote socket address. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the log4j.properties file. |false
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket, Java NIO, etc.). |`WebSocketChannelizer`
-|graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. It is important to note that the Tinkerpop Http and WebSocketChannelizers auto-commit and auto-rollback based on the graphs stored in the graphManager upon script execution completion. |`DefaultGraphManager`
+|graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. It is important to note that the TinkerPop HTTP and WebSocketChannelizers auto-commit and auto-rollback based on the graphs stored in the graphManager upon script execution completion. |`DefaultGraphManager`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
@@ -1698,7 +1698,7 @@ Regardless of the output, the metrics gathered are the same. Each metric is pref
 * `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
 (note that these time apply to both sessionless and in-session requests).
-* `op.traversal` - the number of `Traveral` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
+* `op.traversal` - the number of `Traversal` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
 mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
 times.
 * `engine-name.session.session-id.*` - metrics related to different `GremlinScriptEngine` instances configured for
@@ -1902,7 +1902,7 @@ in a transaction. With this configuration of `client` there is no need to close 
 
 When using this mode of the `SessionedClient` it is important to recognize that global variable state for the session
 is not rolled-back on failure depending on where the failure occurs. For example, sending the following script would
-create a variable "x" in global session scope that would be acccessible on the next request:
+create a variable "x" in global session scope that would be accessible on the next request:
 
 [source,groovy]
 x = 1
@@ -1921,7 +1921,7 @@ example, this script:
 a = 1
 g.addV()
 
-would sucessfully evaluate and return a `Traversal`.  The variable "a" would be available on the next request. However,
+would successfully evaluate and return a `Traversal`.  The variable "a" would be available on the next request. However,
 if there was a failure in transaction management on the call to `commit()`, "a" would still be available to the next
 request.
 

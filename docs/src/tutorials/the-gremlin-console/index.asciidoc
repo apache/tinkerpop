@@ -23,7 +23,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
 of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] wth TinkerPop and graphs, the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] with TinkerPop and graphs, the
 importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
 introduced. This tutorial further explores the usage of the console in the daily work of Gremlin developers delving
 more deeply into the details of its operations and expanding upon the basic usage guide in the
@@ -621,7 +621,7 @@ Iteration is performed by the call to `forEachRemaining()`. The closure supplied
 in the `Traversal`.  Note the use of `def` in that closure to declare the "statement" variable. In the console, the
 use of `def` inside a closure scopes that variable to the closure.  Without `def` the "row" variable would
 be accessible globally (i.e. at the `gremlin>` prompt). The use of `def` at the console prompt for variable definition
-is unecessary and will result in error:
+is unnecessary and will result in error:
 
 [source,groovy]
 ----

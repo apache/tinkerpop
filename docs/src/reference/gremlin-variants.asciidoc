@@ -217,7 +217,7 @@ These can be used analogously to how they are used in Gremlin-Java.
 g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr).toList()
 ----
 
-Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be ommitted.
+Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be omitted.
 
 [source,python]
 >>> statics.load_statics(globals())
@@ -369,7 +369,7 @@ These can be used analogously to how they are used in Gremlin-Java.
 [source,csharp]
 g.V().HasLabel("person").Has("age",P.Gt(30)).Order().By("age",Order.decr).ToList()
 
-Moreover, the class prefixes can be ommitted with a `using static`.
+Moreover, the class prefixes can be omitted with a `using static`.
 
 [source,csharp]
 ----
