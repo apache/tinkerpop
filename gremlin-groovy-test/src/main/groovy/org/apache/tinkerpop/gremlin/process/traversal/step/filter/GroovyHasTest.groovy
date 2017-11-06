@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -168,6 +170,26 @@ public abstract class GroovyHasTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').hasLabel('software')")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXemptyX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId([]).count")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXwithinXemptyXX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(within([])).count")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXwithoutXemptyXX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(without([])).count")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.not(hasId(within([]))).count")
         }
     }
 }

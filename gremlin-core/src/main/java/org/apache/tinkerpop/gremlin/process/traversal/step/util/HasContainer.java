@@ -59,14 +59,19 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
             // grab an instance of a value which is either the first item in a homogeneous collection or the value itself
             final Object valueInstance = this.predicate.getValue() instanceof Collection ?
-                    ((Collection) this.predicate.getValue()).toArray()[0] : this.predicate.getValue();
+                    ((Collection) this.predicate.getValue()).isEmpty() ?
+                            new Object() :
+                            ((Collection) this.predicate.getValue()).toArray()[0] :
+                    this.predicate.getValue();
 
             // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
             // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
             // the constructor.  the original value in P is maintained separately
             this.testingIdString = this.key.equals(T.id.getAccessor()) && valueInstance instanceof String;
             if (this.testingIdString)
-                this.predicate.setValue(this.predicate.getValue() instanceof Collection ? IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) : this.predicate.getValue().toString());
+                this.predicate.setValue(this.predicate.getValue() instanceof Collection ?
+                        IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) :
+                        this.predicate.getValue().toString());
         }
     }
 
@@ -162,9 +167,11 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     private void enforceHomogenousCollectionIfPresent(final Object predicateValue) {
         if (predicateValue instanceof Collection) {
             final Collection collection = (Collection) predicateValue;
-            Class<?> first = collection.toArray()[0].getClass();
-            if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(c -> first.equals(c)))
-                throw new IllegalArgumentException("Has comparisons on a collection of ids require ids to all be of the same type");
+            if (!collection.isEmpty()) {
+                Class<?> first = collection.toArray()[0].getClass();
+                if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(c -> first.equals(c)))
+                    throw new IllegalArgumentException("Has comparisons on a collection of ids require ids to all be of the same type");
+            }
         }
     }
 

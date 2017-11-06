@@ -52,10 +52,14 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
     }
 
     private Iterator<? extends Edge> edges() {
+        if (null == this.ids)
+            return Collections.emptyIterator();
         return IteratorUtils.filter(this.getTraversal().getGraph().get().edges(this.ids), edge -> HasContainer.testAll(edge, this.hasContainers));
     }
 
     private Iterator<? extends Vertex> vertices() {
+        if (null == this.ids)
+            return Collections.emptyIterator();
         final Neo4jGraph graph = (Neo4jGraph) this.getTraversal().getGraph().get();
         return graph.getTrait().lookupVertices(graph, this.hasContainers, this.ids);
     }
