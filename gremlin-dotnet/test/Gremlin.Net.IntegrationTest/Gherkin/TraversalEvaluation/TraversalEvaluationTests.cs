@@ -60,7 +60,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         new TraversalPredicateParameter(
                             new[] { new Token("P"), new Token("gt", LiteralParameter.Create(27)) }) })}),
                 Tuple.Create("g.V().count(Scope.local)", 
-                    new[] { new Token("count", new TraversalEnumParameter("Scope.local"))})
+                    new[] { new Token("count", new TraversalEnumParameter("Scope.local"))}),
+                Tuple.Create("g.V().\n  count()", new[] { new Token("count")}),
+                Tuple.Create("g.V().\n has ( \"a\" ) \n.  \ncount()",
+                    new[] {new Token("has", new StringParameter("a")), new Token("count")}),
             };
             foreach (var item in items)
             {
@@ -82,7 +85,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().where(__.in(\"created\").count().is(1)).values(\"name\")", 3),
                 Tuple.Create("g.V().count(Scope.local)", 2),
                 Tuple.Create("g.V().values(\"age\").is(P.lte(30))", 3),
-                Tuple.Create("g.V().optional(__.out().optional(__.out())).path().limit(1)", 4)
+                Tuple.Create("g.V().optional(__.out().optional(__.out())).path().limit(1)", 4),
+                Tuple.Create("g.V(1).as(\"a\").out(\"knows\").as(\"b\").\n  select(\"a\", \"b\").by(\"name\")", 6)
             };
             var g = new Graph().Traversal();
             foreach (var tuple in traversalTexts)

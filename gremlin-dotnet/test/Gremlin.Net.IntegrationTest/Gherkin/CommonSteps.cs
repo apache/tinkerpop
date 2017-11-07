@@ -31,6 +31,8 @@ using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
@@ -162,19 +164,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return result;
         }
 
-        private static IDictionary ToMap(string arg)
+        private static IDictionary ToMap(string stringMap)
         {
-            throw new NotImplementedException();
+            var jsonMap = JObject.Parse(stringMap);
+            return (IDictionary) jsonMap.ToObject<IDictionary<string, object>>();
         }
 
-        private static ICollection ToSet(string arg)
+        private static ISet<object> ToSet(string stringSet)
         {
-            throw new NotImplementedException();
+            return new HashSet<object>(ToList(stringSet));
         }
 
-        private static IList ToList(string arg)
+        private static IList<object> ToList(string stringList)
         {
-            throw new NotImplementedException();
+            return stringList.Split(',').Select(ParseValue).ToArray();
         }
 
         private static Vertex ToVertex(string name)

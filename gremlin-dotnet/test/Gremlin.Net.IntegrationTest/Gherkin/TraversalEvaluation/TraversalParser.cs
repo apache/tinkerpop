@@ -124,8 +124,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             foreach (var method in ordered)
             {
                 lastMethod = method;
-                var parameters = method.GetParameters();
-                if (tokenParameters.Count < parameters.Length)
+                var methodParameters = method.GetParameters();
+                var requiredParameters = methodParameters.Length;
+                if (requiredParameters > 0 && IsParamsArray(methodParameters.Last()))
+                {
+                    // Params array can be not provided
+                    requiredParameters--;
+                }
+                if (tokenParameters.Count < requiredParameters)
                 {
                     continue;
                 }
@@ -133,13 +139,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 var exactMatches = 0;
                 for (var i = 0; i < tokenParameters.Count; i++)
                 {
-                    if (parameters.Length <= i)
+                    if (methodParameters.Length <= i)
                     {
                         // The method contains less parameters (and no params array) than provided
                         matched = false;
                         break;
                     }
-                    var methodParameter = parameters[i];
+                    var methodParameter = methodParameters[i];
                     var tokenParameterType = tokenParameters[i].GetParameterType();
                     // Match either the same parameter type
                     matched = methodParameter.ParameterType == tokenParameterType;
@@ -324,14 +330,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         parameters.Add(param);
                         break;
                     }
-                    case ',' when text[i+1] != ' ':
-                    case ' ' when text[i+1] != ' ' && text[i+1] != ')':
+                    case ',' when text[i+1] != ' ' && parsing == ParsingPart.StartParameters:
+                    case ' ' when text[i+1] != ' ' && text[i+1] != ')' && parsing == ParsingPart.StartParameters:
                     {
-                        if (parsing != ParsingPart.StartParameters)
-                        {
-                            throw new InvalidOperationException(
-                                "Can not parse space or comma chars outside parameters");
-                        }
                         i++;
                         var param = ParseParameter(text, ref i);
                         if (param == null)
@@ -370,6 +371,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static ITokenParameter ParseParameter(string text, ref int i)
         {
             var firstChar = text[i];
+            while (char.IsWhiteSpace(firstChar))
+            {
+                firstChar = text[++i];
+            }
             if (firstChar == ')')
             {
                 return null;

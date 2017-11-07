@@ -68,7 +68,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             
         public Token(string name, IList<ITokenParameter> parameters = null)
         {
-            Name = name;
+            Name = name.Trim();
             Parameters = parameters ?? EmptyParameters;
         }
             
