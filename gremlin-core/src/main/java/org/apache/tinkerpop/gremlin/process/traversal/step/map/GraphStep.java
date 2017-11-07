@@ -36,8 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,10 +100,15 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public void addIds(final Object... newIds) {
-        this.ids = ArrayUtils.addAll(this.ids,
-                (newIds.length == 1 && newIds[0] instanceof Collection) ?
-                        ((Collection) newIds[0]).toArray(new Object[((Collection) newIds[0]).size()]) :
-                        newIds);
+        if (this.ids.length == 0 &&
+                newIds.length == 1 &&
+                newIds[0] instanceof Collection && ((Collection) newIds[0]).isEmpty())
+            this.ids = null;
+        else
+            this.ids = ArrayUtils.addAll(this.ids,
+                    (newIds.length == 1 && newIds[0] instanceof Collection) ?
+                            ((Collection) newIds[0]).toArray(new Object[((Collection) newIds[0]).size()]) :
+                            newIds);
     }
 
     public void clearIds() {

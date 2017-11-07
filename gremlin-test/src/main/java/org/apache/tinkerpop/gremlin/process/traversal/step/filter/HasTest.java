@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
@@ -107,6 +108,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasIdXemptyX_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasIdXwithinXemptyXX_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasIdXwithoutXemptyXX_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -449,6 +458,38 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasIdXemptyX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasIdXemptyX_count();
+        printTraversalForm(traversal);
+        assertEquals(0L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasIdXwithinXemptyXX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasIdXwithinXemptyXX_count();
+        printTraversalForm(traversal);
+        assertEquals(0L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasIdXwithoutXemptyXX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasIdXwithoutXemptyXX_count();
+        printTraversalForm(traversal);
+        assertEquals(6L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_notXhasIdXwithinXemptyXXX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_notXhasIdXwithinXemptyXXX_count();
+        printTraversalForm(traversal);
+        assertEquals(6L, traversal.next().longValue());
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
@@ -588,6 +629,26 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_hasLabelXsoftwareX() {
             return g.V().hasLabel("person").hasLabel("software");
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXemptyX_count() {
+            return g.V().hasId(Collections.emptyList()).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXwithinXemptyXX_count() {
+            return g.V().hasId(P.within(Collections.emptyList())).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasIdXwithoutXemptyXX_count() {
+            return g.V().hasId(P.without(Collections.emptyList())).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count() {
+            return g.V().not(__.hasId(P.within(Collections.emptyList()))).count();
         }
     }
 }
