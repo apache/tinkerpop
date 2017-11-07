@@ -29,6 +29,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7[changelog] for a complete list of all the modifications that are part of this release.
 
+==== Gremlin-Python Core Types
+With the addition of `UUID`, `Date`, and `Timestamp`, Gremlin-Python now implements serializers for all core GraphSON types. Users
+that were using other types to represent this data can now use the Python classes `datetime.datetime` and`uuid.UUID` in GLV traversals.
+Since Python does not support a native `Timestamp` object, Gremlin-Python now offers a dummy class `Timestamp`, which allows
+users to wrap a float and submit it to the Gremlin Server as a `Timestamp` GraphSON type. `Timestamp` can be found in
+`gremlin_python.statics`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1807[TINKERPOP-1807]
+
 ==== Embedded Remote Connection
 
 As Gremlin Language Variants (GLVs) expand their usage and use of `withRemote()` becomes more common, the need to mock
