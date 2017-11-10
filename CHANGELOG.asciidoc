@@ -29,6 +29,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bump to Netty 4.0.52
 * `TraversalVertexProgram` `profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Returned the `Builder` instance from the `DetachedEdge.Builder` methods of `setOutE` and `setOutV`.
+* Added test framework for GLVs.
+* `TraversalVertexProgram` ``profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Added a test for self-edges and fixed `Neo4jVertex` to provided repeated self-edges on `BOTH`.
 * Better respected permissions on the `plugins.txt` file and prevented writing if marked as read-only.
 * Added getters for the lambdas held by `LambdaCollectingBarrierStep`, `LambdaFlatMapStep` and `LambdaSideEffectStep`.
