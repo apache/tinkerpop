@@ -28,6 +28,7 @@ from hamcrest import *
 regex_and = re.compile(r"([(.,\s])and\(")
 regex_as = re.compile(r"([(.,\s])as\(")
 regex_from = re.compile(r"([(.,\s])from\(")
+regex_global = re.compile(r"([(.,\s])global")
 regex_in = re.compile(r"([(.,\s])in\(")
 regex_is = re.compile(r"([(.,\s])is\(")
 regex_not = re.compile(r"([(.,\s])not\(")
@@ -193,15 +194,17 @@ def _table_assertion(data, result, ctx, ordered):
             assert_that(results_to_test[ix], equal_to(val))
         else:
             assert_that(val, is_in(results_to_test))
-        results_to_test.remove(val)
+            results_to_test.remove(val)
 
-    assert_that(len(results_to_test), is_(0))
+    if not ordered:
+        assert_that(len(results_to_test), is_(0))
 
 
 def _translate(traversal):
     replaced = traversal.replace("\n", "")
     replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_from.sub(r"\1from_(", replaced)
+    replaced = regex_global.sub(r"\1global_", replaced)
     replaced = regex_as.sub(r"\1as_(", replaced)
     replaced = regex_is.sub(r"\1is_(", replaced)
     replaced = regex_not.sub(r"\1not_(", replaced)
