@@ -39,7 +39,7 @@ Feature: Step - max()
       | result |
       | d[35] |
 
-  Scenario: get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_maxX
+  Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_maxX
     Given the modern graph
     And the traversal of
       """

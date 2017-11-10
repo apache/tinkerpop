@@ -39,7 +39,7 @@ Feature: Step - min()
       | result |
       | d[27] |
 
-  Scenario: get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX
+  Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX
     Given the modern graph
     And the traversal of
       """
