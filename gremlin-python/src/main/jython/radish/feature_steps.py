@@ -227,5 +227,4 @@ def _make_traversal(g, traversal_string, params):
 
     b.update(params)
 
-    # print _translate(step.text + " - " + str(b))
     return eval(_translate(traversal_string), b)
