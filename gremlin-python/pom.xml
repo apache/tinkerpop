@@ -450,7 +450,7 @@ limitations under the License.
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
-                                        </exec>                                                                  
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
