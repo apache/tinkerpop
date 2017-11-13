@@ -128,15 +128,18 @@ class TestGraphSONReader(object):
     def test_datetime(self):
         dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": 1481750076295}))
         assert isinstance(dt, datetime.datetime)
+        assert dt == datetime.datetime(2016, 12, 14, 13, 14, 36, 295000)
 
     def test_timestamp(self):
         dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
         assert isinstance(dt, timestamp)
+        assert float(dt) == 1481750076.295
 
     def test_uuid(self):
         prop = self.graphson_reader.readObject(
             json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}))
         assert isinstance(prop, uuid.UUID)
+        assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
 
 
 class TestGraphSONWriter(object):
@@ -259,6 +262,7 @@ class TestGraphSONWriter(object):
         prop = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
         output = self.graphson_writer.writeObject(prop)
         assert expected == output
+
 
 class TestFunctionalGraphSONIO(object):
     """Functional IO tests"""
