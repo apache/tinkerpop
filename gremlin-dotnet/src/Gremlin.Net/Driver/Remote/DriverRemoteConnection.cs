@@ -56,7 +56,7 @@ namespace Gremlin.Net.Driver.Remote
         public DriverRemoteConnection(IGremlinClient client, string traversalSource)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _traversalSource = traversalSource;
+            _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
         }
 
         /// <summary>
