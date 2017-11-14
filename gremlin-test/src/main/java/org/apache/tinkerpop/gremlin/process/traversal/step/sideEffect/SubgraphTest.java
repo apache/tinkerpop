@@ -71,15 +71,15 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         assertVertexEdgeCounts(subgraph, 3, 2);
         subgraph.edges().forEachRemaining(e -> {
             assertEquals("knows", e.label());
-            assertEquals("marko", e.outVertex().values("name").next());
-            assertEquals(new Integer(29), e.outVertex().<Integer>values("age").next());
-            assertEquals("person", e.outVertex().label());
+            assertEquals("marko", g.E(e).outV().values("name").next());
+            assertEquals(new Integer(29), g.E(e).outV().<Integer>values("age").next());
+            assertEquals("person", g.E(e).outV().label().next());
 
-            final String name = e.inVertex().<String>values("name").next();
+            final String name = g.E(e).inV().<String>values("name").next();
             if (name.equals("vadas"))
-                assertEquals(0.5d, e.value("weight"), 0.0001d);
+                assertEquals(0.5d, g.E(e).<Double>values("weight").next(), 0.0001d);
             else if (name.equals("josh"))
-                assertEquals(1.0d, e.value("weight"), 0.0001d);
+                assertEquals(1.0d, g.E(e).<Double>values("weight").next(), 0.0001d);
             else
                 fail("There's a vertex present that should not be in the subgraph");
         });
