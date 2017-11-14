@@ -48,17 +48,16 @@ final class TinkerIndex<T extends Element> {
 
     protected void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
-        if (keyMap == null) {
-            keyMap = new ConcurrentHashMap<>();
-            this.index.put(key, keyMap);
+        if (null == keyMap) {
+            this.index.putIfAbsent(key, new ConcurrentHashMap<Object, Set<T>>());
+            keyMap = this.index.get(key);
         }
         Set<T> objects = keyMap.get(value);
         if (null == objects) {
-            objects = new HashSet<>();
-            keyMap.put(value, objects);
+            keyMap.putIfAbsent(value, ConcurrentHashMap.newKeySet());
+            objects = keyMap.get(value);
         }
         objects.add(element);
-
     }
 
     public List<T> get(final String key, final Object value) {
