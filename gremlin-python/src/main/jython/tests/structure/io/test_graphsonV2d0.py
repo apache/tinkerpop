@@ -1,4 +1,4 @@
-'''
+"""
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -15,21 +15,23 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
-'''
+"""
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import sys
+import datetime
 import json
+import uuid
+
 from mock import Mock
 
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty
-from gremlin_python.structure.graph import Path
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphsonV2d0 import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphsonV2d0
+
 from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
@@ -163,6 +165,23 @@ class TestGraphSONReader(object):
         serdes.objectify.assert_called_once_with(value, reader)
         assert o is serdes.objectify()
 
+    def test_datetime(self):
+        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": 1481750076295}))
+        assert isinstance(dt, datetime.datetime)
+        assert dt == datetime.datetime(2016, 12, 14, 13, 14, 36, 295000)
+
+    def test_timestamp(self):
+        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
+        assert isinstance(dt, timestamp)
+        assert float(dt) == 1481750076.295
+
+    def test_uuid(self):
+        prop = self.graphson_reader.readObject(
+            json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}))
+        assert isinstance(prop, uuid.UUID)
+        assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
+
+
 class TestGraphSONWriter(object):
     graphson_writer = GraphSONWriter()
     graphson_reader = GraphSONReader()
@@ -292,3 +311,61 @@ class TestGraphSONWriter(object):
         assert mapping['@type'] == 'g:Int64'
         assert mapping['@value'] == 1
 
+    def test_datetime(self):
+        expected = json.dumps({"@type": "g:Date", "@value": 1481750076295}, separators=(',', ':'))
+        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000.0)
+        output = self.graphson_writer.writeObject(dt)
+        assert expected == output
+
+    def test_timestamp(self):
+        expected = json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}, separators=(',', ':'))
+        ts = timestamp(1481750076295 / 1000.0)
+        output = self.graphson_writer.writeObject(ts)
+        assert expected == output
+
+    def test_uuid(self):
+        expected = json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}, separators=(',', ':'))
+        prop = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
+        output = self.graphson_writer.writeObject(prop)
+        assert expected == output
+
+
+class TestFunctionalGraphSONIO(object):
+    """Functional IO tests"""
+
+    def test_timestamp(self, remote_connection_v2):
+        g = Graph().traversal().withRemote(remote_connection_v2)
+        ts = timestamp(1481750076295 / 1000)
+        resp = g.addV('test_vertex').property('ts', ts)
+        resp = resp.toList()
+        vid = resp[0].id
+        try:
+            ts_prop = g.V(vid).properties('ts').toList()[0]
+            assert isinstance(ts_prop.value, timestamp)
+            assert ts_prop.value == ts
+        finally:
+            g.V(vid).drop().iterate()
+
+    def test_datetime(self, remote_connection_v2):
+        g = Graph().traversal().withRemote(remote_connection_v2)
+        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000)
+        resp = g.addV('test_vertex').property('dt', dt).toList()
+        vid = resp[0].id
+        try:
+            dt_prop = g.V(vid).properties('dt').toList()[0]
+            assert isinstance(dt_prop.value, datetime.datetime)
+            assert dt_prop.value == dt
+        finally:
+            g.V(vid).drop().iterate()
+
+    def test_uuid(self, remote_connection_v2):
+        g = Graph().traversal().withRemote(remote_connection_v2)
+        uid = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
+        resp = g.addV('test_vertex').property('uuid', uid).toList()
+        vid = resp[0].id
+        try:
+            uid_prop = g.V(vid).properties('uuid').toList()[0]
+            assert isinstance(uid_prop.value, uuid.UUID)
+            assert uid_prop.value == uid
+        finally:
+            g.V(vid).drop().iterate()
