@@ -2853,6 +2853,18 @@ WARNING: `EventStrategy` is not meant for usage in tracking global mutations acr
 words, a mutation in one JVM process is not raised as an event in a different JVM process.  In addition, events are
 not raised when mutations occur outside of the `Traversal` context.
 
+Another default configuration for `EventStrategy` revolves around the concept of "detachment". Graph elements are
+detached from the graph as copies when passed to referring mutation events. Therefore, when adding a new `Vertex` in
+TinkerGraph, the event will not contain a `TinkerVertex` but will instead include a `DetachedVertex`. This behavior
+can be modified with the `detach()` method on the `EventStrategy.Builder` which accepts the following inputs: `null`
+meaning no detachment and the return of the original element, `DetachedFactory` which is the same as the default
+behavior, and `ReferenceFactory` which will return "reference" elements only with no properties.
+
+IMPORTANT: If setting the `detach()` configuration to `null`, be aware that transactional graphs will likely create a
+new transaction immediately following the `commit()` that raises the events. The graph elements raised in the events
+may also not behave as "snapshots" at the time of their creation as they are "live" references to actual database
+elements.
+
 === PartitionStrategy
 
 image::partition-graph.png[width=325]

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -91,26 +92,26 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
         final Element element = traverser.get();
 
-
         if (this.callbackRegistry != null) {
+            final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
             final Property currentProperty = traverser.get().property(key);
             final boolean newProperty = element instanceof Vertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
             final Event.ElementPropertyChangedEvent evt;
             if (element instanceof Vertex)
-                evt = new Event.VertexPropertyChangedEvent(DetachedFactory.detach((Vertex) element, true),
+                evt = new Event.VertexPropertyChangedEvent(eventStrategy.detach((Vertex) element),
                         newProperty ?
-                                new DetachedVertexProperty(null, key, null, null) :
-                                DetachedFactory.detach((VertexProperty) currentProperty, true), value, vertexPropertyKeyValues);
+                                eventStrategy.empty(element, key) :
+                                eventStrategy.detach((VertexProperty) currentProperty), value, vertexPropertyKeyValues);
             else if (element instanceof Edge)
-                evt = new Event.EdgePropertyChangedEvent(DetachedFactory.detach((Edge) element, true),
+                evt = new Event.EdgePropertyChangedEvent(eventStrategy.detach((Edge) element),
                         newProperty ?
-                                new DetachedProperty(key, null) :
-                                DetachedFactory.detach(currentProperty), value);
+                                eventStrategy.empty(element, key) :
+                                eventStrategy.detach(currentProperty), value);
             else if (element instanceof VertexProperty)
-                evt = new Event.VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) element, true),
+                evt = new Event.VertexPropertyPropertyChangedEvent(eventStrategy.detach((VertexProperty) element),
                         newProperty ?
-                                new DetachedProperty(key, null) :
-                                DetachedFactory.detach(currentProperty), value);
+                                eventStrategy.empty(element, key) :
+                                eventStrategy.detach(currentProperty), value);
             else
                 throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), element));
 
