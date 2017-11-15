@@ -31,7 +31,6 @@ from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphsonV2d0 import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphsonV2d0
-
 from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
