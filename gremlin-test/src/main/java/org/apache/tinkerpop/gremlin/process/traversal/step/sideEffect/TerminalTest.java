@@ -61,7 +61,7 @@ public abstract class TerminalTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_out_toSet() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out();
-        assertEquals(6, traversal.toSet().size());
+        assertEquals(4, traversal.toSet().size());
         printTraversalForm(traversal);
         assertEquals("toSet", traversal.asAdmin().getBytecode().getStepInstructions().get(traversal.asAdmin().getBytecode().getStepInstructions().size() - 1).getOperator());
     }
