@@ -42,7 +42,7 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<
 
     public ReferenceVertexProperty(final VertexProperty<V> vertexProperty) {
         super(vertexProperty);
-        this.vertex = ReferenceFactory.detach(vertexProperty.element());
+        this.vertex = null == vertexProperty.element() ? null : ReferenceFactory.detach(vertexProperty.element());
         this.value = vertexProperty.value();
     }
 

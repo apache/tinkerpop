@@ -28,6 +28,13 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -36,9 +43,11 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -544,6 +553,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyRemoved(final VertexProperty element, final Property property) {
+                assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
                 assertEquals("dah", property.value());
@@ -582,6 +592,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
                 assertEquals("dah", oldValue.value());
@@ -620,6 +631,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
                 assertEquals(null, oldValue.value());
@@ -658,6 +670,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyRemoved(final Edge element, final Property property) {
+                assertThat(element, instanceOf(DetachedEdge.class));
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
@@ -696,6 +709,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(DetachedEdge.class));
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
@@ -734,6 +748,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(DetachedEdge.class));
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
@@ -772,6 +787,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgeRemoved(final Edge element) {
+                assertThat(element, instanceOf(DetachedEdge.class));
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
@@ -803,6 +819,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void edgeAdded(final Edge element) {
+                assertThat(element, instanceOf(DetachedEdge.class));
                 assertEquals("self", element.label());
                 assertEquals(id, element.inVertex().id());
                 assertEquals(id, element.outVertex().id());
@@ -838,6 +855,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyRemoved(final VertexProperty element) {
+                assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
                 triggered.set(true);
@@ -869,10 +887,9 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.property("to-change", "blah");
 
         final MutationListener listener = new AbstractMutationListener() {
-
-
             @Override
             public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
                 assertEquals("to-change", oldValue.key());
@@ -908,6 +925,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
                 assertEquals("new", oldValue.key());
@@ -943,6 +961,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
                 assertEquals("new", oldValue.key());
@@ -977,6 +996,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexRemoved(final Vertex element) {
+                assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(id, element.id());
                 assertEquals(label, element.label());
                 triggered.set(true);
@@ -1005,6 +1025,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final MutationListener listener = new AbstractMutationListener() {
             @Override
             public void vertexAdded(final Vertex element) {
+                assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals("thing", element.label());
                 assertEquals("there", element.value("here"));
                 triggered.set(true);
@@ -1023,6 +1044,1027 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertVertexEdgeCounts(graph, 1, 0);
         assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldReferencePropertyOfVertexPropertyWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        final Property p = vp.property("to-drop", "dah");
+        vp.property("not-dropped", "yay!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyRemoved(final VertexProperty element, final Property property) {
+                assertThat(element, instanceOf(ReferenceVertexProperty.class));
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").properties("to-drop").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
+        assertEquals("yay!", g.V(vp.element()).properties("xxx").values("not-dropped").next());
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldReferencePropertyOfVertexPropertyWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(ReferenceVertexProperty.class));
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals("dah", oldValue.value());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("bah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").property("to-change","bah").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldReferencePropertyOfVertexPropertyWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(ReferenceVertexProperty.class));
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals(null, oldValue.value());
+                assertEquals("new", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").property("new","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(2, IteratorUtils.count(g.V(v).properties().properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReferencePropertyOfEdgeWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v, "not-dropped", "yay!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-drop", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyRemoved(final Edge element, final Property property) {
+                assertThat(element, instanceOf(ReferenceEdge.class));
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).properties("to-drop").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
+        assertEquals("yay!", e.value("not-dropped"));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReferencePropertyOfEdgeWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v);
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(ReferenceEdge.class));
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("no!", oldValue.value());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).property("to-change","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReferencePropertyOfEdgeWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v);
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertThat(element, instanceOf(ReferenceEdge.class));
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals(null, oldValue.value());
+                assertEquals("new", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).property("new","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.E(e).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReferenceEdgeWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v, "dropped", "yay!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgeRemoved(final Edge element) {
+                assertThat(element, instanceOf(ReferenceEdge.class));
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).drop().iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 0);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReferenceEdgeWhenAdded() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Object id = v.id();
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgeAdded(final Edge element) {
+                assertThat(element, instanceOf(ReferenceEdge.class));
+                assertEquals("self", element.label());
+                assertEquals(id, element.inVertex().id());
+                assertEquals(id, element.outVertex().id());
+                assertThat(element.properties().hasNext(), is(false));
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).as("a").addE("self").property("here", "there").from("a").to("a").iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 1);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReferenceVertexPropertyWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("to-remove","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        final VertexProperty vpToKeep = v.property("to-keep","dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyRemoved(final VertexProperty element) {
+                assertThat(element, instanceOf(ReferenceVertexProperty.class));
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("to-remove").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(vpToKeep.value(), g.V(v).values("to-keep").next());
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReferenceVertexPropertyWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("to-change", "blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+
+
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(ReferenceVertex.class));
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("blah", oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldRefereceVertexPropertyWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("old","blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(ReferenceVertex.class));
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("new", oldValue.key());
+                assertEquals(null, oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReferenceVertexPropertyWhenNewDeprecated() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("old","blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertThat(element, instanceOf(ReferenceVertex.class));
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("new", oldValue.key());
+                assertEquals(null, oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReferenceVertexWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexRemoved(final Vertex element) {
+                assertThat(element, instanceOf(ReferenceVertex.class));
+                assertEquals(id, element.id());
+                assertEquals(label, element.label());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).drop().iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 0, 0);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReferenceVertexWhenAdded() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexAdded(final Vertex element) {
+                assertThat(element, instanceOf(ReferenceVertex.class));
+                assertEquals("thing", element.label());
+                assertThat(element.properties("here").hasNext(), is(false));
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.addV("thing").property("here", "there").iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 0);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldUseActualPropertyOfVertexPropertyWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        final Property p = vp.property("to-drop", "dah");
+        vp.property("not-dropped", "yay!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyRemoved(final VertexProperty element, final Property property) {
+                assertEquals(vp, element);
+                assertEquals(p, property);
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").properties("to-drop").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
+        assertEquals("yay!", g.V(vp.element()).properties("xxx").values("not-dropped").next());
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldUseActualPropertyOfVertexPropertyWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertEquals(vp, element);
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals("dah", oldValue.value());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("bah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").property("to-change","bah").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(1, IteratorUtils.count(g.V(v).properties().properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldUseActualPropertyOfVertexPropertyWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("xxx","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        vp.property("to-change", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
+                assertEquals(vp, element);
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                assertEquals(null, oldValue.value());
+                assertEquals("new", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("xxx").property("new","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(2, IteratorUtils.count(g.V(v).properties().properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldUseActualPropertyOfEdgeWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v, "not-dropped", "yay!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-drop", "dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyRemoved(final Edge element, final Property property) {
+                assertEquals(e, element);
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("dah", property.value());
+                assertEquals("to-drop", property.key());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).properties("to-drop").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
+        assertEquals("yay!", e.value("not-dropped"));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldUseActualPropertyOfEdgeWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v);
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertEquals(e, element);
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals("no!", oldValue.value());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).property("to-change","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.E(e).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldUseActualPropertyOfEdgeWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v);
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+        e.property("to-change", "no!");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
+                assertEquals(e, element);
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                assertEquals(null, oldValue.value());
+                assertEquals("new", oldValue.key());
+                assertEquals("yay!", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).property("new","yay!").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.E(e).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldUseActualEdgeWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v, "dropped", "yay!");
+        final String label = e.label();
+        final Object inId = v.id();
+        final Object outId = v.id();
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgeRemoved(final Edge element) {
+                assertEquals(e, element);
+                assertEquals(label, element.label());
+                assertEquals(inId, element.inVertex().id());
+                assertEquals(outId, element.outVertex().id());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.E(e).drop().iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 0);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldUseActualEdgeWhenAdded() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final Object id = v.id();
+
+        final AtomicReference<Edge> eventedEdge = new AtomicReference<>();
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void edgeAdded(final Edge element) {
+                eventedEdge.set(element);
+                assertEquals("self", element.label());
+                assertEquals(id, element.inVertex().id());
+                assertEquals(id, element.outVertex().id());
+                assertThat(element.properties().hasNext(), is(false));
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        final Edge e = gts.V(v).as("a").addE("self").property("here", "there").from("a").to("a").next();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 1);
+        assertThat(triggered.get(), is(true));
+        assertEquals(e, eventedEdge.get());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexPropertyWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final VertexProperty vp = v.property("to-remove","blah");
+        final String label = vp.label();
+        final Object value = vp.value();
+        final VertexProperty vpToKeep = v.property("to-keep","dah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyRemoved(final VertexProperty element) {
+                assertEquals(vp, element);
+                assertEquals(label, element.label());
+                assertEquals(value, element.value());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).properties("to-remove").drop().iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertEquals(vpToKeep.value(), g.V(v).values("to-keep").next());
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexPropertyWhenChanged() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("to-change", "blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertEquals(v, element);
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("to-change", oldValue.key());
+                assertEquals("blah", oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexPropertyWhenNew() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("old","blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertEquals(v, element);
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("new", oldValue.key());
+                assertEquals(null, oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexPropertyWhenNewDeprecated() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+        v.property("old","blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertEquals(v, element);
+                assertEquals(label, element.label());
+                assertEquals(id, element.id());
+                assertEquals("new", oldValue.key());
+                assertEquals(null, oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexWhenRemoved() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        final String label = v.label();
+        final Object id = v.id();
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexRemoved(final Vertex element) {
+                assertEquals(v, element);
+                assertEquals(id, element.id());
+                assertEquals(label, element.label());
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).drop().iterate();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 0, 0);
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldUseActualVertexWhenAdded() {
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+
+        final AtomicReference<Vertex> eventedVertex = new AtomicReference<>();
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexAdded(final Vertex element) {
+                eventedVertex.set(element);
+                assertEquals("thing", element.label());
+                assertThat(element.properties("here").hasNext(), is(false));
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        final Vertex v = gts.addV("thing").property("here", "there").next();
+        tryCommit(graph);
+
+        assertVertexEdgeCounts(graph, 1, 0);
+        assertThat(triggered.get(), is(true));
+        assertEquals(v, eventedVertex.get());
     }
 
     private GraphTraversalSource create(final EventStrategy strategy) {

@@ -29,6 +29,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7[changelog] for a complete list of all the modifications that are part of this release.
 
+==== EventStrategy Detachment
+
+`EventStrategy` forced detachment of mutated elements prior to raising them in events. While this was a desired
+outcome, it may not have always fit every use case. For example, a user may have wanted a reference element or the
+actual element itself. As a result, `EventStrategy` has changed to allow it to be constructed with a `detach()`
+option, where it is possible to specify any of the following: `null` for no detachment, `DetachedFactory` for the
+original behavior, and `ReferenceFactory` for detachment that returns reference elements.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1829[TINKERPOP-1829]
+
 ==== Embedded Remote Connection
 
 As Gremlin Language Variants (GLVs) expand their usage and use of `withRemote()` becomes more common, the need to mock

@@ -26,8 +26,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallb
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -46,10 +57,53 @@ import java.util.List;
  */
 public final class EventStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
     private final EventQueue eventQueue;
+    private final Class<?> detachmentFactory;
 
     private EventStrategy(final Builder builder) {
         this.eventQueue = builder.eventQueue;
         this.eventQueue.setListeners(builder.listeners);
+        this.detachmentFactory = builder.detachmentFactory;
+    }
+
+    public Class<?> getDetachmentFactory() {
+        return this.detachmentFactory;
+    }
+
+    /**
+     * Applies the appropriate detach operation to elements that will be raised in mutation events.
+     */
+    public <R> R detach(final R attached) {
+        if (null == detachmentFactory)
+            return attached;
+        else if (detachmentFactory.equals(DetachedFactory.class))
+            return DetachedFactory.detach(attached, true);
+        else if (detachmentFactory.equals(ReferenceFactory.class))
+            return ReferenceFactory.detach(attached);
+        else
+            throw new IllegalStateException("Unknown detachment option using " + detachmentFactory.getSimpleName());
+    }
+
+    /**
+     * For newly created properties that do not yet exist, an empty {@link Property} is required that just contains
+     * a key as a reference.
+     */
+    public <R extends Property> R empty(final Element element, final String key) {
+        // currently the "no detachment" model simply returns a Detached value to maintain consistency with the
+        // original API that already existed (where returning "Detached" was the only option). This could probably
+        // change in the future to use an "empty" property or perhaps the "change" event API could change all together
+        // and have a different return.
+        if (null == detachmentFactory || detachmentFactory.equals(DetachedFactory.class)) {
+            if (element instanceof Vertex)
+                return (R) new DetachedVertexProperty(null, key, null, null);
+            else
+                return (R) new DetachedProperty(key, null);
+        } else if (detachmentFactory.equals(ReferenceFactory.class)) {
+            if (element instanceof Vertex)
+                return (R) new ReferenceVertexProperty(new DetachedVertexProperty(null, key, null, null));
+            else
+                return (R) new ReferenceProperty(new DetachedProperty(key, null));
+        } else
+            throw new IllegalStateException("Unknown empty detachment option using " + detachmentFactory.getSimpleName());
     }
 
     @Override
@@ -78,6 +132,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
     public final static class Builder {
         private final List<MutationListener> listeners = new ArrayList<>();
         private EventQueue eventQueue = new DefaultEventQueue();
+        private Class<?> detachmentFactory = DetachedFactory.class;
 
         Builder() {}
 
@@ -88,6 +143,19 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
 
         public Builder eventQueue(final EventQueue eventQueue) {
             this.eventQueue = eventQueue;
+            return this;
+        }
+
+        /**
+         * Configures the method of detachment for element provided in mutation callback events. If configured with
+         * {@code null} for no detachment with a transactional graph, be aware that accessing the evented elements
+         * after {@code commit()} will likely open new transactions.
+         *
+         * @param factoryClass must be either {@code null} (for no detachment), {@link ReferenceFactory} for elements
+         *                     with no properties or {@link DetachedFactory} for elements with properties.
+         */
+        public Builder detach(final Class<?> factoryClass) {
+            detachmentFactory = factoryClass;
             return this;
         }
 

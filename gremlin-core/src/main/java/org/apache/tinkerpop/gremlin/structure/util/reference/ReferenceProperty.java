@@ -47,7 +47,7 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
     }
 
     public ReferenceProperty(final Property<V> property) {
-        this.element = ReferenceFactory.detach(property.element());
+        this.element = null == property.element() ? null : ReferenceFactory.detach(property.element());
         this.key = property.key();
         this.value = property.value();
     }
