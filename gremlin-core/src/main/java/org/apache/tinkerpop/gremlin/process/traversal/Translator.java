@@ -19,6 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A Translator will translate {@link Bytecode} into another representation. That representation may be a
  * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
@@ -27,6 +31,18 @@ package org.apache.tinkerpop.gremlin.process.traversal;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Translator<S, T> {
+
+    /**
+     * A utility parameter providing all terminal steps that should be avoided when compiling bytecode.
+     */
+    public static Set<String> TERMINAL_STEPS = new HashSet<>(Arrays.asList(
+            Traversal.Symbols.fill,
+            Traversal.Symbols.iterate,
+            Traversal.Symbols.promise,
+            Traversal.Symbols.toBulkSet,
+            Traversal.Symbols.toList,
+            Traversal.Symbols.toSet,
+            Traversal.Symbols.toStream));
 
     /**
      * Get the {@link TraversalSource} representation rooting this translator.

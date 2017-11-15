@@ -66,11 +66,11 @@ public class TraversalTest {
         final MockTraversal<Integer> t = new MockTraversal<>(1, 2, 3, 4, 5, 6, 7);
         final List<Integer> batchOne = t.next(2);
         assertEquals(2, batchOne.size());
-        assertThat(batchOne, hasItems(1 ,2));
+        assertThat(batchOne, hasItems(1, 2));
 
         final List<Integer> batchTwo = t.next(2);
         assertEquals(2, batchTwo.size());
-        assertThat(batchTwo, hasItems(3 ,4));
+        assertThat(batchTwo, hasItems(3, 4));
 
         final List<Integer> batchThree = t.next(2);
         assertEquals(2, batchThree.size());
@@ -90,7 +90,7 @@ public class TraversalTest {
         final List<Integer> listToFill = new ArrayList<>();
         final List<Integer> batch = t.fill(listToFill);
         assertEquals(7, batch.size());
-        assertThat(batch, hasItems(1 ,2, 3, 4, 5, 6, 7));
+        assertThat(batch, hasItems(1, 2, 3, 4, 5, 6, 7));
         assertThat(t.hasNext(), is(false));
         assertSame(listToFill, batch);
     }
@@ -100,7 +100,7 @@ public class TraversalTest {
         final MockTraversal<Integer> t = new MockTraversal<>(1, 2, 3, 4, 5, 6, 7);
         final List<Integer> batch = t.toStream().collect(Collectors.toList());
         assertEquals(7, batch.size());
-        assertThat(batch, hasItems(1 ,2, 3, 4, 5, 6, 7));
+        assertThat(batch, hasItems(1, 2, 3, 4, 5, 6, 7));
         assertThat(t.hasNext(), is(false));
     }
 
@@ -145,7 +145,7 @@ public class TraversalTest {
         }
     }
 
-    private static class MockStep<E> implements Step<E,E> {
+    private static class MockStep<E> implements Step<E, E> {
 
         private final Iterator<E> itty;
 
@@ -239,7 +239,7 @@ public class TraversalTest {
         }
     }
 
-    private static class MockTraversal<T> implements Traversal.Admin<T,T> {
+    private static class MockTraversal<T> implements Traversal.Admin<T, T> {
 
         private Iterator<T> itty;
 
@@ -267,7 +267,7 @@ public class TraversalTest {
 
         @Override
         public Bytecode getBytecode() {
-            return null;
+            return new Bytecode();
         }
 
         @Override

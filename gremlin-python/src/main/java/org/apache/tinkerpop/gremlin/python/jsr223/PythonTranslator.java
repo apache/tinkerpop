@@ -107,6 +107,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
+            if (TERMINAL_STEPS.contains(methodName))
+                continue;
             if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
             else if (methodName.equals("range") && 2 == arguments.length && ((Number) arguments[0]).intValue() != 0) {

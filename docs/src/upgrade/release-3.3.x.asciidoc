@@ -169,6 +169,19 @@ changes there may prove important for the provider's implementation.
 
 ==== Graph Database Providers
 
+===== Terminal Method Added to Traversal Bytecode
+
+There are a set of "terminal methods" associated with a `Traversal`.
+These include: `toList()`, `toSet()`, `promise()`, `iterate()`, etc.
+For some providers, it is important to know which terminal method the user called when executing a traversal. This can allow
+them to make certain assumptions about what data to return. Every finalizing terminal method is
+appended to the traversal's `Bytecode`.
+
+```
+gremlin> g.V().out().iterate().getBytecode()
+==>[[], [V(), out(), iterate()]]
+```
+
 ===== IO Version Check
 
 In the `Graph.io()` method, providers are to bootstrap the `Io` instance returned with their own custom serializers

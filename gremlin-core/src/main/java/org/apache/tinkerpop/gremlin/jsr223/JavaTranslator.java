@@ -78,6 +78,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         }
         boolean spawned = false;
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+            if (TERMINAL_STEPS.contains(instruction.getOperator()))
+                continue;
             if (!spawned) {
                 traversal = (Traversal.Admin) invokeMethod(dynamicSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 spawned = true;
