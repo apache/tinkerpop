@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         /// <summary>
         /// Gets the type argument information based on the modern graph.
         /// </summary>s
-        public static Type GetTypeArguments(MethodInfo method, object[] parameterValues)
+        public static Type GetTypeArguments(MethodInfo method, object[] parameterValues, int genericTypeIndex)
         {
             switch (method.Name)
             {
@@ -56,12 +56,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         return types[0];
                     }
                     return typeof(object);
+                case nameof(GraphTraversal<object,object>.Group) when genericTypeIndex == 0:
+                    // Use IDictionary<string, object> for Group
+                    return typeof(string);
                 case nameof(GraphTraversal<object,object>.ValueMap):
                 case nameof(GraphTraversal<object,object>.Select):
-                    // Use IDictionary<string, object> for value maps
+                case nameof(GraphTraversal<object,object>.Group):
+                case nameof(GraphTraversal<object,object>.Unfold):
+                    // default to object for this methods
                     return typeof(object);
                 case nameof(GraphTraversal<object,object>.Limit):
                 case nameof(GraphTraversal<object,object>.Optional):
+                case nameof(GraphTraversal<object,object>.Sum):
+                case nameof(GraphTraversal<object,object>.Coalesce):
                     // Maintain the same type
                     return method.DeclaringType.GetGenericArguments()[1];
             }

@@ -53,10 +53,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             Value = value;
         }
 
-        public static StringParameter Parse(string text, ref int i)
+        public static StringParameter Parse(string text, char quoteChar, ref int i)
         {
             i++;
-            var endIndex = text.IndexOf('"', i);
+            var endIndex = text.IndexOf(quoteChar, i);
             var result = new StringParameter(text.Substring(i, endIndex - i));
             i = endIndex;
             return result;

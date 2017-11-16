@@ -209,7 +209,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 if (!genericParameters.TryGetValue(name, out type))
                 {
                     // Try to infer it from the name based on modern graph
-                    type = ModernGraphTypeInformation.GetTypeArguments(method, parameterValues);
+                    type = ModernGraphTypeInformation.GetTypeArguments(method, parameterValues, i);
                 }
                 if (type == null)
                 {
@@ -295,6 +295,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         private static IList<Token> ParseTokens(string text, ref int i)
         {
+            // Parser issue: quotes are not normalized
+            text = text.Replace("\\\"", "\"");
             var result = new List<Token>();
             var startIndex = i;
             var parsing = ParsingPart.Name;
@@ -379,9 +381,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 return null;
             }
-            if (firstChar == '"')
+            if (firstChar == '"' || firstChar == '\'')
             {
-                return StringParameter.Parse(text, ref i);
+                return StringParameter.Parse(text, firstChar, ref i);
             }
             if (char.IsDigit(firstChar))
             {

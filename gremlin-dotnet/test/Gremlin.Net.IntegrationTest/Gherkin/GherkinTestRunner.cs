@@ -111,6 +111,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             OutputResults(results);
             Console.WriteLine("Finished Gherkin-based tests");
+            ScenarioData.Shutdown();
         }
 
         private void WriteOutput(string line)
@@ -122,8 +123,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             var totalScenarios = results.Sum(f => f.Scenarios.Count);
             var totalFailedScenarios = results.Sum(f => f.Scenarios.Count(s => s.Value.Count > 0));
-            WriteOutput("Gherkin tests summary");
-            WriteOutput($"Total scenarios: {totalScenarios}. " +
+            Console.WriteLine("Gherkin tests summary");
+            Console.WriteLine($"Total scenarios: {totalScenarios}. " +
                               $"Passed: {totalScenarios-totalFailedScenarios}. Failed: {totalFailedScenarios}.");
             if (totalFailedScenarios == 0)
             {
@@ -188,6 +189,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 .Select(m =>
                 {
                     var attr = (BddAttribute) m.GetCustomAttribute(attribute);
+                    
                     if (attr == null)
                     {
                         return null;
@@ -210,7 +212,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     {
                         parameters.Add(step.Argument);
                     }
-                    if (m.GetParameters().Length != parameters.Count)
+                    var methodParameters = m.GetParameters();
+                    for (var i = parameters.Count; i < methodParameters.Length; i++)
+                    {
+                        // Try to complete with default parameter values
+                        var paramInfo = methodParameters[i];
+                        if (!paramInfo.HasDefaultValue)
+                        {
+                            break;
+                        }
+                        parameters.Add(paramInfo.DefaultValue);
+                    }
+                    if (methodParameters.Length != parameters.Count)
                     {
                         return null;
                     }
@@ -224,7 +237,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             try
             {
-                methodAndParameters.Item1.Invoke(instance, methodAndParameters.Item2);
+                var method = methodAndParameters.Item1;
+                var parameters = methodAndParameters.Item2;
+                var parameterInfos = method.GetParameters();
+                for (var i = 0; i < parameterInfos.Length; i++)
+                {
+                    var paramInfo = parameterInfos[i];
+                    // Do some minimal conversion => regex capturing groups to int
+                    if (paramInfo.ParameterType == typeof(int))
+                    {
+                        parameters[i] = Convert.ToInt32(parameters[i]);
+                    }
+                }
+                method.Invoke(instance, parameters);
             }
             catch (TargetInvocationException ex)
             {
@@ -300,8 +325,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             WriteOutput(path);
             WriteOutput("------");
 
-            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
-            //var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
+            var files = new []
+            {
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Sum.feature",
+//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Coalesce.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddEdge.feature"
+            };
+//            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
+//            var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
             foreach (var gherkinFile in files)
             {
                 var parser = new Parser();

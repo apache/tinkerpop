@@ -86,7 +86,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().count(Scope.local)", 2),
                 Tuple.Create("g.V().values(\"age\").is(P.lte(30))", 3),
                 Tuple.Create("g.V().optional(__.out().optional(__.out())).path().limit(1)", 4),
-                Tuple.Create("g.V(1).as(\"a\").out(\"knows\").as(\"b\").\n  select(\"a\", \"b\").by(\"name\")", 6)
+                Tuple.Create("g.V(1).as(\"a\").out(\"knows\").as(\"b\").\n  select(\"a\", \"b\").by(\"name\")", 6),
+                Tuple.Create(
+                    "g.V().hasLabel(\"software\").group().by(\"name\").by(__.bothE().values(\"weight\").sum())", 5)
             };
             var g = new Graph().Traversal();
             foreach (var tuple in traversalTexts)

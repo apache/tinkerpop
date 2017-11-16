@@ -96,23 +96,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
-        public void g_V_HasXname_markoX_ValueMap_Next()
-        {
-            var graph = new Graph();
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
-
-            var receivedValueMap = g.V().Has("name", "marko").ValueMap<object>().Next();
-
-            var expectedValueMap = new Dictionary<string, object>
-            {
-                {"age", new List<object> {29}},
-                {"name", new List<object> {"marko"}}
-            };
-            Assert.Equal(expectedValueMap, receivedValueMap);
-        }
-
-        [Fact]
         public void g_V_RepeatXOutX_TimesX2X_ValuesXNameX()
         {
             var graph = new Graph();
