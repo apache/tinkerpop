@@ -23,10 +23,8 @@
 
 using System;
 using System.Linq;
-using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -64,6 +62,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().\n  count()", new[] { new Token("count")}),
                 Tuple.Create("g.V().\n has ( \"a\" ) \n.  \ncount()",
                     new[] {new Token("has", new StringParameter("a")), new Token("count")}),
+                Tuple.Create("g.V().choose(__.outE(),__.as(\"a\"))", new []
+                {
+                    new Token("choose", new ITokenParameter[] { 
+                        new StaticTraversalParameter(new[] {new Token("__"), new Token("outE")}, "__.outE()"),
+                        new StaticTraversalParameter(
+                            new[] {new Token("__"), new Token("as", new StringParameter("a"))}, "__.as(\"a\")")
+                    })
+                })
             };
             foreach (var item in items)
             {
@@ -88,7 +94,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().optional(__.out().optional(__.out())).path().limit(1)", 4),
                 Tuple.Create("g.V(1).as(\"a\").out(\"knows\").as(\"b\").\n  select(\"a\", \"b\").by(\"name\")", 6),
                 Tuple.Create(
-                    "g.V().hasLabel(\"software\").group().by(\"name\").by(__.bothE().values(\"weight\").sum())", 5)
+                    "g.V().hasLabel(\"software\").group().by(\"name\").by(__.bothE().values(\"weight\").sum())", 5),
+                Tuple.Create("g.V().choose(__.outE().count().is(0L),__.as(\"a\"),__.as(\"b\"))" +
+                                  "\n.choose(__.select(\"a\"),__.select(\"a\"),__.select(\"b\"))", 3)
             };
             var g = new Graph().Traversal();
             foreach (var tuple in traversalTexts)

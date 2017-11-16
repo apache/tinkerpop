@@ -346,6 +346,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         parameters.Add(param);
                         break;
                     }
+                    case ',' when parsing != ParsingPart.StartParameters:
                     case ')' when parsing != ParsingPart.StartParameters:
                         // The current nested object already ended
                         if (parsing == ParsingPart.Name)

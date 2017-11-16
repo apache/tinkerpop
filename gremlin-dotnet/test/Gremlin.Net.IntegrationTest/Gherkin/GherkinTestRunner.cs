@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -329,7 +328,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Sum.feature",
 //                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Coalesce.feature",
-                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddEdge.feature"
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddEdge.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddVertex.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/ValueMap.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Select.feature",
             };
 //            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
 //            var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);

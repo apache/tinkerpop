@@ -151,9 +151,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     }
                     else
                     {
-                        var expectedArray = expected.OrderBy(x => x).ToArray();
-                        var resultArray = _result.OrderBy(x => x).ToArray();
-                        Assert.Equal(expectedArray, resultArray);
+                        var expectedArray = expected.ToArray();
+                        foreach (var resultItem in _result)
+                        {
+                            Assert.Contains(resultItem, expectedArray);
+                        }
+                        Assert.Equal(expectedArray.Length, _result.Length);
                     }
                     break;
                 default:
@@ -191,8 +194,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static IDictionary ToMap(string stringMap, string graphName)
         {
-            var jsonMap = JObject.Parse(stringMap);
-            return (IDictionary) jsonMap.ToObject<IDictionary<string, object>>();
+            IDictionary<string, JToken> jsonMap = JObject.Parse(stringMap);
+            return jsonMap.ToDictionary(kv => kv.Key, kv => ParseMapValue(kv.Value, graphName));
+        }
+
+        private static object ParseMapValue(JToken value, string graphName)
+        {
+            if (value.Type == JTokenType.Array)
+            {
+                return value.Select(v => ParseMapValue(v, graphName)).ToArray();
+            }
+            var objValue = value.ToObject<object>();
+            if (objValue is long longValue)
+            {
+                // JSON Numeric values converted to int64 by default
+                return Convert.ToInt32(longValue);
+            }
+            if (objValue is string stringValue)
+            {
+                return ParseValue(stringValue, graphName);
+            }
+            return objValue;
         }
 
         private static ISet<object> ToSet(string stringSet, string graphName)
