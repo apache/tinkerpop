@@ -27,13 +27,13 @@ Feature: Step - properties()
     Then the result should be unordered
       | result |
       | marko |
-      | d[29] |
+      | d[29].i |
       | vadas |
-      | d[27] |
+      | d[27].i |
       | josh  |
-      | d[32] |
+      | d[32].i |
       | peter |
-      | d[35] |
+      | d[35.i] |
 
   Scenario: g_V_hasXageX_propertiesXage_nameX_value
     Given the modern graph
@@ -45,13 +45,13 @@ Feature: Step - properties()
     Then the result should be unordered
       | result |
       | marko |
-      | d[29] |
+      | d[29].i |
       | vadas |
-      | d[27] |
+      | d[27].i |
       | josh  |
-      | d[32] |
+      | d[32].i |
       | peter |
-      | d[35] |
+      | d[35].i |
 
   Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
     Given an unsupported test

@@ -60,7 +60,7 @@ Feature: Step - coalesce()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":1, "vadas":1, "josh":1, "lop":2}] |
+      | m[{"ripple":"d[1].l", "vadas":"d[1].l", "josh":"d[1].l", "lop":"d[2].l"}] |
 
   Scenario: g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX
     Given the modern graph

@@ -26,7 +26,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123] |
+      | d[123].l |
 
   Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_sumX
     Given the modern graph
@@ -37,4 +37,4 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":1.0,"lop":1.0}] |
+      | m[{"ripple":"d[1.0].d","lop":"d[1.0].d"}] |

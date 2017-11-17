@@ -206,7 +206,7 @@ Feature: Step - dedup()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1] |
+      | d[1].l |
 
   Scenario: g_V_asXaX_repeatXbothX_timesX3X_emit_name_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_foldX_selectXvaluesX_unfold_dedup
     Given the modern graph
@@ -233,5 +233,5 @@ Feature: Step - dedup()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[0] |
+      | d[0].l |
 

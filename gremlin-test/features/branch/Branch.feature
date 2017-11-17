@@ -35,10 +35,10 @@ Feature: Step - branch()
       | java |
       | lop |
       | ripple |
-      | d[29] |
-      | d[27] |
-      | d[32] |
-      | d[35] |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
 
   Scenario: g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX
     Given the modern graph
@@ -57,10 +57,10 @@ Feature: Step - branch()
       | java |
       | lop |
       | ripple |
-      | d[29] |
-      | d[27] |
-      | d[32] |
-      | d[35] |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
 
   Scenario: g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX_optionXany__labelX
     Given the modern graph
@@ -80,10 +80,10 @@ Feature: Step - branch()
       | java |
       | lop |
       | ripple |
-      | d[29] |
-      | d[27] |
-      | d[32] |
-      | d[35] |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
       | person |
       | person |
       | person |

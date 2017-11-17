@@ -26,7 +26,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[6] |
+      | d[6].l |
 
   Scenario: g_V_out_count
     Given the modern graph
@@ -37,7 +37,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[6] |
+      | d[6].l |
 
   Scenario: g_V_both_both_count
     Given the modern graph
@@ -48,7 +48,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[30] |
+      | d[30].l |
 
   Scenario: g_V_fold_countXlocalX
     Given the modern graph
@@ -59,7 +59,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[6] |
+      | d[6].l |
 
   Scenario: g_V_hasXnoX_count
     Given the modern graph
@@ -70,7 +70,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[0] |
+      | d[0].l |
 
   Scenario: g_V_whereXinXkknowsX_outXcreatedX_count_is_0XX_name
     Given the modern graph
@@ -95,7 +95,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[2505037961767380] |
+      | d[2505037961767380].l |
 
   Scenario: g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count
     Given the grateful graph
@@ -111,7 +111,7 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[24309134024] |
+      | d[24309134024].l |
 
   Scenario: g_V_repeatXoutX_timesX3X_count
     Given the grateful graph
@@ -122,4 +122,4 @@ Feature: Step - count()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[14465066] |
+      | d[14465066].l |

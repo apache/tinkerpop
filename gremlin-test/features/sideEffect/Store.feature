@@ -77,11 +77,11 @@ Feature: Step - store()
     When iterated next
     Then the result should be unordered
       | result |
-      | d[1] |
-      | d[1] |
-      | d[0] |
-      | d[0] |
-      | d[0] |
-      | d[2] |
-      | d[1.0] |
-      | d[1.0] |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |
+      | d[0].l |
+      | d[0].l |
+      | d[2].l |
+      | d[1.0].d |
+      | d[1.0].d |

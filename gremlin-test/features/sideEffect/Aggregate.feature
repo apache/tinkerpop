@@ -74,7 +74,7 @@ Feature: Step - aggregate()
     When iterated next
     Then the result should be unordered
       | result |
-      | d[29] |
-      | d[27] |
-      | d[32] |
-      | d[35] |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |

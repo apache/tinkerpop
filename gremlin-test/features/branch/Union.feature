@@ -88,7 +88,7 @@ Feature: Step - union()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"java":4,"ripple":1,"person":4,"vadas":1,"josh":1,"lop":3}] |
+      | m[{"java":"d[4].l","ripple":"d[1].l","person":"d[4].l","vadas":"d[1].l","josh":"d[1].l","lop":"d[3].l"}] |
 
   Scenario: g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount
     Given the modern graph
@@ -104,7 +104,7 @@ Feature: Step - union()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software":12,"person":20}] |
+      | m[{"software":"d[12].l","person":"d[20].l"}] |
 
   Scenario: g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX
     Given the modern graph
@@ -117,9 +117,9 @@ Feature: Step - union()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3]   |
-      | d[1.9] |
-      | d[1]   |
+      | d[3].l   |
+      | d[1.9].d |
+      | d[1].l   |
 
   Scenario: get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX
     Given the modern graph
@@ -132,9 +132,9 @@ Feature: Step - union()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3]   |
-      | d[0]   |
-      | d[1.9] |
-      | d[0]   |
-      | d[0]   |
-      | d[1]   |
+      | d[3].l   |
+      | d[0].l   |
+      | d[1.9].d |
+      | d[0].i   |
+      | d[0].l   |
+      | d[1].l   |

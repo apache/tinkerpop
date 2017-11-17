@@ -26,7 +26,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"ripple": 1, "lop": 3}] |
+      | m[{"ripple":"d[1].l", "lop":"d[3].l"}] |
 
   Scenario: g_V_outXcreatedX_name_groupCount
     Given the modern graph
@@ -37,7 +37,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"ripple": 1, "lop": 3}] |
+      | m[{"ripple":"d[1].l", "lop":"d[3].l"}] |
 
   Scenario: g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX
     Given the modern graph
@@ -51,7 +51,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"ripple": 1, "lop": 3}] |
+      | m[{"ripple":"d[1].l", "lop":"d[3].l"}] |
 
   Scenario: g_V_outXcreatedX_name_groupCountXaX_capXaX
     Given the modern graph
@@ -64,7 +64,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"ripple": 1, "lop": 3}] |
+      | m[{"ripple":"d[1].l", "lop":"d[3].l"}] |
 
   Scenario: g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX
     Given the modern graph
@@ -78,7 +78,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"ripple":2, "lop": 4, "josh": 1, "vadas": 1}] |
+      | m[{"ripple":"d[2].l", "lop":"d[4].l", "josh":"d[1].l", "vadas":"d[1].l"}] |
 
   Scenario: g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name
     Given the modern graph
@@ -123,7 +123,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[12] |
+      | d[12].l |
 
   Scenario: g_V_hasXnoX_groupCount
     Given the modern graph
@@ -157,7 +157,7 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"marko": 2, "java": 2}] |
+      | m[{"marko":"d[2].l", "java":"d[2].l"}] |
 
   Scenario: g_V_outXcreatedX_groupCountXxX_capXxX
     Given an unsupported test

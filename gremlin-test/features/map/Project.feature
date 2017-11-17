@@ -29,10 +29,10 @@ Feature: Step - project()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":3, "b":29}] |
-      | m[{"a":0, "b":27}] |
-      | m[{"a":2, "b":32}] |
-      | m[{"a":1, "b":35}] |
+      | m[{"a":"d[3].l", "b":"d[29].i"}] |
+      | m[{"a":"d[0].l", "b":"d[27].i"}] |
+      | m[{"a":"d[2].l", "b":"d[32].i"}] |
+      | m[{"a":"d[1].l", "b":"d[35].i"}] |
 
   Scenario: g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX
     Given the modern graph

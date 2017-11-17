@@ -158,7 +158,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":2,"peter":1,"vadas":2,"josh":2,"lop":4,"marko":1}] |
+      | m[{"ripple":"d[2].l","peter":"d[1].l","vadas":"d[2].l","josh":"d[2].l","lop":"d[4].l","marko":"d[1].l"}] |
 
   Scenario: g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX
     Given the modern graph
@@ -184,7 +184,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the result should be ordered
       | result |
-      | d[43958] |
+      | d[43958].l |
 
   Scenario: g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name
     Given the modern graph
@@ -212,7 +212,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":3,"vadas":3,"josh":4,"lop":10,"marko":4}] |
+      | m[{"ripple":"d[3].l,"vadas":"d[3].l","josh":"d[4].l","lop":"d[10].l","marko":"d[4].l"}] |
 
   Scenario: g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX
     Given the modern graph

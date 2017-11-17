@@ -140,10 +140,10 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a": 3, "b": "matthias"}] |
-      | m[{"a": 4, "b": "marko"}] |
-      | m[{"a": 5, "b": "stephen"}] |
-      | m[{"a": 5, "b": "daniel"}] |
+      | m[{"a":"d[3].i", "b": "matthias"}] |
+      | m[{"a":"d[4].i", "b": "marko"}] |
+      | m[{"a":"d[5].i", "b": "stephen"}] |
+      | m[{"a":"d[5].i", "b": "daniel"}] |
 
   Scenario: g_V_hasXname_isXmarkoXX_asXaX_selectXaX
     Given the modern graph
@@ -165,7 +165,7 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software": 2, "person": 4}] |
+      | m[{"software":"d[2].l", "person":"d[4].l"}] |
 
   Scenario: g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX
     Given the modern graph
@@ -178,10 +178,10 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"p": "v[marko]", "r": {"created": 1, "knows": 2}}] |
-      | m[{"p": "v[vadas]", "r": {"knows": 1}}] |
-      | m[{"p": "v[josh]", "r": {"created": 2, "knows": 1}}] |
-      | m[{"p": "v[peter]", "r": {"created": 1}}] |
+      | m[{"p": "v[marko]", "r": {"created": "d[1].l", "knows": "d[2].l"}}] |
+      | m[{"p": "v[vadas]", "r": {"knows": "d[1].l"}}] |
+      | m[{"p": "v[josh]", "r": {"created": "d[2].l", "knows": "d[1].l"}}] |
+      | m[{"p": "v[peter]", "r": {"created": "d[1].l"}}] |
 
   Scenario: g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX
     Given the modern graph
@@ -321,4 +321,4 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple": 1, "lop": 6}] |
+      | m[{"ripple":"d[1].l", "lop":"d[6].l"}] |

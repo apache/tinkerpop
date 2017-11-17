@@ -42,7 +42,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3.5] |
+      | d[3.5].d |
 
   Scenario: g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack
     Given the modern graph
@@ -53,8 +53,8 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[2.0] |
-      | d[1.4] |
+      | d[2.0].d |
+      | d[1.4].d |
 
   Scenario: g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum
     Given an unsupported test

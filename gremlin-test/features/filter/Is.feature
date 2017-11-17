@@ -26,7 +26,7 @@ Feature: Step - coin()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[32] |
+      | d[32].i |
 
   Scenario: g_V_valuesXageX_isXlte_30X
     Given the modern graph
@@ -37,8 +37,8 @@ Feature: Step - coin()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[27] |
-      | d[29] |
+      | d[27].i |
+      | d[29].i |
 
   Scenario: g_V_valuesXageX_isXgte_29X_isXlt_34X
     Given the modern graph
@@ -49,8 +49,8 @@ Feature: Step - coin()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[29] |
-      | d[32] |
+      | d[29].i |
+      | d[32].i |
 
   Scenario: g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX
     Given the modern graph

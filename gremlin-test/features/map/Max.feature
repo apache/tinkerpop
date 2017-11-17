@@ -26,7 +26,7 @@ Feature: Step - max()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[35] |
+      | d[35].i |
 
   Scenario: g_V_repeatXbothX_timesX5X_age_max
     Given the modern graph
@@ -37,7 +37,7 @@ Feature: Step - max()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[35] |
+      | d[35].i |
 
   Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_maxX
     Given the modern graph
@@ -48,4 +48,4 @@ Feature: Step - max()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":1.0,"lop":0.4}] |
+      | m[{"ripple":"d[1.0].d","lop":"d[0.4].d"}] |

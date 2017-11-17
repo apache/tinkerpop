@@ -27,12 +27,12 @@ Feature: Step - constant()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123] |
-      | d[123] |
-      | d[123] |
-      | d[123] |
-      | d[123] |
-      | d[123] |
+      | d[123].i |
+      | d[123].i |
+      | d[123].i |
+      | d[123].i |
+      | d[123].i |
+      | d[123].i |
 
   Scenario: g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX
     Given the modern graph

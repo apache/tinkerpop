@@ -41,9 +41,9 @@ Feature: Step - map()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[7] |
-      | d[5] |
-      | d[5] |
+      | d[7].i |
+      | d[5].i |
+      | d[5].i |
 
   Scenario: g_VX1X_out_mapXnameX_mapXlengthX
     Given the modern graph
@@ -57,9 +57,9 @@ Feature: Step - map()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3] |
-      | d[5] |
-      | d[4] |
+      | d[3].i |
+      | d[5].i |
+      | d[4].i |
 
   Scenario: g_withPath_V_asXaX_out_mapXa_nameX
     Given the modern graph

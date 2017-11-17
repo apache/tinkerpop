@@ -94,7 +94,7 @@ Feature: Step - tail()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[7] |
+      | d[7].l |
 
   Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X
     Given the modern graph

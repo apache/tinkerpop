@@ -70,7 +70,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"java":2}] |
+      | m[{"java":"d[2].l"}] |
 
   Scenario: g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX
     Given the modern graph
@@ -81,7 +81,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":2, "vadas":1, "josh":1, "lop":4}] |
+      | m[{"ripple":"d[2].l", "vadas":"d[1].l", "josh":"d[1].l", "lop":"d[4].l"}] |
 
   Scenario: g_V_group_byXoutE_countX_byXnameX
     Given an unsupported test
@@ -101,7 +101,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software":0, "person":3.5}] |
+      | m[{"software":"d[0].i", "person":"d[3.5].d}] |
 
   Scenario: g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX
     Given the grateful graph
@@ -112,7 +112,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"original":771317, "":160968, "cover":368579}] |
+      | m[{"original":"d[771317].l", "":"d[160968].l", "cover":"d[368579].l"}] |
 
   Scenario: g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX
     Given the grateful graph
@@ -123,7 +123,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"original":771317, "":160968, "cover":368579}] |
+      | m[{"original":"d[771317].l", "":"d[160968].l", "cover":"d[368579].l"}] |
 
   Scenario: g_V_group_byXname_substring_1X_byXconstantX1XX
     Given the modern graph
@@ -135,7 +135,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"p":1, "r":1, "v":1, "j":1, "l":1, "m":1}] |
+      | m[{"p":"d[1].i", "r":"d[1].i", "v":"d[1].i", "j":"d[1].i", "l":"d[1].i", "m":"d[1].i"}] |
 
   Scenario: g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX
     Given the modern graph
@@ -147,7 +147,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"p":1, "r":1, "v":1, "j":1, "l":1, "m":1}] |
+      | m[{"p":"d[1].i", "r":"d[1].i", "v":"d[1].i", "j":"d[1].i", "l":"d[1].i", "m":"d[1].i"}] |
 
   Scenario: g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X
     Given the modern graph
@@ -207,7 +207,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"cover":{"followedBy":777982, "sungBy":0, "writtenBy":0}, "":{"followedBy":179350}, "original":{"followedBy":2185613, "sungBy":0, "writtenBy":0}}] |
+      | m[{"cover":{"followedBy":"d[777982].l", "sungBy":"d[0].l", "writtenBy":"d[0].l"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l", "sungBy":"d[0].l", "writtenBy":"d[0].l"}}] |
 
   Scenario: g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX
     Given the modern graph
@@ -229,7 +229,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software":2.0, "person":5.0}] |
+      | m[{"software":"d[2.0].d", "person":"d[5.0].d"}] |
 
   Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
     Given the modern graph

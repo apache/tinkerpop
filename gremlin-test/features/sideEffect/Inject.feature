@@ -45,7 +45,7 @@ Feature: Step - inject()
     When iterated to list
     Then the result should be unordered
       | result |
-      | p[daniel,d[6]] |
-      | p[v[marko],v[lop],lop,d[3]] |
-      | p[v[marko],v[vadas],vadas,d[5]] |
-      | p[v[marko],v[josh],josh,d[4]] |
+      | p[daniel,d[6].i] |
+      | p[v[marko],v[lop],lop,d[3].i] |
+      | p[v[marko],v[vadas],vadas,d[5].i] |
+      | p[v[marko],v[josh],josh,d[4].i] |

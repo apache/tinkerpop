@@ -26,7 +26,7 @@ Feature: Step - mean()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[30.75] |
+      | d[30.75].d |
 
   Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX
     Given the modern graph
@@ -37,4 +37,4 @@ Feature: Step - mean()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":1.0,"lop":0.3333333333333333}] |
+      | m[{"ripple":"d[1.0]".d,"lop":"d[0.3333333333333333].d"}] |

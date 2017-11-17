@@ -58,12 +58,12 @@ Feature: Step - match()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3] |
-      | d[2] |
-      | d[4] |
-      | d[5] |
-      | d[3] |
-      | d[3] |
+      | d[3].l |
+      | d[2].l |
+      | d[4].l |
+      | d[5].l |
+      | d[3].l |
+      | d[3].l |
 
   Scenario: g_V_matchXa_knows_b__b_created_cX
     Given the modern graph

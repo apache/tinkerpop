@@ -39,9 +39,9 @@ Feature: Step - count()
     When iterated to list
     Then the result should be unordered
       | result |
-      | p[d[29],lop] |
-      | p[d[29],vadas] |
-      | p[d[29],josh] |
+      | p[d[29].i,lop] |
+      | p[d[29].i,vadas] |
+      | p[d[29].i,josh] |
 
   Scenario: g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX
     Given the modern graph
@@ -64,8 +64,8 @@ Feature: Step - count()
     When iterated to list
     Then the result should be unordered
       | result |
-      | p[marko,d[32],ripple] |
-      | p[marko,d[32],lop] |
+      | p[marko,d[32].i,ripple] |
+      | p[marko,d[32].i,lop] |
 
   Scenario: g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path
     Given the modern graph
