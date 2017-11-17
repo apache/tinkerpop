@@ -47,8 +47,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
             {
-                {@"d\[(\d+)\]", (x, _) => Convert.ToInt32(x)},
-                {@"d\[(\d+(?:\.\d+)?)\]", (x, _) => Convert.ToDouble(x)},
+                {@"d\[([\d.]+)\]\.([ilfd])", ToNumber},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},
                 {@"v\[(.+)\]\.sid", (x, graphName) => ToVertex(x, graphName).Id.ToString()},
@@ -61,6 +60,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"m\[(.+)\]", ToMap},
                 {@"c\[(.+)\]", ToLambda}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
+
+        private static readonly IDictionary<char, Func<string, object>> NumericParsers =
+            new Dictionary<char, Func<string, object>>
+            {
+                { 'i', s => Convert.ToInt32(s) },
+                { 'l', s => Convert.ToInt64(s) },
+                { 'f', s => Convert.ToSingle(s) },
+                { 'd', s => Convert.ToDouble(s) }
+            };
 
         [Given("the (\\w+) graph")]
         public void ChooseModernGraph(string graphName)
@@ -193,10 +201,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             
         }
 
-        private static IDictionary ToMap(string stringMap, string graphName)
+        private static object ToMap(string stringMap, string graphName)
         {
-            IDictionary<string, JToken> jsonMap = JObject.Parse(stringMap);
-            return jsonMap.ToDictionary(kv => kv.Key, kv => ParseMapValue(kv.Value, graphName));
+            return ParseMapValue(JObject.Parse(stringMap), graphName);
         }
 
         private static object ToLambda(string stringLambda, string graphName)
@@ -204,8 +211,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             throw new IgnoreException(IgnoreReason.LambdaNotSupported);
         }
 
+        private static object ToNumber(string stringNumber, string graphName)
+        {
+            return NumericParsers[stringNumber[stringNumber.Length - 1]](
+                stringNumber.Substring(0, stringNumber.Length - 1));
+        }
+
         private static object ParseMapValue(JToken value, string graphName)
         {
+            if (value.Type == JTokenType.Object)
+            {
+                IDictionary<string, JToken> jsonMap = (JObject)value; 
+                return jsonMap.ToDictionary(kv => kv.Key, kv => ParseMapValue(kv.Value, graphName));
+            }
             if (value.Type == JTokenType.Array)
             {
                 return value.Select(v => ParseMapValue(v, graphName)).ToArray();
@@ -259,6 +277,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {
                     parser = kv.Value;
                     extractedValue = match.Groups[1].Value;
+                    if (match.Groups.Count > 2)
+                    {
+                        extractedValue += match.Groups[2].Value;
+                    }
                     break;
                 }
             }

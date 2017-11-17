@@ -60,9 +60,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.Group) when genericTypeIndex == 0:
                     // Use IDictionary<string, object> for Group
                     return typeof(string);
+                case nameof(GraphTraversal<object,object>.Sum):
+                    return typeof(long);
                 case nameof(GraphTraversal<object,object>.Limit):
                 case nameof(GraphTraversal<object,object>.Optional):
-                case nameof(GraphTraversal<object,object>.Sum):
                 case nameof(GraphTraversal<object,object>.Coalesce):
                 case nameof(GraphTraversal<object,object>.Match):
                     // Maintain the same type

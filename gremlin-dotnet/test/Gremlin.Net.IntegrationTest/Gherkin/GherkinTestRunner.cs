@@ -31,10 +31,7 @@ using Xunit;
 using Gherkin;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using Newtonsoft.Json.Serialization;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
@@ -43,26 +40,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
             new Dictionary<string, IgnoreReason>
             {
-                { "g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX", IgnoreReason.ScenarioDesignMapNumbers },
                 { "g_V_matchXa_knows_b__b_created_cX", IgnoreReason.MapCoersionIssue},
                 { "g_V_valueMap_matchXa_selectXnameX_bX", IgnoreReason.MapCoersionIssue},
                 { "g_V_matchXa_out_bX", IgnoreReason.MapCoersionIssue},
-                { "g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX",
-                    IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX",
-                    IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_label_groupCount_asXxX_selectXxX", IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
-                    IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
-                    IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
-                    IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX", IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_hasXlangX_group_byXlangX_byXcountX", IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX", IgnoreReason.MapCoersionIssue},
+                { "g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX",
+                    IgnoreReason.MapCoersionIssue},
                 { "g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX",
                     IgnoreReason.MapCoersionIssue},
+                { "g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX",
+                    IgnoreReason.MapCoersionIssue},
+                { "g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX", IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX", IgnoreReason.ScenarioDesignMapNumbers}
             };
         
         private static class Keywords
