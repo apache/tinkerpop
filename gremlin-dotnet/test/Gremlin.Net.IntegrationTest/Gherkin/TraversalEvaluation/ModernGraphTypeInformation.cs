@@ -64,6 +64,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.Optional):
                 case nameof(GraphTraversal<object,object>.Sum):
                 case nameof(GraphTraversal<object,object>.Coalesce):
+                case nameof(GraphTraversal<object,object>.Match):
                     // Maintain the same type
                     return method.DeclaringType.GetGenericArguments()[1];
                 case nameof(GraphTraversal<object,object>.ValueMap):
@@ -73,6 +74,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.Unfold):
                 case nameof(GraphTraversal<object,object>.Choose):
                 case nameof(GraphTraversal<object,object>.Union):
+                case nameof(GraphTraversal<object,object>.Project):
+                case nameof(GraphTraversal<object,object>.Sack):
+                case nameof(GraphTraversal<object,object>.Map):
+                case nameof(GraphTraversal<object,object>.Max):
+                case nameof(GraphTraversal<object,object>.Min):
+                case nameof(GraphTraversal<object,object>.Mean):
+                case nameof(GraphTraversal<object,object>.Cap):
+                case nameof(GraphTraversal<object,object>.Constant):
                     // default to object for this methods
                     return typeof(object);
             }

@@ -58,7 +58,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"p\[(.+)\]", ToPath},
                 {@"l\[(.+)\]", ToList},
                 {@"s\[(.+)\]", ToSet},
-                {@"m\[(.+)\]", ToMap}
+                {@"m\[(.+)\]", ToMap},
+                {@"c\[(.+)\]", ToLambda}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
 
         [Given("the (\\w+) graph")]
@@ -196,6 +197,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             IDictionary<string, JToken> jsonMap = JObject.Parse(stringMap);
             return jsonMap.ToDictionary(kv => kv.Key, kv => ParseMapValue(kv.Value, graphName));
+        }
+
+        private static object ToLambda(string stringLambda, string graphName)
+        {
+            throw new IgnoreException(IgnoreReason.LambdaNotSupported);
         }
 
         private static object ParseMapValue(JToken value, string graphName)

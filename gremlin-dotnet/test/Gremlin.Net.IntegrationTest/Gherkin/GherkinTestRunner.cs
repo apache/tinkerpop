@@ -40,8 +40,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     public class GherkinTestRunner
     {
-        private readonly ITestOutputHelper _output;
-
         private static class Keywords
         {
             public const string Given = "GIVEN";
@@ -64,6 +62,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             { StepBlock.When, typeof(WhenAttribute) },
             { StepBlock.Then, typeof(ThenAttribute) }
         };
+        
+        private readonly ITestOutputHelper _output;
 
         public GherkinTestRunner(ITestOutputHelper output)
         {
@@ -73,7 +73,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Fact]
         public void RunGherkinBasedTests()
         {
-            Console.WriteLine("Starting Gherkin-based tests");
+            WriteOutput("Starting Gherkin-based tests");
             var stepDefinitionTypes = GetStepDefinitionTypes();
             var results = new List<ResultFeature>();
             foreach (var feature in GetFeatures())
@@ -104,6 +104,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         if (result != null)
                         {
                             failedSteps.Add(step, result);
+                            // Stop processing scenario
+                            break;
                         }
                     }
                 }
@@ -115,35 +117,26 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private void WriteOutput(string line)
         {
+#if DEBUG
             _output.WriteLine(line);
+#else
+            Console.WriteLine(line);
+#endif
         }
 
         private void OutputResults(List<ResultFeature> results)
         {
-            var totalScenarios = results.Sum(f => f.Scenarios.Count);
-            var totalFailedScenarios = results.Sum(f => f.Scenarios.Count(s => s.Value.Count > 0));
-            Console.WriteLine("Gherkin tests summary");
-            Console.WriteLine($"Total scenarios: {totalScenarios}. " +
-                              $"Passed: {totalScenarios-totalFailedScenarios}. Failed: {totalFailedScenarios}.");
-            if (totalFailedScenarios == 0)
-            {
-                return;
-            }
+            WriteOutput("Gherkin tests result");
             var identifier = 0;
-            var failures = new List<Exception>();
+            var failures = new List<Tuple<string, Exception>>();
+            var totalScenarios = 0;
+            var totalFailed = 0;
+            var totalIgnored = 0;
             foreach (var resultFeature in results)
             {
-                var failedScenarios = resultFeature.Scenarios.Where(s => s.Value.Count > 0).ToArray();
-                if (failedScenarios.Length > 0)
+                foreach (var resultScenario in resultFeature.Scenarios)
                 {
-                    WriteOutput($"Feature: {resultFeature.Feature.Name}");   
-                }
-                else
-                {
-                    continue;
-                }
-                foreach (var resultScenario in failedScenarios)
-                {
+                    totalScenarios++;
                     WriteOutput($"  Scenario: {resultScenario.Key.Name}");
                     foreach (var step in resultScenario.Key.Steps)
                     {
@@ -154,16 +147,44 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         }
                         else
                         {
-                            WriteOutput($"    {++identifier}) {step.Keyword} {step.Text} (failed)");
-                            failures.Add(failure);
+                            if (failure is IgnoreException)
+                            {
+                                totalIgnored++;
+                                WriteOutput($"    {++identifier}) {step.Keyword} {step.Text} (ignored)");
+                            }
+                            else
+                            {
+                                totalFailed++;
+                                WriteOutput($"    {++identifier}) {step.Keyword} {step.Text} (failed)");
+                            }
+                            failures.Add(Tuple.Create(resultScenario.Key.Name, failure));
                         }
                     }
                 }
             }
-            WriteOutput("Failures:");
+            if (totalFailed > 0)
+            {
+                WriteOutput("Failures" + (totalIgnored > 0 ? " and skipped scenarios" : "") + ":");
+            }
+            else if (totalIgnored > 0)
+            {
+                WriteOutput("Skipped scenarios:");
+            }
             for (var index = 0; index < failures.Count; index++)
             {
-                WriteOutput($"{index+1}) {failures[index]}");
+                var failure = failures[index];
+                var message = failure.Item2 is IgnoreException
+                    ? ": " + failure.Item2.Message
+                    : ": Failed\n" + failure.Item2;
+                WriteOutput($"{index+1}) {failure.Item1}{message}");
+            }
+            WriteOutput("-----------------");
+            WriteOutput($"Total scenarios: {totalScenarios}." +
+                              $" Passed: {totalScenarios-totalFailed-totalIgnored}." +
+                              $" Failed: {totalFailed}. Skipped: {totalIgnored}.");
+            if (totalFailed == 0)
+            {
+                return;
             }
             throw new Exception($"Gherkin test failed, see summary above for more detail");
         }
@@ -332,6 +353,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddVertex.feature",
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/ValueMap.feature",
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Select.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Project.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Path.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Map.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Match.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Max.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Mean.feature",
+                
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Sack.feature",
             };
 //            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
 //            var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
