@@ -161,12 +161,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
             return this;
         }
 
-        public void setOutV(final DetachedVertex v) {
+        public Builder setOutV(final DetachedVertex v) {
             e.outVertex = v;
+            return this;
         }
 
-        public void setInV(final DetachedVertex v) {
+        public Builder setInV(final DetachedVertex v) {
             e.inVertex = v;
+            return this;
         }
 
         public DetachedEdge create() {
