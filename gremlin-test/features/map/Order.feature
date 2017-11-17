@@ -97,7 +97,7 @@ Feature: Step - order()
       | d[0.5].d |
       | d[0.4].d |
       | d[0.4].d |
-      | d[0.2].d] |
+      | d[0.2].d |
 
   Scenario: g_V_order_byXname_a1_b1X_byXname_b2_a2X_name
     Given the modern graph

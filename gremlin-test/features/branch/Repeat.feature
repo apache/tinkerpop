@@ -212,7 +212,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"d[3].l,"vadas":"d[3].l","josh":"d[4].l","lop":"d[10].l","marko":"d[4].l"}] |
+      | m[{"ripple":"d[3].l","vadas":"d[3].l","josh":"d[4].l","lop":"d[10].l","marko":"d[4].l"}] |
 
   Scenario: g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX
     Given the modern graph

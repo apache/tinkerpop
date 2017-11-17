@@ -48,4 +48,4 @@ Feature: Step - min()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"d[1.0].d","lop":"d[0.2]d"}] |
+      | m[{"ripple":"d[1.0].d","lop":"d[0.2].d"}] |

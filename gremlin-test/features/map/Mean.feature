@@ -37,4 +37,4 @@ Feature: Step - mean()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"d[1.0]".d,"lop":"d[0.3333333333333333].d"}] |
+      | m[{"ripple":"d[1.0].d","lop":"d[0.3333333333333333].d"}] |

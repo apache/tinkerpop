@@ -33,7 +33,7 @@ Feature: Step - properties()
       | josh  |
       | d[32].i |
       | peter |
-      | d[35.i] |
+      | d[35].i |
 
   Scenario: g_V_hasXageX_propertiesXage_nameX_value
     Given the modern graph

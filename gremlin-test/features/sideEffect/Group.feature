@@ -101,7 +101,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"software":"d[0].i", "person":"d[3.5].d}] |
+      | m[{"software":"d[0].i", "person":"d[3.5].d"}] |
 
   Scenario: g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX
     Given the grateful graph

@@ -47,7 +47,7 @@ Feature: Step - local()
       | m[{"a":"marko","b":"d[3].i"}] |
       | m[{"a":"josh","b":"d[5].i"}]  |
       | m[{"a":"josh","b":"d[3].i"}]  |
-      | m[{"a":"peter","b":"d[3].i}] |
+      | m[{"a":"peter","b":"d[3].i"}] |
 
   Scenario: g_V_localXoutE_countX
     Given the modern graph
