@@ -40,6 +40,31 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     public class GherkinTestRunner
     {
+        private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
+            new Dictionary<string, IgnoreReason>
+            {
+                { "g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX", IgnoreReason.ScenarioDesignMapNumbers },
+                { "g_V_matchXa_knows_b__b_created_cX", IgnoreReason.MapCoersionIssue},
+                { "g_V_valueMap_matchXa_selectXnameX_bX", IgnoreReason.MapCoersionIssue},
+                { "g_V_matchXa_out_bX", IgnoreReason.MapCoersionIssue},
+                { "g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX",
+                    IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX",
+                    IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_label_groupCount_asXxX_selectXxX", IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
+                    IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
+                    IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
+                    IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX", IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_hasXlangX_group_byXlangX_byXcountX", IgnoreReason.ScenarioDesignMapNumbers},
+                { "g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX", IgnoreReason.MapCoersionIssue},
+                { "g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX",
+                    IgnoreReason.MapCoersionIssue},
+            };
+        
         private static class Keywords
         {
             public const string Given = "GIVEN";
@@ -84,6 +109,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {
                     var failedSteps = new Dictionary<Step, Exception>();
                     resultFeature.Scenarios[scenario] = failedSteps;
+                    if (IgnoredScenarios.TryGetValue(scenario.Name, out var reason))
+                    {
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(reason));
+                        break;
+                    }
                     StepBlock? currentStep = null;
                     StepDefinition stepDefinition = null;
                     foreach (var step in scenario.Steps)
@@ -361,6 +391,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Mean.feature",
                 
                 "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Sack.feature",
+                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Group.feature",
+//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/GroupCount.feature",
+//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Inject.feature",
             };
 //            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
 //            var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
