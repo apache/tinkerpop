@@ -83,6 +83,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.Mean):
                 case nameof(GraphTraversal<object,object>.Cap):
                 case nameof(GraphTraversal<object,object>.Constant):
+                case nameof(GraphTraversal<object,object>.Branch):
+                case nameof(GraphTraversal<object,object>.Local):
+                case nameof(GraphTraversal<object,object>.Tail):
+                case nameof(GraphTraversal<object,object>.Range):
+                case nameof(GraphTraversal<object,object>.Value):
+                case nameof(GraphTraversal<object,object>.Fold):
                     // default to object for this methods
                     return typeof(object);
             }
