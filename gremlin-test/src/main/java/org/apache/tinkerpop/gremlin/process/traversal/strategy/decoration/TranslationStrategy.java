@@ -113,9 +113,14 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         TraversalHelper.removeAllSteps(traversal);
         TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
         ////////////////
-        if (IS_TESTING && !BytecodeHelper.getLambdaLanguage(bytecode).isPresent())
+        if (IS_TESTING && !BytecodeHelper.getLambdaLanguage(bytecode).isPresent()) {
             // this tests to ensure that the bytecode being translated is the same as the bytecode of the generated traversal
+            final String tailOperator = traversal.getBytecode().getStepInstructions().get(traversal.getBytecode().getStepInstructions().size() - 1).getOperator();
+            if (Translator.TERMINAL_STEPS.contains(tailOperator)) {
+                translatedTraversal.getBytecode().addStep(tailOperator);
+            }
             assertEquals(removeTranslationStrategy(traversal.getBytecode()), translatedTraversal.getBytecode());
+        }
     }
 
 

@@ -68,7 +68,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
             // static fields only
         }
 
+        public static final String fill = "fill";
+        public static final String iterate = "iterate";
         public static final String profile = "profile";
+        public static final String promise = "promise";
+        public static final String toBulkSet = "toBulkSet";
+        public static final String toList = "toList";
+        public static final String toSet = "toSet";
+        public static final String toStream = "toStream";
     }
 
     /**
@@ -112,6 +119,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the results in a list
      */
     public default List<E> toList() {
+        if (!this.asAdmin().isLocked()) {
+            this.asAdmin().getBytecode().addStep(Symbols.toList);
+            this.asAdmin().applyStrategies();
+        }
         return this.fill(new ArrayList<>());
     }
 
@@ -121,6 +132,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the results in a set
      */
     public default Set<E> toSet() {
+        if (!this.asAdmin().isLocked()) {
+            this.asAdmin().getBytecode().addStep(Symbols.toSet);
+            this.asAdmin().applyStrategies();
+        }
         return this.fill(new HashSet<>());
     }
 
@@ -131,6 +146,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the results in a bulk set
      */
     public default BulkSet<E> toBulkSet() {
+        if (!this.asAdmin().isLocked()) {
+            this.asAdmin().getBytecode().addStep(Symbols.toBulkSet);
+            this.asAdmin().applyStrategies();
+        }
         return this.fill(new BulkSet<>());
     }
 
@@ -140,6 +159,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the traversal as a stream.
      */
     public default Stream<E> toStream() {
+        if (!this.asAdmin().isLocked()) {
+            this.asAdmin().getBytecode().addStep(Symbols.toStream);
+            this.asAdmin().applyStrategies();
+        }
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 
@@ -151,7 +174,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default <T> CompletableFuture<T> promise(final Function<Traversal<S,E>, T> traversalFunction) {
         // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
-        if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+        if (!this.asAdmin().isLocked()) {
+            this.asAdmin().getBytecode().addStep(Symbols.promise);
+            this.asAdmin().applyStrategies();
+        }
 
         // use the end step so the results are bulked
         final Step<?, E> endStep = this.asAdmin().getEndStep();
@@ -170,7 +196,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+            if (!this.asAdmin().isLocked()) {
+                this.asAdmin().getBytecode().addStep(Symbols.fill);
+                this.asAdmin().applyStrategies();
+            }
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -191,7 +220,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default <A, B> Traversal<A, B> iterate() {
         try {
-            if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+            if (!this.asAdmin().isLocked()) {
+                this.asAdmin().getBytecode().addStep(Symbols.iterate);
+                this.asAdmin().applyStrategies();
+            }
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {

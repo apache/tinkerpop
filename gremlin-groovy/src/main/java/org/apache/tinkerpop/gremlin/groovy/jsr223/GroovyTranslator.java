@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -87,6 +86,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
+            if (TERMINAL_STEPS.contains(methodName))
+                continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
             else {
