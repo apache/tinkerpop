@@ -53,5 +53,5 @@ Feature: Step - fold()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123].l |
+      | d[123].i |
 
