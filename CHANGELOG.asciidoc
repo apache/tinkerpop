@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Provided a method to configure detachment options with `EventStrategy`.
 * Fixed a race condition in `TinkerIndex`.
+* Improved error messaging for bytecode deserialization errors in Gremlin Server.
 * Fixed an `ArrayOutOfBoundsException` in `hasId()` for the rare situation when the provided collection is empty.
 * Bump to Netty 4.0.52
 * `TraversalVertexProgram` `profile()` now accounts for worker iteration in `GraphComputer` OLAP.
