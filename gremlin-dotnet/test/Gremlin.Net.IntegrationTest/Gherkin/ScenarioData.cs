@@ -23,8 +23,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
@@ -41,6 +43,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly Regex EdgeIRegex = new Regex("i=(.+?)[,}]", RegexOptions.Compiled);
         
         private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful"};
+
+        private static readonly IDictionary<string, Vertex> EmptyVertices =
+            new ReadOnlyDictionary<string, Vertex>(new Dictionary<string, Vertex>());
+        
+        private static readonly IDictionary<string, Edge> EmptyEdges =
+            new ReadOnlyDictionary<string, Edge>(new Dictionary<string, Edge>());
         
         private static readonly RemoteConnectionFactory ConnectionFactory = new RemoteConnectionFactory();
 
@@ -99,18 +107,34 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static IDictionary<string, Vertex> GetVertices(GraphTraversalSource g)
         {
-            return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()
-                .ToDictionary(kv => kv.Key, kv => (Vertex)kv.Value);
+            try
+            {
+                return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()
+                    .ToDictionary(kv => kv.Key, kv => (Vertex) kv.Value);
+            }
+            catch (ResponseException)
+            {
+                // Property name might not exist
+                return EmptyVertices;
+            }
         }
 
         private static IDictionary<string, Edge> GetEdges(GraphTraversalSource g)
         {
-            return g.E().Group<string, object>()
-                .By(__.Project<Edge>("o", "l", "i")
-                    .By(__.OutV().Values<string>("name")).By(__.Label()).By(__.InV().Values<string>("name")))
-                .By(__.Tail<object>())
-                .Next()
-                .ToDictionary(kv => GetEdgeKey(kv.Key), kv => (Edge)kv.Value);
+            try
+            {
+                return g.E().Group<string, object>()
+                    .By(__.Project<Edge>("o", "l", "i")
+                        .By(__.OutV().Values<string>("name")).By(__.Label()).By(__.InV().Values<string>("name")))
+                    .By(__.Tail<object>())
+                    .Next()
+                    .ToDictionary(kv => GetEdgeKey(kv.Key), kv => (Edge)kv.Value);
+            }
+            catch (ResponseException)
+            {
+                // Property name might not exist
+                return EmptyEdges;
+            }
         }
 
         private static string GetEdgeKey(string key)

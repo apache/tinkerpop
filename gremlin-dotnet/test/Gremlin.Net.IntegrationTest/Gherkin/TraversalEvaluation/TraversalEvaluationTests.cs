@@ -42,8 +42,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     new[] {new Token("constant", new[] {LiteralParameter.Create(123L)})}),
                 Tuple.Create("g.V().constant(123)", 
                     new[] {new Token("constant", new[] {LiteralParameter.Create(123)})}),
-                Tuple.Create("g.V().constant(123.1)", 
-                    new[] {new Token("constant", new[] {LiteralParameter.Create(123.1)})}),
+                Tuple.Create("g.V().constant(123.50)", 
+                    new[] {new Token("constant", new[] {LiteralParameter.Create(123.50m)})}),
                 Tuple.Create("g.V().constant(123.1f)", 
                     new[] {new Token("constant", new[] {LiteralParameter.Create(123.1f)})}),
                 Tuple.Create("g.V().has(\"no\").count()",
@@ -96,7 +96,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create(
                     "g.V().hasLabel(\"software\").group().by(\"name\").by(__.bothE().values(\"weight\").sum())", 5),
                 Tuple.Create("g.V().choose(__.outE().count().is(0L),__.as(\"a\"),__.as(\"b\"))" +
-                                  "\n.choose(__.select(\"a\"),__.select(\"a\"),__.select(\"b\"))", 3)
+                                  "\n.choose(__.select(\"a\"),__.select(\"a\"),__.select(\"b\"))", 3),
+                Tuple.Create("g.V().repeat(__.out()).times(2) ", 3),
+                Tuple.Create("g.V().local(__.match(\n   __.as(\"project\").in(\"created\").as(\"person\"),\n__.as(\"person\").values(\"name\").as(\"name\"))).select(\"name\", \"project\").by().by(\"name\")", 5),
+                Tuple.Create("g.V().as(\"a\").out().as(\"a\").out().as(\"a\").select(\"a\").by(__.unfold().values(\"name\").fold()).tail(Scope.local, 2)", 9),
+                Tuple.Create("g.V().coin(1.0)", 2)
             };
             var g = new Graph().Traversal();
             foreach (var tuple in traversalTexts)

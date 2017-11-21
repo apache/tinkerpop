@@ -53,11 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 { "g_V_outXcreatedX_groupCount_byXnameX", IgnoreReason.MapCoersionIssue},
                 { "g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount", IgnoreReason
                 .MapCoersionIssue},
-                { "g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX", IgnoreReason.MapCoersionIssue},
-                
-                { "g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum", IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX", IgnoreReason.ScenarioDesignMapNumbers},
-                { "g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX", IgnoreReason.ScenarioDesignMapNumbers}
+                { "g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX", IgnoreReason.MapCoersionIssue}
             };
         
         private static class Keywords
@@ -136,7 +132,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 }
             }
             OutputResults(results);
-            Console.WriteLine("Finished Gherkin-based tests");
+            WriteOutput("Finished Gherkin-based tests");
             ScenarioData.Shutdown();
         }
 
@@ -367,35 +363,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             var rootPath = GetRootPath();
             var path = Path.Combine(rootPath, "gremlin-test", "features");
-            WriteOutput(path);
-            WriteOutput("------");
-
-//            var files = new []
-//            {
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Sum.feature",
-////                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Coalesce.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddEdge.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/AddVertex.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/ValueMap.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Select.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Project.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Path.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Map.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Match.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Max.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/map/Mean.feature",
-//                
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Sack.feature",
-//                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Group.feature",
-////                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/GroupCount.feature",
-////                "/Users/jorge/workspace/tinkerpop/gremlin-test/features/sideEffect/Inject.feature",
-//            };
-//            var files = new [] {"/Users/jorge/workspace/temp/count.feature"};
             var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
             foreach (var gherkinFile in files)
             {
                 var parser = new Parser();
-                WriteOutput("Parsing " + gherkinFile);
                 var doc = parser.Parse(gherkinFile);
                 yield return doc.Feature;
             }

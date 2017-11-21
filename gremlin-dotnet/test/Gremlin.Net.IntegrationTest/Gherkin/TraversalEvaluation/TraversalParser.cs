@@ -244,6 +244,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // if we have the type of value we have the type of E2. 
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
                     }
+                    if (info.ParameterType != tokenParameter.GetParameterType() && IsNumeric(info.ParameterType) &&
+                        IsNumeric(tokenParameter.GetParameterType()))
+                    {
+                        // Numeric conversion
+                        value = Convert.ChangeType(value, info.ParameterType);
+                    }
                 }
                 if (IsParamsArray(info))
                 {
@@ -332,8 +338,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         parameters.Add(param);
                         break;
                     }
-                    case ',' when text[i+1] != ' ' && parsing == ParsingPart.StartParameters:
-                    case ' ' when text[i+1] != ' ' && text[i+1] != ')' && parsing == ParsingPart.StartParameters:
+                    case ',' when parsing == ParsingPart.StartParameters && text.Length > i + 1 && text[i+1] != ' ':
+                    case ' ' when parsing == ParsingPart.StartParameters && text.Length > i + 1 && text[i+1] != ' ' &&
+                                  text[i+1] != ')':
                     {
                         i++;
                         var param = ParseParameter(text, ref i);
@@ -450,7 +457,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             if (match.Groups[1].Value != "")
             {
                 // Captured text with the decimal separator
-                return LiteralParameter.Create(Convert.ToDouble(match.Value));
+                return LiteralParameter.Create(Convert.ToDecimal(match.Value));
             }
             return LiteralParameter.Create(Convert.ToInt32(match.Value));
         }

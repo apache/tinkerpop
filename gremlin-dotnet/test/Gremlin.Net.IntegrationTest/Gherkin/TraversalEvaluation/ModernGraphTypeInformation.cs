@@ -45,6 +45,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         /// </summary>s
         public static Type GetTypeArguments(MethodInfo method, object[] parameterValues, int genericTypeIndex)
         {
+            var isGeneric = method.DeclaringType.GetTypeInfo().IsGenericType;
+            if (!isGeneric)
+            {
+                // Maintain object for anonymous traversal
+                return typeof(object);
+            }
             switch (method.Name)
             {
                 case nameof(GraphTraversal<object,object>.Properties):
@@ -68,31 +74,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 case nameof(GraphTraversal<object,object>.Match):
                     // Maintain the same type
                     return method.DeclaringType.GetGenericArguments()[1];
-                case nameof(GraphTraversal<object,object>.ValueMap):
-                case nameof(GraphTraversal<object,object>.Select):
-                case nameof(GraphTraversal<object,object>.Group):
-                case nameof(GraphTraversal<object,object>.GroupCount):
-                case nameof(GraphTraversal<object,object>.Unfold):
-                case nameof(GraphTraversal<object,object>.Choose):
-                case nameof(GraphTraversal<object,object>.Union):
-                case nameof(GraphTraversal<object,object>.Project):
-                case nameof(GraphTraversal<object,object>.Sack):
-                case nameof(GraphTraversal<object,object>.Map):
-                case nameof(GraphTraversal<object,object>.Max):
-                case nameof(GraphTraversal<object,object>.Min):
-                case nameof(GraphTraversal<object,object>.Mean):
-                case nameof(GraphTraversal<object,object>.Cap):
-                case nameof(GraphTraversal<object,object>.Constant):
-                case nameof(GraphTraversal<object,object>.Branch):
-                case nameof(GraphTraversal<object,object>.Local):
-                case nameof(GraphTraversal<object,object>.Tail):
-                case nameof(GraphTraversal<object,object>.Range):
-                case nameof(GraphTraversal<object,object>.Value):
-                case nameof(GraphTraversal<object,object>.Fold):
+                default:
                     // default to object for this methods
                     return typeof(object);
             }
-            return null;
         }
 
         private static Type GetElementPropertyType(string name)

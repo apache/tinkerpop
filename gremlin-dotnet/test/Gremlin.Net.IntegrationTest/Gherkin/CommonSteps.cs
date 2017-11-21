@@ -41,13 +41,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private GraphTraversalSource _g;
         private string _graphName;
         private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
-        private dynamic _traversal;
+        private ITraversal _traversal;
         private object[] _result;
 
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
             {
-                {@"d\[([\d.]+)\]\.([ilfd])", ToNumber},
+                {@"d\[([\d.]+)\]\.([ilfdm])", ToNumber},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},
                 {@"v\[(.+)\]\.sid", (x, graphName) => ToVertex(x, graphName).Id.ToString()},
@@ -55,8 +55,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"e\[(.+)\].id", (x, graphName) => ToEdge(x, graphName).Id},
                 {@"e\[(.+)\].sid", (x, graphName) => ToEdge(x, graphName).Id.ToString()},
                 {@"p\[(.+)\]", ToPath},
-                {@"l\[(.+)\]", ToList},
-                {@"s\[(.+)\]", ToSet},
+                {@"l\[(.*)\]", ToList},
+                {@"s\[(.*)\]", ToSet},
                 {@"m\[(.+)\]", ToMap},
                 {@"c\[(.+)\]", ToLambda}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
@@ -67,7 +67,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 { 'i', s => Convert.ToInt32(s) },
                 { 'l', s => Convert.ToInt64(s) },
                 { 'f', s => Convert.ToSingle(s) },
-                { 'd', s => Convert.ToDouble(s) }
+                { 'd', s => Convert.ToDouble(s) },
+                { 'm', s => Convert.ToDecimal(s)}
             };
 
         [Given("the (\\w+) graph")]
@@ -121,22 +122,41 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [When("iterated to list")]
         public void IterateToList()
         {
-            if (!(_traversal is ITraversal))
+            if (_traversal == null)
             {
                 throw new InvalidOperationException("Traversal should be set before iterating");
             }
-            IEnumerable enumerable = _traversal.ToList();
-            _result = enumerable.Cast<object>().ToArray();
+            ITraversal t = _traversal;
+            var list = new List<object>();
+            while (t.MoveNext())
+            {
+                list.Add(t.Current);
+            }
+            _result = list.ToArray();
         }
 
         [When("iterated next")]
         public void IterateNext()
         {
-            if (!(_traversal is ITraversal))
+            if (_traversal == null)
             {
                 throw new InvalidOperationException("Traversal should be set before iterating");
             }
-            _result = _traversal.Next();
+            _traversal.MoveNext();
+            var result = _traversal.Current;
+            switch (result)
+            {
+                case null:
+                    _result = null;
+                    return;
+                case object[] arrayResult:
+                    _result = arrayResult;
+                    return;
+                case IEnumerable enumerableResult:
+                    _result = enumerableResult.Cast<object>().ToArray();
+                    return;
+            }
+            throw new InvalidCastException($"Can not convert instance of {result.GetType()} to object[]");
         }
 
         [Then("the result should be (\\w+)")]
@@ -150,6 +170,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     return;
                 case "ordered":
                 case "unordered":
+                case "of":
                     Assert.NotNull(table);
                     var rows = table.Rows.ToArray();
                     Assert.Equal("result", rows[0].Cells.First().Value);
@@ -165,7 +186,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         {
                             Assert.Contains(resultItem, expectedArray);
                         }
-                        Assert.Equal(expectedArray.Length, _result.Length);
+                        if (characterizedAs != "of")
+                        {
+                            Assert.Equal(expectedArray.Length, _result.Length);   
+                        }
                     }
                     break;
                 default:
@@ -248,7 +272,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static IList<object> ToList(string stringList, string graphName)
         {
-            return stringList.Split(',').Select(x => ParseValue(x, graphName)).ToArray();
+            if (stringList == "")
+            {
+                return new List<object>(0);
+            }
+            return stringList.Split(',').Select(x => ParseValue(x, graphName)).ToList();
         }
 
         private static Vertex ToVertex(string name, string graphName)
