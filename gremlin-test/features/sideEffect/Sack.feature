@@ -53,8 +53,8 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[2.0].d |
-      | d[1.4].d |
+      | d[2.0].m |
+      | d[1.4].m |
 
   Scenario: g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum
     Given an unsupported test
