@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -69,6 +70,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         public static final String profile = "profile";
+        public static final String none = "none";
     }
 
     /**
@@ -149,7 +151,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * {@link TraversalSource#withRemote(Configuration)}. Calling this method otherwise will yield an
      * {@code IllegalStateException}.
      */
-    public default <T> CompletableFuture<T> promise(final Function<Traversal<S,E>, T> traversalFunction) {
+    public default <T> CompletableFuture<T> promise(final Function<Traversal<S, E>, T> traversalFunction) {
         // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
         if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
 
@@ -191,7 +193,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default <A, B> Traversal<A, B> iterate() {
         try {
-            if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
+            if (!this.asAdmin().isLocked()) {
+                this.none();
+                this.asAdmin().applyStrategies();
+            }
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -200,6 +205,16 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         } catch (final NoSuchElementException ignored) {
         }
         return (Traversal<A, B>) this;
+    }
+
+    /**
+     * Filter all traversers in the traversal.
+     *
+     * @return the updated traversal with respective {@link NoneStep}.
+     */
+    public default Traversal<S, E> none() {
+        this.asAdmin().getBytecode().addStep(Symbols.none);
+        return this.asAdmin().addStep(new NoneStep<>(this.asAdmin()));
     }
 
     /**
@@ -259,8 +274,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     @Override
     public default void close() throws Exception {
-        for(final Step<?,?> step : this.asAdmin().getSteps()) {
-            if(step instanceof AutoCloseable)
+        for (final Step<?, ?> step : this.asAdmin().getSteps()) {
+            if (step instanceof AutoCloseable)
                 ((AutoCloseable) step).close();
         }
     }

@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-7, 3.2.7>>.
 
+* Added `NoneStep` and `Traversal.none()` for full filtering integration with `iterate()`.
 * Fixed bug in serialization of `Path` for GraphSON 3.0 in `gremlin-python`.
 * Added support for GraphSON 3.0 in Gremlin.Net.
 * Added `math()`-step which supports scientific calculator capabilities for numbers within a traversal.

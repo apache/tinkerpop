@@ -267,7 +267,7 @@ public class TraversalTest {
 
         @Override
         public Bytecode getBytecode() {
-            return null;
+            return new Bytecode();
         }
 
         @Override
