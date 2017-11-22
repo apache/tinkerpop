@@ -95,20 +95,6 @@ def __create_lookup_e(remote):
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
-    projection_of_edges = g.E().group(). \
-        by(project("o", "l", "i").
-           by(outV().values("name")).
-           by(label()).
-           by(inV().values("name"))). \
+    return g.E().group(). \
+        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
         by(tail()).next()
-    edges = {}
-
-    # in GraphSON 3.0 the "key" will be a dictionary and this can work more nicely - right now it's stuck as
-    # a string and has to be parsed
-    for key, value in projection_of_edges.items():
-        o = re.search("o=(.+?)[,\}]", key).group(1)
-        l = re.search("l=(.+?)[,\}]", key).group(1)
-        i = re.search("i=(.+?)[,\}]", key).group(1)
-        edges[o + "-" + l + "->" + i] = value
-
-    return edges
