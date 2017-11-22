@@ -134,12 +134,16 @@ limitations under the License.
                                             <value>${skipTests}</value>
                                         </property>
                                         <property>
+                                            <name>python</name>
+                                            <value>false</value>
+                                        </property>
+                                        <property>
                                             <name>gremlinServerDir</name>
                                             <value>${gremlin.server.dir}</value>
                                         </property>
                                         <property>
                                             <name>settingsFile</name>
-                                            <value>${gremlin.server.dir}/conf/gremlin-server-modern.yaml</value>
+                                            <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/driver/remote/gremlin-server-integration.yaml</value>
                                         </property>
                                         <property>
                                             <name>executionName</name>
