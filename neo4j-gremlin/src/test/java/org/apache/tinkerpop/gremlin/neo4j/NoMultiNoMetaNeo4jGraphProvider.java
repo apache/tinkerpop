@@ -38,7 +38,7 @@ public class NoMultiNoMetaNeo4jGraphProvider extends AbstractNeo4jGraphProvider 
             put(Neo4jGraph.CONFIG_DIRECTORY, directory);
             put(Neo4jGraph.CONFIG_META_PROPERTIES, false);
             put(Neo4jGraph.CONFIG_MULTI_PROPERTIES, false);
-            put(Neo4jGraph.CONFIG_CONF + ".dbms.memory.pagecache.size", "1024m");
+            put(Neo4jGraph.CONFIG_CONF + ".dbms.memory.pagecache.size", "1m");
         }};
     }
 }
