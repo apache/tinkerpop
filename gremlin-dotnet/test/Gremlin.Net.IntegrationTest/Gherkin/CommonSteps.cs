@@ -296,6 +296,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ParseValue(string stringValue, string graphName)
         {
+            // Parser issue: quotes are not normalized
+            stringValue = stringValue.Replace("\\\"", "\"");
             Func<string, string, object> parser = null;
             string extractedValue = null;
             foreach (var kv in Parsers)
