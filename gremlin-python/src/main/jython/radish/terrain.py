@@ -97,5 +97,5 @@ def __create_lookup_e(remote):
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
     return g.E().group(). \
-        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")).\
+        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
         by(tail()).next()
