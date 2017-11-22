@@ -94,7 +94,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
-    private static void assertCommonA(Traversal<Vertex, Map<String, Long>> traversal) {
+    private static void assertCommonA(final Traversal<Vertex, Map<String, Long>> traversal) {
         final Map<String, Long> map = traversal.next();
         assertEquals(map.size(), 2);
         assertEquals(Long.valueOf(3l), map.get("lop"));

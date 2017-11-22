@@ -70,7 +70,9 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'mock'
+        'mock',
+        'radish-bdd==0.8.0',
+        'PyHamcrest'
     ],
     install_requires=install_requires,
     classifiers=[

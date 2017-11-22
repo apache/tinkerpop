@@ -34,8 +34,14 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public IRemoteConnection CreateRemoteConnection()
         {
+            // gmodern is the standard test traversalsource that the main body of test uses
+            return CreateRemoteConnection("gmodern");
+        }
+
+        public IRemoteConnection CreateRemoteConnection(string traversalSource)
+        {
             return new Net.Driver.Remote.DriverRemoteConnection(
-                new GremlinClient(new GremlinServer(TestHost, TestPort)));
+                new GremlinClient(new GremlinServer(TestHost, TestPort)), traversalSource);
         }
     }
 }

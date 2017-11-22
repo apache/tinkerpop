@@ -341,7 +341,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -349,7 +349,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -440,6 +440,17 @@ limitations under the License.
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py test"/>
                                         </exec>
+                                        <!-- radish seems to like all dependencies in place -->
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py install"/>
+                                        </exec>
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
@@ -512,12 +523,16 @@ limitations under the License.
                                             <value>${skipTests}</value>
                                         </property>
                                         <property>
+                                            <name>python</name>
+                                            <value>true</value>
+                                        </property>
+                                        <property>
                                             <name>gremlinServerDir</name>
                                             <value>${gremlin.server.dir}</value>
                                         </property>
                                         <property>
                                             <name>settingsFile</name>
-                                            <value>${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml</value>
+                                            <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/driver/remote/gremlin-server-integration.yaml</value>
                                         </property>
                                         <property>
                                             <name>executionName</name>

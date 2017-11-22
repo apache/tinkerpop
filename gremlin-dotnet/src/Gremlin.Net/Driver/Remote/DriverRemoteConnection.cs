@@ -36,15 +36,27 @@ namespace Gremlin.Net.Driver.Remote
     public class DriverRemoteConnection : IRemoteConnection, IDisposable
     {
         private readonly IGremlinClient _client;
+        private readonly string _traversalSource;
 
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" />.
         /// </summary>
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
-        public DriverRemoteConnection(IGremlinClient client)
+        public DriverRemoteConnection(IGremlinClient client):this(client, "g")
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new <see cref="IRemoteConnection" />.
+        /// </summary>
+        /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
+        /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
+        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
+        public DriverRemoteConnection(IGremlinClient client, string traversalSource)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
+            _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
         }
 
         /// <summary>
@@ -66,7 +78,7 @@ namespace Gremlin.Net.Driver.Remote
                     .Processor(Tokens.ProcessorTraversal)
                     .OverrideRequestId(requestid)
                     .AddArgument(Tokens.ArgsGremlin, bytecode)
-                    .AddArgument(Tokens.ArgsAliases, new Dictionary<string, string> {{"g", "g"}})
+                    .AddArgument(Tokens.ArgsAliases, new Dictionary<string, string> {{"g", _traversalSource}})
                     .Create();
             return await _client.SubmitAsync<Traverser>(requestMsg).ConfigureAwait(false);
         }

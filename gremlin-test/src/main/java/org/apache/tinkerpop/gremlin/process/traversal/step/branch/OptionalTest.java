@@ -125,12 +125,12 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
     public static class Traversals extends OptionalTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX2X_optionalXoutXknowsXX(Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_VX2X_optionalXoutXknowsXX(final Object v2Id) {
             return this.g.V(v2Id).optional(out("knows"));
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX2X_optionalXinXknowsXX(Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_VX2X_optionalXinXknowsXX(final Object v2Id) {
             return this.g.V(v2Id).optional(in("knows"));
         }
 
