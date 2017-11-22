@@ -269,29 +269,39 @@ server.stop().join()
                 <executions>
                     <execution>
                         <id>install node and npm</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
-                        <phase>generate-test-resources</phase>
                     </execution>
                     <execution>
                         <id>npm install</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>generate-test-resources</phase>
                         <configuration>
                             <arguments>install</arguments>
                         </configuration>
                     </execution>
                     <execution>
                         <id>npm test</id>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>integration-test</phase>
                         <configuration>
                             <arguments>test</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm test gherkin features</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run-script features</arguments>
                         </configuration>
                     </execution>
                 </executions>

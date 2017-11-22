@@ -36,7 +36,8 @@
     "ws": "^3.0.0"
   },
   "devDependencies": {
-    "mocha": ">= 1.14.0"
+    "mocha": "~4.0.1",
+    "cucumber": "~3.1.0"
   },
   "repository": {
     "type": "git",
@@ -47,6 +48,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test --recursive -t 5000",
+    "features": "./node_modules/.bin/cucumber.js ../../../../../gremlin-test/features/",
     "unit-test": "./node_modules/.bin/mocha test/unit"
   },
   "engines": {
