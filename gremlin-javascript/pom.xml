@@ -31,7 +31,6 @@ limitations under the License.
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- TESTING -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>

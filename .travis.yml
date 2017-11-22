@@ -16,3 +16,4 @@ jobs:
   include:
     - script: "mvn clean install -Dci"
     - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DskipIntegrationTests=false"
+    - script: "mvn clean install -pl :gremlin-javascript -DskipIntegrationTests=false"
