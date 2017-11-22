@@ -44,11 +44,11 @@ project.setContextValue("gremlin.server", server)
 log.info("Gremlin Server with no authentication started on port 45940")
 
 def settingsSecure = Settings.read("${settingsFile}")
-settings.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
-settings.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
-settings.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
-settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
-settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
 if (Boolean.parseBoolean(python)) {
     settingsSecure.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
