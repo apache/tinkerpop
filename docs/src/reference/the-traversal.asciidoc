@@ -649,6 +649,12 @@ g.V().drop()
 g.V()
 ----
 
+[[emit-step]]
+=== Emit Step
+
+The `emit`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
+documentation on the `emit()` there).
+
 [[explain-step]]
 === Explain Step
 
@@ -2365,6 +2371,12 @@ g.V(4).union(
          __.in().values('age'),
          out().values('lang')).path()
 ----
+
+[[until-step]]
+=== Until Step
+
+The `until`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
+documentation on the `until()` there).
 
 [[value-step]]
 === Value Step
