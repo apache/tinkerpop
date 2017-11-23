@@ -41,6 +41,7 @@ var responseStatusCode = {
  * Creates a new instance of DriverRemoteConnection.
  * @param {String} url The resource uri.
  * @param {Object} [options] The connection options.
+ * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
  * @param {Array} [options.ca] Trusted certificates.
  * @param {String|Array|Buffer} [options.cert] The certificate key.
  * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
@@ -71,6 +72,7 @@ function DriverRemoteConnection(url, options) {
   this._responseHandlers = {};
   this._reader = options.reader || new serializer.GraphSONReader();
   this._writer = options.writer || new serializer.GraphSONWriter();
+  this._traversalSource = options.traversalSource || 'g';
   this._openPromise = null;
   this._openCallback = null;
   this._closePromise = null;
@@ -125,7 +127,7 @@ DriverRemoteConnection.prototype._getRequest = function (id, bytecode) {
     'processor': 'traversal',
     'args': {
       'gremlin': this._writer.adaptObject(bytecode),
-      'aliases': { 'g': 'g'}
+      'aliases': { 'g': this._traversalSource }
     }
   });
 };
@@ -193,7 +195,7 @@ function getUuid() {
     hex.substr(20, 12));
 }
 
-var bufferFromString = Buffer.from || function newBuffer(text) {
+const bufferFromString = (Int8Array.from !== Buffer.from && Buffer.from) || function newBuffer(text) {
   return new Buffer(text, 'utf8');
 };
 

@@ -22,16 +22,16 @@
  */
 'use strict';
 
-var assert = require('assert');
-var Bytecode = require('../../lib/process/bytecode');
-var DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
-var graphModule = require('../../lib/structure/graph');
+const assert = require('assert');
+const Bytecode = require('../../lib/process/bytecode');
+const graphModule = require('../../lib/structure/graph');
+const helper = require('../helper');
 
 var connection;
 
 describe('DriverRemoteConnection', function () {
   before(function () {
-    connection = new DriverRemoteConnection('ws://localhost:45950/gremlin');
+    connection = helper.getConnection();
     return connection.open();
   });
   after(function () {
@@ -56,9 +56,3 @@ describe('DriverRemoteConnection', function () {
     });
   });
 });
-
-function delay(ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms);
-  });
-}

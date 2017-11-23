@@ -22,20 +22,18 @@
  */
 'use strict';
 
-var assert = require('assert');
-var graphModule = require('../../lib/structure/graph');
-var Graph = graphModule.Graph;
-var Vertex = graphModule.Vertex;
-var utils = require('../../lib/utils');
-var t = require('../../lib/process/traversal');
-var TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
-var DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
+const assert = require('assert');
+const graphModule = require('../../lib/structure/graph');
+const Graph = graphModule.Graph;
+const Vertex = graphModule.Vertex;
+const utils = require('../../lib/utils');
+const helper = require('../helper');
 
 var connection;
 
 describe('Traversal', function () {
   before(function () {
-    connection = new DriverRemoteConnection('ws://localhost:45950/gremlin');
+    connection = helper.getConnection();
     return connection.open();
   });
   after(function () {

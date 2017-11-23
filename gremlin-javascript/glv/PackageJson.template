@@ -47,8 +47,8 @@
     "url": "https://issues.apache.org/jira/browse/TINKERPOP"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test --recursive -t 5000",
-    "features": "./node_modules/.bin/cucumber.js ../../../../../gremlin-test/features/",
+    "test": "./node_modules/.bin/mocha test/unit test/integration -t 5000",
+    "features": "./node_modules/.bin/cucumber.js --require test/cucumber ../../../../../gremlin-test/features/map/Count.feature",
     "unit-test": "./node_modules/.bin/mocha test/unit"
   },
   "engines": {

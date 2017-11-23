@@ -22,18 +22,8 @@
  */
 'use strict';
 
-const defineSupportCode = require('cucumber').defineSupportCode;
+const DriverRemoteConnection = require('../lib/driver/driver-remote-connection');
 
-defineSupportCode(function (methods) {
-  function TinkerPopWorld(){
-    this.g = null;
-    this.traversal = null;
-  }
-  methods.setWorldConstructor(TinkerPopWorld);
-  methods.BeforeAll(function () {
-    // load all traversals
-  });
-  methods.Before(function () {
-
-  });
-});
+exports.getConnection = function getConnection(traversalSource) {
+  return new DriverRemoteConnection('ws://localhost:45940/gremlin', { traversalSource: traversalSource });
+};

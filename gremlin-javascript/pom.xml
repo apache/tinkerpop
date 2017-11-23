@@ -202,26 +202,30 @@ packageJsonFile.newWriter().withWriter{ it << packageJsonTemplate }
                             <goal>execute</goal>
                         </goals>
                         <configuration>
+                            <properties>
+                                <property>
+                                    <name>skipTests</name>
+                                    <value>${skipTests}</value>
+                                </property>
+                                <property>
+                                    <name>python</name>
+                                    <value>false</value>
+                                </property>
+                                <property>
+                                    <name>gremlinServerDir</name>
+                                    <value>${gremlin.server.dir}</value>
+                                </property>
+                                <property>
+                                    <name>settingsFile</name>
+                                    <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/driver/remote/gremlin-server-integration.yaml</value>
+                                </property>
+                                <property>
+                                    <name>executionName</name>
+                                    <value>${project.name}</value>
+                                </property>
+                            </properties>
                             <scripts>
-                                <script>
-                                    <![CDATA[
-import org.apache.tinkerpop.gremlin.server.GremlinServer
-import org.apache.tinkerpop.gremlin.server.Settings
-import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
-import org.apache.tinkerpop.gremlin.server.op.session.Session
-
-if (${skipIntegrationTests}) return
-log.info("Starting Gremlin Server instances for native testing of gremlin-javascript")
-def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern.yaml")
-settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
-settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
-settings.port = 45950
-def server = new GremlinServer(settings)
-server.start().join()
-project.setContextValue("gremlin.javascript.server", server)
-log.info("Gremlin Server started on port 45950")
-]]>
-                                </script>
+                                <script>${gremlin.server.dir}/src/test/scripts/test-server-start.groovy</script>
                             </scripts>
                         </configuration>
                     </execution>
@@ -232,19 +236,18 @@ log.info("Gremlin Server started on port 45950")
                             <goal>execute</goal>
                         </goals>
                         <configuration>
+                            <properties>
+                                <property>
+                                    <name>skipTests</name>
+                                    <value>${skipTests}</value>
+                                </property>
+                                <property>
+                                    <name>executionName</name>
+                                    <value>${project.name}</value>
+                                </property>
+                            </properties>
                             <scripts>
-                                <script>
-                                    <![CDATA[
-import org.apache.tinkerpop.gremlin.server.GremlinServer
-import org.apache.tinkerpop.gremlin.server.op.session.Session
-
-if (${skipIntegrationTests}) return
-log.info("Tests for native gremlin-javascript complete")
-def server = project.getContextValue("gremlin.javascript.server")
-log.info("Shutting down $server")
-server.stop().join()
-]]>
-                                </script>
+                                <script>${gremlin.server.dir}/src/test/scripts/test-server-stop.groovy</script>
                             </scripts>
                         </configuration>
                     </execution>
@@ -292,6 +295,7 @@ server.stop().join()
                         </goals>
                         <configuration>
                             <arguments>test</arguments>
+                            <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                     <execution>
@@ -302,6 +306,7 @@ server.stop().join()
                         </goals>
                         <configuration>
                             <arguments>run-script features</arguments>
+                            <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                 </executions>

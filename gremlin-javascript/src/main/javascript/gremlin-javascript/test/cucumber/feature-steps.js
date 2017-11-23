@@ -22,34 +22,37 @@
  */
 'use strict';
 
-const {defineSupportCode} = require('cucumber');
+const defineSupportCode = require('cucumber').defineSupportCode;
 const vm = require('vm');
 
 
-defineSupportCode(function({Given, When, Then}) {
-  Given(/^the (.+) graph$/, function (graphName) {
+defineSupportCode(function(methods) {
+  methods.Given(/^the (.+) graph$/, function (graphName) {
     //TODO: Set context g
   });
-  // Given('the graph initializer of');
-  Given('an unsupported test', () => {});
+  methods.Given('the graph initializer of', function () {
+    //TODO
+  });
 
-  Given('the traversal of', function (traversalText) {
+  methods.Given('an unsupported test', () => {});
+
+  methods.Given('the traversal of', function (traversalText) {
     //TODO: make traversal
   });
 
-  Given(/^$/, function (paramName, stringValue) {
+  methods.Given(/^$/, function (paramName, stringValue) {
     //TODO: Add parameter
   });
 
-  When('iterated to list', function () {
+  methods.When('iterated to list', function () {
     //TODO
   });
 
-  When('iterated next', function () {
+  methods.When('iterated next', function () {
     //TODO
   });
 
-  Then(/^the result should be (\w+)$/, function (characterizedAs, resultTable) {
+  methods.Then(/^the result should be (\w+)$/, function (characterizedAs, resultTable) {
     //TODO
     //console.log('--resultTable', resultTable.rows());
     if (typeof resultTable === 'function'){
@@ -57,13 +60,13 @@ defineSupportCode(function({Given, When, Then}) {
     }
   });
 
-  Then(/^the graph should return (\d+) for count of (.+)$/, function (stringCount, traversalString) {
+  methods.Then(/^the graph should return (\d+) for count of (.+)$/, function (stringCount, traversalString) {
 
   });
 
-  Then(/^the result should have a count of (\d+)$/, function (stringCount) {
+  methods.Then(/^the result should have a count of (\d+)$/, function (stringCount) {
 
   });
 
-  Then('nothing should happen because', () => {});
+  methods.Then('nothing should happen because', () => {});
 });
