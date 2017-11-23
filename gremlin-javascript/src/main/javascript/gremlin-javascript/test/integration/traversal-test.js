@@ -42,10 +42,10 @@ describe('Traversal', function () {
   describe('#toList()', function () {
     it('should submit the traversal and return a list', function () {
       var g = new Graph().traversal().withRemote(connection);
-      return g.addV('user').toList().then(function (list) {
+      return g.V().toList().then(function (list) {
         assert.ok(list);
-        assert.strictEqual(list.length, 1);
-        assert.ok(list[0] instanceof Vertex);
+        assert.strictEqual(list.length, 7);
+        list.forEach(v => assert.ok(v instanceof Vertex));
       });
     });
   });

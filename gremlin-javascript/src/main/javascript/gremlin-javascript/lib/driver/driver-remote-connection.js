@@ -72,11 +72,11 @@ function DriverRemoteConnection(url, options) {
   this._responseHandlers = {};
   this._reader = options.reader || new serializer.GraphSONReader();
   this._writer = options.writer || new serializer.GraphSONWriter();
-  this._traversalSource = options.traversalSource || 'g';
   this._openPromise = null;
   this._openCallback = null;
   this._closePromise = null;
   this.isOpen = false;
+  this.traversalSource = options.traversalSource || 'g';
 }
 
 inherits(DriverRemoteConnection, RemoteConnection);
@@ -127,7 +127,7 @@ DriverRemoteConnection.prototype._getRequest = function (id, bytecode) {
     'processor': 'traversal',
     'args': {
       'gremlin': this._writer.adaptObject(bytecode),
-      'aliases': { 'g': this._traversalSource }
+      'aliases': { 'g': this.traversalSource }
     }
   });
 };
