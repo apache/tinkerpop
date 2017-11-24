@@ -37,7 +37,8 @@
   },
   "devDependencies": {
     "mocha": "~4.0.1",
-    "cucumber": "~3.1.0"
+    "cucumber": "~3.1.0",
+    "chai": "~4.1.2"
   },
   "repository": {
     "type": "git",
@@ -48,7 +49,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/unit test/integration -t 5000",
-    "features": "./node_modules/.bin/cucumber.js --require test/cucumber ../../../../../gremlin-test/features/map/Count.feature",
+    "features": "./node_modules/.bin/cucumber.js --require test/cucumber ../../../../../gremlin-test/features/map/AddVertex.feature",
     "unit-test": "./node_modules/.bin/mocha test/unit"
   },
   "engines": {

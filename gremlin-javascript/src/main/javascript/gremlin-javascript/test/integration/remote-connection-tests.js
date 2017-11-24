@@ -39,7 +39,7 @@ describe('DriverRemoteConnection', function () {
   });
   describe('#submit()', function () {
     it('should send the request and parse the response', function () {
-      return connection.submit(new Bytecode().addStep('addV', [ 'person' ]).addStep('property', [ 'name', 'marko']))
+      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);

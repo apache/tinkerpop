@@ -128,6 +128,37 @@ function Path(labels, objects) {
   this.objects = objects;
 }
 
+Path.prototype.equals = function (other) {
+  if (!(other instanceof Path)) {
+    return false;
+  }
+  if (other === this) {
+    return true;
+  }
+  return areEqual(this.objects, other.objects) && areEqual(this.labels, other.labels);
+};
+
+function areEqual(obj1, obj2) {
+  if (obj1 === obj2) {
+    return true;
+  }
+  if (typeof obj1.equals === 'function') {
+    return obj1.equals(obj2);
+  }
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    if (obj1.length !== obj2.length) {
+      return false;
+    }
+    for (let i = 0; i < obj1.length; i++) {
+      if (!areEqual(obj1[i], obj2[i])){
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
   Edge: Edge,
   Graph: Graph,

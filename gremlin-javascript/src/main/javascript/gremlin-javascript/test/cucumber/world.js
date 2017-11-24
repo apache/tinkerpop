@@ -37,18 +37,43 @@ defineSupportCode(function (methods) {
     this.traversal = null;
     this.result = null;
     this.cache = null;
+    this.graphName = null;
+    this.parameters = {};
   }
 
-  TinkerPopWorld.prototype.getDataByGraphName = function (name) {
-    return this.cache[name];
+  TinkerPopWorld.prototype.getData = function () {
+    if (!this.graphName) {
+      throw new Error("Graph name is not set");
+    }
+    return this.cache[this.graphName];
+  };
+
+  TinkerPopWorld.prototype.cleanEmptyGraph = function () {
+    const connection = this.cache['empty'].connection;
+    const g = new Graph().traversal().withRemote(connection);
+    return g.V().drop().toList();
+  };
+
+  TinkerPopWorld.prototype.loadEmptyGraphData = function () {
+    const cacheData = this.cache['empty'];
+    const c = cacheData.connection;
+    return Promise.all([ getVertices(c), getEdges(c) ]).then(values => {
+      cacheData.vertices = values[0];
+      cacheData.edges = values[1];
+    });
   };
 
   methods.setWorldConstructor(TinkerPopWorld);
 
   methods.BeforeAll(function () {
     // load all traversals
-    const promises = ['modern', 'classic', 'crew', 'grateful'].map(graphName => {
-      const connection = helper.getConnection('g' + graphName);
+    const promises = ['modern', 'classic', 'crew', 'grateful', 'empty'].map(graphName => {
+      let connection = null;
+      if (graphName === 'empty') {
+        connection = helper.getConnection('ggraph');
+        return connection.open().then(() => cache['empty'] = { connection: connection });
+      }
+      connection = helper.getConnection('g' + graphName);
       return connection.open()
         .then(() => Promise.all([getVertices(connection), getEdges(connection)]))
         .then(values => {

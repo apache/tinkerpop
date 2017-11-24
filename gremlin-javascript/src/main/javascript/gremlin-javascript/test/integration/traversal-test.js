@@ -44,7 +44,7 @@ describe('Traversal', function () {
       var g = new Graph().traversal().withRemote(connection);
       return g.V().toList().then(function (list) {
         assert.ok(list);
-        assert.strictEqual(list.length, 7);
+        assert.strictEqual(list.length, 6);
         list.forEach(v => assert.ok(v instanceof Vertex));
       });
     });
