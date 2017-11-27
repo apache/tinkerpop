@@ -25,12 +25,17 @@
 const defineSupportCode = require('cucumber').defineSupportCode;
 const vm = require('vm');
 const expect = require('chai').expect;
+const util = require('util');
 const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const Graph = graphModule.Graph;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
+
+// Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
+// Use false for GraphSON3.
+const mapAsObject = true;
 
 const parsers = [
   [ 'd\\[([\\d.]+)\\]\\.[ilfdm]', toNumeric ],
@@ -69,6 +74,8 @@ defineSupportCode(function(methods) {
   });
 
   methods.Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, stringValue) {
+    // Remove escaped chars
+    stringValue = stringValue.replace(/\\"/g, '"');
     let p = Promise.resolve();
     if (this.graphName === 'empty') {
       p = this.loadEmptyGraphData();
@@ -76,6 +83,11 @@ defineSupportCode(function(methods) {
     const self = this;
     return p.then(() => {
       self.parameters[paramName] = parseValue.call(self, stringValue);
+    }).catch(err => {
+      if (err instanceof IgnoreError) {
+        return 'skipped';
+      }
+      throw err;
     });
   });
 
@@ -98,13 +110,13 @@ defineSupportCode(function(methods) {
     const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
     switch (characterizedAs) {
       case 'ordered':
-        console.log('--- ordered', expectedResult);
         expect(this.result).to.have.deep.ordered.members(expectedResult);
         break;
       case 'unordered':
-        console.log('--- unordered expected:', expectedResult);
-        console.log('--- obtained:', this.result);
         expect(this.result).to.have.deep.members(expectedResult);
+        break;
+      case 'of':
+        expect(this.result).to.include.deep.members(expectedResult);
         break;
     }
   });
@@ -117,7 +129,22 @@ defineSupportCode(function(methods) {
   });
 
   methods.Then(/^the result should have a count of (\d+)$/, function (stringCount) {
-    expect(this.result).to.have.lengthOf(parseInt(stringCount, 10));
+    const expected = parseInt(stringCount, 10);
+    if (!Array.isArray(this.result)) {
+      let count = 0;
+      if (this.result instanceof Map) {
+        count = this.result.size;
+      }
+      else if (typeof this.result === 'object') {
+        count = Object.keys(this.result).length;
+      }
+      else {
+        throw new Error('result not supported: ' + util.inspect(this.result));
+      }
+      expect(count).to.be.equal(expected);
+      return;
+    }
+    expect(this.result).to.have.lengthOf(expected);
   });
 
   methods.Then('nothing should happen because', _ => {});
@@ -187,7 +214,11 @@ function toVertexIdString(name) {
 }
 
 function toEdge(name) {
-  return this.getData().edges[name];
+  const e = this.getData().edges[name];
+  if (!e) {
+    throw new Error(util.format('Edge with key "%s" not found', name));
+  }
+  return e;
 }
 
 function toEdgeId(name) {
@@ -210,6 +241,45 @@ function toArray(stringList) {
   return stringList.split(',').map(x => parseValue.call(this, x));
 }
 
-function toMap() {}
+function toMap(stringMap) {
+  return parseMapValue.call(this, JSON.parse(stringMap));
+}
 
-function toLambda() {}
+function parseMapValue(value) {
+  if (typeof value === 'string') {
+    return parseValue.call(this, value);
+  }
+  if (Array.isArray(value)) {
+    return value.map(x => parseMapValue.call(this, x));
+  }
+  if (typeof value !== 'object') {
+    return value;
+  }
+  if (mapAsObject) {
+    const result = {};
+    Object.keys(value).forEach(key => {
+      result[key] = parseMapValue.call(this, value[key]);
+    });
+    return result;
+  }
+  const map = new Map();
+  Object.keys(value).forEach(key => {
+    map.set(key, parseMapValue.call(this, value[key]));
+  });
+  return map;
+}
+
+function toLambda() {
+  throw new IgnoreError(IgnoreError.reason.lambdaNotSupported);
+}
+
+function IgnoreError(reason) {
+  Error.call(this, reason);
+  Error.captureStackTrace(this, IgnoreError);
+}
+
+util.inherits(IgnoreError, Error);
+
+IgnoreError.reason = {
+  lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
+};

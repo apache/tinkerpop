@@ -104,7 +104,7 @@ function getVertices(connection) {
 function getEdges(connection) {
   const g = new Graph().traversal().withRemote(connection);
   return g.E().group()
-    .by(__.project("o", "l", "i").by(__.outV().values("name")).by(__.inV().values("name")))
+    .by(__.project("o", "l", "i").by(__.outV().values("name")).by(__.label()).by(__.inV().values("name")))
     .by(__.tail())
     .next()
     .then(it => {
