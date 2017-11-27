@@ -58,6 +58,18 @@ Traversal.prototype.toList = function () {
 };
 
 /**
+ * Iterates all Traverser instances in the traversal.
+ * @returns {Promise}
+ */
+Traversal.prototype.iterate = function () {
+  return this._applyStrategies().then(() => {
+    let it;
+    while ((it = this._getNext()) && !it.done) {
+    }
+  });
+};
+
+/**
  * Async iterator method implementation.
  * Returns a promise containing an iterator item.
  * @returns {Promise.<{value, done}>}

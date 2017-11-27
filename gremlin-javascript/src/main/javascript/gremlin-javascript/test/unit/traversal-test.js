@@ -32,7 +32,6 @@ const TraversalStrategies = require('../../lib/process/traversal-strategy').Trav
 describe('Traversal', function () {
 
   describe('#getByteCode()', function () {
-
     it('should add steps for with a string parameter', function () {
       var g = new graph.Graph().traversal();
       var bytecode = g.V().out('created').getBytecode();
@@ -61,7 +60,6 @@ describe('Traversal', function () {
   });
 
   describe('#next()', function () {
-
     it('should apply the strategies and return a Promise with the iterator item', function () {
       var strategyMock = {
         apply: function (traversal) {
@@ -173,6 +171,25 @@ describe('Traversal', function () {
         .then(list => {
           expect(list).to.have.members([1, 2, 2, 2, 3, 3, 4]);
         });
+    });
+  });
+
+  describe('#iterate()', function () {
+    it('should apply the strategies and return a Promise', function () {
+      let applied = false;
+      const strategyMock = {
+        apply: function (traversal) {
+          applied = true;
+          traversal.traversers = [ new t.Traverser('a', 1), new t.Traverser('b', 1) ];
+          return utils.resolvedPromise();
+        }
+      };
+      const strategies = new TraversalStrategies();
+      strategies.addStrategy(strategyMock);
+      const traversal = new t.Traversal(null, strategies, null);
+      return traversal.iterate().then(() => {
+        assert.strictEqual(applied, true);
+      });
     });
   });
 });
