@@ -172,8 +172,9 @@ public final class TraversalHelper {
      * @param traversal  the traversal on which the action will occur
      */
     public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(stepIndex(removeStep, traversal), insertStep);
-        traversal.removeStep(removeStep);
+        final int i;
+        traversal.removeStep(i = stepIndex(removeStep, traversal));
+        traversal.addStep(i, insertStep);
     }
 
     public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {

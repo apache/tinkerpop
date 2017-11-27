@@ -253,6 +253,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * `TraversalVertexProgram` `profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Returned the `Builder` instance from the `DetachedEdge.Builder` methods of `setOutE` and `setOutV`.
 * Added test framework for GLVs.
+* Fixed bug in `TraversalHelper.replaceStep()` where the step being replaced needed to be removed prior to the new one being added.
 * Added alias support in the .NET `DriverRemoteConnection`.
 * Added a test for self-edges and fixed `Neo4jVertex` to provided repeated self-edges on `BOTH`.
 * Better respected permissions on the `plugins.txt` file and prevented writing if marked as read-only.
