@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
@@ -47,6 +48,8 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,6 +67,22 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TraversalHelperTest {
+
+    @Test
+    public void shouldSetPreviousStepToEmptyStep() {
+        final Traversal.Admin<?, ?> traversal = __.V().out().asAdmin();
+        //transform the traversal to __.V().not(out())
+        //the VertexStep's previousStep should be the EmptyStep
+        Optional<VertexStep> vertexStepOpt = TraversalHelper.getFirstStepOfAssignableClass(VertexStep.class, traversal);
+        assertTrue(vertexStepOpt.isPresent());
+        Traversal.Admin<?,?> inner = __.start().asAdmin();
+        inner.addStep(0, vertexStepOpt.get());
+        TraversalHelper.replaceStep(vertexStepOpt.get(), new NotStep<>(__.identity().asAdmin(), inner), traversal);
+        List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClassRecursively(VertexStep.class, traversal);
+        assertEquals(1, vertexSteps.size());
+        VertexStep vertexStep = vertexSteps.get(0);
+        assertTrue("Expected the previousStep to be an EmptyStep, found instead " + vertexStep.getPreviousStep().toString(),vertexStep.getPreviousStep() == EmptyStep.instance());
+    }
 
     @Test
     public void shouldIdentifyLocalChildren() {
