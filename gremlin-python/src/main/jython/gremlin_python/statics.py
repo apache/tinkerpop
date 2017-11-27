@@ -36,6 +36,15 @@ else:
     from types import LongType
     from types import TypeType
 
+
+class timestamp(float):
+    """
+    In Python a timestamp is simply a float. This dummy class (similar to long), allows users to wrap a float
+    in a GLV script to make sure the value is serialized as a GraphSON timestamp.
+    """
+    pass
+
+
 staticMethods = {}
 staticEnums = {}
 default_lambda_language = "gremlin-python"
