@@ -22,14 +22,17 @@
  */
 'use strict';
 
-var assert = require('assert');
-var graph = require('../../lib/structure/graph');
-var utils = require('../../lib/utils');
-var t = require('../../lib/process/traversal');
-var TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
+const assert = require('assert');
+const expect = require('chai').expect;
+const graph = require('../../lib/structure/graph');
+const utils = require('../../lib/utils');
+const t = require('../../lib/process/traversal');
+const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 
 describe('Traversal', function () {
+
   describe('#getByteCode()', function () {
+
     it('should add steps for with a string parameter', function () {
       var g = new graph.Graph().traversal();
       var bytecode = g.V().out('created').getBytecode();
@@ -40,6 +43,7 @@ describe('Traversal', function () {
       assert.strictEqual(bytecode.stepInstructions[1][0], 'out');
       assert.strictEqual(bytecode.stepInstructions[1][1], 'created');
     });
+
     it('should add steps with an enum value', function () {
       var g = new graph.Graph().traversal();
       var bytecode = g.V().order().by('age', t.order.decr).getBytecode();
@@ -55,7 +59,9 @@ describe('Traversal', function () {
       assert.strictEqual(bytecode.stepInstructions[2][2].elementName, 'decr');
     });
   });
+
   describe('#next()', function () {
+
     it('should apply the strategies and return a Promise with the iterator item', function () {
       var strategyMock = {
         apply: function (traversal) {
@@ -83,8 +89,43 @@ describe('Traversal', function () {
           return traversal.next();
         });
     });
+
+    it('should support bulk', function () {
+      const strategyMock = {
+        apply: function (traversal) {
+          traversal.traversers = [ new t.Traverser(1, 2), new t.Traverser(2, 1) ];
+          return utils.resolvedPromise();
+        }
+      };
+      const strategies = new TraversalStrategies();
+      strategies.addStrategy(strategyMock);
+      const traversal = new t.Traversal(null, strategies, null);
+      return traversal.next()
+        .then(function (item) {
+          assert.strictEqual(item.value, 1);
+          assert.strictEqual(item.done, false);
+          return traversal.next();
+        })
+        .then(function (item) {
+          assert.strictEqual(item.value, 1);
+          assert.strictEqual(item.done, false);
+          return traversal.next();
+        })
+        .then(function (item) {
+          assert.strictEqual(item.value, 2);
+          assert.strictEqual(item.done, false);
+          return traversal.next();
+        })
+        .then(function (item) {
+          assert.strictEqual(item.value, null);
+          assert.strictEqual(item.done, true);
+          return traversal.next();
+        });
+    });
   });
+
   describe('#toList()', function () {
+
     it('should apply the strategies and return a Promise with an array', function () {
       var strategyMock = {
         apply: function (traversal) {
@@ -100,6 +141,7 @@ describe('Traversal', function () {
         assert.deepEqual(list, [ 'a', 'b' ]);
       });
     });
+
     it('should return an empty array when traversers is empty', function () {
       var strategyMock = {
         apply: function (traversal) {
@@ -114,6 +156,23 @@ describe('Traversal', function () {
         assert.ok(Array.isArray(list));
         assert.strictEqual(list.length, 0);
       });
-    })
+    });
+
+    it('should support bulk', function () {
+      const strategyMock = {
+        apply: function (traversal) {
+          traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 3), new t.Traverser(3, 2),
+            new t.Traverser(4, 1) ];
+          return utils.resolvedPromise();
+        }
+      };
+      const strategies = new TraversalStrategies();
+      strategies.addStrategy(strategyMock);
+      const traversal = new t.Traversal(null, strategies, null);
+      return traversal.toList()
+        .then(list => {
+          expect(list).to.have.members([1, 2, 2, 2, 3, 3, 4]);
+        });
+    });
   });
 });

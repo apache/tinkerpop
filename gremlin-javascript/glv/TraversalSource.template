@@ -22,15 +22,15 @@
  */
 'use strict';
 
-var utils = require('../utils');
-var parseArgs = utils.parseArgs;
-var itemDone = Object.freeze({ value: null, done: true });
-var emptyArray = Object.freeze([]);
+const utils = require('../utils');
+const parseArgs = utils.parseArgs;
+const itemDone = Object.freeze({ value: null, done: true });
 
 function Traversal(graph, traversalStrategies, bytecode) {
   this.graph = graph;
   this.traversalStrategies = traversalStrategies;
   this.bytecode = bytecode;
+  /** @type {Array<Traverser>} */
   this.traversers = null;
   this.sideEffects = null;
   this._traversalStrategiesPromise = null;
@@ -47,17 +47,13 @@ Traversal.prototype.getBytecode = function () {
  * @returns {Promise.<Array>}
  */
 Traversal.prototype.toList = function () {
-  var self = this;
-  return this._applyStrategies().then(function () {
-    if (!self.traversers || self._traversersIteratorIndex === self.traversers.length) {
-      return emptyArray;
+  return this._applyStrategies().then(() => {
+    const result = [];
+    let it;
+    while ((it = this._getNext()) && !it.done) {
+      result.push(it.value);
     }
-    var arr = new Array(self.traversers.length - self._traversersIteratorIndex);
-    for (var i = self._traversersIteratorIndex; i < self.traversers.length; i++) {
-      arr[i] = self.traversers[i].object;
-    }
-    self._traversersIteratorIndex = self.traversers.length;
-    return arr;
+    return result;
   });
 };
 
@@ -67,13 +63,23 @@ Traversal.prototype.toList = function () {
  * @returns {Promise.<{value, done}>}
  */
 Traversal.prototype.next = function () {
-  var self = this;
-  return this._applyStrategies().then(function () {
-    if (!self.traversers || self._traversersIteratorIndex === self.traversers.length) {
-      return itemDone;
+  return this._applyStrategies().then(() => this._getNext());
+};
+
+/**
+ * Synchronous iterator of traversers including
+ * @private
+ */
+Traversal.prototype._getNext = function () {
+  while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
+    let traverser = this.traversers[this._traversersIteratorIndex];
+    if (traverser.bulk > 0) {
+      traverser.bulk--;
+      return { value: traverser.object, done: false };
     }
-    return { value: self.traversers[self._traversersIteratorIndex++].object, done: false };
-  });
+    this._traversersIteratorIndex++;
+  }
+  return itemDone;
 };
 
 Traversal.prototype._applyStrategies = function () {
@@ -133,7 +139,7 @@ P.prototype.or = function (arg) {
 
 function Traverser(object, bulk) {
   this.object = object;
-  this.bulk = bulk == undefined ? 1 : bulk;
+  this.bulk = bulk || 1;
 }
 
 function TraversalSideEffects() {
