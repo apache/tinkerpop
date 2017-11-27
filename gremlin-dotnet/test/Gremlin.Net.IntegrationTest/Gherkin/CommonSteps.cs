@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
@@ -66,9 +67,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 { 'i', s => Convert.ToInt32(s) },
                 { 'l', s => Convert.ToInt64(s) },
-                { 'f', s => Convert.ToSingle(s) },
-                { 'd', s => Convert.ToDouble(s) },
-                { 'm', s => Convert.ToDecimal(s)}
+                { 'f', s => Convert.ToSingle(s, CultureInfo.InvariantCulture) },
+                { 'd', s => Convert.ToDouble(s, CultureInfo.InvariantCulture) },
+                { 'm', s => Convert.ToDecimal(s, CultureInfo.InvariantCulture) }
             };
 
         [Given("the (\\w+) graph")]

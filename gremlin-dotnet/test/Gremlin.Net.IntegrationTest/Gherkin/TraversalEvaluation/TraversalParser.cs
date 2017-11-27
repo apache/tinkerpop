@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -452,12 +453,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             }
             if (numericText.EndsWith("F"))
             {
-                return LiteralParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length-1)));
+                return LiteralParameter.Create(Convert.ToSingle(match.Value.Substring(0, match.Value.Length - 1),
+                    CultureInfo.InvariantCulture));
             }
             if (match.Groups[1].Value != "")
             {
                 // Captured text with the decimal separator
-                return LiteralParameter.Create(Convert.ToDecimal(match.Value));
+                return LiteralParameter.Create(Convert.ToDecimal(match.Value, CultureInfo.InvariantCulture));
             }
             return LiteralParameter.Create(Convert.ToInt32(match.Value));
         }
