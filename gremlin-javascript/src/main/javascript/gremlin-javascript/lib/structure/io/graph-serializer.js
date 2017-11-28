@@ -65,7 +65,9 @@ var serializers = [
   TraverserSerializer,
   PSerializer,
   LambdaSerializer,
-  EnumSerializer
+  EnumSerializer,
+  VertexSerializer,
+  EdgeSerializer
 ];
 
 /**
@@ -237,7 +239,7 @@ BytecodeSerializer.prototype._serializeInstructions = function (instructions) {
   }
   var result = new Array(instructions.length);
   result[0] = instructions[0];
-  for (var i = 1; i < instructions.length; i++) {
+  for (var i = 0; i < instructions.length; i++) {
     result[i] = this.writer.adaptObject(instructions[i]);
   }
   return result;
@@ -258,7 +260,7 @@ PSerializer.prototype.serialize = function (item) {
   var resultValue = result[valueKey] = {
     'predicate': item.operator
   };
-  if (item.other == undefined) {
+  if (item.other === undefined || item.other === null) {
     resultValue['value'] = this.writer.adaptObject(item.value);
   }
   else {
@@ -340,6 +342,21 @@ VertexSerializer.prototype.deserialize = function (obj) {
   return new g.Vertex(this.reader.read(value['id']), value['label'], this.reader.read(value['properties']));
 };
 
+/** @param {Vertex} item */
+VertexSerializer.prototype.serialize = function (item) {
+  var result = {};
+  result[typeKey] = 'g:Vertex';
+  result[valueKey] = {
+    'id': this.writer.adaptObject(item.id),
+    'label': item.label
+  };
+  return result;
+};
+
+VertexSerializer.prototype.canBeUsedFor = function (value) {
+  return (value instanceof g.Vertex);
+};
+
 function VertexPropertySerializer() {
 
 }
@@ -378,6 +395,25 @@ EdgeSerializer.prototype.deserialize = function (obj) {
     this.reader.read(value['inV']),
     this.reader.read(value['properties'])
   );
+};
+
+/** @param {Edge} item */
+EdgeSerializer.prototype.serialize = function (item) {
+  var result = {};
+  result[typeKey] = 'g:Edge';
+  result[valueKey] = {
+    'id': this.writer.adaptObject(item.id),
+    'label': item.label,
+    'outV': this.writer.adaptObject(item.outV.id),
+    'outVLabel': item.outV.label,
+    'inV': this.writer.adaptObject(item.inV.id),
+    'inVLabel': item.inV.label
+  };
+  return result;
+};
+
+EdgeSerializer.prototype.canBeUsedFor = function (value) {
+  return (value instanceof g.Edge);
 };
 
 function PathSerializer() {
