@@ -94,6 +94,17 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void shouldFilterOnIterate() {
+        final Traversal<Vertex,String> traversal = g.V().out().out().<String>values("name").aggregate("x").iterate();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, traversal.asAdmin().getSideEffects().<BulkSet>get("x").size());
+        assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("ripple"));
+        assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("lop"));
+        assertEquals(Traversal.Symbols.none, traversal.asAdmin().getBytecode().getStepInstructions().get(traversal.asAdmin().getBytecode().getStepInstructions().size()-1).getOperator());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void shouldLoadVerticesViaIds() {
         final List<Vertex> vertices = g.V().toList();
         final List<Object> ids = vertices.stream().map(Vertex::id).collect(Collectors.toList());
