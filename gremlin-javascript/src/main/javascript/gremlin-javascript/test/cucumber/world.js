@@ -33,6 +33,7 @@ defineSupportCode(function (methods) {
   const cache = {};
 
   function TinkerPopWorld(){
+    this.scenario = null;
     this.g = null;
     this.traversal = null;
     this.result = null;
@@ -91,7 +92,8 @@ defineSupportCode(function (methods) {
     return Promise.all(Object.keys(cache).map(graphName => cache[graphName].connection.close()));
   });
 
-  methods.Before(function () {
+  methods.Before(function (info) {
+    this.scenario = info.pickle.name;
     this.cache = cache;
   });
 });

@@ -52,8 +52,20 @@ const parsers = [
   [ 'c\\[(.+)\\]', toLambda ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
+const ignoreReason = {
+  lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
+};
+
+const ignoredScenarios = {
+  // An associative array containing the scenario name as key, for example:
+  // 'g_V_branchXlabel_eq_person': new IgnoreError(ignoreReason.lambdaNotSupported),
+};
+
 defineSupportCode(function(methods) {
   methods.Given(/^the (.+) graph$/, function (graphName) {
+    if (ignoredScenarios[this.scenario]) {
+      return 'skipped';
+    }
     this.graphName = graphName;
     const data = this.getData();
     this.g = new Graph().traversal().withRemote(data.connection);
@@ -282,7 +294,7 @@ function parseMapValue(value) {
 }
 
 function toLambda() {
-  throw new IgnoreError(IgnoreError.reason.lambdaNotSupported);
+  throw new IgnoreError(ignoreReason.lambdaNotSupported);
 }
 
 /**
@@ -311,7 +323,3 @@ function IgnoreError(reason) {
 }
 
 util.inherits(IgnoreError, Error);
-
-IgnoreError.reason = {
-  lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
-};
