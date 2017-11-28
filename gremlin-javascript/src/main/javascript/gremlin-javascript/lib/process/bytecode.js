@@ -34,7 +34,7 @@ function Bytecode(toClone) {
   }
   else {
     this.sourceInstructions = toClone.sourceInstructions.slice(0);
-    this.stepInstructions = toClone.sourceInstructions.slice(0);
+    this.stepInstructions = toClone.stepInstructions.slice(0);
   }
 }
 
