@@ -80,9 +80,8 @@ defineSupportCode(function(methods) {
     if (this.graphName === 'empty') {
       p = this.loadEmptyGraphData();
     }
-    const self = this;
     return p.then(() => {
-      self.parameters[paramName] = parseValue.call(self, stringValue);
+      this.parameters[paramName] = parseValue.call(this, stringValue);
     }).catch(err => {
       if (err instanceof IgnoreError) {
         return 'skipped';
@@ -96,7 +95,13 @@ defineSupportCode(function(methods) {
   });
 
   methods.When('iterated next', function () {
-    return this.traversal.next().then(it => this.result = it.value);
+    return this.traversal.next().then(it => {
+      this.result = it.value;
+      if (this.result instanceof Path) {
+        // Compare using the objects array
+        this.result = this.result.objects;
+      }
+    });
   });
 
   methods.Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resultTable) {
@@ -110,13 +115,14 @@ defineSupportCode(function(methods) {
     const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
     switch (characterizedAs) {
       case 'ordered':
-        expect(this.result).to.have.deep.ordered.members(expectedResult);
+        expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
         break;
       case 'unordered':
-        expect(this.result).to.have.deep.members(expectedResult);
+        expect(toCompare(this.result)).to.have.deep.members(expectedResult);
         break;
       case 'of':
-        expect(this.result).to.include.deep.members(expectedResult);
+        // result is a subset of the expected
+        expect(expectedResult).to.include.deep.members(toCompare(this.result));
         break;
     }
   });
@@ -156,7 +162,11 @@ function getSandbox(g, parameters) {
     __: __,
     Cardinality: traversalModule.cardinality,
     Column: traversalModule.column,
-    Direction: traversalModule.direction,
+    Direction: {
+      BOTH: traversalModule.direction.both,
+      IN: traversalModule.direction.in,
+      OUT: traversalModule.direction.out
+    },
     Order: traversalModule.order,
     P: traversalModule.P,
     Pick: traversalModule.pick,
@@ -172,6 +182,8 @@ function getSandbox(g, parameters) {
 function translate(traversalText) {
   // Remove escaped chars
   traversalText = traversalText.replace(/\\"/g, '"');
+  // Remove long suffix
+  traversalText = traversalText.replace(/\b(\d+)l\b/gi, '$1');
   // Change according to naming convention
   traversalText = traversalText.replace(/\.in\(/g, '.in_(');
   traversalText = traversalText.replace(/\.from\(/g, '.from_(');
@@ -231,7 +243,7 @@ function toEdgeIdString(name) {
 
 function toPath(value) {
   const parts = value.split(',');
-  return new Path(parts.map(_ => new Array(0)), parts.map(x => parseValue.call(this, x)));
+  return new Path(new Array(0), parts.map(x => parseValue.call(this, x)));
 }
 
 function toArray(stringList) {
@@ -271,6 +283,26 @@ function parseMapValue(value) {
 
 function toLambda() {
   throw new IgnoreError(IgnoreError.reason.lambdaNotSupported);
+}
+
+/**
+ * Adapts the object to be compared, removing labels property of the Path.
+ */
+function toCompare(obj) {
+  if (!obj) {
+    return obj;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(toCompare);
+  }
+  if (obj instanceof Path) {
+    // labels are ignored
+    obj.labels = new Array(0);
+  }
+  return obj;
 }
 
 function IgnoreError(reason) {
