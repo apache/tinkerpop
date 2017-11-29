@@ -60,3 +60,14 @@ var toPromise = exports.toPromise = function toPromise(promiseFactory, handler) 
   promiseFactory = promiseFactory || defaultPromiseFactory;
   return promiseFactory(handler);
 };
+
+exports.toLong = function toLong(value) {
+  return new Long(value);
+};
+
+var Long = exports.Long = function Long(value) {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    throw new TypeError('Ty')
+  }
+  this.value = value.toString();
+};

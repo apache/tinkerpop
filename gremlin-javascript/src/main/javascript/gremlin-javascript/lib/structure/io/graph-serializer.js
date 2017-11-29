@@ -24,7 +24,8 @@
 
 var t = require('../../process/traversal');
 var Bytecode = require('../../process/bytecode');
-var g = require('../graph.js');
+var g = require('../graph');
+var utils = require('../../utils');
 
 /**
  * A type serializer
@@ -67,7 +68,8 @@ var serializers = [
   LambdaSerializer,
   EnumSerializer,
   VertexSerializer,
-  EdgeSerializer
+  EdgeSerializer,
+  LongSerializer
 ];
 
 /**
@@ -208,6 +210,21 @@ NumberSerializer.prototype.deserialize = function (obj) {
 
 NumberSerializer.prototype.canBeUsedFor = function (value) {
   return (typeof value === 'number');
+};
+
+function LongSerializer() {
+
+}
+
+NumberSerializer.prototype.serialize = function (item) {
+  return {
+    [typeKey]: 'g:Int64',
+    [valueKey]: item.value
+  };
+};
+
+NumberSerializer.prototype.canBeUsedFor = function (value) {
+  return (value instanceof utils.Long);
 };
 
 function BytecodeSerializer() {

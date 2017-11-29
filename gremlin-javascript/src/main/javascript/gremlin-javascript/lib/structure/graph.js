@@ -23,7 +23,6 @@
 'use strict';
 
 var gt = require('../process/graph-traversal');
-var t = require('../process/traversal');
 var TraversalStrategies = require('../process/traversal-strategy').TraversalStrategies;
 var utils = require('../utils');
 var inherits = utils.inherits;

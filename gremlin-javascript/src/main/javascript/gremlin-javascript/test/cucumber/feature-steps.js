@@ -29,6 +29,7 @@ const util = require('util');
 const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
+const utils = require('../../lib/utils');
 const Graph = graphModule.Graph;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
@@ -185,6 +186,7 @@ function getSandbox(g, parameters) {
     Scope: traversalModule.scope,
     Operator: traversalModule.operator,
     T: traversalModule.t,
+    toLong: utils.toLong
   };
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);
@@ -194,8 +196,8 @@ function getSandbox(g, parameters) {
 function translate(traversalText) {
   // Remove escaped chars
   traversalText = traversalText.replace(/\\"/g, '"');
-  // Remove long suffix
-  traversalText = traversalText.replace(/\b(\d+)l\b/gi, '$1');
+  // Replace long suffix with Long instance
+  traversalText = traversalText.replace(/\b(\d+)l\b/gi, 'toLong($1)');
   // Change according to naming convention
   traversalText = traversalText.replace(/\.in\(/g, '.in_(');
   traversalText = traversalText.replace(/\.from\(/g, '.from_(');

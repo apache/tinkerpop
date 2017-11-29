@@ -29,6 +29,7 @@ var graph = require('./lib/structure/graph');
 var gs = require('./lib/structure/io/graph-serializer');
 var rc = require('./lib/driver/remote-connection');
 var Bytecode = require('./lib/process/bytecode');
+var utils = require('./lib/utils');
 
 module.exports = {
   driver: {
@@ -68,6 +69,7 @@ module.exports = {
     Path: graph.Path,
     Property: graph.Property,
     Vertex: graph.Vertex,
-    VertexProperty: graph.VertexProperty
+    VertexProperty: graph.VertexProperty,
+    toLong: utils.toLong
   }
 };
