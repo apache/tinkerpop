@@ -27,7 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Provided a method to configure detachment options with `EventStrategy`.
 * Fixed a race condition in `TinkerIndex`.
 * Fixed an `ArrayOutOfBoundsException` in `hasId()` for the rare situation when the provided collection is empty.
-* Bump to Netty 4.0.52
+* Bump to Netty 4.0.53
 * `TraversalVertexProgram` `profile()` now accounts for worker iteration in `GraphComputer` OLAP.
 * Returned the `Builder` instance from the `DetachedEdge.Builder` methods of `setOutE` and `setOutV`.
 * Added test framework for GLVs.
