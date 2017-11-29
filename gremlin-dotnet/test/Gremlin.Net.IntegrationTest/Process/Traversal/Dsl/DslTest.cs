@@ -30,13 +30,35 @@ using Xunit;
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl {
 
     public static class SocialTraversal {
-        public static GraphTraversal<Vertex,Vertex> knows(this GraphTraversal<Vertex,Vertex> t, string personName) {
+        public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName) {
             return t.Out("knows").HasLabel("person").Has("name", personName);
+        }
+
+        public static GraphTraversal<Vertex, int> YoungestFriendsAge(this GraphTraversal<Vertex,Vertex> t) {
+            return t.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
+        }
+
+        public static GraphTraversal<Vertex,long> CreatedAtLeast(this GraphTraversal<Vertex,Vertex> t, long number) {
+            return t.OutE("created").Count().Is(P.Gte(number));
+        }
+    }
+
+    public static class __Social {
+        public static GraphTraversal<object,Vertex> Knows(string personName) {
+            return __.Out("knows").HasLabel("person").Has("name", personName);
+        }
+
+        public static GraphTraversal<object, int> YoungestFriendsAge() {
+            return __.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
+        }
+
+        public static GraphTraversal<object,long> CreatedAtLeast(long number) {
+            return __.OutE("created").Count().Is(P.Gte(number));
         }
     }
 
     public static class SocialTraversalSource {
-        public static GraphTraversal<Vertex,Vertex> persons(this GraphTraversalSource g, params string[] personNames) {
+        public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames) {
             GraphTraversal<Vertex,Vertex> t = g.V().HasLabel("person");
 
             if (personNames.Length > 0) {    
@@ -56,7 +78,11 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl {
             var connection = _connectionFactory.CreateRemoteConnection();
             var social = graph.Traversal().WithRemote(connection);
 
-            Assert.NotNull(social.persons("marko").knows("josh").Next());
+            Assert.NotNull(social.Persons("marko").Knows("josh").Next());
+            Assert.Equal(27, social.Persons("marko").YoungestFriendsAge().Next());
+            Assert.Equal(4, social.Persons().Count().Next());
+            Assert.Equal(2, social.Persons("marko", "josh").Count().Next());
+            Assert.Equal(1, social.Persons().Filter(__Social.CreatedAtLeast(2)).Count().Next());
         }
     }
 }
