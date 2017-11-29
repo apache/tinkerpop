@@ -27,41 +27,53 @@ using Gremlin.Net.Structure;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Xunit;
 
-namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl {
+namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl 
+{
 
-    public static class SocialTraversal {
-        public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName) {
+    public static class SocialTraversal 
+    {
+        public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName) 
+        {
             return t.Out("knows").HasLabel("person").Has("name", personName);
         }
 
-        public static GraphTraversal<Vertex, int> YoungestFriendsAge(this GraphTraversal<Vertex,Vertex> t) {
+        public static GraphTraversal<Vertex, int> YoungestFriendsAge(this GraphTraversal<Vertex,Vertex> t) 
+        {
             return t.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
         }
 
-        public static GraphTraversal<Vertex,long> CreatedAtLeast(this GraphTraversal<Vertex,Vertex> t, long number) {
+        public static GraphTraversal<Vertex,long> CreatedAtLeast(this GraphTraversal<Vertex,Vertex> t, long number) 
+        {
             return t.OutE("created").Count().Is(P.Gte(number));
         }
     }
 
-    public static class __Social {
-        public static GraphTraversal<object,Vertex> Knows(string personName) {
+    public static class __Social 
+    {
+        public static GraphTraversal<object,Vertex> Knows(string personName)
+         {
             return __.Out("knows").HasLabel("person").Has("name", personName);
         }
 
-        public static GraphTraversal<object, int> YoungestFriendsAge() {
+        public static GraphTraversal<object, int> YoungestFriendsAge() 
+        {
             return __.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
         }
 
-        public static GraphTraversal<object,long> CreatedAtLeast(long number) {
+        public static GraphTraversal<object,long> CreatedAtLeast(long number) 
+        {
             return __.OutE("created").Count().Is(P.Gte(number));
         }
     }
 
-    public static class SocialTraversalSource {
-        public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames) {
+    public static class SocialTraversalSource 
+    {
+        public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames) 
+        {
             GraphTraversal<Vertex,Vertex> t = g.V().HasLabel("person");
 
-            if (personNames.Length > 0) {    
+            if (personNames.Length > 0) 
+            {    
                 t = t.Has("name", P.Within(personNames));
             }
 
@@ -69,11 +81,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl {
         }
     }
 
-    public class DslTest {
+    public class DslTest 
+    {
         private readonly RemoteConnectionFactory _connectionFactory = new RemoteConnectionFactory();
         
         [Fact]
-        public void ShouldUseDsl() {
+        public void ShouldUseDsl() 
+        {
             var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
             var social = graph.Traversal().WithRemote(connection);
