@@ -29,8 +29,7 @@ var RemoteConnection = require('./remote-connection').RemoteConnection;
 var utils = require('../utils');
 var serializer = require('../structure/io/graph-serializer');
 var inherits = utils.inherits;
-var mimeType = 'application/vnd.gremlin-v2.0+json';
-var header = String.fromCharCode(mimeType.length) + mimeType;
+var defaultMimeType = 'application/vnd.gremlin-v2.0+json';
 var responseStatusCode = {
   success: 200,
   noContent: 204,
@@ -41,16 +40,18 @@ var responseStatusCode = {
  * Creates a new instance of DriverRemoteConnection.
  * @param {String} url The resource uri.
  * @param {Object} [options] The connection options.
- * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
  * @param {Array} [options.ca] Trusted certificates.
  * @param {String|Array|Buffer} [options.cert] The certificate key.
+ * @param {String} [options.mimeType] The mime type to use.
  * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
- * @param {GraphSONReader} [options.reader] The GraphSON2 reader to use.
+ * @param {GraphSONReader} [options.reader] The reader to use.
  * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
- * @param {GraphSONWriter} [options.writer] The GraphSON2 writer to use.
+ * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
+ * @param {GraphSONWriter} [options.writer] The writer to use.
  * @constructor
  */
 function DriverRemoteConnection(url, options) {
+  RemoteConnection.call(this, url);
   options = options || {};
   this._ws = new WebSocket(url, {
     ca: options.ca,
@@ -75,6 +76,8 @@ function DriverRemoteConnection(url, options) {
   this._openPromise = null;
   this._openCallback = null;
   this._closePromise = null;
+  var mimeType = options.mimeType || defaultMimeType;
+  this._header = String.fromCharCode(mimeType.length) + mimeType;
   this.isOpen = false;
   this.traversalSource = options.traversalSource || 'g';
 }
@@ -114,7 +117,7 @@ DriverRemoteConnection.prototype.submit = function (bytecode, promiseFactory) {
         callback: callback,
         result: null
       };
-      var message = bufferFromString(header + JSON.stringify(self._getRequest(requestId, bytecode)));
+      var message = bufferFromString(self._header + JSON.stringify(self._getRequest(requestId, bytecode)));
       self._ws.send(message);
     });
   });

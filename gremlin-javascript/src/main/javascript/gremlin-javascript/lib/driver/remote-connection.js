@@ -27,7 +27,7 @@ var TraversalStrategy = require('../process/traversal-strategy').TraversalStrate
 var utils = require('../utils');
 var inherits = utils.inherits;
 
-function RemoteConnection(url, traversalSource) {
+function RemoteConnection(url) {
   this.url = url;
 }
 
