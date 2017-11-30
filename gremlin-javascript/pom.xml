@@ -150,7 +150,8 @@ def binding = ["enums": CoreImports.getClassImports()
                                         findAll { GraphTraversalSource.class.equals(it.returnType) }.
                                         findAll {
                                             !it.name.equals("clone") &&
-                                                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
+                                                    // Use hardcoded name to be for forward-compatibility
+                                                    !it.name.equals("withBindings") &&
                                                     !it.name.equals(TraversalSource.Symbols.withRemote) &&
                                                     !it.name.equals(TraversalSource.Symbols.withComputer)
                                         }.
@@ -222,6 +223,10 @@ packageJsonFile.newWriter().withWriter{ it << packageJsonTemplate }
                                 <property>
                                     <name>executionName</name>
                                     <value>${project.name}</value>
+                                </property>
+                                <property>
+                                    <name>projectBaseDir</name>
+                                    <value>${project.basedir}</value>
                                 </property>
                             </properties>
                             <scripts>
