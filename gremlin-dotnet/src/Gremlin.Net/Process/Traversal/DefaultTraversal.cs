@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal
@@ -86,9 +87,61 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <inheritdoc />
-        public E Current => (E)TraverserEnumerator.Current?.Object;
+        public E Current => GetCurrent<E>();
 
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current => GetCurrent();
+
+        private TReturn GetCurrent<TReturn>()
+        {
+            var value = GetCurrent();
+            var returnType = typeof(TReturn);
+            if (value == null || value.GetType() == returnType)
+            {
+                // Avoid evaluating type comparisons
+                return (TReturn) value;
+            }
+            return (TReturn) GetValue(returnType, value);
+        }
+
+        private object GetCurrent()
+        {
+            // Use dynamic to object to prevent runtime dynamic conversion evaluation
+            return TraverserEnumerator.Current?.Object;
+        }
+
+        /// <summary>
+        /// Gets the value, converting to the expected type when necessary and supported. 
+        /// </summary>
+        private static object GetValue(Type type, object value)
+        {
+            var genericType = type.GetTypeInfo().IsGenericType
+                ? type.GetTypeInfo().GetGenericTypeDefinition()
+                : null;
+            if (value is IDictionary dictValue && genericType == typeof(IDictionary<,>))
+            {
+                var keyType = type.GenericTypeArguments[0];
+                var valueType = type.GenericTypeArguments[1];
+                var mapType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
+                var result = (IDictionary) Activator.CreateInstance(mapType);
+                foreach (DictionaryEntry kv in dictValue)
+                {
+                    result.Add(GetValue(keyType, kv.Key), GetValue(valueType, kv.Value));
+                }
+                return result;
+            }
+            if (value is IEnumerable enumerableValue && genericType == typeof(IList<>))
+            {
+                var childType = type.GenericTypeArguments[0];
+                var listType = typeof(List<>).MakeGenericType(childType);
+                var result = (IList) Activator.CreateInstance(listType);
+                foreach (var itemValue in enumerableValue)
+                {
+                    result.Add(itemValue);
+                }
+                return result;
+            }
+            return value;
+        }
 
         private IEnumerator<Traverser> GetTraverserEnumerator()
         {
