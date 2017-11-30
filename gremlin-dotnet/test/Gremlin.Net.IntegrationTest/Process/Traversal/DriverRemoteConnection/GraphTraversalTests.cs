@@ -142,6 +142,52 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
+        public void ValueMapTest()
+        {
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = graph.Traversal().WithRemote(connection);
+
+            var result = g.V(1).ValueMap<IList<object>>().Next();
+            Assert.Equal(
+                new Dictionary<string, IList<object>>
+                {
+                    { "age", new List<object> { 29 } },
+                    { "name", new List<object> { "marko" } }
+                },
+                result);
+        }
+
+        [Fact]
+        public void ValueMapWithListConversionTest()
+        {
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = graph.Traversal().WithRemote(connection);
+
+            var result = g.V(1).ValueMap<IList<int>>("age").Next();
+            Assert.Equal(new Dictionary<string, IList<int>>
+            {
+                { "age", new List<int> { 29 } }
+            }, result);
+        }
+
+        [Fact]
+        public void GroupedEdgePropertyConversionTest()
+        {
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = graph.Traversal().WithRemote(connection);
+            var result = g.V().HasLabel("software").Group<string, double>().By("name")
+                          .By(__.BothE().Values<double>("weight").Mean<double>()).Next();
+            Assert.Equal(new Dictionary<string, double>
+            {
+                { "ripple", 1D },
+                { "lop", 1d/3d }
+            }, result);
+        }
+
+        [Fact]
         public void ShouldUseBindingsInTraversal()
         {
             var graph = new Graph();
