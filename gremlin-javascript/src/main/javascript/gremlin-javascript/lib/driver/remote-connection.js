@@ -22,60 +22,54 @@
  */
 'use strict';
 
-var t = require('../process/traversal');
-var TraversalStrategy = require('../process/traversal-strategy').TraversalStrategy;
-var utils = require('../utils');
-var inherits = utils.inherits;
+const t = require('../process/traversal');
+const TraversalStrategy = require('../process/traversal-strategy').TraversalStrategy;
 
-function RemoteConnection(url) {
-  this.url = url;
-}
-
-/**
- * @abstract
- * @param {Bytecode} bytecode
- * @param {Function|undefined} promiseFactory
- * @returns {Promise}
- */
-RemoteConnection.prototype.submit = function (bytecode, promiseFactory) {
-  throw new Error('submit() was not implemented');
-};
-
-/**
- * @extends {Traversal}
- * @constructor
- */
-function RemoteTraversal(traversers, sideEffects) {
-  t.Traversal.call(this, null, null, null);
-  this.traversers = traversers;
-  this.sideEffects = sideEffects;
-}
-
-inherits(RemoteTraversal, t.Traversal);
-
-/**
- *
- * @param {RemoteConnection} connection
- * @extends {TraversalStrategy}
- * @constructor
- */
-function RemoteStrategy(connection) {
-  TraversalStrategy.call(this);
-  this.connection = connection;
-}
-
-inherits(RemoteStrategy, TraversalStrategy);
-
-/** @override */
-RemoteStrategy.prototype.apply = function (traversal, promiseFactory) {
-  if (traversal.traversers) {
-    return utils.resolvedPromise(promiseFactory);
+class RemoteConnection {
+  constructor(url) {
+    this.url = url;
   }
-  return this.connection.submit(traversal.getBytecode(), promiseFactory).then(function (remoteTraversal) {
-    traversal.sideEffects = remoteTraversal.sideEffects;
-    traversal.traversers = remoteTraversal.traversers;
-  });
-};
+
+  /**
+   * @abstract
+   * @param {Bytecode} bytecode
+   * @param {Function|undefined} promiseFactory
+   * @returns {Promise}
+   */
+  submit(bytecode, promiseFactory) {
+    throw new Error('submit() was not implemented');
+  };
+}
+
+class RemoteTraversal extends t.Traversal {
+  constructor(traversers, sideEffects) {
+    super(null, null, null);
+    this.traversers = traversers;
+    this.sideEffects = sideEffects;
+  }
+}
+
+class RemoteStrategy extends TraversalStrategy {
+  /**
+   * Creates a new instance of RemoteStrategy.
+   * @param {RemoteConnection} connection
+   */
+  constructor(connection) {
+    super();
+    this.connection = connection;
+  }
+
+  /** @override */
+  apply(traversal, promiseFactory) {
+    if (traversal.traversers) {
+      return utils.resolvedPromise(promiseFactory);
+    }
+    return this.connection.submit(traversal.getBytecode(), promiseFactory).then(function (remoteTraversal) {
+      traversal.sideEffects = remoteTraversal.sideEffects;
+      traversal.traversers = remoteTraversal.traversers;
+    });
+  }
+}
 
 module.exports = {
   RemoteConnection: RemoteConnection,

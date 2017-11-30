@@ -22,430 +22,159 @@
  */
 'use strict';
 
-var t = require('../../process/traversal');
-var Bytecode = require('../../process/bytecode');
-var g = require('../graph');
-var utils = require('../../utils');
-
-/**
- * A type serializer
- * @typedef {Object} Serializer
- * @property {Function} serialize
- * @property {Function} deserialize
- * @property {Function} [canBeUsedFor]
- */
-
-/**
- * @const
- * @private
- */
-var valueKey = '@value';
-
-/**
- * @const
- * @private
- */
-var typeKey = '@type';
-
-var deserializers = {
-  'g:Traverser': TraverserSerializer,
-  'g:Int32':  NumberSerializer,
-  'g:Int64':  NumberSerializer,
-  'g:Float':  NumberSerializer,
-  'g:Double': NumberSerializer,
-  'g:Vertex': VertexSerializer,
-  'g:Edge': EdgeSerializer,
-  'g:VertexProperty': VertexPropertySerializer,
-  'g:Property': PropertySerializer,
-  'g:Path': PathSerializer
-};
-
-var serializers = [
-  NumberSerializer,
-  BytecodeSerializer,
-  TraverserSerializer,
-  PSerializer,
-  LambdaSerializer,
-  EnumSerializer,
-  VertexSerializer,
-  EdgeSerializer,
-  LongSerializer
-];
+const typeSerializers = require('./type-serializers');
 
 /**
  * GraphSON Writer
- * @param {Object} [options]
- * @param {Object} options.serializers An object used as an associative array with GraphSON 2 type name as keys and
- * serializer instances as values, ie: { 'g:Int64': longSerializer }.
- * @constructor
  */
-function GraphSONWriter(options) {
-  this._options = options || {};
-  // Create instance of the default serializers
-  this._serializers = serializers.map(function (serializerConstructor) {
-    var s = new serializerConstructor();
-    s.writer = this;
-    return s;
-  }, this);
-  var customSerializers = this._options.serializers || {};
-  Object.keys(customSerializers).forEach(function (key) {
-    var s = customSerializers[key];
-    if (!s.serialize) {
-      return;
-    }
-    s.writer = this;
-    // Insert custom serializers first
-    this._serializers.unshift(s);
-  }, this);
-}
-
-GraphSONWriter.prototype.adaptObject = function (value) {
-  var s;
-  if (Array.isArray(value)) {
-    return value.map(function (item) {
-      return this.adaptObject(item);
-    }, this);
-  }
-  for (var i = 0; i < this._serializers.length; i++) {
-    var currentSerializer = this._serializers[i];
-    if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
-      s = currentSerializer;
-      break;
-    }
-  }
-  if (s) {
-    return s.serialize(value);
-  }
-  // Default (strings / objects / ...)
-  return value;
-};
-
-/**
- * Returns the GraphSON representation of the provided object instance.
- * @param {Object} obj
- * @returns {String}
- */
-GraphSONWriter.prototype.write = function (obj) {
-  return JSON.stringify(this.adaptObject(obj));
-};
-
-/**
- * GraphSON Reader
- * @param {Object} [options]
- * @param {Object} [options.serializers] An object used as an associative array with GraphSON 2 type name as keys and
- * deserializer instances as values, ie: { 'g:Int64': longSerializer }.
- * @constructor
- */
-function GraphSONReader(options) {
-  this._options = options || {};
-  this._deserializers = {};
-  Object.keys(deserializers).forEach(function (typeName) {
-    var serializerConstructor = deserializers[typeName];
-    var s = new serializerConstructor();
-    s.reader = this;
-    this._deserializers[typeName] = s;
-  }, this);
-  if (this._options.serializers) {
-    var customSerializers = this._options.serializers || {};
-    Object.keys(customSerializers).forEach(function (key) {
-      var s = customSerializers[key];
-      if (!s.deserialize) {
+class GraphSONWriter {
+  /**
+   * @param {Object} [options]
+   * @param {Object} options.serializers An object used as an associative array with GraphSON 2 type name as keys and
+   * serializer instances as values, ie: { 'g:Int64': longSerializer }.
+   * @constructor
+   */
+  constructor(options) {
+    this._options = options || {};
+    // Create instance of the default serializers
+    this._serializers = serializers.map(serializerConstructor => {
+      const s = new serializerConstructor();
+      s.writer = this;
+      return s;
+    });
+    const customSerializers = this._options.serializers || {};
+    Object.keys(customSerializers).forEach(key => {
+      const s = customSerializers[key];
+      if (!s.serialize) {
         return;
       }
-      s.reader = this;
-      this._deserializers[key] = s;
-    }, this);
+      s.writer = this;
+      // Insert custom serializers first
+      this._serializers.unshift(s);
+    });
   }
-}
 
-GraphSONReader.prototype.read = function (obj) {
-  if (obj === undefined) {
-    return undefined;
-  }
-  if (obj === null) {
-    return null;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(function mapEach(item) {
-      return this.read(item);
-    }, this);
-  }
-  var type = obj[typeKey];
-  if (type) {
-    var d = this._deserializers[type];
-    if (d) {
-      // Use type serializer
-      return d.deserialize(obj);
+  adaptObject(value) {
+    let s;
+    if (Array.isArray(value)) {
+      return value.map(item => this.adaptObject(item));
     }
-    return obj[valueKey];
+    for (let i = 0; i < this._serializers.length; i++) {
+      const currentSerializer = this._serializers[i];
+      if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
+        s = currentSerializer;
+        break;
+      }
+    }
+    if (s) {
+      return s.serialize(value);
+    }
+    // Default (strings / objects / ...)
+    return value;
   }
-  if (obj && typeof obj === 'object' && obj.constructor === Object) {
-    return this._deserializeObject(obj);
+
+  /**
+   * Returns the GraphSON representation of the provided object instance.
+   * @param {Object} obj
+   * @returns {String}
+   */
+  write(obj) {
+    return JSON.stringify(this.adaptObject(obj));
   }
-  // Default (for boolean, number and other scalars)
-  return obj;
-};
+}
 
-GraphSONReader.prototype._deserializeObject = function (obj) {
-  var keys = Object.keys(obj);
-  var result = {};
-  for (var i = 0; i < keys.length; i++) {
-    result[keys[i]] = this.read(obj[keys[i]]);
+class GraphSONReader {
+  /**
+   * GraphSON Reader
+   * @param {Object} [options]
+   * @param {Object} [options.serializers] An object used as an associative array with GraphSON 2 type name as keys and
+   * deserializer instances as values, ie: { 'g:Int64': longSerializer }.
+   * @constructor
+   */
+  constructor(options) {
+    this._options = options || {};
+    this._deserializers = {};
+    Object.keys(deserializers).forEach(typeName => {
+      const serializerConstructor = deserializers[typeName];
+      const s = new serializerConstructor();
+      s.reader = this;
+      this._deserializers[typeName] = s;
+    });
+    if (this._options.serializers) {
+      const customSerializers = this._options.serializers || {};
+      Object.keys(customSerializers).forEach(key => {
+        const s = customSerializers[key];
+        if (!s.deserialize) {
+          return;
+        }
+        s.reader = this;
+        this._deserializers[key] = s;
+      });
+    }
   }
-  return result;
-};
 
-function NumberSerializer() {
-
-}
-
-NumberSerializer.prototype.serialize = function (item) {
-  return item;
-};
-
-NumberSerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return parseFloat(value);
-};
-
-NumberSerializer.prototype.canBeUsedFor = function (value) {
-  return (typeof value === 'number');
-};
-
-function LongSerializer() {
-
-}
-
-NumberSerializer.prototype.serialize = function (item) {
-  return {
-    [typeKey]: 'g:Int64',
-    [valueKey]: item.value
-  };
-};
-
-NumberSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof utils.Long);
-};
-
-function BytecodeSerializer() {
-
-}
-
-BytecodeSerializer.prototype.serialize = function (item) {
-  var bytecode = item;
-  if (item instanceof t.Traversal) {
-    bytecode = item.getBytecode();
+  read(obj) {
+    if (obj === undefined) {
+      return undefined;
+    }
+    if (obj === null) {
+      return null;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.read(item));
+    }
+    const type = obj[typeSerializers.typeKey];
+    if (type) {
+      const d = this._deserializers[type];
+      if (d) {
+        // Use type serializer
+        return d.deserialize(obj);
+      }
+      return obj[typeSerializers.valueKey];
+    }
+    if (obj && typeof obj === 'object' && obj.constructor === Object) {
+      return this._deserializeObject(obj);
+    }
+    // Default (for boolean, number and other scalars)
+    return obj;
   }
-  var result = {};
-  result[typeKey] = 'g:Bytecode';
-  var resultValue = result[valueKey] = {};
-  var sources = this._serializeInstructions(bytecode.sourceInstructions);
-  if (sources) {
-    resultValue['source'] = sources;
+
+  _deserializeObject(obj) {
+    const keys = Object.keys(obj);
+    const result = {};
+    for (let i = 0; i < keys.length; i++) {
+      result[keys[i]] = this.read(obj[keys[i]]);
+    }
+    return result;
   }
-  var steps = this._serializeInstructions(bytecode.stepInstructions);
-  if (steps) {
-    resultValue['step'] = steps;
-  }
-  return result;
-};
-
-BytecodeSerializer.prototype._serializeInstructions = function (instructions) {
-  if (instructions.length === 0) {
-    return null;
-  }
-  var result = new Array(instructions.length);
-  result[0] = instructions[0];
-  for (var i = 0; i < instructions.length; i++) {
-    result[i] = this.writer.adaptObject(instructions[i]);
-  }
-  return result;
-};
-
-BytecodeSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof Bytecode) || (value instanceof t.Traversal);
-};
-
-function PSerializer() {
-
 }
 
-/** @param {P} item */
-PSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:P';
-  var resultValue = result[valueKey] = {
-    'predicate': item.operator
-  };
-  if (item.other === undefined || item.other === null) {
-    resultValue['value'] = this.writer.adaptObject(item.value);
-  }
-  else {
-    resultValue['value'] = [ this.writer.adaptObject(item.value), this.writer.adaptObject(item.other) ];
-  }
-  return result;
+const deserializers = {
+  'g:Traverser': typeSerializers.TraverserSerializer,
+  'g:Int32':  typeSerializers.NumberSerializer,
+  'g:Int64':  typeSerializers.NumberSerializer,
+  'g:Float':  typeSerializers.NumberSerializer,
+  'g:Double': typeSerializers.NumberSerializer,
+  'g:Vertex': typeSerializers.VertexSerializer,
+  'g:Edge': typeSerializers.EdgeSerializer,
+  'g:VertexProperty': typeSerializers.VertexPropertySerializer,
+  'g:Property': typeSerializers.PropertySerializer,
+  'g:Path': typeSerializers.PathSerializer
 };
 
-PSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof t.P);
-};
-
-function LambdaSerializer() {
-
-}
-
-/** @param {Function} item */
-LambdaSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:Lambda';
-  result[valueKey] = {
-    'arguments': item.length,
-    'language': 'gremlin-javascript',
-    'script': item.toString()
-  };
-  return result;
-};
-
-LambdaSerializer.prototype.canBeUsedFor = function (value) {
-  return (typeof value === 'function');
-};
-
-function EnumSerializer() {
-
-}
-
-/** @param {EnumValue} item */
-EnumSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:' + item.typeName;
-  result[valueKey] = item.elementName;
-  return result;
-};
-
-EnumSerializer.prototype.canBeUsedFor = function (value) {
-  return value && value.typeName && value instanceof t.EnumValue;
-};
-
-function TraverserSerializer() {
-
-}
-
-/** @param {Traverser} item */
-TraverserSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:Traverser';
-  result[valueKey] = {
-    'value': this.writer.adaptObject(item.object),
-    'bulk': this.writer.adaptObject(item.bulk)
-  };
-  return result;
-};
-
-TraverserSerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return new t.Traverser(this.reader.read(value['value']), this.reader.read(value['bulk']));
-};
-
-TraverserSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof t.Traverser);
-};
-
-function VertexSerializer() {
-
-}
-
-VertexSerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return new g.Vertex(this.reader.read(value['id']), value['label'], this.reader.read(value['properties']));
-};
-
-/** @param {Vertex} item */
-VertexSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:Vertex';
-  result[valueKey] = {
-    'id': this.writer.adaptObject(item.id),
-    'label': item.label
-  };
-  return result;
-};
-
-VertexSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof g.Vertex);
-};
-
-function VertexPropertySerializer() {
-
-}
-
-VertexPropertySerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return new g.VertexProperty(
-    this.reader.read(value['id']),
-    value['label'],
-    this.reader.read(value['value']),
-    this.reader.read(value['properties'])
-  );
-};
-
-function PropertySerializer() {
-
-}
-
-PropertySerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return new g.Property(
-    value['key'],
-    this.reader.read(value['value']));
-};
-
-function EdgeSerializer() {
-
-}
-
-EdgeSerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  return new g.Edge(
-    this.reader.read(value['id']),
-    this.reader.read(value['outV']),
-    value['label'],
-    this.reader.read(value['inV']),
-    this.reader.read(value['properties'])
-  );
-};
-
-/** @param {Edge} item */
-EdgeSerializer.prototype.serialize = function (item) {
-  var result = {};
-  result[typeKey] = 'g:Edge';
-  result[valueKey] = {
-    'id': this.writer.adaptObject(item.id),
-    'label': item.label,
-    'outV': this.writer.adaptObject(item.outV.id),
-    'outVLabel': item.outV.label,
-    'inV': this.writer.adaptObject(item.inV.id),
-    'inVLabel': item.inV.label
-  };
-  return result;
-};
-
-EdgeSerializer.prototype.canBeUsedFor = function (value) {
-  return (value instanceof g.Edge);
-};
-
-function PathSerializer() {
-
-}
-
-PathSerializer.prototype.deserialize = function (obj) {
-  var value = obj[valueKey];
-  var objects = value['objects'].map(function objectMapItem(o) {
-    return this.reader.read(o);
-  }, this);
-  return new g.Path(this.reader.read(value['labels']), objects);
-};
+const serializers = [
+  typeSerializers.NumberSerializer,
+  typeSerializers.BytecodeSerializer,
+  typeSerializers.TraverserSerializer,
+  typeSerializers.PSerializer,
+  typeSerializers.LambdaSerializer,
+  typeSerializers.EnumSerializer,
+  typeSerializers.VertexSerializer,
+  typeSerializers.EdgeSerializer,
+  typeSerializers.LongSerializer
+];
 
 module.exports = {
-  GraphSONWriter: GraphSONWriter,
-  GraphSONReader: GraphSONReader
+  GraphSONWriter,
+  GraphSONReader
 };

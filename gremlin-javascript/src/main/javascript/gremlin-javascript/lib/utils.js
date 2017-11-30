@@ -22,9 +22,6 @@
  * @author Jorge Bay Gondra
  */
 'use strict';
-var util = require('util');
-
-exports.inherits = util.inherits;
 
 exports.parseArgs = function parseArgs() {
   return (arguments.length === 1 ? [ arguments[0] ] : Array.apply(null, arguments));
@@ -56,7 +53,7 @@ exports.resolvedPromise = function (promiseFactory) {
   });
 };
 
-var toPromise = exports.toPromise = function toPromise(promiseFactory, handler) {
+const toPromise = exports.toPromise = function toPromise(promiseFactory, handler) {
   promiseFactory = promiseFactory || defaultPromiseFactory;
   return promiseFactory(handler);
 };
@@ -65,7 +62,7 @@ exports.toLong = function toLong(value) {
   return new Long(value);
 };
 
-var Long = exports.Long = function Long(value) {
+const Long = exports.Long = function Long(value) {
   if (typeof value !== 'string' && typeof value !== 'number') {
     throw new TypeError('Ty')
   }

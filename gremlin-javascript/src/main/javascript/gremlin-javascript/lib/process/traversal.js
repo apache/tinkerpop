@@ -26,202 +26,209 @@ const utils = require('../utils');
 const parseArgs = utils.parseArgs;
 const itemDone = Object.freeze({ value: null, done: true });
 
-function Traversal(graph, traversalStrategies, bytecode) {
-  this.graph = graph;
-  this.traversalStrategies = traversalStrategies;
-  this.bytecode = bytecode;
-  /** @type {Array<Traverser>} */
-  this.traversers = null;
-  this.sideEffects = null;
-  this._traversalStrategiesPromise = null;
-  this._traversersIteratorIndex = 0;
+class Traversal {
+  constructor(graph, traversalStrategies, bytecode) {
+    this.graph = graph;
+    this.traversalStrategies = traversalStrategies;
+    this.bytecode = bytecode;
+    /** @type {Array<Traverser>} */
+    this.traversers = null;
+    this.sideEffects = null;
+    this._traversalStrategiesPromise = null;
+    this._traversersIteratorIndex = 0;
+  }
+
+  /** @returns {Bytecode} */
+  getBytecode() {
+    return this.bytecode;
+  }
+
+  /**
+   * Returns an Array containing the traverser objects.
+   * @returns {Promise.<Array>}
+   */
+  toList() {
+    return this._applyStrategies().then(() => {
+      const result = [];
+      let it;
+      while ((it = this._getNext()) && !it.done) {
+        result.push(it.value);
+      }
+      return result;
+    });
+  };
+
+  /**
+   * Iterates all Traverser instances in the traversal.
+   * @returns {Promise}
+   */
+  iterate() {
+    return this._applyStrategies().then(() => {
+      let it;
+      while ((it = this._getNext()) && !it.done) {
+      }
+    });
+  }
+
+  /**
+   * Async iterator method implementation.
+   * Returns a promise containing an iterator item.
+   * @returns {Promise.<{value, done}>}
+   */
+  next() {
+    return this._applyStrategies().then(() => this._getNext());
+  }
+
+  /**
+   * Synchronous iterator of traversers including
+   * @private
+   */
+  _getNext() {
+    while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
+      let traverser = this.traversers[this._traversersIteratorIndex];
+      if (traverser.bulk > 0) {
+        traverser.bulk--;
+        return { value: traverser.object, done: false };
+      }
+      this._traversersIteratorIndex++;
+    }
+    return itemDone;
+  }
+
+  _applyStrategies() {
+    if (this._traversalStrategiesPromise) {
+      // Apply strategies only once
+      return this._traversalStrategiesPromise;
+    }
+    return this._traversalStrategiesPromise = this.traversalStrategies.applyStrategies(this);
+  }
+
+  /**
+   * Returns the Bytecode JSON representation of the traversal
+   * @returns {String}
+   */
+  toString() {
+    return this.bytecode.toString();
+  };
 }
 
-/** @returns {Bytecode} */
-Traversal.prototype.getBytecode = function () {
-  return this.bytecode;
-};
-
-/**
- * Returns an Array containing the traverser objects.
- * @returns {Promise.<Array>}
- */
-Traversal.prototype.toList = function () {
-  return this._applyStrategies().then(() => {
-    const result = [];
-    let it;
-    while ((it = this._getNext()) && !it.done) {
-      result.push(it.value);
-    }
-    return result;
-  });
-};
-
-/**
- * Iterates all Traverser instances in the traversal.
- * @returns {Promise}
- */
-Traversal.prototype.iterate = function () {
-  return this._applyStrategies().then(() => {
-    let it;
-    while ((it = this._getNext()) && !it.done) {
-    }
-  });
-};
-
-/**
- * Async iterator method implementation.
- * Returns a promise containing an iterator item.
- * @returns {Promise.<{value, done}>}
- */
-Traversal.prototype.next = function () {
-  return this._applyStrategies().then(() => this._getNext());
-};
-
-/**
- * Synchronous iterator of traversers including
- * @private
- */
-Traversal.prototype._getNext = function () {
-  while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
-    let traverser = this.traversers[this._traversersIteratorIndex];
-    if (traverser.bulk > 0) {
-      traverser.bulk--;
-      return { value: traverser.object, done: false };
-    }
-    this._traversersIteratorIndex++;
+class P {
+  /**
+   * Represents an operation.
+   * @constructor
+   */
+  constructor(operator, value, other) {
+    this.operator = operator;
+    this.value = value;
+    this.other = other;
   }
-  return itemDone;
-};
 
-Traversal.prototype._applyStrategies = function () {
-  if (this._traversalStrategiesPromise) {
-    // Apply strategies only once
-    return this._traversalStrategiesPromise;
+  /**
+   * Returns the string representation of the instance.
+   * @returns {string}
+   */
+  toString() {
+    if (this.other === undefined) {
+      return this.operator + '(' + this.value + ')';
+    }
+    return this.operator + '(' + this.value + ', ' + this.other + ')';
   }
-  return this._traversalStrategiesPromise = this.traversalStrategies.applyStrategies(this);
-};
 
-/**
- * Returns the Bytecode JSON representation of the traversal
- * @returns {String}
- */
-Traversal.prototype.toString = function () {
-  return this.bytecode.toString();
-};
+  and(arg) {
+    return new P('and', this, arg);
+  }
 
-/**
- * Represents an operation.
- * @constructor
- */
-function P(operator, value, other) {
-  this.operator = operator;
-  this.value = value;
-  this.other = other;
+  or(arg) {
+    return new P('or', this, arg);
+  }
+
+  /** @param {...Object} args */
+  static between(args) {
+    return createP('between', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static eq(args) {
+    return createP('eq', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static gt(args) {
+    return createP('gt', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static gte(args) {
+    return createP('gte', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static inside(args) {
+    return createP('inside', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static lt(args) {
+    return createP('lt', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static lte(args) {
+    return createP('lte', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static neq(args) {
+    return createP('neq', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static not(args) {
+    return createP('not', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static outside(args) {
+    return createP('outside', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static test(args) {
+    return createP('test', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static within(args) {
+    return createP('within', parseArgs.apply(null, arguments));
+  }
+
+  /** @param {...Object} args */
+  static without(args) {
+    return createP('without', parseArgs.apply(null, arguments));
+  }
+
 }
-
-/**
- * Returns the string representation of the instance.
- * @returns {string}
- */
-P.prototype.toString = function () {
-  if (this.other === undefined) {
-    return this.operator + '(' + this.value + ')';
-  }
-  return this.operator + '(' + this.value + ', ' + this.other + ')';
-};
 
 function createP(operator, args) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(P, args));
 }
 
-/** @param {...Object} args */
-P.between = function (args) {
-  return createP('between', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.eq = function (args) {
-  return createP('eq', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.gt = function (args) {
-  return createP('gt', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.gte = function (args) {
-  return createP('gte', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.inside = function (args) {
-  return createP('inside', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.lt = function (args) {
-  return createP('lt', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.lte = function (args) {
-  return createP('lte', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.neq = function (args) {
-  return createP('neq', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.not = function (args) {
-  return createP('not', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.outside = function (args) {
-  return createP('outside', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.test = function (args) {
-  return createP('test', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.within = function (args) {
-  return createP('within', parseArgs.apply(null, arguments));
-};
-
-/** @param {...Object} args */
-P.without = function (args) {
-  return createP('without', parseArgs.apply(null, arguments));
-};
-
-P.prototype.and = function (arg) {
-  return new P('and', this, arg);
-};
-
-P.prototype.or = function (arg) {
-  return new P('or', this, arg);
-};
-
-function Traverser(object, bulk) {
-  this.object = object;
-  this.bulk = bulk || 1;
+class Traverser {
+  constructor(object, bulk) {
+    this.object = object;
+    this.bulk = bulk || 1;
+  }
 }
 
-function TraversalSideEffects() {
+class TraversalSideEffects {
 
 }
 
 function toEnum(typeName, keys) {
-  var result = {};
-  keys.split(' ').forEach(function (k) {
-    var jsKey = k;
+  const result = {};
+  keys.split(' ').forEach(k => {
+    let jsKey = k;
     if (jsKey === jsKey.toUpperCase()) {
       jsKey = jsKey.toLowerCase();
     }
@@ -230,17 +237,19 @@ function toEnum(typeName, keys) {
   return result;
 }
 
-function EnumValue(typeName, elementName) {
-  this.typeName = typeName;
-  this.elementName = elementName;
+class EnumValue {
+  constructor(typeName, elementName) {
+    this.typeName = typeName;
+    this.elementName = elementName;
+  }
 }
 
 module.exports = {
-  EnumValue: EnumValue,
-  P: P,
-  Traversal: Traversal,
-  TraversalSideEffects: TraversalSideEffects,
-  Traverser: Traverser,
+  EnumValue,
+  P,
+  Traversal,
+  TraversalSideEffects,
+  Traverser,
   barrier: toEnum('Barrier', 'normSack'),
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),

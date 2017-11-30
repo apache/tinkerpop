@@ -33,8 +33,8 @@ describe('Traversal', function () {
 
   describe('#getByteCode()', function () {
     it('should add steps for with a string parameter', function () {
-      var g = new graph.Graph().traversal();
-      var bytecode = g.V().out('created').getBytecode();
+      const g = new graph.Graph().traversal();
+      const bytecode = g.V().out('created').getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
       assert.strictEqual(bytecode.stepInstructions.length, 2);
@@ -44,8 +44,8 @@ describe('Traversal', function () {
     });
 
     it('should add steps with an enum value', function () {
-      var g = new graph.Graph().traversal();
-      var bytecode = g.V().order().by('age', t.order.decr).getBytecode();
+      const g = new graph.Graph().traversal();
+      const bytecode = g.V().order().by('age', t.order.decr).getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
       assert.strictEqual(bytecode.stepInstructions.length, 3);
@@ -61,15 +61,15 @@ describe('Traversal', function () {
 
   describe('#next()', function () {
     it('should apply the strategies and return a Promise with the iterator item', function () {
-      var strategyMock = {
+      const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 1) ];
           return utils.resolvedPromise();
         }
       };
-      var strategies = new TraversalStrategies();
+      const strategies = new TraversalStrategies();
       strategies.addStrategy(strategyMock);
-      var traversal = new t.Traversal(null, strategies, null);
+      const traversal = new t.Traversal(null, strategies, null);
       return traversal.next()
         .then(function (item) {
           assert.strictEqual(item.value, 1);
@@ -125,15 +125,15 @@ describe('Traversal', function () {
   describe('#toList()', function () {
 
     it('should apply the strategies and return a Promise with an array', function () {
-      var strategyMock = {
+      const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser('a', 1), new t.Traverser('b', 1) ];
           return utils.resolvedPromise();
         }
       };
-      var strategies = new TraversalStrategies();
+      const strategies = new TraversalStrategies();
       strategies.addStrategy(strategyMock);
-      var traversal = new t.Traversal(null, strategies, null);
+      const traversal = new t.Traversal(null, strategies, null);
       return traversal.toList().then(function (list) {
         assert.ok(list);
         assert.deepEqual(list, [ 'a', 'b' ]);
@@ -141,15 +141,15 @@ describe('Traversal', function () {
     });
 
     it('should return an empty array when traversers is empty', function () {
-      var strategyMock = {
+      const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [];
           return utils.resolvedPromise();
         }
       };
-      var strategies = new TraversalStrategies();
+      const strategies = new TraversalStrategies();
       strategies.addStrategy(strategyMock);
-      var traversal = new t.Traversal(null, strategies, null);
+      const traversal = new t.Traversal(null, strategies, null);
       return traversal.toList().then(function (list) {
         assert.ok(Array.isArray(list));
         assert.strictEqual(list.length, 0);

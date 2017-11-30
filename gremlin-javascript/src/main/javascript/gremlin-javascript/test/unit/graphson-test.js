@@ -22,23 +22,23 @@
  */
 'use strict';
 
-var assert = require('assert');
-var graph = require('../../lib/structure/graph');
-var t = require('../../lib/process/traversal.js');
-var gs = require('../../lib/structure/io/graph-serializer.js');
-var GraphSONReader = gs.GraphSONReader;
-var GraphSONWriter = gs.GraphSONWriter;
-var P = t.P;
+const assert = require('assert');
+const graph = require('../../lib/structure/graph');
+const t = require('../../lib/process/traversal.js');
+const gs = require('../../lib/structure/io/graph-serializer.js');
+const GraphSONReader = gs.GraphSONReader;
+const GraphSONWriter = gs.GraphSONWriter;
+const P = t.P;
 
 describe('GraphSONReader', function () {
   it('should parse GraphSON int32, float and double to Number from GraphSON', function () {
-    var reader = new GraphSONReader();
+    const reader = new GraphSONReader();
     [
       [ 'g:Int32', 31 ],
       [ 'g:Float', 31.3],
       [ 'g:Double', 31.2]
     ].forEach(function (item) {
-      var result = reader.read({
+      const result = reader.read({
         "@type": item[0],
         "@value": item[1]
       });
@@ -47,12 +47,12 @@ describe('GraphSONReader', function () {
     });
   });
   it('should parse vertices from GraphSON', function () {
-    var obj = {
+    const obj = {
       "@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
         "properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],
           "age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}};
-    var reader = new GraphSONReader(obj);
-    var result = reader.read(obj);
+    const reader = new GraphSONReader(obj);
+    const result = reader.read(obj);
     assert.ok(result instanceof graph.Vertex);
     assert.strictEqual(result.label, 'person');
     assert.strictEqual(typeof result.id, 'number');
@@ -65,7 +65,7 @@ describe('GraphSONReader', function () {
     assert.strictEqual(result.properties['age'][0].value, 29);
   });
   it('should parse paths from GraphSON', function () {
-    var obj = {"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[
+    const obj = {"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[
       {
         "@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
         "properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},
@@ -79,8 +79,8 @@ describe('GraphSONReader', function () {
           "lang":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":5},
             "value":"java","label":"lang"}}]}}},
       "lop"]}};
-    var reader = new GraphSONReader(obj);
-    var result = reader.read(obj);
+    const reader = new GraphSONReader(obj);
+    const result = reader.read(obj);
     assert.ok(result);
     assert.ok(result.objects);
     assert.ok(result.labels);
@@ -93,17 +93,17 @@ describe('GraphSONReader', function () {
 });
 describe('GraphSONWriter', function () {
   it('should write numbers', function () {
-    var writer = new GraphSONWriter();
+    const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(2), '2');
   });
   it('should write boolean values', function () {
-    var writer = new GraphSONWriter();
+    const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(true), 'true');
     assert.strictEqual(writer.write(false), 'false');
   });
   it('should write P', function () {
-    var writer = new GraphSONWriter();
-    var expected = JSON.stringify({"@type":"g:P","@value":{"predicate":"and","value":[
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type":"g:P","@value":{"predicate":"and","value":[
       {"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},
         {"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},
       {"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}});

@@ -27,7 +27,7 @@ const Bytecode = require('../../lib/process/bytecode');
 const graphModule = require('../../lib/structure/graph');
 const helper = require('../helper');
 
-var connection;
+let connection;
 
 describe('DriverRemoteConnection', function () {
   before(function () {

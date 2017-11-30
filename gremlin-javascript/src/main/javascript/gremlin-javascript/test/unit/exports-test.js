@@ -22,8 +22,8 @@
  */
 'use strict';
 
-var assert = require('assert');
-var glvModule = require('../../');
+const assert = require('assert');
+const glvModule = require('../../');
 
 describe('API', function () {
   it('should export fields under process', function () {

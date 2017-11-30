@@ -22,120 +22,120 @@
  */
 'use strict';
 
-var gt = require('../process/graph-traversal');
-var TraversalStrategies = require('../process/traversal-strategy').TraversalStrategies;
-var utils = require('../utils');
-var inherits = utils.inherits;
+const gt = require('../process/graph-traversal');
+const TraversalStrategies = require('../process/traversal-strategy').TraversalStrategies;
 
-function Graph() {
+class Graph {
+  /**
+   * Returns the graph traversal source.
+   * @returns {GraphTraversalSource}
+   */
+  traversal() {
+    return new gt.GraphTraversalSource(this, new TraversalStrategies());
+  }
 
+  toString() {
+    return 'graph[empty]';
+  }
 }
 
-/**
- * Returns the graph traversal source.
- * @returns {GraphTraversalSource}
- */
-Graph.prototype.traversal = function () {
-  return new gt.GraphTraversalSource(this, new TraversalStrategies());
-};
+class Element {
+  constructor(id, label) {
+    this.id = id;
+    this.label = label;
+  }
 
-Graph.prototype.toString = function () {
-  return 'graph[empty]';
-};
-
-function Element(id, label) {
-  this.id = id;
-  this.label = label;
+  /**
+   * Compares this instance to another and determines if they can be considered as equal.
+   * @param {Element} other
+   * @returns {boolean}
+   */
+  equals(other) {
+    return (other instanceof Element) && this.id === other.id;
+  }
 }
 
-/**
- * Compares this instance to another and determines if they can be considered as equal.
- * @param {Element} other
- * @returns {boolean}
- */
-Element.prototype.equals = function (other) {
-  return (other instanceof Element) && this.id === other.id;
-};
+class Vertex extends Element {
+  constructor(id, label, properties) {
+    super(id, label);
+    this.properties = properties;
+  }
 
-function Vertex(id, label, properties) {
-  Element.call(this, id, label);
-  this.properties = properties;
+  toString() {
+    return 'v[' + this.id + ']';
+  }
 }
 
-Vertex.prototype.toString = function () {
-  return 'v[' + this.id + ']';
-};
-
-inherits(Vertex, Element);
-
-function Edge(id, outV, label, inV, properties) {
-  Element.call(this, id, label);
-  this.outV = outV;
-  this.inV = inV;
-  this.properties = {};
-  (function adaptProperties(self) {
+class Edge extends Element {
+  constructor(id, outV, label, inV, properties) {
+    super(id, label);
+    this.outV = outV;
+    this.inV = inV;
+    this.properties = {};
     if (properties) {
-      var keys = Object.keys(properties);
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        self.properties[k] = properties[k].value;
+      const keys = Object.keys(properties);
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        this.properties[k] = properties[k].value;
       }
     }
-  })(this);
-}
-
-inherits(Edge, Element);
-
-Edge.prototype.toString = function () {
-  return 'e[' + this.id + '][' + this.outV.id + '-' + this.label + '->' + this.inV.id + ']';
-};
-
-function VertexProperty(id, label, value, properties) {
-  Element.call(this, id, label);
-  this.value = value;
-  this.key = this.label;
-  this.properties = properties;
-}
-
-inherits(VertexProperty, Element);
-
-VertexProperty.prototype.toString = function () {
-  return 'vp[' + this.label + '->' + this.value.substr(0, 20) + ']';
-};
-
-function Property(key, value) {
-  this.key = key;
-  this.value = value;
-}
-
-Property.prototype.toString = function () {
-  return 'p[' + this.key + '->' + this.value.substr(0, 20) + ']';
-};
-
-Property.prototype.equals = function (other) {
-  return (other instanceof Property) && this.key === other.key && this.value === other.value;
-};
-
-/**
- * Represents a walk through a graph as defined by a traversal.
- * @param {Array} labels
- * @param {Array} objects
- * @constructor
- */
-function Path(labels, objects) {
-  this.labels = labels;
-  this.objects = objects;
-}
-
-Path.prototype.equals = function (other) {
-  if (!(other instanceof Path)) {
-    return false;
   }
-  if (other === this) {
-    return true;
+
+  toString() {
+    return 'e[' + this.id + '][' + this.outV.id + '-' + this.label + '->' + this.inV.id + ']';
   }
-  return areEqual(this.objects, other.objects) && areEqual(this.labels, other.labels);
-};
+}
+
+class VertexProperty extends Element {
+  constructor(id, label, value, properties) {
+    super(id, label);
+    this.value = value;
+    this.key = this.label;
+    this.properties = properties;
+  }
+
+  toString() {
+    return 'vp[' + this.label + '->' + this.value.substr(0, 20) + ']';
+  }
+}
+
+class Property {
+  constructor(key, value) {
+    this.key = key;
+    this.value = value;
+  }
+
+  toString() {
+    return 'p[' + this.key + '->' + this.value.substr(0, 20) + ']';
+  }
+
+  equals(other) {
+    return (other instanceof Property) && this.key === other.key && this.value === other.value;
+  }
+}
+
+class Path {
+  /**
+   * Represents a walk through a graph as defined by a traversal.
+   * @param {Array} labels
+   * @param {Array} objects
+   * @constructor
+   */
+  constructor(labels, objects) {
+    this.labels = labels;
+    this.objects = objects;
+  }
+
+  equals(other) {
+    if (!(other instanceof Path)) {
+      return false;
+    }
+    if (other === this) {
+      return true;
+    }
+    return areEqual(this.objects, other.objects) && areEqual(this.labels, other.labels);
+  }
+}
 
 function areEqual(obj1, obj2) {
   if (obj1 === obj2) {

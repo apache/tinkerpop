@@ -29,7 +29,7 @@ const Vertex = graphModule.Vertex;
 const utils = require('../../lib/utils');
 const helper = require('../helper');
 
-var connection;
+let connection;
 
 describe('Traversal', function () {
   before(function () {

@@ -22,165 +22,164 @@
  */
 'use strict';
 
-var crypto = require('crypto');
-var WebSocket = require('ws');
-var util = require('util');
-var RemoteConnection = require('./remote-connection').RemoteConnection;
-var utils = require('../utils');
-var serializer = require('../structure/io/graph-serializer');
-var inherits = utils.inherits;
-var defaultMimeType = 'application/vnd.gremlin-v2.0+json';
-var responseStatusCode = {
+const crypto = require('crypto');
+const WebSocket = require('ws');
+const util = require('util');
+const RemoteConnection = require('./remote-connection').RemoteConnection;
+const utils = require('../utils');
+const serializer = require('../structure/io/graph-serializer');
+const responseStatusCode = {
   success: 200,
   noContent: 204,
   partialContent: 206
 };
+const defaultMimeType = 'application/vnd.gremlin-v2.0+json';
 
-/**
- * Creates a new instance of DriverRemoteConnection.
- * @param {String} url The resource uri.
- * @param {Object} [options] The connection options.
- * @param {Array} [options.ca] Trusted certificates.
- * @param {String|Array|Buffer} [options.cert] The certificate key.
- * @param {String} [options.mimeType] The mime type to use.
- * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
- * @param {GraphSONReader} [options.reader] The reader to use.
- * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
- * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
- * @param {GraphSONWriter} [options.writer] The writer to use.
- * @constructor
- */
-function DriverRemoteConnection(url, options) {
-  RemoteConnection.call(this, url);
-  options = options || {};
-  this._ws = new WebSocket(url, {
-    ca: options.ca,
-    cert: options.cert,
-    pfx: options.pfx,
-    rejectUnauthorized: options.rejectUnauthorized
-  });
-  var self = this;
-  this._ws.on('open', function opened () {
-    self.isOpen = true;
-    if (self._openCallback) {
-      self._openCallback();
+class DriverRemoteConnection extends RemoteConnection {
+  /**
+   * Creates a new instance of DriverRemoteConnection.
+   * @param {String} url The resource uri.
+   * @param {Object} [options] The connection options.
+   * @param {Array} [options.ca] Trusted certificates.
+   * @param {String|Array|Buffer} [options.cert] The certificate key.
+   * @param {String} [options.mimeType] The mime type to use.
+   * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
+   * @param {GraphSONReader} [options.reader] The reader to use.
+   * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
+   * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
+   * @param {GraphSONWriter} [options.writer] The writer to use.
+   * @constructor
+   */
+  constructor(url, options) {
+    super(url);
+    options = options || {};
+    this._ws = new WebSocket(url, {
+      ca: options.ca,
+      cert: options.cert,
+      pfx: options.pfx,
+      rejectUnauthorized: options.rejectUnauthorized
+    });
+    var self = this;
+    this._ws.on('open', function opened () {
+      self.isOpen = true;
+      if (self._openCallback) {
+        self._openCallback();
+      }
+    });
+    this._ws.on('message', function incoming (data) {
+      self._handleMessage(data);
+    });
+    // A map containing the request id and the handler
+    this._responseHandlers = {};
+    this._reader = options.reader || new serializer.GraphSONReader();
+    this._writer = options.writer || new serializer.GraphSONWriter();
+    this._openPromise = null;
+    this._openCallback = null;
+    this._closePromise = null;
+    const mimeType = options.mimeType || defaultMimeType;
+    this._header = String.fromCharCode(mimeType.length) + mimeType;
+    this.isOpen = false;
+    this.traversalSource = options.traversalSource || 'g';
+  }
+
+  /**
+   * Opens the connection, if its not already opened.
+   * @returns {Promise}
+   */
+  open(promiseFactory) {
+    if (this._closePromise) {
+      return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
+        callback(new Error('Connection has been closed'));
+      });
     }
-  });
-  this._ws.on('message', function incoming (data) {
-    self._handleMessage(data);
-  });
-  // A map containing the request id and the handler
-  this._responseHandlers = {};
-  this._reader = options.reader || new serializer.GraphSONReader();
-  this._writer = options.writer || new serializer.GraphSONWriter();
-  this._openPromise = null;
-  this._openCallback = null;
-  this._closePromise = null;
-  var mimeType = options.mimeType || defaultMimeType;
-  this._header = String.fromCharCode(mimeType.length) + mimeType;
-  this.isOpen = false;
-  this.traversalSource = options.traversalSource || 'g';
+    if (this._openPromise) {
+      return this._openPromise;
+    }
+    const self = this;
+    return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
+      if (self.isOpen) {
+        return callback();
+      }
+      // It will be invoked when opened
+      self._openCallback = callback;
+    });
+  }
+
+  /** @override */
+  submit(bytecode, promiseFactory) {
+    const self = this;
+    return this.open().then(function () {
+      return utils.toPromise(promiseFactory, function promiseHandler(callback) {
+        const requestId = getUuid();
+        self._responseHandlers[requestId] = {
+          callback: callback,
+          result: null
+        };
+        const message = bufferFromString(self._header + JSON.stringify(self._getRequest(requestId, bytecode)));
+        self._ws.send(message);
+      });
+    });
+  }
+
+  _getRequest(id, bytecode) {
+    return ({
+      'requestId': { '@type': 'g:UUID', '@value': id },
+      'op': 'bytecode',
+      'processor': 'traversal',
+      'args': {
+        'gremlin': this._writer.adaptObject(bytecode),
+        'aliases': { 'g': this.traversalSource }
+      }
+    });
+  }
+
+  _handleMessage(data) {
+    const response = this._reader.read(JSON.parse(data.toString()));
+    const handler = this._responseHandlers[response.requestId];
+    if (response.status.code >= 400) {
+      // callback in error
+      return handler.callback(
+        new Error(util.format('Server error: %s (%d)', response.status.message, response.status.code)));
+    }
+    switch (response.status.code) {
+      case responseStatusCode.noContent:
+        return handler.callback(null, { traversers: []});
+      case responseStatusCode.partialContent:
+        handler.result = handler.result || [];
+        handler.result.push.apply(handler.result, response.result.data);
+        break;
+      default:
+        if (handler.result) {
+          handler.result.push.apply(handler.result, response.result.data);
+        }
+        else {
+          handler.result = response.result.data;
+        }
+        return handler.callback(null, { traversers: handler.result });
+    }
+  }
+
+  /**
+   * Closes the Connection.
+   * @return {Promise}
+   */
+  close(promiseFactory) {
+    if (this._closePromise) {
+      return this._closePromise;
+    }
+    const self = this;
+    return this._closePromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
+      self._ws.on('close', function () {
+        self.isOpen = false;
+        callback();
+      });
+      self._ws.close();
+    });
+  }
 }
 
-inherits(DriverRemoteConnection, RemoteConnection);
-
-/**
- * Opens the connection, if its not already opened.
- * @returns {Promise}
- */
-DriverRemoteConnection.prototype.open = function (promiseFactory) {
-  if (this._closePromise) {
-    return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-      callback(new Error('Connection has been closed'));
-    });
-  }
-  if (this._openPromise) {
-    return this._openPromise;
-  }
-  var self = this;
-  return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-    if (self.isOpen) {
-      return callback();
-    }
-    // It will be invoked when opened
-    self._openCallback = callback;
-  });
-};
-
-/** @override */
-DriverRemoteConnection.prototype.submit = function (bytecode, promiseFactory) {
-  var self = this;
-  return this.open().then(function () {
-    return utils.toPromise(promiseFactory, function promiseHandler(callback) {
-      var requestId = getUuid();
-      self._responseHandlers[requestId] = {
-        callback: callback,
-        result: null
-      };
-      var message = bufferFromString(self._header + JSON.stringify(self._getRequest(requestId, bytecode)));
-      self._ws.send(message);
-    });
-  });
-};
-
-DriverRemoteConnection.prototype._getRequest = function (id, bytecode) {
-  return ({
-    'requestId': { '@type': 'g:UUID', '@value': id },
-    'op': 'bytecode',
-    'processor': 'traversal',
-    'args': {
-      'gremlin': this._writer.adaptObject(bytecode),
-      'aliases': { 'g': this.traversalSource }
-    }
-  });
-};
-
-DriverRemoteConnection.prototype._handleMessage = function (data) {
-  var response = this._reader.read(JSON.parse(data.toString()));
-  var handler = this._responseHandlers[response.requestId];
-  if (response.status.code >= 400) {
-    // callback in error
-    return handler.callback(
-      new Error(util.format('Server error: %s (%d)', response.status.message, response.status.code)));
-  }
-  switch (response.status.code) {
-    case responseStatusCode.noContent:
-      return handler.callback(null, { traversers: []});
-    case responseStatusCode.partialContent:
-      handler.result = handler.result || [];
-      handler.result.push.apply(handler.result, response.result.data);
-      break;
-    default:
-      if (handler.result) {
-        handler.result.push.apply(handler.result, response.result.data);
-      }
-      else {
-        handler.result = response.result.data;
-      }
-      return handler.callback(null, { traversers: handler.result });
-  }
-};
-
-/**
- * Closes the Connection.
- * @return {Promise}
- */
-DriverRemoteConnection.prototype.close = function (promiseFactory) {
-  if (this._closePromise) {
-    return this._closePromise;
-  }
-  var self = this;
-  return this._closePromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-    self._ws.on('close', function () {
-      self.isOpen = false;
-      callback();
-    });
-    self._ws.close();
-  });
-};
-
 function getUuid() {
-  var buffer = crypto.randomBytes(16);
+  const buffer = crypto.randomBytes(16);
   //clear the version
   buffer[6] &= 0x0f;
   //set the version 4
@@ -189,7 +188,7 @@ function getUuid() {
   buffer[8] &= 0x3f;
   //set the IETF variant
   buffer[8] |= 0x80;
-  var hex = buffer.toString('hex');
+  const hex = buffer.toString('hex');
   return (
     hex.substr(0, 8) + '-' +
     hex.substr(8, 4) + '-' +
