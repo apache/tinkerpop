@@ -38,23 +38,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
-            new Dictionary<string, IgnoreReason>
-            {
-                { "g_V_matchXa_knows_b__b_created_cX", IgnoreReason.MapCoersionIssue},
-                { "g_V_valueMap_matchXa_selectXnameX_bX", IgnoreReason.MapCoersionIssue},
-                { "g_V_matchXa_out_bX", IgnoreReason.MapCoersionIssue},
-                { "g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX",
-                    IgnoreReason.MapCoersionIssue},
-                { "g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX",
-                    IgnoreReason.MapCoersionIssue},
-                { "g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX",
-                    IgnoreReason.MapCoersionIssue},
-                { "g_V_outXcreatedX_name_groupCount", IgnoreReason.MapCoersionIssue},
-                { "g_V_outXcreatedX_groupCount_byXnameX", IgnoreReason.MapCoersionIssue},
-                { "g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount", IgnoreReason
-                .MapCoersionIssue},
-                { "g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX", IgnoreReason.MapCoersionIssue}
-            };
+            new Dictionary<string, IgnoreReason>();
         
         private static class Keywords
         {

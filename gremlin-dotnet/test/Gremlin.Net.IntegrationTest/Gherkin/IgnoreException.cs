@@ -43,13 +43,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.LambdaNotSupported:
                     reasonSuffix = " because lambdas are not supported in Gremlin.NET";
                     break;
-                case IgnoreReason.MapCoersionIssue:
-                    reasonSuffix = " because there is conversion issue for IDictionary<K, V> instaces in" +
-                                   " Gremlin.NET (TINKERPOP-1837)";
-                    break;
-                case IgnoreReason.ScenarioDesignMapNumbers:
-                    reasonSuffix = " because the expected result contains lenient numeric numbers";
-                    break;
             }
             return $"Scenario ignored" + reasonSuffix;
         }
@@ -57,8 +50,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     
     public enum IgnoreReason
     {
-        LambdaNotSupported,
-        ScenarioDesignMapNumbers,
-        MapCoersionIssue
+        LambdaNotSupported
     }
 }
