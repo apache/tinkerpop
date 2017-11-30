@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrat
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,6 +51,8 @@ public class LambdaRestrictionStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
+                {"map(Lambda.function('true')}", __.map(Lambda.function("true")), false},
+                {"filter(Lambda.predicate('true')}", __.filter(Lambda.predicate("true")), false},
                 {"filter(x->true)", __.filter(x -> true), false},
                 {"map(Traverser::get)", __.map(Traverser::get), false},
                 {"sideEffect(x -> {int i = 1+1;})", __.sideEffect(x -> {
