@@ -66,7 +66,7 @@ public interface Lambda extends Serializable {
 
         @Override
         public String toString() {
-            return this.lambdaSource;
+            return "lambda[" + this.lambdaSource + "]";
         }
 
         @Override
