@@ -368,7 +368,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             else
                 traversal = context.getGremlinExecutor().eval(bytecode, EMPTY_BINDINGS, lambdaLanguage.get(), traversalSourceName);
         } catch (Exception ex) {
-            logger.error("Could not deserialize the Traversal instance", context);
+            logger.error("Could not deserialize the Traversal instance", ex);
             throw new OpProcessorException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage(ex.getMessage())
