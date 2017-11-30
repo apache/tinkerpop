@@ -3234,7 +3234,7 @@ second static class to deal with when writing traversals rather than just callin
 namespace Dsl
 {
 
-    public static class SocialTraversal
+    public static class SocialTraversalExtensions
     {
         public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName)
         {
@@ -3270,7 +3270,7 @@ namespace Dsl
         }
     }
 
-    public static class SocialTraversalSource
+    public static class SocialTraversalSourceExtensions
     {
         public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames)
         {
@@ -3294,6 +3294,7 @@ requirement. To use the DSL, bring it into scope with the `using` directive:
 [source,csharp]
 ----
 using Dsl;
+using static Dsl.__Social;
 ----
 
 and then it can be called from the application as follows:
@@ -3306,5 +3307,5 @@ var social = graph.Traversal().WithRemote(connection);
 
 social.Persons("marko").Knows("josh");
 social.Persons("marko").YoungestFriendsAge();
-social.Persons().Filter(__Social.CreatedAtLeast(2)).Count();
+social.Persons().Filter(CreatedAtLeast(2)).Count();
 ----

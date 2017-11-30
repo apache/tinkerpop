@@ -30,7 +30,7 @@ using Xunit;
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl 
 {
 
-    public static class SocialTraversal 
+    public static class SocialTraversalExtensions
     {
         public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName) 
         {
@@ -66,7 +66,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl
         }
     }
 
-    public static class SocialTraversalSource 
+    public static class SocialTraversalSourceExtensions
     {
         public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames) 
         {
