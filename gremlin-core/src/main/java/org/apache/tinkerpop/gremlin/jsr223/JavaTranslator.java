@@ -173,6 +173,14 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         for (int i = 0; i < arguments.length; i++) {
             argumentsCopy[i] = translateObject(arguments[i]);
         }
+
+        // without this initial check iterating an invalid methodName will lead to a null pointer and a less than
+        // great error message for the user. 
+        if (!methodCache.containsKey(methodName)) {
+            final String methodArgs = argumentsCopy.length > 0 ? Arrays.toString(argumentsCopy) : "";
+            throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + methodArgs + ")");
+        }
+
         try {
             for (final Method method : methodCache.get(methodName)) {
                 if (returnType.isAssignableFrom(method.getReturnType())) {
@@ -218,6 +226,9 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         } catch (final Throwable e) {
             throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(argumentsCopy) + ")", e);
         }
+
+        // if it got down here then the method was in the cache but it was never called as it could not be found
+        // for the supplied arguments
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
     }
 
