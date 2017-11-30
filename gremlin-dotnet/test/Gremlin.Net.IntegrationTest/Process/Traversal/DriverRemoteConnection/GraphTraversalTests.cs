@@ -148,7 +148,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var result = g.V(1).ValueMap<IList<object>>().Next();
+            var result = g.V(1).ValueMap<string, IList<object>>().Next();
             Assert.Equal(
                 new Dictionary<string, IList<object>>
                 {
@@ -165,7 +165,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var result = g.V(1).ValueMap<IList<int>>("age").Next();
+            var result = g.V(1).ValueMap<string, IList<int>>("age").Next();
             Assert.Equal(new Dictionary<string, IList<int>>
             {
                 { "age", new List<int> { 29 } }
