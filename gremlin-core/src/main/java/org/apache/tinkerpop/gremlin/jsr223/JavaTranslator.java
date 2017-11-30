@@ -176,8 +176,10 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
         // without this initial check iterating an invalid methodName will lead to a null pointer and a less than
         // great error message for the user. 
-        if (!methodCache.containsKey(methodName))
-            throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
+        if (!methodCache.containsKey(methodName)) {
+            final String methodArgs = argumentsCopy.length > 0 ? Arrays.toString(argumentsCopy) : "";
+            throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + methodArgs + ")");
+        }
 
         try {
             for (final Method method : methodCache.get(methodName)) {
