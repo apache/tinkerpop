@@ -248,6 +248,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added core GraphSON classes for Gremlin-Python: `UUID`, `Date`, and `Timestamp`.
+* Documented the recommended method for constructing DSLs with Gremlin.Net.
 * Provided a method to configure detachment options with `EventStrategy`.
 * Fixed a race condition in `TinkerIndex`.
 * Improved error messaging for bytecode deserialization errors in Gremlin Server.
