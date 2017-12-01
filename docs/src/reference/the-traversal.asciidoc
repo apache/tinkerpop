@@ -3218,3 +3218,94 @@ social.persons("marko").youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()
 ----
 
+=== Gremlin.Net
+
+Developing DSLs for .Net is most easily implemented using link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
+as they don't require direct extension of classes in the TinkerPop hierarchy. Extension Method classes simply need to
+be constructed for the `GraphTraversal` and the `GraphTraversalSource`. Unfortunately, anonymous traversals (spawned
+from `__`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
+extended. The only option is to re-implement the methods of `__` as a wrapper in the anonymous traversal for the DSL
+or to simply create a static class for the DSL and use the two anonymous traversals creators independently. The
+following example uses the latter approach as it saves a lot of boilerplate code with the minor annoyance of having a
+second static class to deal with when writing traversals rather than just calling `__` for everything.
+
+[source,csharp]
+----
+namespace Dsl
+{
+
+    public static class SocialTraversalExtensions
+    {
+        public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName)
+        {
+            return t.Out("knows").HasLabel("person").Has("name", personName);
+        }
+
+        public static GraphTraversal<Vertex, int> YoungestFriendsAge(this GraphTraversal<Vertex,Vertex> t)
+        {
+            return t.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
+        }
+
+        public static GraphTraversal<Vertex,long> CreatedAtLeast(this GraphTraversal<Vertex,Vertex> t, long number)
+        {
+            return t.OutE("created").Count().Is(P.Gte(number));
+        }
+    }
+
+    public static class __Social
+    {
+        public static GraphTraversal<object,Vertex> Knows(string personName)
+        {
+            return __.Out("knows").HasLabel("person").Has("name", personName);
+        }
+
+        public static GraphTraversal<object, int> YoungestFriendsAge()
+        {
+            return __.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
+        }
+
+        public static GraphTraversal<object,long> CreatedAtLeast(long number)
+        {
+            return __.OutE("created").Count().Is(P.Gte(number));
+        }
+    }
+
+    public static class SocialTraversalSourceExtensions
+    {
+        public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames)
+        {
+            GraphTraversal<Vertex,Vertex> t = g.V().HasLabel("person");
+
+            if (personNames.Length > 0)
+            {
+                t = t.Has("name", P.Within(personNames));
+            }
+
+            return t;
+        }
+    }
+}
+----
+
+Note the creation of `__Social` as the Social DSL's "extension" to the available ways in which to spawn anonymous
+traversals. The use of the double underscore prefix in the name is just a convention to consider using and is not a
+requirement. To use the DSL, bring it into scope with the `using` directive:
+
+[source,csharp]
+----
+using Dsl;
+using static Dsl.__Social;
+----
+
+and then it can be called from the application as follows:
+
+[source,csharp]
+----
+var graph = new Graph();
+var connection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)));
+var social = graph.Traversal().WithRemote(connection);
+
+social.Persons("marko").Knows("josh");
+social.Persons("marko").YoungestFriendsAge();
+social.Persons().Filter(CreatedAtLeast(2)).Count();
+----
