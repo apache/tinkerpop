@@ -449,9 +449,9 @@ connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
                                      graphson_writer=graphson_writer)
 ----
 
-===== Supporting Gremlin-DotNet IO
+===== Supporting Gremlin.Net IO
 
-The serialization system of Gremlin-DotNet provides ways to add new types by creating serializers and deserializers in
+The serialization system of Gremlin.Net provides ways to add new types by creating serializers and deserializers in
 any .NET language and registering them with the `GremlinClient`.
 
 [source,csharp]
