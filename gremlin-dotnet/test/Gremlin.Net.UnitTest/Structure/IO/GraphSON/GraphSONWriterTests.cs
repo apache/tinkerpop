@@ -145,12 +145,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
-        public void ShouldSerializeDateTime()
+        public void ShouldSerializeDateTimeOffset()
         {
             var writer = CreateStandardGraphSONWriter();
-            var dateTime = TestUtils.FromJavaTime(1475583442552);
+            var dateTimeOffset = TestUtils.FromJavaTime(1475583442552);
 
-            var graphSon = writer.WriteObject(dateTime);
+            var graphSon = writer.WriteObject(dateTimeOffset);
 
             const string expected = "{\"@type\":\"g:Date\",\"@value\":1475583442552}";
             Assert.Equal(expected, graphSon);

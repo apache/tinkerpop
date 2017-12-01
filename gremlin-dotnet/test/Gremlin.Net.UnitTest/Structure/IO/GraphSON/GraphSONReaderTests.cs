@@ -72,15 +72,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
-        public void ShouldDeserializeDateToDateTime()
+        public void ShouldDeserializeDateToDateTimeOffset()
         {
             var graphSon = "{\"@type\":\"g:Date\",\"@value\":1475583442552}";
             var reader = CreateStandardGraphSONReader();
 
-            DateTime readDateTime = reader.ToObject(JObject.Parse(graphSon));
+            DateTimeOffset deserializedValue = reader.ToObject(JObject.Parse(graphSon));
 
-            var expectedDateTime = TestUtils.FromJavaTime(1475583442552);
-            Assert.Equal(expectedDateTime, readDateTime);
+            var expectedDateTimeOffset = TestUtils.FromJavaTime(1475583442552);
+            Assert.Equal(expectedDateTimeOffset, deserializedValue);
         }
 
         [Fact]
@@ -211,15 +211,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
-        public void ShouldDeserializeTimestampToDateTime()
+        public void ShouldDeserializeTimestampToDateTimeOffset()
         {
             var graphSon = "{\"@type\":\"g:Timestamp\",\"@value\":1475583442558}";
             var reader = CreateStandardGraphSONReader();
 
-            DateTime readDateTime = reader.ToObject(JObject.Parse(graphSon));
+            DateTimeOffset deserializedValue = reader.ToObject(JObject.Parse(graphSon));
 
-            var expectedDateTime = TestUtils.FromJavaTime(1475583442558);
-            Assert.Equal(expectedDateTime, readDateTime);
+            var expectedDateTimeOffset = TestUtils.FromJavaTime(1475583442558);
+            Assert.Equal(expectedDateTimeOffset, deserializedValue);
         }
 
         [Fact]
