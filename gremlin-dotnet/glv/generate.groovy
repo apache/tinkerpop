@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
+import java.lang.reflect.TypeVariable
 
 def toCSharpTypeMap = ["Long": "long",
                        "Integer": "int",
@@ -115,8 +116,17 @@ def getJavaParameterTypeNames = { method ->
             } 
 }
 
-def toCSharpParamString = { param ->
-    csharpParamTypeName = toCSharpType(param.type.simpleName)
+def toCSharpParamString = { param, genTypeName ->
+    String csharpParamTypeName = genTypeName;
+    if (csharpParamTypeName == null){
+        csharpParamTypeName = toCSharpType(param.type.simpleName)
+    }
+    else if (csharpParamTypeName == "M") {
+        csharpParamTypeName = "object";
+    }
+    else if (csharpParamTypeName == "A" || csharpParamTypeName == "B") {
+        csharpParamTypeName = "E2";
+    }
     "${csharpParamTypeName} ${param.name}"
     }
 
@@ -131,22 +141,32 @@ def getCSharpParamTypeString = { method ->
             }.join(",")
 }
 
-def getCSharpParamString = { method ->
+def getCSharpParamString = { method, useGenericParams ->
     def parameters = method.parameters;
     if (parameters.length == 0)
-        return ""        
+        return ""
+
+    def genericTypes = method.getGenericParameterTypes();
     def csharpParameters = parameters.
-            init().
-            collect { param ->
-                toCSharpParamString(param)
-            };
-    def lastCSharpParam = "";
-    if (method.isVarArgs())
-        lastCSharpParam += "params ";
-    lastCSharpParam += toCSharpParamString(parameters.last())
-    csharpParameters += lastCSharpParam
-    csharpParamString = csharpParameters.join(", ")
-    csharpParamString
+            toList().indexed().
+            collect { index, param ->
+                String genTypeName = null
+                if (useGenericParams) {
+                    def genType = genericTypes[index]
+                    if (genType instanceof TypeVariable<?>) {
+                        genTypeName = ((TypeVariable<?>)genType).name
+                    }
+                }
+                toCSharpParamString(param, genTypeName)
+            }.
+            toArray();
+
+    if (method.isVarArgs()) {
+        def lastIndex = csharpParameters.length-1;
+        csharpParameters[lastIndex] = "params " + csharpParameters[lastIndex];
+    }
+
+    csharpParameters.join(", ")
 }
 
 def getParamNames = { parameters ->
@@ -209,7 +229,7 @@ def binding = ["pmethods": P.class.getMethods().
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
-                            def parameters = getCSharpParamString(javaMethod)
+                            def parameters = getCSharpParamString(javaMethod, false)
                             def paramNames = getParamNames(javaMethod.parameters)
                             return ["methodName": javaMethod.name, "parameters":parameters, "paramNames":paramNames]
                         },
@@ -220,7 +240,7 @@ def binding = ["pmethods": P.class.getMethods().
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
                             def typeArguments = javaMethod.genericReturnType.actualTypeArguments.collect{t -> ((java.lang.Class)t).simpleName}
-                            def parameters = getCSharpParamString(javaMethod)
+                            def parameters = getCSharpParamString(javaMethod, false)
                             def paramNames = getParamNames(javaMethod.parameters)
                             return ["methodName": javaMethod.name, "typeArguments": typeArguments, "parameters":parameters, "paramNames":paramNames]
                         },
@@ -235,7 +255,7 @@ def binding = ["pmethods": P.class.getMethods().
                             def t1 = toCSharpType(typeNames[0])
                             def t2 = toCSharpType(typeNames[1])
                             def tParam = getCSharpGenericTypeParam(t2)
-                            def parameters = getCSharpParamString(javaMethod)
+                            def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
                             return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames]
                         },
@@ -255,7 +275,7 @@ def binding = ["pmethods": P.class.getMethods().
                                 t2 = specificTypes[0]
                                 tParam = specificTypes.size() > 1 ? "<" + specificTypes[1] + ">" : ""
                             }
-                            def parameters = getCSharpParamString(javaMethod)
+                            def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
                             def callGenericTypeArg = hasMethodNoGenericCounterPartInGraphTraversal(javaMethod) ? "" : tParam
                             def graphTraversalT2 = getGraphTraversalT2ForT2(t2)
