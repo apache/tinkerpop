@@ -365,11 +365,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 dir.Parent != null;
                 dir = dir.Parent)
             {
-                if (dir.Name == "gremlin-dotnet" && dir.Parent?.Name == "tinkerpop")
+                if (dir.Name == "gremlin-dotnet" && dir.GetFiles("pom.xml").Length == 1)
                 {
                     rootDir = dir.Parent;
                     break;
-                }   
+                }
             }
             if (rootDir == null)
             {

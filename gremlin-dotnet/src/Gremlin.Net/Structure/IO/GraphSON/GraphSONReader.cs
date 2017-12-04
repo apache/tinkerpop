@@ -113,7 +113,11 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         private dynamic ReadTypedValue(JToken typedValue)
         {
             var graphSONType = (string) typedValue[GraphSONTokens.TypeKey];
-            return _deserializerByGraphSONType[graphSONType].Objectify(typedValue[GraphSONTokens.ValueKey], this);
+            if (!_deserializerByGraphSONType.TryGetValue(graphSONType, out var deserializer))
+            {
+                throw new InvalidOperationException($"Deserializer for \"{graphSONType}\" not found");
+            }
+            return deserializer.Objectify(typedValue[GraphSONTokens.ValueKey], this);
         }
 
         private dynamic ReadDictionary(JToken jtokenDict)

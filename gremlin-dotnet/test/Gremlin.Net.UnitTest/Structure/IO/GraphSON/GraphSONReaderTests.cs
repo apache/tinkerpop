@@ -164,6 +164,30 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
+        public void ShouldDeserializeDecimal()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigDecimal\",\"@value\":-8.201}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            decimal deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(-8.201M, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeDecimalValueAsString()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigDecimal\",\"@value\":\"7.50\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            decimal deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(7.5M, deserializedValue);
+        }
+
+        [Fact]
         public void ShouldDeserializeList()
         {
             var serializedValue = "[{\"@type\":\"g:Int32\",\"@value\":5},{\"@type\":\"g:Int32\",\"@value\":6}]";

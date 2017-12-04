@@ -30,5 +30,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         protected override string GraphSONTypeName => "BigDecimal";
         protected override Type HandledType => typeof(decimal);
         protected override string Prefix => "gx";
+        protected override bool StringifyValue => true;
     }
 }

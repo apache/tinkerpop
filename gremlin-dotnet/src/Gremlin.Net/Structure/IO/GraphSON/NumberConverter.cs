@@ -32,6 +32,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         protected abstract string GraphSONTypeName { get; }
         protected abstract Type HandledType { get; }
         protected virtual string Prefix => "g";
+        protected virtual bool StringifyValue => false;
 
         public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
@@ -40,7 +41,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            return GraphSONUtil.ToTypedValue(GraphSONTypeName, objectData, Prefix);
+            object value = objectData;
+            if (StringifyValue)
+            {
+                value = value?.ToString();
+            }
+            return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
         }
     }
 }
