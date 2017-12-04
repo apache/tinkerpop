@@ -634,7 +634,7 @@ changes there may prove important for the provider's implementation.
 
 ==== Graph System Providers
 
-===== GremlnPlugin
+===== GremlinPlugin
 
 The previously deprecated `GremlinPlugin` system has been removed. The old `GremlinPlugin` interface formerly resided
 in the `org.apache.tinkerpop.gremlin.groovy.plugin` package of `gremlin-groovy`. This interface was replaced by an
