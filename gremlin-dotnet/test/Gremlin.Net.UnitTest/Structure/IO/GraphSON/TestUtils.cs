@@ -25,12 +25,12 @@ using System;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 {
-    internal class TestUtils
+    internal static class TestUtils
     {
-        public static DateTime FromJavaTime(long javaTimestamp)
+        public static DateTimeOffset FromJavaTime(long milliseconds)
         {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return epoch.AddMilliseconds(javaTimestamp);
+            var epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+            return epoch.AddTicks(TimeSpan.TicksPerMillisecond * milliseconds);
         }
     }
 }
