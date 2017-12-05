@@ -22,31 +22,14 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal abstract class NumberConverter : IGraphSONDeserializer, IGraphSONSerializer
+    internal class DecimalConverter : NumberConverter
     {
-        protected abstract string GraphSONTypeName { get; }
-        protected abstract Type HandledType { get; }
-        protected virtual string Prefix => "g";
-        protected virtual bool StringifyValue => false;
-
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-        {
-            return graphsonObject.ToObject(HandledType);
-        }
-
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            object value = objectData;
-            if (StringifyValue)
-            {
-                value = value?.ToString();
-            }
-            return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
-        }
+        protected override string GraphSONTypeName => "BigDecimal";
+        protected override Type HandledType => typeof(decimal);
+        protected override string Prefix => "gx";
+        protected override bool StringifyValue => true;
     }
 }

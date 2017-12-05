@@ -51,6 +51,11 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public IEnumerable<Traverser> Traversers { get; set; }
 
+        ITraversal ITraversal.Iterate()
+        {
+            return Iterate();
+        }
+
         /// <summary>
         ///     Gets or sets the <see cref="ITraversalStrategy" /> strategies of this traversal.
         /// </summary>

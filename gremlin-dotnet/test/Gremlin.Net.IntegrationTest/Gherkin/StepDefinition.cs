@@ -22,31 +22,18 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using System.Dynamic;
+using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 
-namespace Gremlin.Net.Structure.IO.GraphSON
+namespace Gremlin.Net.IntegrationTest.Gherkin
 {
-    internal abstract class NumberConverter : IGraphSONDeserializer, IGraphSONSerializer
+    public abstract class StepDefinition : IDisposable
     {
-        protected abstract string GraphSONTypeName { get; }
-        protected abstract Type HandledType { get; }
-        protected virtual string Prefix => "g";
-        protected virtual bool StringifyValue => false;
+        internal RemoteConnectionFactory ConnectionFactory = new RemoteConnectionFactory();
 
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public virtual void Dispose()
         {
-            return graphsonObject.ToObject(HandledType);
-        }
-
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            object value = objectData;
-            if (StringifyValue)
-            {
-                value = value?.ToString();
-            }
-            return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
+            ConnectionFactory.Dispose();
         }
     }
 }

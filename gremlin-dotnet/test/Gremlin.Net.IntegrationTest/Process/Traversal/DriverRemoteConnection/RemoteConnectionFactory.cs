@@ -22,15 +22,20 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
+using Gremlin.Net.Structure.IO.GraphSON;
+using DriverRemoteConnectionImpl = Gremlin.Net.Driver.Remote.DriverRemoteConnection;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
-    internal class RemoteConnectionFactory
+    internal class RemoteConnectionFactory : IDisposable
     {
         private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
+
+        private readonly IList<DriverRemoteConnectionImpl> _connections = new List<DriverRemoteConnectionImpl>();
 
         public IRemoteConnection CreateRemoteConnection()
         {
@@ -40,8 +45,19 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public IRemoteConnection CreateRemoteConnection(string traversalSource)
         {
-            return new Net.Driver.Remote.DriverRemoteConnection(
-                new GremlinClient(new GremlinServer(TestHost, TestPort)), traversalSource);
+            var c = new DriverRemoteConnectionImpl(
+                new GremlinClient(new GremlinServer(TestHost, TestPort), new GraphSON2Reader(), new GraphSON2Writer(),
+                    GremlinClient.GraphSON2MimeType), traversalSource);
+            _connections.Add(c);
+            return c;
+        }
+
+        public void Dispose()
+        {
+            foreach (var connection in _connections)
+            {
+                connection.Dispose();
+            }
         }
     }
 }

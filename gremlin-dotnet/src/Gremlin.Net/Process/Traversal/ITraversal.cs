@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -31,7 +32,7 @@ namespace Gremlin.Net.Process.Traversal
     /// Represents the basic information for a walk over a graph.
     /// </summary>
     /// <seealso cref="ITraversal{SType, EType}"/>
-    public interface ITraversal
+    public interface ITraversal: IEnumerator
     {
         /// <summary>
         ///     Gets the <see cref="Bytecode" /> representation of this traversal.
@@ -47,6 +48,12 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
         IEnumerable<Traverser> Traversers { get; set; }
+
+        /// <summary>
+        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
+        /// </summary>
+        /// <returns>The fully drained traversal.</returns>
+        ITraversal Iterate();
     }
 
     /// <summary>
@@ -71,7 +78,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
         /// </summary>
         /// <returns>The fully drained traversal.</returns>
-        ITraversal<S, E> Iterate();
+        new ITraversal<S, E> Iterate();
 
         /// <summary>
         ///     Gets the next <see cref="Traverser" />.

@@ -101,6 +101,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDecimal(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(6.5M);
+
+            Assert.Equal("{\"@type\":\"gx:BigDecimal\",\"@value\":\"6.5\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldSerializeBoolean(int version)
         {
             var writer = CreateGraphSONWriter(version);

@@ -38,6 +38,11 @@ namespace Gremlin.Net.Driver
         /// Defines the default mime type to use.
         /// </summary>
         public const string DefaultMimeType = "application/vnd.gremlin-v3.0+json";
+
+        /// <summary>
+        /// The GraphSON2 mime type to use.
+        /// </summary>
+        public const string GraphSON2MimeType = "application/vnd.gremlin-v2.0+json";
         
         private readonly ConnectionPool _connectionPool;
 

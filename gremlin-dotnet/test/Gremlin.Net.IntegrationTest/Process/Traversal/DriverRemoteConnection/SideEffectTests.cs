@@ -76,46 +76,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
-        public void ShouldReturnSideEffectValueWhenGetIsCalledForGroupCountTraversal()
-        {
-            var graph = new Graph();
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
-            var t = g.V().Out("created").GroupCount("m").By("name").Iterate();
-            t.SideEffects.Keys();
-            var m = (IList) t.SideEffects.Get("m");
-
-            Assert.Equal(2, m.Count);
-            var result = new Dictionary<object, object>();
-            
-            foreach (IDictionary map in m)
-            {
-                foreach (var key in map.Keys)
-                {
-                    result.Add(key, map[key]);
-                }
-            }
-            Assert.Equal((long) 3, result["lop"]);
-            Assert.Equal((long) 1, result["ripple"]);
-        }
-
-        [Fact]
-        public void ShouldReturnSideEffectValueWhenGetIsCalledOnATraversalWithSideEffect()
-        {
-            var graph = new Graph();
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
-            var t = g.WithSideEffect("a", new List<string> {"first", "second"}).V().Iterate();
-            t.SideEffects.Keys();
-
-            var a = t.SideEffects.Get("a") as List<object>;
-
-            Assert.Equal(2, a.Count);
-            Assert.Equal("first", a[0]);
-            Assert.Equal("second", a[1]);
-        }
-
-        [Fact]
         public void ShouldThrowWhenGetIsCalledWithAnUnknownKey()
         {
             var graph = new Graph();
@@ -124,23 +84,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var t = g.V().Iterate();
 
             Assert.Throws<KeyNotFoundException>(() => t.SideEffects.Get("m"));
-        }
-
-        [Fact]
-        public void ShouldReturnBothSideEffectForTraversalWithTwoSideEffects_()
-        {
-            var graph = new Graph();
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
-
-            var t = g.V().Out("created").GroupCount("m").By("name").Values<string>("name").Aggregate("n").Iterate();
-
-            var keys = t.SideEffects.Keys().ToList();
-            Assert.Equal(2, keys.Count);
-            Assert.Contains("m", keys);
-            Assert.Contains("n", keys);
-            var n = (IList<object>) t.SideEffects.Get("n");
-            Assert.Equal(new[] {"lop", "ripple"}, n.Select(tr => ((Traverser)tr).Object));
         }
 
         [Fact]

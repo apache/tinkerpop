@@ -23,30 +23,24 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
-namespace Gremlin.Net.Structure.IO.GraphSON
+namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
-    internal abstract class NumberConverter : IGraphSONDeserializer, IGraphSONSerializer
+    public interface ITokenParameter
     {
-        protected abstract string GraphSONTypeName { get; }
-        protected abstract Type HandledType { get; }
-        protected virtual string Prefix => "g";
-        protected virtual bool StringifyValue => false;
+        /// <summary>
+        /// Gets the value of the parameter 
+        /// </summary>
+        object GetValue();
 
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-        {
-            return graphsonObject.ToObject(HandledType);
-        }
+        /// <summary>
+        /// Gets the type of the parameter
+        /// </summary>
+        Type GetParameterType();
 
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            object value = objectData;
-            if (StringifyValue)
-            {
-                value = value?.ToString();
-            }
-            return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
-        }
+        /// <summary>
+        /// Sets the context parameter values by a given name, ie: "v1Id" = 1
+        /// </summary>
+        void SetContextParameterValues(IDictionary<string, object> values);
     }
 }

@@ -22,31 +22,34 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
-namespace Gremlin.Net.Structure.IO.GraphSON
+namespace Gremlin.Net.IntegrationTest.Gherkin
 {
-    internal abstract class NumberConverter : IGraphSONDeserializer, IGraphSONSerializer
+    /// <summary>
+    /// Represents a test exception that should be ignored, given a reason (ie: feature not supported in the .NET GLV)
+    /// </summary>
+    public class IgnoreException : Exception
     {
-        protected abstract string GraphSONTypeName { get; }
-        protected abstract Type HandledType { get; }
-        protected virtual string Prefix => "g";
-        protected virtual bool StringifyValue => false;
-
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public IgnoreException(IgnoreReason reason) : base(GetMessage(reason))
         {
-            return graphsonObject.ToObject(HandledType);
+            
         }
 
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+        private static string GetMessage(IgnoreReason reason)
         {
-            object value = objectData;
-            if (StringifyValue)
+            string reasonSuffix = null;
+            switch (reason)
             {
-                value = value?.ToString();
+                case IgnoreReason.LambdaNotSupported:
+                    reasonSuffix = " because lambdas are not supported in Gremlin.NET";
+                    break;
             }
-            return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
+            return $"Scenario ignored" + reasonSuffix;
         }
+    }
+    
+    public enum IgnoreReason
+    {
+        LambdaNotSupported
     }
 }
