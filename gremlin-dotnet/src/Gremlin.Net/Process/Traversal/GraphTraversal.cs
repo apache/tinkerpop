@@ -420,7 +420,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the constant step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< S , E2 > Constant<E2> (object e)
+        public GraphTraversal< S , E2 > Constant<E2> (E2 e)
         {
             Bytecode.AddStep("constant", e);
             return Wrap< S , E2 >(this);
@@ -559,7 +559,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the fold step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< S , E2 > Fold<E2> (object seed, object foldFunction)
+        public GraphTraversal< S , E2 > Fold<E2> (E2 seed, object foldFunction)
         {
             Bytecode.AddStep("fold", seed, foldFunction);
             return Wrap< S , E2 >(this);
