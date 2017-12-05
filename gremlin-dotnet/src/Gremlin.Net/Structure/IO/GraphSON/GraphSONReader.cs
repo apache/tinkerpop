@@ -48,7 +48,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"g:Edge", new EdgeDeserializer()},
                 {"g:Property", new PropertyDeserializer()},
                 {"g:VertexProperty", new VertexPropertyDeserializer()},
-                {"g:Path", new PathDeserializer()}
+                {"g:Path", new PathDeserializer()},
+                {"gx:BigDecimal", new DecimalConverter()}
             };
 
         /// <summary>
@@ -89,9 +90,17 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic ToObject(JToken jToken)
         {
             if (jToken is JArray)
+            {
                 return jToken.Select(t => ToObject(t));
-            if (!jToken.HasValues) return ((JValue) jToken).Value;
-            if (!HasTypeKey(jToken)) return ReadDictionary(jToken);
+            }
+            if (jToken is JValue jValue)
+            {
+                return jValue.Value;
+            }
+            if (!HasTypeKey(jToken))
+            {
+                return ReadDictionary(jToken);
+            }
             return ReadTypedValue(jToken);
         }
 
@@ -104,7 +113,11 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         private dynamic ReadTypedValue(JToken typedValue)
         {
             var graphSONType = (string) typedValue[GraphSONTokens.TypeKey];
-            return _deserializerByGraphSONType[graphSONType].Objectify(typedValue[GraphSONTokens.ValueKey], this);
+            if (!_deserializerByGraphSONType.TryGetValue(graphSONType, out var deserializer))
+            {
+                throw new InvalidOperationException($"Deserializer for \"{graphSONType}\" not found");
+            }
+            return deserializer.Objectify(typedValue[GraphSONTokens.ValueKey], this);
         }
 
         private dynamic ReadDictionary(JToken jtokenDict)

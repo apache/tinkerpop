@@ -207,7 +207,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"cover":{"followedBy":"d[777982].l", "sungBy":"d[0].l", "writtenBy":"d[0].l"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l", "sungBy":"d[0].l", "writtenBy":"d[0].l"}}] |
+      | m[{"cover":{"followedBy":"d[777982].l", "sungBy":"d[0].i", "writtenBy":"d[0].i"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l", "sungBy":"d[0].i", "writtenBy":"d[0].i"}}] |
 
   Scenario: g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX
     Given the modern graph

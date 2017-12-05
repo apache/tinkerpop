@@ -27,7 +27,7 @@ namespace Gremlin.Net.Process.Traversal
     ///     Represents a <see cref="Bytecode" /> instruction by an operator name and its arguments.
     /// </summary>
     public class Instruction
-    {
+    {   
         /// <summary>
         ///     Initializes a new instance of the <see cref="Instruction" /> class.
         /// </summary>
