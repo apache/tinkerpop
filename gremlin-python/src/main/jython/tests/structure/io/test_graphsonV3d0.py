@@ -20,6 +20,7 @@ under the License.
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 import datetime
+import time
 import json
 import uuid
 
@@ -191,10 +192,15 @@ class TestGraphSONReader(object):
         assert o is serdes.objectify()
 
     def test_datetime(self):
-        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": 1481750076295}))
+        expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
+        pts = time.mktime((expected.year, expected.month, expected.day,
+                                           expected.hour, expected.minute, expected.second,
+                                           -1, -1, -1)) + expected.microsecond / 1e6
+        timestamp = int(round(pts * 1000))
+        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": timestamp}))
         assert isinstance(dt, datetime.datetime)
         # TINKERPOP-1848
-        # assert dt == datetime.datetime(2016, 12, 14, 16, 14, 36, 295000, tzinfo=None)
+        assert dt == expected
 
     def test_timestamp(self):
         dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))

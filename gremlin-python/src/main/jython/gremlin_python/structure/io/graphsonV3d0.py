@@ -343,17 +343,16 @@ class DateIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer):
-        # Java timestamp expects miliseconds
         if six.PY3:
             pts = obj.timestamp()
         else:
             # Hack for legacy Python
-            # Taken from:
-            # https://github.com/jaraco/backports.datetime_timestamp/blob/master/backports/datetime_timestamp/__init__.py
+            # timestamp() in Python 3.3
             pts = time.mktime((obj.year, obj.month, obj.day,
 			                   obj.hour, obj.minute, obj.second,
 			                   -1, -1, -1)) + obj.microsecond / 1e6
 
+        # Java timestamp expects miliseconds
         # Have to use int because of legacy Python
         ts = int(round(pts * 1000))
         return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
