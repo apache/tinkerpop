@@ -477,7 +477,7 @@ class Console {
         if (args.length == 1 && !args[0].startsWith("-")) {
             new Console(io, [[args[0]]], true)
         } else {
-            def scriptAndArgs = parseArgs(options.e ? "-e" : "-i", args, cli)
+            def scriptAndArgs = parseArgs(options.e ? ["-e", "--execute"] : ["-i", "--interactive"], args, cli)
             new Console(io, scriptAndArgs, !options.e)
         }
     }
@@ -487,10 +487,10 @@ class Console {
      * argument list to allow for multiple {@code -e} and {@code -i} values and parses such parameters into a list
      * of lists where the inner list is a script file and its arguments.
      */
-    private static List<List<String>> parseArgs(final String option, final String[] args, final CliBuilder cli) {
+    private static List<List<String>> parseArgs(final List<String> options, final String[] args, final CliBuilder cli) {
         def parsed = []
         for (int ix = 0; ix < args.length; ix++) {
-            if (args[ix] == option) {
+            if (args[ix] in options) {
                 // increment the counter to move past the option that was found. should now be positioned on the
                 // first argument to that option
                 ix++
