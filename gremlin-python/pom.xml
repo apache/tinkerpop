@@ -264,29 +264,6 @@ limitations under the License.
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!--
-                    <plugin>
-                        <groupId>net.sf.mavenjython</groupId>
-                        <artifactId>jython-compile-maven-plugin</artifactId>
-                        <version>1.4</version>
-                        <executions>
-                            <execution>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>jython</goal>
-                                </goals>
-                                <configuration>
-                                    <libraries>
-                                        <param>aenum>=1.4.5</param>
-                                        <param>tornado>=4.4.1</param>
-                                        <param>six>=1.10.0</param>
-                                        <param>futures>=3.0.5</param>
-                                    </libraries>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    -->
                     <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -301,7 +278,6 @@ limitations under the License.
                                 <configuration>
                                     <tasks>
                                         <mkdir dir="${project.build.directory}/python-reports"/>
-                                        <mkdir dir="${project.build.directory}/python/env"/>
                                         <mkdir dir="${project.build.directory}/python-packaged/env"/>
                                     </tasks>
                                 </configuration>
@@ -341,7 +317,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -349,7 +325,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -359,9 +335,6 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
-                                        <copy todir="${project.build.directory}/jython">
-                                            <fileset dir="src/main/jython"/>
-                                        </copy>
                                     </tasks>
                                 </configuration>
                             </execution>
@@ -376,6 +349,7 @@ limitations under the License.
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
+                                            <!-- oddly the "build-lib" needs to be in place or else docs won't generate -->
                                             <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
                                         </exec>
                                     </target>
