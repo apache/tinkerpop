@@ -58,7 +58,7 @@ BEGIN {
       print "jython.eval('os.chdir(\"" TP_HOME "\")')"
       print "jython.eval('import sys')"
       print "jython.eval('sys.path.append(\"" PYTHONPATH "\")')"
-      print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-python/target/test-classes/Lib\")')"
+      print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-python/target/python2/env/lib/python2.7/site-packages\")')"
       print "jython.eval('from gremlin_python import statics')"
       print "jython.eval('from gremlin_python.process.traversal import *')"
       print "jython.eval('from gremlin_python.process.strategies import *')"
