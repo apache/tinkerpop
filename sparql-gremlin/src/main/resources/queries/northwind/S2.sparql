@@ -1,0 +1,13 @@
+select ?a ?dec ?name ?unitPrice ?stock ?discountinued ?unitsOnOrder
+where {
+
+?a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://northwind.com/model/Product> .
+?a <http://northwind.com/model/category> ?c.
+?c <http://northwind.com/model/categoryName> "Seafood".
+?c <http://northwind.com/model/description> ?dec.
+?a <http://northwind.com/model/productName> ?name.
+?a <http://northwind.com/model/unitPrice> ?unitPrice.
+?a <http://northwind.com/model/unitsInStock> ?stock.
+?a <http://northwind.com/model/discontinued> ?discontinued.
+?a <http://northwind.com/model/unitsOnOrder> ?unitOnOrder.
+} Limit 10

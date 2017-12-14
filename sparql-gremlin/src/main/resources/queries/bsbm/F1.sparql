@@ -1,0 +1,7 @@
+select  ?a ?review ?r1
+where {
+                ?a v:reviewerID ?rid.
+                ?a e:edge ?review .
+                ?review v:Rating_1 ?r1.
+                FILTER ( ?rid = 86).
+}

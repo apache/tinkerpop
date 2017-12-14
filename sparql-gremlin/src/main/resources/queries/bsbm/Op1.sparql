@@ -1,0 +1,9 @@
+select  ?propertyTextual2 ?propertyTextual3 ?propertyNumeric2  where {
+
+ ?product v:productID ?pid .
+                FILTER ( ?pid = 343 ) .
+?product v:ProductPropertyTextual2 ?propertyTextual_2 .
+?product v:ProductPropertyTextual3 ?propertyTextual_3 .
+optional {   ?product v:productID ?pid .
+                FILTER ( ?pid = 350 ) . ?product  v:ProductPropertyNumeric_2 ?propertyNumeric2 .}
+}

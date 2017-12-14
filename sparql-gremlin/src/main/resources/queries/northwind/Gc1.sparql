@@ -1,0 +1,5 @@
+select  (COUNT(?stock) as ?total)
+where {
+                        ?a e:inCategory ?c .
+                        ?a v:unitsInStock ?stock.
+} group by(?stock)

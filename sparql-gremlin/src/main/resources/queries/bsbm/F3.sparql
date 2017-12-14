@@ -1,0 +1,6 @@
+select ?pid
+where {
+                ?a v:productID ?pid .
+                ?a  v:ProductPropertyNumeric_1 ?property1 .
+                FILTER ( ?property1 = 1 )
+}

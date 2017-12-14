@@ -1,0 +1,1 @@
+select ?customerID (COUNT(?orderID) as ?orderCount) where {  ?element v:customer ?b . ?b p:customerID ?customerID . ?customerID p:orderID ?c } GROUP by (?customerID) LIMIT 5

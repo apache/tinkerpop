@@ -1,0 +1,5 @@
+SELECT ?name
+WHERE {
+    ?person v:name ?name .
+    ?person v:age 29 .
+}

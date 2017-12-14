@@ -1,0 +1,5 @@
+select (count(?propn4) as ?total)
+where {
+
+                ?product v:ProductPropertyNumeric_4 ?propn4.
+} GROUP BY(?propn4)

@@ -1,0 +1,6 @@
+SELECT ?name ?age
+WHERE {
+    ?person v:name ?name .
+    ?person v:age ?age .
+    FILTER (?age < 30 || ?age > 40)
+}

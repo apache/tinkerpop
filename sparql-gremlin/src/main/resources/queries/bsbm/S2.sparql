@@ -1,0 +1,13 @@
+Select ?rating1 ?rating2 ?rating3 ?rating4
+where {
+                ?reviewer v:type "reviewer".
+                ?reviewer v:reviewerID ?rid.
+                        FILTER( ?rid = 424).
+                ?reviewer e:edge ?review.
+                ?review v:Rating_1 ?rating1.
+                ?review v:Rating_2 ?rating2.
+                ?review v:Rating_3 ?rating3.
+                ?review v:Rating_4 ?rating4.
+
+
+} LIMIT 5

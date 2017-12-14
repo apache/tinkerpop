@@ -1,0 +1,1 @@
+select ?b ?unitPrice where {  ?a v:label "product" . ?a v:name ?b . ?a v:unitsOnOrder ?unitsOnOrder . }  ORDER BY DESC (?unitsOnOrder) LIMIT 10

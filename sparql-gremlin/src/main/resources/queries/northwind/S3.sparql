@@ -1,0 +1,15 @@
+select ?b ?shipcity ?freight ?reqDate ?shipName ?postalCode ?shippedDate ?orderDate ?shipAddress
+
+{
+?a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://northwind.com/model/Customer> .
+?a <http://www.w3.org/2000/01/rdf-schema#label> "ALFKI" .
+?b <http://northwind.com/model/customer> ?a .
+?b <http://northwind.com/model/shipCity> ?shipcity .
+?b <http://northwind.com/model/freight> ?freight .
+?b <http://northwind.com/model/requiredDate> ?reqDate .
+?b <http://northwind.com/model/shipName> ?shipName .
+?b <http://northwind.com/model/shipPostalCode> ?postalCode .
+?b <http://northwind.com/model/shippedDate> ?shippedDate .
+?b <http://northwind.com/model/orderDate> ?orderDate .
+?b <http://northwind.com/model/shipAddress> ?shipAddress .
+}

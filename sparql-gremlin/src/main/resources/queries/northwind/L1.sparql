@@ -1,0 +1,6 @@
+select ?b ?c
+where {
+                ?a v:label "product" .
+                ?a v:name ?b .
+                ?a v:unitsInStock ?c.
+}  LIMIT 5

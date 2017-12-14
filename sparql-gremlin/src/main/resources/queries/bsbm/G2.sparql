@@ -1,0 +1,10 @@
+select ?rating1
+where {
+                ?a v:type ""reviewer"" .
+                ?a v:reviewerID ?rid.
+                                 ?a e:edge ?review .
+                                 ?review v:Rating_1 ?rating1.
+                                 ?review e:edge ?product.
+                                 ?product v:productID ?pid.
+                             FILTER ( ?rid = 86).
+} GROUP BY (?rating1)

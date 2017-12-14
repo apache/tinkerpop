@@ -1,0 +1,20 @@
+
+select ?plabel ?label ?flabel ?proptext1 ?proptext2 ?proptext3 ?propnum1 ?propnum2 ?comment
+where {
+      ?producer v:type "producer".
+      ?producer v:label_n ?plabel.
+      ?producer e:edge ?product.
+      ?product v:type "product".
+      ?product v:productID ?pid.
+                      FILTER(?pid = 343).
+      ?product v:label_n ?label.
+      ?product v:comment ?comment.
+      ?product v:ProductPropertyTextual_1 ?proptext1.
+      ?product v:ProductPropertyTextual_2 ?proptext2.
+      ?product v:ProductPropertyTextual_3 ?proptext3.
+             ?product v:ProductPropertyNumeric_1 ?propnum1.
+             ?product v:ProductPropertyNumeric_2 ?propnum2.
+             ?product e:edge ?pfeature.
+             ?pfeature v:type "product_feature".
+             ?pfeature v:label_n ?flabel.
+} LIMIT 10

@@ -1,0 +1,5 @@
+select ?b
+where {
+                ?a v:label "product" .
+                ?a v:name ?b .
+}  

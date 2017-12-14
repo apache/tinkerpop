@@ -1,0 +1,6 @@
+select ?unitOnOrder
+  where {
+                  ?a v:label "product".
+                  ?a v:name ?name.
+                  ?a v:unitsOnOrder ?unitOnOrder
+  } GROUP BY (?unitOnOrder)

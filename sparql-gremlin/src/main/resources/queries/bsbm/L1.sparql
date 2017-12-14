@@ -1,0 +1,9 @@
+select ?rating
+where {
+
+                ?a v:type ""review"" .
+                ?a v:Rating_1 ?rating.
+                ?a e:edge ?product.
+                ?product v:productID ?pid .
+                FILTER ( ?pid = 343 ) .
+} LIMIT 2

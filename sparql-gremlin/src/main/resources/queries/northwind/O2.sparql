@@ -1,0 +1,5 @@
+select ?unitPrice ?b
+  where {
+                  ?a v:name ?b .
+                  ?a v:unitPrice ?unitPrice .
+  }  ORDER BY DESC(?unitPrice) LIMIT 5

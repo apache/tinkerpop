@@ -1,0 +1,6 @@
+select (COUNT(?reviewer) as ?total)
+  where {
+
+                  ?reviewer v:type "reviewer".
+                  ?reviewer v:country ?country.
+  } GROUP BY(?country)

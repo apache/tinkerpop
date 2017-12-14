@@ -1,0 +1,9 @@
+select ?pid ?label
+where {
+                ?a v:productTypeID ?tid.
+                FILTER(?tid = 58).
+                ?a e:edge ?product.
+                ?product v:productID ?pid.
+                ?product v:label_n ?label.
+
+} ORDER BY(?pid) LIMIT 10
