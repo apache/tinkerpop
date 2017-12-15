@@ -611,7 +611,7 @@ features it implements) or should not otherwise be executed.  It is possible for
 by using the `@Graph.OptOut` annotation.  The following is an example of this annotation usage as taken from
 `HadoopGraph`:
 
-[source, java]
+[source,java]
 ----
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
@@ -648,7 +648,7 @@ Also note that some of the tests in the Gremlin Test Suite are parameterized tes
 specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized
 tests.  It is defined by a Java annotation that looks like this:
 
-[source, java]
+[source,java]
 @Parameterized.Parameters(name = "expect({0})")
 
 The annotation above shows that the name of each parameterized test will be prefixed with "expect" and have

@@ -602,6 +602,88 @@ IMPORTANT: When using the extended type system in Gremlin Server, support for th
 Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These
 implementations are only required to support the core types and not the extended ones.
 
+Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+f = new ByteArrayOutputStream()
+mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).create()
+graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
+f.close()
+----
+
+Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder. Here's is the
+example output from the code above:
+
+[source,json]
+----
+{
+    "@type": "g:Vertex",
+    "@value": {
+        "id": {
+            "@type": "g:Int32",
+            "@value": 1
+        },
+        "label": "person",
+        "properties": {
+            "name": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 0
+                    },
+                    "value": "marko",
+                    "label": "name"
+                }
+            }],
+            "uuid": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 12
+                    },
+                    "value": {
+                        "@type": "g:UUID",
+                        "@value": "829c7ddb-3831-4687-a872-e25201230cd3"
+                    },
+                    "label": "uuid"
+                }
+            }],
+            "age": [{
+                "@type": "g:VertexProperty",
+                "@value": {
+                    "id": {
+                        "@type": "g:Int64",
+                        "@value": 1
+                    },
+                    "value": {
+                        "@type": "g:Int32",
+                        "@value": 29
+                    },
+                    "label": "age"
+                }
+            }]
+        }
+    }
+}
+----
+
+Types can be disabled when creating a GraphSON 2.0 `Mapper` with:
+
+[source,groovy]
+----
+graph.io(graphson()).mapper().
+      version(GraphSONVersion.V2_0).
+      typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
+----
+
+By disabling types, the JSON payload produced will lack the extra information that is written for types. Please note,
+disabling types can be unsafe with regards to the written data in that types can be lost.
+
 [[gryo-reader-writer]]
 === Gryo Reader/Writer
 

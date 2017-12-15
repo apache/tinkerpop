@@ -132,6 +132,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   fi
 
   sed 's/\t/    /g' ${input} |
+  awk -f ${AWK_SCRIPTS}/tabify.awk |
   awk -f ${AWK_SCRIPTS}/prepare.awk |
   awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" -v PYTHONPATH="${TP_HOME}/gremlin-python/target/classes/Lib" |
   awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template |
@@ -141,8 +142,9 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   ${lb} awk -f ${AWK_SCRIPTS}/cleanup.awk  |
   ${lb} awk -f ${AWK_SCRIPTS}/language-variants.awk > ${output}
 
+  # check exit code for each of the previously piped commands
   ps=(${PIPESTATUS[@]})
-  for i in {0..6}; do
+  for i in {0..9}; do
     ec=${ps[i]}
     [ ${ec} -eq 0 ] || break
   done
