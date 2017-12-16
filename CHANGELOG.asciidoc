@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-7]]
-=== TinkerPop 3.2.7 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.2.7 (Release Date: December 17, 2017)
 
 * Added core GraphSON classes for Gremlin-Python: `UUID`, `Date`, and `Timestamp`.
 * Documented the recommended method for constructing DSLs with Gremlin.Net.
@@ -68,6 +68,70 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Cancel script evaluation timeout in `GremlinExecutor` when script evaluation finished.
 * Added a recipe for OLAP traversals with Spark on YARN.
 * Added `spark-yarn` dependencies to the manifest of `spark-gremlin`.
+
+==== Bugs
+
+* TINKERPOP-1650 PathRetractionStrategy makes Match steps unsolvable
+* TINKERPOP-1731 Docker build does not appear to work for gremlin-dotnet
+* TINKERPOP-1745 Gremlin .NET: Use DateTimeOffset instead of DateTime to represent g:Date
+* TINKERPOP-1753 OrderStep not able to order by non-integer numbers
+* TINKERPOP-1760 OLAP compilation failing around ConnectiveStrategy
+* TINKERPOP-1761 GremlinExecutor: Timeout future not cancelled on successful script evaluation
+* TINKERPOP-1762 Make MatchStep analyze mid-clause variables for executing ordering purposes.
+* TINKERPOP-1764 Generalize MatchStep to localize all barriers, not just reducing barriers.
+* TINKERPOP-1766 Gremlin.Net: Closed connections should not be re-used
+* TINKERPOP-1782 RangeByIsCountStrategy doesn't handle floating point numbers properly
+* TINKERPOP-1789 Reference elements should be represented by id and label *(breaking)*
+* TINKERPOP-1790 GraphSON 3.0 doc updates
+* TINKERPOP-1791 GremlinDsl custom step with generic end type produces invalid code in __.java
+* TINKERPOP-1792 Random TraversalSource Selection in GremlinScriptEngine
+* TINKERPOP-1795 Getting Lambda comparator message for .profile() step
+* TINKERPOP-1796 Driver connection pool SSL properties missing
+* TINKERPOP-1797 LambdaRestrictionStrategy and LambdaMapStep in `by()`-modulation.
+* TINKERPOP-1798 MutationListener.vertexPropertyChanged oldValue should be a VertexProperty
+* TINKERPOP-1801 OLAP profile() step return incorrect timing
+* TINKERPOP-1802 hasId() fails for empty collections
+* TINKERPOP-1803 inject() doesn't re-attach with remote traversals
+* TINKERPOP-1819 documentation query and description mismatch
+* TINKERPOP-1821 Consistent behavior of self-referencing edges
+* TINKERPOP-1825 Gremlin .NET: Constant() step has incorrect parameter defined
+* TINKERPOP-1830 Race condition in Tinkergraph index creation
+* TINKERPOP-1832 TraversalHelper.replaceStep sets previousStep to the wrong step
+* TINKERPOP-1846 LambdaRestrictionStrategy not triggering for Lambda scripts
+* TINKERPOP-1848 Fix g:Date assertion in python tests
+* TINKERPOP-1851 Gremlin long options for -e and -i are not working properly
+
+==== Improvements
+
+* TINKERPOP-1661 Docker-built documentation does not always point locally
+* TINKERPOP-1725 DotNet GLV: Make traversal generation deterministic
+* TINKERPOP-1734 DSL for Gremlin .NET
+* TINKERPOP-1746 Better error message on wrong ordering of emit()/until()/has()
+* TINKERPOP-1752 Gremlin.Net: Generate completely type-safe methods
+* TINKERPOP-1756 Provide a way to easily mock a RemoteConnection for tests
+* TINKERPOP-1759 Improve hashcode and equals for Traverser implementations
+* TINKERPOP-1768 Bump to Jackson 2.8.10
+* TINKERPOP-1770 Remote traversal timeout
+* TINKERPOP-1771 gremlin.bat doesn't support paths containing spaces
+* TINKERPOP-1779 Bump to GMavenPlus 1.6
+* TINKERPOP-1784 Gremlin Language Test Suite
+* TINKERPOP-1785 Gremlin.Net should be strong-name signed
+* TINKERPOP-1786 Recipe and missing manifest items for Spark on Yarn
+* TINKERPOP-1787 Allow :remote command to accept a user defined Cluster instance
+* TINKERPOP-1806 Consistently use Gremlin.Net instead of Gremlin-DotNet
+* TINKERPOP-1807 Gremlin-Python doesn't support GraphSON types g:Date, g:Timestamp and g:UUID
+* TINKERPOP-1808 Add ability to get the consumer in LambdaSideEffectStep
+* TINKERPOP-1811 Improve error reporting for serialization errors between gremlin-python and gremlin-server
+* TINKERPOP-1812 ProfileTest assumes that graph implementations will not add their own steps
+* TINKERPOP-1813 Subgraph step requires the graph API
+* TINKERPOP-1814 Some process tests require the graph API
+* TINKERPOP-1820 Include .NET GLV tests on TravisCI
+* TINKERPOP-1824 Update netty version to 4.0.52
+* TINKERPOP-1827 Gremlin .NET: Test Suite Runner
+* TINKERPOP-1829 Improve flexibility of detachment for EventStrategy
+* TINKERPOP-1833 DetachedEdge.Builder#setInV and setOutV doesn't return the builder
+* TINKERPOP-1835 Bump Netty 4.0.53
+* TINKERPOP-1837 Gremlin .NET: Provide type coercion between IDictionary<K, V> instances
 
 [[release-3-2-6]]
 === TinkerPop 3.2.6 (Release Date: August 21, 2017)
