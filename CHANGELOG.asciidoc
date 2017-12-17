@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-1]]
-=== TinkerPop 3.3.1 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.3.1 (Release Date: December 17, 2017)
 
 This release also includes changes from <<release-3-2-7, 3.2.7>>.
 
@@ -39,6 +39,22 @@ This release also includes changes from <<release-3-2-7, 3.2.7>>.
 * Defaulted `IoCore.gryo()` and `IoCore.graphson()` to both use their 3.0 formats which means that `Graph.io()` will use those by default.
 * Bumped Neo4j 3.2.3
 
+==== Bugs
+
+* TINKERPOP-1773 Lop should be created as a "software" and not a "person"
+* TINKERPOP-1783 PageRank gives incorrect results for graphs with sinks *(breaking)*
+* TINKERPOP-1799 Failure to serialize path() in gremlin-python
+* TINKERPOP-1847 tinkergraph-gremlin dependency on gremlin-test, bad scope?
+
+==== Improvements
+
+* TINKERPOP-1632 Create a set of default functions
+* TINKERPOP-1692 Bump to Neo4j 3.2.3
+* TINKERPOP-1717 Update name and link of DynamoDB storage backend in landing page
+* TINKERPOP-1730 Gremlin .NET support for GraphSON 3.0
+* TINKERPOP-1767 Method for graph providers to check an IO version and type
+* TINKERPOP-1793 addE() should allow dynamic edge labels
+* TINKERPOP-1834 Consider iterate() as a first class step
 
 [[release-3-3-0]]
 === TinkerPop 3.3.0 (Release Date: August 21, 2017)
