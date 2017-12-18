@@ -1187,7 +1187,7 @@ a final `create` method as follows:
 public GremlinPlugin create()
 ----
 
-Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportGremlinPlugin.html
+Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportGremlinPlugin.html[ImportGremlinPlugin]
 for an example of what implementing a `Builder` might look like in this context.
 
 Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_
