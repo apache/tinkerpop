@@ -542,7 +542,7 @@ possible to get a global view of a sideEffect until after an iteration has occur
 In some situations, a "stale" local representation of the sideEffect is sufficient to ensure the intended semantics of the
 traversal are respected. However, this is not generally true so be wary of traversals that require global views of a
 sideEffect. To ensure a fresh global representation, use `barrier()` prior to accessing the global sideEffect. Note that this
-only comes into play with custom steps and <<lambda-steps,lambda steps>>. The standard Gremlin step library is respective of OLAP semantics.
+only comes into play with custom steps and <<general-steps,lambda steps>>. The standard Gremlin step library is respective of OLAP semantics.
 . When evaluating traversals that rely on path information (i.e. the history of the traversal), practical
 computational limits can easily be reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion]
 of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to being
