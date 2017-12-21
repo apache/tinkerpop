@@ -615,7 +615,7 @@ If the old `GryoSerializer` model is desired, then the properties file should si
 spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
 ```
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389[TINKERPOP-1389]
 
 ==== ScriptInputFormat
 
