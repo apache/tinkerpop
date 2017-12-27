@@ -31,6 +31,9 @@ function cleanup {
 }
 trap cleanup EXIT
 
+REMOVE_CONTAINER="--rm"
+[[ -n ${KEEP_CONTAINER} ]] && unset REMOVE_CONTAINER
+
 case "$1" in
   -h | --help ) ${DIR}/scripts/build.sh -h; exit 0 ;;
 esac
@@ -47,6 +50,6 @@ CMD ["sh", "-c", "docker/scripts/build.sh $@"]
 EOF
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_DOCKER_OPTS} --rm -ti tinkerpop:${BUILD_TAG}
+docker run ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG}
 
 popd > /dev/null
