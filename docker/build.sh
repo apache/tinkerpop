@@ -52,4 +52,6 @@ EOF
 docker build -t tinkerpop:${BUILD_TAG} .
 docker run ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG}
 
+status=$?
 popd > /dev/null
+exit $status
