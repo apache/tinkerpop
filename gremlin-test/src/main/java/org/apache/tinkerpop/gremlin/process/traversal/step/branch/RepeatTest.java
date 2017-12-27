@@ -297,7 +297,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VXX_hasXname_markoX_repeatXoutEXX_inVXX_simplePathXXX_untilXhasXname_rippleXX_limitX1X_pathXX_byXvaluesXnameXX_byXT_labelX() {
+    public void g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX() {
         final Traversal<Vertex, Path> traversal = get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX();
         printTraversalForm(traversal);
         final Path path = traversal.next();

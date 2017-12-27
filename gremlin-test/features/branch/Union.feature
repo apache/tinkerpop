@@ -121,7 +121,7 @@ Feature: Step - union()
       | d[1.9].d |
       | d[1].l   |
 
-  Scenario: get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX
+  Scenario: g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
     And using the parameter v2Id defined as "v[vadas].id"

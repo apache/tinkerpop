@@ -17,7 +17,7 @@
 
 Feature: Step - has()
 
-  Scenario: Use has() with P.gt()
+  Scenario: g_V_hasXage_gt_30X
     Given the modern graph
     And the traversal of
       """
@@ -29,7 +29,7 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  Scenario: Use hasId() with P
+  Scenario: g_V_in_hasIdXneqX1XX
     Given the modern graph
     And using the parameter v1 defined as "v[marko].id"
     And the traversal of

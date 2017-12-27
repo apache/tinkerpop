@@ -20,20 +20,55 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ValueMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -66,7 +101,7 @@ public class FeatureCoverageTest {
     private static Pattern scenarioName = Pattern.compile("^\\s*Scenario:\\s*(.*)$");
 
     @Test
-    @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
+    // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
@@ -74,24 +109,65 @@ public class FeatureCoverageTest {
                 // branch
                 BranchTest.class,
                 ChooseTest.class,
+                LocalTest.class,
                 OptionalTest.class,
+                RepeatTest.class,
+                UnionTest.class,
                 // filter
+                AndTest.class,
                 CoinTest.class,
+                CyclicPathTest.class,
+                DedupTest.class,
                 DropTest.class,
                 FilterTest.class,
+                HasTest.class,
                 IsTest.class,
                 OrTest.class,
+                RangeTest.class,
+                SampleTest.class,
+                SimplePathTest.class,
+                TailTest.class,
+                WhereTest.class,
                 // map
+                AddEdgeTest.class,
+                AddVertexTest.class,
+                CoalesceTest.class,
+                ConstantTest.class,
                 CountTest.class,
+                FlatMapTest.class,
+                FoldTest.class,
+                GraphTest.class,
+                LoopsTest.class,
+                MapTest.class,
+                MatchTest.class,
+                MaxTest.class,
+                MeanTest.class,
+                MinTest.class,
+                OrderTest.class,
+                PageRankTest.class,
                 PathTest.class,
+                // PeerPressureTest.class,
+                // ProfileTest.class,
+                // ProgramTest.class,
                 ProjectTest.class,
+                PropertiesTest.class,
+                SelectTest.class,
+                SumTest.class,
+                UnfoldTest.class,
                 ValueMapTest.class,
                 VertexTest.class,
                 // sideEffect
                 AggregateTest.class,
+                // ExplainTest.class,
                 GroupCountTest.class,
+                GroupTest.class,
                 InjectTest.class,
+                SackTest.class,
+                SideEffectCapTest.class,
+                SideEffectTest.class,
                 StoreTest.class);
+                // SubgraphTest.class,
+                // TreeTest.class);
 
         final Field field = ProcessStandardSuite.class.getDeclaredField("testsToEnforce");
         field.setAccessible(true);

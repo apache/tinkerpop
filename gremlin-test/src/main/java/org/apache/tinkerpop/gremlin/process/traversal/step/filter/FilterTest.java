@@ -103,10 +103,15 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_filterXage_gt_30X() {
-        Traversal<Vertex, Vertex> traversal = get_g_VX1X_filterXage_gt_30X(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_filterXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
-        traversal = get_g_VX1X_filterXage_gt_30X(convertToVertexId("josh"));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX2X_filterXage_gt_30X() {
+        final  Traversal<Vertex, Vertex> traversal = get_g_VX1X_filterXage_gt_30X(convertToVertexId("josh"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>value("age"));
