@@ -1,0 +1,57 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[edge-move]]
+== Moving an Edge
+
+image:gremlin-edge.png[width=145]
+
+Aside from their properties, edges are immutable structures where the label and the related in and out vertices
+cannot be modified. To "move" an edge from one vertex to another, it requires that the edge be dropped and a new edge
+be created with the same properties and label. It is possible to simulate this "move" in a single traversal as
+follows:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').
+  outE().inV().
+  path().by('name').by(valueMap(true))
+----
+
+The "marko" vertex contains a "knows" edge to the "vadas" vertex. The following code shows how to "move" that edge to
+the "peter" vertex in a single traversal:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').as('a').
+  outE('knows').as('e1').filter(inV().has('name','vadas')).       <1>
+  V().has('name','peter').
+  addE('knows').from('a').as('e2').                               <2>
+  sideEffect(select('e1').properties().
+             unfold().as('p').
+             select('e2').
+             property(select('p').key(), select('p').value())).   <3>
+  select('e1').drop()                                             <4>
+g.V().has('name','marko').
+  outE().inV().
+  path().by('name').by(valueMap(true))
+----
+
+<1> Find the edge to "move" and label that as "e1". It will be necessary to reference this later to get the edge
+properties to transfer to the new "moved" edge.
+<2> Add the "moved" edge and label it as "e2".
+<3> Use a `sideEffect()` to transfer the properties from "e1" to "e2".
+<4> Use `drop()` to get rid of the old edge at "e1" now that the new "e2" edge is in place.
