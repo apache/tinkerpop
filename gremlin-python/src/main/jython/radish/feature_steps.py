@@ -155,13 +155,13 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):       # parse vertex id
         return __find_cached_element(ctx, graph_name, val[2:-4], "v").id
     elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):      # parse vertex id as string
-        return __find_cached_element(ctx, graph_name, val[2:-5], "v").id
+        return str(__find_cached_element(ctx, graph_name, val[2:-5], "v").id)
     elif isinstance(val, str) and re.match("^v\[.*\]$", val):           # parse vertex
         return __find_cached_element(ctx, graph_name, val[2:-1], "v")
     elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):       # parse edge id
         return __find_cached_element(ctx, graph_name, val[2:-4], "e").id
     elif isinstance(val, str) and re.match("^e\[.*\]\.sid$", val):      # parse edge id as string
-        return __find_cached_element(ctx, graph_name, val[2:-5], "e").id
+        return str(__find_cached_element(ctx, graph_name, val[2:-5], "e").id)
     elif isinstance(val, str) and re.match("^e\[.*\]$", val):           # parse edge
         return __find_cached_element(ctx, graph_name, val[2:-1], "e")
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):           # parse json as a map
