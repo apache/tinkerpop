@@ -154,9 +154,9 @@ def _convert(val, ctx):
     elif isinstance(val, unicode):                                      # convert annoying python 2.x unicode nonsense
         return _convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):           # parse list
-        return list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+        return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^s\[.*\]$", val):           # parse set
-        return set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+        return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^d\[.*\]\.[ilfdm]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
     elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):       # parse vertex id
