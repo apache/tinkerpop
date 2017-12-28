@@ -151,6 +151,45 @@ Feature: Step - has()
 
   Scenario: g_VXv2X_hasXage_gt_30X
     Given the modern graph
+    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter d30 defined as "d[30].i"
+    And the traversal of
+      """
+      g.V(g.V(v4Id).next()).has("age", P.gt(d30))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
+  Scenario: g_VX1X_out_hasXid_lt_3X
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v3Id defined as "v[lop].id"
+    And the traversal of
+      """
+      g.V(v1Id).out().has(T.id, P.lt(v3Id))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+
+  Scenario: g_VX1AsStringX_out_hasXid_2AsStringX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].sid"
+    And using the parameter v2Id defined as "v[vadas].sid"
+    And the traversal of
+      """
+      g.V(v1Id).out().hasId(v2Id)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+
+  Scenario: g_VX1X_out_hasXid_2X
+    Given the modern graph
     And using the parameter v2 defined as "v[josh]"
     And the traversal of
       """
@@ -173,6 +212,21 @@ Feature: Step - has()
     Then the result should be unordered
       | result |
       | v[vadas] |
+
+  Scenario: g_VX1X_out_hasXid_2_3X
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter v3Id defined as "v[lop].id"
+    And the traversal of
+      """
+      g.V(v1Id).out().hasId(v2Id, v3Id)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[lop] |
 
   Scenario: g_VX1X_out_hasXid_2AsString_3AsStringX
     Given the modern graph
@@ -354,6 +408,19 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  Scenario: g_V_both_dedup_properties_hasKeyXageX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().both().properties().dedup().hasKey("age").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
   Scenario: g_V_hasXage_withinX27X_count
     Given the modern graph
     And the traversal of
@@ -398,3 +465,96 @@ Feature: Step - has()
       | result |
       | d[2].l |
 
+
+  Scenario: g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value
+    Given the modern graph
+    And using the parameter d30 defined as "d[30].i"
+    And the traversal of
+    """
+    g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(d30)).value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_hasNotXageX_name
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasNot("age").values("name")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_hasIdX1X_hasIdX2X
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v2Id defined as "v[vadas].id"
+    And the traversal of
+    """
+    g.V().hasId(v1Id).hasId(v2Id)
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasLabelXpersonX_hasLabelXsoftwareX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().hasLabel("person").hasLabel("software")
+    """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasIdXemptyX_count
+    Given the modern graph
+    And using the parameter l defined as "l[]"
+    And the traversal of
+    """
+    g.V().hasId(l).count()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].l |
+
+  Scenario: g_V_hasIdXwithinXemptyXX_count
+    Given the modern graph
+    And using the parameter l defined as "l[]"
+    And the traversal of
+    """
+    g.V().hasId(P.within(l)).count()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].l |
+
+  Scenario: g_V_hasIdXwithoutXemptyXX_count
+    Given the modern graph
+    And using the parameter l defined as "l[]"
+    And the traversal of
+    """
+    g.V().hasId(P.without(l)).count()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
+
+  Scenario: g_V_notXhasIdXwithinXemptyXXX_count
+    Given the modern graph
+    And using the parameter l defined as "l[]"
+    And the traversal of
+    """
+    g.V().not(__.hasId(P.within(l))).count()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |

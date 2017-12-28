@@ -590,7 +590,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id) {
-            return g.V(g.V(v1Id).next()).has("age", P.gt(30));
+            return g.V(v1Id).has("age", P.gt(30));
         }
 
         @Override
