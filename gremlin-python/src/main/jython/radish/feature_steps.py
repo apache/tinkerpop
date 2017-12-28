@@ -43,7 +43,8 @@ project = __.project
 tail = __.tail
 
 ignores = [
-    "g.V(v1Id).out().inject(v2).values(\"name\")"  # bug in attachment won't connect v2
+    "g.V(v1Id).out().inject(v2).values(\"name\")",  # bug in attachment won't connect v2
+    "g.V().hasLabel(\"person\").has(\"age\", P.not(P.lte(d10).and(P.not(P.between(d11, d20)))).and(P.lt(d29).or(P.eq(d35)))).values(\"name\")" # TINKERPOP-1859
            ]
 
 
@@ -92,11 +93,17 @@ def translate_traversal(step):
 
 @when("iterated to list")
 def iterate_the_traversal(step):
+    if step.context.ignore:
+        return
+    
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 
 @when("iterated next")
 def next_the_traversal(step):
+    if step.context.ignore:
+        return
+
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.next())
 
 
