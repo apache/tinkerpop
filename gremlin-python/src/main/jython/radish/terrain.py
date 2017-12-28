@@ -17,7 +17,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-import re
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -57,6 +56,10 @@ def prepare_static_traversal_source(features, marker):
                 scenario.context.remote_conn[graph_name] = cache[graph_name]["remote_conn"]
                 scenario.context.lookup_v[graph_name] = cache[graph_name]["lookup_v"]
                 scenario.context.lookup_e[graph_name] = cache[graph_name]["lookup_e"]
+
+            # setup the "empty" lookups as needed
+            scenario.context.lookup_v["empty"] = {}
+            scenario.context.lookup_e["empty"] = {}
 
 
 @before.each_scenario
