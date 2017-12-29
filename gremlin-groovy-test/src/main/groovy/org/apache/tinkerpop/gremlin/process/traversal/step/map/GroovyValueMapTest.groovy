@@ -34,8 +34,18 @@ public abstract class GroovyValueMapTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXtrueX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap(true)")
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap('name', 'age')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXtrue_name_ageX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap(true, 'name', 'age')")
         }
 
         @Override
