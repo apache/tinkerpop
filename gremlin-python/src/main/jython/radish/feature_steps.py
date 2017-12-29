@@ -33,6 +33,8 @@ regex_in = re.compile(r"([(.,\s])in\(")
 regex_is = re.compile(r"([(.,\s])is\(")
 regex_not = re.compile(r"([(.,\s])not\(")
 regex_or = re.compile(r"([(.,\s])or\(")
+regex_true = re.compile(r"(true)")
+regex_false = re.compile(r"(false)")
 
 
 ignores = [
@@ -157,6 +159,8 @@ def _convert(val, ctx):
         return Path([set([])], path_objects)
     elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
+    elif isinstance(val, str) and re.match("^t\[.*\]$", val):         # parse instance of T enum
+        return T[val[2:-1]]
     else:
         return val
 
@@ -209,7 +213,9 @@ def _translate(traversal):
     replaced = regex_is.sub(r"\1is_(", replaced)
     replaced = regex_not.sub(r"\1not_(", replaced)
     replaced = regex_or.sub(r"\1or_(", replaced)
-    return regex_in.sub(r"\1in_(", replaced)
+    replaced = regex_in.sub(r"\1in_(", replaced)
+    replaced = regex_true.sub(r"True", replaced)
+    return regex_false.sub(r"False", replaced)
 
 
 def _make_traversal(g, traversal_string, params):
