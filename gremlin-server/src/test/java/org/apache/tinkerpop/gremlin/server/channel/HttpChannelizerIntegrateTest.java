@@ -18,14 +18,41 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-
+import org.apache.http.NoHttpResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.Settings;
 
+import org.junit.Test;
+import org.junit.Assert;
+
 import java.util.Map;
 import java.util.HashMap;
+import java.net.SocketException;
 
 public class HttpChannelizerIntegrateTest extends AbstractGremlinServerChannelizerIntegrateTest {
+
+    @Override
+    public Settings overrideSettings(final Settings settings) {
+        super.overrideSettings(settings);
+        final String nameOfTest = name.getMethodName();
+        if (nameOfTest.equals("shouldBreakOnInvalidAuthenticationHandler") ) {
+            settings.authentication = getAuthSettings();
+            settings.authentication.authenticationHandler = "Foo.class";
+        }
+        return settings;
+    }
+
+    @Test
+    public void shouldBreakOnInvalidAuthenticationHandler() throws Exception {
+        final CombinedTestClient client =  new CombinedTestClient(getProtocol());
+        try {
+            client.sendAndAssert("2+2", 4);
+            Assert.fail("An exception should be thrown with an invalid authentication handler");
+        } catch (NoHttpResponseException | SocketException e) {
+        } finally {
+            client.close();
+        }
+    }
 
     @Override
     public String getProtocol() {
