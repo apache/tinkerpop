@@ -28,7 +28,7 @@ BEGIN {
 
 /<\/style>/ {
   if (!styled) {
-    print ".invisible {position: absolute; left: 9999px}"
+    print ".invisible {color: rgba(0,0,0,0); font-size: 0;}"
     styled=1
   }
 }
