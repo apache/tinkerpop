@@ -57,7 +57,7 @@ public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Build
     }
 
     @Override
-    public <P extends VertexProgram> P create(final Graph graph) {
-        return (P) VertexProgram.createVertexProgram(graph, this.configuration);
+    public <P extends VertexProgram> P create(final Graph... graphs) {
+        return (P) VertexProgram.createVertexProgram(this.configuration, graphs);
     }
 }

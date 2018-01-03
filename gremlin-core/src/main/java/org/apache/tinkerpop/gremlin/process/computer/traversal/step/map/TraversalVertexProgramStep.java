@@ -70,10 +70,10 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public TraversalVertexProgram generateProgram(final Graph graph, final Memory memory) {
+    public TraversalVertexProgram generateProgram(final Memory memory, final Graph... graphs) {
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         final TraversalStrategies computerSpecificStrategies = this.getTraversal().getStrategies().clone();
-        TraversalStrategies.GlobalCache.getStrategies(graph.getClass())
+        TraversalStrategies.GlobalCache.getStrategies(graphs[0].getClass())
                 .toList()
                 .stream()
                 .filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy)
@@ -84,7 +84,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         final TraversalVertexProgram.Builder builder = TraversalVertexProgram.build().traversal(computerSpecificTraversal);
         if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
             builder.haltedTraversers(memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
-        return builder.create(graph);
+        return builder.create(graphs);
     }
 
     @Override
