@@ -177,7 +177,7 @@ def _any_assertion(data, result, ctx):
 
 def _table_assertion(data, result, ctx, ordered):
     # results from traversal should have the same number of entries as the feature data table
-    assert_that(len(result), equal_to(len(data)))
+    assert_that(len(result), equal_to(len(data)), "result:" + str(result))
 
     results_to_test = list(result)
 
