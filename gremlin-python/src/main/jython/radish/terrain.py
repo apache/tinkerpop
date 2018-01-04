@@ -63,7 +63,7 @@ def prepare_static_traversal_source(features, marker):
 @before.each_scenario
 def prepare_traversal_source(scenario):
     # some tests create data - create a fresh remote to the empty graph and clear that graph prior to each test
-    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph", message_serializer=serializer.GraphSONSerializersV2d0())
+    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph", message_serializer=serializer.GraphSONSerializersV3d0())
     scenario.context.remote_conn["empty"] = remote
     g = Graph().traversal().withRemote(remote)
     g.V().drop().iterate()
@@ -81,7 +81,7 @@ def close_static_traversal_source(features, marker):
 
 
 def __create_remote(server_graph_name):
-    return DriverRemoteConnection('ws://localhost:45940/gremlin', server_graph_name, message_serializer=serializer.GraphSONSerializersV2d0())
+    return DriverRemoteConnection('ws://localhost:45940/gremlin', server_graph_name, message_serializer=serializer.GraphSONSerializersV3d0())
 
 
 def __create_lookup_v(remote):
