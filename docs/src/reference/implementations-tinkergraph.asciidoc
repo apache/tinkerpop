@@ -47,7 +47,7 @@ Graph graph = TinkerGraph.open();
 GraphTraversalSource g = graph.traversal();
 Vertex marko = g.addV("person").property("name","marko").property("age",29).next();
 Vertex lop = g.addV("software").property("name","lop").property("lang","java").next();
-g.withSideEffect("l",lop).V(marko).addE("created").to('l').property("weight",0.6d).iterate();
+g.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
 ----
 
 The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
