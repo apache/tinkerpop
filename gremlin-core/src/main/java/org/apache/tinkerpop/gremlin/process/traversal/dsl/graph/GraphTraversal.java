@@ -1647,7 +1647,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * of {@code low} do not pass through and those that exceed the value of {@code high} will end the iteration.
      *
      * @param low  the number at which to start allowing objects through the stream
-     * @param high the number at which to end the stream
+     * @param high the number at which to end the stream - use {@code -1} to emit all remaining objects
      * @return the traversal with an appended {@link RangeGlobalStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
      * @since 3.0.0-incubating
@@ -1664,7 +1664,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param scope the scope of how to apply the {@code range}
      * @param low   the number at which to start allowing objects through the stream
-     * @param high  the number at which to end the stream
+     * @param high  the number at which to end the stream - use {@code -1} to emit all remaining objects
      * @return the traversal with an appended {@link RangeGlobalStep} or {@link RangeLocalStep} depending on {@code scope}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#range-step" target="_blank">Reference Documentation - Range Step</a>
      * @since 3.0.0-incubating
