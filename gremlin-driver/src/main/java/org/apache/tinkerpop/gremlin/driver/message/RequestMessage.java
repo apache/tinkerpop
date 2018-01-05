@@ -112,7 +112,7 @@ public final class RequestMessage {
      */
     public static final class Builder {
         public static final String OP_PROCESSOR_NAME = "";
-        private UUID requestId = UUID.randomUUID();
+        private UUID requestId;
         private String op;
         private String processor = OP_PROCESSOR_NAME;
         private Map<String, Object> args = new HashMap<>();
@@ -155,7 +155,7 @@ public final class RequestMessage {
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage create() {
-            return new RequestMessage(requestId, op, processor, args);
+            return new RequestMessage(requestId == null ? UUID.randomUUID() : requestId, op, processor, args);
         }
     }
 
