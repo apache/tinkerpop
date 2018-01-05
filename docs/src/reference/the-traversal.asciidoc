@@ -1733,13 +1733,15 @@ g.E().propertyMap()
 
 As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through
 with `range()`-step (*filter*). When the low-end of the range is not met, objects are continued to be iterated. When
-within the low (inclusive) and high (exclusive) range, traversers are emitted. Finally, when above the high range, the
-traversal breaks out of iteration.
+within the low (inclusive) and high (exclusive) range, traversers are emitted. When above the high range, the traversal
+breaks out of iteration. Finally, the use of `-1` on the high range will emit remaining traversers after the low range
+begins.
 
 [gremlin-groovy,modern]
 ----
 g.V().range(0,3)
 g.V().range(1,3)
+g.V().range(1, -1)
 g.V().repeat(both()).times(1000000).emit().range(6,10)
 ----
 
