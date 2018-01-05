@@ -368,7 +368,7 @@ and recommendation.
 * Provides a method for Non-JVM languages (e.g. Python, Javascript, etc.) to communicate with the TinkerPop stack.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
-NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Rexster].
+NOTE: Gremlin Server is the replacement for link:https://github.com/tinkerpop/rexster[Rexster].
 
 NOTE: Please see the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
 on how to develop a driver for Gremlin Server.
@@ -848,7 +848,7 @@ image:gremlin-rexster.png[width=225,float=left] While the default behavior for G
 WebSocket-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].
 The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
 programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
-with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
+with Gremlin Server.   It also may represent an easier upgrade path from link:https://github.com/tinkerpop/rexster[Rexster]
 as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
 Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
