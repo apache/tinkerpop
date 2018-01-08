@@ -68,6 +68,19 @@ public interface VertexProgram<M> extends Cloneable {
      * @param graph         the graph that the VertexProgram will run against
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
+    @Deprecated
+    public default void loadState(final Graph graph, final Configuration configuration) {
+        loadState(configuration, graph);
+    }
+
+    /**
+     * When it is necessary to load the state of the VertexProgram, this method is called.
+     * This is typically required when the VertexProgram needs to be serialized to another machine.
+     * Note that what is loaded is simply the instance state, not any processed data.
+     *
+     * @param graphs        the graph that the VertexProgram will run against
+     * @param configuration the configuration to load the state of the VertexProgram from.
+     */
     public default void loadState(final Configuration configuration, final Graph... graphs) {
 
     }
@@ -216,6 +229,21 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @param graph         The graph that the vertex program will execute against
      * @param configuration A configuration with requisite information to build a vertex program
+     * @param <V>           The vertex program type
+     * @return the newly constructed vertex program
+     */
+    @Deprecated
+    public static <V extends VertexProgram> V createVertexProgram(final Graph graph, final Configuration configuration) {
+        return createVertexProgram(configuration, graph);
+    }
+
+    /**
+     * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
+     * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.
+     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided graph and configuration.
+     *
+     * @param configuration A configuration with requisite information to build a vertex program
+     * @param graphs        The graphs that the vertex program will execute against
      * @param <V>           The vertex program type
      * @return the newly constructed vertex program
      */

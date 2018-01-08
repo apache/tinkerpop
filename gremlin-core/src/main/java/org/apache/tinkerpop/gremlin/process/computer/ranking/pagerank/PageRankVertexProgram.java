@@ -77,7 +77,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     @Override
     public void loadState(final Configuration configuration, final Graph... graphs) {
         if (graphs.length != 1) {
-            throw new IllegalStateException("Must provide one graph to use");
+            throw new IllegalStateException("Must provide one graph to use, received " + graphs.length);
         }
         Graph graph = graphs[0];
         if (configuration.containsKey(INITIAL_RANK_TRAVERSAL))

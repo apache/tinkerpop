@@ -61,7 +61,7 @@ public interface VertexComputing {
     /**
      * Generate the {@link VertexProgram}.
      *
-     * @param graph  the {@link Graph} that the program will be executed over.
+     * @param graphs the {@link Graph} that the program will be executed over.
      * @param memory the {@link Memory} from the previous OLAP job if it exists, else its an empty memory structure.
      * @return the generated vertex program instance.
      */
