@@ -162,10 +162,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (!configuration.containsKey(TRAVERSAL))
             throw new IllegalArgumentException("The configuration does not have a traversal: " + TRAVERSAL);
         if (graphs.length != 1) {
-            throw new IllegalStateException("Must provide one graph to use");
+            throw new IllegalStateException("Must provide one graph to use, received " + graphs.length);
         }
-        Graph graph = graphs[0];
-        this.traversal = PureTraversal.loadState(configuration, TRAVERSAL, graph);
+        this.traversal = PureTraversal.loadState(configuration, TRAVERSAL, graphs[0]);
         if (!this.traversal.get().isLocked())
             this.traversal.get().applyStrategies();
         /// traversal is compiled and ready to be introspected

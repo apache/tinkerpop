@@ -326,12 +326,11 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         @SuppressWarnings("unchecked")
         @Override
         public BulkLoaderVertexProgram create(final Graph... graphs) {
-            if (graphs.length != 1) {
-                throw new IllegalStateException("Must provide one graph to use");
+            if (graphs.length == 0) {
+                throw new IllegalStateException("Must provide at least one graph to use");
             }
-            Graph graph = graphs[0];
-            ConfigurationUtils.append(graph.configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
-            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(configuration, graph);
+            ConfigurationUtils.append(graphs[0].configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
+            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(configuration, graphs);
         }
 
         private void setGraphConfigurationProperty(final String key, final Object value) {
