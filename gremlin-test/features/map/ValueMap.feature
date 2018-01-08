@@ -42,12 +42,12 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"id": "v[marko].id", "label": "person", "name": ["marko"], "age": [29]}] |
-      | m[{"id": "v[josh].id", "label": "person", "name": ["josh"], "age": [32]}] |
-      | m[{"id": "v[peter].id", "label": "person", "name": ["peter"], "age": [35]}] |
-      | m[{"id": "v[vadas].id", "label": "person", "name": ["vadas"], "age": [27]}] |
-      | m[{"id": "v[lop].id", "label": "software", "name": ["lop"], "lang": ["java"]}] |
-      | m[{"id": "v[ripple].id", "label": "software", "name": ["ripple"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"], "lang": ["java"]}] |
 
   Scenario: g_V_valueMapXname_ageX
     Given the modern graph
@@ -74,12 +74,12 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"id": "v[marko].id", "label": "person", "name": ["marko"], "age": [29]}] |
-      | m[{"id": "v[josh].id", "label": "person", "name": ["josh"], "age": [32]}] |
-      | m[{"id": "v[peter].id", "label": "person", "name": ["peter"], "age": [35]}] |
-      | m[{"id": "v[vadas].id", "label": "person", "name": ["vadas"], "age": [27]}] |
-      | m[{"id": "v[lop].id", "label": "software", "name": ["lop"]}] |
-      | m[{"id": "v[ripple].id", "label": "software", "name": ["ripple"]}] |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"]}] |
 
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
