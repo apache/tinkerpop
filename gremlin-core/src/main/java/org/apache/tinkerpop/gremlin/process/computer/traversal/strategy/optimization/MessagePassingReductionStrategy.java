@@ -79,7 +79,7 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
         // only process the first traversal step in an OLAP chain
         TraversalHelper.getFirstStepOfAssignableClass(TraversalVertexProgramStep.class, traversal).ifPresent(step -> {
             final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance()); // best guess at what the graph will be as its dynamically determined
-            final Traversal.Admin<?, ?> compiledComputerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
+            final Traversal.Admin<?, ?> compiledComputerTraversal = step.generateProgram(EmptyMemory.instance(), graph).getTraversal().get().clone();
             if (!compiledComputerTraversal.isLocked())
                 compiledComputerTraversal.applyStrategies();
             if (!TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(LocalStep.class, LambdaHolder.class), compiledComputerTraversal) && // don't do anything with lambdas or locals as this leads to unknown adjacencies

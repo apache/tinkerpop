@@ -53,7 +53,19 @@ public interface VertexComputing {
      * @param memory the {@link Memory} from the previous OLAP job if it exists, else its an empty memory structure.
      * @return the generated vertex program instance.
      */
-    public VertexProgram generateProgram(final Graph graph, final Memory memory);
+    @Deprecated
+    public default VertexProgram generateProgram(final Graph graph, final Memory memory) {
+        return generateProgram(memory, graph);
+    }
+
+    /**
+     * Generate the {@link VertexProgram}.
+     *
+     * @param graph  the {@link Graph} that the program will be executed over.
+     * @param memory the {@link Memory} from the previous OLAP job if it exists, else its an empty memory structure.
+     * @return the generated vertex program instance.
+     */
+    public VertexProgram generateProgram(final Memory memory, final Graph... graphs);
 
     /**
      * @deprecated As of release 3.2.1. Please use {@link VertexComputing#getComputer()}.

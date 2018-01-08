@@ -91,8 +91,8 @@ public class BulkDumperVertexProgram implements VertexProgram<Tuple> {
 
         @SuppressWarnings("unchecked")
         @Override
-        public BulkDumperVertexProgram create(final Graph graph) {
-            return (BulkDumperVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
+        public BulkDumperVertexProgram create(final Graph... graphs) {
+            return (BulkDumperVertexProgram) VertexProgram.createVertexProgram(configuration, graphs);
         }
     }
 }
