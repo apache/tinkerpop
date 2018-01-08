@@ -155,7 +155,7 @@ public final class RequestMessage {
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage create() {
-            return new RequestMessage(requestId == null ? UUID.randomUUID() : requestId, op, processor, args);
+            return new RequestMessage(null == requestId ? UUID.randomUUID() : requestId, op, processor, args);
         }
     }
 
