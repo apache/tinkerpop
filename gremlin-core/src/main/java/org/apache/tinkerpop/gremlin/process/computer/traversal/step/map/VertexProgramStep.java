@@ -64,7 +64,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                future = this.getComputer().apply(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
+                future = this.getComputer().apply(graph).program(this.generateProgram(EmptyMemory.instance(), graph)).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
@@ -72,7 +72,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
                 final Memory memory = traverser.get().memory();
-                future = this.generateComputer(graph).program(this.generateProgram(graph, memory)).submit();
+                future = this.getComputer().apply(graph).program(this.generateProgram(memory, graph)).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return traverser.split(result, this);

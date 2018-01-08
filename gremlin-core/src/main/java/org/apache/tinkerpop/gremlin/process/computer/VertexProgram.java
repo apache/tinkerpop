@@ -68,7 +68,7 @@ public interface VertexProgram<M> extends Cloneable {
      * @param graph         the graph that the VertexProgram will run against
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
-    public default void loadState(final Graph graph, final Configuration configuration) {
+    public default void loadState(final Configuration configuration, final Graph... graphs) {
 
     }
 
@@ -219,13 +219,13 @@ public interface VertexProgram<M> extends Cloneable {
      * @param <V>           The vertex program type
      * @return the newly constructed vertex program
      */
-    public static <V extends VertexProgram> V createVertexProgram(final Graph graph, final Configuration configuration) {
+    public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration, final Graph... graphs) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM));
             final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final V vertexProgram = constructor.newInstance();
-            vertexProgram.loadState(graph, configuration);
+            vertexProgram.loadState(configuration, graphs);
             return vertexProgram;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -240,7 +240,7 @@ public interface VertexProgram<M> extends Cloneable {
          */
         public Builder configure(final Object... keyValues);
 
-        public <P extends VertexProgram> P create(final Graph graph);
+        public <P extends VertexProgram> P create(final Graph... graphs);
 
     }
 

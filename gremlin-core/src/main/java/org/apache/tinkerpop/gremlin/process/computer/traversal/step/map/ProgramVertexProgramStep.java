@@ -55,14 +55,14 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
     }
 
     @Override
-    public VertexProgram generateProgram(final Graph graph, final Memory memory) {
+    public VertexProgram generateProgram(final Memory memory, final Graph... graphs) {
         final MapConfiguration base = new MapConfiguration(this.configuration);
         base.setDelimiterParsingDisabled(true);
         PureTraversal.storeState(base, ROOT_TRAVERSAL, TraversalHelper.getRootTraversal(this.getTraversal()).clone());
         base.setProperty(STEP_ID, this.getId());
         if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
             TraversalVertexProgram.storeHaltedTraversers(base, memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
-        return VertexProgram.createVertexProgram(graph, base);
+        return VertexProgram.createVertexProgram(base, graphs);
     }
 
     @Override
