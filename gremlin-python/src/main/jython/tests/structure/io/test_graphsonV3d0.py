@@ -53,9 +53,12 @@ class TestGraphSONReader(object):
         x = self.graphson_reader.readObject(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                                      {"@type": "g:Int32", "@value": 2},
+                                                     {"@type": "g:Float", "@value": 2.0},
                                                      "3"]}))
-        assert isinstance(x, set)
-        assert x == set([1, 2, "3"])
+        # coerce to list here because Java might return numerics of different types which python won't recognize
+        # see comments of TINKERPOP-1844 for more details
+        assert isinstance(x, list)
+        assert x == list([1, 2, 2.0, "3"])
         ##
         x = self.graphson_reader.readObject(
             json.dumps({"@type": "g:Map",

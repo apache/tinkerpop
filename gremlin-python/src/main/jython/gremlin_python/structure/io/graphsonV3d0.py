@@ -428,9 +428,11 @@ class SetIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, s, reader):
-        new_set = set()
+        # coerce to list here because Java might return numerics of different types which python won't recognize
+        # see comments of TINKERPOP-1844 for more details
+        new_set = []
         for obj in s:
-            new_set.add(reader.toObject(obj))
+            new_set.append(reader.toObject(obj))
         return new_set
 
 
