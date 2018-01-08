@@ -2483,15 +2483,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
             @SuppressWarnings("unchecked")
             @Override
-            public VertexProgramQ create(final Graph graph) {
-                if (graph != null) {
-                    ConfigurationUtils.append(graph.configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
+            public VertexProgramQ create(final Graph... graphs) {
+                if (graphs != null && graphs.length > 0) {
+                    ConfigurationUtils.append(graphs[0].configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
                 }
-                return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramQ create() {
-                return create(null);
+                return (VertexProgramQ) VertexProgram.createVertexProgram(configuration, graphs);
             }
 
             public Builder property(final String name) {
