@@ -43,6 +43,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.LambdaNotSupported:
                     reasonSuffix = " because lambdas are not supported in Gremlin.NET";
                     break;
+                case IgnoreReason.TraversalTDeserializationNotSupported:
+                    reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
+                    break;
             }
             return $"Scenario ignored" + reasonSuffix;
         }
@@ -50,6 +53,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     
     public enum IgnoreReason
     {
-        LambdaNotSupported
+        /// <summary>
+        /// Lambdas are not supported on Gremlin.NET yet.
+        /// </summary>
+        LambdaNotSupported,
+        
+        /// <summary>
+        /// Deserialization of g:T on GraphSON3 is not supported.
+        /// </summary>
+        TraversalTDeserializationNotSupported
     }
 }
