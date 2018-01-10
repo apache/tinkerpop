@@ -31,13 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -60,6 +54,8 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Number> get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Number> get_g_VX1_2X_localXunionXcountXX(final Object v1Id, final Object v2Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -144,6 +140,14 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_VX1_2X_localXunionXcountXX() {
+        final Traversal<Vertex, Number> traversal = get_g_VX1_2X_localXunionXcountXX(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1L, 1L), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
         final Traversal<Vertex, Number> traversal = get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -191,6 +195,11 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(final Object v1Id, final Object v2Id) {
             return g.V(v1Id, v2Id).local(union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()));
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_VX1_2X_localXunionXcountXX(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id, v2Id).local(union((Traversal) count()));
         }
     }
 }

@@ -59,6 +59,12 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         return clone;
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        this.previousIterator = EmptyIterator.instance();
+    }
+
     protected abstract Iterator<Traverser.Admin<E>> standardAlgorithm() throws NoSuchElementException;
 
     protected abstract Iterator<Traverser.Admin<E>> computerAlgorithm() throws NoSuchElementException;

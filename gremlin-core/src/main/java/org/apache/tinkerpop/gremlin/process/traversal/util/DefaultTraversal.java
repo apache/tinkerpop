@@ -208,6 +208,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public void reset() {
         this.steps.forEach(Step::reset);
+        this.finalEndStep.reset();
         this.lastTraverser = EmptyTraverser.instance();
     }
 
