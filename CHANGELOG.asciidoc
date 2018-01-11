@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
+* Removed hardcoded expectation in metrics serialization test suite as different providers may have different outputs.
 
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: December 17, 2017)

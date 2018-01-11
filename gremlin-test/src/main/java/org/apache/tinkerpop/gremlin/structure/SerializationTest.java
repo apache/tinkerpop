@@ -213,7 +213,7 @@ public class SerializationTest {
             final GryoWriter gryoWriter = gryoIo.writer().create();
             final GryoReader gryoReader = gryoIo.reader().create();
 
-            final TraversalMetrics before = (TraversalMetrics) g.V().both().profile().next();
+            final TraversalMetrics before = g.V().both().profile().next();
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             gryoWriter.writeObject(outputStream, before);
 
@@ -355,7 +355,7 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeTraversalMetrics() throws Exception {
             final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
-            final TraversalMetrics tm = (TraversalMetrics) g.V().both().profile().next();
+            final TraversalMetrics tm = g.V().both().profile().next();
             final String json = mapper.writeValueAsString(tm);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
@@ -363,7 +363,7 @@ public class SerializationTest {
             assertTrue(m.containsKey(GraphSONTokens.METRICS));
 
             final List<Map<String, Object>> metrics = (List<Map<String, Object>>) m.get(GraphSONTokens.METRICS);
-            assertEquals(2, metrics.size());
+            assertEquals(tm.getMetrics().size(), metrics.size());
 
             final Map<String, Object> metrics0 = metrics.get(0);
             assertTrue(metrics0.containsKey(GraphSONTokens.ID));
