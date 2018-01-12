@@ -127,9 +127,9 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the <%= method.methodName %> step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal< <%= method.typeArguments.join(",") %> > <%= toCSharpMethodName.call(method.methodName) %>(<%= method.parameters %>)
+        public GraphTraversal< <%= method.typeNames.join(",") %> > <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %>(<%= method.parameters %>)
         {
-            var traversal = new GraphTraversal< <%= method.typeArguments.join(",") %> >(TraversalStrategies, new Bytecode(Bytecode));
+            var traversal = new GraphTraversal< <%= method.typeNames.join(",") %> >(TraversalStrategies, new Bytecode(Bytecode));
             <%  if (method.parameters.contains("params ")) {
           %>var args = new List<object>(<%= method.paramNames.init().size() %> + <%= method.paramNames.last() %>.Length) {<%= method.paramNames.init().join(", ") %>};
             args.AddRange(<%= method.paramNames.last() %>);

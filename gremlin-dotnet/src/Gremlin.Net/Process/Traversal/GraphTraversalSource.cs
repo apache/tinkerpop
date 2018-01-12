@@ -244,6 +244,19 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the inject step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal< S,S > Inject<S>(params object[] starts)
+        {
+            var traversal = new GraphTraversal< S,S >(TraversalStrategies, new Bytecode(Bytecode));
+            var args = new List<object>(0 + starts.Length) {};
+            args.AddRange(starts);
+            traversal.Bytecode.AddStep("inject", args.ToArray());
+            return traversal;
+        }
+
     }
     
 #pragma warning restore 1591

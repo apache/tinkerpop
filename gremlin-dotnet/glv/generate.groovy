@@ -81,6 +81,9 @@ def getCSharpGenericTypeParam = { typeName ->
     else if (typeName.contains("<K, ")) {
         tParam = "<K>"
     }
+    else if (typeName.contains("S")) {
+        tParam = "<S>"
+    }
     return tParam
 }
 
@@ -234,15 +237,17 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "parameters":parameters, "paramNames":paramNames]
                         },
                "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                        findAll { GraphTraversal.class.equals(it.returnType) && !it.name.equals('inject')}.          
+                        findAll { GraphTraversal.class.equals(it.returnType) }.          
                 // Select unique combination of C# parameter types and sort by Java parameter type combination                                                                    
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
-                            def typeArguments = javaMethod.genericReturnType.actualTypeArguments.collect{t -> ((java.lang.Class)t).simpleName}
-                            def parameters = getCSharpParamString(javaMethod, false)
+                            def typeNames = getJavaGenericTypeParameterTypeNames(javaMethod)
+                            def t2 = toCSharpType(typeNames[1])
+                            def tParam = getCSharpGenericTypeParam(t2)
+                            def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            return ["methodName": javaMethod.name, "typeArguments": typeArguments, "parameters":parameters, "paramNames":paramNames]
+                            return ["methodName": javaMethod.name, "typeNames": typeNames, "tParam":tParam, "parameters":parameters, "paramNames":paramNames]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
