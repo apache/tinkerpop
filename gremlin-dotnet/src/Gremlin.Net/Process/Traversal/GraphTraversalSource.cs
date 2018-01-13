@@ -190,7 +190,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Edge,Edge > E(params object[] edgesIds)
         {
             var traversal = new GraphTraversal< Edge,Edge >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + edgesIds.Length) {};
+            var args = new List< object >(0 + edgesIds.Length) {};
             args.AddRange(edgesIds);
             traversal.Bytecode.AddStep("E", args.ToArray());
             return traversal;
@@ -203,7 +203,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Vertex,Vertex > V(params object[] vertexIds)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + vertexIds.Length) {};
+            var args = new List< object >(0 + vertexIds.Length) {};
             args.AddRange(vertexIds);
             traversal.Bytecode.AddStep("V", args.ToArray());
             return traversal;
@@ -227,7 +227,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal< Vertex,Vertex > AddV(params object[] keyValues)
         {
             var traversal = new GraphTraversal< Vertex,Vertex >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + keyValues.Length) {};
+            var args = new List< object >(0 + keyValues.Length) {};
             args.AddRange(keyValues);
             traversal.Bytecode.AddStep("addV", args.ToArray());
             return traversal;
@@ -248,10 +248,10 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the inject step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal< S,S > Inject<S>(params object[] starts)
+        public GraphTraversal< S,S > Inject<S>(params S[] starts)
         {
             var traversal = new GraphTraversal< S,S >(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<object>(0 + starts.Length) {};
+            var args = new List< S >(0 + starts.Length) {};
             args.AddRange(starts);
             traversal.Bytecode.AddStep("inject", args.ToArray());
             return traversal;

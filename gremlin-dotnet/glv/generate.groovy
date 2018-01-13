@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
 import java.lang.reflect.TypeVariable
+import java.lang.reflect.GenericArrayType
 
 def toCSharpTypeMap = ["Long": "long",
                        "Integer": "int",
@@ -84,6 +85,9 @@ def getCSharpGenericTypeParam = { typeName ->
     else if (typeName.contains("S")) {
         tParam = "<S>"
     }
+    else if (typeName.contains("A")) {
+        tParam = "<A>"
+    }
     return tParam
 }
 
@@ -127,6 +131,9 @@ def toCSharpParamString = { param, genTypeName ->
     else if (csharpParamTypeName == "M") {
         csharpParamTypeName = "object";
     }
+    else if (csharpParamTypeName == "A[]") {
+        csharpParamTypeName = "object[]";
+    }
     else if (csharpParamTypeName == "A" || csharpParamTypeName == "B") {
         csharpParamTypeName = "E2";
     }
@@ -159,6 +166,11 @@ def getCSharpParamString = { method, useGenericParams ->
                     if (genType instanceof TypeVariable<?>) {
                         genTypeName = ((TypeVariable<?>)genType).name
                     }
+                    else if (genType instanceof GenericArrayType) {
+                        if (((GenericArrayType)genType).getGenericComponentType() instanceof TypeVariable<?>) {
+                            genTypeName = ((TypeVariable<?>)((GenericArrayType)genType).getGenericComponentType()).name + "[]"
+                        }                        
+                    }
                 }
                 toCSharpParamString(param, genTypeName)
             }.
@@ -177,6 +189,16 @@ def getParamNames = { parameters ->
         collect { param ->
             param.name
         }
+}
+
+def getArgsListType = { parameterString ->
+    def argsListType = "object"
+    if (parameterString.contains("params ")) {
+        def paramsType = parameterString.substring(parameterString.indexOf("params ") + "params ".length(), parameterString.indexOf("[]"))
+        if (paramsType == "E" || paramsType == "S")
+            argsListType = paramsType
+    }
+    argsListType
 }
 
 def hasMethodNoGenericCounterPartInGraphTraversal = { method ->
@@ -247,7 +269,8 @@ def binding = ["pmethods": P.class.getMethods().
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            return ["methodName": javaMethod.name, "typeNames": typeNames, "tParam":tParam, "parameters":parameters, "paramNames":paramNames]
+                            def argsListType = getArgsListType(parameters)
+                            return ["methodName": javaMethod.name, "typeNames": typeNames, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -262,7 +285,8 @@ def binding = ["pmethods": P.class.getMethods().
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames]
+                            def argsListType = getArgsListType(parameters)
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
                         },
                "anonStepMethods": __.class.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
