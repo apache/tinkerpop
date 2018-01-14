@@ -52,6 +52,8 @@ public interface VertexComputing {
      * @param graph  the {@link Graph} that the program will be executed over.
      * @param memory the {@link Memory} from the previous OLAP job if it exists, else its an empty memory structure.
      * @return the generated vertex program instance.
+     * @deprecated As of release 3.2.8, replaced by {@link #generateProgram(Memory, Graph...)}
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1861">TINKERPOP-1861</a>
      */
     @Deprecated
     public default VertexProgram generateProgram(final Graph graph, final Memory memory) {

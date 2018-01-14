@@ -67,6 +67,8 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @param graph         the graph that the VertexProgram will run against
      * @param configuration the configuration to load the state of the VertexProgram from.
+     * @deprecated As of release 3.2.8, replaced by {@link #loadState(Configuration, Graph...)}
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1861">TINKERPOP-1861</a>
      */
     @Deprecated
     public default void loadState(final Graph graph, final Configuration configuration) {

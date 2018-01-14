@@ -327,7 +327,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         @Override
         public BulkLoaderVertexProgram create(final Graph... graphs) {
             if (graphs.length == 0) {
-                throw new IllegalStateException("Must provide at least one graph to use");
+                throw new IllegalArgumentException("Must provide at least one graph to use");
             }
             ConfigurationUtils.append(graphs[0].configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
             return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(configuration, graphs);

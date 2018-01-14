@@ -87,15 +87,19 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
 
     @Override
     public PeerPressureVertexProgram generateProgram(final Memory memory, final Graph... graphs) {
+        if (graphs.length != 1) {
+            throw new IllegalArgumentException("Must provide one graph to use, received " + graphs.length);
+        }
+        final Graph graph = graphs[0];
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
-        detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graphs[0].getClass()));
+        detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
         final PeerPressureVertexProgram.Builder builder = PeerPressureVertexProgram.build()
                 .property(this.clusterProperty)
                 .maxIterations(this.times)
                 .edges(detachedTraversal);
         if (this.previousTraversalVertexProgram())
             builder.initialVoteStrength(new HaltedTraversersCountTraversal());
-        return builder.create(graphs);
+        return builder.create(graph);
     }
 
     @Override
