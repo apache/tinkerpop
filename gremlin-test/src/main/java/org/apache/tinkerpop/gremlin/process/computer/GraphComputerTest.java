@@ -1865,7 +1865,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
+        public void loadState(final Configuration configuration, final Graph... graphs) {
             this.state = configuration.getString("state");
         }
 
@@ -2514,7 +2514,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
 
         @Override
-        public void loadState(final Graph graph, final Configuration config) {
+        public void loadState(final Configuration config, final Graph... graphs) {
             configuration = new BaseConfiguration();
             if (config != null) {
                 ConfigurationUtils.copy(config, configuration);
