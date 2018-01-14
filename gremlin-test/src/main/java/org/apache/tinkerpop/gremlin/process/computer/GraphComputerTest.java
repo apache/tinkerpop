@@ -2715,9 +2715,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 case OUT:
                     this.messageScope = this.outMessageScope;
                     break;
-                default:
+                case BOTH:
                     this.messageScope = this.bothMessageScope;
                     break;
+                default:
+                    throw new IllegalStateException("Should not reach this point!");
             }
         }
 
