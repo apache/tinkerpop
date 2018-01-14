@@ -168,8 +168,12 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         private final Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
 
         @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
-            VertexProgram.super.loadState(graph, configuration);
+        public void loadState(final Configuration configuration, final Graph... graphs) {
+            if (graphs.length != 1) {
+                throw new IllegalArgumentException("Must provide one graph to use, received " + graphs.length);
+            }
+            final Graph graph = graphs[0];
+            VertexProgram.super.loadState(configuration, graphs);
             this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
             this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
             this.programStep = new TraversalMatrix<>(this.traversal.get()).getStepById(configuration.getString(ProgramVertexProgramStep.STEP_ID));
