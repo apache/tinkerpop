@@ -2619,12 +2619,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     public void testMessagePassingIn() throws Exception {
-        runTest(Direction.BOTH).forEachRemaining(v -> {
-            assertEquals(2, v.keys().size());
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+        runTest(Direction.IN).forEachRemaining(v -> {
+            vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
                 assertEquals("ab", v.value(VertexProgramR.PROPERTY_OUT).toString());
@@ -2639,11 +2635,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     public void testMessagePassingOut() throws Exception {
         runTest(Direction.OUT).forEachRemaining(v -> {
-            assertEquals(2, v.keys().size());
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+            vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
                 assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
@@ -2658,11 +2650,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     public void testMessagePassingBoth() throws Exception {
         runTest(Direction.BOTH).forEachRemaining(v -> {
-            assertEquals(2, v.keys().size());
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
-            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
-            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+            vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
                 assertEquals("aab", v.value(VertexProgramR.PROPERTY_OUT).toString());
@@ -2682,6 +2670,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final VertexProgramR svp = VertexProgramR.build().direction(direction).create();
         final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).submit().get();
         return result.graph().traversal().V();
+    }
+
+    private static void vertexPropertyChecks(Vertex v) {
+        assertEquals(2, v.keys().size());
+        assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
+        assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
+        assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
+        assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
     }
 
     private static class VertexProgramR implements VertexProgram<String> {
