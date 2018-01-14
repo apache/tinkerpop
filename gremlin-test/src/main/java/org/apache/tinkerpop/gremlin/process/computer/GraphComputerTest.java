@@ -2619,63 +2619,84 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     public void testMessagePassingIn() throws Exception {
-        runTest(Direction.IN).forEachRemaining(v -> {
-            String in = v.value("propin").toString();
-            if (in.equals("a")) {
-                assertEquals("ab", v.value("propout").toString());
-            } else {
-                assertEquals("", v.value("propout").toString());
-            }
+        runTest(Direction.BOTH).forEachRemaining(v -> {
+            assertEquals(2, v.keys().size());
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("ab", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
         });
     }
 
     @Test
     public void testMessagePassingOut() throws Exception {
         runTest(Direction.OUT).forEachRemaining(v -> {
-            String in = v.value("propin").toString();
-            if (in.equals("a")) {
-                assertEquals("a", v.value("propout").toString());
-            } else {
-                assertEquals("a", v.value("propout").toString());
-            }
+            assertEquals(2, v.keys().size());
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
         });
     }
 
     @Test
     public void testMessagePassingBoth() throws Exception {
         runTest(Direction.BOTH).forEachRemaining(v -> {
-            String in = v.value("propin").toString();
-            if (in.equals("a")) {
-                assertEquals("aab", v.value("propout").toString());
-            } else {
-                assertEquals("a", v.value("propout").toString());
-            }
+            assertEquals(2, v.keys().size());
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
+            assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
+            assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("aab", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
         });
     }
 
     private GraphTraversal<Vertex, Vertex> runTest(Direction direction) throws Exception {
-        g.addV().property("propin", "a").as("a")
-                .addV().property("propin", "b").as("b")
-                .addE("edge").from("a").to("b").addE("edge").from("a").to("a").iterate();
-        final VertexProgramR svp = VertexProgramR.build().propertyIn("propin")
-                .propertyOut("propout").direction(direction).create();
+        final Vertex a = graph.addVertex(VertexProgramR.PROPERTY_IN, "a");
+        final Vertex b = graph.addVertex(VertexProgramR.PROPERTY_IN, "b");
+        a.addEdge("edge", b);
+        a.addEdge("edge", a);
+        final VertexProgramR svp = VertexProgramR.build().direction(direction).create();
         final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).submit().get();
         return result.graph().traversal().V();
     }
 
     private static class VertexProgramR implements VertexProgram<String> {
         private static final String SIMPLE_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.simpleVertexProgram";
-        private static final String PROPERTY_OUT_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".propertyout";
-        private static final String PROPERTY_IN_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".propertyin";
+        private static final String PROPERTY_OUT = "propertyout";
+        private static final String PROPERTY_IN = "propertyin";
         private static final String DIRECTION_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".direction";
 
         private final MessageScope.Local<String> inMessageScope = MessageScope.Local.of(__::inE);
         private final MessageScope.Local<String> outMessageScope = MessageScope.Local.of(__::outE);
         private final MessageScope.Local<String> bothMessageScope = MessageScope.Local.of(__::bothE);
         private MessageScope.Local<String> messageScope;
-        private Set<VertexComputeKey> vertexComputeKeys;
-
-        private String propertyout, propertyin;
+        private final Set<VertexComputeKey> vertexComputeKeys = new HashSet<>(Arrays.asList(
+                VertexComputeKey.of(VertexProgramR.PROPERTY_OUT, false),
+                VertexComputeKey.of(VertexProgramR.PROPERTY_IN, false)));
 
         /**
          * Clones this vertex program.
@@ -2686,8 +2707,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void loadState(final Graph graph, final Configuration configuration) {
-            this.propertyout = configuration.getString(PROPERTY_OUT_CFG_KEY);
-            this.propertyin = configuration.getString(PROPERTY_IN_CFG_KEY);
             Direction direction = Direction.valueOf(configuration.getString(DIRECTION_CFG_KEY));
             switch (direction) {
                 case IN:
@@ -2700,8 +2719,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     this.messageScope = this.bothMessageScope;
                     break;
             }
-            this.vertexComputeKeys = new HashSet<>(Arrays.asList(VertexComputeKey.of(this.propertyout, false),
-                    VertexComputeKey.of(this.propertyin, false)));
         }
 
         @Override
@@ -2711,11 +2728,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void execute(Vertex vertex, Messenger<String> messenger, Memory memory) {
             if (memory.isInitialIteration()) {
-                messenger.sendMessage(this.messageScope, vertex.value(this.propertyin).toString());
+                messenger.sendMessage(this.messageScope, vertex.value(PROPERTY_IN).toString());
             } else {
                 char[] composite = IteratorUtils.reduce(messenger.receiveMessages(), "", (a, b) -> a + b).toCharArray();
                 Arrays.sort(composite);
-                vertex.property(this.propertyout, new String(composite));
+                vertex.property(PROPERTY_OUT, new String(composite));
             }
         }
 
@@ -2770,16 +2787,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
             public VertexProgramR create() {
                 return create(null);
-            }
-
-            public Builder propertyOut(final String name) {
-                configuration.setProperty(PROPERTY_OUT_CFG_KEY, name);
-                return this;
-            }
-
-            public Builder propertyIn(final String name) {
-                configuration.setProperty(PROPERTY_IN_CFG_KEY, name);
-                return this;
             }
 
             public Builder direction(final Direction direction) {
