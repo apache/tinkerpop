@@ -83,9 +83,9 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     @Override
     public void loadState(final Configuration configuration, final Graph... graphs) {
         if (graphs.length != 1) {
-            throw new IllegalStateException("Must provide one graph to use, received " + graphs.length);
+            throw new IllegalArgumentException("Must provide one graph to use, received " + graphs.length);
         }
-        Graph graph = graphs[0];
+        final Graph graph = graphs[0];
         if (configuration.containsKey(INITIAL_VOTE_STRENGTH_TRAVERSAL))
             this.initialVoteStrengthTraversal = PureTraversal.loadState(configuration, INITIAL_VOTE_STRENGTH_TRAVERSAL, graph);
         if (configuration.containsKey(EDGE_TRAVERSAL)) {
