@@ -44,7 +44,7 @@ public final class SparkInterceptorStrategy extends AbstractTraversalStrategy<Tr
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance()); // best guess at what the graph will be as its dynamically determined
         for (final TraversalVertexProgramStep step : TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal)) {
-            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
+            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(EmptyMemory.instance(), graph).getTraversal().get().clone();
             if (!computerTraversal.isLocked())
                 computerTraversal.applyStrategies();
             if (SparkStarBarrierInterceptor.isLegal(computerTraversal)) {
