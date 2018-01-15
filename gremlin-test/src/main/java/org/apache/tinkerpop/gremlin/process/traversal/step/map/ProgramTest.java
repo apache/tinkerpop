@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
@@ -193,7 +194,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
             assertEquals(2, map.size());
             assertTrue(map.values().contains(3l));
             assertTrue(map.values().contains(1l));
-            final TraverserSet<Object> activeTraversers = new TraverserSet<>();
+            final VertexTraverserSet<Object> activeTraversers = new VertexTraverserSet<>();
             map.keySet().forEach(vertex -> activeTraversers.add(this.haltedTraversers.peek().split(vertex, EmptyStep.instance())));
             this.haltedTraversers.clear();
             this.checkSideEffects();
