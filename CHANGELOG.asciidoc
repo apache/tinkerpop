@@ -22,10 +22,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-3-2]]
 === TinkerPop 3.3.2 (Release Date: NOT OFFICIALLY RELEASED YET)
-
+                             
 This release also includes changes from <<release-3-2-8, 3.2.8>>.
 
-* Fix regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler
+* Fixed regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler
 * Defaulted GLV tests for gremlin-python to run for GraphSON 3.0.
 * In gremlin-python, the GraphSON 3.0 `g:Set` type is now deserialized to `List`.
 
