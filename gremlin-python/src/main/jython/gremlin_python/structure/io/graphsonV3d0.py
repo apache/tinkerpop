@@ -27,7 +27,7 @@ from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
-from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
+from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 # When we fall back to a superclass's serializer, we iterate over this map.
@@ -534,3 +534,11 @@ class PathDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return Path(reader.toObject(d["labels"]), reader.toObject(d["objects"]))
+
+
+class TDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:T"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return T[d]

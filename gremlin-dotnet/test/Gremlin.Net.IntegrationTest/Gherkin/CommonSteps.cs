@@ -59,7 +59,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"l\[(.*)\]", ToList},
                 {@"s\[(.*)\]", ToSet},
                 {@"m\[(.+)\]", ToMap},
-                {@"c\[(.+)\]", ToLambda}
+                {@"c\[(.+)\]", ToLambda},
+                {@"t\[(.+)\]", ToT}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
 
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =
@@ -234,6 +235,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static object ToLambda(string stringLambda, string graphName)
         {
             throw new IgnoreException(IgnoreReason.LambdaNotSupported);
+        }
+
+        private static object ToT(string enumName, string graphName)
+        {
+            return Enum.Parse(typeof(T), TraversalParser.GetCsharpName(enumName));
         }
 
         private static object ToNumber(string stringNumber, string graphName)

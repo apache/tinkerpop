@@ -33,6 +33,22 @@ Feature: Step - valueMap()
       | m[{"name": ["lop"], "lang": ["java"]}] |
       | m[{"name": ["ripple"], "lang": ["java"]}] |
 
+  Scenario: g_V_valueMapXtrueX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"], "lang": ["java"]}] |
+
   Scenario: g_V_valueMapXname_ageX
     Given the modern graph
     And the traversal of
@@ -48,6 +64,22 @@ Feature: Step - valueMap()
       | m[{"name": ["vadas"], "age": [27]}] |
       | m[{"name": ["lop"]}] |
       | m[{"name": ["ripple"]}] |
+
+  Scenario: g_V_valueMapXtrue_name_ageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap(true, "name", "age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"]}] |
 
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
