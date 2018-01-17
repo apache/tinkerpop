@@ -233,6 +233,8 @@ public interface VertexProgram<M> extends Cloneable {
      * @param configuration A configuration with requisite information to build a vertex program
      * @param <V>           The vertex program type
      * @return the newly constructed vertex program
+     * @deprecated As of release 3.2.8, replaced by {@link #createVertexProgram(Configuration, Graph...)}
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1861">TINKERPOP-1861</a>
      */
     @Deprecated
     public static <V extends VertexProgram> V createVertexProgram(final Graph graph, final Configuration configuration) {
