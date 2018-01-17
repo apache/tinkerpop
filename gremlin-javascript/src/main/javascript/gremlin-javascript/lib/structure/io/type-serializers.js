@@ -270,6 +270,12 @@ class PathSerializer extends TypeSerializer {
   }
 }
 
+class TSerializer extends TypeSerializer {
+  deserialize(obj) {
+    return t.t[obj[valueKey]];
+  }
+}
+
 module.exports = {
   BytecodeSerializer,
   EdgeSerializer,
@@ -280,6 +286,7 @@ module.exports = {
   PathSerializer,
   PropertySerializer,
   PSerializer,
+  TSerializer,
   TraverserSerializer,
   typeKey,
   valueKey,

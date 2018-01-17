@@ -159,7 +159,8 @@ const deserializers = {
   'g:Edge': typeSerializers.EdgeSerializer,
   'g:VertexProperty': typeSerializers.VertexPropertySerializer,
   'g:Property': typeSerializers.PropertySerializer,
-  'g:Path': typeSerializers.PathSerializer
+  'g:Path': typeSerializers.PathSerializer,
+  'g:T': typeSerializers.TSerializer
 };
 
 const serializers = [

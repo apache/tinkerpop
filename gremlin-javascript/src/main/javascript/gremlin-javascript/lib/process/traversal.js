@@ -242,6 +242,10 @@ class EnumValue {
     this.typeName = typeName;
     this.elementName = elementName;
   }
+
+  toString() {
+    return this.elementName;
+  }
 }
 
 module.exports = {
