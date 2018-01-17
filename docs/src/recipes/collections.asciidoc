@@ -282,7 +282,7 @@ g.V().has('name','marko').
     by(select(values).unfold())
 ----
 
-The code above, basically deconstruct then reconstructs the `Map`. The key to the pattern is to first `unfold()` the
+The code above, basically deconstructs then reconstructs the `Map`. The key to the pattern is to first `unfold()` the
 `Map` into its key and value entries. Then for each key and value produce a new `Map` using `group()` where the key
 for that map is the key of the entry (those are obviously unique as you picked them out of the `valueMap()`) and the
 value is simply the `unfold()` of the list of values in each entry. Recall that the `select(values).unfold()` only
@@ -340,4 +340,49 @@ g.V().
         group().
           by(keys).
           by(select(values).unfold()))
+----
+
+As there may be a desire to remove entries from a `Map`, there may also be the need to add keys to a `Map`. The pattern
+here involves the use of a `union()` that returns the `Map` instances which can be flattened to entries and then
+reconstructed as a new `Map` that has been merged together:
+
+[gremlin-groovy,modern]
+----
+g.V().
+  has('name','marko').
+  union(project('degree').         <1>
+          by(bothE().count()),
+        valueMap(true)).
+  unfold().                        <2>
+  group().
+    by(keys).
+    by(select(values).unfold())
+----
+
+<1> The `valueMap(true)` of a `Vertex` can be extended with the "degree" of the `Vertex` by performing a `union()` of
+the two traversals that produce that output (both produce `Map` objects).
+<2> The `unfold()` step is used to decompose the `Map` objects into key/value entries that are then constructed back
+into a single new `Map` given the patterns shown earlier. The `Map` objects of both traversals in the `union()` are
+essentially merged together.
+
+When using this pattern, it is important to recognize that if there are non-unique keys produced by the traversals
+supplied to `union()`, they will overwrite one another given the final `by()` modulator above. If changed to
+`by(select(values).unfold().fold())` they will merge to produce a `List` of values. Of course, that change will bring
+a `List` back for all the values of the new `Map`. With some added logic the `Map` values can be flattened out of
+`List` instances when necessary:
+
+[gremlin-groovy,modern]
+----
+g.V().
+  has('name','marko').
+  union(valueMap(true),
+        project('age').
+          by(constant(100))).
+  unfold().
+  group().
+    by(keys).
+    by(select(values).
+       unfold().
+       fold().
+       choose(count(local).is(eq(1)), unfold()))
 ----
