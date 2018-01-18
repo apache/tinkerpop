@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -252,6 +254,33 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
     public void shouldHandleDefaultRemoteTraverser() throws Exception {
         final DefaultRemoteTraverser<String> o = new DefaultRemoteTraverser<>("test", 100);
         assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
+    }
+
+    @Test
+    public void shouldHandleVariantsOfP() throws Exception {
+        final List<P> variantsOfP = Arrays.asList(
+                P.between(1,2),
+                P.eq(1),
+                P.gt(1),
+                P.gte(1),
+                P.inside(1,2),
+                P.lt(1),
+                P.lte(1),
+                P.neq(1),
+                P.not(P.eq(1)),
+                P.outside(1,2),
+                P.within(1),
+                P.within(1,2,3,4),
+                P.within(Arrays.asList(1,2,3,4)),
+                P.without(1),
+                P.without(1,2,3,4),
+                P.without(Arrays.asList(1,2,3,4)),
+                P.eq(1).and(P.eq(2)),
+                P.eq(1).or(P.eq(2)));
+
+        for (P p : variantsOfP) {
+            assertEquals(p, serializeDeserialize(mapper, p, P.class));
+        }
     }
 
     // Class needs to be defined as statics as it's a nested class.

@@ -117,6 +117,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count();
 
+    public abstract Traversal<Vertex, Long> get_g_V_hasXage_withinX27X_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasXage_withinX27_29X_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasXage_withoutX27X_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_hasXage_withoutX27_29X_count();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
@@ -490,6 +498,38 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertEquals(6L, traversal.next().longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXage_withinX27X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXage_withinX27X_count();
+        printTraversalForm(traversal);
+        assertEquals(1L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXage_withinX27_29X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXage_withinX27_29X_count();
+        printTraversalForm(traversal);
+        assertEquals(2L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXage_withoutX27X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXage_withoutX27X_count();
+        printTraversalForm(traversal);
+        assertEquals(3L, traversal.next().longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXage_withoutX27_29X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXage_withoutX27_29X_count();
+        printTraversalForm(traversal);
+        assertEquals(2L, traversal.next().longValue());
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
@@ -649,6 +689,26 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count() {
             return g.V().not(__.hasId(P.within(Collections.emptyList()))).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withinX27X_count() {
+            return g.V().has("age", P.within(27)).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withinX27_29X_count() {
+            return g.V().has("age", P.within(27, 29)).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withoutX27X_count() {
+            return g.V().has("age", P.without(27)).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withoutX27_29X_count() {
+            return g.V().has("age", P.without(27, 29)).count();
         }
     }
 }

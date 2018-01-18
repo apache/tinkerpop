@@ -191,5 +191,25 @@ public abstract class GroovyHasTest {
         public Traversal<Vertex, Long> get_g_V_notXhasIdXwithinXemptyXXX_count() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.not(hasId(within([]))).count")
         }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withinX27X_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('age', P.within(27)).count()")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withinX27_29X_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('age', P.within(27, 29)).count()")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withoutX27X_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('age', P.without(27)).count()")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasXage_withoutX27_29X_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('age', P.without(27, 29)).count()")
+        }
     }
 }
