@@ -315,27 +315,17 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="--python=python2 env"/>
                                         </exec>
-                                        <!-- temporary manual installation of deps to hardcode colorful version given radish/PyHamcrest troubles -->
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel aenum pysingleton humanize radish-parse_type docopt 'colorful==0.4.0' 'tag-expressions>=1.0.0'"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install radish-bdd PyHamcrest --no-deps"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
                                         </exec>
-                                        <!-- temporary manual installation of deps to hardcode colorful version given radish/PyHamcrest troubles -->
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel aenum pysingleton humanize radish-parse_type docopt 'colorful==0.4.0' 'tag-expressions>=1.0.0'"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install radish-bdd PyHamcrest --no-deps"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -433,6 +423,7 @@ limitations under the License.
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
+                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
                                             <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
                                         </exec>
                                     </target>
