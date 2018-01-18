@@ -265,12 +265,13 @@ def binding = ["pmethods": P.class.getMethods().
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
                             def typeNames = getJavaGenericTypeParameterTypeNames(javaMethod)
+                            def typeNameString = typeNames.join(", ")
                             def t2 = toCSharpType(typeNames[1])
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
                             def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "typeNames": typeNames, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            return ["methodName": javaMethod.name, "typeNameString": typeNameString, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
