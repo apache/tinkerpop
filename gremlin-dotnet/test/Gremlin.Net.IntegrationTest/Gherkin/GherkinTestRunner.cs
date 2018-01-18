@@ -38,7 +38,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
-            new Dictionary<string, IgnoreReason>();
+            new Dictionary<string, IgnoreReason>
+            {
+                { "g_V_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported },
+                { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }
+            };
         
         private static class Keywords
         {

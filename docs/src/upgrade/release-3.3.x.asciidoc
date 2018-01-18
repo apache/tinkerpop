@@ -21,9 +21,41 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
-== TinkerPop 3.3.1
+== TinkerPop 3.3.2
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-2[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Gremlin Python Sets
+
+Graph traversals that return a `Set` from Java are now coerced to a `List` in Python. This change ensures that Python
+results match Java results for the same traversal. It is possible to see this problem in prior versions of
+gremlin-python where a `Set` of numbers of different types are returned. In Java, a set of:
+
+[source,text]
+----
+[1,1.0d,2,2.0d]
+----
+
+would be deserialized to the following in Python:
+
+[source,text]
+----
+[1,2]
+----
+
+Now that the Java `Set` is coerced to a `List` in Gremin Python, the Java `Set` can be fully represented. Users who
+require a `Set` will need to manually convert their `List` to a `Set`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1844[TINKERPOP-1844]
+
+
+== TinkerPop 3.3.1
+
+*Release Date: December 17, 2017*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-1[changelog] for a complete list of all the modifications that are part of this release.
 
@@ -615,7 +647,7 @@ If the old `GryoSerializer` model is desired, then the properties file should si
 spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
 ```
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1389[TINKERPOP-1389]
 
 ==== ScriptInputFormat
 

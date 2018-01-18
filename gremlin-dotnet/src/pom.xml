@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-dotnet</artifactId>
-        <version>3.3.1-SNAPSHOT</version>
+        <version>3.3.2-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
@@ -136,13 +136,8 @@ limitations under the License.
                                             </then>
 
                                             <else>
-                                                <!--
-                                                specifically using 3.4.4 given some bug that seems to pin us to this
-                                                version - https://github.com/NuGet/Home/issues/4090 - it might work
-                                                with newer versions but definitely failed with 4.1.0
-                                                -->
                                                 <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
-                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe"/>
+                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe"/>
                                                 </exec>
                                             </else>
                                         </if>
@@ -150,12 +145,9 @@ limitations under the License.
                                         <!--
                                         until https://github.com/NuGet/Home/issues/4095 we have to have to specify
                                         the "ConfigFile" option to nuget.
-
-                                        Currently set to staging as we don't have an official release yet. For release
-                                        candidates set to https://www.nuget.org/api/v2/package
                                         -->
                                         <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
-                                            <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://staging.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>

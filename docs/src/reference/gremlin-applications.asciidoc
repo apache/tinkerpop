@@ -384,7 +384,7 @@ and recommendation.
 * Provides a method for Non-JVM languages (e.g. Python, Javascript, etc.) to communicate with the TinkerPop stack.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
-NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Rexster].
+NOTE: Gremlin Server is the replacement for link:https://github.com/tinkerpop/rexster[Rexster].
 
 NOTE: Please see the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
 on how to develop a driver for Gremlin Server.
@@ -871,7 +871,7 @@ image:gremlin-rexster.png[width=225,float=left] While the default behavior for G
 WebSocket-based connection, it can also be configured to support plain HTTP web service.
 The HTTP endpoint provides for a communication protocol familiar to most developers, with a wide support of
 programming languages, tools and libraries for accessing it.  As a result, HTTP provides a fast way to get started
-with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
+with Gremlin Server.   It also may represent an easier upgrade path from link:https://github.com/tinkerpop/rexster[Rexster]
 as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
 Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
@@ -1813,7 +1813,7 @@ client.submit("[1,2,3,x]", params);
 ----
 
 The more parameters that are used in a script the more expensive the compilation step becomes. Gremlin Server has a
-`OpProcessor` setting called `maxParameters`, which is mentioned in the <<opprocess-configuration,OpProcessor Configuration>>
+`OpProcessor` setting called `maxParameters`, which is mentioned in the <<opprocessor-configurations,OpProcessor Configuration>>
 section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
@@ -2307,7 +2307,7 @@ profile { g.V().iterate() }.prettyPrint()
 [[describe-graph]]
 ==== Describe Graph
 
-A good implementation of the Gremlin APIs will validate their features against the xref:validating-with-gremlin-test[Gremlin test suite].
+A good implementation of the Gremlin APIs will validate their features against the link:../dev/provider/#validating-with-gremlin-test[Gremlin test suite].
 To learn more about a specific implementation's compliance with the test suite, use the `describeGraph` function.
 The following shows the output for `HadoopGraph`:
 

@@ -27,7 +27,7 @@ from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
-from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
+from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 # When we fall back to a superclass's serializer, we iterate over this map.
@@ -428,9 +428,11 @@ class SetIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, s, reader):
-        new_set = set()
+        # coerce to list here because Java might return numerics of different types which python won't recognize
+        # see comments of TINKERPOP-1844 for more details
+        new_set = []
         for obj in s:
-            new_set.add(reader.toObject(obj))
+            new_set.append(reader.toObject(obj))
         return new_set
 
 
@@ -532,3 +534,11 @@ class PathDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return Path(reader.toObject(d["labels"]), reader.toObject(d["objects"]))
+
+
+class TDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:T"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return T[d]

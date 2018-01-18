@@ -29,16 +29,44 @@ limitations under the License.
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
 persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with
 TinkerPop3 and serves as the reference implementation for other providers to study in order to understand the
-semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+semantics of the various methods of the TinkerPop3 API. Its status as a reference implementation does not however imply
+that it is not suitable for production. TinkerGraph has many practical use cases in production applications and their
+development. Some examples of TinkerGraph use cases include:
+
+* Ad-hoc analysis of large immutable graphs that fit in memory.
+* Extract subgraphs, from larger graphs that don't fit in memory, into TinkerGraph for further analysis or other
+purposes.
+* Use TinkerGraph as a sandbox to develop and debug complex traversals by simulating data from a larger graph inside
+a TinkerGraph.
+
+Constructing a simple graph using TinkerGraph in Java8 is presented below:
 
 [source,java]
-Graph g = TinkerGraph.open();
-Vertex marko = g.addVertex("name","marko","age",29);
-Vertex lop = g.addVertex("name","lop","lang","java");
-marko.addEdge("created",lop,"weight",0.6d);
+----
+Graph graph = TinkerGraph.open();
+GraphTraversalSource g = graph.traversal();
+Vertex marko = g.addV("person").property("name","marko").property("age",29).next();
+Vertex lop = g.addV("software").property("name","lop").property("lang","java").next();
+g.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
+----
 
-The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
-property. Next, the graph can be queried as such.
+The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
+property. The addition of these two vertices and the edge between them could also be done in a single Gremlin statement
+as follows:
+
+[source,java]
+----
+g.addV("person").property("name","marko").property("age",29).as("m").
+  addV("software").property("name","lop").property("lang","java").as("l").
+  addE("created").from("m").to("l").property("weight",0.6d).iterate();
+----
+
+IMPORTANT: Pay attention to the fact that traversals end with `next()` or `iterate()`. These methods advance the
+objects in the traversal stream and without those methods, the traversal does nothing. Review the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Result Iteration Section]
+of The Gremlin Console tutorial for more information.
+
+Next, the graph can be queried as such.
 
 [source,java]
 g.V().has("name","marko").out("created").values("name")

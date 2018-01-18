@@ -222,7 +222,7 @@ public class SerializationTest {
             final GryoWriter gryoWriter = gryoIo.writer().create();
             final GryoReader gryoReader = gryoIo.reader().create();
 
-            final TraversalMetrics before = (TraversalMetrics) g.V().both().profile().next();
+            final TraversalMetrics before = g.V().both().profile().next();
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             gryoWriter.writeObject(outputStream, before);
 
@@ -559,7 +559,7 @@ public class SerializationTest {
             assertTrue(m.containsKey(GraphSONTokens.METRICS));
 
             final List<Map<String, Object>> metrics = (List<Map<String, Object>>) m.get(GraphSONTokens.METRICS);
-            assertEquals(2, metrics.size());
+            assertEquals(tm.getMetrics().size(), metrics.size());
 
             final Map<String, Object> metrics0 = metrics.get(0);
             assertTrue(metrics0.containsKey(GraphSONTokens.ID));
@@ -574,19 +574,19 @@ public class SerializationTest {
             final ObjectMapper mapper = graph.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().version(GraphSONVersion.V1_0).create().createMapper();
             final Tree t = g.V(convertToVertexId("marko")).out().properties("name").tree().next();
             final String json = mapper.writeValueAsString(t);
-            
+
             final HashMap<String, Object> m = (HashMap<String, Object>) mapper.readValue(json, mapTypeReference);
-            
+
             // Check Structure
             assertEquals(1, m.size());
             assertTrue(m.containsKey(convertToVertexId("marko").toString()));
-            
+
             // Check Structure n+1
             final HashMap<String, Object> branch = (HashMap<String, Object>) m.get(convertToVertexId("marko").toString());
             assertEquals(2, branch.size());
             assertTrue(branch.containsKey(GraphSONTokens.KEY));
             assertTrue(branch.containsKey(GraphSONTokens.VALUE));
-            
+
             //Check n+1 key (traversed element)
             final HashMap<String, Object> branchKey = (HashMap<String, Object>) branch.get(GraphSONTokens.KEY);
             assertTrue(branchKey.containsKey(GraphSONTokens.ID));
@@ -599,19 +599,19 @@ public class SerializationTest {
             final HashMap<String, List<HashMap<String, Object>>> branchKeyProps = (HashMap<String, List<HashMap<String, Object>>>) branchKey.get(GraphSONTokens.PROPERTIES);
             assertEquals("marko", branchKeyProps.get("name").get(0).get("value"));
             assertEquals(29, branchKeyProps.get("age").get(0).get("value"));
-            
+
             //Check n+1 value (traversed element)
             final HashMap<String, Object> branchValue = (HashMap<String, Object>) branch.get(GraphSONTokens.VALUE);
             assertEquals(3, branchValue.size());
             assertTrue(branchValue.containsKey(convertToVertexId("vadas").toString()));
             assertTrue(branchValue.containsKey(convertToVertexId("lop").toString()));
             assertTrue(branchValue.containsKey(convertToVertexId("josh").toString()));
-            
+
             // Check that vp[] functioned properly
             final HashMap<String, HashMap<String, Object>> branch2 = (HashMap<String, HashMap<String, Object>>) branchValue.get(convertToVertexId("vadas").toString());
             assertTrue(branch2.containsKey(GraphSONTokens.KEY));
             assertTrue(branch2.containsKey(GraphSONTokens.VALUE));
-            
+
             final Map.Entry entry = branch2.get(GraphSONTokens.VALUE).entrySet().iterator().next();
             final HashMap<String, HashMap<String, Object>> branch2Prop = (HashMap<String, HashMap<String, Object>>) entry.getValue();
             assertTrue(branch2Prop.get(GraphSONTokens.KEY).containsKey(GraphSONTokens.ID));

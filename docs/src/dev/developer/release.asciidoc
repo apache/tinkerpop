@@ -355,6 +355,7 @@ The release artifacts can be found at this location:
 
 https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-gremlin-console-xx.yy.zz-bin.zip
 https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-gremlin-server-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-xx.yy.zz-src.zip
 
 The online docs can be found here:
 

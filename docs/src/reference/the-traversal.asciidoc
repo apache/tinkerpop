@@ -426,7 +426,7 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<simplepath-step, `simplePath()`>>: filter if the traverser's path is simple given `by()`-modulation.
 * <<sample-step, `sample()`>>: sample using the value returned by `by()`-modulation.
 * <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
-* <<groupCount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
+* <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
 * <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
 * <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
 * <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
@@ -1320,7 +1320,7 @@ g.V().hasLabel('person').
 [[option-step]]
 === Option Step
 
-An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>.
+An option to a <<general-steps,`branch()`>> or <<choose-step,`choose()`>>.
 
 [[optional-step]]
 === Optional Step
@@ -1733,13 +1733,15 @@ g.E().propertyMap()
 
 As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through
 with `range()`-step (*filter*). When the low-end of the range is not met, objects are continued to be iterated. When
-within the low (inclusive) and high (exclusive) range, traversers are emitted. Finally, when above the high range, the
-traversal breaks out of iteration.
+within the low (inclusive) and high (exclusive) range, traversers are emitted. When above the high range, the traversal
+breaks out of iteration. Finally, the use of `-1` on the high range will emit remaining traversers after the low range
+begins.
 
 [gremlin-groovy,modern]
 ----
 g.V().range(0,3)
 g.V().range(1,3)
+g.V().range(1, -1)
 g.V().repeat(both()).times(1000000).emit().range(6,10)
 ----
 
