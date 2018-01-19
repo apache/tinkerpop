@@ -27,8 +27,7 @@ g = graph.traversal()
 
 toJson = { o, type, comment = "" ->
   println "Writing ${type}"
-  "${type}\n" +
-  "^".multiply(type.length()) + "\n\n" +
+  "==== ${type}\n\n" +
   (comment.isEmpty() ? "" : comment + "\n\n") +
   "[source,json]\n" +
   "----\n" +
@@ -40,8 +39,7 @@ toJson = { o, type, comment = "" ->
 file = new File("out-graphson-1d0.txt")
 file.withWriter { writer ->
 
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== Graph Structure\n\n")
   writer.write(toJson(graph.edges().next(), "Edge"))
   writer.write(toJson(g.V().out().out().path().next(), "Path"))
   writer.write(toJson(graph.edges().next().properties().next(), "Property"))
@@ -52,8 +50,7 @@ file.withWriter { writer ->
   writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty"))
 
   writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
+  writer.write("=== RequestMessage\n\n")
   def msg = null
   msg = RequestMessage.build("authentication").
                        add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
@@ -75,8 +72,7 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
 
   writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
   writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
@@ -86,8 +82,7 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
 
   writer.write("\n")
-  writer.write("Time\n")
-  writer.write("~~~~\n\n")
+  writer.write("=== Time\n\n")
   writer.write(toJson(Duration.ofDays(5), "Duration", "The following example is a `Duration` of five days."))
   writer.write(toJson(Instant.now(), "Instant"))
   writer.write(toJson(LocalDate.of(2016, 1, 1), "LocalDate"))
@@ -114,8 +109,7 @@ mapper = GraphSONMapper.build().
 file = new File("out-graphson-2d0.txt")
 file.withWriter { writer ->
 
-  writer.write("Core\n")
-  writer.write("~~~~\n\n")
+  writer.write("=== Core\n\n")
   writer.write(toJson(File, "Class"))
   writer.write(toJson(new Date(), "Date"))
   writer.write(toJson(100.00d, "Double"))
@@ -126,8 +120,7 @@ file.withWriter { writer ->
   writer.write(toJson(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID"))
 
   writer.write("\n")
-  writer.write("Graph Structure\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== Graph Structure\n\n")
   writer.write(toJson(graph.edges().next(), "Edge"))
   writer.write(toJson(g.V().out().out().path().next(), "Path"))
   writer.write(toJson(graph.edges().next().properties().next(), "Property"))
@@ -138,8 +131,7 @@ file.withWriter { writer ->
   writer.write(toJson(graph.vertices().next().properties().next(), "VertexProperty"))
 
   writer.write("\n")
-  writer.write("Graph Process\n")
-  writer.write("~~~~~~~~~~~~~\n\n")
+  writer.write("=== Graph Process\n\n")
   writer.write(toJson(SackFunctions.Barrier.normSack, "Barrier"))
   writer.write(toJson(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`."))
   writer.write(toJson(g.V().hasLabel('person').out().in().tree(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language."))
@@ -156,6 +148,8 @@ file.withWriter { writer ->
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
   writer.write(toJson(metrics, "Metrics"))
   writer.write(toJson(P.gt(0), "P"))
+  writer.write(toJson(P.within(1), "P within"))
+  writer.write(toJson(P.without(1,2), "P without"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or"))
   writer.write(toJson(Scope.local, "Scope"))
@@ -164,8 +158,7 @@ file.withWriter { writer ->
   writer.write(toJson(g.V().hasLabel('person').nextTraverser(), "Traverser"))
 
   writer.write("\n")
-  writer.write("RequestMessage\n")
-  writer.write("~~~~~~~~~~~~~~\n\n")
+  writer.write("=== RequestMessage\n\n")
   def msg = null
   msg = RequestMessage.build("authentication").
                        add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create()
@@ -187,8 +180,7 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Sessionless Eval", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
 
   writer.write("\n")
-  writer.write("ResponseMessage\n")
-  writer.write("~~~~~~~~~~~~~~~\n\n")
+  writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
   writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server)."))
@@ -198,8 +190,7 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script."))
 
   writer.write("\n")
-  writer.write("Extended\n")
-  writer.write("~~~~~~~~\n\n")
+  writer.write("=== Extended\n\n")
   writer.write("""Note that the "extended" types require the addition of the separate `GraphSONXModuleV2d0` module as follows:\n
 [source,java]
 ----
@@ -1160,7 +1151,7 @@ The following `RequestMessage` is an example of the response that should be made
 [source,json]
 ----
 {
-  "requestId" : "e943a111-a9f4-4fbd-bc47-28c5e01de67e",
+  "requestId" : "edf0a0b5-1d05-4b0f-96c7-3feaaf6ec45a",
   "op" : "authentication",
   "processor" : "",
   "args" : {
@@ -1177,7 +1168,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 [source,json]
 ----
 {
-  "requestId" : "5d7e3354-cd29-47eb-b14a-d6fcc973e58e",
+  "requestId" : "f865b4dc-65f8-4732-a2f1-3bb1ae8823ef",
   "op" : "eval",
   "processor" : "session",
   "args" : {
@@ -1198,7 +1189,7 @@ The following `RequestMessage` is an example of a session request for a script e
 [source,json]
 ----
 {
-  "requestId" : "bb310bd3-f44f-4617-8195-4794e8e5851b",
+  "requestId" : "5a8408fc-08e4-409f-ac85-10e3afe0b8d0",
   "op" : "eval",
   "processor" : "session",
   "args" : {
@@ -1222,7 +1213,7 @@ The following `RequestMessage` is an example of a request to close a session.
 [source,json]
 ----
 {
-  "requestId" : "58d90945-76b1-4109-b6f8-44629752bda0",
+  "requestId" : "920b91b4-4ea6-4a35-80e6-a45c4e39830f",
   "op" : "close",
   "processor" : "session",
   "args" : {
@@ -1238,7 +1229,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 [source,json]
 ----
 {
-  "requestId" : "7239b3a7-0e5a-4b6f-b941-bcbc2b38bf3e",
+  "requestId" : "02d6325b-320c-42a7-9bb5-149db1cefbf7",
   "op" : "eval",
   "processor" : "",
   "args" : {
@@ -1258,7 +1249,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 [source,json]
 ----
 {
-  "requestId" : "6e0fea49-2ea4-4cf9-859d-723b4b468efe",
+  "requestId" : "1fdf1159-cd7f-474b-ab2a-46d291095d78",
   "op" : "eval",
   "processor" : "",
   "args" : {
@@ -1279,7 +1270,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -1371,7 +1362,7 @@ The following example is a `Duration` of five days.
 
 [source,json]
 ----
-"2016-10-04T12:17:19.571Z"
+"2018-01-19T13:30:19.931Z"
 ----
 
 ==== LocalDate
@@ -1406,14 +1397,14 @@ The following example is a `Duration` of five days.
 
 [source,json]
 ----
-"2016-10-04T08:17:19.613-04:00"
+"2018-01-19T08:30:19.935-05:00"
 ----
 
 ==== OffsetTime
 
 [source,json]
 ----
-"08:17:19.620-04:00"
+"08:30:19.935-05:00"
 ----
 
 ==== Period
@@ -1447,7 +1438,7 @@ The following example is a `YearMonth` of "June 2016"
 
 [source,json]
 ----
-"2016-10-04T08:17:19.633-04:00[America/New_York]"
+"2018-01-19T08:30:19.937-05:00[America/New_York]"
 ----
 
 ==== ZoneOffset
@@ -1494,7 +1485,7 @@ types. By default, TinkerPop types will have the namespace "g" (or "gx" for "ext
 ----
 {
   "@type" : "g:Date",
-  "@value" : 1475583442552
+  "@value" : 1516368624530
 }
 ----
 
@@ -1544,7 +1535,7 @@ types. By default, TinkerPop types will have the namespace "g" (or "gx" for "ext
 ----
 {
   "@type" : "g:Timestamp",
-  "@value" : 1475583442558
+  "@value" : 1516368624533
 }
 ----
 
@@ -3416,16 +3407,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:Bytecode",
   "@value" : {
-    "step" : [ [ "V" ], [ "has", {
-      "@type" : "g:T",
-      "@value" : "label"
-    }, {
-      "@type" : "g:P",
-      "@value" : {
-        "predicate" : "eq",
-        "value" : "person"
-      }
-    } ], [ "out" ], [ "in" ], [ "tree" ] ]
+    "step" : [ [ "V" ], [ "hasLabel", "person" ], [ "out" ], [ "in" ], [ "tree" ] ]
   }
 }
 ----
@@ -3490,6 +3472,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== Pick
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
 ==== Lambda
 
 [source,json]
@@ -3513,7 +3505,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 0.163871
+      "@value" : 0.138285
     },
     "counts" : {
       "traverserCount" : {
@@ -3529,7 +3521,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
     "annotations" : {
       "percentDur" : {
         "@type" : "g:Double",
-        "@value" : 14.805689498929809
+        "@value" : 20.492768957867455
       }
     },
     "id" : "7.0.0()",
@@ -3538,7 +3530,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.293702
+          "@value" : 0.172605
         },
         "counts" : {
           "traverserCount" : {
@@ -3554,7 +3546,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 26.535876495625722
+            "@value" : 25.57872788785994
           }
         },
         "id" : "2.0.0()"
@@ -3576,6 +3568,41 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       "@type" : "g:Int32",
       "@value" : 0
     }
+  }
+}
+----
+
+==== P within
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "within",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    } ]
+  }
+}
+----
+
+==== P without
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "without",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    } ]
   }
 }
 ----
@@ -3677,14 +3704,14 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
   "@value" : {
     "dur" : {
       "@type" : "g:Double",
-      "@value" : 1.10424
+      "@value" : 0.575429
     },
     "metrics" : [ {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.162194
+          "@value" : 0.087601
         },
         "counts" : {
           "traverserCount" : {
@@ -3700,17 +3727,17 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 14.688292400202855
+            "@value" : 15.22359839354638
           }
         },
         "id" : "7.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.304753
+          "@value" : 0.154435
         },
         "counts" : {
           "traverserCount" : {
@@ -3726,17 +3753,17 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 27.59843874520032
+            "@value" : 26.83823721084617
           }
         },
         "id" : "2.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.196628
+          "@value" : 0.18682
         },
         "counts" : {
           "traverserCount" : {
@@ -3752,17 +3779,17 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 17.80663623849888
+            "@value" : 32.46621216518459
           }
         },
         "id" : "3.0.0()"
       }
     }, {
-      "@type" : "g:metrics",
+      "@type" : "g:Metrics",
       "@value" : {
         "dur" : {
           "@type" : "g:Double",
-          "@value" : 0.440665
+          "@value" : 0.146573
         },
         "counts" : {
           "traverserCount" : {
@@ -3778,7 +3805,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
         "annotations" : {
           "percentDur" : {
             "@type" : "g:Double",
-            "@value" : 39.90663261609795
+            "@value" : 25.47195223042287
           }
         },
         "id" : "4.0.0()"
@@ -3913,10 +3940,7 @@ The following `RequestMessage` is an example of the response that should be made
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "79fcec2e-62f3-4cb4-82a6-7f879bc04c42"
-  },
+  "requestId" : "494a84a2-4829-4c37-8977-cff830f8cfb6",
   "op" : "authentication",
   "processor" : "",
   "args" : {
@@ -3933,10 +3957,7 @@ The following `RequestMessage` is an example of a simple session request for a s
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "c4183c83-8cd5-4058-ae9d-53e74f383031"
-  },
+  "requestId" : "ec474f7f-1ff5-404c-a9c8-3dbffa977eac",
   "op" : "eval",
   "processor" : "session",
   "args" : {
@@ -3963,10 +3984,7 @@ The following `RequestMessage` is an example of a session request for a script e
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "11944916-6fbb-4746-9bf1-53e9754dbe28"
-  },
+  "requestId" : "5f427442-3d46-4254-97c9-90ed7b631a9c",
   "op" : "eval",
   "processor" : "session",
   "args" : {
@@ -3996,10 +4014,7 @@ The following `RequestMessage` is an example of a request to close a session.
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "4b5c19fa-3bb5-482c-bca1-ac8ae408c95b"
-  },
+  "requestId" : "a648cf9d-6ddd-4c0e-9606-a7f3bfaf5171",
   "op" : "close",
   "processor" : "session",
   "args" : {
@@ -4018,10 +4033,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "3304b3e0-9995-4eca-b8fb-14bbef01f7b8"
-  },
+  "requestId" : "b774546a-f26e-4613-b935-a7fea1047f4f",
   "op" : "eval",
   "processor" : "",
   "args" : {
@@ -4044,10 +4056,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 [source,json]
 ----
 {
-  "requestId" : {
-    "@type" : "g:UUID",
-    "@value" : "0b93d54e-4124-4401-8b8f-addb18a213ea"
-  },
+  "requestId" : "19ab1ce9-cf43-4e7e-80d2-94a0102e02b8",
   "op" : "eval",
   "processor" : "",
   "args" : {
@@ -4066,11 +4075,12 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 }
 ----
 
+
 === ResponseMessage
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -4298,7 +4308,7 @@ The following example is a `Duration` of five days.
 ----
 {
   "@type" : "gx:Instant",
-  "@value" : "2016-10-04T12:17:22.696Z"
+  "@value" : "2018-01-19T13:30:24.598Z"
 }
 ----
 
@@ -4348,7 +4358,7 @@ The following example is a `Duration` of five days.
 ----
 {
   "@type" : "gx:OffsetDateTime",
-  "@value" : "2016-10-04T08:17:22.699-04:00"
+  "@value" : "2018-01-19T08:30:24.600-05:00"
 }
 ----
 
@@ -4358,7 +4368,7 @@ The following example is a `Duration` of five days.
 ----
 {
   "@type" : "gx:OffsetTime",
-  "@value" : "08:17:22.701-04:00"
+  "@value" : "08:30:24.601-05:00"
 }
 ----
 
@@ -4414,7 +4424,7 @@ The following example is a `YearMonth` of "June 2016"
 ----
 {
   "@type" : "gx:ZonedDateTime",
-  "@value" : "2016-10-04T08:17:22.708-04:00[America/New_York]"
+  "@value" : "2018-01-19T08:30:24.603-05:00[America/New_York]"
 }
 ----
 
