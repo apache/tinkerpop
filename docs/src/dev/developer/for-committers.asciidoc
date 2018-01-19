@@ -444,3 +444,75 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The properties files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
+
+[[io]]
+== IO Documentation and Testing
+
+The link:http://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML, GraphSON
+and Gryo with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
+the greatest focus here as it is used as the primary IO format for link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[GLVs].
+This documentation is largely generated from the `gremlin-io-test` module found under `gremlin-tools`. The
+`gremlin-io-test` module also includes a testing framework which validates that formats don't break between TinkerPop
+versions. Unfortunately, this module requires some maintenance to ensure that the documentation and tests both stay
+updated.
+
+The `gremlin-io-test` module contains a set of files in the test resources that are statically bound to the version in
+which they were generated. Older versions should never be modified. The only time changes to these resources should be
+accepted should be for the current `SNAPSHOT` version. The test resources are generated from the `Model` class which
+contains the objects that will undergo serialization for purpose of testing. Note that these same objects in the
+`Model` are also used to generate documentation.
+
+To generate these test resources and documentation snippets based on the `Model`, use this Maven command:
+
+[source,text]
+----
+mvn clean install -pl :gremlin-io-test -Dio
+----
+
+This command will generate two directories in the `/target` output directory of `gremlin-io-test`: `test-case-data`
+and `dev-docs`. The contents of `test-case-data` represents the serialized `Model` objects that can be copied to the
+test resources and the contents of the `dev-docs` contains asciidoc snippets that can be copied to the IO documentation.
+
+When does this command need to be executed?
+
+1. If a new object is added to the `Model` - in this case, the newly created data files should be copied to the
+appropriate test resource directory for the current `SNAPSHOT` version and the appropriate asciidoc snippet added to
+the IO asciidocs.
+2. After the release of a new TinkerPop version - in this case, a new test resource directory should be created for
+the `SNAPSHOT` version and the generated `test-case-data` copied in appropriately.
+
+The second case, does require some additional discussion. When a new version is added the following classes will need
+to be updated in the following ways:
+
+*GryoCompatibility* - Include new Gryo 1.0 and 3.0 enums for the current `SNAPSHOT`.
+
+[source,java]
+----
+V1D0_3_3_x("3.3.x", "1.0", "v1d0"),
+V3D0_3_3_x("3.3.x", "3.0", "v3d0")
+----
+
+*GraphSONCompatibility* - Include new GraphSON enums for each of the various GraphSON configurations and versions.
+
+[source,java]
+----
+V1D0_3_3_x("3.3.x", "1.0", "v1d0"),
+V2D0_PARTIAL_3_3_x("3.3.x", "2.0", "v2d0-partial"),
+V2D0_NO_TYPE_3_3_x("3.3.x", "2.0", "v2d0-no-types"),
+V3D0_PARTIAL_3_3_x("3.3.x", "3.0", "v3d0");
+----
+
+*GryoCompatibilityTest* - Add the newly included `GryoCompatibility` enums to the test parameters being careful to
+match the appropriate "mapper" to the right version.
+
+*GraphSONUntypedCompatibilityTest* - Add the newly included GraphSON 1.0 and 2.0 "untyped" enums to the test parameters
+being careful to match the appropriate "mapper" to the right version.
+
+*GraphSONTypedCompatibilityTest* - Add the newly included GraphSON 3.0 and 2.0 "typed" enums to the test parameters
+being careful to match the appropriate "mapper" to the right version.
+
+At this point, all of the IO tests are rigged up properly and assuming the test resources are available a standard
+`mvn clean install` should execute the compatibility tests and validate that everything is working as expected and
+that there are no breaks in serialization processes.
+
+
