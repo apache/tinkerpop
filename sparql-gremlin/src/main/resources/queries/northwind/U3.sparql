@@ -1,0 +1,15 @@
+select ?fname ?phone
+  where {
+                  {
+                         ?a v:customerId ?cid.
+                         FILTER(?cid = "ALFKI").
+                         ?a v:name ?fname.
+                         ?a v:phone ?phone.
+                  } UNION
+                  {
+                          ?a v:customerId ?cid.
+                         FILTER(?cid = "ANTON").
+                         ?a v:name ?fname.
+                         ?a v:phone ?phone.
+                  }
+  }

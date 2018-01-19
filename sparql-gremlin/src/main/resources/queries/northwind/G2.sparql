@@ -1,0 +1,6 @@
+select ?unitPrice (COUNT(?unitPrice) as ?total)
+where {
+                ?a v:label "product".
+                ?a v:name ?name.
+                ?a v:unitPrice ?unitPrice
+} GROUP BY (?unitPrice)

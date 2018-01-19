@@ -1,0 +1,15 @@
+select ?pid ?label ?ppn1
+  where {
+                  {
+                          ?a v:productID ?pid .
+                          ?a v:label_n ?label .
+                          ?a v:ProductPropertyNumeric_1 ?ppn1.
+                          FILTER (?pid = 343).
+                  } UNION
+                  {
+                          ?a v:productID ?pid .
+                          ?a v:label_n ?label .
+                          ?a v:ProductPropertyNumeric_1 ?ppn1.
+                          FILTER (?pid = 350).
+                  }
+  }

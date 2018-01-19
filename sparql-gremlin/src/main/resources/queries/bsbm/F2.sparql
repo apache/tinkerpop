@@ -1,0 +1,7 @@
+select ?pid ?property1 ?property2
+where {
+               ?a v:productID ?pid .
+                ?a v:ProductPropertyNumeric_1 ?property1 .
+                ?a v:ProductPropertyNumeric_2 ?property2 .
+                FILTER ( ?property1 = 1 && ?property2 >100 ).
+}

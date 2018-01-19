@@ -1,0 +1,6 @@
+select distinct ?b ?c
+  where {
+                  ?a v:name ?b .
+                  ?a v:unitsInStock ?c.
+                  FILTER( ?c = 0).
+  }

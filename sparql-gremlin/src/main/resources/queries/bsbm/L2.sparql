@@ -1,0 +1,5 @@
+select ?pid ?label
+where {
+                ?a v:productID ?pid .
+                ?a  v:label_n ?label .
+} LIMIT 5

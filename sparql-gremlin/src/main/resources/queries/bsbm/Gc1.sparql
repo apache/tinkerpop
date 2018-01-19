@@ -1,0 +1,5 @@
+select (COUNT(?country) as ?total)
+where {
+                ?vendor v:type "vendor".
+                ?vendor v:country ?country.
+} GROUP BY(?country)

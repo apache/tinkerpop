@@ -1,0 +1,5 @@
+select  (COUNT (DISTINCT(?product)) as ?total)
+  where {
+                  ?a v:type ""review"" .
+                  ?a e:edge ?product .
+  }

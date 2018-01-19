@@ -1,0 +1,5 @@
+select distinct ?b
+where {
+                 ?a v:label "category" .
+                 ?a v:name ?b .
+}

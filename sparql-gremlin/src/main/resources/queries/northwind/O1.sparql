@@ -1,0 +1,5 @@
+select ?unitsInStock ?b
+  where {
+                  ?a v:name ?b .
+                  ?a v:unitsInStock ?unitsInStock .
+  }  ORDER BY DESC(?unitsInStock) LIMIT 5

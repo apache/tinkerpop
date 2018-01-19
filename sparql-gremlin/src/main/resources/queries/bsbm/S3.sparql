@@ -1,0 +1,15 @@
+select  ?producer ?plabel ?comment ?phpage ?country ?product ?offer ?price ?owpage
+where {
+       ?producer v:type "producer".
+        ?producer v:label_n ?plabel.
+       ?producer v:comment ?comment.
+       ?producer v:country ?country.
+       ?producer v:homepage ?phpage.
+       ?producer e:edge ?product.
+       ?product v:type "product".
+       ?product v:productID ?pid. FILTER(?pid = 343).
+       ?product e:edge ?offer.
+       ?offer v:type "offer".
+       ?offer v:price ?price.
+       ?offer v:OfferWebPage ?owpage.
+} LIMIT 5

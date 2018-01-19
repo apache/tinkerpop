@@ -1,0 +1,17 @@
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+
+select ?label where {
+
+   {
+      ?product a bsbm-inst:ProductType58 .
+      ?product rdfs:label ?label.
+   }
+
+UNION
+
+  {
+      ?product a bsbm-inst:ProductType102 .
+      ?product rdfs:label ?label.
+  }
+} LIMIT 10

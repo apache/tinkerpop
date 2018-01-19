@@ -1,0 +1,6 @@
+select ?property {
+
+    ?a v:ProductPropertyTextual_1 ?property.
+        ?a v:productID ?pid.
+        FILTER( ?pid = 343 ).
+}

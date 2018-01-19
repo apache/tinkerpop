@@ -1,0 +1,5 @@
+select (count(?rating3) as ?total)
+  where {
+
+                  ?product v:Rating_3 ?rating3.
+  } GROUP BY(?rating3)

@@ -1,0 +1,13 @@
+select ?b ?unitsInStock
+  where {
+                  {
+                          ?a v:name ?b .
+                          ?a v:unitsInStock ?unitsInStock .
+                          FILTER(?unitsInStock <10 ).
+                  } UNION
+                  {
+                          ?a v:name ?b .
+                          ?a v:unitsInStock ?unitsInStock .
+                          FILTER(?unitsInStock <20 && ?unitsInStock > 10).
+                  }
+  }

@@ -1,0 +1,9 @@
+SELECT ?a ?b ?c
+WHERE {
+  ?a v:label "person" .
+  ?a e:knows ?b .
+  ?a e:created ?c .
+  ?b e:created ?c .
+  ?a v:age ?d .
+    FILTER (?d < 30)
+}

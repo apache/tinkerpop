@@ -1,0 +1,6 @@
+select  (COUNT(?stock) as ?total)
+where {
+                        ?a e:inCategory ?c .
+                        ?c v:name "Seafood".
+                        ?a v:unitPrice ?stock.
+} group by(?stock)

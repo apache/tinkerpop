@@ -1,0 +1,1 @@
+select ?productName ?unitsOnOrder where {  ?a v:name ?productName . ?a v:unitsOnOrder ?unitsOnOrder . FILTER(?unitsOnOrder = 0) } LIMIT 5

@@ -1,0 +1,7 @@
+SELECT ?name ?age
+WHERE {
+    ?person v:name ?name .
+    ?person v:age ?age .
+    ?person e:created ?project .
+    ?project v:name "lop" .
+}

@@ -1,0 +1,6 @@
+select ?b ?unitPrice
+where {
+                ?a v:label "product" .
+                ?a v:name ?b .
+                ?a v:unitPrice ?unitPrice .
+}  ORDER BY (?unitPrice) LIMIT 5

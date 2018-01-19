@@ -1,0 +1,1 @@
+select ?productName ?unitPrice where {  ?a v:label "product" . ?a v:name ?productName . ?a v:unitPrice ?unitPrice . FILTER( ?unitPrice >= 5 && ?unitPrice < 10) }

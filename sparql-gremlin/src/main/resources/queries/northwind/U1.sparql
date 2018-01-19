@@ -1,0 +1,13 @@
+select ?b ?unitPrice
+  where {
+                  {
+                          ?a v:name ?b .
+                          ?a v:unitPrice ?unitPrice .
+                          FILTER(?unitPrice <4.0 ).
+                  } UNION
+                  {
+                          ?a v:name ?b .
+                          ?a v:unitPrice ?unitPrice .
+                          FILTER(?unitPrice <7.0 && ?unitPrice > 4.0).
+                  }
+  }

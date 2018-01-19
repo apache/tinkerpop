@@ -1,0 +1,13 @@
+select DISTINCT ?vendor
+  where {
+                  {
+                          ?vendor v:type "vendor".
+                          ?vendor v:country ?country.
+                          FILTER (?country = 'RU').
+                  } UNION
+                  {
+                          ?vendor v:type "vendor".
+                          ?vendor v:country ?country.
+                          FILTER (?country = 'GB').
+                  }
+  }

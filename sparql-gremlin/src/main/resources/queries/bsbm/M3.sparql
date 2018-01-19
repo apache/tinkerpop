@@ -1,0 +1,8 @@
+Select ?reviewer (COUNT (?rating1) as ?total)
+where {
+                ?reviewer v:type "reviewer".
+                ?reviewer e:edge ?review.
+                ?review v:Rating_1 ?rating1.
+                ?review e:edge ?product .
+
+} GROUP BY (?reviewer) ORDER BY DESC (?total) LIMIT 10

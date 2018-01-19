@@ -1,0 +1,5 @@
+select ?price ?wpage
+  where {
+                  ?offer v:price ?price.
+                  ?offer v:OfferWebPage ?wpage.
+  } LIMIT 5

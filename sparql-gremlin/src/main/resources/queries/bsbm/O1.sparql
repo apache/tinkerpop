@@ -1,0 +1,5 @@
+select ?rating1
+  where {
+
+                  ?review v:Rating_1 ?rating1.
+  } ORDER BY DESC(?rating_1) LIMIT 1

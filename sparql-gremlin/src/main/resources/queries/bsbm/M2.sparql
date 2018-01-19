@@ -1,0 +1,6 @@
+Select ?product (COUNT (?review) as ?total)
+where {
+                ?review v:type "review".
+                ?review e:edge ?product .
+
+} GROUP BY (?product) ORDER BY DESC (?total) LIMIT 10

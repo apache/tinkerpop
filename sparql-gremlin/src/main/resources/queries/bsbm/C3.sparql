@@ -1,0 +1,6 @@
+select ?label where {
+
+      ?a v:label_n ?label.
+          ?a v:productID ?pid.
+          FILTER( ?pid = 343 ).
+  }

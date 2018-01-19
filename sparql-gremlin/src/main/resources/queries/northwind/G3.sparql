@@ -1,0 +1,6 @@
+select ?unitsInStock
+where {
+                ?a v:label "product".
+                ?a v:name ?name.
+                ?a v:unitsInStock ?unitsInStock
+} GROUP BY (?unitsInStock)

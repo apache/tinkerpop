@@ -1,0 +1,6 @@
+Select ?pid (COUNT (?review) as ?total)
+where {
+                        ?review v:type "review" .
+                        ?review e:edge ?product .
+                        ?product v:productID ?pid.
+} GROUP BY(?pid) LIMIT 10

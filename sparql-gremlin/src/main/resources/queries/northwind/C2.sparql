@@ -1,0 +1,5 @@
+select distinct ?b ?c
+where {
+                ?a v:name ?b .
+                ?a v:description ?c
+}

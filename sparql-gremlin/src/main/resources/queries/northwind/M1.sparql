@@ -1,0 +1,6 @@
+select ?stock (count(?a) as ?total)
+  where {
+                          ?a e:inCategory ?c .
+                          ?a v:name ?b  .
+                          ?a v:unitsInStock ?stock.
+  } GROUP BY(?stock) ORDER BY (?stock) Limit 3
