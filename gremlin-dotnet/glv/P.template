@@ -32,11 +32,16 @@ namespace Gremlin.Net.Process.Traversal
     /// </summary>
     public class P
     {
-<% pmethods.each { method -> %>
+<% pmethods.findAll{ !(it in ["within", "without"]) }.each { method -> %>
         public static TraversalPredicate <%= toCSharpMethodName.call(method) %>(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
             return new TraversalPredicate("<%= method %>", value);
+        }
+<% } %><% pmethods.findAll{ it in ["within", "without"] }.each { method -> %>
+        public static TraversalPredicate <%= toCSharpMethodName.call(method) %>(params object[] args)
+        {
+            return new TraversalPredicate("<%= method %>", args);
         }
 <% } %>
     }

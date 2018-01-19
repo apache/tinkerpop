@@ -150,6 +150,8 @@ file.withWriter { writer ->
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
   writer.write(toJson(metrics, "Metrics", "", "v2d0-partial"))
   writer.write(toJson(P.gt(0), "P", "", "v2d0-partial"))
+  writer.write(toJson(P.within(1), "P within", "v2d0-partial"))
+  writer.write(toJson(P.without(1,2), "P without", "v2d0-partial"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and", "", "v2d0-partial"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", "v2d0-partial"))
   writer.write(toJson(Scope.local, "Scope", "", "v2d0-partial"))
@@ -276,6 +278,8 @@ file.withWriter { writer ->
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
   writer.write(toJson(metrics, "Metrics", "", "v2d0-no-types"))
   writer.write(toJson(P.gt(0), "P", "", "v2d0-no-types"))
+  writer.write(toJson(P.within(1), "P within", "v2d0-no-types"))
+  writer.write(toJson(P.without(1,2), "P without", "v2d0-no-types"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and", "", "v2d0-no-types"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", "v2d0-no-types"))
   writer.write(toJson(Scope.local, "Scope", "", "v2d0-no-types"))
@@ -1047,7 +1051,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -5120,6 +5124,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== Pick
+
+[source,json]
+----
+{
+  "@type" : "g:Pick",
+  "@value" : "any"
+}
+----
+
 ==== Lambda
 
 [source,json]
@@ -5204,6 +5218,41 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
       "@type" : "g:Int32",
       "@value" : 0
     }
+  }
+}
+----
+
+==== P within
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "within",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    } ]
+  }
+}
+----
+
+==== P without
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "without",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    } ]
   }
 }
 ----

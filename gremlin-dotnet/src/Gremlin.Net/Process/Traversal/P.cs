@@ -101,14 +101,12 @@ namespace Gremlin.Net.Process.Traversal
 
         public static TraversalPredicate Within(params object[] args)
         {
-            var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("within", value);
+            return new TraversalPredicate("within", args);
         }
 
         public static TraversalPredicate Without(params object[] args)
         {
-            var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("without", value);
+            return new TraversalPredicate("without", args);
         }
 
     }
