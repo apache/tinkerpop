@@ -2888,6 +2888,41 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== P within
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "within",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    } ]
+  }
+}
+----
+
+==== P without
+
+[source,json]
+----
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "without",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    } ]
+  }
+}
+----
+
 ==== P and
 
 [source,json]

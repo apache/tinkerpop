@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,90 +30,134 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class CompatibilitiesTest {
-    /**
-     * Need to bump this each time we get a new release on the 3.2.x line.
-     */
-    private static final String LAST_OF_3_2_x = "3.2.6";
 
     @Test
     public void shouldFindGryoVersionsBeforeRelease3_2_4() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .beforeRelease("3.2.4").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_3));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_3,
+                MockCompatibility.V1D0_3_2_2, MockCompatibility.V1D0_3_2_2_PARTIAL));
     }
 
     @Test
     public void shouldFindGryoVersionsAfterRelease3_2_x() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .afterRelease(LAST_OF_3_2_x).match();
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
+                .afterRelease("3.2.7").match();
         assertThat(compatibilityList, containsInAnyOrder(
-                GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V1D0_3_3_1,
-                GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
+                MockCompatibility.V1D0_3_3_0, MockCompatibility.V1D0_3_3_1,
+                MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
     }
 
     @Test
     public void shouldFindGryoVersionsBetweenReleases3_2_3And3_2_5() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .betweenReleases("3.2.3", "3.2.5").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_4));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4,
+                MockCompatibility.V1D0_3_2_4_PARTIAL));
     }
 
     @Test
     public void shouldFindGryoVersionsBefore3_0() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .before("3.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V1D0_3_2_3,
-                GryoCompatibility.V1D0_3_2_4, GryoCompatibility.V1D0_3_2_5,
-                GryoCompatibility.V1D0_3_2_6, GryoCompatibility.V1D0_3_3_0, GryoCompatibility.V1D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_2,
+                MockCompatibility.V1D0_3_2_2_PARTIAL,
+                MockCompatibility.V1D0_3_2_4_PARTIAL,
+                MockCompatibility.V1D0_3_2_3,
+                MockCompatibility.V1D0_3_2_4, MockCompatibility.V1D0_3_2_5,
+                MockCompatibility.V1D0_3_2_6, MockCompatibility.V1D0_3_3_0, MockCompatibility.V1D0_3_3_1));
     }
 
     @Test
     public void shouldFindGryoVersionsAfter1_0() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .after("1.0").match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
     }
 
     @Test
     public void shouldFindGryoVersionsAfterRelease3_2_4AndAfter1_0() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .afterRelease(LAST_OF_3_2_x)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
+                .afterRelease("3.2.7")
                 .after("1.0")
                 .match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0, GryoCompatibility.V3D0_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V3D0_3_3_0, MockCompatibility.V3D0_3_3_1));
     }
 
     @Test
     public void shouldFindGraphSONWithConfigurationPartial() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
                 .configuredAs(".*partial.*").match();
-        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_2_3,
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_4, GraphSONCompatibility.V2D0_PARTIAL_3_2_5,
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_6, GraphSONCompatibility.V2D0_PARTIAL_3_3_0,
-                GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4_PARTIAL, MockCompatibility.V1D0_3_2_2_PARTIAL));
     }
 
     @Test
     public void shouldFindGraphSONAfterVersion3_2_3WithConfigurationPartial() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GraphSONCompatibility.class)
-                .afterRelease(LAST_OF_3_2_x)
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
+                .afterRelease("3.2.3")
                 .configuredAs(".*partial.*").match();
-        assertThat(compatibilityList, containsInAnyOrder(GraphSONCompatibility.V2D0_PARTIAL_3_3_0,
-                GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(MockCompatibility.V1D0_3_2_4_PARTIAL));
     }
 
     @Test
     public void shouldJoinCompatibilities() {
-        final List<Compatibility> compatibilityList = Compatibilities.with(GryoCompatibility.class)
-                .afterRelease("3.2.4")
+        final List<Compatibility> compatibilityList = Compatibilities.with(MockCompatibility.class)
+                .afterRelease("3.3.0")
                 .after("1.0")
-                .join(Compatibilities.with(GraphSONCompatibility.class)
+                .join(Compatibilities.with(MockCompatibility.class)
                         .configuredAs(".*partial.*"))
                 .match();
-        assertThat(compatibilityList, containsInAnyOrder(GryoCompatibility.V3D0_3_3_0,
-                GryoCompatibility.V3D0_3_3_1, 
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_3, GraphSONCompatibility.V2D0_PARTIAL_3_2_4,
-                GraphSONCompatibility.V2D0_PARTIAL_3_2_5,GraphSONCompatibility.V2D0_PARTIAL_3_2_6,
-                GraphSONCompatibility.V2D0_PARTIAL_3_3_0, GraphSONCompatibility.V2D0_PARTIAL_3_3_1));
+        assertThat(compatibilityList, containsInAnyOrder(
+                MockCompatibility.V1D0_3_2_4_PARTIAL, MockCompatibility.V1D0_3_2_2_PARTIAL,
+                MockCompatibility.V3D0_3_3_1));
+    }
+
+    enum MockCompatibility implements Compatibility {
+        V1D0_3_2_2("3.2.2", "1.0", "v1d0"),
+        V1D0_3_2_2_PARTIAL("3.2.2", "1.0", "v1d0-partial"),
+        V1D0_3_2_3("3.2.3", "1.0", "v1d0"),
+        V1D0_3_2_4("3.2.4", "1.0", "v1d0"),
+        V1D0_3_2_4_PARTIAL("3.2.4", "1.0", "v1d0-partial"),
+        V1D0_3_2_5("3.2.5", "1.0", "v1d0"),
+        V1D0_3_2_6("3.2.6", "1.0", "v1d0"),
+        V1D0_3_3_0("3.3.0", "1.0", "v1d0"),
+        V3D0_3_3_0("3.3.0", "3.0", "v3d0"),
+        V1D0_3_3_1("3.3.1", "1.0", "v1d0"),
+        V3D0_3_3_1("3.3.1", "3.0", "v3d0");
+
+        private final String mockVersion;
+        private final String tinkerpopVersion;
+        private final String configuration;
+
+        MockCompatibility(final String tinkerpopVersion, final String mockVersion, final String configuration) {
+            this.tinkerpopVersion = tinkerpopVersion;
+            this.mockVersion = mockVersion;
+            this.configuration = configuration;
+        }
+
+        @Override
+        public byte[] readFromResource(final String resource) throws IOException {
+            return new byte[0];
+        }
+
+        @Override
+        public String getReleaseVersion() {
+            return tinkerpopVersion;
+        }
+
+        @Override
+        public String getVersion() {
+            return mockVersion;
+        }
+
+        @Override
+        public String getConfiguration() {
+            return configuration;
+        }
+
+        @Override
+        public String toString() {
+            return tinkerpopVersion + "-" + configuration;
+        }
     }
 }

@@ -154,6 +154,8 @@ public class Model {
         metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
         addGraphProcessEntry(metrics, "Metrics", "", noTypeGraphSONPlusGryo3_3_0);
         addGraphProcessEntry(P.gt(0), "P", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(P.within(1), "P within", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(P.without(1,2), "P without", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
         addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "", noTypeGraphSONPlusGryo3_2_3);
         // A bug in the the Gryo serialization of ConjunctiveP prevented its proper serialization in versions prior to 3.3.0 and 3.2.4.
