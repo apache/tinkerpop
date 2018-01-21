@@ -65,10 +65,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the <%= method.methodName %> step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal< <%= method.t1 %> , <%= method.t2 %> > <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %> (<%= method.parameters %>)
+        public GraphTraversal<$method.t1, $method.t2> <%= toCSharpMethodName.call(method.methodName) %><%= method.tParam %> (<%= method.parameters %>)
         {
         <%  if (method.parameters.contains("params ")) {
-      %>    var args = new List<object>(<%= method.paramNames.init().size() %> + <%= method.paramNames.last() %>.Length) {<%= method.paramNames.init().join(", ") %>};
+      %>    var args = new List<$method.argsListType>(<%= method.paramNames.init().size() %> + <%= method.paramNames.last() %>.Length) {<%= method.paramNames.init().join(", ") %>};
             args.AddRange(<%= method.paramNames.last() %>);
             Bytecode.AddStep("<%= method.methodName %>", args.ToArray());<%
             }
@@ -76,7 +76,7 @@ namespace Gremlin.Net.Process.Traversal
       %>    Bytecode.AddStep("<%= method.methodName %>"<% if (method.parameters) out << ', '+ method.paramNames.join(", ") %>);<%
             }
         %>
-            return Wrap< <%= method.t1 %> , <%= method.t2 %> >(this);
+            return Wrap<$method.t1, $method.t2>(this);
         }
 <% } %>
     }
