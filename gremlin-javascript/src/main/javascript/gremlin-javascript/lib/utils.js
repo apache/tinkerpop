@@ -27,37 +27,6 @@ exports.parseArgs = function parseArgs() {
   return (arguments.length === 1 ? [ arguments[0] ] : Array.apply(null, arguments));
 };
 
-/**
- * @param {Function} handler
- * @returns {Promise}
- */
-function defaultPromiseFactory(handler) {
-  return new Promise(function executor(resolve, reject) {
-    handler(function handlerCallback(err, result) {
-      if (err) {
-        return reject(err);
-      }
-      resolve(result);
-    });
-  });
-}
-
-/**
- * Gets a resolved Promise instance.
- * @param {Function} promiseFactory
- * @returns {Promise}
- */
-exports.resolvedPromise = function (promiseFactory) {
-  return toPromise(promiseFactory, function handler(cb) {
-    cb();
-  });
-};
-
-const toPromise = exports.toPromise = function toPromise(promiseFactory, handler) {
-  promiseFactory = promiseFactory || defaultPromiseFactory;
-  return promiseFactory(handler);
-};
-
 exports.toLong = function toLong(value) {
   return new Long(value);
 };

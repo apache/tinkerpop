@@ -28,21 +28,15 @@ class TraversalStrategies {
   /**
    * Creates a new instance of TraversalStrategies.
    * @param {TraversalStrategies} [parent] The parent strategies from where to clone the values from.
-   * @param {Function} [promiseFactory] The factory used to create the A+ Promise instances. Use it when you want to
-   * create Promise instances without using ECMAScript Promise constructor, ie: bluebird or Q promises.
    * @constructor
    */
-  constructor(parent, promiseFactory) {
+  constructor(parent) {
     if (parent) {
       // Clone the strategies
       this.strategies = parent.strategies.slice(0);
-      this.promiseFactory = parent.promiseFactory;
     }
     else {
       this.strategies = [];
-    }
-    if (promiseFactory) {
-      this.promiseFactory = promiseFactory;
     }
   }
 
@@ -57,12 +51,9 @@ class TraversalStrategies {
    */
   applyStrategies(traversal) {
     // Apply all strategies serially
-    const self = this;
-    return this.strategies.reduce(function reduceItem(promise, strategy) {
-      return promise.then(function () {
-        return strategy.apply(traversal, self.promiseFactory);
-      });
-    }, utils.resolvedPromise(this.promiseFactory));
+    return this.strategies.reduce((promise, strategy) => {
+      return promise.then(() => strategy.apply(traversal));
+    }, Promise.resolve());
   }
 }
 
@@ -71,10 +62,9 @@ class TraversalStrategy {
   /**
    * @abstract
    * @param {Traversal} traversal
-   * @param {Function|undefined} promiseFactory
    * @returns {Promise}
    */
-  apply(traversal, promiseFactory) {
+  apply(traversal) {
 
   }
 }

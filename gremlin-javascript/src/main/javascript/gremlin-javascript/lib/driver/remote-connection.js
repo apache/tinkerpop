@@ -33,10 +33,9 @@ class RemoteConnection {
   /**
    * @abstract
    * @param {Bytecode} bytecode
-   * @param {Function|undefined} promiseFactory
    * @returns {Promise}
    */
-  submit(bytecode, promiseFactory) {
+  submit(bytecode) {
     throw new Error('submit() was not implemented');
   };
 }
@@ -60,11 +59,11 @@ class RemoteStrategy extends TraversalStrategy {
   }
 
   /** @override */
-  apply(traversal, promiseFactory) {
+  apply(traversal) {
     if (traversal.traversers) {
-      return utils.resolvedPromise(promiseFactory);
+      return Promise.resolve();
     }
-    return this.connection.submit(traversal.getBytecode(), promiseFactory).then(function (remoteTraversal) {
+    return this.connection.submit(traversal.getBytecode()).then(function (remoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
       traversal.traversers = remoteTraversal.traversers;
     });

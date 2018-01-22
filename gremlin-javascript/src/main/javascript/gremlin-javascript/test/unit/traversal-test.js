@@ -25,7 +25,6 @@
 const assert = require('assert');
 const expect = require('chai').expect;
 const graph = require('../../lib/structure/graph');
-const utils = require('../../lib/utils');
 const t = require('../../lib/process/traversal');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 
@@ -64,7 +63,7 @@ describe('Traversal', function () {
       const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 1) ];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();
@@ -92,7 +91,7 @@ describe('Traversal', function () {
       const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser(1, 2), new t.Traverser(2, 1) ];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();
@@ -128,7 +127,7 @@ describe('Traversal', function () {
       const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser('a', 1), new t.Traverser('b', 1) ];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();
@@ -144,7 +143,7 @@ describe('Traversal', function () {
       const strategyMock = {
         apply: function (traversal) {
           traversal.traversers = [];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();
@@ -161,7 +160,7 @@ describe('Traversal', function () {
         apply: function (traversal) {
           traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 3), new t.Traverser(3, 2),
             new t.Traverser(4, 1) ];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();
@@ -181,7 +180,7 @@ describe('Traversal', function () {
         apply: function (traversal) {
           applied = true;
           traversal.traversers = [ new t.Traverser('a', 1), new t.Traverser('b', 1) ];
-          return utils.resolvedPromise();
+          return Promise.resolve();
         }
       };
       const strategies = new TraversalStrategies();

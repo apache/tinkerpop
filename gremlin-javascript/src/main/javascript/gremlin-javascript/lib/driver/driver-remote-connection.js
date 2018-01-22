@@ -59,16 +59,13 @@ class DriverRemoteConnection extends RemoteConnection {
       pfx: options.pfx,
       rejectUnauthorized: options.rejectUnauthorized
     });
-    var self = this;
-    this._ws.on('open', function opened () {
-      self.isOpen = true;
-      if (self._openCallback) {
-        self._openCallback();
+    this._ws.on('open', () => {
+      this.isOpen = true;
+      if (this._openCallback) {
+        this._openCallback();
       }
     });
-    this._ws.on('message', function incoming (data) {
-      self._handleMessage(data);
-    });
+    this._ws.on('message', data => this._handleMessage(data));
     // A map containing the request id and the handler
     this._responseHandlers = {};
     this._reader = options.reader || new serializer.GraphSONReader();
@@ -86,39 +83,33 @@ class DriverRemoteConnection extends RemoteConnection {
    * Opens the connection, if its not already opened.
    * @returns {Promise}
    */
-  open(promiseFactory) {
+  open() {
     if (this._closePromise) {
-      return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-        callback(new Error('Connection has been closed'));
-      });
+      return this._openPromise = Promise.reject(new Error('Connection has been closed'));
+    }
+    if (this.isOpen) {
+      return Promise.resolve();
     }
     if (this._openPromise) {
       return this._openPromise;
     }
-    const self = this;
-    return this._openPromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-      if (self.isOpen) {
-        return callback();
-      }
-      // It will be invoked when opened
-      self._openCallback = callback;
+    return this._openPromise = new Promise((resolve, reject) => {
+      // Set the callback that will be invoked once the WS is opened
+      this._openCallback = err => err ? reject(err) : resolve();
     });
   }
 
   /** @override */
-  submit(bytecode, promiseFactory) {
-    const self = this;
-    return this.open().then(function () {
-      return utils.toPromise(promiseFactory, function promiseHandler(callback) {
-        const requestId = getUuid();
-        self._responseHandlers[requestId] = {
-          callback: callback,
-          result: null
-        };
-        const message = bufferFromString(self._header + JSON.stringify(self._getRequest(requestId, bytecode)));
-        self._ws.send(message);
-      });
-    });
+  submit(bytecode) {
+    return this.open().then(() => new Promise((resolve, reject) => {
+      const requestId = getUuid();
+      this._responseHandlers[requestId] = {
+        callback: (err, result) => err ? reject(err) : resolve(result),
+        result: null
+      };
+      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode)));
+      this._ws.send(message);
+    }));
   }
 
   _getRequest(id, bytecode) {
@@ -163,17 +154,16 @@ class DriverRemoteConnection extends RemoteConnection {
    * Closes the Connection.
    * @return {Promise}
    */
-  close(promiseFactory) {
+  close() {
     if (this._closePromise) {
       return this._closePromise;
     }
-    const self = this;
-    return this._closePromise = utils.toPromise(promiseFactory, function promiseHandler(callback) {
-      self._ws.on('close', function () {
-        self.isOpen = false;
-        callback();
+    this._closePromise = new Promise(resolve => {
+      this._ws.on('close', function () {
+        this.isOpen = false;
+        resolve();
       });
-      self._ws.close();
+      this._ws.close();
     });
   }
 }
