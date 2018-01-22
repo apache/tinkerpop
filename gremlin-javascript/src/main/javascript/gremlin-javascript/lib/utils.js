@@ -23,10 +23,6 @@
  */
 'use strict';
 
-exports.parseArgs = function parseArgs() {
-  return (arguments.length === 1 ? [ arguments[0] ] : Array.apply(null, arguments));
-};
-
 exports.toLong = function toLong(value) {
   return new Long(value);
 };

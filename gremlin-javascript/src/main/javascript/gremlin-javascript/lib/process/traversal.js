@@ -23,7 +23,6 @@
 'use strict';
 
 const utils = require('../utils');
-const parseArgs = utils.parseArgs;
 const itemDone = Object.freeze({ value: null, done: true });
 
 class Traversal {
@@ -143,68 +142,68 @@ class P {
   }
 
   /** @param {...Object} args */
-  static between(args) {
-    return createP('between', parseArgs.apply(null, arguments));
+  static between(...args) {
+    return createP('between', args);
   }
 
   /** @param {...Object} args */
-  static eq(args) {
-    return createP('eq', parseArgs.apply(null, arguments));
+  static eq(...args) {
+    return createP('eq', args);
   }
 
   /** @param {...Object} args */
-  static gt(args) {
-    return createP('gt', parseArgs.apply(null, arguments));
+  static gt(...args) {
+    return createP('gt', args);
   }
 
   /** @param {...Object} args */
-  static gte(args) {
-    return createP('gte', parseArgs.apply(null, arguments));
+  static gte(...args) {
+    return createP('gte', args);
   }
 
   /** @param {...Object} args */
-  static inside(args) {
-    return createP('inside', parseArgs.apply(null, arguments));
+  static inside(...args) {
+    return createP('inside', args);
   }
 
   /** @param {...Object} args */
-  static lt(args) {
-    return createP('lt', parseArgs.apply(null, arguments));
+  static lt(...args) {
+    return createP('lt', args);
   }
 
   /** @param {...Object} args */
-  static lte(args) {
-    return createP('lte', parseArgs.apply(null, arguments));
+  static lte(...args) {
+    return createP('lte', args);
   }
 
   /** @param {...Object} args */
-  static neq(args) {
-    return createP('neq', parseArgs.apply(null, arguments));
+  static neq(...args) {
+    return createP('neq', args);
   }
 
   /** @param {...Object} args */
-  static not(args) {
-    return createP('not', parseArgs.apply(null, arguments));
+  static not(...args) {
+    return createP('not', args);
   }
 
   /** @param {...Object} args */
-  static outside(args) {
-    return createP('outside', parseArgs.apply(null, arguments));
+  static outside(...args) {
+    return createP('outside', args);
   }
 
   /** @param {...Object} args */
-  static test(args) {
-    return createP('test', parseArgs.apply(null, arguments));
+  static test(...args) {
+    return createP('test', args);
   }
 
   /** @param {...Object} args */
-  static within(args) {
-    return createP('within', parseArgs.apply(null, arguments));
+  static within(...args) {
+    return createP('within', args);
   }
 
   /** @param {...Object} args */
-  static without(args) {
-    return createP('without', parseArgs.apply(null, arguments));
+  static without(...args) {
+    return createP('without', args);
   }
 
 }

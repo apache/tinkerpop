@@ -27,7 +27,6 @@ const remote = require('../driver/remote-connection');
 const utils = require('../utils');
 const Bytecode = require('./bytecode');
 const TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
-const parseArgs = utils.parseArgs;
 
 
 /**
@@ -68,8 +67,8 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  <%= toJs.call(method) %>(args) {
-    const b = new Bytecode(this.bytecode).addSource('<%= method %>', parseArgs.apply(null, arguments));
+  <%= toJs.call(method) %>(...args) {
+    const b = new Bytecode(this.bytecode).addSource('<%= method %>', args);
     return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   <%
@@ -80,8 +79,8 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  <%= toJs.call(method) %>(args) {
-    const b = new Bytecode(this.bytecode).addStep('<%= method %>', parseArgs.apply(null, arguments));
+  <%= toJs.call(method) %>(...args) {
+    const b = new Bytecode(this.bytecode).addStep('<%= method %>', args);
     return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   <% } %>
@@ -100,29 +99,26 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  <%= toJs.call(method) %>(args) {
-    this.bytecode.addStep('<%= method %>', parseArgs.apply(null, arguments));
+  <%= toJs.call(method) %>(...args) {
+    this.bytecode.addStep('<%= method %>', args);
     return this;
   }
   <% } %>
+}
+
+function callOnEmptyTraversal(fnName, args) {
+  const g = new GraphTraversal(null, null, new Bytecode());
+  return g[fnName].apply(g, args);
 }
 
 /**
  * Contains the static method definitions
  * @type {Object}
  */
-const statics = {};
-<% anonStepMethods.each{ method -> %>
-/**
- * <%= method %>() static method
- * @param {...Object} args
- * @returns {GraphTraversal}
- */
-statics.<%= toJs.call(method) %> = function (args) {
-  const g = new GraphTraversal(null, null, new Bytecode());
-  return g.<%= toJs.call(method) %>.apply(g, arguments);
+const statics = {<% anonStepMethods.eachWithIndex { method, i -> %>
+  <%= toJs.call(method) %>: (...args) => callOnEmptyTraversal('<%= toJs.call(method) %>', args)<%= i < anonStepMethods.size() - 1 ? "," : ""%><% } %>
 };
-<% } %>
+
 module.exports = {
   GraphTraversal,
   GraphTraversalSource,

@@ -23,7 +23,6 @@
 'use strict';
 
 const utils = require('../utils');
-const parseArgs = utils.parseArgs;
 const itemDone = Object.freeze({ value: null, done: true });
 
 class Traversal {
@@ -143,8 +142,8 @@ class P {
   }
 <% pmethods.each{ method -> %>
   /** @param {...Object} args */
-  static <%= toJs.call(method) %>(args) {
-    return createP('<%= method %>', parseArgs.apply(null, arguments));
+  static <%= toJs.call(method) %>(...args) {
+    return createP('<%= method %>', args);
   }
 <% } %>
 }

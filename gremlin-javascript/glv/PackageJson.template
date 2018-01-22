@@ -44,15 +44,16 @@
     "type": "git",
     "url": "https://github.com/apache/tinkerpop.git"
   },
+  "homepage": "https://tinkerpop.apache.org/",
   "bugs": {
     "url": "https://issues.apache.org/jira/browse/TINKERPOP"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/unit test/integration -t 5000",
-    "features": "./node_modules/.bin/cucumber.js --require test/cucumber ../../../../../gremlin-test/features/",
-    "unit-test": "./node_modules/.bin/mocha test/unit"
+    "test": "mocha test/unit test/integration -t 5000",
+    "features": "cucumber.js --require test/cucumber ../../../../../gremlin-test/features/",
+    "unit-test": "mocha test/unit"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   }
 }

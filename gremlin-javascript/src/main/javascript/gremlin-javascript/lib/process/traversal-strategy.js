@@ -33,7 +33,7 @@ class TraversalStrategies {
   constructor(parent) {
     if (parent) {
       // Clone the strategies
-      this.strategies = parent.strategies.slice(0);
+      this.strategies = [...parent.strategies];
     }
     else {
       this.strategies = [];

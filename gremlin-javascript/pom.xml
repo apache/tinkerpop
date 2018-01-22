@@ -243,7 +243,7 @@ limitations under the License.
                 <configuration>
                     <skip>${skipIntegrationTests}</skip>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                    <nodeVersion>v4.8.3</nodeVersion>
+                    <nodeVersion>v6.12.3</nodeVersion>
                 </configuration>
             </plugin>
             <!--
@@ -291,7 +291,7 @@ limitations under the License.
                         <configuration>
                             <skip>${skipIntegrationTests}</skip>
                             <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                            <nodeVersion>v4.8.3</nodeVersion>
+                            <nodeVersion>v6.12.3</nodeVersion>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -33,8 +33,8 @@ class Bytecode {
       this.stepInstructions = [];
     }
     else {
-      this.sourceInstructions = toClone.sourceInstructions.slice(0);
-      this.stepInstructions = toClone.stepInstructions.slice(0);
+      this.sourceInstructions = [...toClone.sourceInstructions];
+      this.stepInstructions = [...toClone.stepInstructions];
     }
   }
 
