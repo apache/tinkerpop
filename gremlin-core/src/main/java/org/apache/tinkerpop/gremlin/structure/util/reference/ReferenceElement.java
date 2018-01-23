@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -44,7 +45,12 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
     public ReferenceElement(final Element element) {
         this.id = element.id();
         try {
-            this.label = element.label();
+            //Exception creation takes too much time, return default values for known types
+            if (element instanceof ComputerGraph.ComputerAdjacentVertex) {
+                this.label = VertexProperty.DEFAULT_LABEL;
+            } else {
+                this.label = element.label();
+            }
         } catch (final UnsupportedOperationException e) {
             if (element instanceof Vertex)
                 this.label = Vertex.DEFAULT_LABEL;
