@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -73,17 +75,19 @@ final class WorkerExecutor {
         // MASTER ACTIVE
         // these are traversers that are going from OLTP (master) to OLAP (workers)
         // these traversers were broadcasted from the master traversal to the workers for attachment
-        final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
+        final VertexTraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
         // some memory systems are interacted with by multiple threads and thus, concurrent modification can happen at iterator.remove().
         // its better to reduce the memory footprint and shorten the active traverser list so synchronization is worth it.
         // most distributed OLAP systems have the memory partitioned and thus, this synchronization does nothing.
         synchronized (maybeActiveTraversers) {
             if (!maybeActiveTraversers.isEmpty()) {
-                final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
-                while (iterator.hasNext()) {
-                    final Traverser.Admin<Object> traverser = iterator.next();
-                    if (vertex.equals(WorkerExecutor.getHostingVertex(traverser.get()))) {
+                final Collection<Traverser.Admin<Object>> traversers = maybeActiveTraversers.get(vertex);
+                if (traversers != null) {
+                    final Iterator<Traverser.Admin<Object>> iterator = traversers.iterator();
+                    while (iterator.hasNext()) {
+                        final Traverser.Admin<Object> traverser = iterator.next();
                         iterator.remove();
+                        maybeActiveTraversers.remove(traverser);
                         traverser.attach(Attachable.Method.get(vertex));
                         traverser.setSideEffects(traversalSideEffects);
                         toProcessTraversers.add(traverser);

@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
@@ -229,13 +230,13 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 toProcessTraversers.add(traverser);
             });
             assert this.haltedTraversers.isEmpty();
-            final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
+            final VertexTraverserSet<Object> remoteActiveTraversers = new VertexTraverserSet<>();
             MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, this.haltedTraversers, this.haltedTraverserStrategy);
             memory.set(HALTED_TRAVERSERS, this.haltedTraversers);
             memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
         } else {
             memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
-            memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
+            memory.set(ACTIVE_TRAVERSERS, new VertexTraverserSet<>());
         }
         // local variable will no longer be used so null it for GC
         this.haltedTraversers = null;
@@ -315,12 +316,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.TERMINATE);
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
-        memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
+        memory.set(ACTIVE_TRAVERSERS, new VertexTraverserSet<>());
         if (voteToHalt) {
             // local traverser sets to process
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             // traversers that need to be sent back to the workers (no longer can be processed locally by the master traversal)
-            final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
+            final VertexTraverserSet<Object> remoteActiveTraversers = new VertexTraverserSet<>();
             // halted traversers that have completed their journey
             final TraverserSet<Object> haltedTraversers = memory.get(HALTED_TRAVERSERS);
             // get all barrier traversers
