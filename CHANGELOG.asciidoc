@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * Removed hardcoded expectation in metrics serialization test suite as different providers may have different outputs.
+* Added `VertexTraverserSet` which indexes on a `Vertex` thus improving performance in `VertexProgram` implementations.
 * Fixed a bug in `ComputerAwareStep` that didn't handle `reset()` properly and thus occasionally produced some extra traversers.
 
 [[release-3-2-7]]
