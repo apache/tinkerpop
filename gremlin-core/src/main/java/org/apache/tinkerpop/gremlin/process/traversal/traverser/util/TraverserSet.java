@@ -47,7 +47,8 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     }
 
     public TraverserSet(final Traverser.Admin<S> traverser) {
-        this.map.put(traverser, traverser);
+        if (traverser != null)
+            this.map.put(traverser, traverser);
     }
 
     @Override

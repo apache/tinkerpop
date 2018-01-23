@@ -18,10 +18,33 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 /**
  * A marker interface that identifies an object as something that an {@link Attachable} can connect to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Host {
+
+    /**
+     * Extracts the {@link Vertex} that is holding the specified object.
+     *
+     * @throws IllegalStateException if the object is not a graph element type
+     */
+    public static Vertex getHostingVertex(final Object object) {
+        Object obj = object;
+        while (true) {
+            if (obj instanceof Vertex)
+                return (Vertex) obj;
+            else if (obj instanceof Edge)
+                return ((Edge) obj).outVertex();
+            else if (obj instanceof Property)
+                obj = ((Property) obj).element();
+            else
+                throw new IllegalStateException("The host of the object is unknown: " + obj.toString() + ':' + obj.getClass().getCanonicalName());
+        }
+    }
 }

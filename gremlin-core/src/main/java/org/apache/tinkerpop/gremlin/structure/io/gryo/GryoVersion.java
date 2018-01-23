@@ -52,7 +52,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.IndexedTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
@@ -308,7 +308,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
             // skip 171, 172 to sync with tp33
-            add(GryoTypeReg.of(VertexTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
         }};
     }
 
