@@ -73,6 +73,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
@@ -247,7 +248,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HashMap.class, 11));
             add(GryoTypeReg.of(HashMap.Entry.class, 16));
             add(GryoTypeReg.of(Types.HASH_MAP_NODE, 92));
-            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 172));                  // ***LAST ID***
+            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 172));
             add(GryoTypeReg.of(KryoSerializable.class, 36));
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
@@ -372,6 +373,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
+            add(GryoTypeReg.of(VertexTraverserSet.class, 173));                 // ***LAST ID***
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -422,7 +424,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HashMap.class, 11));
             add(GryoTypeReg.of(HashMap.Entry.class, 16));
             add(GryoTypeReg.of(Types.HASH_MAP_NODE, 92));
-            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 170));                  // ***LAST ID***
+            add(GryoTypeReg.of(Types.HASH_MAP_TREE_NODE, 170));
             add(GryoTypeReg.of(KryoSerializable.class, 36));
             add(GryoTypeReg.of(LinkedHashMap.class, 47));
             add(GryoTypeReg.of(LinkedHashSet.class, 71));
@@ -486,6 +488,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MultiComparator.class, 165));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
+
             add(GryoTypeReg.of(Tree.class, 61));
             add(GryoTypeReg.of(HashSet.class, 62));
             add(GryoTypeReg.of(BulkSet.class, 64));
@@ -548,6 +551,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
+            // skip 171, 172 to sync with tp33
+            add(GryoTypeReg.of(VertexTraverserSet.class, 173));                 // ***LAST ID***
         }};
     }
 
