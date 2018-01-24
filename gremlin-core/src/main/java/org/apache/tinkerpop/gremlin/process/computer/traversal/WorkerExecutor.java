@@ -31,13 +31,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.VertexTraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.IndexedTraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -75,7 +75,7 @@ final class WorkerExecutor {
         // MASTER ACTIVE
         // these are traversers that are going from OLTP (master) to OLAP (workers)
         // these traversers were broadcasted from the master traversal to the workers for attachment
-        final VertexTraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
+        final IndexedTraverserSet<Object,Vertex> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
         // some memory systems are interacted with by multiple threads and thus, concurrent modification can happen at iterator.remove().
         // its better to reduce the memory footprint and shorten the active traverser list so synchronization is worth it.
         // most distributed OLAP systems have the memory partitioned and thus, this synchronization does nothing.
@@ -160,7 +160,7 @@ final class WorkerExecutor {
                     // decide whether to message the traverser or to process it locally
                     if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                         // if the element is remote, then message, else store it locally for re-processing
-                        final Vertex hostingVertex = WorkerExecutor.getHostingVertex(traverser.get());
+                        final Vertex hostingVertex = Host.getHostingVertex(traverser.get());
                         if (!vertex.equals(hostingVertex)) { // if its host is not the current vertex, then send the traverser to the hosting vertex
                             voteToHalt.set(false); // if message is passed, then don't vote to halt
                             messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser.detach()));
@@ -200,7 +200,7 @@ final class WorkerExecutor {
                         if (traverser.isHalted() &&
                                 (returnHaltedTraversers ||
                                         (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
-                                        getHostingVertex(traverser.get()).equals(vertex))) {
+                                        Host.getHostingVertex(traverser.get()).equals(vertex))) {
                             if (returnHaltedTraversers)
                                 memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(haltedTraverserStrategy.halt(traverser)));
                             else
@@ -223,7 +223,7 @@ final class WorkerExecutor {
                         // if its a ReferenceFactory (one less iteration required)
                         ((returnHaltedTraversers || ReferenceFactory.class == haltedTraverserStrategy.getHaltedTraverserFactory()) &&
                                 (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
-                                getHostingVertex(traverser.get()).equals(vertex))) {
+                                Host.getHostingVertex(traverser.get()).equals(vertex))) {
                     if (returnHaltedTraversers)
                         memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(haltedTraverserStrategy.halt(traverser)));
                     else
@@ -232,20 +232,6 @@ final class WorkerExecutor {
                     activeTraversers.add(traverser);
                 }
             });
-        }
-    }
-
-    private static Vertex getHostingVertex(final Object object) {
-        Object obj = object;
-        while (true) {
-            if (obj instanceof Vertex)
-                return (Vertex) obj;
-            else if (obj instanceof Edge)
-                return ((Edge) obj).outVertex();
-            else if (obj instanceof Property)
-                obj = ((Property) obj).element();
-            else
-                throw new IllegalStateException("The host of the object is unknown: " + obj.toString() + ':' + obj.getClass().getCanonicalName());
         }
     }
 }
