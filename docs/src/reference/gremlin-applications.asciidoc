@@ -977,7 +977,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
 To configure a "remote" traversal, there first needs to be a `TraversalSource`. A `TraversalSource` can be generated
 from any `Graph` instance with the `traversal()` method. Of course, any traversals generated from this source using the
-`withRemote()` configuration option will not execute against the local graph. That could be confusing and it maybe be
+`withRemote()` configuration option will not execute against the local graph. That could be confusing and it may be
 easier to think of the local graph as being "empty". To that end, it is recommended that when using `withRemote()`,
 the `TraversalSource` be generated with `EmptyGraph` as follows:
 

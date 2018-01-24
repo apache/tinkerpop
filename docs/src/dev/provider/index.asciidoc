@@ -1154,7 +1154,7 @@ Note that the plugin provides a unique name for the plugin which follows a names
 (e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make TinkerGraph
 classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The
 `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin`
-implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering
+implementations may be hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering
 new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for
 the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand
 which environment the plugin is being used in.
