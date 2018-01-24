@@ -92,7 +92,6 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.3.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
