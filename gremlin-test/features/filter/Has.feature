@@ -43,3 +43,47 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  Scenario: g_V_hasXage_withinX27X_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.within(27)).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1].l |
+
+  Scenario: g_V_hasXage_withinX27_29X_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.within(27,29)).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[2].l |
+
+  Scenario: g_V_hasXage_withoutX27X_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.without(27)).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[3].l |
+
+  Scenario: g_V_hasXage_withoutX27_29X_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.without(27,29)).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[2].l |
+
