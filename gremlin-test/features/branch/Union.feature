@@ -138,3 +138,17 @@ Feature: Step - union()
       | d[0].i   |
       | d[0].l   |
       | d[1].l   |
+
+  Scenario: g_VX1_2X_localXunionXcountXX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v2Id defined as "v[vadas].id"
+    And the traversal of
+      """
+      g.V(v1Id, v2Id).local(union(count()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l   |
+      | d[1].l   |
