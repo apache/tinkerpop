@@ -103,3 +103,29 @@ Feature: Step - where()
       | josh |
       | peter |
 
+  Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("created").in("created").as("b").where("a", P.neq("b")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("created").in("created").as("b").where(__.as("b").out("created").has("name", "ripple")).values("age", "name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | d[32].i |
+

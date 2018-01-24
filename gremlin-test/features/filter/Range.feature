@@ -226,27 +226,3 @@ Feature: Step - range()
       | result |
       | m[{"b":"josh"}] |
       | m[{"b":"josh"}] |
-
-  Scenario: g_V_repeatXbothX_timesX3X_rangeX5_11X
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().repeat(both()).times(3).range(5, 11)
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | d[6].l |
-
-  Scenario: g_V_repeatXbothX_timesX3X_rangeX5_11X
-    Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(v1Id).out("created").inE("created").range(1, 3).outV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-      | v[ripple] |

@@ -145,7 +145,7 @@ Feature: Step - union()
     And using the parameter v2Id defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(v1Id, v2Id).local(union(count()))
+      g.V(v1Id, v2Id).local(__.union(__.count()))
       """
     When iterated to list
     Then the result should be unordered
