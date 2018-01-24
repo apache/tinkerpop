@@ -65,12 +65,13 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             request_id, request_message)
         self._transport.write(message)
 
-    def data_received(self, data, results_dict):
-        data = json.loads(data.decode('utf-8'))
-        request_id = data['requestId']
+    def data_received(self, message, results_dict):
+        message = self._message_serializer.deserialize_message(json.loads(message.decode('utf-8')))
+        request_id = message['requestId']
         result_set = results_dict[request_id]
-        status_code = data['status']['code']
-        aggregate_to = data['result']['meta'].get('aggregateTo', 'list')
+        status_code = message['status']['code']
+        aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
+        data = message['result']['data']
         result_set.aggregate_to = aggregate_to
         if status_code == 407:
             auth = b''.join([b'\x00', self._username.encode('utf-8'),
@@ -79,28 +80,19 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
                 'traversal', 'authentication',
                 {'sasl': base64.b64encode(auth).decode()})
             self.write(request_id, request_message)
-            data = self._transport.read()
-            self.data_received(data, results_dict)
+            message = self._transport.read()
+            self.data_received(message, results_dict)
         elif status_code == 204:
             result_set.stream.put_nowait([])
             del results_dict[request_id]
         elif status_code in [200, 206]:
-            results = []
-            # this is a bit of a hack for now. basically the protocol.py picks the json apart and doesn't
-            # account for types too well right now.
-            if self._message_serializer.version == b"application/vnd.gremlin-v2.0+json":
-                for msg in data["result"]["data"]:
-                    results.append(
-                        self._message_serializer.deserialize_message(msg))
-            else:
-                results = self._message_serializer.deserialize_message(data["result"]["data"]["@value"])
-            result_set.stream.put_nowait(results)
+            result_set.stream.put_nowait(data)
             if status_code == 206:
-                data = self._transport.read()
-                self.data_received(data, results_dict)
+                message = self._transport.read()
+                self.data_received(message, results_dict)
             else:
                 del results_dict[request_id]
         else:
             del results_dict[request_id]
             raise GremlinServerError(
-                "{0}: {1}".format(status_code, data["status"]["message"]))
+                "{0}: {1}".format(status_code, message["status"]["message"]))

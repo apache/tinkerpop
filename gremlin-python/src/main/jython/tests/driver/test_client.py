@@ -79,12 +79,13 @@ def test_client_async(client):
 
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
-    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1, message_serializer=serializer.GraphSONSerializersV2d0())
+    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
+    message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
     future = client.submitAsync(message)
-    future2 = client.submitAsync(message)
+    future2 = client.submitAsync(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
@@ -99,10 +100,10 @@ def test_multi_conn_pool(client):
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
-
-    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1, message_serializer=serializer.GraphSONSerializersV2d0())
+    message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode})
+    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
     future = client.submitAsync(message)
-    future2 = client.submitAsync(message)
+    future2 = client.submitAsync(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
