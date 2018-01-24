@@ -263,7 +263,7 @@ Projects" side panel, right click the `gremlin-shaded` module and select "Ignore
 . At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use
 `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
 
-Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
+Note that it may be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
 
 Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.
 This will ensure that tests will properly execute within the IDE.
