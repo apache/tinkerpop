@@ -108,6 +108,18 @@ limitations under the License.
             <email>twilmes@gmail.com</email>
             <url>https://github.com/twilmes</url>
         </contributor>
+        <contributor>
+            <name>Harsh Thakkar</name>
+            <email>harsh9t@gmail.com</email>
+            <organization>University of Bonn</organization>
+            <organizationUrl>http://harshthakkar.in</organizationUrl>
+        </contributor>
+        <contributor>
+            <name>Dharmen Punjani</name>
+            <email>dharmen.punjani@gmail.com</email>
+            <organization>National and Kapodistrian University of Athens</organization>
+            <organizationUrl>http://wdaqua.eu/students/dharmen-punjani</organizationUrl>
+        </contributor>
     </contributors>
     <prerequisites>
         <maven>3.1.0</maven>
@@ -124,6 +136,7 @@ limitations under the License.
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>neo4j-gremlin</module>
+        <module>sparql-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
@@ -639,6 +652,11 @@ limitations under the License.
                         <artifactId>oncrpc</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.1</version>
             </dependency>
             <dependency>
                 <groupId>commons-httpclient</groupId>
