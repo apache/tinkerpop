@@ -44,7 +44,11 @@ tail = __.tail
 
 ignores = [
     "g.V(v1Id).out().inject(v2).values(\"name\")",  # bug in attachment won't connect v2
-    "g.V().hasLabel(\"person\").has(\"age\", P.not(P.lte(d10).and(P.not(P.between(d11, d20)))).and(P.lt(d29).or(P.eq(d35)))).values(\"name\")" # TINKERPOP-1859
+    # TINKERPOP-1859 - for the following...seems to be related to P.not processing
+    "g.V().hasLabel(\"person\").has(\"age\", P.not(P.lte(d10).and(P.not(P.between(d11, d20)))).and(P.lt(d29).or(P.eq(d35)))).values(\"name\")",
+    "g.V(v1Id).out().aggregate(\"x\").out().where(P.not(P.within(\"x\")))",
+    "g.V().as(\"a\").out().as(\"b\").where(__.and(__.as(\"a\").out(\"knows\").as(\"b\"), __.or(__.as(\"b\").out(\"created\").has(\"name\", \"ripple\"), __.as(\"b\").in(\"knows\").count().is(P.not(P.eq(0)))))).select(\"a\", \"b\")",
+    "g.V().as(\"a\").out(\"created\").as(\"b\").in(\"created\").as(\"c\").both(\"knows\").both(\"knows\").as(\"d\").where(\"c\", P.not(P.eq(\"a\").or(P.eq(\"d\")))).select(\"a\", \"b\", \"c\", \"d\")"
            ]
 
 

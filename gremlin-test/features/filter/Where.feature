@@ -129,3 +129,198 @@ Feature: Step - where()
       | josh |
       | d[32].i |
 
+  Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("created").in("created").where(P.eq("a")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("created").in("created").where(P.neq("a")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | peter |
+      | josh  |
+
+  Scenario: g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).out().aggregate("x").out().where(P.not(P.within("x")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[ripple] |
+
+  Scenario: g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v2 defined as "v[vadas]"
+    And the traversal of
+      """
+      g.withSideEffect("a", v2).V(v1Id).out().where(P.neq("a"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).repeat(__.bothE("created").where(P.without("e")).aggregate("e").otherV()).emit().path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[marko],e[marko-created->lop],v[lop]] |
+      | p[v[marko],e[marko-created->lop],v[lop],e[josh-created->lop],v[josh]] |
+      | p[v[marko],e[marko-created->lop],v[lop],e[peter-created->lop],v[peter]] |
+      | p[v[marko],e[marko-created->lop],v[lop],e[josh-created->lop],v[josh],e[josh-created->ripple],v[ripple]] |
+
+  Scenario: g_V_whereXnotXoutXcreatedXXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(__.not(__.out("created"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().as("b").where(__.and(__.as("a").out("knows").as("b"), __.or(__.as("b").out("created").has("name", "ripple"), __.as("b").in("knows").count().is(P.not(P.eq(0)))))).select("a", "b")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "v[marko]", "b": "v[vadas]"}] |
+      | m[{"a": "v[marko]", "b": "v[josh]"}] |
+
+  Scenario: g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(__.out("created").and().out("knows").or().in("knows")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+
+  Scenario: g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_selectXa_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out("created").as("b").where(__.and(__.as("b").in(), __.not(__.as("a").out("created").has("name", "ripple")))).select("a", "b")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "v[marko]", "b": "v[lop]"}] |
+      | m[{"a": "v[peter]", "b": "v[lop]"}] |
+
+  Scenario: g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c", P.not(P.eq("a").or(P.eq("d")))).select("a", "b", "c", "d")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "v[marko]", "b": "v[lop]", "c": "v[josh]", "d": "v[vadas]"}] |
+      | m[{"a": "v[peter]", "b": "v[lop]", "c": "v[josh]", "d": "v[vadas]"}] |
+
+  Scenario: g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_selectXa_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().as("b").where(__.as("b").in().count().is(P.eq(3)).or().where(__.as("b").out("created").and().as("b").has(T.label, "person"))).select("a", "b")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "v[marko]", "b": "v[lop]"}] |
+      | m[{"a": "v[marko]", "b": "v[josh]"}] |
+      | m[{"a": "v[josh]", "b": "v[lop]"}] |
+      | m[{"a": "v[peter]", "b": "v[lop]"}] |
+
+  Scenario: g_V_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_gtXbXX_byXageX_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out("created").in("created").as("b").where("a", P.gt("b")).by("age").select("a", "b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "josh", "b": "marko"}] |
+      | m[{"a": "peter", "b": "marko"}] |
+      | m[{"a": "peter", "b": "josh"}] |
+
+  Scenario: g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_whereXa_gtXbX_orXeqXbXXX_byXageX_byXweightX_byXweightX_selectXa_cX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").outE("created").as("b").inV().as("c").where("a", P.gt("b").or(P.eq("b"))).by("age").by("weight").by("weight").select("a", "c").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "marko", "c": "lop"}] |
+      | m[{"a": "josh", "c": "ripple"}] |
+      | m[{"a": "josh", "c": "lop"}] |
+      | m[{"a": "peter", "c": "lop"}] |
+
+  Scenario: g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").outE("created").as("b").inV().as("c").in("created").as("d").where("a", P.lt("b").or(P.gt("c")).and(P.neq("d"))).by("age").by("weight").by(__.in("created").values("age").min()).select("a", "c", "d").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "josh", "c": "lop", "d": "marko"}] |
+      | m[{"a": "josh", "c": "lop", "d": "peter"}] |
+      | m[{"a": "peter", "c": "lop", "d": "marko"}] |
+      | m[{"a": "peter", "c": "lop", "d": "josh"}] |
+
+  Scenario: g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out().has("age").where(P.gt("a")).by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+
