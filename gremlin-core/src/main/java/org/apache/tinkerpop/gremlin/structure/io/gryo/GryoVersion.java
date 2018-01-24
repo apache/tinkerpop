@@ -373,7 +373,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
-            add(GryoTypeReg.of(VertexTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
