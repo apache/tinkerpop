@@ -93,7 +93,7 @@ file.withWriter { writer ->
   writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
-  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server)."))
+  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges may be requested in some cases, but not in the default provided by Gremlin Server)."))
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                         result(Arrays.asList(graph.vertices().next())).create()
@@ -149,9 +149,9 @@ file.withWriter { writer ->
   metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
   metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
   writer.write(toJson(metrics, "Metrics", "", "v2d0-partial"))
-  writer.write(toJson(P.gt(0), "P", "", "v2d0-partial"))
-  writer.write(toJson(P.within(1), "P within", "v2d0-partial"))
-  writer.write(toJson(P.without(1,2), "P without", "v2d0-partial"))
+  writer.write(toJson(P.gt(0), "P", "`P` expects a single value of a `List` of values. There is special handling for `List` values when it comes to `within`, `without`, `inside`, `outside` and `between`. For `inside`, `outside` and `between`, the expectation is that the collection contain two objects (the rest will be ignored) and those two objects become the arguments to those methods. For `within` and `without`, these methods will accept an arbitrary number of objects in the collection.", "v2d0-partial"))
+  writer.write(toJson(P.within(1), "P within", "Please see <<p,P>> for additional information on `within`.", "v2d0-partial"))
+  writer.write(toJson(P.without(1,2), "P without", "Please see <<p,P>> for additional information on `within`.", "v2d0-partial"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and", "", "v2d0-partial"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", "v2d0-partial"))
   writer.write(toJson(Scope.local, "Scope", "", "v2d0-partial"))
@@ -190,7 +190,7 @@ file.withWriter { writer ->
   writer.write("=== ResponseMessage\n\n")
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.AUTHENTICATE).create()
-  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).", "v2d0-partial"))
+  writer.write(toJson(msg, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges may be requested in some cases, but no in the default provided by Gremlin Server).", "v2d0-partial"))
   msg = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                         code(org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode.SUCCESS).
                         result(Arrays.asList(graph.vertices().next())).create()
@@ -1051,7 +1051,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but no in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different dependending on the SASL implementation (e.g. multiple challenges may be requested in some cases, but not in the default provided by Gremlin Server).
 
 [source,json]
 ----
@@ -5243,6 +5243,8 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 
 ==== P
 
+`P` expects a single value of a `List` of values. There is special handling for `List` values when it comes to `within`, `without`, `inside`, `outside` and `between`. For `inside`, `outside` and `between`, the expectation is that the collection contain two objects (the rest will be ignored) and those two objects become the arguments to those methods. For `within` and `without`, these methods will accept an arbitrary number of objects in the collection.
+
 [source,json]
 ----
 {
@@ -5259,6 +5261,8 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 
 ==== P within
 
+Please see <<_p,P>> for additional information on `within`.
+
 [source,json]
 ----
 {
@@ -5274,6 +5278,8 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 ----
 
 ==== P without
+
+Please see <<_p,P>> for additional information on `within`.
 
 [source,json]
 ----
@@ -5762,7 +5768,7 @@ The following `RequestMessage` is an example of a sessionless request for a scri
 
 ==== Authentication Challenge
 
-When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).
+When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges may be requested in some cases, but not in the default provided by Gremlin Server).
 
 [source,json]
 ----
