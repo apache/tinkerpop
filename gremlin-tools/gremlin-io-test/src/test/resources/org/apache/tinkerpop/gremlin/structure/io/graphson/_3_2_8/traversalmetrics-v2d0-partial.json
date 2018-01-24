@@ -1,0 +1,114 @@
+{
+  "@type" : "g:TraversalMetrics",
+  "@value" : {
+    "dur" : {
+      "@type" : "g:Double",
+      "@value" : 0.605947
+    },
+    "metrics" : [ {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.11929
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 4
+          }
+        },
+        "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 19.686540241968356
+          }
+        },
+        "id" : "7.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.174927
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 28.868366375277045
+          }
+        },
+        "id" : "2.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.164905
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 7
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 27.214426344218225
+          }
+        },
+        "id" : "3.0.0()"
+      }
+    }, {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.146825
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 1
+          }
+        },
+        "name" : "TreeStep",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 24.230667038536374
+          }
+        },
+        "id" : "4.0.0()"
+      }
+    } ]
+  }
+}
