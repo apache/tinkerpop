@@ -473,6 +473,12 @@ This command will generate two directories in the `/target` output directory of 
 and `dev-docs`. The contents of `test-case-data` represents the serialized `Model` objects that can be copied to the
 test resources and the contents of the `dev-docs` contains asciidoc snippets that can be copied to the IO documentation.
 
+Generating data files in the fashion mentioned above with Maven is only good for versions of TinkerPop on the 3.3.x
+line because the `gremlin-io-test` module did not exist in 3.2.x. Of course, compatibility is still tested back to
+those older versions. To generate test data from 3.2.x, there are Groovy scripts in the comments of the
+`gryo.asciidoc` and `graphson.asciidoc` files that can copy/pasted to the Gremlin Console. They will generate the
+batch of test files needed for `gremlin-io-test`.
+
 When does this command need to be executed?
 
 1. If a new object is added to the `Model` - in this case, the newly created data files should be copied to the
@@ -514,5 +520,3 @@ being careful to match the appropriate "mapper" to the right version.
 At this point, all of the IO tests are rigged up properly and assuming the test resources are available a standard
 `mvn clean install` should execute the compatibility tests and validate that everything is working as expected and
 that there are no breaks in serialization processes.
-
-

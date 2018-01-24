@@ -16,7 +16,9 @@ limitations under the License.
 
 
 *******************************************************************************
-* The following groovy script generates the data samples for Gryo.
+* The following groovy script generates the data samples for Gryo and is used
+* when older versions of TinkerPop need data generation for the tests,
+* specifically, the 3.2.x line before gremlin-io-test was a module.
 *******************************************************************************
 import org.apache.tinkerpop.shaded.kryo.io.Output
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
@@ -24,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 import org.apache.tinkerpop.gremlin.structure.io.*
 import org.apache.commons.configuration.BaseConfiguration
+import java.time.*
 
 new File("io-output/dev-docs/").mkdirs()
 new File("io-output/test-case-data/gryo").mkdirs()

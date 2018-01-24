@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 *******************************************************************************
-* The following groovy script generates the data samples for GraphSON.
+* The following groovy script generates the data samples for GraphSON and is
+* used when older versions of TinkerPop need data generation for the tests,
+* specifically, the 3.2.x line before gremlin-io-test was a module.
 *******************************************************************************
 import java.time.*
 mapper = GraphSONMapper.build().
@@ -253,6 +255,7 @@ file.withWriter { writer ->
   writer.write("\n")
   writer.write("=== Graph Structure\n\n")
   writer.write(toJson(graph.edges().next(), "Edge", "", "v2d0-no-types"))
+  writer.write(toJson(g.V().out().out().path().next(), "Path", "", "v2d0-no-types"))
   writer.write(toJson(graph.edges().next().properties().next(), "Property", "", "v2d0-no-types"))
   writer.write(toJson(new org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph(org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.of(graph.vertices().next()), Direction.BOTH), "StarGraph", "", "v2d0-no-types"))
   writer.write(toJson(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.", "v2d0-no-types"))
