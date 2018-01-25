@@ -5,6 +5,17 @@ jdk:
   - oraclejdk8
 sudo: required
 dist: trusty
+cache:
+  directories:
+    - $HOME/mvn-home
+
+install:
+  # install maven 3.3.9 if it is not in cache already
+  - bash .travis.install-maven.sh "3.3.9" "${HOME}/mvn-home"
+  - export M2_HOME=${HOME}/mvn-home
+  - export PATH=${HOME}/mvn-home/bin:${PATH}
+  # visual check that we have the correct maven version installed
+  - mvn -version
 
 before_install:
   - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
@@ -15,4 +26,5 @@ before_install:
 jobs:
   include:
     - script: "mvn clean install -Dci"
-    - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DskipIntegrationTests=false"
+    - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DskipIntegrationTests=false"
+    - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript -DskipIntegrationTests=false"
