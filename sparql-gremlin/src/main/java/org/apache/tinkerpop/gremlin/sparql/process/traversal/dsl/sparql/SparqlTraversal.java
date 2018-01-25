@@ -22,6 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
+ * The {@code SparqlTraversal} has no additional traversal steps. The only step available for "SPARQL" is the
+ * {@link SparqlTraversalSource#sparql(String)} start step.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface SparqlTraversal<S, E> extends Traversal<S, E> {
@@ -55,14 +58,5 @@ public interface SparqlTraversal<S, E> extends Traversal<S, E> {
     public default SparqlTraversal<S, E> iterate() {
         Traversal.super.iterate();
         return this;
-    }
-
-    public static final class Symbols {
-
-        private Symbols() {
-            // static fields only
-        }
-
-        public static final String sparql = "sparql";
     }
 }
