@@ -120,6 +120,7 @@ limitations under the License.
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
+        <module>gremlin-javascript</module>
         <module>gremlin-python</module>
         <module>gremlin-dotnet</module>
         <module>hadoop-gremlin</module>
@@ -286,6 +287,7 @@ limitations under the License.
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
                         <exclude>.travis.yml</exclude>
+                        <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
@@ -321,6 +323,10 @@ limitations under the License.
                         <exclude>**/*.csproj</exclude>
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
+                        <exclude>**/gremlin-javascript/node_modules/**</exclude>
+                        <exclude>**/node/node_modules/**</exclude>
+                        <exclude>**/node/node</exclude>
+                        <exclude>**/npm-debug.log</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,12 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM tinkerpop:hadoop-HADOOP_VERSION
-
-RUN mkdir -p /usr/src/tinkerpop
-WORKDIR /usr/src/tinkerpop
-COPY . /usr/src/tinkerpop
-RUN chmod 744 ./.travis.install-maven.sh
-ENV M2_HOME /root/mvn-home
-ENV PATH ${M2_HOME}/bin:${PATH}
-RUN ./.travis.install-maven.sh 3.3.9 ${M2_HOME}
+*.gz
+*.tgz
+test/
+.DS_Store
+.idea
+node_modules/
+npm-debug.log
+# maven plugin com.github.eirslett frontend-maven-plugin installs node.js runtime in "node" folder
+node/

@@ -1,0 +1,40 @@
+{
+  "name": "gremlin-javascript",
+  "version": "3.2.8-alpha1",
+  "description": "JavaScript Gremlin Language Variant",
+  "author": "Apache TinkerPop team",
+  "keywords": [
+    "graph",
+    "gremlin",
+    "tinkerpop",
+    "connection",
+    "glv",
+    "driver",
+    "graphdb"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ws": "^3.0.0"
+  },
+  "devDependencies": {
+    "mocha": "~4.0.1",
+    "cucumber": "~3.1.0",
+    "chai": "~4.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/tinkerpop.git"
+  },
+  "homepage": "https://tinkerpop.apache.org/",
+  "bugs": {
+    "url": "https://issues.apache.org/jira/browse/TINKERPOP"
+  },
+  "scripts": {
+    "test": "mocha test/unit test/integration -t 5000",
+    "features": "cucumber.js --require test/cucumber ../../../../../gremlin-test/features/",
+    "unit-test": "mocha test/unit"
+  },
+  "engines": {
+    "node": ">=6"
+  }
+}

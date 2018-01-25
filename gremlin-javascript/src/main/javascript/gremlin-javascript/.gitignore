@@ -1,0 +1,5 @@
+node_modules/
+.idea/
+npm-debug.log
+# maven plugin com.github.eirslett frontend-maven-plugin installs node.js runtime in "node" folder
+node/

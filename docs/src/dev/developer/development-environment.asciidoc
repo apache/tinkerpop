@@ -131,6 +131,17 @@ This should update `~/.config/NuGet/NuGet.Config` a file with an entry containin
 
 See release documentation for more information on configuration for release.
 
+
+[[nodejs-environment]]
+=== JavaScript Environment
+When building `gremlin-javascript`, mvn command will include a local copy of Node.js runtime and npm inside your project
+using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
+other existing Node.js runtime instances in your machine.
+
+The release manager should have the authentication token set, for more information see the Release Environment
+section below.
+
+
 [[release-environment]]
 === Release Environment
 
@@ -165,6 +176,10 @@ password =
 
 The release manager shall use the project's pypi credentials, which are available in the PMC repository.
 The `password` should be left blank so the deployment process in Maven will prompt for it at deployment time.
+
+To deploy `gremlin-javascript` on the link:https://www.npmjs.com[npm registry], the release manager must set the
+authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser` command. This
+must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system.
 
 [[building-testing]]
 == Building and Testing
