@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -123,8 +124,10 @@ public class SparqlTraversalSource implements TraversalSource {
      */
     public <S> SparqlTraversal<S,String> sparql(final String query) {
         final SparqlTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.inject);
         clone.bytecode.addStep(GraphTraversal.Symbols.constant, query);
         final SparqlTraversal.Admin<S, S> traversal = new DefaultSparqlTraversal<>(clone);
+        traversal.addStep(new InjectStep<S>(traversal));
         return traversal.addStep(new ConstantStep<S,String>(traversal, query));
     }
 
