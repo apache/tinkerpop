@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
@@ -44,7 +45,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         implements TraversalStrategy.DecorationStrategy {
     private static final SparqlStrategy INSTANCE = new SparqlStrategy();
 
-    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(RemoteStrategy.class);
 
     private SparqlStrategy() {}
 
@@ -63,7 +64,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        if (traversal.getSteps().size() == 1 && traversal.getEndStep() instanceof ConstantStep) {
+        if (traversal.getSteps().size() == 2 && traversal.getEndStep() instanceof ConstantStep) {
             final ConstantStep stepWithSparql = (ConstantStep) traversal.getEndStep();
             final Object constant = stepWithSparql.getConstant();
             if (constant instanceof String) {
