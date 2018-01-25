@@ -489,21 +489,22 @@ class Console {
      */
     private static List<List<String>> parseArgs(final List<String> options, final String[] args, final CliBuilder cli) {
         def parsed = []
-        for (int ix = 0; ix < args.length; ix++) {
-            if (args[ix] in options) {
+        def normalizedArgs = normalizeArgs(options, args)
+        for (int ix = 0; ix < normalizedArgs.length; ix++) {
+            if (normalizedArgs[ix] in options) {
                 // increment the counter to move past the option that was found. should now be positioned on the
                 // first argument to that option
                 ix++
 
                 def parsedSet = []
-                for (ix; ix < args.length; ix++) {
+                for (ix; ix < normalizedArgs.length; ix++) {
                     // this is a do nothing as there's no arguments to the option or it's the start of a new option
-                    if (cli.options.options.any { "-" + it.opt == args[ix] || "--" + it.longOpt == args[ix] }) {
+                    if (cli.options.options.any { "-" + it.opt == normalizedArgs[ix] || "--" + it.longOpt == normalizedArgs[ix] }) {
                         // rollback the counter now that we hit the next option
                         ix--
-                        break;
+                        break
                     }
-                    parsedSet << args[ix]
+                    parsedSet << normalizedArgs[ix]
                 }
 
                 if (!parsedSet.isEmpty()) {
@@ -517,5 +518,16 @@ class Console {
         }
 
         return parsed
+    }
+
+    /**
+     * The {@code args} value contains the individual flagged parameters provided on the command line which may come
+     * with or without an "=" to separate the flag from the argument to the flag. This method normalizes these values
+     * to split the flag from the argument so that it can be evaluated in a consistent way by {@code parseArgs()}.
+     */
+    private static def normalizeArgs(final List<String> options, final String[] args) {
+        return args.collect{ arg -> options.any{
+            arg.startsWith(it) } ? arg.split("=", 2) : arg
+        }.flatten().toArray()
     }
 }
