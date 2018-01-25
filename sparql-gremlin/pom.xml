@@ -11,10 +11,6 @@
     <artifactId>sparql-gremlin</artifactId>
     <name>Apache TinkerPop :: SPARQL Gremlin</name>
 
-    <properties>
-        <query.dir>src/test/resources/sparql/queries</query.dir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.jena</groupId>
