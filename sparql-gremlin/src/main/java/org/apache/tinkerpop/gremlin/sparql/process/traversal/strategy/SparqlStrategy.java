@@ -18,8 +18,62 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.sparql.SparqlToGremlinCompiler;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SparqlStrategy {
+public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+        implements TraversalStrategy.DecorationStrategy {
+    private static final SparqlStrategy INSTANCE = new SparqlStrategy();
+
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
+
+    private SparqlStrategy() {}
+
+    public static SparqlStrategy instance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public Set<Class<? extends DecorationStrategy>> applyPost() {
+        return POSTS;
+    }
+
+
+    @Override
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (!(traversal.getParent() instanceof EmptyStep))
+            return;
+
+        if (traversal.getSteps().size() == 1 && traversal.getEndStep() instanceof ConstantStep) {
+            final ConstantStep stepWithSparql = (ConstantStep) traversal.getEndStep();
+            final Object constant = stepWithSparql.getConstant();
+            if (constant instanceof String) {
+                final String sparql = (String) constant;
+                final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.convertToGremlinTraversal(
+                        traversal.getGraph().get(), sparql);
+                TraversalHelper.removeAllSteps(traversal);
+                sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
+            } else {
+                // The ConstantStep expects a string value
+                throw new IllegalStateException("SparqlStrategy cannot be applied to this traversal");
+            }
+        } else {
+            // SparqlStrategy requires that there be one step and it be a ConstantStep that contains some SPARQL
+            throw new IllegalStateException("SparqlStrategy cannot be applied to this traversal");
+        }
+    }
 }
