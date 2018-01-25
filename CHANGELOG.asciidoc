@@ -113,6 +113,7 @@ This release also includes changes from <<release-3-2-8, 3.2.8>>.
 
 * Fixed regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler.
 * Defaulted GLV tests for gremlin-python to run for GraphSON 3.0.
+* Fixed a bug in dynamic Gryo registration where registrations that did not have serializers would fail.
 * Fixed a bug with `Tree` serialization in GraphSON 3.0.
 * In gremlin-python, the GraphSON 3.0 `g:Set` type is now deserialized to `List`.
 
