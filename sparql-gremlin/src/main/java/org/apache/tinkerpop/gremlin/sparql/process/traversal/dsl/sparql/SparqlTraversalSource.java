@@ -25,12 +25,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
+ * A {@link TraversalSource} implementation that spawns {@link SparqlTraversal} instances.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SparqlTraversalSource implements TraversalSource {
@@ -115,9 +118,12 @@ public class SparqlTraversalSource implements TraversalSource {
         return (SparqlTraversalSource) clone;
     }
 
+    /**
+     * The start step for a SPARQL based traversal that accepts a string representation of the query to execute.
+     */
     public <S> SparqlTraversal<S,String> sparql(final String query) {
         final SparqlTraversalSource clone = this.clone();
-        clone.bytecode.addStep(SparqlTraversal.Symbols.sparql, query);
+        clone.bytecode.addStep(GraphTraversal.Symbols.constant, query);
         final SparqlTraversal.Admin<S, S> traversal = new DefaultSparqlTraversal<>(clone);
         return traversal.addStep(new ConstantStep<S,String>(traversal, query));
     }
