@@ -382,6 +382,9 @@ public enum GryoVersion {
                     "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
                     "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
+
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
+                    null, 1690);
         }};
     }
 
@@ -560,7 +563,7 @@ public enum GryoVersion {
                                             final String serializer, final int registrationId) {
         try {
             final Class typeClass = Class.forName(type);
-            final Optional<SerializerShim<?>> serializerInstance = Optional.of(serializer)
+            final Optional<SerializerShim<?>> serializerInstance = Optional.ofNullable(serializer)
                     .map(FunctionUtils.wrapFunction(Class::forName))
                     .map(FunctionUtils.wrapFunction(c -> (SerializerShim<?>) c.getConstructor().newInstance()));
             if (serializerInstance.isPresent()) {
