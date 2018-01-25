@@ -33,6 +33,7 @@ const utils = require('../../lib/utils');
 const Graph = graphModule.Graph;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
+const t = traversalModule.t;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
 // Use false for GraphSON3.
@@ -50,7 +51,8 @@ const parsers = [
   [ 'l\\[(.*)\\]', toArray ],
   [ 's\\[(.*)\\]', toArray ],
   [ 'm\\[(.+)\\]', toMap ],
-  [ 'c\\[(.+)\\]', toLambda ]
+  [ 'c\\[(.+)\\]', toLambda ],
+  [ 't\\[(.+)\\]', toT ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
@@ -260,6 +262,10 @@ function toPath(value) {
   return new Path(new Array(0), parts.map(x => parseValue.call(this, x)));
 }
 
+function toT(value) {
+  return t[value];
+}
+
 function toArray(stringList) {
   if (stringList === '') {
     return new Array(0);
@@ -284,13 +290,13 @@ function parseMapValue(value) {
   if (mapAsObject) {
     const result = {};
     Object.keys(value).forEach(key => {
-      result[key] = parseMapValue.call(this, value[key]);
+      result[parseMapValue.call(this, key)] = parseMapValue.call(this, value[key]);
     });
     return result;
   }
   const map = new Map();
   Object.keys(value).forEach(key => {
-    map.set(key, parseMapValue.call(this, value[key]));
+    map.set(parseMapValue.call(this, key), parseMapValue.call(this, value[key]));
   });
   return map;
 }

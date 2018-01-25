@@ -143,6 +143,16 @@ class GraphTraversalSource {
   }
   
   /**
+   * addE GraphTraversalSource step method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  addE(...args) {
+    const b = new Bytecode(this.bytecode).addStep('addE', args);
+    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
+  
+  /**
    * addV GraphTraversalSource step method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -189,26 +199,6 @@ class GraphTraversal extends Traversal {
    */
   addE(...args) {
     this.bytecode.addStep('addE', args);
-    return this;
-  }
-  
-  /**
-   * Graph traversal addInE method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  addInE(...args) {
-    this.bytecode.addStep('addInE', args);
-    return this;
-  }
-  
-  /**
-   * Graph traversal addOutE method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  addOutE(...args) {
-    this.bytecode.addStep('addOutE', args);
     return this;
   }
   
@@ -473,16 +463,6 @@ class GraphTraversal extends Traversal {
   }
   
   /**
-   * Graph traversal groupV3d0 method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  groupV3d0(...args) {
-    this.bytecode.addStep('groupV3d0', args);
-    return this;
-  }
-  
-  /**
    * Graph traversal has method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -673,32 +653,22 @@ class GraphTraversal extends Traversal {
   }
   
   /**
-   * Graph traversal mapKeys method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  mapKeys(...args) {
-    this.bytecode.addStep('mapKeys', args);
-    return this;
-  }
-  
-  /**
-   * Graph traversal mapValues method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  mapValues(...args) {
-    this.bytecode.addStep('mapValues', args);
-    return this;
-  }
-  
-  /**
    * Graph traversal match method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   match(...args) {
     this.bytecode.addStep('match', args);
+    return this;
+  }
+  
+  /**
+   * Graph traversal math method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  math(...args) {
+    this.bytecode.addStep('math', args);
     return this;
   }
   
@@ -983,6 +953,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal skip method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  skip(...args) {
+    this.bytecode.addStep('skip', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal store method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1166,8 +1146,6 @@ function callOnEmptyTraversal(fnName, args) {
 const statics = {
   V: (...args) => callOnEmptyTraversal('V', args),
   addE: (...args) => callOnEmptyTraversal('addE', args),
-  addInE: (...args) => callOnEmptyTraversal('addInE', args),
-  addOutE: (...args) => callOnEmptyTraversal('addOutE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
   and: (...args) => callOnEmptyTraversal('and', args),
@@ -1192,7 +1170,6 @@ const statics = {
   fold: (...args) => callOnEmptyTraversal('fold', args),
   group: (...args) => callOnEmptyTraversal('group', args),
   groupCount: (...args) => callOnEmptyTraversal('groupCount', args),
-  groupV3d0: (...args) => callOnEmptyTraversal('groupV3d0', args),
   has: (...args) => callOnEmptyTraversal('has', args),
   hasId: (...args) => callOnEmptyTraversal('hasId', args),
   hasKey: (...args) => callOnEmptyTraversal('hasKey', args),
@@ -1212,9 +1189,8 @@ const statics = {
   local: (...args) => callOnEmptyTraversal('local', args),
   loops: (...args) => callOnEmptyTraversal('loops', args),
   map: (...args) => callOnEmptyTraversal('map', args),
-  mapKeys: (...args) => callOnEmptyTraversal('mapKeys', args),
-  mapValues: (...args) => callOnEmptyTraversal('mapValues', args),
   match: (...args) => callOnEmptyTraversal('match', args),
+  math: (...args) => callOnEmptyTraversal('math', args),
   max: (...args) => callOnEmptyTraversal('max', args),
   mean: (...args) => callOnEmptyTraversal('mean', args),
   min: (...args) => callOnEmptyTraversal('min', args),
@@ -1238,6 +1214,7 @@ const statics = {
   select: (...args) => callOnEmptyTraversal('select', args),
   sideEffect: (...args) => callOnEmptyTraversal('sideEffect', args),
   simplePath: (...args) => callOnEmptyTraversal('simplePath', args),
+  skip: (...args) => callOnEmptyTraversal('skip', args),
   store: (...args) => callOnEmptyTraversal('store', args),
   subgraph: (...args) => callOnEmptyTraversal('subgraph', args),
   sum: (...args) => callOnEmptyTraversal('sum', args),

@@ -257,12 +257,12 @@ module.exports = {
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),
   direction: toEnum('Direction', 'BOTH IN OUT'),
-  graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0'),
-  gryoVersion: toEnum('GryoVersion', 'V1_0'),
+  graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
+  gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
-  order: toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr'),
+  order: toEnum('Order', 'decr incr shuffle'),
   pick: toEnum('Pick', 'any none'),
-  pop: toEnum('Pop', 'all first last'),
+  pop: toEnum('Pop', 'all first last mixed'),
   scope: toEnum('Scope', 'global local'),
   t: toEnum('T', 'id key label value')
 };
