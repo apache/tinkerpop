@@ -36,6 +36,10 @@ public class ConstantStep<S, E> extends MapStep<S, E> {
         this.constant = constant;
     }
 
+    public E getConstant() {
+        return this.constant;
+    }
+
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         return this.constant;
