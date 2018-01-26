@@ -21,9 +21,10 @@ package org.apache.tinkerpop.gremlin.sparql;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.SortCondition;
@@ -57,8 +58,6 @@ public class SparqlToGremlinTranspiler {
 	private GraphTraversal<Vertex, ?> traversal;
 
     private List<Traversal> traversalList = new ArrayList<>();
-
-    private String sortingVariable = "";
 
 	private SparqlToGremlinTranspiler(final GraphTraversal<Vertex, ?> traversal) {
 		this.traversal = traversal;
@@ -96,31 +95,18 @@ public class SparqlToGremlinTranspiler {
 		final int numberOfTraversal = traversalList.size();
         final Traversal arrayOfAllTraversals[] = new Traversal[numberOfTraversal];
 
-		if (query.hasOrderBy() && !query.hasGroupBy()) {
-            final List<SortCondition> sortingConditions = query.getOrderBy();
-
-			for (SortCondition sortCondition : sortingConditions) {
-                final Expr expr = sortCondition.getExpression();
-				sortingVariable = expr.getVarName();
-			}
-		}
-
 		for (Traversal tempTrav : traversalList) {
 			arrayOfAllTraversals[traversalIndex++] = tempTrav;
 		}
 
-		Order orderDirection = Order.incr;
+		final Map<String, Order> orderingIndex = new HashMap<>();
 		if (query.hasOrderBy()) {
-            int directionOfSort = 0;
             final List<SortCondition> sortingConditions = query.getOrderBy();
 
 			for (SortCondition sortCondition : sortingConditions) {
                 final Expr expr = sortCondition.getExpression();
-				directionOfSort = sortCondition.getDirection();
-				sortingVariable = expr.getVarName();
+                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == 1 ? Order.incr : Order.decr);
 			}
-
-			if (directionOfSort == -1) orderDirection = Order.decr;
 		}
 
 		if (traversalList.size() > 0)
@@ -128,6 +114,8 @@ public class SparqlToGremlinTranspiler {
 
 		final List<String> vars = query.getResultVars();
 		if (!query.isQueryResultStar() && !query.hasGroupBy()) {
+		    // the result sizes have special handling to get the right signatures of select() called. perhaps this
+            // could be refactored to work more nicely
             switch (vars.size()) {
                 case 0:
                     throw new IllegalStateException();
@@ -135,20 +123,16 @@ public class SparqlToGremlinTranspiler {
                     if (query.isDistinct())
                         traversal = traversal.dedup(vars.get(0));
 
-                    if (query.hasOrderBy())
-                        traversal = traversal.order().by(sortingVariable, orderDirection);
-                    else
-                        traversal = traversal.select(vars.get(0));
+                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+                    traversal = traversal.select(vars.get(0));
 
                     break;
                 case 2:
                     if (query.isDistinct())
                         traversal = traversal.dedup(vars.get(0), vars.get(1));
 
-                    if (query.hasOrderBy())
-                        traversal = traversal.order().by(__.select(vars.get(0)), orderDirection).by(__.select(vars.get(1)));
-                    else
-                        traversal = traversal.select(vars.get(0), vars.get(1));
+                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+                    traversal = traversal.select(vars.get(0), vars.get(1));
 
                     break;
                 default:
@@ -157,11 +141,11 @@ public class SparqlToGremlinTranspiler {
                     if (query.isDistinct())
                         traversal = traversal.dedup(all);
 
+                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+
+                    // just some shenanigans to get the right signature of select() called
                     final String[] others = Arrays.copyOfRange(all, 2, vars.size());
-                    if (query.hasOrderBy())
-                        traversal = traversal.order().by(__.select(vars.get(0)), orderDirection).by(__.select(vars.get(1)));
-                    else
-                        traversal = traversal.select(vars.get(0), vars.get(1), others);
+                    traversal = traversal.select(vars.get(0), vars.get(1), others);
 
                     break;
             }
@@ -202,7 +186,7 @@ public class SparqlToGremlinTranspiler {
 		}
 
 		if (query.hasOrderBy() && query.hasGroupBy())
-			traversal = traversal.order().by(sortingVariable, orderDirection);
+            orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
 
 		if (query.hasLimit()) {
 			long limit = query.getLimit(), offset = 0;
@@ -233,14 +217,7 @@ public class SparqlToGremlinTranspiler {
          */
         @Override
         public void visit(final OpBGP opBGP) {
-            final List<Triple> triples = opBGP.getPattern().getList();
-            final Traversal[] matchTraversals = new Traversal[triples.size()];
-            int i = 0;
-            for (final Triple triple : triples) {
-
-                matchTraversals[i++] = TraversalBuilder.transform(triple);
-                traversalList.add(matchTraversals[i - 1]);
-            }
+            opBGP.getPattern().getList().forEach(triple -> traversalList.add(TraversalBuilder.transform(triple)));
         }
 
         /**

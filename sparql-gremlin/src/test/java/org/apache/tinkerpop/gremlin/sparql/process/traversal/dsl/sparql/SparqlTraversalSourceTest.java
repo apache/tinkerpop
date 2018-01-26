@@ -27,16 +27,18 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SparqlTraversalSourceTest {
 
+    private static final Graph graph = TinkerFactory.createModern();
+    private static final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class);
+
     @Test
-    public void shouldDoStuff() {
-        final Graph graph = TinkerFactory.createModern();
-        final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class);
+    public void shouldFindAllPersonsNamesAndAges() {
         final List<?> x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").toList();
         assertThat(x, containsInAnyOrder(
                 new HashMap<String,Object>(){{
@@ -46,6 +48,29 @@ public class SparqlTraversalSourceTest {
                 new HashMap<String,Object>(){{
                     put("name", "vadas");
                     put("age", 27);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "josh");
+                    put("age", 32);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "peter");
+                    put("age", 35);
+                }}
+        ));
+    }
+
+    @Test
+    public void shouldFindAllPersonsNamesAndAgesOrdered() {
+        final List<?> x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").toList();
+        assertThat(x, contains(
+                new HashMap<String,Object>(){{
+                    put("name", "vadas");
+                    put("age", 27);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "marko");
+                    put("age", 29);
                 }},
                 new HashMap<String,Object>(){{
                     put("name", "josh");
