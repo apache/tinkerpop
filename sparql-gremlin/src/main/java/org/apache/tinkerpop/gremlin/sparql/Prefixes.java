@@ -22,15 +22,16 @@ package org.apache.tinkerpop.gremlin.sparql;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Helper methods for working with prefix lines in SPARQL queries.
+ */
+class Prefixes {
 
-public class Prefixes {
+    final static String BASE_URI = "http://tinkerpop.apache.org/traversal/";
 
-	// public final static String BASE_URI = "http://northwind.com/model/";
-    public final static String BASE_URI = "http://www.tinkerpop.com/traversal/";
+    private final static List<String> PREFIXES = Arrays.asList("edge", "property", "value");
 
-    final static List<String> PREFIXES = Arrays.asList("edge", "property", "value");
-
-    final static String PREFIX_DEFINITIONS;
+    private final static String PREFIX_DEFINITIONS;
 
     static {
         final StringBuilder builder = new StringBuilder();
@@ -41,24 +42,24 @@ public class Prefixes {
         PREFIX_DEFINITIONS = builder.toString();
     }
 
-    public static String getURI(final String prefix) {
+    static String getURI(final String prefix) {
         return BASE_URI + prefix + "#";
     }
 
-    public static String getURIValue(final String uri) {
+    static String getURIValue(final String uri) {
         return uri.substring(uri.indexOf("#") + 1);
     }
 
-    public static String getPrefix(final String uri) {
+    static String getPrefix(final String uri) {
         final String tmp = uri.substring(0, uri.indexOf("#"));
         return tmp.substring(tmp.lastIndexOf("/") + 1);
     }
 
-    public static String prepend(final String script) {
+    static String prepend(final String script) {
         return PREFIX_DEFINITIONS + script;
     }
 
-    public static StringBuilder prepend(final StringBuilder scriptBuilder) {
+    static StringBuilder prepend(final StringBuilder scriptBuilder) {
         return scriptBuilder.insert(0, PREFIX_DEFINITIONS);
     }
 }
