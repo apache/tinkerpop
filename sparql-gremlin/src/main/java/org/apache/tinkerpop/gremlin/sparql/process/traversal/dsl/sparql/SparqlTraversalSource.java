@@ -47,7 +47,6 @@ public class SparqlTraversalSource implements TraversalSource {
     public SparqlTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
         this.strategies = traversalStrategies;
-        this.strategies.addStrategies(SparqlStrategy.instance());
     }
 
     public SparqlTraversalSource(final Graph graph) {
@@ -126,6 +125,7 @@ public class SparqlTraversalSource implements TraversalSource {
      */
     public <S> SparqlTraversal<S,?> sparql(final String query) {
         final SparqlTraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SparqlStrategy.instance());
 
         // this is a bit of a hack to get remote traversals to work cleanly. on the remote side, we'd expect a
         // GraphTraversalSource not a SparqlTraversalSource (given that sparql-gremlin is to be implemented in the
