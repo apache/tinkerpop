@@ -406,7 +406,7 @@ public enum GryoVersion {
                     "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
 
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
-                    null, 1690);
+                    null, 183);   // ***LAST ID***
         }};
     }
 
