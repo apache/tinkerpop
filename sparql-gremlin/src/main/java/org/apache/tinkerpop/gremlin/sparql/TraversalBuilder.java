@@ -26,10 +26,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-
+/**
+ * Converts triple patterns into {@link GraphTraversal} instances.
+ */
 class TraversalBuilder {
 
-    public static GraphTraversal<?, ?> transform(final Triple triple) {
+    static GraphTraversal<?, ?> transform(final Triple triple) {
         final GraphTraversal<Vertex, ?> matchTraversal = __.as(triple.getSubject().getName());
         
         final Node predicate = triple.getPredicate();
@@ -53,7 +55,6 @@ class TraversalBuilder {
                                                       final PropertyType type, final Node object) {
         switch (propertyName) {
             case "id":
-         
                 return object.isConcrete()
                         ? traversal.hasId(object.getLiteralValue())
                         : traversal.id().as(object.getName());
