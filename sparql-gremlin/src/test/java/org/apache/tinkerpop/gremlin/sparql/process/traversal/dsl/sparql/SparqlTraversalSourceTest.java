@@ -18,16 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -36,6 +41,7 @@ public class SparqlTraversalSourceTest {
 
     private static final Graph graph = TinkerFactory.createModern();
     private static final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class);
+    private static final GraphTraversalSource _g = graph.traversal();
 
     @Test
     public void shouldFindAllPersonsNamesAndAges() {
@@ -87,5 +93,22 @@ public class SparqlTraversalSourceTest {
     public void shouldFindAllNamesOrdered() {
         final List<?> x = g.sparql("SELECT ?name WHERE { ?person v:name ?name } ORDER BY DESC(?name)").toList();
         assertThat(x, contains("vadas", "ripple", "peter", "marko", "lop", "josh"));
+    }
+
+    @Test
+    public void shouldFilter() {
+        final Map<String,Vertex> x = (Map) g.sparql(  "SELECT ?a ?b ?c\n" +
+                                                            "WHERE {\n" +
+                                                            "  ?a v:label \"person\" .\n" +
+                                                            "  ?a e:knows ?b .\n" +
+                                                            "  ?a e:created ?c .\n" +
+                                                            "  ?b e:created ?c .\n" +
+                                                            "  ?a v:age ?d .\n" +
+                                                            "    FILTER (?d < 30)\n" +
+                                                            "}").next();
+
+        assertEquals(x.get("a"), _g.V(1).next());
+        assertEquals(x.get("b"), _g.V(4).next());
+        assertEquals(x.get("c"), _g.V(3).next());
     }
 }
