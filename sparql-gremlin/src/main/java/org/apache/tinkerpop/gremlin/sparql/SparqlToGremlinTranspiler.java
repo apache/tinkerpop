@@ -55,59 +55,59 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  */
 public class SparqlToGremlinTranspiler {
 
-	private GraphTraversal<Vertex, ?> traversal;
+    private GraphTraversal<Vertex, ?> traversal;
 
     private List<Traversal> traversalList = new ArrayList<>();
 
-	private SparqlToGremlinTranspiler(final GraphTraversal<Vertex, ?> traversal) {
-		this.traversal = traversal;
-	}
+    private SparqlToGremlinTranspiler(final GraphTraversal<Vertex, ?> traversal) {
+        this.traversal = traversal;
+    }
 
-	private SparqlToGremlinTranspiler(final GraphTraversalSource g) {
-		this(g.V());
-	}
-
-    /**
-     * Converts SPARQL to a Gremlin traversal.
-     *
-     * @param graph the {@link Graph} instance to execute the traversal from
-     * @param sparqlQuery the query to transpile to Gremlin
-     */
-    public static GraphTraversal<Vertex, ?> transpile(final Graph graph, final String sparqlQuery) {
-        return transpile(graph.traversal(),	sparqlQuery);
+    private SparqlToGremlinTranspiler(final GraphTraversalSource g) {
+        this(g.V());
     }
 
     /**
      * Converts SPARQL to a Gremlin traversal.
      *
-     * @param g the {@link GraphTraversalSource} instance to execute the traversal from
+     * @param graph       the {@link Graph} instance to execute the traversal from
+     * @param sparqlQuery the query to transpile to Gremlin
+     */
+    public static GraphTraversal<Vertex, ?> transpile(final Graph graph, final String sparqlQuery) {
+        return transpile(graph.traversal(), sparqlQuery);
+    }
+
+    /**
+     * Converts SPARQL to a Gremlin traversal.
+     *
+     * @param g           the {@link GraphTraversalSource} instance to execute the traversal from
      * @param sparqlQuery the query to transpile to Gremlin
      */
     public static GraphTraversal<Vertex, ?> transpile(final GraphTraversalSource g, final String sparqlQuery) {
         return transpile(g, QueryFactory.create(Prefixes.prepend(sparqlQuery), Syntax.syntaxSPARQL));
     }
 
-	private GraphTraversal<Vertex, ?> transpile(final Query query) {
-		final Op op = Algebra.compile(query);
-		OpWalker.walk(op, new GremlinOpVisitor());
+    private GraphTraversal<Vertex, ?> transpile(final Query query) {
+        final Op op = Algebra.compile(query);
+        OpWalker.walk(op, new GremlinOpVisitor());
 
-		int traversalIndex = 0;
-		final int numberOfTraversal = traversalList.size();
+        int traversalIndex = 0;
+        final int numberOfTraversal = traversalList.size();
         final Traversal arrayOfAllTraversals[] = new Traversal[numberOfTraversal];
 
-		for (Traversal tempTrav : traversalList) {
-			arrayOfAllTraversals[traversalIndex++] = tempTrav;
-		}
+        for (Traversal tempTrav : traversalList) {
+            arrayOfAllTraversals[traversalIndex++] = tempTrav;
+        }
 
-		// creates a map of ordering keys and their ordering direction
+        // creates a map of ordering keys and their ordering direction
         final Map<String, Order> orderingIndex = createOrderIndexFromQuery(query);
 
-		if (traversalList.size() > 0)
-			traversal = traversal.match(arrayOfAllTraversals);
+        if (traversalList.size() > 0)
+            traversal = traversal.match(arrayOfAllTraversals);
 
-		final List<String> vars = query.getResultVars();
-		if (!query.isQueryResultStar() && !query.hasGroupBy()) {
-		    // the result sizes have special handling to get the right signatures of select() called. perhaps this
+        final List<String> vars = query.getResultVars();
+        if (!query.isQueryResultStar() && !query.hasGroupBy()) {
+            // the result sizes have special handling to get the right signatures of select() called. perhaps this
             // could be refactored to work more nicely
             switch (vars.size()) {
                 case 0:
@@ -116,7 +116,7 @@ public class SparqlToGremlinTranspiler {
                     if (query.isDistinct())
                         traversal = traversal.dedup(vars.get(0));
 
-                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
                     traversal = traversal.select(vars.get(0));
 
                     break;
@@ -124,7 +124,7 @@ public class SparqlToGremlinTranspiler {
                     if (query.isDistinct())
                         traversal = traversal.dedup(vars.get(0), vars.get(1));
 
-                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
                     traversal = traversal.select(vars.get(0), vars.get(1));
 
                     break;
@@ -134,7 +134,7 @@ public class SparqlToGremlinTranspiler {
                     if (query.isDistinct())
                         traversal = traversal.dedup(all);
 
-                    orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
 
                     // just some shenanigans to get the right signature of select() called
                     final String[] others = Arrays.copyOfRange(all, 2, vars.size());
@@ -142,59 +142,59 @@ public class SparqlToGremlinTranspiler {
 
                     break;
             }
-		}
+        }
 
-		if (query.hasGroupBy()) {
-			final VarExprList lstExpr = query.getGroupBy();
-			String grpVar = "";
-			for (Var expr : lstExpr.getVars()) {
-				grpVar = expr.getName();
-			}
+        if (query.hasGroupBy()) {
+            final VarExprList lstExpr = query.getGroupBy();
+            String grpVar = "";
+            for (Var expr : lstExpr.getVars()) {
+                grpVar = expr.getName();
+            }
 
-			if (!grpVar.isEmpty())
-				traversal = traversal.select(grpVar);
-			if (query.hasAggregators()) {
+            if (!grpVar.isEmpty())
+                traversal = traversal.select(grpVar);
+            if (query.hasAggregators()) {
                 final List<ExprAggregator> exprAgg = query.getAggregators();
-				for (ExprAggregator expr : exprAgg) {
-					if (expr.getAggregator().getName().contains("COUNT")) {
-						if (!query.toString().contains("GROUP")) {
-							if (expr.getAggregator().toString().contains("DISTINCT"))
-								traversal = traversal.dedup(expr.getAggregator().getExprList().get(0).toString().substring(1));
-							else
-								traversal = traversal.select(expr.getAggregator().getExprList().get(0).toString().substring(1));
+                for (ExprAggregator expr : exprAgg) {
+                    if (expr.getAggregator().getName().contains("COUNT")) {
+                        if (!query.toString().contains("GROUP")) {
+                            if (expr.getAggregator().toString().contains("DISTINCT"))
+                                traversal = traversal.dedup(expr.getAggregator().getExprList().get(0).toString().substring(1));
+                            else
+                                traversal = traversal.select(expr.getAggregator().getExprList().get(0).toString().substring(1));
 
-							traversal = traversal.count();
-						} else {
+                            traversal = traversal.count();
+                        } else {
                             traversal = traversal.groupCount();
                         }
-					}
+                    }
 
-					if (expr.getAggregator().getName().contains("MAX")) {
-						traversal = traversal.max();
-					}
-				}
-			} else {
+                    if (expr.getAggregator().getName().contains("MAX")) {
+                        traversal = traversal.max();
+                    }
+                }
+            } else {
                 traversal = traversal.group();
             }
-		}
+        }
 
-		if (query.hasOrderBy() && query.hasGroupBy())
-            orderingIndex.forEach((k,v) -> traversal = traversal.order().by(__.select(k), v));
+        if (query.hasOrderBy() && query.hasGroupBy())
+            orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
 
-		if (query.hasLimit()) {
-			long limit = query.getLimit(), offset = 0;
+        if (query.hasLimit()) {
+            long limit = query.getLimit(), offset = 0;
 
-			if (query.hasOffset())
-				offset = query.getOffset();
+            if (query.hasOffset())
+                offset = query.getOffset();
 
-			if (query.hasGroupBy() && query.hasOrderBy())
-				traversal = traversal.range(Scope.local, offset, offset + limit);
-			else
-				traversal = traversal.range(offset, offset + limit);
-		}
+            if (query.hasGroupBy() && query.hasOrderBy())
+                traversal = traversal.range(Scope.local, offset, offset + limit);
+            else
+                traversal = traversal.range(offset, offset + limit);
+        }
 
-		return traversal;
-	}
+        return traversal;
+    }
 
     /**
      * Extracts any {@code SortCondition} instances from the SPARQL query and holds them in an index of their keys
