@@ -18,10 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
-import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -31,9 +36,25 @@ public class SparqlTraversalSourceTest {
     @Test
     public void shouldDoStuff() {
         final Graph graph = TinkerFactory.createModern();
-        final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class).
-                                                withStrategies(SparqlStrategy.instance());
-        final Object x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").toList();
-        System.out.println(x);
+        final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class);
+        final List<?> x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").toList();
+        assertThat(x, containsInAnyOrder(
+                new HashMap<String,Object>(){{
+                    put("name", "marko");
+                    put("age", 29);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "vadas");
+                    put("age", 27);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "josh");
+                    put("age", 32);
+                }},
+                new HashMap<String,Object>(){{
+                    put("name", "peter");
+                    put("age", 35);
+                }}
+        ));
     }
 }
