@@ -82,4 +82,10 @@ public class SparqlTraversalSourceTest {
                 }}
         ));
     }
+
+    @Test
+    public void shouldFindAllNamesOrdered() {
+        final List<?> x = g.sparql("SELECT ?name WHERE { ?person v:name ?name } ORDER BY DESC(?name)").toList();
+        assertThat(x, contains("vadas", "ripple", "peter", "marko", "lop", "josh"));
+    }
 }
