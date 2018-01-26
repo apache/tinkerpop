@@ -107,39 +107,28 @@ public class SparqlToGremlinTranspiler {
 
         final List<String> vars = query.getResultVars();
         if (!query.isQueryResultStar() && !query.hasGroupBy()) {
-            // the result sizes have special handling to get the right signatures of select() called. perhaps this
-            // could be refactored to work more nicely
-            switch (vars.size()) {
+            final String[] all = new String[vars.size()];
+            vars.toArray(all);
+            if (query.isDistinct()) {
+                traversal = traversal.dedup(all);
+            }
+
+            // apply ordering from ORDER BY
+            orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
+
+            // the result sizes have special handling to get the right signatures of select() called.
+            switch (all.length) {
                 case 0:
                     throw new IllegalStateException();
                 case 1:
-                    if (query.isDistinct())
-                        traversal = traversal.dedup(vars.get(0));
-
-                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
-                    traversal = traversal.select(vars.get(0));
-
+                    traversal = traversal.select(all[0]);
                     break;
                 case 2:
-                    if (query.isDistinct())
-                        traversal = traversal.dedup(vars.get(0), vars.get(1));
-
-                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
-                    traversal = traversal.select(vars.get(0), vars.get(1));
-
+                    traversal = traversal.select(all[0], all[1]);
                     break;
                 default:
-                    final String[] all = new String[vars.size()];
-                    vars.toArray(all);
-                    if (query.isDistinct())
-                        traversal = traversal.dedup(all);
-
-                    orderingIndex.forEach((k, v) -> traversal = traversal.order().by(__.select(k), v));
-
-                    // just some shenanigans to get the right signature of select() called
                     final String[] others = Arrays.copyOfRange(all, 2, vars.size());
-                    traversal = traversal.select(vars.get(0), vars.get(1), others);
-
+                    traversal = traversal.select(all[0], all[1], others);
                     break;
             }
         }
@@ -207,7 +196,10 @@ public class SparqlToGremlinTranspiler {
 
             for (SortCondition sortCondition : sortingConditions) {
                 final Expr expr = sortCondition.getExpression();
-                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == 1 ? Order.incr : Order.decr);
+
+                // by default, the sort will be ascending. getDirection() returns -2 if the DESC/ASC isn't
+                // supplied - weird
+                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == -1 ? Order.decr : Order.incr);
             }
         }
 

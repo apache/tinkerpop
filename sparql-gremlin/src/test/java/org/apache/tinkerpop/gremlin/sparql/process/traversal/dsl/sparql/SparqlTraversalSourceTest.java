@@ -111,4 +111,27 @@ public class SparqlTraversalSourceTest {
         assertEquals(x.get("b"), _g.V(4).next());
         assertEquals(x.get("c"), _g.V(3).next());
     }
+
+    @Test
+    public void shouldDistinct() {
+        final List<?> x = g.sparql(
+                "SELECT DISTINCT ?name\n" +
+                "WHERE {\n" +
+                "    ?a e:created ?b .\n" +
+                "    ?a v:name ?name .\n" +
+                "}").toList();
+        assertThat(x, containsInAnyOrder("marko", "josh", "peter"));
+    }
+
+    @Test
+    public void shouldDistinctAndOrder() {
+        final List<?> x = g.sparql(
+                "SELECT DISTINCT ?name\n" +
+                        "WHERE {\n" +
+                        "    ?a e:created ?b .\n" +
+                        "    ?a v:name ?name .\n" +
+                        "}" +
+                        "ORDER BY ?name").toList();
+        assertThat(x, contains("josh", "marko", "peter"));
+    }
 }
