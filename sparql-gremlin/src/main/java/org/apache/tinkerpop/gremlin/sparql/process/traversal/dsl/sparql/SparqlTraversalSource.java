@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -46,6 +47,7 @@ public class SparqlTraversalSource implements TraversalSource {
     public SparqlTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
         this.strategies = traversalStrategies;
+        this.strategies.addStrategies(SparqlStrategy.instance());
     }
 
     public SparqlTraversalSource(final Graph graph) {
@@ -122,7 +124,7 @@ public class SparqlTraversalSource implements TraversalSource {
     /**
      * The start step for a SPARQL based traversal that accepts a string representation of the query to execute.
      */
-    public <S> SparqlTraversal<S,String> sparql(final String query) {
+    public <S> SparqlTraversal<S,?> sparql(final String query) {
         final SparqlTraversalSource clone = this.clone();
 
         // this is a bit of a hack to get remote traversals to work cleanly. on the remote side, we'd expect a
