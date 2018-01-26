@@ -99,15 +99,8 @@ public class SparqlToGremlinTranspiler {
 			arrayOfAllTraversals[traversalIndex++] = tempTrav;
 		}
 
-		final Map<String, Order> orderingIndex = new HashMap<>();
-		if (query.hasOrderBy()) {
-            final List<SortCondition> sortingConditions = query.getOrderBy();
-
-			for (SortCondition sortCondition : sortingConditions) {
-                final Expr expr = sortCondition.getExpression();
-                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == 1 ? Order.incr : Order.decr);
-			}
-		}
+		// creates a map of ordering keys and their ordering direction
+        final Map<String, Order> orderingIndex = createOrderIndexFromQuery(query);
 
 		if (traversalList.size() > 0)
 			traversal = traversal.match(arrayOfAllTraversals);
@@ -202,6 +195,24 @@ public class SparqlToGremlinTranspiler {
 
 		return traversal;
 	}
+
+    /**
+     * Extracts any {@code SortCondition} instances from the SPARQL query and holds them in an index of their keys
+     * where the value is that keys sorting direction.
+     */
+    private static Map<String, Order> createOrderIndexFromQuery(final Query query) {
+        final Map<String, Order> orderingIndex = new HashMap<>();
+        if (query.hasOrderBy()) {
+            final List<SortCondition> sortingConditions = query.getOrderBy();
+
+            for (SortCondition sortCondition : sortingConditions) {
+                final Expr expr = sortCondition.getExpression();
+                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == 1 ? Order.incr : Order.decr);
+            }
+        }
+
+        return orderingIndex;
+    }
 
     private static GraphTraversal<Vertex, ?> transpile(final GraphTraversalSource g, final Query query) {
         return new SparqlToGremlinTranspiler(g).transpile(query);
