@@ -45,6 +45,8 @@ include::implementations-hadoop-end.asciidoc[]
 
 include::gremlin-variants.asciidoc[]
 
+include::transpilers.asciidoc[]
+
 include::conclusion.asciidoc[]
 
 include::acknowledgements.asciidoc[]
