@@ -1,0 +1,66 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[transpilers]]
+= Gremlin Transpilers
+
+There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
+data. Cypher is used to do pattern matching in graph data. The list could go on. Transpilers convert languages like
+these to Gremlin so that it becomes possible to use them in any context that Gremlin is used. In other words, a
+Gremlin Transpiler enables a particular query language to work on any TinkerPop-enabled graph system.
+
+== SPARQL-Gremlin
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>sparql-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+The SPARQL-Gremlin transpiler converts link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin so that
+they can be executed across any TinkerPop-enabled graph system. To use this transpiler in the Gremlin Console, first
+install and activate the "tinkerpop.sparql" plugin:
+
+[source,text]
+----
+gremlin> :install org.apache.tinkerpop sparql-gremlin x.y.z
+==>Loaded: [org.apache.tinkerpop, sparql-gremlin, x.y.z]
+gremlin> :plugin use tinkerpop.sparql
+==>tinkerpop.sparql activated
+----
+
+Installing this plugin will download appropriate dependencies and import certain classes to the console so that they
+may be used as follows:
+
+[gremlin-groovy,modern]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal(SparqlTraversalSource)                                                             <1>
+g.sparql("""SELECT ?name ?age
+            WHERE { ?person v:name ?name . ?person v:age ?age }
+            ORDER BY ASC(?age)""")                                                                     <2>
+----
+
+<1> Define `g` as a `TraversalSource` that uses the `SparqlTraversalSource` - by default, the `traversal()` method
+usually returns a `GraphTraversalSource` which includes the standard Gremlin starts steps like `V()` or `E()`. In this
+case, the `SparqlTraversalSource` enables starts steps that are specific to SPARQL only - in this case the `sparql()`
+start step.
+<2> Execute a SPARQL query against the TinkerGraph instance. The `SparqlTraversalSource` uses a
+<<traversalstrategy,TraversalStrategy>> to transparently converts that SPARQL query into a standard Gremlin traversal
+and then when finally iterated, executes that against the TinkerGraph.
