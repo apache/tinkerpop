@@ -110,6 +110,7 @@ public class SparqlTraversalSourceTest {
         assertEquals(x.get("a"), _g.V(1).next());
         assertEquals(x.get("b"), _g.V(4).next());
         assertEquals(x.get("c"), _g.V(3).next());
+        assertEquals(3, x.size());
     }
 
     @Test
@@ -133,5 +134,20 @@ public class SparqlTraversalSourceTest {
                         "}" +
                         "ORDER BY ?name").toList();
         assertThat(x, contains("josh", "marko", "peter"));
+    }
+
+    @Test
+    public void shouldGroup() {
+        final Map<String,Long> x = (Map) g.sparql(
+                "SELECT ?name (COUNT(?name) AS ?name_count)\n" +
+                        "WHERE {\n" +
+                        "    ?a e:created ?b .\n" +
+                        "    ?a v:name ?name .\n" +
+                        "}" +
+                        "GROUP BY ?name").next();
+        assertEquals(new Long(2), x.get("josh"));
+        assertEquals(new Long(1), x.get("peter"));
+        assertEquals(new Long(1), x.get("marko"));
+        assertEquals(3, x.size());
     }
 }
