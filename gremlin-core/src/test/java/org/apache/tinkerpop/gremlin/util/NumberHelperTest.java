@@ -27,7 +27,7 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.*;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
