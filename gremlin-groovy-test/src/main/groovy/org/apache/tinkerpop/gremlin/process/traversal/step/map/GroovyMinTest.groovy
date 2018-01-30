@@ -41,7 +41,12 @@ public abstract class GroovyMinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('software').group().by('name').by(bothE().weight.min())")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('software').group().by('name').by(bothE().weight.min())")
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_injectX9999999999X_min() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.values('foo').inject(9999999999L).min")
         }
     }
 }
