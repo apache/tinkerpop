@@ -41,14 +41,6 @@ class TestConsole(object):
         TestConsole._expect_prompt(child)
         TestConsole._close(child)
 
-    def test_just_dash_i_with_equals(self):
-        child = pexpect.spawn(TestConsole.gremlinsh + "-i=x.script")
-        TestConsole._expect_gremlin_header(child)
-        TestConsole._send(child, "x")
-        child.expect("==>2\r\n")
-        TestConsole._expect_prompt(child)
-        TestConsole._close(child)
-
     def test_just_dash_dash_interactive(self):
         child = pexpect.spawn(TestConsole.gremlinsh + "--interactive x.script")
         TestConsole._expect_gremlin_header(child)
@@ -127,6 +119,11 @@ class TestConsole(object):
         child = pexpect.spawn(TestConsole.gremlinsh + "-e x-printed.script")
         child.expect("2\r\n")
         TestConsole._close(child)
+
+    def test_just_dash_e_file_not_found(self):
+        child = pexpect.spawn(TestConsole.gremlinsh + "-e=x-printed.script")
+        child.expect("Gremlin file not found at \[=x-printed.script\]\.\r\n")
+        child.expect(pexpect.EOF)
 
     def test_just_dash_dash_execute(self):
         child = pexpect.spawn(TestConsole.gremlinsh + "--execute x-printed.script")

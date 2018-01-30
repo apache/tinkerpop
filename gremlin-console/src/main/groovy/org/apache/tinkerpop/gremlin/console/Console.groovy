@@ -526,8 +526,13 @@ class Console {
      * to split the flag from the argument so that it can be evaluated in a consistent way by {@code parseArgs()}.
      */
     private static def normalizeArgs(final List<String> options, final String[] args) {
-        return args.collect{ arg -> options.any{
-            arg.startsWith(it) } ? arg.split("=", 2) : arg
-        }.flatten().toArray()
+        return args.collect{ arg ->
+                // arguments that match -i/-e options should be normalized where long forms need to be split on "="
+                // and short forms need to have the "=" included with the argument
+                if (options.any{ arg.startsWith(it) }) {
+                    return arg.matches("^-[e,i]=.*") ? [arg.substring(0, 2), arg.substring(2)] : arg.split("=", 2)
+                } 
+                return arg
+            }.flatten().toArray()
     }
 }
