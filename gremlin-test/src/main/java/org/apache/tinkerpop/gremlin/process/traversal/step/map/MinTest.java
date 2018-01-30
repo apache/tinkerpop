@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -45,6 +46,8 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_foo_injectX9999999999X_min();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -75,6 +78,16 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         assertEquals(0.2, map.get("lop"));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_foo_injectX9999999999X_min() {
+        final Traversal<Vertex, Number> traversal = get_g_V_foo_injectX9999999999X_min();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertEquals(9999999999L, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends MinTest {
 
         @Override
@@ -90,6 +103,11 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX() {
             return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").min());
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_injectX9999999999X_min() {
+            return g.V().values("foo").inject(9999999999L).min();
         }
     }
 }

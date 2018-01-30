@@ -34,12 +34,24 @@ public final class NumberHelper {
             (a, b) -> a.byteValue() * b.byteValue(),
             (a, b) -> a.byteValue() / b.byteValue(),
             (a, b) -> {
-                final byte x = a.byteValue(), y = b.byteValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final byte x = a.byteValue(), y = b.byteValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.byteValue();
+                }
+                return b.byteValue();
             },
             (a, b) -> {
-                final byte x = a.byteValue(), y = b.byteValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final byte x = a.byteValue(), y = b.byteValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.byteValue();
+                }
+                return b.byteValue();
             },
             (a, b) -> Byte.compare(a.byteValue(), b.byteValue()));
 
@@ -49,12 +61,24 @@ public final class NumberHelper {
             (a, b) -> a.shortValue() * b.shortValue(),
             (a, b) -> a.shortValue() / b.shortValue(),
             (a, b) -> {
-                final short x = a.shortValue(), y = b.shortValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final short x = a.shortValue(), y = b.shortValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.shortValue();
+                }
+                return b.shortValue();
             },
             (a, b) -> {
-                final short x = a.shortValue(), y = b.shortValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final short x = a.shortValue(), y = b.shortValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.shortValue();
+                }
+                return b.shortValue();
             },
             (a, b) -> Short.compare(a.shortValue(), b.shortValue()));
 
@@ -64,12 +88,24 @@ public final class NumberHelper {
             (a, b) -> a.intValue() * b.intValue(),
             (a, b) -> a.intValue() / b.intValue(),
             (a, b) -> {
-                final int x = a.intValue(), y = b.intValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final int x = a.intValue(), y = b.intValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.intValue();
+                }
+                return b.intValue();
             },
             (a, b) -> {
-                final int x = a.intValue(), y = b.intValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final int x = a.intValue(), y = b.intValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.intValue();
+                }
+                return b.intValue();
             },
             (a, b) -> Integer.compare(a.intValue(), b.intValue()));
 
@@ -79,12 +115,24 @@ public final class NumberHelper {
             (a, b) -> a.longValue() * b.longValue(),
             (a, b) -> a.longValue() / b.longValue(),
             (a, b) -> {
-                final long x = a.longValue(), y = b.longValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final long x = a.longValue(), y = b.longValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.longValue();
+                }
+                return b.longValue();
             },
             (a, b) -> {
-                final long x = a.longValue(), y = b.longValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final long x = a.longValue(), y = b.longValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.longValue();
+                }
+                return b.longValue();
             },
             (a, b) -> Long.compare(a.longValue(), b.longValue()));
 
@@ -94,12 +142,24 @@ public final class NumberHelper {
             (a, b) -> bigIntegerValue(a).multiply(bigIntegerValue(b)),
             (a, b) -> bigIntegerValue(a).divide(bigIntegerValue(b)),
             (a, b) -> {
-                final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
-                return x.compareTo(y) <= 0 ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
+                        return x.compareTo(y) <= 0 ? x : y;
+                    }
+                    return bigIntegerValue(a);
+                }
+                return bigIntegerValue(b);
             },
             (a, b) -> {
-                final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
-                return x.compareTo(y) >= 0 ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final BigInteger x = bigIntegerValue(a), y = bigIntegerValue(b);
+                        return x.compareTo(y) >= 0 ? x : y;
+                    }
+                    return bigIntegerValue(a);
+                }
+                return bigIntegerValue(b);
             },
             (a, b) -> bigIntegerValue(a).compareTo(bigIntegerValue(b)));
 
@@ -109,12 +169,24 @@ public final class NumberHelper {
             (a, b) -> a.floatValue() * b.floatValue(),
             (a, b) -> a.floatValue() / b.floatValue(),
             (a, b) -> {
-                final float x = a.floatValue(), y = b.floatValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final float x = a.floatValue(), y = b.floatValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.floatValue();
+                }
+                return b.floatValue();
             },
             (a, b) -> {
-                final float x = a.floatValue(), y = b.floatValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final float x = a.floatValue(), y = b.floatValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.floatValue();
+                }
+                return b.floatValue();
             },
             (a, b) -> Float.compare(a.floatValue(), b.floatValue()));
 
@@ -124,12 +196,24 @@ public final class NumberHelper {
             (a, b) -> a.doubleValue() * b.doubleValue(),
             (a, b) -> a.doubleValue() / b.doubleValue(),
             (a, b) -> {
-                final double x = a.doubleValue(), y = b.doubleValue();
-                return x <= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final double x = a.doubleValue(), y = b.doubleValue();
+                        return x <= y ? x : y;
+                    }
+                    return a.doubleValue();
+                }
+                return b.doubleValue();
             },
             (a, b) -> {
-                final double x = a.doubleValue(), y = b.doubleValue();
-                return x >= y ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final double x = a.doubleValue(), y = b.doubleValue();
+                        return x >= y ? x : y;
+                    }
+                    return a.doubleValue();
+                }
+                return b.doubleValue();
             },
             (a, b) -> Double.compare(a.doubleValue(), b.doubleValue()));
 
@@ -144,7 +228,7 @@ public final class NumberHelper {
                     return ba.divide(bb);
                 } catch (ArithmeticException ignored) {
                     // set a default precision
-                    final int precision = Math.max(ba.precision(),bb.precision()) + 10;
+                    final int precision = Math.max(ba.precision(), bb.precision()) + 10;
                     BigDecimal result = ba.divide(bb, new MathContext(precision));
                     final int scale = Math.max(Math.max(ba.scale(), bb.scale()), 10);
                     if (result.scale() > scale) result = result.setScale(scale, BigDecimal.ROUND_HALF_UP);
@@ -152,12 +236,24 @@ public final class NumberHelper {
                 }
             },
             (a, b) -> {
-                final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
-                return x.compareTo(y) <= 0 ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
+                        return x.compareTo(y) <= 0 ? x : y;
+                    }
+                    return bigDecimalValue(a);
+                }
+                return bigDecimalValue(b);
             },
             (a, b) -> {
-                final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
-                return x.compareTo(y) >= 0 ? x : y;
+                if (isNumber(a)) {
+                    if (isNumber(b)) {
+                        final BigDecimal x = bigDecimalValue(a), y = bigDecimalValue(b);
+                        return x.compareTo(y) >= 0 ? x : y;
+                    }
+                    return bigDecimalValue(a);
+                }
+                return bigDecimalValue(b);
             },
             (a, b) -> bigDecimalValue(a).compareTo(bigDecimalValue(b)));
 
@@ -194,7 +290,7 @@ public final class NumberHelper {
         int bits = 8;
         boolean fp = forceFloatingPoint;
         for (final Number number : numbers) {
-            if (number == null) continue;
+            if (!isNumber(number)) continue;
             final Class<? extends Number> clazz = number.getClass();
             if (clazz.equals(Byte.class)) continue;
             if (clazz.equals(Short.class)) {
@@ -314,5 +410,9 @@ public final class NumberHelper {
             if (bits <= 64) return Long.class;
             return BigInteger.class;
         }
+    }
+
+    private static boolean isNumber(final Number number) {
+        return number != null && !number.equals(Double.NaN);
     }
 }
