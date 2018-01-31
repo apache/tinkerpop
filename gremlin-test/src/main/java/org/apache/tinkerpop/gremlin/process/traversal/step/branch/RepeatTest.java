@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.groupCount;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -43,7 +45,9 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.loops;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -65,6 +69,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit();
+
+    public abstract Traversal<Vertex, Path> get_g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name();
 
     // WHILE/DO
 
@@ -199,6 +205,16 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertEquals(6, path1);
         assertEquals(6, path2);
         assertEquals(2, path3);
+    }
+
+    @Test
+    @LoadGraphWith(SINK)
+    public void g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name() {
+        final Traversal<Vertex, Path> traversal = get_g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name();
+        printTraversalForm(traversal);
+        final Path path = traversal.next();
+        assertThat(path, contains("loop", "loop", "loop", "loop", "loop", "loop"));
+        assertThat(traversal.hasNext(), is(false));
     }
 
     @Test
@@ -365,5 +381,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX() {
             return g.V().has("name", "marko").repeat(outE().inV().simplePath()).until(has("name", "ripple")).path().by("name").by(T.label);
         }
-   }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name() {
+            return g.V().has("loops","name","loop").repeat(__.in()).times(5).path().by("name");
+        }
+    }
 }

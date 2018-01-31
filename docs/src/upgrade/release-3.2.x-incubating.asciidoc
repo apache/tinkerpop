@@ -21,13 +21,33 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+== TinkerPop 3.2.8
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.8/CHANGELOG.asciidoc#release-3-2-8[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Kitchen Sink Test Graph
+
+The "Kitchen Sink" test graph has been added to the `gremlin-test` module. It contains (or will contain) various
+disconnected subgraphs of that offer unique structures (e.g. a self-loop) for specific test cases. Graph systems that
+use the test suite should not have to make any changes to account for this new graph unless that system performs some
+form or special pre-initialization of their system in preparation for loading (e.g. requires a schema) or does the
+loading of the graph test data outside of the standard method in which TinkerPop provides.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1877[TINKERPOP-1877]
+
 == TinkerPop 3.2.7
 
 *Release Date: December 17, 2017*
 
-=== Upgrading for Users
-
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
 
 ==== Gremlin-Python Core Types
 With the addition of `UUID`, `Date`, and `Timestamp`, Gremlin-Python now implements serializers for all core GraphSON types. Users
