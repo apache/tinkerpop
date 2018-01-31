@@ -28,6 +28,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed hardcoded expectation in metrics serialization test suite as different providers may have different outputs.
 * Added `IndexedTraverserSet` which indexes on the value of a `Traverser` thus improving performance when used.
 * Utilized `IndexedTraverserSet` in `TraversalVertexProgram` to avoid extra iteration when doing `Vertex` lookups.
+* Fixed a bug in Gremlin Console which prevented handling of `gremlin.sh` flags that had an "=" between the flag and its arguments.
 * Fixed a bug in `ComputerAwareStep` that didn't handle `reset()` properly and thus occasionally produced some extra traversers.
 
 [[release-3-2-7]]
