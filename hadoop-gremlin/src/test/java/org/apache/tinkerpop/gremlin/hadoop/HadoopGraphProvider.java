@@ -79,7 +79,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-modern-v3d0.kryo",
                     "grateful-dead-v3d0.kryo",
                     "tinkerpop-classic-v3d0.kryo",
-                    "tinkerpop-crew-v3d0.kryo");
+                    "tinkerpop-crew-v3d0.kryo",
+                    "tinkerpop-sink-v3d0.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
@@ -92,7 +93,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic-typed-v2d0.json",
                     "tinkerpop-classic-v3d0.json",
                     "tinkerpop-crew-typed-v2d0.json",
-                    "tinkerpop-crew-v3d0.json");
+                    "tinkerpop-crew-v3d0.json",
+                    "tinkerpop-sink-v3d0.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
@@ -151,6 +153,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew" + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.SINK)) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-sink." + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

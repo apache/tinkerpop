@@ -200,6 +200,8 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             return TinkerGraph.DefaultIdManager.INTEGER;
         else if (loadGraphWith.equals(LoadGraphWith.GraphData.GRATEFUL))
             return TinkerGraph.DefaultIdManager.INTEGER;
+        else if (loadGraphWith.equals(LoadGraphWith.GraphData.SINK))
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else
             throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerGraph.IdManager.class.getName(), loadGraphWith.name()));
     }

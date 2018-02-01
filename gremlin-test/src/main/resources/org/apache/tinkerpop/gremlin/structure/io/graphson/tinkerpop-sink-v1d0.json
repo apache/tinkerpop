@@ -1,0 +1,1 @@
+{"id":1000,"label":"loops","inE":{"self":[{"id":1,"outV":1000}]},"outE":{"self":[{"id":1,"inV":1000}]},"properties":{"name":[{"id":0,"value":"loop"}]}}
