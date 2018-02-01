@@ -154,7 +154,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew" + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.SINK)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-sink." + type));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-sink" + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
