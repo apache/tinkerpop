@@ -56,8 +56,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX();
-
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X();
@@ -83,7 +81,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-    public void g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX() {
+    public void g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
         final Vertex vertex = traversal.next();
@@ -133,22 +131,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    public void g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX();
-        printTraversalForm(traversal);
-        final Vertex stephen = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals("person", stephen.label());
-        assertThat((List<String>) IteratorUtils.asList(stephen.values("name")), containsInAnyOrder("stephen", "stephenm"));
-        assertEquals(2, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(g.V()));
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
         final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
         printTraversalForm(traversal);
@@ -184,7 +166,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-    public void g_V_hasXname_markoX_addVXmetaPersonX_propertyXname_nameX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
+    public void g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
         printTraversalForm(traversal);
         final Vertex marko = traversal.next();
@@ -330,11 +312,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
             return g.addV("person").property("name", "stephen");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
-            return g.addV("person").property("name", "stephen").property("name", "stephenm");
         }
 
         @Override

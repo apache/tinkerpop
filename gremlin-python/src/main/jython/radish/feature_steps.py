@@ -135,7 +135,7 @@ def assert_side_effects(step, count, traversal_string):
 
     t = _make_traversal(step.context.g, traversal_string.replace('\\"', '"'),
                         step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
-    assert_that(count, equal_to(t.count().next()))
+    assert_that(t.count().next(), equal_to(count))
 
 
 @then("the result should have a count of {count:d}")

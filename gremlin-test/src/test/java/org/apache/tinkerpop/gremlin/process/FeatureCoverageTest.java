@@ -100,6 +100,12 @@ public class FeatureCoverageTest {
 
     private static Pattern scenarioName = Pattern.compile("^\\s*Scenario:\\s*(.*)$");
 
+    // g_V_addVXlabel_animal_age_0X - deprecated
+    // g_addVXlabel_person_name_stephenX - deprecated
+    private static final List<String> testToIgnore = Arrays.asList(
+            "g_V_addVXlabel_animal_age_0X",
+            "g_addVXlabel_person_name_stephenX");
+
     @Test
     // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
@@ -182,6 +188,7 @@ public class FeatureCoverageTest {
                                            t.getSimpleName().replace("Test", "") + ".feature";
             final Set<String> testMethods = Stream.of(t.getDeclaredMethods())
                     .filter(m -> m.isAnnotationPresent(Test.class))
+                    .filter(m -> !testToIgnore.contains(m.getName()))
                     .map(Method::getName).collect(Collectors.toSet());
 
             final File featureFile = new File(featureFileName);
