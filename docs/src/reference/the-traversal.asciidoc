@@ -219,8 +219,8 @@ supports user provided ids.
 
 *Additional References*
 
-link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE-java.lang.String-[`addEdge(String)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`addE(Traversal)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE-java.lang.String-[`addE(String)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`addE(Traversal)`]
 
 [[addvertex-step]]
 === AddVertex Step
@@ -241,7 +241,7 @@ g.V().has('name','nothing').bothE()
 
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV--[`addV()`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-[`addV(String)`]),
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`addV(Traversal)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`addV(Traversal)`]
 
 [[addproperty-step]]
 === AddProperty Step
@@ -371,7 +371,7 @@ g.V().hasLabel('software').as('a','b','c').
 
 *Additional References*
 
-link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as-java.lang.String-java.lang.String...-[`as(String, String...)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as-java.lang.String-java.lang.String...-[`as(String,String...)`]
 
 [[barrier-step]]
 === Barrier Step
@@ -803,6 +803,22 @@ g.V().values('age').sum() <6>
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fold--[`fold()`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fold-E2-java.util.function.BiFunction-[`fold(Object,BiFunction)`]
 
+[[from-step]]
+=== From Step
+
+The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
+<<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
+means by which they are added. The general pattern is `step().from()`. See <<to-step,`to()`>>-step.
+
+The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
+ <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
+
+*Additional References*
+
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-java.lang.String-[`from(String)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`from(Traversal)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.structure.Vertex-[`from(Vertex)`]
+
 [[graph-step]]
 === Graph Step
 
@@ -830,22 +846,6 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 *Additional References*
 
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V-java.lang.Object...-[`V(Object...)`]
-
-[[from-step]]
-=== From Step
-
-The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
-<<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
-means by which they are added. The general pattern is `step().from()`. See <<to-step,`to()`>>-step.
-
-The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
- <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
-
-*Additional References*
-
-link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-java.lang.String-[`from(String)`],
-link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`from(Traversal)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-org.apache.tinkerpop.gremlin.structure.Vertex-[`from(Vertex)`]
 
 [[group-step]]
 === Group Step
@@ -1462,7 +1462,7 @@ Furthermore, the following built in functions are provided:
 
 *Additional References*
 
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#math-java.lang.String-[`math(String)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#math-java.lang.String-[`math(String)`]
 
 [[max-step]]
 === Max Step
@@ -2451,9 +2451,9 @@ g.V().hasLabel('person').filter(outE('created')).as('p'). <1>
 
 *Additional References*
 
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip-long-[`skip(long)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-[`skip(Scope,long)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html[`Scope`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip-long-[`skip(long)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-[`skip(Scope,long)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html[`Scope`]
 
 [[store-step]]
 === Store Step
@@ -2591,8 +2591,8 @@ g.V().valueMap().tail(local) <4>
 
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail--[`tail()`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-long-[`tail(long)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-[`tail(Scope)`]
-link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-[`tail(Scope,long)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-[`tail(Scope)`]
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-[tail(Scope,long)`]
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html[`Scope`]
 
 [[timelimit-step]]
@@ -2641,7 +2641,7 @@ The list of steps that support `to()`-modulation are: <<simplepath-step,`simpleP
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`to(Direction,String...)`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`to(String)`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to-org.apache.tinkerpop.gremlin.process.traversal.Traversal-[`to(Traversal)`],
-link:http://tinkerpop.apache.org/javadocs/3.3.2-SNAPSHOT/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to-org.apache.tinkerpop.gremlin.structure.Vertex-[`to(Vertex)`],
+link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to-org.apache.tinkerpop.gremlin.structure.Vertex-[`to(Vertex)`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toE-org.apache.tinkerpop.gremlin.structure.Direction-java.lang.String...-[`toE(Direction,String)`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toV-org.apache.tinkerpop.gremlin.structure.Direction-[`toV(Direction)`],
 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Direction.html[`Direction`]
