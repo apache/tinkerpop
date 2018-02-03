@@ -1727,7 +1727,7 @@ path.a
 path.b
 path.c
 path.d == path.e
-----   
+----
 
 *Additional References*
 
