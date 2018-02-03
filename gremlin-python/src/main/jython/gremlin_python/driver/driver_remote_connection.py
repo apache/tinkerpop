@@ -63,13 +63,12 @@ class DriverRemoteConnection(RemoteConnection):
         def cb(f):
             try:
                 result_set = f.result()
-            except Exception as e:
-                future.set_exception(e)
-            else:
                 results = result_set.all().result()
                 side_effects = RemoteTraversalSideEffects(result_set.request_id,
                                                           self._client)
                 future.set_result(RemoteTraversal(iter(results), side_effects))
+            except Exception as e:
+                future.set_exception(e)
 
         future_result_set.add_done_callback(cb)
         return future
