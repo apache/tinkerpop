@@ -1,4 +1,4 @@
-'''
+"""
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -15,7 +15,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
-'''
+"""
 import concurrent.futures
 import pytest
 
@@ -65,10 +65,14 @@ def client(request):
         request.addfinalizer(fin)
         return client
 
-@pytest.fixture
+@pytest.fixture(params=['v2', 'v3'])
 def remote_connection(request):
     try:
-        remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        if request.param == 'v2':
+            remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        else:
+            remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:

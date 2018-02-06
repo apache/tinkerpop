@@ -119,10 +119,10 @@ class TestDriverRemoteConnection(object):
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
 
-    def test_side_effects(self, remote_connection_v2):
+    def test_side_effects(self, remote_connection):
         statics.load_statics(globals())
         #
-        g = Graph().traversal().withRemote(remote_connection_v2)
+        g = Graph().traversal().withRemote(remote_connection)
         ###
         t = g.V().hasLabel("project").name.iterate()
         assert 0 == len(t.side_effects.keys())
