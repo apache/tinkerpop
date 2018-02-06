@@ -104,6 +104,10 @@ public class FeatureCoverageTest {
             // deprecated tests
             "g_V_addVXlabel_animal_age_0X",
             "g_addVXlabel_person_name_stephenX",
+            // GLV suite doesn't support property identifiers and related assertions
+            "g_V_hasXageX_properties_hasXid_nameIdX_value",
+            "g_V_hasXageX_properties_hasXid_nameIdAsStringX_value",
+            "g_V_hasXageX_propertiesXnameX",
             // grateful dead graph not supported in GLV suite
             "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
             "g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX",
@@ -115,7 +119,14 @@ public class FeatureCoverageTest {
             "get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
             "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
             "g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX",
-            "g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name");
+            "g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name",
+            // Pop tests not organized right for GLVs
+            "g_V_valueMap_selectXpop_aX",
+            "g_V_selectXa_bX",
+            "g_V_valueMap_selectXpop_a_bX",
+            "g_V_selectXaX",
+            // assertion doesn't seem to want to work right for embedded lists
+            "g_V_asXa_bX_out_asXcX_path_selectXkeysX");
 
     @Test
     // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
