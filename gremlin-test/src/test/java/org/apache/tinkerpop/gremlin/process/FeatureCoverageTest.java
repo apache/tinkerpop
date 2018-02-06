@@ -126,7 +126,16 @@ public class FeatureCoverageTest {
             "g_V_valueMap_selectXpop_a_bX",
             "g_V_selectXaX",
             // assertion doesn't seem to want to work right for embedded lists
-            "g_V_asXa_bX_out_asXcX_path_selectXkeysX");
+            "g_V_asXa_bX_out_asXcX_path_selectXkeysX",
+            // probably need TINKERPOP-1877
+            "g_V_bothEXselfX",
+            "g_V_bothXselfX",
+            // ugh - BigInteger?
+            "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+            // ugh - clone
+            "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
+            // wont round right or something
+            "g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack");
 
     @Test
     // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
@@ -192,7 +201,7 @@ public class FeatureCoverageTest {
                 InjectTest.class,
                 SackTest.class,
                 SideEffectCapTest.class,
-                SideEffectTest.class,
+                //SideEffectTest.class,
                 StoreTest.class);
                 // SubgraphTest.class,
                 // TreeTest.class);
@@ -214,7 +223,7 @@ public class FeatureCoverageTest {
                     .map(Method::getName).collect(Collectors.toSet());
 
             final File featureFile = new File(featureFileName);
-            assertThat(featureFile.exists(), is(true));
+            assertThat("Where is: " + featureFileName, featureFile.exists(), is(true));
             assertThat(featureFile.isFile(), is(true));
 
             final Set<String> testsInFeatureFile = new HashSet<>();
