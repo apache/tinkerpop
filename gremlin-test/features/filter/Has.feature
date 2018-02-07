@@ -127,12 +127,12 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_VX2X_hasXage_gt_30X
+  Scenario: g_VX4X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v2Id defined as "v[josh].id"
+    And using the parameter v4Id defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v2Id).has("age", P.gt(30))
+      g.V(v4Id).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be unordered
@@ -149,13 +149,13 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_VXv2X_hasXage_gt_30X
+  Scenario: g_VXv4X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v4Id defined as "v[josh].id"
+    And using the parameter v4 defined as "v[josh]"
     And using the parameter d30 defined as "d[30].i"
     And the traversal of
       """
-      g.V(g.V(v4Id).next()).has("age", P.gt(d30))
+      g.V(v4).has("age", P.gt(d30))
       """
     When iterated to list
     Then the result should be unordered
