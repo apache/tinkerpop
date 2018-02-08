@@ -23,7 +23,8 @@ graphs: {
   classic: conf/tinkergraph-empty.properties,
   modern: conf/tinkergraph-empty.properties,
   crew: conf/tinkergraph-empty.properties,
-  grateful: conf/tinkergraph-empty.properties}
+  grateful: conf/tinkergraph-empty.properties,
+  sink: conf/tinkergraph-empty.properties}
 plugins:
   - tinkerpop.tinkergraph
 scriptEngines: {

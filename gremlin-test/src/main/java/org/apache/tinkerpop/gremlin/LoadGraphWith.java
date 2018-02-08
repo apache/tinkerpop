@@ -77,7 +77,13 @@ public @interface LoadGraphWith {
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
          * complex traversals.
          */
-        GRATEFUL;
+        GRATEFUL,
+
+        /**
+         * Loads a test graph which contains disconnected subgraphs specialized for testing purposes (e.g. a subgraph
+         * with a self-loop). This graph is created with the {@link TestHelper#loadSinkGraph(Graph)} method.
+         */
+        SINK;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -104,6 +110,10 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
         }};
 
+        private static final List<FeatureRequirement> featuresRequiredBySink = new ArrayList<FeatureRequirement>() {{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+        }};
+
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -114,6 +124,8 @@ public @interface LoadGraphWith {
                     return RESOURCE_PATH_PREFIX + "tinkerpop-modern.kryo";
                 case GRATEFUL:
                     return RESOURCE_PATH_PREFIX + "grateful-dead.kryo";
+                case SINK:
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-sink.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");
@@ -129,6 +141,8 @@ public @interface LoadGraphWith {
                     return featuresRequiredByModern;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;
+                case SINK:
+                    return featuresRequiredBySink;
             }
 
             throw new RuntimeException("No features for this GraphData type");

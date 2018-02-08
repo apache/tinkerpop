@@ -28,6 +28,7 @@ globals << [hook : [
     TinkerFactory.generateModern(modern)
     TinkerFactory.generateTheCrew(crew)
     grateful.io(gryo()).readGraph('../data/grateful-dead.kryo')
+    TinkerFactory.generateKitchenSink(sink)
 
     // a wild bit of trickery here. the process tests use an INTEGER id manager when LoadGraphWith is used. this
     // closure provides a way to to manually override the various id managers for TinkerGraph - the graph on which
@@ -45,7 +46,7 @@ globals << [hook : [
         idManagerField.set(graph, TinkerGraph.DefaultIdManager.INTEGER)
     }
 
-    [classic, modern, crew].each{
+    [classic, modern, crew, sink].each{
       allowSetOfIdManager(it, "vertexIdManager")
       allowSetOfIdManager(it, "edgeIdManager")
       allowSetOfIdManager(it, "vertexPropertyIdManager")
@@ -59,3 +60,4 @@ globals << [gmodern : modern.traversal()]
 globals << [gcrew : crew.traversal()]
 globals << [ggraph : graph.traversal()]
 globals << [ggrateful : grateful.traversal()]
+globals << [gsink : sink.traversal()]

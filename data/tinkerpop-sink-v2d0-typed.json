@@ -1,0 +1,1 @@
+{"id":{"@type":"g:Int64","@value":0},"label":"loops","inE":{"self":[{"id":{"@type":"g:Int64","@value":2},"outV":{"@type":"g:Int64","@value":0}}]},"outE":{"self":[{"id":{"@type":"g:Int64","@value":2},"inV":{"@type":"g:Int64","@value":0}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":1},"value":"loop"}]}}
