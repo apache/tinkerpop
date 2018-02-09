@@ -155,7 +155,7 @@ public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageS
                 return kryo.readObject(input, ResponseMessage.class);
             }
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, GryoMessageSerializerV3d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be deserialized by %s.", msg, AbstractGryoMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -189,7 +189,7 @@ public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageS
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), GryoMessageSerializerV3d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, AbstractGryoMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -206,7 +206,7 @@ public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageS
                 return kryo.readObject(input, RequestMessage.class);
             }
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, GryoMessageSerializerV3d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGryoMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -237,7 +237,7 @@ public abstract class AbstractGryoMessageSerializerV3d0 extends AbstractMessageS
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), GryoMessageSerializerV3d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGryoMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }

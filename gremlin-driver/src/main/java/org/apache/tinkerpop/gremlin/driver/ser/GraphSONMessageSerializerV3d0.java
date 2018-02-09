@@ -78,7 +78,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
         try {
             return mapper.readValue(msg, ResponseMessage.class);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be deserialized by %s.", msg, GraphSONMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -88,7 +88,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
         try {
             return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage.toString(), GraphSONMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -98,7 +98,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
         try {
             return mapper.readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, GraphSONMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -108,7 +108,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
         try {
             return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage.toString(), GraphSONMessageSerializerV3d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
