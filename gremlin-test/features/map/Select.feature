@@ -338,7 +338,7 @@ Feature: Step - select()
       | marko |
       | marko |
 
-  Scenario: get_g_V_outE_weight_groupCount_selectXkeysX_unfold
+  Scenario: g_V_outE_weight_groupCount_selectXkeysX_unfold
     Given the modern graph
     And the traversal of
       """
@@ -515,17 +515,3 @@ Feature: Step - select()
       | result |
       | d[2].l |
       | d[2].l |
-
-  Scenario: g_V_outE_weight_groupCount_selectXkeysX_unfold
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().outE().values("weight").groupCount().select(Column.keys).unfold()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0.5].f |
-      | d[1.0].f |
-      | d[0.4].f |
-      | d[0.2].f |
