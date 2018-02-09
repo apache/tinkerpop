@@ -22,7 +22,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-3-2]]
 === TinkerPop 3.3.2 (Release Date: NOT OFFICIALLY RELEASED YET)
-                             
+
 This release also includes changes from <<release-3-2-8, 3.2.8>>.
 
 * Fixed regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler
@@ -276,6 +276,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * `ReferenceElement` avoids `UnsupportedOperationException` handling in construction thus improving performance.
+* Improved error messaging for failed serialization and deserialization of request/response messages.
 * Removed hardcoded expectation in metrics serialization test suite as different providers may have different outputs.
 * Added `IndexedTraverserSet` which indexes on the value of a `Traverser` thus improving performance when used.
 * Utilized `IndexedTraverserSet` in `TraversalVertexProgram` to avoid extra iteration when doing `Vertex` lookups.

@@ -89,7 +89,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, AbstractGraphSONMessageSerializerV2d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -109,7 +109,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGraphSONMessageSerializerV2d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -121,7 +121,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             msg.readBytes(payload);
             return mapper.readValue(payload, RequestMessage.class);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -133,7 +133,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             msg.readBytes(payload);
             return mapper.readValue(payload, ResponseMessage.class);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
+            logger.warn(String.format("Response [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
