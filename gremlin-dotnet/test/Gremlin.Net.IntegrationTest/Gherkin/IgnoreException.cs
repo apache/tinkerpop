@@ -43,6 +43,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.LambdaNotSupported:
                     reasonSuffix = " because lambdas are not supported in Gremlin.NET";
                     break;
+                case IgnoreReason.NeedsFurtherInvestigation:
+                    reasonSuffix = " as further investigation is required";
+                    break;
             }
             return $"Scenario ignored" + reasonSuffix;
         }
@@ -50,6 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     
     public enum IgnoreReason
     {
-        LambdaNotSupported
+        LambdaNotSupported,
+        NeedsFurtherInvestigation
     }
 }
