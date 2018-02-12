@@ -159,6 +159,7 @@ g.V().out('created').toSet() <6>
 g.V().out('created').toBulkSet() <7>
 results = ['blah',3]
 g.V().out('created').fill(results) <8>
+g.addV('person').iterate() <9>
 ----
 
 <1> `hasNext()` determines whether there are available results.
@@ -169,6 +170,9 @@ g.V().out('created').fill(results) <8>
 <6> `toSet()` will return all results in a set (thus, duplicates removed).
 <7> `toBulkSet()` will return all results in a weighted set (thus, duplicates preserved via weighting).
 <8> `fill(collection)` will put all results in the provided collection and return the collection when complete.
+<9> `iterate()` does not exactly fit the definition of a terminal step in that it doesn't return a result, but still
+returns a traversal - it does however behave as a terminal step in that it iterates the traversal and generates side
+effects without returning the actual result.
 
 Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
 
