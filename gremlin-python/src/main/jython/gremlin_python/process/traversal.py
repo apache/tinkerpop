@@ -403,6 +403,19 @@ class Bytecode(object):
         if isinstance(arg, Traversal):
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
+        elif isinstance(arg, P):
+            binding = self.__convertArgument(arg.value)
+            if isinstance(binding, Binding):
+                arg.value = binding.value
+            else:
+                arg.value = binding
+            if arg.other is not None:
+                binding = self.__convertArgument(arg.other)
+                if isinstance(binding, Binding):
+                    arg.other = binding.value
+                else:
+                    arg.other = binding
+            return arg
         elif isinstance(arg, dict):
             newDict = {}
             for key in arg:
