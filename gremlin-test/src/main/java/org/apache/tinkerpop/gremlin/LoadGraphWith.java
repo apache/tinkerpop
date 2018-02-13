@@ -81,7 +81,7 @@ public @interface LoadGraphWith {
 
         /**
          * Loads a test graph which contains disconnected subgraphs specialized for testing purposes (e.g. a subgraph
-         * with a self-loop). This graph is created with the {@link TestHelper#loadSinkGraph(Graph)} method.
+         * with a self-loop).
          */
         SINK;
 
