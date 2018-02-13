@@ -517,7 +517,7 @@ script = """
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the console with
 the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
 <2> There are now two configured remote connections.  The one marked by an asterisk is the one that was just created
-and denotes the current one that `:sumbit` will react to.
+and denotes the current one that `:submit` will react to.
 <3> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
 <4> The last result of a remote script is always stored in the reserved variable `result`, which allows access to
 the `Result` and by virtue of that, the `Map` itself.
