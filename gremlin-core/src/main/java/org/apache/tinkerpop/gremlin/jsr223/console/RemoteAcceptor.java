@@ -71,7 +71,7 @@ public interface RemoteAcceptor extends Closeable {
      * set to {@code false}.
      * <p/>
      * A {@code RemoteAcceptor} should only return {@code true} for this method if it expects that all activities it
-     * supports are executed through the {@code :sumbit} command. If the users interaction with the remote requires
+     * supports are executed through the {@code :submit} command. If the users interaction with the remote requires
      * working with both local and remote evaluation at the same time, it is likely best to keep this method return
      * {@code false}. A good example of this type of plugin would be the Gephi Plugin which uses {@code :remote config}
      * to configure a local {@code TraversalSource} to be used and expects calls to {@code :submit} for the same body
