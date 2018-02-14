@@ -34,7 +34,7 @@ def prepare_static_traversal_source(features, marker):
     # as the various traversal sources for testing do not change their data, there is no need to re-create remotes
     # and client side lookup data over and over. it can be created once for all tests and be reused.
     cache = {}
-    for graph_name in (("modern", "gmodern"), ("classic", "gclassic"), ("crew", "gcrew"), ("grateful", "ggrateful")):
+    for graph_name in (("modern", "gmodern"), ("classic", "gclassic"), ("crew", "gcrew"), ("grateful", "ggrateful"), ("sink", "gsink")):
         cache[graph_name[0]] = {}
         remote = __create_remote(graph_name[1])
         cache[graph_name[0]]["remote_conn"] = __create_remote(graph_name[1])
@@ -52,7 +52,7 @@ def prepare_static_traversal_source(features, marker):
             scenario.context.lookup_v = {}
             scenario.context.lookup_e = {}
 
-            for graph_name in ("modern", "classic", "crew", "grateful"):
+            for graph_name in ("modern", "classic", "crew", "grateful", "sink"):
                 scenario.context.remote_conn[graph_name] = cache[graph_name]["remote_conn"]
                 scenario.context.lookup_v[graph_name] = cache[graph_name]["lookup_v"]
                 scenario.context.lookup_e[graph_name] = cache[graph_name]["lookup_e"]

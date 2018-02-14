@@ -228,3 +228,19 @@ Feature: Step - repeat()
       | josh  |
       | created |
       | ripple  |
+
+  Scenario: g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name
+    Given the sink graph
+    And the traversal of
+      """
+      g.V().has("loops","name","loop").repeat(__.in()).times(5).path().by("name")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | loop |
+      | loop |
+      | loop  |
+      | loop |
+      | loop  |
+      | loop  |

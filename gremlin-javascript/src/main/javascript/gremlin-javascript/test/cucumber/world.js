@@ -68,7 +68,7 @@ defineSupportCode(function (methods) {
 
   methods.BeforeAll(function () {
     // load all traversals
-    const promises = ['modern', 'classic', 'crew', 'grateful', 'empty'].map(graphName => {
+    const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty'].map(graphName => {
       let connection = null;
       if (graphName === 'empty') {
         connection = helper.getConnection('ggraph');

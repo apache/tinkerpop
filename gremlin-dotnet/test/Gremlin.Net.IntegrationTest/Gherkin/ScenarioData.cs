@@ -42,7 +42,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly Regex EdgeLRegex = new Regex("l=(.+?)[,}]", RegexOptions.Compiled);
         private static readonly Regex EdgeIRegex = new Regex("i=(.+?)[,}]", RegexOptions.Compiled);
         
-        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful"};
+        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
 
         private static readonly IDictionary<string, Vertex> EmptyVertices =
             new ReadOnlyDictionary<string, Vertex>(new Dictionary<string, Vertex>());
