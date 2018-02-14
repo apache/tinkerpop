@@ -30,25 +30,21 @@ limitations under the License.
     <AssemblyVersion><%= (projectVersion =~ /(\d+\.\d+)\.*/)[0][1] %>.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
-    <Description>
-      Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
-    </Description>
-    <Summary>
-      Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).
-      Gremlin is the graph traversal language of TinkerPop. It can be described as a functional, data-flow language
-      that enables users to succinctly express complex traversals on (or queries of) their application’s property graph.
+    <Description>Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
 
-      Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including “dot notation”
-      for function chaining (a.b.c), round bracket function arguments (a(b,c))`, and support for global namespaces
-      (a(b()) vs a(__.b()))`. As such, anyone familiar with Gremlin-Java will immediately be able to work with
-      Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
+Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).
+Gremlin is the graph traversal language of TinkerPop. It can be described as a functional, data-flow language
+that enables users to succinctly express complex traversals on (or queries of) their application’s property graph.
 
-      Please see the reference documentation at Apache TinkerPop for more information on usage.
+Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including “dot notation”
+for function chaining (a.b.c), round bracket function arguments (a(b,c))`, and support for global namespaces
+(a(b()) vs a(__.b()))`. As such, anyone familiar with Gremlin-Java will immediately be able to work with
+Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
 
-      NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann (versions &lt;= 0.X) and is now
-      included as part of the Apache TinkerPop project. The 'old' Gremlin.Net driver is however still supported.
-      Head to https://github.com/FlorianHockmann/Gremlin.Net for more information.
-    </Summary>
+Please see the reference documentation at Apache TinkerPop for more information on usage.
+
+NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann (versions: 0.y.z) and is now
+included as part of the Apache TinkerPop project.</Description>
     <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'\$(OS)' != 'Windows_NT'">true</PublicSign>
