@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Modified `GremlinDslProcessor` so that it generated the `getAnonymousTraversalClass()` method to return the DSL version of `__`.
 * Added the "Kitchen Sink" test data set.
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.

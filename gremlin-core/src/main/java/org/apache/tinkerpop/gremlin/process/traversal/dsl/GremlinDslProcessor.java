@@ -297,6 +297,12 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", ctx.traversalClassName, GraphStep.class, Edge.class)
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
                     .build());
+            traversalSourceClass.addMethod(MethodSpec.methodBuilder("getAnonymousTraversalClass")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addStatement("return Optional.of(__.class)")
+                    .returns(ParameterizedTypeName.get(Optional.class, Class.class))
+                    .build());
         }
 
         final JavaFile traversalSourceJavaFile = JavaFile.builder(ctx.packageName, traversalSourceClass.build()).build();
