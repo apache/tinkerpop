@@ -173,6 +173,7 @@ function getSandbox(g, parameters) {
   const sandbox = {
     g: g,
     __: __,
+    Barrier: traversalModule.barrier,
     Cardinality: traversalModule.cardinality,
     Column: traversalModule.column,
     Direction: {
@@ -183,6 +184,7 @@ function getSandbox(g, parameters) {
     Order: traversalModule.order,
     P: traversalModule.P,
     Pick: traversalModule.pick,
+    Pop: traversalModule.pop,
     Scope: traversalModule.scope,
     Operator: traversalModule.operator,
     T: traversalModule.t,
