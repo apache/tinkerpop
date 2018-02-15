@@ -174,3 +174,17 @@ traversal from taking longer than one hundred milliseconds to execute (the previ
 than that). While the answer provided with the `timeLimit()` is not the absolute ranking, it does provide a relative
 ranking that closely matches the absolute one. The use of `timeLimit()` in certain algorithms (e.g. recommendations)
 can shorten the time required to get a reasonable and usable result.
+
+[[pagerank-centrality]]
+=== PageRank Centrality
+
+While not technically a recipe, it's worth noting here in the "Centrality Section" that
+link:https://en.wikipedia.org/wiki/PageRank[PageRank] centrality can be calculated with Gremlin with the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#pagerank-step[pageRank()]-step which is designed to work with
+`GraphComputer` (OLAP) based traversals.
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().pageRank().by('pageRank').values('pageRank')
+----
