@@ -26,8 +26,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.HttpServerCodec;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsAndHttpChannelizerHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WebSocketHandlerUtil;
@@ -39,9 +41,10 @@ import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.P
 import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_REQUEST_HANDLER;
 import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_HTTP_RESPONSE_ENCODER;
 
-/*
+/**
  * A ChannelInboundHandlerAdapter for use with {@link WsAndHttpChannelizer} that toggles between WebSockets
- * and http
+ * and http.
+ *
  * @author Keith Lohnes lohnesk@gmail.com
  */
 @ChannelHandler.Sharable
@@ -54,6 +57,10 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
         //WebSocketChannelizer has everything needed for the http endpoint to work
         wsChannelizer.init(serverGremlinExecutor);
         this.httpGremlinEndpointHandler = httpGremlinEndpointHandler;
+    }
+
+    public Channelizer getWsChannelizer() {
+        return wsChannelizer;
     }
 
     public void configure(final ChannelPipeline pipeline) {

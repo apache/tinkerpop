@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Modified `GremlinDslProcessor` so that it generated the `getAnonymousTraversalClass()` method to return the DSL version of `__`.
 * Added the "Kitchen Sink" test data set.
+* Added `idleReadLimit` and `idleWriteLimit` to Gremlin Server that enables a "ping" and auto-close for seemingly dead clients.
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * Improved error messaging for failed serialization and deserialization of request/response messages.

@@ -27,6 +27,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -54,6 +55,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -82,7 +84,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -112,6 +113,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     private static final String KEY_PASS = "changeit";
     private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
     private static final String CLIENT_CRT = "src/test/resources/client.crt";
+    private Level previousLogLevel;
 
     private Log4jRecordingAppender recordingAppender = null;
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph("graph");
@@ -128,12 +130,26 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void setupForEachTest() {
         recordingAppender = new Log4jRecordingAppender();
         final Logger rootLogger = Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldPingChannelIfClientDies")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(Level.INFO);
+        }
+
         rootLogger.addAppender(recordingAppender);
     }
 
     @After
     public void teardownForEachTest() {
         final Logger rootLogger = Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldPingChannelIfClientDies")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        }
+
         rootLogger.removeAppender(recordingAppender);
     }
 
@@ -234,6 +250,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldTimeOutRemoteTraversal":
                 settings.scriptEvaluationTimeout = 500;
                 break;
+            case "shouldPingChannelIfClientDies":
+                settings.idleWriteLimit = 1000;
+                break;
         }
 
         return settings;
@@ -291,6 +310,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         compilerCustomizerProviderConf.put(ConfigurationCustomizerProvider.class.getName(), keyValues);
         scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldPingChannelIfClientDies() throws Exception {
+        final Client client = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).keepAliveInterval(0).create().connect();
+        client.submit("1+1").all().get();
+
+        // since we do nothing for 3 seconds and the time limit for ping is 1 second we should get *about* 3 pings -
+        // i don't think the assertion needs to be too accurate. just need to make sure there's a ping message out
+        // there record
+        Thread.sleep(3000);
+
+        assertThat(recordingAppender.logContainsAny(".*Checking channel - sending ping to client after idle period of .*$"), is(true));
+
+        client.close();
     }
 
     @Test

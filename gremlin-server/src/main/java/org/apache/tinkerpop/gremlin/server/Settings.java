@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import info.ganglia.gmetric4j.gmetric.GMetric;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -163,6 +162,21 @@ public class Settings {
      * become writeable again until the buffer is drained and it drops below this value.
      */
     public int writeBufferLowWaterMark = 1024 * 32;
+
+    /**
+     * Time in milliseconds that the server will allow a channel to not receive requests from a client before it
+     * automatically closes. If enabled, the value provided should typically exceed the amount of time given to
+     * {@link #idleWriteLimit}. Set this value to 0 to disable this feature.
+     */
+    public long idleReadLimit = 0;
+
+    /**
+     * Time in milliseconds that the server will allow a channel to not send responses to a client before it sends
+     * a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will
+     * thus reset the {@link #idleReadLimit} and keep the channel open. If enabled, this number should be smaller than
+     * the value provided to the {@link #idleReadLimit}. Set this value to 0 to disable this feature.
+     */
+    public long idleWriteLimit = 0;
 
     /**
      * If set to {@code true} the {@code aliases} option is required on requests and Gremlin Server will use that

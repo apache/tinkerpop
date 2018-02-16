@@ -51,6 +51,8 @@ serializers:
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 strictTransactionManagement: false
+idleReadLimit: 0
+idleWriteLimit: 0
 threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
