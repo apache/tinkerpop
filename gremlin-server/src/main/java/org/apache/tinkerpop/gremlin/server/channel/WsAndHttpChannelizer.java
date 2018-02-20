@@ -49,7 +49,7 @@ public class WsAndHttpChannelizer extends AbstractChannelizer {
 
     @Override
     public boolean supportsIdleMonitor() {
-        return handler.getWsChannelizer().supportsIdleMonitor();
+        return true;
     }
 
     @Override
