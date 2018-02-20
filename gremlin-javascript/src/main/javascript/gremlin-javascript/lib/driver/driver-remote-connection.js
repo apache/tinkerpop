@@ -126,7 +126,31 @@ class DriverRemoteConnection extends RemoteConnection {
 
   _handleMessage(data) {
     const response = this._reader.read(JSON.parse(data.toString()));
+    if (response.requestId === null || response.requestId === undefined) {
+        // There was a serialization issue on the server that prevented the parsing of the request id
+        // We invoke any of the pending handlers with an error
+        Object.keys(this._responseHandlers).forEach(requestId => {
+          const handler = this._responseHandlers[requestId];
+          this._clearHandler(requestId);
+          if (response.status !== undefined && response.status.message) {
+            return handler.callback(
+              new Error(util.format(
+                'Server error (no request information): %s (%d)', response.status.message, response.status.code)));
+          } else {
+            return handler.callback(new Error(util.format('Server error (no request information): %j', response)));
+          }
+        });
+        return;
+    }
+
     const handler = this._responseHandlers[response.requestId];
+
+    if (!handler) {
+      // The handler for a given request id was not found
+      // It was probably invoked earlier due to a serialization issue.
+      return;
+    }
+
     if (response.status.code >= 400) {
       // callback in error
       return handler.callback(
@@ -134,6 +158,7 @@ class DriverRemoteConnection extends RemoteConnection {
     }
     switch (response.status.code) {
       case responseStatusCode.noContent:
+        this._clearHandler(response.requestId);
         return handler.callback(null, { traversers: []});
       case responseStatusCode.partialContent:
         handler.result = handler.result || [];
@@ -146,8 +171,18 @@ class DriverRemoteConnection extends RemoteConnection {
         else {
           handler.result = response.result.data;
         }
+        this._clearHandler(response.requestId);
         return handler.callback(null, { traversers: handler.result });
     }
+  }
+
+  /**
+   * Clears the internal state containing the callback and result buffer of a given request.
+   * @param requestId
+   * @private
+   */
+  _clearHandler(requestId) {
+    delete this._responseHandlers[requestId];
   }
 
   /**

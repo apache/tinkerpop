@@ -69,3 +69,43 @@ Feature: Step - sack()
       """
       This API is deprecated - will not test.
       """
+
+  Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withBulk(false).withSack(1.0, Operator.sum).V(v1Id).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1.0].d |
+
+  Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withBulk(false).withSack(1, Operator.sum).V().out().barrier().sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+
+  Scenario: g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withSack(1.0, Operator.sum).V(v1Id).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1.0].d |
+      | d[1.0].d |

@@ -17,17 +17,17 @@
 
 Feature: Step - cap()
 
-  Scenario: g_V_group_byXnameX
+  Scenario: g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX
     Given the modern graph
     And the traversal of
       """
-      g.V().group().by("name")
+      g.V().has("age").groupCount("a").by("name").out().cap("a")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"l[v[ripple]]", "vadas":"l[v[vadas]]", "lop":"l[v[lop]]", "peter": "l[v[peter]]", "josh": "l[v[josh]]", "marko":"l[v[marko]]"}] |
-    
+      | m[{"peter":"d[1].i", "vadas":"d[1].i", "josh":"d[1].i", "marko": "d[1].i"}] |
+
   Scenario: g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX
     Given an unsupported test
     Then nothing should happen because

@@ -49,3 +49,20 @@ Feature: Step - inject()
       | p[v[marko],v[lop],lop,d[3].i] |
       | p[v[marko],v[vadas],vadas,d[5].i] |
       | p[v[marko],v[josh],josh,d[4].i] |
+
+  Scenario: g_VX1X_injectXg_VX4XX_out_name
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v4 defined as "v[josh]"
+    And the traversal of
+      """
+      g.V(v1Id).inject(v4).out().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | ripple |
+      | lop   |
+      | lop   |
+      | vadas |
+      | josh  |

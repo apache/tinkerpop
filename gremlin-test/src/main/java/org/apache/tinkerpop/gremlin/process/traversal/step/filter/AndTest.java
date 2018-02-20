@@ -54,7 +54,7 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
+    public void g_V_andXhasXage_gt_27X__outE_count_gte_2X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh"), traversal);
@@ -62,7 +62,7 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_andXout__hasXlabel_personX_and_hasXage_gte_32XX_name() {
+    public void g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", "peter"), traversal);

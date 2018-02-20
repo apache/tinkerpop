@@ -46,6 +46,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.TraversalTDeserializationNotSupported:
                     reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
                     break;
+                case IgnoreReason.NeedsFurtherInvestigation:
+                    reasonSuffix = " as further investigation is required";
+                    break;
             }
             return $"Scenario ignored" + reasonSuffix;
         }
@@ -57,10 +60,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// Lambdas are not supported on Gremlin.NET yet.
         /// </summary>
         LambdaNotSupported,
-        
+
         /// <summary>
         /// Deserialization of g:T on GraphSON3 is not supported.
         /// </summary>
-        TraversalTDeserializationNotSupported
+        TraversalTDeserializationNotSupported,
+
+        /// <summary>
+        /// Problem not yet classified and needs additional review.
+        /// </summary>
+        NeedsFurtherInvestigation
     }
 }

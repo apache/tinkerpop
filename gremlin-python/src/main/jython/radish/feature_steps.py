@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph, Path
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import Cardinality, P, Scope, Column, Order, Direction, T, Pick, Operator
+from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator
 from radish import given, when, then
 from hamcrest import *
 
@@ -36,14 +36,27 @@ regex_or = re.compile(r"([(.,\s])or\(")
 regex_true = re.compile(r"(true)")
 regex_false = re.compile(r"(false)")
 
+outV = __.outV
+label = __.label
+inV = __.inV
+project = __.project
+tail = __.tail
 
 ignores = [
-    "g.V(v1Id).out().inject(v2).values(\"name\")"  # bug in attachment won't connect v2
-           ]
+    "g.V(v1Id).out().inject(v2).values(\"name\")",  # bug in attachment won't connect v2
+    # TINKERPOP-1859 - for the following...seems to be related to P.not processing
+    "g.V().hasLabel(\"person\").has(\"age\", P.not(P.lte(d10).and(P.not(P.between(d11, d20)))).and(P.lt(d29).or(P.eq(d35)))).values(\"name\")",
+    "g.V(v1Id).out().aggregate(\"x\").out().where(P.not(P.within(\"x\")))",
+    "g.V().as(\"a\").out().as(\"b\").where(__.and(__.as(\"a\").out(\"knows\").as(\"b\"), __.or(__.as(\"b\").out(\"created\").has(\"name\", \"ripple\"), __.as(\"b\").in(\"knows\").count().is(P.not(P.eq(0)))))).select(\"a\", \"b\")",
+    "g.V().as(\"a\").out(\"created\").as(\"b\").in(\"created\").as(\"c\").both(\"knows\").both(\"knows\").as(\"d\").where(\"c\", P.not(P.eq(\"a\").or(P.eq(\"d\")))).select(\"a\", \"b\", \"c\", \"d\")",
+    # not sure yet
+    "g.V(v1).hasLabel(\"person\").map(l1).order(Scope.local).by(Column.values, Order.decr).by(Column.keys, Order.incr)"
+    ]
 
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
+    step.context.graph_name = graph_name
     step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
 
 
@@ -54,7 +67,12 @@ def initialize_graph(step):
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    assert len(traversal.toList()) > 0
+    result = traversal.toList()
+    assert len(result) > 0
+
+    # add the first result - if a map - to the bindings. this is useful for cases when parameters for
+    # the test traversal need to come from the original graph initializer (i.e. a new graph is created
+    # and you need the id of a vertex from that graph)
 
 
 @given("an unsupported test")
@@ -81,11 +99,17 @@ def translate_traversal(step):
 
 @when("iterated to list")
 def iterate_the_traversal(step):
+    if step.context.ignore:
+        return
+    
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
 
 
 @when("iterated next")
 def next_the_traversal(step):
+    if step.context.ignore:
+        return
+
     step.context.result = map(lambda x: _convert_results(x), step.context.traversal.next())
 
 
@@ -113,7 +137,7 @@ def assert_side_effects(step, count, traversal_string):
 
     t = _make_traversal(step.context.g, traversal_string.replace('\\"', '"'),
                         step.context.traversal_params if hasattr(step.context, "traversal_params") else {})
-    assert_that(count, equal_to(t.count().next()))
+    assert_that(t.count().next(), equal_to(count))
 
 
 @then("the result should have a count of {count:d}")
@@ -127,42 +151,52 @@ def nothing_happening(step):
 
 
 def _convert(val, ctx):
-    if isinstance(val, dict):                                         # convert dictionary keys/values
+    graph_name = ctx.graph_name
+    if isinstance(val, dict):                                           # convert dictionary keys/values
         n = {}
         for key, value in val.items():
             n[_convert(key, ctx)] = _convert(value, ctx)
         return n
-    elif isinstance(val, unicode):                                    # convert annoying python 2.x unicode nonsense
+    elif isinstance(val, unicode):                                      # convert annoying python 2.x unicode nonsense
         return _convert(val.encode('utf-8'), ctx)
-    elif isinstance(val, str) and re.match("^l\[.*\]$", val):         # parse list
-        return list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
-    elif isinstance(val, str) and re.match("^s\[.*\]$", val):         # parse set
-        return set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match("^l\[.*\]$", val):           # parse list
+        return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match("^s\[.*\]$", val):           # parse set
+        return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^d\[.*\]\.[ilfdm]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
-    elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):     # parse vertex id
-        return ctx.lookup_v["modern"][val[2:-4]].id
-    elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):    # parse vertex id as string
-        return ctx.lookup_v["modern"][val[2:-5]].id
-    elif isinstance(val, str) and re.match("^v\[.*\]$", val):         # parse vertex
-        return ctx.lookup_v["modern"][val[2:-1]]
-    elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):     # parse edge id
-        return ctx.lookup_e["modern"][val[2:-4]].id
-    elif isinstance(val, str) and re.match("^e\[.*\]\.sid$", val):    # parse edge id as string
-        return ctx.lookup_e["modern"][val[2:-5]].id
-    elif isinstance(val, str) and re.match("^e\[.*\]$", val):         # parse edge
-        return ctx.lookup_e["modern"][val[2:-1]]
-    elif isinstance(val, str) and re.match("^m\[.*\]$", val):         # parse json as a map
+    elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):       # parse vertex id
+        return __find_cached_element(ctx, graph_name, val[2:-4], "v").id
+    elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):      # parse vertex id as string
+        return str(__find_cached_element(ctx, graph_name, val[2:-5], "v").id)
+    elif isinstance(val, str) and re.match("^v\[.*\]$", val):           # parse vertex
+        return __find_cached_element(ctx, graph_name, val[2:-1], "v")
+    elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):       # parse edge id
+        return __find_cached_element(ctx, graph_name, val[2:-4], "e").id
+    elif isinstance(val, str) and re.match("^e\[.*\]\.sid$", val):      # parse edge id as string
+        return str(__find_cached_element(ctx, graph_name, val[2:-5], "e").id)
+    elif isinstance(val, str) and re.match("^e\[.*\]$", val):           # parse edge
+        return __find_cached_element(ctx, graph_name, val[2:-1], "e")
+    elif isinstance(val, str) and re.match("^m\[.*\]$", val):           # parse json as a map
         return _convert(json.loads(val[2:-1].replace('\\"', '"')), ctx)
-    elif isinstance(val, str) and re.match("^p\[.*\]$", val):         # parse path
+    elif isinstance(val, str) and re.match("^p\[.*\]$", val):           # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
         return Path([set([])], path_objects)
-    elif isinstance(val, str) and re.match("^c\[.*\]$", val):         # parse lambda/closure
+    elif isinstance(val, str) and re.match("^c\[.*\]$", val):           # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
     elif isinstance(val, str) and re.match("^t\[.*\]$", val):         # parse instance of T enum
         return T[val[2:-1]]
     else:
         return val
+
+
+def __find_cached_element(ctx, graph_name, identifier, element_type):
+    if graph_name == "empty":
+        cache = __create_lookup_v(ctx.remote_conn["empty"]) if element_type == "v" else __create_lookup_e(ctx.remote_conn["empty"])
+    else:
+        cache = ctx.lookup_v[graph_name] if element_type == "v" else ctx.lookup_e[graph_name]
+
+    return cache[identifier]
 
 
 def _convert_results(val):
@@ -221,12 +255,14 @@ def _translate(traversal):
 def _make_traversal(g, traversal_string, params):
     b = {"g": g,
          "__": __,
+         "Barrier": Barrier,
          "Cardinality": Cardinality,
          "Column": Column,
          "Direction": Direction,
          "Order": Order,
          "P": P,
          "Pick": Pick,
+         "Pop": Pop,
          "Scope": Scope,
          "Operator": Operator,
          "T": T}
@@ -234,3 +270,20 @@ def _make_traversal(g, traversal_string, params):
     b.update(params)
 
     return eval(_translate(traversal_string), b)
+
+
+def __create_lookup_v(remote):
+    g = Graph().traversal().withRemote(remote)
+
+    # hold a map of name/vertex for use in asserting results
+    return g.V().group().by('name').by(tail()).next()
+
+
+def __create_lookup_e(remote):
+    g = Graph().traversal().withRemote(remote)
+
+    # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
+    # outgoingV-label->incomingV
+    return g.E().group(). \
+        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
+        by(tail()).next()

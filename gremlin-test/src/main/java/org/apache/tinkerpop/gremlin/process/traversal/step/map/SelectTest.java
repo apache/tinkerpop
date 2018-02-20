@@ -564,7 +564,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_whereXoutXknowsXX_selectXaX_byXnameX() {
+    public void g_V_asXaX_whereXoutXknowsXX_selectXaX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_whereXoutXknowsXX_selectXaX();
         printTraversalForm(traversal);
         assertEquals(convertToVertex(graph, "marko"), traversal.next());
