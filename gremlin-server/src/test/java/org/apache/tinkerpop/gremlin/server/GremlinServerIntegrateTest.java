@@ -251,7 +251,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.scriptEvaluationTimeout = 500;
                 break;
             case "shouldPingChannelIfClientDies":
-                settings.idleWriteLimit = 1000;
+                settings.keepAliveInterval = 1000;
                 break;
         }
 

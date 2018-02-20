@@ -166,17 +166,17 @@ public class Settings {
     /**
      * Time in milliseconds that the server will allow a channel to not receive requests from a client before it
      * automatically closes. If enabled, the value provided should typically exceed the amount of time given to
-     * {@link #idleWriteLimit}. Set this value to 0 to disable this feature.
+     * {@link #keepAliveInterval}. Set this value to 0 to disable this feature.
      */
-    public long idleReadLimit = 0;
+    public long idleConnectionTimeout = 0;
 
     /**
      * Time in milliseconds that the server will allow a channel to not send responses to a client before it sends
      * a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will
-     * thus reset the {@link #idleReadLimit} and keep the channel open. If enabled, this number should be smaller than
-     * the value provided to the {@link #idleReadLimit}. Set this value to 0 to disable this feature.
+     * thus reset the {@link #idleConnectionTimeout} and keep the channel open. If enabled, this number should be smaller than
+     * the value provided to the {@link #idleConnectionTimeout}. Set this value to 0 to disable this feature.
      */
-    public long idleWriteLimit = 0;
+    public long keepAliveInterval = 0;
 
     /**
      * If set to {@code true} the {@code aliases} option is required on requests and Gremlin Server will use that

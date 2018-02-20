@@ -154,7 +154,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // checks for no activity on a channel and triggers an event that is consumed by the OpSelectorHandler
         // and either closes the connection or sends a ping to see if the client is still alive
         if (supportsIdleMonitor())
-            pipeline.addLast(new IdleStateHandler((int) (settings.idleReadLimit / 1000), (int) (settings.idleWriteLimit / 1000),0));
+            pipeline.addLast(new IdleStateHandler((int) (settings.idleConnectionTimeout / 1000), (int) (settings.keepAliveInterval / 1000),0));
 
         // the implementation provides the method by which Gremlin Server will process requests.  the end of the
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage

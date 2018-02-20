@@ -126,10 +126,10 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             // periodically ping the server, but coming from this direction allows the server to kill channels that
             // have dead clients on the other end
             if (e.state() == IdleState.READER_IDLE) {
-                logger.info("Closing channel - client is disconnected after idle period of " + settings.idleReadLimit + " " + ctx.channel());
+                logger.info("Closing channel - client is disconnected after idle period of " + settings.idleConnectionTimeout + " " + ctx.channel());
                 ctx.close();
             } else if (e.state() == IdleState.WRITER_IDLE) {
-                logger.info("Checking channel - sending ping to client after idle period of " + settings.idleWriteLimit + " " + ctx.channel());
+                logger.info("Checking channel - sending ping to client after idle period of " + settings.keepAliveInterval + " " + ctx.channel());
                 ctx.writeAndFlush(channelizer.createIdleDetectionMessage());
             }
         }
