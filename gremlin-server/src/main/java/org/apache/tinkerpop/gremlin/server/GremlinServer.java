@@ -216,7 +216,16 @@ public class GremlinServer {
         try {
             final Class clazz = Class.forName(settings.channelizer);
             final Object o = clazz.newInstance();
-            return (Channelizer) o;
+
+            final Channelizer c = (Channelizer) o;
+            if (c.supportsIdleMonitor()) {
+                logger.info("idleConnectionTimeout was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
+                        settings.idleConnectionTimeout, settings.idleConnectionTimeout / 1000, settings.idleConnectionTimeout < 1000 ? "disabled" : "enabled");
+                logger.info("keepAliveInterval was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
+                        settings.keepAliveInterval, settings.keepAliveInterval / 1000, settings.keepAliveInterval < 1000 ? "disabled" : "enabled");
+            }
+
+            return c;
         } catch (ClassNotFoundException cnfe) {
             logger.error("Could not find {} implementation defined by the 'channelizer' setting as: {}",
                     Channelizer.class.getName(), settings.channelizer);

@@ -45,8 +45,8 @@ metrics: {
   gangliaReporter: {enabled: false, interval: 180000, addressingMode: MULTICAST},
   graphiteReporter: {enabled: false, interval: 180000}}
 strictTransactionManagement: false
-idleReadLimit: 0
-idleWriteLimit: 0
+idleConnectionTimeout: 0
+keepAliveInterval: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192
