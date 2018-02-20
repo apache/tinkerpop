@@ -52,17 +52,3 @@ Feature: Step - properties()
       | d[32].i |
       | peter |
       | d[35].i |
-
-  Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      There is no way to currently get property identifiers on elements.
-      """
-
-  Scenario: g_V_hasXageX_propertiesXnameX
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      There is no way to currently assert property elements in the test logic.
-      """

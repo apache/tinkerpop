@@ -30,6 +30,7 @@ settings.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empt
 settings.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settings.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
 if (Boolean.parseBoolean(python)) {
     settings.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
@@ -49,6 +50,7 @@ settingsSecure.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergrap
 settingsSecure.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsSecure.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].scripts = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
 if (Boolean.parseBoolean(python)) {
     settingsSecure.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()

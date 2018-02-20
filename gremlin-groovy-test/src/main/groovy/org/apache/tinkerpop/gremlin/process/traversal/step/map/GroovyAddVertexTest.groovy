@@ -47,11 +47,6 @@ public abstract class GroovyAddVertexTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('person').property('name', 'stephen').property('name', 'stephenm')")
-        }
-
-        @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm')")
         }

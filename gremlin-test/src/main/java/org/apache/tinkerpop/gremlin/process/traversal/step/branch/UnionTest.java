@@ -87,7 +87,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
+    public void g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
         final Traversal<Vertex, String> traversal = get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX();
         printTraversalForm(traversal);
         checkResults(new HashMap<String, Long>() {{
@@ -102,7 +102,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+    public void g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
         printTraversalForm(traversal);
         final Map<String, Long> groupCount = traversal.next();

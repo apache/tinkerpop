@@ -186,7 +186,6 @@ class P(object):
         self.value = value
         self.other = other
 
-
     @staticmethod
     def between(*args):
         return P("between", *args)
@@ -221,7 +220,7 @@ class P(object):
 
     @staticmethod
     def not_(*args):
-        return P("not_", *args)
+        return P("not", *args)
 
     @staticmethod
     def outside(*args):
@@ -241,18 +240,13 @@ class P(object):
 
     def and_(self, arg):
         return P("and", self, arg)
+
     def or_(self, arg):
         return P("or", self, arg)
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
-    def __repr__(self):
-        return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
-    def and_(self, arg):
-        return P("and", self, arg)
-    def or_(self, arg):
-        return P("or", self, arg)
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
+
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 

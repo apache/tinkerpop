@@ -27,6 +27,7 @@ globals << [hook : [
     TinkerFactory.generateClassic(classic)
     TinkerFactory.generateModern(modern)
     TinkerFactory.generateTheCrew(crew)
+    TinkerFactory.generateKitchenSink(sink)
     grateful.io(gryo()).readGraph('data/grateful-dead.kryo')
   }
 ] as LifeCycleHook]
@@ -38,3 +39,4 @@ globals << [gcrew : crew.traversal()]
 globals << [ggraph : graph.traversal()]
 globals << [g : modern.traversal()]
 globals << [ggrateful : grateful.traversal()]
+globals << [gsink : sink.traversal()]

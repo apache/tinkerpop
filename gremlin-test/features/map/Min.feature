@@ -49,3 +49,14 @@ Feature: Step - min()
     Then the result should be unordered
       | result |
       | m[{"ripple":"d[1.0].d","lop":"d[0.2].d"}] |
+
+  Scenario: g_V_foo_injectX9999999999X_min
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").inject(9999999999L).min()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[9999999999].l |

@@ -263,7 +263,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_out_aggregateXxX_out_whereXwithout_xX() {
+    public void g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals("ripple", traversal.next().<String>value("name"));
@@ -273,7 +273,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(convertToVertexId("marko"), convertToVertexId("vadas"));
+        final Traversal<Vertex, Vertex> traversal = get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(convertToVertexId("marko"), g.V(convertToVertexId("vadas")).next());
         printTraversalForm(traversal);
         int counter = 0;
         final Set<Vertex> vertices = new HashSet<>();
@@ -324,7 +324,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
+    public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "vadas", "josh"), traversal);
@@ -471,8 +471,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id) {
-            return g.withSideEffect("a", g.V(v2Id).next()).V(v1Id).out().where(neq("a"));
+        public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2) {
+            return g.withSideEffect("a", v2).V(v1Id).out().where(neq("a"));
         }
 
         @Override

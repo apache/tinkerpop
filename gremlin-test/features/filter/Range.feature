@@ -90,7 +90,7 @@ Feature: Step - range()
       | v[peter] |
     And the result should have a count of 2
 
-  Scenario: get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV
+  Scenario: g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
@@ -105,7 +105,7 @@ Feature: Step - range()
       | v[peter] |
     And the result should have a count of 2
 
-  Scenario: get_g_V_repeatXbothX_timesX3X_rangeX5_11X
+  Scenario: g_V_repeatXbothX_timesX3X_rangeX5_11X
     Given the modern graph
     And the traversal of
       """

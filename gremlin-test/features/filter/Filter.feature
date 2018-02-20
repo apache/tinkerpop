@@ -57,6 +57,30 @@ Feature: Step - filter()
       | v[ripple] |
       | v[lop]  |
 
+  Scenario: g_VX1X_filterXage_gt_30X
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter l1 defined as "c[it.get().property('age').orElse(0) > 30]"
+    And the traversal of
+      """
+      g.V(v1Id).filter(l1)
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_VX2X_filterXage_gt_30X
+    Given the modern graph
+    And using the parameter v2Id defined as "v[josh].id"
+    And using the parameter l1 defined as "c[it.get().property('age').orElse(0) > 30]"
+    And the traversal of
+      """
+      g.V(v2Id).filter(l1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
   Scenario: g_VX1X_out_filterXage_gt_30X
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"

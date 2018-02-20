@@ -255,7 +255,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() throws Exception {
+    public void g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
@@ -490,7 +490,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_matchXwhereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_bX() {
+    public void g_V_matchXwhereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXwhereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,

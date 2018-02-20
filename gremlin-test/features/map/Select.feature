@@ -322,3 +322,196 @@ Feature: Step - select()
     Then the result should be unordered
       | result |
       | m[{"ripple":"d[1].l", "lop":"d[6].l"}] |
+
+  Scenario: g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().until(__.out().out()).repeat(__.in().as("a")).select("a").by(__.tail(Scope.local).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | marko |
+      | marko |
+      | marko |
+      | marko |
+
+  Scenario: g_V_outE_weight_groupCount_selectXkeysX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().values("weight").groupCount().select(Column.keys).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].f |
+      | d[1.0].f |
+      | d[0.4].f |
+      | d[0.2].f |
+
+  Scenario: g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").as("name").as("language").as("creators").select("name", "language", "creators").by("name").by("lang").
+                    by(__.in("created").values("name").fold().order(Scope.local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"lop","language":"java","creators":["josh","marko","peter"]}] |
+      | m[{"name":"ripple","language":"java","creators":["josh"]}] |
+
+  Scenario: g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().values("weight").groupCount().unfold().select(Column.keys).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].f |
+      | d[1.0].f |
+      | d[0.4].f |
+      | d[0.2].f |
+
+  Scenario: g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().values("weight").groupCount().unfold().select(Column.values).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[2].l |
+      | d[2].l |
+      | d[1].l |
+
+  Scenario: g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().until(__.out().out()).repeat(__.in().as("a").in().as("b")).select("a", "b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"josh","b":"marko"}] |
+      | m[{"a":"josh","b":"marko"}] |
+
+  Scenario: g_V_outE_weight_groupCount_selectXvaluesX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().values("weight").groupCount().select(Column.values).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[2].l |
+      | d[2].l |
+      | d[1].l |
+
+  Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("knows").as("b").select("a", "b")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[marko]","b":"v[vadas]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]"}] |
+
+  Scenario: g_V_asXaX_whereXoutXknowsXX_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").where(__.out("knows")).select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  Scenario: g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.first, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+
+  Scenario: g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out("knows").as("b").local(__.select("a", "b").by("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"marko","b":"vadas"}] |
+      | m[{"a":"marko","b":"josh"}] |
+
+  Scenario: g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").repeat(__.out().as("a")).times(2).select(Pop.last, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[ripple] |
+      | v[lop] |
+
+  Scenario: g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).outE("knows").as("here").has("weight", 1.0).inV().has("name", "josh").select("here")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->josh] |
+
+  Scenario: g_V_asXaX_hasXname_markoX_asXbX_asXcX_selectXa_b_cX_by_byXnameX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").has("name", "marko").as("b").as("c").select("a", "b", "c").by().by("name").by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[marko]","b":"marko","c":"d[29].i"}] |
+
+  Scenario: g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().values("weight").groupCount().select(Column.values).unfold().groupCount().select(Column.values).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2].l |
+      | d[2].l |
