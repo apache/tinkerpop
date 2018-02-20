@@ -131,7 +131,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         recordingAppender = new Log4jRecordingAppender();
         final Logger rootLogger = Logger.getRootLogger();
 
-        if (name.getMethodName().equals("shouldPingChannelIfClientDies")) {
+        if (name.getMethodName().equals("shouldPingChannelIfClientDies") ||
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.INFO);
@@ -144,7 +145,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void teardownForEachTest() {
         final Logger rootLogger = Logger.getRootLogger();
 
-        if (name.getMethodName().equals("shouldPingChannelIfClientDies")) {
+        if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
+                name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
@@ -253,6 +255,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldPingChannelIfClientDies":
                 settings.keepAliveInterval = 1000;
                 break;
+            case "shouldCloseChannelIfClientDoesntRespond":
+                settings.idleConnectionTimeout = 1000;
+                break;
         }
 
         return settings;
@@ -310,6 +315,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         compilerCustomizerProviderConf.put(ConfigurationCustomizerProvider.class.getName(), keyValues);
         scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
         return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldCloseChannelIfClientDoesntRespond() throws Exception {
+        final SimpleClient client = TestClientFactory.createWebSocketClient();
+        client.submit("1+1");
+
+        // since we do nothing for 2 seconds and the time limit for timeout on the server is 1 second, the server
+        // will autoclose the channel
+        Thread.sleep(2000);
+
+        assertThat(recordingAppender.logContainsAny(".*Closing channel - client is disconnected after idle period of .*$"), is(true));
+
+        client.close();
     }
 
     @Test
