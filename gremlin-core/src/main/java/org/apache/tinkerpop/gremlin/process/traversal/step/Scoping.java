@@ -110,12 +110,12 @@ public interface Scoping {
     public enum Variable {START, END}
 
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
-        if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().get(key);
-        ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
             return ((Map<String, S>) object).get(key);
+        ///
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().get(key);
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
@@ -125,12 +125,12 @@ public interface Scoping {
     }
 
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
-        if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().get(key);
-        ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
             return ((Map<String, S>) object).get(key);
+        ///
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().get(key);
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
