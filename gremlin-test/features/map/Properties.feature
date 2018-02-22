@@ -52,3 +52,10 @@ Feature: Step - properties()
       | d[32].i |
       | peter |
       | d[35].i |
+
+  Scenario: g_injectXg_VX1X_propertiesXnameX_nextX_value
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      The test suite doesn't do well with vertex property values.
+      """

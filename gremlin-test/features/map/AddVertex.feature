@@ -308,3 +308,55 @@ Feature: Step - addV()
       | result |
       | m[{"temp": ["test"], "name": ["lop"]}] |
       | m[{"temp": ["test"], "name": ["ripple"]}] |
+
+  Scenario: g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And the traversal of
+      """
+      g.V().as("a").has("name", "marko").out("created").as("b").addV(__.select("a").label()).property("test", __.select("b").label()).valueMap(true)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"test\",\"software\")"
+
+  Scenario: g_addVXV_hasXname_markoX_propertiesXnameX_keyX_label
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And the traversal of
+      """
+      g.addV(__.V().has("name", "marko").properties("name").key()).label()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | name |
+

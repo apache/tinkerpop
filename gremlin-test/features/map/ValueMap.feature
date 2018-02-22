@@ -92,3 +92,16 @@ Feature: Step - valueMap()
     Then the result should be unordered
       | result |
       | m[{"name": ["lop"], "lang": ["java"]}] |
+
+  Scenario: g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").filter(__.outE("created")).valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": ["marko"], "age": [29], "t[label]":"person", "t[id]":"v[marko].id"}] |
+      | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
+      | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |

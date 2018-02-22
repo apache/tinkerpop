@@ -305,3 +305,123 @@ Feature: Step - addE()
     And the graph should return 2 for count of "g.V().limit(1).bothE()"
     And the graph should return 1 for count of "g.V().limit(1).inE()"
     And the graph should return 1 for count of "g.V().limit(1).outE()"
+
+  Scenario: g_V_hasXname_markoX_asXaX_outEXcreatedX_asXbX_inV_addEXselectXbX_labelX_toXaX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And using the parameter v1 defined as "v[marko]"
+    And the traversal of
+      """
+      g.V().has("name", "marko").as("a").outE("created").as("b").inV().addE(__.select("b").label()).to("a")
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 4 for count of "g.V(v1).bothE()"
+    And the graph should return 1 for count of "g.V(v1).inE(\"created\")"
+    And the graph should return 1 for count of "g.V(v1).in(\"created\").has(\"name\",\"lop\")"
+    And the graph should return 1 for count of "g.V(v1).outE(\"created\")"
+
+  Scenario: g_addEXV_outE_label_groupCount_orderXlocalX_byXvalues_decrX_selectXkeysX_unfold_limitX1XX_fromXV_hasXname_vadasXX_toXV_hasXname_lopXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And using the parameter v2 defined as "v[vadas]"
+    And the traversal of
+      """
+      g.addE(__.V().outE().label().groupCount().order(Scope.local).by(Column.values, Order.decr).select(Column.keys).unfold().limit(1)).from(__.V().has("name", "vadas")).to(__.V().has("name", "lop"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 2 for count of "g.V(v2).bothE()"
+    And the graph should return 1 for count of "g.V(v2).inE(\"knows\")"
+    And the graph should return 1 for count of "g.V(v2).outE(\"created\")"
+    And the graph should return 1 for count of "g.V(v2).out(\"created\").has(\"name\",\"lop\")"
+
+  Scenario: g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And using the parameter v1 defined as "v[marko]"
+    And using the parameter v6 defined as "v[peter]"
+    And using the parameter dotOne defined as "d[0.1].d"
+    And the traversal of
+      """
+      g.addE("knows").from(v1).to(v6).property("weight", dotOne)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
+
+  Scenario: g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And using the parameter v1 defined as "v[marko]"
+    And using the parameter v6 defined as "v[peter]"
+    And using the parameter dotOne defined as "d[0.1].d"
+    And the traversal of
+      """
+      g.V(v1).addE("knows").to(v6).property("weight", dotOne)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
