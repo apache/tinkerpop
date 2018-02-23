@@ -69,7 +69,7 @@ public class Log4jRecordingAppenderTest {
 
     @Test
     public void shouldMatchAnyMessages() {
-        assertTrue(recordingAppender.logContainsAny("ERROR"));
+        assertTrue(recordingAppender.logContainsAny("ERROR.*"));
     }
 
     @Test

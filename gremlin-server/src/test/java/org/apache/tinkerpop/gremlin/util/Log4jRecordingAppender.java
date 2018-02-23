@@ -60,7 +60,8 @@ public class Log4jRecordingAppender extends AppenderSkeleton {
         messages.clear();
     }
 
-    public boolean logContainsAny(final String fragment) {
-        return messages.stream().anyMatch(m -> m.contains(fragment));
+    public boolean logContainsAny(final String regex) {
+        // chop off the line feed so that the regex doesn't have to account for that
+        return messages.stream().anyMatch(m -> m.substring(0,m.length() - 1).matches(regex));
     }
 }

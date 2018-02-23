@@ -26,6 +26,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
@@ -85,7 +86,9 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         final WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));
-        } else if (frame instanceof PongWebSocketFrame) {
+        } else if (frame instanceof PingWebSocketFrame) {
+            ctx.writeAndFlush(new PongWebSocketFrame());
+        }else if (frame instanceof PongWebSocketFrame) {
             logger.debug("Received response from keep-alive request");
         } else if (frame instanceof BinaryWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));

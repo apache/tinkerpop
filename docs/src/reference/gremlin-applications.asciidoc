@@ -1073,7 +1073,8 @@ The following table describes the various configuration options that Gremlin Ser
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
-|useEpollEventLoop |try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
+|idleConnectionTimeout |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveInterval`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
+|keepAliveInterval |Time in milliseconds that the server will allow a channel to not send responses to a client before it sends a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will thus reset the `idleConnectionTimeout` and keep the channel open. If enabled, this number should be smaller than the value provided to the `idleConnectionTimeout`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
 |maxAccumulationBufferComponents |Maximum number of request components that can be aggregated for a message. |1024
 |maxChunkSize |The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple `HttpContent` objects.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be split into smaller chunks if the length of the chunk exceeds this value. |8192
 |maxContentLength |The maximum length of the aggregated content for a message.  Works in concert with `maxChunkSize` where chunked requests are accumulated back into a single message.  A request exceeding this size will return a `413 - Request Entity Too Large` status code.  A response exceeding this size will raise an internal exception. |65536
@@ -1121,6 +1122,7 @@ The following table describes the various configuration options that Gremlin Ser
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
+|useEpollEventLoop |try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
 |writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |65536
 |=========================================================
@@ -1160,8 +1162,7 @@ The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <
 |sessionTimeout |Time in milliseconds before a session will time out. |28800000
 |=========================================================
 
-StandardOpProcessor
-++++++++++++++++++
+===== StandardOpProcessor
 
 The `StandardOpProcessor` provides a way to interact with Gremlin Server without use of sessions and is the default
 method for processing script evaluation requests.
@@ -1593,8 +1594,10 @@ The following sections define best practices for working with Gremlin Server.
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
-* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
-* When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
+* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.
+Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
+* When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a
+maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in
 this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but

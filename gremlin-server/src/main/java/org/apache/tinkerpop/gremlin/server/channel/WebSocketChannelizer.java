@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
@@ -111,6 +112,16 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         if (authenticationHandler != null)
             pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+    }
+
+    @Override
+    public boolean supportsIdleMonitor() {
+        return true;
+    }
+
+    @Override
+    public Object createIdleDetectionMessage() {
+        return new PingWebSocketFrame();
     }
 
     private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {

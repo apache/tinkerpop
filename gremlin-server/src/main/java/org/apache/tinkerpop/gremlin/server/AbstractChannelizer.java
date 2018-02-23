@@ -23,6 +23,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
@@ -98,6 +99,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
+    private IdleStateHandler idleStateHandler;
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
     private IteratorHandler iteratorHandler;
@@ -138,7 +140,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         authenticator = createAuthenticator(settings.authentication);
 
         // these handlers don't share any state and can thus be initialized once per pipeline
-        opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
+        opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService, this);
         opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
         iteratorHandler = new IteratorHandler(settings);
     }
@@ -147,7 +149,15 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public void initChannel(final SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
 
-        if (sslContext.isPresent()) pipeline.addLast(PIPELINE_SSL, sslContext.get().newHandler(ch.alloc()));
+        sslContext.ifPresent(sslContext -> pipeline.addLast(PIPELINE_SSL, sslContext.newHandler(ch.alloc())));
+
+        // checks for no activity on a channel and triggers an event that is consumed by the OpSelectorHandler
+        // and either closes the connection or sends a ping to see if the client is still alive
+        if (supportsIdleMonitor()) {
+            final int idleConnectionTimeout = (int) (settings.idleConnectionTimeout / 1000);
+            final int keepAliveInterval = (int) (settings.keepAliveInterval / 1000);
+            pipeline.addLast(new IdleStateHandler(idleConnectionTimeout, keepAliveInterval, 0));
+        }
 
         // the implementation provides the method by which Gremlin Server will process requests.  the end of the
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
