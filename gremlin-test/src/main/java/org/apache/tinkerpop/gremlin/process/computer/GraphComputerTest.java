@@ -1656,6 +1656,76 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     /////////////////////////////////////////////
 
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportMultipleScopesWithEdgeFunction() throws ExecutionException, InterruptedException {
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new MultiScopeVertexWithEdgeFunctionProgram()).submit().get();
+        assertEquals(result.graph().traversal().V().has("name", "josh").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 0L);
+        assertEquals(result.graph().traversal().V().has("name", "lop").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 4L);
+        assertEquals(result.graph().traversal().V().has("name", "ripple").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 10L);
+        assertEquals(result.graph().traversal().V().has("name", "marko").next().property(MultiScopeVertexProgram.MEMORY_KEY).value(), 20L);
+    }
+
+    public static class MultiScopeVertexWithEdgeFunctionProgram extends StaticVertexProgram<Long> {
+
+        private final MessageScope.Local<Long> countMessageScopeIn = MessageScope.Local.of(__::inE, (m,e) -> m * Math.round(((Double) e.values("weight").next()) * 10));
+        private final MessageScope.Local<Long> countMessageScopeOut = MessageScope.Local.of(__::outE, (m,e) -> m * Math.round(((Double) e.values("weight").next()) * 10));
+
+        private static final String MEMORY_KEY = "count";
+
+
+        @Override
+        public void setup(final Memory memory) {
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+
+        @Override
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of(MEMORY_KEY, false));
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            HashSet<MessageScope> scopes = new HashSet<>();
+            scopes.add(countMessageScopeIn);
+            scopes.add(countMessageScopeOut);
+            return scopes;
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger<Long> messenger, Memory memory) {
+            switch (memory.getIteration()) {
+                case 0:
+                    if (vertex.value("name").equals("josh")) {
+                        messenger.sendMessage(this.countMessageScopeIn, 2L);
+                        messenger.sendMessage(this.countMessageScopeOut, 1L);
+                    }
+                    break;
+                case 1:
+                    long edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0L, (a, b) -> a + b);
+                    vertex.property(MEMORY_KEY, edgeCount);
+                    break;
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() == 1;
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+    }
+
+    /////////////////////////////////////////////
+
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportGraphFilter() throws Exception {
