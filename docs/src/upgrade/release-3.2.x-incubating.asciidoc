@@ -27,6 +27,21 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.8/CHANGELOG.asciidoc#release-3-2-8[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Improved Connection Monitoring
+
+Gremlin Server now has two new settings: `idleConnectionTimeout` and `keepAliveInterval`. The `keepAliveInterval` tells
+Gremlin Server how long it should wait between writes to a client before it issues a "ping" to that client to see if
+it is still present. The `idleConnectionTimeout` represents how long Gremlin Server should wait between requests from
+a client before it closes the connection on the server side. By default, these two configurations are set to zero,
+meaning that they are both disabled.
+
+This change should help to alleviate issues where connections are left open on the server longer than they should be
+by clients that might mysteriously disappear without properly closing their connections.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1726[TINKERPOP-1726]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

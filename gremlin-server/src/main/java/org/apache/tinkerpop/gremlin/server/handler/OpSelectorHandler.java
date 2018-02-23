@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
@@ -51,13 +54,24 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
 
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
+    private final Channelizer channelizer;
 
+    /**
+     * @deprecated As of release 3.2.8, replaced by {@link #OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService, Channelizer)}
+     */
+    @Deprecated
     public OpSelectorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
                              final ScheduledExecutorService scheduledExecutorService) {
+        this(settings, graphManager, gremlinExecutor, scheduledExecutorService, null);
+    }
+
+    public OpSelectorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
+                             final ScheduledExecutorService scheduledExecutorService, final Channelizer channelizer) {
         this.settings = settings;
         this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.channelizer = channelizer;
     }
 
     @Override
@@ -82,6 +96,27 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
         } catch (OpProcessorException ope) {
             logger.warn(ope.getMessage(), ope);
             ctx.writeAndFlush(ope.getResponseMessage());
+        }
+    }
+
+    @Override
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) throws Exception {
+        // only need to handle this event if the idle monitor is on
+        if (!channelizer.supportsIdleMonitor()) return;
+
+        if (evt instanceof IdleStateEvent) {
+            final IdleStateEvent e = (IdleStateEvent) evt;
+
+            // if no requests (reader) then close, if no writes from server to client then ping. clients should
+            // periodically ping the server, but coming from this direction allows the server to kill channels that
+            // have dead clients on the other end
+            if (e.state() == IdleState.READER_IDLE) {
+                logger.info("Closing channel - client is disconnected after idle period of " + settings.idleConnectionTimeout + " " + ctx.channel());
+                ctx.close();
+            } else if (e.state() == IdleState.WRITER_IDLE) {
+                logger.info("Checking channel - sending ping to client after idle period of " + settings.keepAliveInterval + " " + ctx.channel());
+                ctx.writeAndFlush(channelizer.createIdleDetectionMessage());
+            }
         }
     }
 }
