@@ -135,7 +135,8 @@ of the published documentation on the dev mailing list.
 
 A release candidate is an unofficial release that is represented by a tagged version in the Git repository.  It is
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
-might be high.
+might be high. Release candidates do not require a vote thread. Lazy consensus is acceptable for confirming their
+deployment.
 
 . `mvn clean install -DincludeNeo4j`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
@@ -152,6 +153,14 @@ might be high.
 . `git commit -a -m "Returned to xx.yy.zz-SNAPSHOT"` and `git push`
 . Announce the release candidate to `dev` mailing list and await feedback
 . Repeat as required or proceed to the next phase
+
+Note that release candidates need not require the release of all artifacts. For example, if the risk is with one
+particular GLV, then a release candidate can be prepared of just that particular artifact. In those cases, a tag on
+the commit that represents the release candidate is sufficient and does not necessarily require that the versions
+be bumped to reflect the actual "-rc" version. In other words, if preparing a release candidate for .NET, then there
+is no need to go through the processing of bumping versions in Java artifacts and all GLVs. Nor is it necessary to
+alter the version of .NET to include the release candidate versioning. It can simply be altered locally by the
+release manager and deployed.
 
 == PMC Vote
 
