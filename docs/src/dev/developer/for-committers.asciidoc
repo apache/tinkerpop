@@ -177,8 +177,7 @@ Test cases for the Gremlin Language currently requires that the newly developed 
 
 1. As a test written in Java in the `gremlin-test` module within the subpackages of
 `org.apache.tinkerpop.gremlin.process.traversal.step`
-2. As a test written in Groovy in the `gremlin-groovy-test` module within the same subpackage structure as `gremlin-test`
-3. As a test written in Gherkin in the `gremlin-test` module in the `/features` subdirectory
+2. As a test written in Gherkin in the `gremlin-test` module in the `/features` subdirectory
 
 When writing a Java test case for a Gremlin step, be sure to use the following conventions.
 
@@ -195,14 +194,11 @@ When writing a Java test case for a Gremlin step, be sure to use the following c
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
 
-Groovy tests are implemented by extending the Java test and implementing the abstract method that produces the
-traversal. Simply follow existing patterns in those tests - they are self-evident.
-
 Gherkin tests follow some important conventions and have a sub-language that must be adhered to for the tests to
 function properly. Note that Gherkin tests are designed to support the testing of GLVs and at some point will likely
-replace the Java tests (Groovy tests have already been removed in 3.3.x). If a new Java test is added and an associated
-Gherkin tests is not, the overall build will fail the `FeatureCoverageTest` of `gremlin-test` which validates that all
-tests written in Java are also implemented in Gherkin.
+replace the Java tests. If a new Java test is added and an associated Gherkin tests is not, the overall build will
+fail the `FeatureCoverageTest` of `gremlin-test` which validates that all tests written in Java are also implemented
+in Gherkin.
 
 The basic syntax of a Gherkin test is as follows:
 
