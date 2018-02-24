@@ -174,7 +174,14 @@ for an example.
 
 === Gremlin Language Test Cases
 
-When writing a test case for a Gremlin step, be sure to use the following conventions.
+Test cases for the Gremlin Language currently requires that the newly developed test be added in three places:
+
+1. As a test written in Java in the `gremlin-test` module within the subpackages of
+`org.apache.tinkerpop.gremlin.process.traversal.step`
+2. As a test written in Groovy in the `gremlin-groovy-test` module within the same subpackage structure as `gremlin-test`
+3. As a test written in Gherkin in the `gremlin-test` module in the `/features` subdirectory
+
+When writing a Java test case for a Gremlin step, be sure to use the following conventions.
 
 * The name of the traversal generator should start with `get`, use `X` for brackets, `_` for space, and the Gremlin-Groovy sugar syntax.
 ** `get_g_V_hasLabelXpersonX_groupXaX_byXageX_byXsumX_name()`
@@ -188,6 +195,213 @@ When writing a test case for a Gremlin step, be sure to use the following conven
 * `AbstractGremlinProcessTest` has various static methods to make writing a test case easy.
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
+
+Groovy tests are implemented by extending the Java test and implementing the abstract method that produces the
+traversal. Simply follow existing patterns in those tests - they are self-evident.
+
+Gherkin tests follow some important conventions and have a sub-language that must be adhered to for the tests to
+function properly. Note that Gherkin tests are designed to support the testing of GLVs and at some point will likely
+replace the Java tests (Groovy tests have already been removed in 3.3.x). If a new Java test is added and an associated
+Gherkin tests is not, the overall build will fail the `FeatureCoverageTest` of `gremlin-test` which validates that all
+tests written in Java are also implemented in Gherkin.
+
+The basic syntax of a Gherkin test is as follows:
+
+[source,gherkin]
+----
+Scenario: g_VX1X_unionXrepeatXoutX_timesX2X__outX_name
+  Given the modern graph
+  And using the parameter v1Id defined as "v[marko].id"
+  And the traversal of
+    """
+    g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | ripple |
+    | lop |
+    | lop   |
+    | vadas |
+    | josh  |
+----
+
+==== Scenario Name
+
+The name of the scenario needs to match the name of the Java test. If it does not then the `FeatureCoverageTest` will
+fail.
+
+==== Given
+
+"Given" sets the context of the test. Specifically, it establishes the graph that will be used for the test. It
+conforms to the pattern of "Given the _xxx_ graph" where the "xxx" may be one of the following:
+
+* empty
+* modern
+* classic
+* crew
+* sink
+* grateful
+
+Never modify the data of any of the graphs except for the "empty" graph. The "empty" graph is the only graph that is
+guaranteed to be refreshed between tests. The "empty" graph maybe be modified by the traversal under test or by an
+additional "Given" option:
+
+[source,gherkin]
+----
+Given the empty graph
+And the graph initializer of
+  """
+  g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+    addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+    addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+    addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+    addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+    addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+    addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+    addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+    addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+    addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+    addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+    addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+  """
+----
+
+The above configuration will use the "empty" graph and initialize it with the specified traversal. In this case, that
+traversal loads the "empty" graph with the "modern" graph.
+
+Once the graph for the test is defined, the context can be expanded to include parameters that will be applied to the
+traversal under test. Any variable value being used in the traversal under test, especially ones that require a
+specific type, should be defined as parameters. The structure for parameter definition looks like this:
+
+[source,gherkin]
+----
+Given the modern graph
+And using the parameter v1Id defined as "v[marko].id"
+----
+
+In the above example, "v1Id" is the name of the parameter that will be used in the traversal. The end of that line in
+quotes is the value of that parameter and should use the type system notation that has been developed for the TinkerPop
+Gherkin tests. The type system notation ensures that different language variants have the ability to construct the
+appropriate types expected by the tests.
+
+The syntax of the type notation involves a prefix character to help denote the type, a value between two square
+brackets, optionally suffixed with some additional notation depending on the primary type.
+
+* Edge - *e[_xxx_]* - The "xxx" should be replaced with a representation of an edge in the form of the
+`vertex_name-edgelabel->vertex_name`. This syntax may also include the `.id` suffix which would indicate getting the
+edge identifier or the `.sid` suffix which gets a string representation of the edge identifier.
+* Lambda - *c[_xxx_]* - The "xxx" should contain a lambda written in Groovy.
+* List - *l[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the list should be added to
+between the square brackets. These values respect the type system thus allowing for creation of lists of vertices,
+edges, maps, and any other available type.
+* Map - *m[_xxx_]* - The "xxx" should be replaced with a JSON string. Note that keys and values will be parsed using
+the type notation system so that it is possible to have maps containing arbitrary keys and values.
+* Numeric - *d[_xxx_]._y_* - The "xxx" should be replaced with a number. The suffix denoted by "y" should always be
+included to further qualify the type of numeric. The following options are available:
+** *d* - 32-bit Double
+** *f* - 32-bit Float
+** *i* - 32-bit Integer
+** *l* - 64-bit Long
+** *m* - Arbitrary-precision signed decimal numbers (i.e. BigDecimal in Java)
+* Path - *p[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the `Path` should be added to
+between the square brackets. These values respect the type system thus allowing for creation of `Path` of vertices,
+edges, maps, and any other available type.
+* Set - *s[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the set should be added to
+between the square brackets. These values respect the type system thus allowing for creation of sets of vertices,
+edges, maps, and any other available type.
+* String - Any value not using the system notation will be interpreted as a string.
+* T - *t[_xxx_]* - The "xxx" should be replaced with a value of the `T` enum, such as `id` or `label`.
+* Vertex - *v[_xxx_]* - The "xxx" should be replaced with the "name" property of a vertex in the graph. This syntax may
+include the `.id` suffix which would indicate getting the vertex identifier or the `.sid` suffix which gets a string
+representation of the edge identifier.
+
+Finally, specify the traversal under test with the "Given" option "and the traversal":
+
+[source,gherkin]
+----
+And the traversal of
+  """
+  g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name")
+  """
+----
+
+It will be the results of this traversal that end up being asserted by Gherkin. When writing these test traversals,
+be sure to always use the method and enum prefixes. For example, use  `__.out()` for an anonymous traversal rather
+than just `out()` and prefer `Scope.local` rather than just `local`.
+
+If a particular test cannot be written in Gherkin for some reason or cannot be otherwise supported by a GLV, first,
+consider whether or not this test can be re-written in Java so that it will work for GLVs and then, second, if it
+cannot, then use the following syntax for unsupported tests:
+
+[source,gherkin]
+----
+Scenario: g_V_outXcreatedX_groupCountXxX_capXxX
+  Given an unsupported test
+  Then nothing should happen because
+    """
+    The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
+    specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
+    with GraphSON 3.x.
+    """
+----
+
+==== When
+
+The "When" options get the result from the traversal in preparation for assertion. There are two options to iterate:
+
+* "When iterated to list" - iterates the entire traversal into a list result that is asserted
+* "When iterated next" - gets the first value from the traversal as the result to be asserted
+
+There should be only one "When" defined in a scenario.
+
+==== Then
+
+The "Then" options handle the assertion of the result. There are several options to consider:
+
+* "the result should have a count of _xxx_" - assumes a list value in the result and counts the number of values
+in it
+* "the result should be empty" - no results
+* "the result should be ordered" - the exact results and should appear in the order presented
+* "the result should be unordered" - the exact results but can appear any order
+* "the result should be of" - results can be any of the specified values and in any order (use when guarantees
+regarding the exact results cannot be pre-determined easily - see the `range()` step tests for examples)
+
+These final three types of assertions mentioned above should be followed by a Gherkin table that has one column, where
+each row value in that column represents a value to assert in the result. These values are type notation respected as
+shown in the following example:
+
+[source,gherkin]
+----
+Then the result should be unordered
+  | result |
+  | ripple |
+  | lop |
+  | lop   |
+  | vadas |
+  | josh  |
+----
+
+Another method of assertion is to test mutations in the original graph. Again, mutations should only occur on the
+"empty" graph, but they can be validated as follows:
+
+[source,gherkin]
+----
+Scenario: g_V_outE_drop
+  Given the empty graph
+  And the graph initializer of
+    """
+    g.addV().as("a").addV().as("b").addE("knows").to("a")
+    """
+  And the traversal of
+    """
+    g.V().outE().drop()
+    """
+  When iterated to list
+  Then the result should be empty
+  And the graph should return 2 for count of "g.V()"
+  And the graph should return 0 for count of "g.E()"
+----
 
 == Developing Benchmarks
 
