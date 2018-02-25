@@ -1,3 +1,1 @@
 {"id":0,"label":"loops","inE":{"self":[{"id":2,"outV":0}]},"outE":{"self":[{"id":2,"inV":0}]},"properties":{"name":[{"id":1,"value":"loop"}]}}
-{"id":1,"label":"message_passing_test","inE":{"msg_pass_test_edge":[{"id":5,"outV":1}]},"outE":{"msg_pass_test_edge":[{"id":4,"inV":2},{"id":5,"inV":1}]},"properties":{"propertyin":[{"id":0,"value":"a"}]}}
-{"id":2,"label":"message_passing_test","inE":{"msg_pass_test_edge":[{"id":4,"outV":1}]},"properties":{"propertyin":[{"id":3,"value":"b"}]}}
