@@ -69,6 +69,7 @@ import java.util.concurrent.Future;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2688,8 +2689,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     ///////////////////////////////////
 
     @Test
+    @LoadGraphWith(SINK)
     public void testMessagePassingIn() throws Exception {
-        runTest(Direction.IN).forEachRemaining(v -> {
+        runMPTest(Direction.IN).forEachRemaining(v -> {
             vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
@@ -2703,8 +2705,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @LoadGraphWith(SINK)
     public void testMessagePassingOut() throws Exception {
-        runTest(Direction.OUT).forEachRemaining(v -> {
+        runMPTest(Direction.OUT).forEachRemaining(v -> {
             vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
@@ -2718,8 +2721,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @LoadGraphWith(SINK)
     public void testMessagePassingBoth() throws Exception {
-        runTest(Direction.BOTH).forEachRemaining(v -> {
+        runMPTest(Direction.BOTH).forEachRemaining(v -> {
             vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
             if (in.equals("a"))
@@ -2732,14 +2736,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         });
     }
 
-    private GraphTraversal<Vertex, Vertex> runTest(Direction direction) throws Exception {
-        final Vertex a = graph.addVertex(VertexProgramR.PROPERTY_IN, "a");
-        final Vertex b = graph.addVertex(VertexProgramR.PROPERTY_IN, "b");
-        a.addEdge("edge", b);
-        a.addEdge("edge", a);
+    private GraphTraversal<Vertex, Vertex> runMPTest(Direction direction) throws Exception {
         final VertexProgramR svp = VertexProgramR.build().direction(direction).create();
-        final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).submit().get();
-        return result.graph().traversal().V();
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).vertices(__.hasLabel(VertexProgramR.VERTEX_LABEL)).submit().get();
+        return result.graph().traversal().V().hasLabel(VertexProgramR.VERTEX_LABEL);
     }
 
     private static void vertexPropertyChecks(Vertex v) {
@@ -2754,6 +2754,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         private static final String SIMPLE_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.simpleVertexProgram";
         private static final String PROPERTY_OUT = "propertyout";
         private static final String PROPERTY_IN = "propertyin";
+        private static final String VERTEX_LABEL = "message_passing_test";
         private static final String DIRECTION_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".direction";
 
         private final MessageScope.Local<String> inMessageScope = MessageScope.Local.of(__::inE);
