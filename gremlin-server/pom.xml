@@ -243,5 +243,39 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>docker-images</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>.docker</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docker-image</id>
+                                <goals>
+                                    <goal>build</goal>
+                                    <goal>push</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <repository>tinkerpop/gremlin-server</repository>
+                            <tag>${project.version}</tag>
+                            <buildArgs>
+                                <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>                
+            </build>
+        </profile>
     </profiles>
 </project>

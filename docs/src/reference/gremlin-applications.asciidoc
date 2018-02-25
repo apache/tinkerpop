@@ -353,6 +353,38 @@ variable initialization code into the console.
 Like, execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
 <<execution-mode, Execution Mode Section>> for more information on the specifics of that capability.
 
+[[gremlin-console-docker-image]]
+=== Docker Image
+The Gremlin Console can also be started as a link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Docker image]:
+
+[source,text]
+----
+$ docker run -it tinkerpop/gremlin-console:x.y.z
+Feb 25, 2018 3:47:24 PM java.util.prefs.FileSystemPreferences$1 run
+INFO: Created user preferences directory.
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin>
+----
+
+The Docker image offers the same options as the standalone Console. It can be used for example to execute scripts:
+
+[source,bash]
+----
+$ docker run -it tinkerpop/gremlin-console:x.y.z -e gremlin.groovy
+v[1]
+v[2]
+v[3]
+v[4]
+v[5]
+v[6]
+----
+
 [[gremlin-server]]
 == Gremlin Server
 
@@ -1900,6 +1932,63 @@ $ curl -X POST -d "{\"gremlin\":\"divideIt(8, 2)\"}" "http://localhost:8182"
 
 In the above REST-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
 immediately forget the script after execution. In this way, the function does not end up being globally available.
+
+[[gremlin-server-docker-image]]
+=== Docker Image
+The Gremlin Server can also be started as a link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Docker image]:
+
+[source,text]
+----
+$ docker run tinkerpop/gremlin-server:x.y.z
+[INFO] GremlinServer - 
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server.yaml
+[INFO] MetricManager - Configured Metrics ConsoleReporter configured with report interval=180000ms
+[INFO] MetricManager - Configured Metrics CsvReporter configured with report interval=180000ms to fileName=/tmp/gremlin-server-metrics.csv
+[INFO] MetricManager - Configured Metrics JmxReporter configured with domain= and agentId=
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] DefaultGraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/empty-sample.groovy
+[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and preparing GremlinScriptEngines instances.
+[INFO] ServerGremlinExecutor - Initialized gremlin-groovy GremlinScriptEngine and registered metrics
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] OpLoader - Adding the standard OpProcessor.
+[INFO] OpLoader - Adding the control OpProcessor.
+[INFO] OpLoader - Adding the session OpProcessor.
+[INFO] OpLoader - Adding the traversal OpProcessor.
+[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
+[INFO] GremlinServer - Executing start up LifeCycleHook
+[INFO] Logger$info - Executed once at startup of Gremlin Server.
+[INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
+[INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v2.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+By default, Gremlin Server listens on port 8182. So that port should be exposed if it should be reachable on the host:
+
+[source,bash]
+----
+$ docker run -p 8182:8182 tinkerpop/gremlin-server:x.y.z
+----
+
+Arguments provided with `docker run` are forwarded to the script that starts Gremlin Server. This allows for example
+to use an alternative config file:
+
+[source,bash]
+----
+$ docker run tinkerpop/gremlin-server:x.y.z conf/gremlin-server-secure.yaml
+----
 
 [[gremlin-plugins]]
 == Gremlin Plugins

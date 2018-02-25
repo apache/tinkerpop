@@ -319,6 +319,7 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
+                        <exclude>**/.docker</exclude>
                         <exclude>bin/gremlin.sh</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>**/Debug/**</exclude>
@@ -495,6 +496,11 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>1.3.7</version>
                 </plugin>
             </plugins>
         </pluginManagement>
