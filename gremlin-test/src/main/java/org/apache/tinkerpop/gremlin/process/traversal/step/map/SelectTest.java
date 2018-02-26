@@ -83,7 +83,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX();
 
-    public abstract Traversal<Integer, String> get_g_withSideEffectXa_a_markoX_injectX1X_selectXaX_select_XaX();
+    public abstract Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(final Object v1Id);
 
     // below are original back()-tests
 
@@ -345,8 +345,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_withSideEffectXa_a_markoX_injectX1X_selectXaX_select_XaX() {
-        final Traversal<Integer, String> traversal = get_g_withSideEffectXa_a_markoX_injectX1X_selectXaX_select_XaX();
+    public void g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("marko", traversal.next());
@@ -658,7 +658,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
         assertFalse(traversal.hasNext());
     }
-
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX() {
@@ -734,10 +733,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             return g.V().choose(__.outE().count().is(0L), __.as("a"), __.as("b")).choose(__.select("a"), __.select("a"), __.select("b"));
         }
 
-        public Traversal<Integer, String> get_g_withSideEffectXa_a_markoX_injectX1X_selectXaX_select_XaX() {
-            final Map<String, String> m = new HashMap<>(1);
-            m.put("a", "marko");
-            return g.withSideEffect("a", m).inject(1).select("a").select("a");
+        public Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(final Object v1Id) {
+            return g.V(v1Id).group("a").by(__.constant("a")).by(__.values("name"))
+                    .barrier() // TODO: this barrier() should not be necessary
+                    .select("a").select("a");
         }
 
         // below are original back()-tests

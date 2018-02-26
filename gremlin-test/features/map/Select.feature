@@ -204,6 +204,22 @@ Feature: Step - select()
       | v[ripple] |
       | v[peter] |
 
+  Scenario: g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).group("a").
+                  by(__.constant("a")).
+                  by(__.values("name")).
+        barrier().
+        select("a").select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
   Scenario: g_VX1X_asXhereX_out_selectXhereX
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
