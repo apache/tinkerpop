@@ -25,9 +25,9 @@ limitations under the License.
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>3.3.2-SNAPSHOT</Version>
-    <FileVersion>3.3.2.0</FileVersion>
-    <AssemblyVersion>3.3.0.0</AssemblyVersion>
+    <Version>3.4.0-SNAPSHOT</Version>
+    <FileVersion>3.4.0.0</FileVersion>
+    <AssemblyVersion>3.4.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
