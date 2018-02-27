@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,17 +40,15 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        Number result;
         final Iterator<E> iterator = traverser.get().iterator();
         if (iterator.hasNext()) {
-            result = iterator.next();
+            Number result = iterator.next();
             while (iterator.hasNext()) {
                 result = NumberHelper.add(result, iterator.next());
             }
-        } else {
-            result = 0;
+            return (E) result;
         }
-        return (E) result;
+        throw FastNoSuchElementException.instance();
     }
 
     @Override

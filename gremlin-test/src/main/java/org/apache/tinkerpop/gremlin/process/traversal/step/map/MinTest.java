@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -43,6 +44,12 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_age_min();
 
+    public abstract Traversal<Vertex, Integer> get_g_V_age_fold_minXlocalX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_foo_min();
+
+    public abstract Traversal<Vertex, Number> get_g_V_foo_fold_minXlocalX();
+
     public abstract Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX();
@@ -55,6 +62,30 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Integer> traversal = get_g_V_age_min();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(27), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_age_fold_minXlocalX() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_age_fold_minXlocalX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_foo_min() {
+        final Traversal<Vertex, Number> traversal = get_g_V_foo_min();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_foo_fold_minXlocalX() {
+        final Traversal<Vertex, Number> traversal = get_g_V_foo_fold_minXlocalX();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -93,6 +124,21 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
             return g.V().values("age").min();
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_age_fold_minXlocalX() {
+            return g.V().values("age").fold().min(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_min() {
+            return g.V().values("foo").min();
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_fold_minXlocalX() {
+            return g.V().values("foo").fold().min(Scope.local);
         }
 
         @Override

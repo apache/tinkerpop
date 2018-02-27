@@ -28,6 +28,35 @@ Feature: Step - max()
       | result |
       | d[35].i |
 
+  Scenario: g_V_foo_max
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").max()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_age_fold_maxXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").fold().max(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[35].i |
+
+  Scenario: g_V_foo_fold_maxXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").fold().max(Scope.local)
+      """
+    When iterated to list
+    Then the result should be empty
+
   Scenario: g_V_repeatXbothX_timesX5X_age_max
     Given the modern graph
     And the traversal of

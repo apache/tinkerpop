@@ -132,11 +132,8 @@ public class TinkerGraphPlayTest {
     public void testPlayDK() throws Exception {
 
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal();
-        graph.io(GraphMLIo.build()).readGraph("/projects/apache/tinkerpop/data/grateful-dead.xml");
-        System.out.println(g.V().filter(outE("sungBy").count().is(0)).explain());
-        System.out.println(g.V().filter(outE("sungBy").count().is(lt(1))).explain());
-        System.out.println(g.V().filter(outE("sungBy").count().is(1)).explain());
+        GraphTraversalSource g = graph.traversal().withComputer();
+        g.V().values("test").max().forEachRemaining(System.out::println);
     }
 
     @Test

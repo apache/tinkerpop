@@ -135,7 +135,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     public void g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX() {
         final Traversal<Vertex, Number> traversal = get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(0l, 0l, 0, 3l, 1l, 1.9d), traversal);
+        checkResults(Arrays.asList(3L, 0L, 1.9, 0L, 1L), traversal);
     }
 
     @Test
