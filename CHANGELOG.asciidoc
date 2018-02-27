@@ -16,6 +16,16 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
+== TinkerPop 3.4.0 (NOT NAMED YET)
+
+NEED AND IMAGE
+
+[[release-3-4-0]]
+=== TinkerPop 3.4.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-3-2, 3.3.2>>.
+
+
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
