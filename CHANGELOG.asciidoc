@@ -26,7 +26,7 @@ NEED AND IMAGE
 This release also includes changes from <<release-3-3-2, 3.3.2>>.
 
 * Fixed a bug in `ReducingBarrierStep`, that returned the provided seed value despite no elements being available.
-
+* Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
