@@ -65,10 +65,11 @@ TinkerPop has several release branches:
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (no longer maintained)
 * `tp32` - 3.2.x (bug fixes and documentation updates only)
-* `master` - 3.3.x
+* `tp33` - 3.3.x (current development)
+* `master` - 3.4.x (future development)
 
-Changes to `tp32` should merge to `master`. Please read more about this process in the <<pull-requests, Pull Requests>>
-section.
+Changes to `tp32` should merge to `tp33` and then `tp33` to `master`. Please read more about this process in the
+<<pull-requests, Pull Requests>> section.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
