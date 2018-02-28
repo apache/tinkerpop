@@ -252,6 +252,90 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void shouldFilterMixedCriteriaButNotCheckAdjacentVertices() {
+        final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
+
+        // 9 isn't present because marko is not in the vertex list
+        final Traversal<Edge, ?> edgeCriterion = __.or(
+                has("weight", 0.4d).hasLabel("created"), // 11
+                has("weight", 1.0d).hasLabel("created") // 10
+        );
+
+        final SubgraphStrategy strategy = SubgraphStrategy.build().
+                checkAdjacentVertices(false).
+                edges(edgeCriterion).vertices(vertexCriterion).create();
+        final GraphTraversalSource sg = g.withStrategies(strategy);
+
+        // three vertices are included in the subgraph
+        assertEquals(6, g.V().count().next().longValue());
+        assertEquals(3, sg.V().count().next().longValue());
+
+        // three edges are explicitly included as we ignore checking of adjacent vertices
+        assertEquals(6, g.E().count().next().longValue());
+        assertEquals(3, sg.E().count().next().longValue());
+
+        // from vertex
+
+        assertEquals(2, g.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out().count().next().longValue());
+
+        assertEquals(1, g.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in().count().next().longValue());
+
+        assertEquals(3, g.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both().count().next().longValue());
+
+        // marko not present directly because of vertexCriterion - only accessible via vertices in the subgraph
+        assertEquals(1, g.V(convertToVertexId("marko")).count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("marko")).count().next().longValue());
+
+        // with label
+
+        assertEquals(2, g.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both("created").count().next().longValue());
+
+        assertEquals(1, g.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).both("knows").count().next().longValue());
+
+        // with branch factor
+
+        assertEquals(1, g.V(convertToVertexId("josh")).local(bothE().limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(bothE().limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(bothE("knows", "created").limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(bothE("knows", "created").limit(1)).inV().count().next().longValue());
+
+        // from edge
+
+        // marko is not accessible from the edge
+        assertEquals(2, g.E(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
+        assertEquals(1, sg.E(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void shouldFilterMixedCriteria() throws Exception {
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
