@@ -2753,7 +2753,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     private static class VertexProgramR implements VertexProgram<String> {
         private static final String SIMPLE_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.simpleVertexProgram";
         private static final String PROPERTY_OUT = "propertyout";
-        private static final String PROPERTY_IN = "propertyin";
+        private static final String PROPERTY_IN = "name";
         private static final String VERTEX_LABEL = "message_passing_test";
         private static final String DIRECTION_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".direction";
 

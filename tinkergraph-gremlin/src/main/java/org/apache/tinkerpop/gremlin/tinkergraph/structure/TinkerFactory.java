@@ -151,9 +151,9 @@ public final class TinkerFactory {
           iterate();
         final String LABEL = "message_passing_test";
         final String EDGE_LABEL = "msg_pass_test_edge";
-        final String PROPERTY_IN = "propertyin";
-        Vertex a = graph.addVertex(T.id, 2000, T.label, LABEL, PROPERTY_IN, "a");
-        Vertex b = graph.addVertex(T.id, 2001, T.label, LABEL, PROPERTY_IN, "b");
+        final String PROPERTY_IN = "name";
+        final Vertex a = graph.addVertex(T.id, 2000, T.label, LABEL, PROPERTY_IN, "a");
+        final Vertex b = graph.addVertex(T.id, 2001, T.label, LABEL, PROPERTY_IN, "b");
         a.addEdge(EDGE_LABEL, b);
         a.addEdge(EDGE_LABEL, a);
     }
