@@ -57,6 +57,8 @@ Note the "+" following the link in each table entry - it forces an asciidoc line
 A gentle introduction to TinkerPop and the Gremlin traversal language that is divided into five, ten and fifteen minute tutorial blocks.
 |image:gremlin-dashboard.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] +
 Provides a detailed look at The Gremlin Console and how it can be used when working with TinkerPop.
+^|image:gremlin-anatomy.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/gremlins-anatomy/[Gremlin's Anatomy]
+Identifies and explains the component parts of a Gremlin traversal.
 ^|image:gremlin-chef.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes]
 A collection of best practices and common traversal patterns for Gremlin.
 ^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants]
@@ -77,6 +79,7 @@ A getting started guide for users of graph databases and the Gremlin query langu
 
 Unless otherwise noted, all "publications" are externally managed:
 
+* Mallette, S.P., link:https://www.slideshare.net/StephenMallette/gremlins-anatomy-88713465["Gremlin's Anatomy,"] DataStax User Group, February 2018.
 * Rodriguez, M.A., link:https://www.slideshare.net/slidarko/gremlin-1013-on-your-fm-dial["Gremlin 101.3 On Your FM Dial,"] DataStax Support and Engineering Summits, Carmel California and Las Vegas Nevada, May 2017.
 * Rodriguez, M.A., link:https://www.datastax.com/2017/03/graphoendodonticology["Graphoendodonticology,"] DataStax Engineering Blog, March 2017
 * Rodriguez, M.A., link:http://www.datastax.com/dev/blog/gremlins-time-machine["Gremlin's Time Machine,"] DataStax Engineering Blog, September 2016.
