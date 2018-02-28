@@ -282,6 +282,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added `checkAdjacentVertices` option to `SubgraphStrategy`.
 * Modified `GremlinDslProcessor` so that it generated the `getAnonymousTraversalClass()` method to return the DSL version of `__`.
 * Added the "Kitchen Sink" test data set.
 * Added `idleConnectionTimeout` and `keepAliveInterval` to Gremlin Server that enables a "ping" and auto-close for seemingly dead clients.
