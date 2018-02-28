@@ -82,13 +82,14 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     private final String MARKER = Graph.Hidden.hide("gremlin.subgraphStrategy");
 
-    private SubgraphStrategy(final Traversal<Vertex, ?> vertexCriterion, final Traversal<Edge, ?> edgeCriterion, final Traversal<VertexProperty, ?> vertexPropertyCriterion) {
+    private SubgraphStrategy(final Builder builder) {
 
-        this.vertexCriterion = null == vertexCriterion ? null : vertexCriterion.asAdmin().clone();
+        this.vertexCriterion = null == builder.vertexCriterion ? null : builder.vertexCriterion.asAdmin().clone();
 
-        // if there is no vertex predicate there is no need to test either side of the edge
-        if (null == this.vertexCriterion) {
-            this.edgeCriterion = null == edgeCriterion ? null : edgeCriterion.asAdmin().clone();
+        // if there is no vertex predicate there is no need to test either side of the edge - also this option can
+        // be simply configured in the builder to not be used
+        if (null == this.vertexCriterion || !builder.checkAdjacentVertices) {
+            this.edgeCriterion = null == builder.edgeCriterion ? null : builder.edgeCriterion.asAdmin().clone();
         } else {
             final Traversal.Admin<Edge, ?> vertexPredicate;
             vertexPredicate = __.<Edge>and(
@@ -97,12 +98,12 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
             // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
             // edge predicate provided by the user.
-            this.edgeCriterion = null == edgeCriterion ?
+            this.edgeCriterion = null == builder.edgeCriterion ?
                     vertexPredicate :
-                    edgeCriterion.asAdmin().clone().addStep(new TraversalFilterStep<>(edgeCriterion.asAdmin(), vertexPredicate));
+                    builder.edgeCriterion.asAdmin().clone().addStep(new TraversalFilterStep<>(builder.edgeCriterion.asAdmin(), vertexPredicate));
         }
 
-        this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin().clone();
+        this.vertexPropertyCriterion = null == builder.vertexPropertyCriterion ? null : builder.vertexPropertyCriterion.asAdmin().clone();
 
         if (null != this.vertexCriterion)
             TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.vertexCriterion);
@@ -316,25 +317,50 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public final static class Builder {
 
-        private Traversal<Vertex, ?> vertexPredicate = null;
-        private Traversal<Edge, ?> edgePredicate = null;
-        private Traversal<VertexProperty, ?> vertexPropertyPredicate = null;
+        private Traversal<Vertex, ?> vertexCriterion = null;
+        private Traversal<Edge, ?> edgeCriterion = null;
+        private Traversal<VertexProperty, ?> vertexPropertyCriterion = null;
+        private boolean checkAdjacentVertices = true;
 
         private Builder() {
         }
 
+        /**
+         * Enables the strategy to apply the {@link #vertices(Traversal)} filter to the adjacent vertices of an edge.
+         * If using this strategy for OLAP then this value should be set to {@code false} as checking adjacent vertices
+         * will force the traversal to leave the local star graph (which is not possible in OLAP) and will cause an
+         * error. By default, this value is {@code true}.
+         */
+        public Builder checkAdjacentVertices(final boolean enable) {
+            this.checkAdjacentVertices = enable;
+            return this;
+        }
+
+        /**
+         * The traversal predicate that defines the vertices to include in the subgraph. If
+         * {@link #checkAdjacentVertices(boolean)} is {@code true} then this predicate will also be applied to the
+         * adjacent vertices of edges. Take care when setting this value for OLAP based traversals as the traversal
+         * predicate cannot be written in such a way as to leave the local star graph and can thus only evaluate the
+         * current vertex and its related edges.
+         */
         public Builder vertices(final Traversal<Vertex, ?> vertexPredicate) {
-            this.vertexPredicate = vertexPredicate;
+            this.vertexCriterion = vertexPredicate;
             return this;
         }
 
+        /**
+         * The traversal predicate that defines the edges to include in the subgraph.
+         */
         public Builder edges(final Traversal<Edge, ?> edgePredicate) {
-            this.edgePredicate = edgePredicate;
+            this.edgeCriterion = edgePredicate;
             return this;
         }
 
+        /**
+         * The traversal predicate that defines the vertex properties to include in the subgraph.
+         */
         public Builder vertexProperties(final Traversal<VertexProperty, ?> vertexPropertyPredicate) {
-            this.vertexPropertyPredicate = vertexPropertyPredicate;
+            this.vertexPropertyCriterion = vertexPropertyPredicate;
             return this;
         }
 
@@ -355,9 +381,9 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         public SubgraphStrategy create() {
-            if (null == this.vertexPredicate && null == this.edgePredicate && null == this.vertexPropertyPredicate)
+            if (null == this.vertexCriterion && null == this.edgeCriterion && null == this.vertexPropertyCriterion)
                 throw new IllegalStateException("A subgraph must be filtered by a vertex, edge, or vertex property criterion");
-            return new SubgraphStrategy(this.vertexPredicate, this.edgePredicate, this.vertexPropertyPredicate);
+            return new SubgraphStrategy(this);
         }
     }
 }
