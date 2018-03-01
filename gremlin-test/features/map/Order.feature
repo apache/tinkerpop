@@ -192,7 +192,7 @@ Feature: Step - order()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"vadas":"d[0].d","peter":"d[0.2].d","josh":"d[1.4].d","marko":"d[1.9].d"}] |
+      | m[{"vadas":"d[0].i","peter":"d[0.2].d","josh":"d[1.4].d","marko":"d[1.9].d"}] |
 
   Scenario: g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX
     Given the modern graph
@@ -203,12 +203,12 @@ Feature: Step - order()
     When iterated to list
     Then the result should be ordered
       | result |
-      | l[d[1.0].f,d[0.4].f,d[1.0].f] |
-      | l[d[0.4].f,d[0.5].f,d[1.0].f] |
-      | l[d[0.4].f,d[0.4].f,d[0.2].f] |
-      | l[d[1.0].f]                   |
-      | l[d[0.5].f]                   |
-      | l[d[0.2].f]                   |
+      | l[d[1.0].d,d[0.4].d,d[1.0].d] |
+      | l[d[0.4].d,d[0.5].d,d[1.0].d] |
+      | l[d[0.4].d,d[0.4].d,d[0.2].d] |
+      | l[d[1.0].d]                   |
+      | l[d[0.5].d]                   |
+      | l[d[0.2].d]                   |
 
   Scenario: g_V_group_byXlabelX_byXname_order_byXdecrX_foldX
     Given the modern graph
@@ -233,7 +233,7 @@ Feature: Step - order()
       | m[{"marko":"d[1.9].d"}]  |
       | m[{"josh":"d[1.4].d"}]  |
       | m[{"peter":"d[0.2].d"}]  |
-      | m[{"vadas":"d[0].d"}]  |
+      | m[{"vadas":"d[0].i"}]  |
 
   Scenario: g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX
     Given the modern graph

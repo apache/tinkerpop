@@ -43,9 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             { "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_outE_weight_groupCount_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX", IgnoreReason.NeedsFurtherInvestigation }
+            { "g_V_outE_weight_groupCount_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation }
         };
         
         private static class Keywords
