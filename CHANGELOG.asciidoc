@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `checkAdjacentVertices` option to `SubgraphStrategy`.
 * Modified `GremlinDslProcessor` so that it generated the `getAnonymousTraversalClass()` method to return the DSL version of `__`.
 * Added the "Kitchen Sink" test data set.
+* Fixed deserialization of `P.not()` for GraphSON.
 * Added `idleConnectionTimeout` and `keepAliveInterval` to Gremlin Server that enables a "ping" and auto-close for seemingly dead clients.
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
