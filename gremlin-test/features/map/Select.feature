@@ -347,10 +347,10 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[0.5].f |
-      | d[1.0].f |
-      | d[0.4].f |
-      | d[0.2].f |
+      | d[0.5].d |
+      | d[1.0].d |
+      | d[0.4].d |
+      | d[0.2].d |
 
   Scenario: g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX
     Given the modern graph
@@ -374,10 +374,10 @@ Feature: Step - select()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[0.5].f |
-      | d[1.0].f |
-      | d[0.4].f |
-      | d[0.2].f |
+      | d[0.5].d |
+      | d[1.0].d |
+      | d[0.4].d |
+      | d[0.2].d |
 
   Scenario: g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold
     Given the modern graph
