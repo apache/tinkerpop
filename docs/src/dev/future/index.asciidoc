@@ -143,3 +143,9 @@ client-side traversals over remote subgraphs, where the subgraph is like a remot
 essentially build a subgraph which is merged into the primary graph. That subgraph is effectively the "transaction".
 Build it locally then submit it remotely and have the server sort out the merging. It's perhaps the most natural way
 to load data. With "Gremlinito" you then get the added power of being able to traverse a local subgraph.
+
+== Testing Framework
+
+Consider a testing framework based on the Gherkin tests from 3.x and a `gremlin-test` parent module for all the test
+framework modules that will potentially be needed. In 3.x, we found situation where having test modules beyond
+`gremlin-test` would have been helpful, so a parent module that held all those would probably be smart.
