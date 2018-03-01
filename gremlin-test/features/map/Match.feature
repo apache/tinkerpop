@@ -134,7 +134,7 @@ Feature: Step - match()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":"v[marko]","b":"v[lop]","c":3}] |
+      | m[{"a":"v[marko]","b":"v[lop]","c":"d[3].l"}] |
 
   Scenario: g_V_matchXa__a_out_b__notXa_created_bXX
     Given the modern graph
