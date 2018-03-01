@@ -74,6 +74,7 @@ public final class GraphSONTokens {
     public static final String ARGUMENTS = "arguments";
     public static final String PREDICATE = "predicate";
     public static final String AND = "and";
+    public static final String NOT = "not";
     public static final String OR = "or";
     public static final String SOURCE = "source";
     public static final String STEP = "step";
