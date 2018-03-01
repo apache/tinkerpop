@@ -80,7 +80,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].d |
+      | d[1.0].m |
 
   Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
     Given the modern graph
