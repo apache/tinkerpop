@@ -38,7 +38,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {"name", typeof(string)},
             {"lang", typeof(string)},
             {"weight", typeof(float)},
-            {"foo", typeof(object)} // used when for invalid property key lookups
+            {"foo", typeof(object)}, // used when for invalid property key lookups
+            {"friendWeight", typeof(float)}  // used in an AddVertex.feature test
         };
         
         /// <summary>
