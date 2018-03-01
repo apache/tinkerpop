@@ -55,6 +55,8 @@ public final class ToyGraphInputRDD implements InputRDD {
             vertices = IteratorUtils.list(IteratorUtils.map(TinkerFactory.createClassic().vertices(), VertexWritable::new));
         else if (configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION).contains("crew"))
             vertices = IteratorUtils.list(IteratorUtils.map(TinkerFactory.createTheCrew().vertices(), VertexWritable::new));
+        else if (configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION).contains("sink"))
+            vertices = IteratorUtils.list(IteratorUtils.map(TinkerFactory.createKitchenSink().vertices(), VertexWritable::new));
         else if (configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION).contains("grateful")) {
             try {
                 final Graph graph = TinkerGraph.open();
