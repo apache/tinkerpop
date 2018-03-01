@@ -49,7 +49,6 @@ These items include:
 ** The role of Blueprints should be significantly reduced.
 ** The role of Gremlin should be significantly increased.
 
-
 == Hiding Blueprints
 
 Originally from the link:https://lists.apache.org/thread.html/b4d80072ad36849b4e9cd3308f87115660574e3e7a4abb7ee68e959b@%3Cdev.tinkerpop.apache.org%3E[mailing list]:
@@ -118,3 +117,29 @@ now is rooted in the Neo4j approach to transactions and is often more trouble th
 Distributed transactions are a challenge and don't apply to every provider. Transactions are further complicated by
 GLVs. The idea of local subgraphs for mutations and transaction management might be good but that goes against having
 just `ReferenceGraph`.
+
+== Gremlin Language Subset
+
+On link:https://issues.apache.org/jira/browse/TINKERPOP-1417[TINKERPOP-1417], it was suggested that we "Create a
+Gremlin language subset that is easy to implement on any VM". Implementing the Gremlin VM in another language is
+pretty straightforward. However, its a lot of code.. all these steps implementations. One thing we could do to make
+it easy for database providers not on the JVM (e.g. ArangoDB and C) is to create "Gremlito" (Gremlin--). This language
+subset wouldn't support side-effects, sacks, match, etc. Basically, just simple traversal steps and reducing barrier
+terminals.
+
+Thus:
+
+* out, in, both, values, outE, inV, id, label, etc.
+* repeat
+* select, project
+* where, has, limit, range, is, dedup
+* path, simplePath, cyclicPath
+* groupCount, sum, group, count, max, min, etc. (reducing barriers)
+
+=== Comments
+
+This has an interesting potential impact on GLVs because "Little Gremlin" could be implemented within them for
+client-side traversals over remote subgraphs, where the subgraph is like a remote transaction. All graph mutations
+essentially build a subgraph which is merged into the primary graph. That subgraph is effectively the "transaction".
+Build it locally then submit it remotely and have the server sort out the merging. It's perhaps the most natural way
+to load data. With "Gremlinito" you then get the added power of being able to traverse a local subgraph.
