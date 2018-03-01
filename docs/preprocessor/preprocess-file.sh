@@ -76,6 +76,9 @@ function cleanup {
       echo -e "\n\e[1mLast 10 lines of ${output}:\e[0m\n"
       tail -n10 ${output}
       echo
+      echo "Opening ${output} for full inspection"
+      sleep 5
+      less ${output}
     fi
   fi
   rm -rf ${output} ${CONSOLE_HOME}/.ext
