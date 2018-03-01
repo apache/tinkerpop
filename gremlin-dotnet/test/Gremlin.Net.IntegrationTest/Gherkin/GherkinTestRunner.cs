@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios = new Dictionary<string, IgnoreReason> {
             { "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name", IgnoreReason.NeedsFurtherInvestigation }, // TINKERPOP-1859??
             { "g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.NeedsFurtherInvestigation }, // TINKERPOP-1859??
-            { "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NeedsFurtherInvestigation }
+            { "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NeedsFurtherInvestigation } // TINKERPOP-1907
         };
         
         private static class Keywords
