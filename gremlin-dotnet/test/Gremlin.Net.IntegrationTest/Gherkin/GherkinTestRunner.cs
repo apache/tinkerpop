@@ -38,12 +38,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios = new Dictionary<string, IgnoreReason> {
-            { "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_whereXa_gtXbX_orXeqXbXXX_byXageX_byXweightX_byXweightX_selectXa_cX_byXnameX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX", IgnoreReason.NeedsFurtherInvestigation },
+            { "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name", IgnoreReason.NeedsFurtherInvestigation }, // TINKERPOP-1859??
+            { "g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.NeedsFurtherInvestigation }, // TINKERPOP-1859??
             { "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack", IgnoreReason.NeedsFurtherInvestigation },
             { "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NeedsFurtherInvestigation },
             { "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack", IgnoreReason.NeedsFurtherInvestigation },
@@ -52,7 +48,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             { "g_V_outE_weight_groupCount_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_foo_injectX9999999999X_min", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX", IgnoreReason.NeedsFurtherInvestigation }
         };
         
