@@ -1946,31 +1946,7 @@ $ docker run tinkerpop/gremlin-server:x.y.z
 -----oOOo-(3)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server.yaml
-[INFO] MetricManager - Configured Metrics ConsoleReporter configured with report interval=180000ms
-[INFO] MetricManager - Configured Metrics CsvReporter configured with report interval=180000ms to fileName=/tmp/gremlin-server-metrics.csv
-[INFO] MetricManager - Configured Metrics JmxReporter configured with domain= and agentId=
-[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] DefaultGraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
-[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
-[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/empty-sample.groovy
-[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and preparing GremlinScriptEngines instances.
-[INFO] ServerGremlinExecutor - Initialized gremlin-groovy GremlinScriptEngine and registered metrics
-[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
-[INFO] OpLoader - Adding the standard OpProcessor.
-[INFO] OpLoader - Adding the control OpProcessor.
-[INFO] OpLoader - Adding the session OpProcessor.
-[INFO] OpLoader - Adding the traversal OpProcessor.
-[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
-[INFO] GremlinServer - Executing start up LifeCycleHook
-[INFO] Logger$info - Executed once at startup of Gremlin Server.
-[INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v2.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+...
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
