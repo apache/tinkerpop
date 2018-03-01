@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
@@ -68,6 +69,7 @@ import java.util.concurrent.Future;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2681,6 +2683,185 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     return true;
                 }
             };
+        }
+    }
+
+    ///////////////////////////////////
+
+    @Test
+    @LoadGraphWith(SINK)
+    public void testMessagePassingIn() throws Exception {
+        runMPTest(Direction.IN).forEachRemaining(v -> {
+            vertexPropertyChecks(v);
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("ab", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
+        });
+    }
+
+    @Test
+    @LoadGraphWith(SINK)
+    public void testMessagePassingOut() throws Exception {
+        runMPTest(Direction.OUT).forEachRemaining(v -> {
+            vertexPropertyChecks(v);
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
+        });
+    }
+
+    @Test
+    @LoadGraphWith(SINK)
+    public void testMessagePassingBoth() throws Exception {
+        runMPTest(Direction.BOTH).forEachRemaining(v -> {
+            vertexPropertyChecks(v);
+            final String in = v.value(VertexProgramR.PROPERTY_IN);
+            if (in.equals("a"))
+                assertEquals("aab", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else if (in.equals("b"))
+                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+            else
+                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                        + "=" + String.valueOf(in));
+        });
+    }
+
+    private GraphTraversal<Vertex, Vertex> runMPTest(Direction direction) throws Exception {
+        final VertexProgramR svp = VertexProgramR.build().direction(direction).create();
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).vertices(__.hasLabel(VertexProgramR.VERTEX_LABEL)).submit().get();
+        return result.graph().traversal().V().hasLabel(VertexProgramR.VERTEX_LABEL);
+    }
+
+    private static void vertexPropertyChecks(Vertex v) {
+        assertEquals(2, v.keys().size());
+        assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
+        assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
+        assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_IN)));
+        assertEquals(1, IteratorUtils.count(v.values(VertexProgramR.PROPERTY_OUT)));
+    }
+
+    private static class VertexProgramR implements VertexProgram<String> {
+        private static final String SIMPLE_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.simpleVertexProgram";
+        private static final String PROPERTY_OUT = "propertyout";
+        private static final String PROPERTY_IN = "name";
+        private static final String VERTEX_LABEL = "message_passing_test";
+        private static final String DIRECTION_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".direction";
+
+        private final MessageScope.Local<String> inMessageScope = MessageScope.Local.of(__::inE);
+        private final MessageScope.Local<String> outMessageScope = MessageScope.Local.of(__::outE);
+        private final MessageScope.Local<String> bothMessageScope = MessageScope.Local.of(__::bothE);
+        private MessageScope.Local<String> messageScope;
+        private final Set<VertexComputeKey> vertexComputeKeys = new HashSet<>(Arrays.asList(
+                VertexComputeKey.of(VertexProgramR.PROPERTY_OUT, false),
+                VertexComputeKey.of(VertexProgramR.PROPERTY_IN, false)));
+
+        /**
+         * Clones this vertex program.
+         *
+         * @return a clone of this vertex program
+         */
+        public VertexProgramR clone() { return this; }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            Direction direction = Direction.valueOf(configuration.getString(DIRECTION_CFG_KEY));
+            switch (direction) {
+                case IN:
+                    this.messageScope = this.inMessageScope;
+                    break;
+                case OUT:
+                    this.messageScope = this.outMessageScope;
+                    break;
+                case BOTH:
+                    this.messageScope = this.bothMessageScope;
+                    break;
+                default:
+                    throw new IllegalStateException("Should not reach this point!");
+            }
+        }
+
+        @Override
+        public void setup(Memory memory) {
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger<String> messenger, Memory memory) {
+            if (memory.isInitialIteration()) {
+                messenger.sendMessage(this.messageScope, vertex.value(PROPERTY_IN).toString());
+            } else {
+                char[] composite = IteratorUtils.reduce(messenger.receiveMessages(), "", (a, b) -> a + b).toCharArray();
+                Arrays.sort(composite);
+                vertex.property(PROPERTY_OUT, new String(composite));
+            }
+        }
+
+        @Override
+        public boolean terminate(Memory memory) {
+            return !memory.isInitialIteration();
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.singleton(this.messageScope);
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+
+        @Override
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return this.vertexComputeKeys;
+        }
+
+        @Override
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return Collections.emptySet();
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        static class Builder extends AbstractVertexProgramBuilder<Builder> {
+
+            private Builder() {
+                super(VertexProgramR.class);
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public VertexProgramR create(final Graph graph) {
+                if (graph != null) {
+                    ConfigurationUtils.append(graph.configuration().subset(SIMPLE_VERTEX_PROGRAM_CFG_PREFIX), configuration);
+                }
+                return (VertexProgramR) VertexProgram.createVertexProgram(graph, configuration);
+            }
+
+            public VertexProgramR create() {
+                return create(null);
+            }
+
+            public Builder direction(final Direction direction) {
+                configuration.setProperty(DIRECTION_CFG_KEY, direction.toString());
+                return this;
+            }
         }
     }
 }
