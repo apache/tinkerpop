@@ -44,7 +44,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             { "g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_outE_weight_groupCount_selectXkeysX_unfold", IgnoreReason.NeedsFurtherInvestigation },
-            { "g_V_foo_injectX9999999999X_min", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX", IgnoreReason.NeedsFurtherInvestigation },
             { "g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_decrX", IgnoreReason.NeedsFurtherInvestigation }
         };
