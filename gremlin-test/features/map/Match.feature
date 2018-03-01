@@ -230,7 +230,7 @@ Feature: Step - match()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]","d":2}] |
+      | m[{"a":"v[marko]","b":"v[josh]","c":"v[lop]","d":"d[2].l"}] |
 
   Scenario: g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_selectXa_b_cX_byXidX
     Given the modern graph
