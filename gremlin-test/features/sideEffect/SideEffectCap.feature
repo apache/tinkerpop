@@ -26,7 +26,7 @@ Feature: Step - cap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"peter":"d[1].i", "vadas":"d[1].i", "josh":"d[1].i", "marko": "d[1].i"}] |
+      | m[{"peter":"d[1].l", "vadas":"d[1].l", "josh":"d[1].l", "marko": "d[1].l"}] |
 
   Scenario: g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX
     Given an unsupported test
