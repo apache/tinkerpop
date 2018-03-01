@@ -321,6 +321,8 @@ final class TraversalSerializersV3d0 {
 
             if (predicate.equals(GraphSONTokens.AND) || predicate.equals(GraphSONTokens.OR)) {
                 return predicate.equals(GraphSONTokens.AND) ? new AndP((List<P>) value) : new OrP((List<P>) value);
+            } else if (predicate.equals(GraphSONTokens.NOT) && value instanceof P) {
+                return P.not((P<?>) value);
             } else {
                 try {
                     if (value instanceof Collection) {

@@ -22,6 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -326,6 +327,16 @@ public class GraphSONMessageSerializerV3d0Test {
         assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
+    }
+
+    @Test
+    public void shouldDeserializeNotPredicate() throws Exception {
+        final String requestMessageWithP = "{\"requestId\":{\"@type\":\"g:UUID\",\"@value\":\"0397b9c0-ffab-470e-a6a8-644fc80c01d6\"},\"op\":\"bytecode\",\"processor\":\"traversal\",\"args\":{\"gremlin\":{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"V\"],[\"hasLabel\",\"person\"],[\"has\",\"age\",{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"not\",\"value\":{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"lte\",\"value\":{\"@type\":\"g:Int32\",\"@value\":10}}}}}]]}},\"aliases\":{\"g\":\"gmodern\"}}}";
+        final ByteBuf bb = allocator.buffer(requestMessageWithP.length());
+        bb.writeBytes(requestMessageWithP.getBytes());
+        final RequestMessage m = serializer.deserializeRequest(bb);
+        assertEquals("bytecode", m.getOp());
+        assertNotNull(m.getArgs());
     }
     
     private void assertCommon(final ResponseMessage response) {
