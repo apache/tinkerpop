@@ -853,7 +853,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode node = mapper.readTree(json);
             assertEquals("java.lang.ArithmeticException", node.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS).get(0).asText());
             assertEquals(1, node.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS).size());
-            assertThat(node.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE).asText(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java:1742)\n\tat org.codehaus.groovy.runtime.typehandling.BigDecimalMath.divideImpl(BigDecimalMath.java:68)\n\tat org.codehaus.groovy.runtime.typehandling.IntegerMath.divideImpl(IntegerMath.java:49)\n\tat org.codehaus.groovy.runtime.dgmimpl.NumberNumberDiv$NumberNumber.invoke(NumberNumberDiv.java:323)\n\tat org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite.call(PojoMetaMethodSite.java:56)\n\tat org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)\n\tat org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)\n"));
+            assertThat(node.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE).asText(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java"));
         }
     }
 
