@@ -29,6 +29,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * Improved error messaging for failed serialization and deserialization of request/response messages.
+* Fixed handling of `Direction.BOTH` in `Messenger` implementations to pass the message to the opposite side of the `StarGraph`.
 * Removed hardcoded expectation in metrics serialization test suite as different providers may have different outputs.
 * Added `IndexedTraverserSet` which indexes on the value of a `Traverser` thus improving performance when used.
 * Utilized `IndexedTraverserSet` in `TraversalVertexProgram` to avoid extra iteration when doing `Vertex` lookups.
