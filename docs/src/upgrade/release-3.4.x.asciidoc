@@ -28,3 +28,45 @@ NEED AN IMAGE
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asciidoc#release-3-4-0[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== Modifications to reducing barrier steps
+
+The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:
+
+[source,groovy]
+----
+gremlin> g.V().values('foo').min()
+==>NaN
+gremlin> g.V().values('foo').max()
+==>NaN
+gremlin> g.V().values('foo').mean()
+==>NaN
+gremlin> g.V().values('foo').sum()
+==>0
+----
+
+These traversals will no longer emit a result. Note, that this also affects more complex scenarios, e.g. if these steps are used in `by()` modulators:
+
+[source,groovy]
+----
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(outE().values("weight").sum())
+==>[software:0,person:3.5]
+----
+
+Since software vertices have no outgoing edges and thus no weight values to sum, `software` will no longer show up in the result. In order to get the same result as before, one would
+have to add a `coalesce()`-step:
+
+[source,groovy]
+----
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(outE().values("weight").sum())
+==>[person:3.5]
+gremlin> 
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(coalesce(outE().values("weight"), constant(0)).sum())
+==>[software:0,person:3.5]
+----
