@@ -259,11 +259,10 @@ public class GraphSONMessageSerializerV3d0Test {
     }
 
     @Test
-    @org.junit.Ignore
     public void shouldSerializeToTreeJson() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
-        final Map t = g.V(1).out().properties("name").tree().next();
+        final Tree t = g.V(1).out().properties("name").tree().next();
 
         final ResponseMessage response = convert(t);
         assertCommon(response);
