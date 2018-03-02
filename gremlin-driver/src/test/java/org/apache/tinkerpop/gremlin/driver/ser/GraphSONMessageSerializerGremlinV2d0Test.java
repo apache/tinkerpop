@@ -261,7 +261,6 @@ public class GraphSONMessageSerializerGremlinV2d0Test {
     }
 
     @Test
-    @org.junit.Ignore
     public void shouldSerializeToTreeJson() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
