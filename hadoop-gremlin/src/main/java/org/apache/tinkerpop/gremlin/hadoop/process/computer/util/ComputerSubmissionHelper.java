@@ -66,7 +66,7 @@ public final class ComputerSubmissionHelper {
 
         try {
             submissionExecutor = Executors.newSingleThreadExecutor(runnable -> {
-                Thread t = new Thread(threadGroup, runnable, threadName + "-TP-" + threadNameSuffix);
+                final Thread t = new Thread(threadGroup, runnable, threadName + "-TP-" + threadNameSuffix);
                 t.setContextClassLoader(classLoader);
                 return t;
             });

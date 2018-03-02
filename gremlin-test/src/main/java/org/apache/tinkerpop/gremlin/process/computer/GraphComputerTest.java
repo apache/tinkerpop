@@ -2726,23 +2726,27 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         runMPTest(Direction.BOTH).forEachRemaining(v -> {
             vertexPropertyChecks(v);
             final String in = v.value(VertexProgramR.PROPERTY_IN);
-            if (in.equals("a"))
-                assertEquals("aab", v.value(VertexProgramR.PROPERTY_OUT).toString());
-            else if (in.equals("b"))
-                assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
-            else
-                throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
-                        + "=" + String.valueOf(in));
+            switch (in) {
+                case "a":
+                    assertEquals("aab", v.value(VertexProgramR.PROPERTY_OUT).toString());
+                    break;
+                case "b":
+                    assertEquals("a", v.value(VertexProgramR.PROPERTY_OUT).toString());
+                    break;
+                default:
+                    throw new IllegalStateException("This vertex should not exist: " + VertexProgramR.PROPERTY_IN
+                            + "=" + String.valueOf(in));
+            }
         });
     }
 
-    private GraphTraversal<Vertex, Vertex> runMPTest(Direction direction) throws Exception {
+    private GraphTraversal<Vertex, Vertex> runMPTest(final Direction direction) throws Exception {
         final VertexProgramR svp = VertexProgramR.build().direction(direction).create();
         final ComputerResult result = graphProvider.getGraphComputer(graph).program(svp).vertices(__.hasLabel(VertexProgramR.VERTEX_LABEL)).submit().get();
         return result.graph().traversal().V().hasLabel(VertexProgramR.VERTEX_LABEL);
     }
 
-    private static void vertexPropertyChecks(Vertex v) {
+    private static void vertexPropertyChecks(final Vertex v) {
         assertEquals(2, v.keys().size());
         assertTrue(v.keys().contains(VertexProgramR.PROPERTY_IN));
         assertTrue(v.keys().contains(VertexProgramR.PROPERTY_OUT));
@@ -2757,6 +2761,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         private static final String VERTEX_LABEL = "message_passing_test";
         private static final String DIRECTION_CFG_KEY = SIMPLE_VERTEX_PROGRAM_CFG_PREFIX + ".direction";
 
+        private Direction direction;
         private final MessageScope.Local<String> inMessageScope = MessageScope.Local.of(__::inE);
         private final MessageScope.Local<String> outMessageScope = MessageScope.Local.of(__::outE);
         private final MessageScope.Local<String> bothMessageScope = MessageScope.Local.of(__::bothE);
@@ -2774,7 +2779,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void loadState(final Graph graph, final Configuration configuration) {
-            Direction direction = Direction.valueOf(configuration.getString(DIRECTION_CFG_KEY));
+            direction = Direction.valueOf(configuration.getString(DIRECTION_CFG_KEY));
             switch (direction) {
                 case IN:
                     this.messageScope = this.inMessageScope;
@@ -2791,27 +2796,33 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void setup(Memory memory) {
+        public void storeState(final Configuration configuration) {
+            VertexProgram.super.storeState(configuration);
+            configuration.setProperty(DIRECTION_CFG_KEY, direction.name());
         }
 
         @Override
-        public void execute(Vertex vertex, Messenger<String> messenger, Memory memory) {
+        public void setup(final Memory memory) {
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger<String> messenger, final Memory memory) {
             if (memory.isInitialIteration()) {
                 messenger.sendMessage(this.messageScope, vertex.value(PROPERTY_IN).toString());
             } else {
-                char[] composite = IteratorUtils.reduce(messenger.receiveMessages(), "", (a, b) -> a + b).toCharArray();
+                final char[] composite = IteratorUtils.reduce(messenger.receiveMessages(), "", (a, b) -> a + b).toCharArray();
                 Arrays.sort(composite);
                 vertex.property(PROPERTY_OUT, new String(composite));
             }
         }
 
         @Override
-        public boolean terminate(Memory memory) {
+        public boolean terminate(final Memory memory) {
             return !memory.isInitialIteration();
         }
 
         @Override
-        public Set<MessageScope> getMessageScopes(Memory memory) {
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
             return Collections.singleton(this.messageScope);
         }
 
