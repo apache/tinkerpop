@@ -111,7 +111,7 @@ namespace Gremlin.Net.Structure
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"[{string.Join(", ", Objects)}]";
+            return $"path[{string.Join(", ", Objects)}]";
         }
 
         /// <summary>

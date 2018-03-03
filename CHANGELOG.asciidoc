@@ -25,6 +25,7 @@ NEED AND IMAGE
 
 This release also includes changes from <<release-3-3-2, 3.3.2>>.
 
+* Change the `toString()` of `Path` to be standardized as other graph elements are.
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 

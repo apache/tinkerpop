@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -102,5 +103,10 @@ public final class EmptyPath implements Path, Serializable {
     @Override
     public boolean equals(final Object object) {
         return object instanceof EmptyPath;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.pathString(this);
     }
 }

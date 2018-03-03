@@ -75,7 +75,7 @@ class TestGraph(object):
 
     def test_path(self):
         path = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
-        assert "[1, v[1], 'hello']" == str(path)
+        assert "path[1, v[1], hello]" == str(path)
         assert 1 == path["a"]
         assert Vertex(1) == path["c"]
         assert [1, Vertex(1)] == path["b"]
