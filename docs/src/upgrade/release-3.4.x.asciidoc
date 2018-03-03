@@ -64,7 +64,6 @@ gremlin> g.V().group().
 ......1>   by(label).
 ......2>   by(outE().values("weight").sum())
 ==>[person:3.5]
-gremlin> 
 gremlin> g.V().group().
 ......1>   by(label).
 ......2>   by(coalesce(outE().values("weight"), constant(0)).sum())
@@ -73,3 +72,45 @@ gremlin> g.V().group().
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1777[TINKERPOP-1777]
 
+==== Change in order of select() scopes
+
+The order of select scopes has been changed to: maps, side-effects, paths
+Previously the order was: side-effects, maps, paths - which made it almost impossible to select a specific map entry if a side-effect with the same name existed.
+
+The following snippets illustrate the changed behavior:
+
+[source,groovy]
+----
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a")
+==>[a:marko]
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a").select("a")
+==>[a:marko]
+----
+
+Above is the old behavior; the second `select("a")` has no effect, it selects the side-effect `a` again, although one would expect to get the map entry `a`. What follows is the new behavior:
+
+[source,groovy]
+----
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a")
+==>[a:marko]
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a").select("a")
+==>marko
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
