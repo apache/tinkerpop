@@ -68,7 +68,16 @@ public final class TinkerMessenger<M> implements Messenger<M> {
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
                 final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
                 multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
-                        .map(e -> this.messageBoard.receiveMessages.get(messageScope).get((edge[0] = e).vertices(direction).next()))
+                        .map((Edge e) -> {
+                            edge[0] = e;
+                            Vertex vv;
+                            if (direction.equals(Direction.IN) || direction.equals(Direction.OUT)) {
+                                vv = e.vertices(direction).next();
+                            } else {
+                                vv = e.outVertex() == this.vertex ? e.inVertex() : e.outVertex();
+                            }
+                            return this.messageBoard.receiveMessages.get(messageScope).get(vv);
+                        })
                         .filter(q -> null != q)
                         .flatMap(Queue::stream)
                         .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
