@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
@@ -57,10 +58,19 @@ public final class GiraphMessenger<M> implements Messenger<M> {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = GiraphMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.giraphVertex.getValue().get());
             final Direction direction = GiraphMessenger.getOppositeDirection(incidentTraversal);
-            incidentTraversal.forEachRemaining(edge ->
+
+            // handle processing for BOTH given TINKERPOP-1862 where the target of the message is the one opposite
+            // the current vertex
+            incidentTraversal.forEachRemaining(edge -> {
+                if (direction.equals(Direction.IN) || direction.equals(Direction.OUT))
                     this.giraphComputation.sendMessage(
                             new ObjectWritable<>(edge.vertices(direction).next().id()),
-                            new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
+                            new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge)));
+                else
+                    this.giraphComputation.sendMessage(
+                            new ObjectWritable<>(edge instanceof StarGraph.StarOutEdge ? edge.inVertex().id() : edge.outVertex().id()),
+                            new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge)));
+            });
         } else {
             final MessageScope.Global globalMessageScope = (MessageScope.Global) messageScope;
             globalMessageScope.vertices().forEach(vertex ->
