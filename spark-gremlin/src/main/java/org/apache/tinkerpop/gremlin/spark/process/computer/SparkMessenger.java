@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
@@ -63,7 +64,16 @@ public final class SparkMessenger<M> implements Messenger<M> {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
             final Direction direction = SparkMessenger.getOppositeDirection(incidentTraversal);
-            incidentTraversal.forEachRemaining(edge -> this.outgoingMessages.add(new Tuple2<>(edge.vertices(direction).next().id(), localMessageScope.getEdgeFunction().apply(message, edge))));
+
+            // handle processing for BOTH given TINKERPOP-1862 where the target of the message is the one opposite
+            // the current vertex
+            incidentTraversal.forEachRemaining(edge -> {
+                if (direction.equals(Direction.IN) || direction.equals(Direction.OUT))
+                    this.outgoingMessages.add(new Tuple2<>(edge.vertices(direction).next().id(), localMessageScope.getEdgeFunction().apply(message, edge)));
+                else
+                    this.outgoingMessages.add(new Tuple2<>(edge instanceof StarGraph.StarOutEdge ? edge.inVertex().id() : edge.outVertex().id(), localMessageScope.getEdgeFunction().apply(message, edge)));
+
+            });
         } else {
             ((MessageScope.Global) messageScope).vertices().forEach(v -> this.outgoingMessages.add(new Tuple2<>(v.id(), message)));
         }
