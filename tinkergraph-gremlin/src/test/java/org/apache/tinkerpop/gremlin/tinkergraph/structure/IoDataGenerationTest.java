@@ -100,6 +100,16 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteSinkGraphAsGryoV1d0() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-sink-v1d0.kryo");
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteClassicGraphAsGryoV3d0() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-v3d0.kryo");
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
