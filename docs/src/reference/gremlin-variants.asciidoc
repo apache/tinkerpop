@@ -315,7 +315,7 @@ to `Set` manually.
 [[gremlin-DotNet]]
 == Gremlin.Net
 
-Apache TinkerPop's Gremlin.Net implements Gremlin within the C# language. It targets .NET Standard and can
+image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C# language. It targets .NET Standard and can
 therefore be used on different operating systems and with different .NET frameworks, such as .NET Framework
 and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very similar to that of Java, it should be very easy to switch between
 Gremlin-Java and Gremlin.Net. The only major syntactical difference is that all method names in Gremlin.Net
