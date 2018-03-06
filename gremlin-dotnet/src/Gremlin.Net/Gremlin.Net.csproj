@@ -46,6 +46,7 @@ NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann 
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageIconUrl>http://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
   </PropertyGroup>
 
