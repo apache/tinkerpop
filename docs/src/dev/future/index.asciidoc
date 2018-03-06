@@ -118,6 +118,14 @@ Distributed transactions are a challenge and don't apply to every provider. Tran
 GLVs. The idea of local subgraphs for mutations and transaction management might be good but that goes against having
 just `ReferenceGraph`.
 
+In "hiding blueprints" we should probably consider what relevance certain components of the Structure API still have:
+
+* `io()` - this sorta fell short a few ways: API was a bit clunky, no integration with loading via OLAP, etc.
+* `variables()` - one of the problems with variables is that they were not persisted by `io()` which was generally a
+problem for TinkerGraph which relied on `io()` for flushing to file storage. This topic was discussed a bit on
+link:https://issues.apache.org/jira/browse/TINKERPOP-892[TINKERPOP-892]
+* `tx()` - as discussed in the earlier paragraph
+
 == Gremlin Language Subset
 
 On link:https://issues.apache.org/jira/browse/TINKERPOP-1417[TINKERPOP-1417], it was suggested that we "Create a
