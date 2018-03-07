@@ -66,9 +66,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
         }
 
         this.rs = rs;
-        this.sideEffects = new DriverRemoteTraversalSideEffects(client,
-                rs.getOriginalRequestMessage().getRequestId(),
-                rs.getHost(), rs.allItemsAvailableAsync());
+        this.sideEffects = new DriverRemoteTraversalSideEffects(client,rs);
     }
 
     /**

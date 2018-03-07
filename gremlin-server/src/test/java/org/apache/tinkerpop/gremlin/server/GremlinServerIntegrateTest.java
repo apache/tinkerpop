@@ -1009,7 +1009,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldGetSideEffectKeysUsingWithRemote() throws Exception {
+    public void shouldGetSideEffectKeysAndStatusUsingWithRemote() throws Exception {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
@@ -1017,6 +1017,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
         traversal.iterate();
         final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
+        assertThat(se.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
 
         // Get keys
         final Set<String> sideEffectKeys = se.keys();
@@ -1039,6 +1040,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         final BulkSet localBSideEffects = se.get("b");
         assertThat(localBSideEffects.isEmpty(), is(false));
+
+        final GraphTraversal gdotv = g.V();
+        gdotv.toList();
+        final DriverRemoteTraversalSideEffects gdotvSe = (DriverRemoteTraversalSideEffects) gdotv.asAdmin().getSideEffects();
+        assertThat(gdotvSe.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
     }
 
     @Test

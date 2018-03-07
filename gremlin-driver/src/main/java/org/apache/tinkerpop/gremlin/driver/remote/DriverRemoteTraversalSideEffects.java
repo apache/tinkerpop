@@ -22,6 +22,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Host;
 import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
@@ -52,13 +53,37 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
     private boolean closed = false;
     private boolean retrievedAllKeys = false;
     private final CompletableFuture<Void> ready;
+    private final CompletableFuture<Map<String,Object>> statusAttributes;
 
+    /**
+     * @deprecated As of release 3.3.2, replaced by {@link #DriverRemoteTraversalSideEffects(Client, ResultSet)}
+     */
+    @Deprecated
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host,
                                             final CompletableFuture<Void> ready) {
         this.client = client;
         this.serverSideEffect = serverSideEffect;
         this.host = host;
         this.ready = ready;
+        this.statusAttributes = CompletableFuture.completedFuture(Collections.emptyMap());
+    }
+
+    public DriverRemoteTraversalSideEffects(final Client client, final ResultSet rs) {
+        this.client = client;
+        this.serverSideEffect = rs.getOriginalRequestMessage().getRequestId();
+        this.host = rs.getHost();
+        this.ready = rs.allItemsAvailableAsync();
+        this.statusAttributes = rs.statusAttributes();
+    }
+
+    /**
+     * Gets the status attributes from the response from the server. This method will block until all results have
+     * been retrieved.
+     */
+    public Map<String,Object> statusAttributes() {
+        // wait for the read to complete (i.e. iteration on the server) before allowing the caller to get the
+        // attribute. simply following the pattern from other methods here for now.
+        return statusAttributes.join();
     }
 
     @Override
