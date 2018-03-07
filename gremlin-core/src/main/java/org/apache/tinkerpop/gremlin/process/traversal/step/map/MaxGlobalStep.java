@@ -41,7 +41,13 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     }
 
     @Override
-    public S projectTraverser(Traverser.Admin<S> traverser) {
+    public void processAllStarts() {
+        if (this.starts.hasNext())
+            super.processAllStarts();
+    }
+
+    @Override
+    public S projectTraverser(final Traverser.Admin<S> traverser) {
         return traverser.get();
     }
 

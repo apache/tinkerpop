@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -39,17 +40,49 @@ import static org.junit.Assert.*;
 @RunWith(GremlinProcessRunner.class)
 public abstract class SumTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Double> get_g_V_valuesXageX_sum();
+    public abstract Traversal<Vertex, Number> get_g_V_age_sum();
+
+    public abstract Traversal<Vertex, Number> get_g_V_age_fold_sumXlocalX();
+
+    public abstract Traversal<Vertex, Number> get_g_V_foo_sum();
+
+    public abstract Traversal<Vertex, Number> get_g_V_foo_fold_sumXlocalX();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_sumX();
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_valuesXageX_sum() {
-        final Traversal<Vertex, Double> traversal = get_g_V_valuesXageX_sum();
+    public void g_V_age_sum() {
+        final Traversal<Vertex, Number> traversal = get_g_V_age_sum();
         printTraversalForm(traversal);
         final Number sum = traversal.next();
-        assertEquals(123L, sum);
+        assertEquals(123, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_age_fold_sumXlocalX() {
+        final Traversal<Vertex, Number> traversal = get_g_V_age_fold_sumXlocalX();
+        printTraversalForm(traversal);
+        final Number sum = traversal.next();
+        assertEquals(123, sum.intValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_foo_sum() {
+        final Traversal<Vertex, Number> traversal = get_g_V_foo_sum();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_foo_fold_sumXlocalX() {
+        final Traversal<Vertex, Number> traversal = get_g_V_foo_fold_sumXlocalX();
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
 
@@ -69,8 +102,23 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
     public static class Traversals extends SumTest {
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
+        public Traversal<Vertex, Number> get_g_V_age_sum() {
             return g.V().values("age").sum();
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_age_fold_sumXlocalX() {
+            return g.V().values("age").fold().sum(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_sum() {
+            return g.V().values("foo").sum();
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_V_foo_fold_sumXlocalX() {
+            return g.V().values("foo").fold().sum(Scope.local);
         }
 
         @Override

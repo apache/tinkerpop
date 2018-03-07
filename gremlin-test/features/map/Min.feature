@@ -28,6 +28,35 @@ Feature: Step - min()
       | result |
       | d[27].i |
 
+  Scenario: g_V_foo_min
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").min()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_age_fold_minXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").fold().min(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+
+  Scenario: g_V_foo_fold_minXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").fold().min(Scope.local)
+      """
+    When iterated to list
+    Then the result should be empty
+
   Scenario: g_V_repeatXbothX_timesX5X_age_min
     Given the modern graph
     And the traversal of

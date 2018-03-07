@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Subgra
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
@@ -52,6 +53,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
+import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -96,25 +98,25 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         // USE SPARK DSL FOR THE RESPECTIVE END REDUCING BARRIER STEP OF THE TRAVERSAL
         final Object result;
         if (endStep instanceof CountGlobalStep)
-            result = nextRDD.map(Traverser::bulk).fold(0l, (a, b) -> a + b);
-        else if (endStep instanceof SumGlobalStep)
-            result = nextRDD
+            result = nextRDD.map(Traverser::bulk).fold(0L, (a, b) -> a + b);
+        else if (endStep instanceof SumGlobalStep) {
+            result = nextRDD.isEmpty() ? null : nextRDD
                     .map(traverser -> NumberHelper.mul(traverser.bulk(), (Number) traverser.get()))
                     .fold(0, NumberHelper::add);
-        else if (endStep instanceof MeanGlobalStep)
-            result = nextRDD
+        } else if (endStep instanceof MeanGlobalStep) {
+            result = nextRDD.isEmpty() ? null : nextRDD
                     .map(traverser -> new MeanGlobalStep.MeanNumber((Number) traverser.get(), traverser.bulk()))
-                    .fold(new MeanGlobalStep.MeanNumber(), MeanGlobalStep.MeanNumber::add)
+                    .fold(MeanNumberSupplier.instance().get(), MeanGlobalStep.MeanNumber::add)
                     .getFinal();
-        else if (endStep instanceof MinGlobalStep)
-            result = nextRDD
+        } else if (endStep instanceof MinGlobalStep) {
+            result = nextRDD.isEmpty() ? null : nextRDD
                     .map(traverser -> (Number) traverser.get())
-                    .fold(Integer.MAX_VALUE, NumberHelper::min);
-        else if (endStep instanceof MaxGlobalStep)
-            result = nextRDD
+                    .fold(Double.NaN, NumberHelper::min);
+        } else if (endStep instanceof MaxGlobalStep) {
+            result = nextRDD.isEmpty() ? null : nextRDD
                     .map(traverser -> (Number) traverser.get())
-                    .fold(Integer.MIN_VALUE, NumberHelper::max);
-        else if (endStep instanceof FoldStep) {
+                    .fold(Double.NaN, NumberHelper::max);
+        } else if (endStep instanceof FoldStep) {
             final BinaryOperator biOperator = endStep.getBiOperator();
             result = nextRDD.map(traverser -> {
                 if (endStep.getSeedSupplier() instanceof ArrayListSupplier) {
@@ -148,9 +150,11 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         ///////////////////////////////
 
         // generate the HALTED_TRAVERSERS for the memory
-        final TraverserSet<Long> haltedTraversers = new TraverserSet<>();
-        haltedTraversers.add(traversal.getTraverserGenerator().generate(result, endStep, 1l)); // all reducing barrier steps produce a result of bulk 1
-        memory.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
+        if (result != null) {
+            final TraverserSet<Long> haltedTraversers = new TraverserSet<>();
+            haltedTraversers.add(traversal.getTraverserGenerator().generate(result, endStep, 1l)); // all reducing barrier steps produce a result of bulk 1
+            memory.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
+        }
         memory.incrIteration(); // any local star graph reduction takes a single iteration
         return inputRDD;
     }

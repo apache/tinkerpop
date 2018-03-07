@@ -192,13 +192,13 @@ Feature: Step - order()
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"vadas":"d[0].i","peter":"d[0.2].d","josh":"d[1.4].d","marko":"d[1.9].d"}] |
+      | m[{"peter":"d[0.2].d","josh":"d[1.4].d","marko":"d[1.9].d"}] |
 
-  Scenario: g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX
+  Scenario: g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_decrX
     Given the modern graph
     And the traversal of
       """
-      g.V().local(__.bothE().values("weight").fold()).order().by(__.sum(Scope.local), Order.decr)
+      g.V().map(__.bothE().values("weight").fold()).order().by(__.sum(Scope.local), Order.decr)
       """
     When iterated to list
     Then the result should be ordered
@@ -233,7 +233,6 @@ Feature: Step - order()
       | m[{"marko":"d[1.9].d"}]  |
       | m[{"josh":"d[1.4].d"}]  |
       | m[{"peter":"d[0.2].d"}]  |
-      | m[{"vadas":"d[0].i"}]  |
 
   Scenario: g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX
     Given the modern graph

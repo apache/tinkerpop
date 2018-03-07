@@ -218,8 +218,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         final Map<String, Number> map = traversal.next();
         assertFalse(traversal.hasNext());
-        assertEquals(2, map.size());
-        assertEquals(0, map.get("software"));
+        assertEquals(1, map.size());
         assertEquals(3.5d, (double) map.get("person"), 0.01d);
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
@@ -424,16 +423,12 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(179350, subMap.get("followedBy").intValue());
         //
         subMap = map.get("original");
-        assertEquals(3, subMap.size());
+        assertEquals(1, subMap.size());
         assertEquals(2185613, subMap.get("followedBy").intValue());
-        assertEquals(0, subMap.get("writtenBy").intValue());
-        assertEquals(0, subMap.get("sungBy").intValue());
         //
         subMap = map.get("cover");
-        assertEquals(3, subMap.size());
+        assertEquals(1, subMap.size());
         assertEquals(777982, subMap.get("followedBy").intValue());
-        assertEquals(0, subMap.get("writtenBy").intValue());
-        assertEquals(0, subMap.get("sungBy").intValue());
     }
 
     @Test

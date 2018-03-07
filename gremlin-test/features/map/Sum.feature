@@ -17,7 +17,7 @@
 
 Feature: Step - sum()
 
-  Scenario: g_V_valuesXageX_sum
+  Scenario: g_V_age_sum
     Given the modern graph
     And the traversal of
       """
@@ -27,6 +27,35 @@ Feature: Step - sum()
     Then the result should be unordered
       | result |
       | d[123].l |
+
+  Scenario: g_V_foo_sum
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").sum()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_age_fold_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").fold().sum(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[123].i |
+
+  Scenario: g_V_foo_fold_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").fold().sum(Scope.local)
+      """
+    When iterated to list
+    Then the result should be empty
 
   Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_sumX
     Given the modern graph

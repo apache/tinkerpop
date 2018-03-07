@@ -28,6 +28,35 @@ Feature: Step - mean()
       | result |
       | d[30.75].d |
 
+  Scenario: g_V_foo_mean
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").mean()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_age_fold_meanXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").fold().mean(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[30.75].d |
+
+  Scenario: g_V_foo_fold_meanXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("foo").fold().mean(Scope.local)
+      """
+    When iterated to list
+    Then the result should be empty
+
   Scenario: g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_meanX
     Given the modern graph
     And the traversal of

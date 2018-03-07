@@ -76,7 +76,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXname_order_byXdecrX_foldX();
 
-    public abstract Traversal<Vertex, List<Double>> get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX();
+    public abstract Traversal<Vertex, List<Double>> get_g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_decrX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX();
 
@@ -244,8 +244,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
-        final Traversal<Vertex, List<Double>> traversal = get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX();
+    public void g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
+        final Traversal<Vertex, List<Double>> traversal = get_g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_decrX();
         final List<List<Double>> list = traversal.toList();
         assertEquals(list.get(0).size(), 3);
         assertEquals(list.get(1).size(), 3);
@@ -386,12 +386,9 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         final Map<String, Number> m = traversal.next();
         assertFalse(traversal.hasNext());
-        assertEquals(4, m.size());
+        assertEquals(3, m.size());
         final Iterator<Map.Entry<String, Number>> iterator = m.entrySet().iterator();
         Map.Entry<String, Number> entry = iterator.next();
-        assertEquals("vadas", entry.getKey());
-        assertEquals(0.0, entry.getValue().doubleValue(), 0.0001);
-        entry = iterator.next();
         assertEquals("peter", entry.getKey());
         assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
         entry = iterator.next();
@@ -417,9 +414,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         entry = traversal.next();
         assertEquals("peter", entry.getKey());
         assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
-        entry = traversal.next();
-        assertEquals("vadas", entry.getKey());
-        assertEquals(0.0, entry.getValue().doubleValue(), 0.0001);
         assertFalse(traversal.hasNext());
     }
 
@@ -485,8 +479,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<Double>> get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
-            return g.V().local(__.bothE().<Double>values("weight").fold()).order().by(__.sum(Scope.local), Order.decr);
+        public Traversal<Vertex, List<Double>> get_g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
+            return g.V().map(__.bothE().<Double>values("weight").fold()).order().by(__.sum(Scope.local), Order.decr);
         }
 
         @Override

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,9 +49,8 @@ public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extend
                 counter++;
             }
             return NumberHelper.div(result, counter, true);
-        } else {
-            return Double.NaN;
         }
+        throw FastNoSuchElementException.instance();
     }
 
     @Override

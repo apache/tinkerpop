@@ -49,6 +49,12 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext())
+            super.processAllStarts();
+    }
+
+    @Override
     public E projectTraverser(final Traverser.Admin<S> traverser) {
         return (E) new MeanNumber(traverser.get(), traverser.bulk());
     }
