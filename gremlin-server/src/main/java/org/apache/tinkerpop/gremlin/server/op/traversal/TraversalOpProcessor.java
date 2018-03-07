@@ -489,6 +489,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             }
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
+                    .statusAttributes(generateStatusAttributes(ctx, msg, ResponseStatusCode.NO_CONTENT, itty, settings))
                     .create());
             return;
         }
