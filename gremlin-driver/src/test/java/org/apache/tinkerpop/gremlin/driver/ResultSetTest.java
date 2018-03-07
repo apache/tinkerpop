@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +48,29 @@ public class ResultSetTest extends AbstractResultQueueTest {
     @Before
     public void setupThis() {
         resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
+    }
+
+    @Test
+    public void shouldReturnResponseAttributes() throws Exception {
+        resultQueue.statusAttributes = new HashMap<String,Object>() {{
+            put("test",123);
+            put("junk","here");
+        }};
+
+        final CompletableFuture<Map<String,Object>> attrs = resultSet.statusAttributes();
+        readCompleted.complete(null);
+
+        final Map<String,Object> m = attrs.get();
+        assertEquals(123, m.get("test"));
+        assertEquals("here", m.get("junk"));
+        assertEquals(2, m.size());
+    }
+
+    @Test
+    public void shouldReturnEmptyMapForNoResponseAttributes() throws Exception {
+        final CompletableFuture<Map<String,Object>> attrs = resultSet.statusAttributes();
+        readCompleted.complete(null);
+        assertThat(attrs.get().isEmpty(), is(true));
     }
 
     @Test
