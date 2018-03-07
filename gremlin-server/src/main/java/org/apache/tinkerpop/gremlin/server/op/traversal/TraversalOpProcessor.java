@@ -458,6 +458,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     @Override
     protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
                                                    final ResponseStatusCode code, final Iterator itty) {
+        // leaving this overriding the deprecated version of this method because it provides a decent test to those
+        // who might have their own OpProcessor implementations that apply meta-data. leaving this alone helps validate
+        // that the upgrade path is clean. we can remove this in 3.4.0
         Map<String, Object> metaData = Collections.emptyMap();
         if (itty instanceof SideEffectIterator) {
             final SideEffectIterator traversalIterator = (SideEffectIterator) itty;
@@ -467,6 +470,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 metaData.put(Tokens.ARGS_SIDE_EFFECT_KEY, key);
                 metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getSideEffectAggregator());
             }
+        } else {
+            // this is a standard traversal iterator
+            metaData = super.generateMetaData(ctx, msg, code, itty);
         }
 
         return metaData;
@@ -539,7 +545,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     // thread that processed the eval of the script so, we have to push serialization down into that
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
+                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code,
+                                generateResultMetaData(ctx, msg, code, itty, settings),
+                                generateStatusAttributes(ctx, msg, code, itty, settings));
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here

@@ -248,9 +248,18 @@ final class Handler {
                     }
                 }
 
-                // as this is a non-PARTIAL_CONTENT code - the stream is done
-                if (response.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT)
+                // the last message in a OK stream could have meta-data that is useful to the result. note that error
+                // handling of the status attributes is handled separately above
+                if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.NO_CONTENT) {
+                    // in 3.4.0 this should get refactored. i think the that the markComplete() could just take the
+                    // status attributes as its argument - need to investigate that further
+                    queue.statusAttributes = response.getStatus().getAttributes();
+                }
+
+                // as this is a non-PARTIAL_CONTENT code - the stream is done.
+                if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
                     pending.remove(response.getRequestId()).markComplete();
+                }
             } finally {
                 // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
                 // error handling is at play.

@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
@@ -53,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -93,6 +95,13 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     @After
     public void afterTest() {
         cluster.close();
+    }
+
+    @Test
+    public void shouldReturnResponseAttributes() throws Exception {
+        final ResultSet results = client.submit("g.V()");
+        final Map<String,Object> attr = results.statusAttributes().get(20000, TimeUnit.MILLISECONDS);
+        assertThat(attr.containsKey(Tokens.ARGS_HOST), is(true));
     }
 
     @Test
