@@ -19,11 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
@@ -33,29 +31,22 @@ import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author Dean Zhu
  */
 public class SparkMessengerTest extends AbstractSparkTest {
-    private static ObjectMapper objectmapper = new ObjectMapper();
 
     @Test
     public void testSparkMessenger() throws Exception {
         // Define scopes
         final MessageScope.Local<String> orderSrcMessageScope = MessageScope.Local
-                .of(__::inE, new BiFunction<String, Edge, String>() {
-                    @Override
-                    public String apply(String message, Edge edge) {
-                        System.out.println(edge);
-                        if ("mocked_edge_label1".equals(edge.label())) {
-                            return message;
-                        }
-                        return null;
+                .of(__::inE, (message, edge) -> {
+                    if ("mocked_edge_label1".equals(edge.label())) {
+                        return message;
                     }
+                    return null;
                 });
-        final MessageScope.Local<String> inMessageScope = MessageScope.Local.of(__::inE);
 
         // Define star graph
         final StarGraph starGraph = StarGraph.open();
@@ -75,12 +66,8 @@ public class SparkMessengerTest extends AbstractSparkTest {
 
         messenger.sendMessage(orderSrcMessageScope, "a");
         List<Tuple2<Object, String>> outgoingMessages0 = messenger.getOutgoingMessages();
-        System.out.println(objectmapper.writeValueAsString(outgoingMessages0));
 
         Assert.assertEquals("a", outgoingMessages0.get(0)._2());
         Assert.assertNull(outgoingMessages0.get(1)._2());
-        //messenger.sendMessage(inMessageScope, "a");
-        //List<Tuple2<Object, String>> outgoingMessages1 = messenger.getOutgoingMessages();
-        //System.out.println(objectmapper.writeValueAsString(outgoingMessages1));
     }
 }
