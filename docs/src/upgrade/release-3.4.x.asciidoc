@@ -70,3 +70,6 @@ gremlin> g.V().group().
 ......2>   by(coalesce(outE().values("weight"), constant(0)).sum())
 ==>[software:0,person:3.5]
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1777[TINKERPOP-1777]
+
