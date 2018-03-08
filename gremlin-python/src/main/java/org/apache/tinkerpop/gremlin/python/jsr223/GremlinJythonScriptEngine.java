@@ -41,11 +41,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
@@ -123,10 +123,7 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
         // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
         // namespace as global bindings (e.g. traversalsources and graphs).
         if (traversalSource.equals(HIDDEN_G))
-            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G+ " - it is reserved");
-
-        if (bindings.containsKey(HIDDEN_G))
-            throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
+            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
 
         if (!bindings.containsKey(traversalSource))
             throw new IllegalArgumentException("The bindings available to the ScriptEngine do not contain a traversalSource named: " + traversalSource);

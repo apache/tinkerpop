@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class JythonTranslator extends PythonTranslator {
 
@@ -53,5 +54,13 @@ public final class JythonTranslator extends PythonTranslator {
             return "JythonTwoArgLambda(" + lambdaString + ")";
         else
             return "JythonUnknownArgLambda(" + lambdaString + ")";
+    }
+
+    @Override
+    protected String resolveSymbol(final String methodName) {
+        // since this is Jython we should expect the Gremlin to conform to the java classes to which the engine is
+        // bound - therefore, unlike the python engine which converts java names to python friendly ones, this
+        // jython one can just pass them through.
+        return methodName;
     }
 }
