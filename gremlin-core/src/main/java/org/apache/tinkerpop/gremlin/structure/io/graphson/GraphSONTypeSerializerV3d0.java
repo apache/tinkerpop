@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
+import org.apache.tinkerpop.shaded.jackson.core.type.WritableTypeId;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 
 import java.io.IOException;
@@ -61,43 +63,57 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
     }
 
     @Override
-    public void writeTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof Map) {
-            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
-            jsonGenerator.writeStartArray();
+    public WritableTypeId writeTypePrefix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            if (writableTypeId.forValue instanceof Map) {
+                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
+                jsonGenerator.writeStartArray();
+            } else {
+                jsonGenerator.writeStartObject();
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            if (writableTypeId.forValue instanceof List || writableTypeId.forValue instanceof Set) {
+                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
+                jsonGenerator.writeStartArray();
+            } else {
+                jsonGenerator.writeStartArray();
+            }
         } else {
-            jsonGenerator.writeStartObject();
+            throw new IllegalStateException("Could not write prefix");
         }
+
+        return writableTypeId;
     }
 
     @Override
-    public void writeTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof Map) {
-            jsonGenerator.writeEndArray();
-            writeTypeSuffix(jsonGenerator);
+    public WritableTypeId writeTypeSuffix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypeSuffix(jsonGenerator);
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            if (writableTypeId.forValue instanceof Map) {
+                jsonGenerator.writeEndArray();
+                writeTypeSuffix(jsonGenerator);
+            } else {
+                jsonGenerator.writeEndObject();
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            if (writableTypeId.forValue instanceof List || writableTypeId.forValue instanceof Set) {
+                jsonGenerator.writeEndArray();
+                writeTypeSuffix(jsonGenerator);
+            } else {
+                jsonGenerator.writeEndArray();
+            }
         } else {
-            jsonGenerator.writeEndObject();
+            throw new IllegalStateException("Could not write suffix");
         }
-    }
 
-    @Override
-    public void writeTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof List || o instanceof Set) {
-            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
-            jsonGenerator.writeStartArray();
-        } else {
-            jsonGenerator.writeStartArray();
-        }
-    }
-
-    @Override
-    public void writeTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (o instanceof List || o instanceof Set) {
-            jsonGenerator.writeEndArray();
-            writeTypeSuffix(jsonGenerator);
-        } else {
-            jsonGenerator.writeEndArray();
-        }
+        return writableTypeId;
     }
 
     @Override

@@ -19,8 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -74,6 +77,36 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void elementOrderShouldNotMatter() throws Exception {
+        final String bytecodeJSONFail1 = "{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@type\":\"g:Int32\",\"@value\":-4294967295}]]}}";
+        final String bytecodeJSONFail2 = "{\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@value\":-4294967295,\"@type\":\"g:Int32\"}]]},\"@type\":\"g:Bytecode\"}";
+
+        // first validate the failures of TINKERPOP-1738 - prior to the jackson fix on 2.9.4 one of these would have
+        // passed based on the ordering of the properties
+        try {
+            mapper.readValue(bytecodeJSONFail1, Bytecode.class);
+            fail("Should have thrown an error because 'bigint1value' is not an int32");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(JsonMappingException.class));
+        }
+
+        try {
+            mapper.readValue(bytecodeJSONFail2, Bytecode.class);
+            fail("Should have thrown an error because 'bigint1value' is not an int32");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(JsonMappingException.class));
+        }
+
+        // now do a legit parsing based on order
+        final String bytecodeJSON1 = "{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@type\":\"g:Int64\",\"@value\":-4294967295}]]}}";
+        final String bytecodeJSON2 = "{\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@value\":-4294967295,\"@type\":\"g:Int64\"}]]},\"@type\":\"g:Bytecode\"}";
+
+        final Bytecode bytecode1 = mapper.readValue(bytecodeJSON1, Bytecode.class);
+        final Bytecode bytecode2 = mapper.readValue(bytecodeJSON2, Bytecode.class);
+        assertEquals(bytecode1, bytecode2);
+    }
 
     @Test
     public void shouldSerializeDeserializeNestedCollectionsAndMapAndTypedValuesCorrectly() throws Exception {

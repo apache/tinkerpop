@@ -36,8 +36,12 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
+import org.apache.tinkerpop.shaded.jackson.core.type.WritableTypeId;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
@@ -52,6 +56,40 @@ public class GraphSONTypeSerializerV2d0 extends AbstractGraphSONTypeSerializer {
     GraphSONTypeSerializerV2d0(final TypeIdResolver idRes, final String propertyName, final TypeInfo typeInfo,
                                final String valuePropertyName) {
         super(idRes, propertyName, typeInfo, valuePropertyName);
+    }
+
+    @Override
+    public WritableTypeId writeTypePrefix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            jsonGenerator.writeStartObject();
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            jsonGenerator.writeStartArray();
+        } else {
+            throw new IllegalStateException("Could not write prefix");
+        }
+
+        return writableTypeId;
+    }
+
+    @Override
+    public WritableTypeId writeTypeSuffix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypeSuffix(jsonGenerator);
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            jsonGenerator.writeEndObject();
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            jsonGenerator.writeEndArray();
+        } else {
+            throw new IllegalStateException("Could not write suffix");
+        }
+
+        return writableTypeId;
     }
 
     @Override
