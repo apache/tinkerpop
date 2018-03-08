@@ -39,6 +39,8 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
+import org.apache.tinkerpop.shaded.jackson.core.type.WritableTypeId;
 import org.apache.tinkerpop.shaded.jackson.databind.BeanProperty;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
@@ -79,7 +81,7 @@ public class GraphSONTypeSerializer extends TypeSerializer {
 
     @Override
     public JsonTypeInfo.As getTypeInclusion() {
-        return null;
+        return JsonTypeInfo.As.WRAPPER_OBJECT;
     }
 
     @Override
@@ -93,79 +95,37 @@ public class GraphSONTypeSerializer extends TypeSerializer {
     }
 
     @Override
-    public void writeTypePrefixForScalar(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (canWriteTypeId()) {
-            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
+    public WritableTypeId writeTypePrefix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            jsonGenerator.writeStartObject();
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            jsonGenerator.writeStartArray();
+        } else {
+            throw new IllegalStateException("Could not write prefix");
         }
+
+        return writableTypeId;
     }
 
     @Override
-    public void writeTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        jsonGenerator.writeStartObject();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(Map);
-    }
-
-    @Override
-    public void writeTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        jsonGenerator.writeStartArray();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(List);
-    }
-
-    @Override
-    public void writeTypeSuffixForScalar(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        if (canWriteTypeId()) {
-            writeTypeSuffix(jsonGenerator);
+    public WritableTypeId writeTypeSuffix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
+        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
+            if (canWriteTypeId()) {
+                writeTypeSuffix(jsonGenerator);
+            }
+        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+            jsonGenerator.writeEndObject();
+        } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
+            jsonGenerator.writeEndArray();
+        } else {
+            throw new IllegalStateException("Could not write suffix");
         }
-    }
 
-    @Override
-    public void writeTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        jsonGenerator.writeEndObject();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(Map);
-    }
-
-    @Override
-    public void writeTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
-        jsonGenerator.writeEndArray();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(List);
-    }
-
-    @Override
-    public void writeCustomTypePrefixForScalar(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
-        if (canWriteTypeId()) {
-            writeTypePrefix(jsonGenerator, s);
-        }
-    }
-
-    @Override
-    public void writeCustomTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
-        jsonGenerator.writeStartObject();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(s);
-    }
-
-    @Override
-    public void writeCustomTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
-        jsonGenerator.writeStartArray();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(s);
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForScalar(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
-        if (canWriteTypeId()) {
-            writeTypeSuffix(jsonGenerator);
-        }
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
-        jsonGenerator.writeEndObject();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(s);
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator,final  String s) throws IOException {
-        jsonGenerator.writeEndArray();
-        // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(s);
+        return writableTypeId;
     }
 
     private boolean canWriteTypeId() {
