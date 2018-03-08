@@ -106,6 +106,7 @@ conf.setProperty('spark.executor.extraClassPath', "./__spark_libs__/*:$hadoopCon
 conf.setProperty('spark.driver.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
 conf.setProperty('spark.executor.extraLibraryPath', "$hadoop/lib/native:$hadoop/lib/native/Linux-amd64-64")
 conf.setProperty('gremlin.spark.persistContext', 'true')
+hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 graph = GraphFactory.open(conf)
 g = graph.traversal().withComputer(SparkGraphComputer)
 g.V().group().by(values('name')).by(both().count())
