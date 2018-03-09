@@ -19,7 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration.MapConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -62,5 +71,15 @@ public final class JythonTranslator extends PythonTranslator {
         // bound - therefore, unlike the python engine which converts java names to python friendly ones, this
         // jython one can just pass them through.
         return methodName;
+    }
+
+    @Override
+    protected String resolveTraversalStrategyProxy(final TraversalStrategyProxy proxy) {
+        // since this is jython we don't need a traversal proxy here - we need the actual JVM version of the strategy
+        // since this script will be executed in Jython. 
+        if (proxy.getConfiguration().isEmpty())
+            return proxy.getStrategyClass().getCanonicalName() + ".instance()";
+        else
+            return proxy.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
     }
 }

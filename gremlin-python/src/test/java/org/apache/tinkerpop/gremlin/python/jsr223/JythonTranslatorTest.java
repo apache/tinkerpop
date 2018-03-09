@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -100,6 +101,18 @@ public class JythonTranslatorTest {
                         __.as("x").id().as("id")).
                 select("lbl", "id").
                                  map(Lambda.function("lambda x: type(x.get())")).toList();
+
+        assertEquals(6, o.size());
+    }
+
+    @Test
+    public void shouldTranslateToJythonWhenUsingLambdasAndStrategies() throws Exception {
+        // the jython translation kicks in when you add a lambda so ensure that it translates when strategies are
+        // present
+        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g")));
+        final List<Object> o = g.withStrategies(ReadOnlyStrategy.instance()).
+                V().has("name").map(Lambda.function("lambda x: type(x.get())")).toList();
 
         assertEquals(6, o.size());
     }

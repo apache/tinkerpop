@@ -139,7 +139,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         return traversalScript.toString();
     }
 
-    private String convertToString(final Object object) {
+    protected String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof Bytecode)
@@ -172,11 +172,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof TraversalStrategyProxy) {
-            final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
-            if (proxy.getConfiguration().isEmpty())
-                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
-            else
-                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+            return resolveTraversalStrategyProxy((TraversalStrategyProxy) object);
         } else if (object instanceof TraversalStrategy) {
             return convertToString(new TraversalStrategyProxy((TraversalStrategy) object));
         } else if (object instanceof Boolean)
@@ -242,4 +238,10 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         return SymbolHelper.toPython(methodName);
     }
 
+    protected String resolveTraversalStrategyProxy(final TraversalStrategyProxy proxy) {
+        if (proxy.getConfiguration().isEmpty())
+            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
+        else
+            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+    }
 }
