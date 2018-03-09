@@ -48,7 +48,7 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
         } catch (ScriptException se) {
             final Throwable root = ExceptionUtils.getRootCause(se);
             assertEquals(MultipleCompilationErrorsException.class, root.getClass());
-            assertThat(se.getMessage(), containsString("[Static type checking] - Cannot find matching method java.lang.Object#getRed(). Please check if the declared type is right and if the method exists."));
+            assertThat(se.getMessage(), containsString("[Static type checking] - Cannot find matching method java.lang.Object#getRed(). Please check if the declared type is correct and if the method exists."));
         }
     }
 
