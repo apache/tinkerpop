@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -111,9 +113,10 @@ public class JythonTranslatorTest {
         // present
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
         g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g")));
-        final List<Object> o = g.withStrategies(ReadOnlyStrategy.instance()).
-                V().has("name").map(Lambda.function("lambda x: type(x.get())")).toList();
+        final List<Object> o = g.withStrategies(ReadOnlyStrategy.instance(),
+                                                SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
+                                 V().has("name").map(Lambda.function("lambda x: type(x.get())")).toList();
 
-        assertEquals(6, o.size());
+        assertEquals(4, o.size());
     }
 }
