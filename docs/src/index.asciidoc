@@ -57,7 +57,7 @@ Note the "+" following the link in each table entry - it forces an asciidoc line
 A gentle introduction to TinkerPop and the Gremlin traversal language that is divided into five, ten and fifteen minute tutorial blocks.
 |image:gremlin-dashboard.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] +
 Provides a detailed look at The Gremlin Console and how it can be used when working with TinkerPop.
-^|image:gremlin-anatomy.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/gremlins-anatomy/[Gremlin's Anatomy]
+^|image:gremlin-anatomy.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy]
 Identifies and explains the component parts of a Gremlin traversal.
 ^|image:gremlin-chef.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes]
 A collection of best practices and common traversal patterns for Gremlin.
