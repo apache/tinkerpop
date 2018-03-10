@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,20 +21,12 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class Barrier : EnumWrapper, IConsumer
+    /// <summary>
+    ///     Represents a predicate (boolean-valued function) of one argument. 
+    /// </summary>
+    public interface IPredicate
     {
-        private Barrier(string enumValue)
-            : base("Barrier", enumValue)
-        {            
-        }
-
-        public static Barrier NormSack => new Barrier("normSack");
     }
-    
-#pragma warning restore 1591
 }

@@ -21,20 +21,13 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class Barrier : EnumWrapper, IConsumer
+    /// <summary>
+    ///     Represents an operation that accepts a single input argument and returns no result. Unlike most other functional
+    ///     interfaces, Consumer is expected to operate via side-effects.
+    /// </summary>
+    public interface IConsumer
     {
-        private Barrier(string enumValue)
-            : base("Barrier", enumValue)
-        {            
-        }
-
-        public static Barrier NormSack => new Barrier("normSack");
     }
-    
-#pragma warning restore 1591
 }

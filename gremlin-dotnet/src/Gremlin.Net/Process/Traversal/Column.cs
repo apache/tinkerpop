@@ -26,7 +26,7 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class Column : EnumWrapper
+    public class Column : EnumWrapper, IFunction
     {
         private Column(string enumValue)
             : base("Column", enumValue)

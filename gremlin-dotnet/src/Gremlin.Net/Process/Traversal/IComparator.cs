@@ -21,20 +21,12 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class Barrier : EnumWrapper, IConsumer
+    /// <summary>
+    ///     A comparison function, which imposes a total ordering on some collection of objects.
+    /// </summary>
+    public interface IComparator
     {
-        private Barrier(string enumValue)
-            : base("Barrier", enumValue)
-        {            
-        }
-
-        public static Barrier NormSack => new Barrier("normSack");
     }
-    
-#pragma warning restore 1591
 }

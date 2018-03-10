@@ -48,17 +48,17 @@ def toCSharpTypeMap = ["Long": "long",
                        "TraversalMetrics": "E2",
                        "Traversal": "ITraversal",
                        "Traversal[]": "ITraversal[]",
-                       "Predicate": "TraversalPredicate",
+                       "Predicate": "IPredicate",
                        "P": "TraversalPredicate",
                        "TraversalStrategy": "ITraversalStrategy",
                        "TraversalStrategy[]": "ITraversalStrategy[]",
-                       "Function": "object",
-                       "BiFunction": "object",
+                       "Function": "IFunction",
+                       "BiFunction": "IBiFunction",
                        "UnaryOperator": "object",
-                       "BinaryOperator": "object",
-                       "Consumer": "object",
+                       "BinaryOperator": "IBinaryOperator",
+                       "Consumer": "IConsumer",
                        "Supplier": "object",
-                       "Comparator": "object",
+                       "Comparator": "IComparator",
                        "VertexProgram": "object"]
 
 def useE2 = ["E2", "E2"];
@@ -341,6 +341,14 @@ def toCSharpName = { enumClass, itemName ->
 
 def createEnum = { enumClass ->
     def b = ["enumClass": enumClass,
+             "implementedTypes": enumClass.getInterfaces().
+                    collect { it.getSimpleName() }.
+                    findAll { toCSharpTypeMap.containsKey(it) }.
+                    findAll { toCSharpTypeMap[it] != "object" }.
+                    sort { a, b -> a <=> b }.
+                    collect(["EnumWrapper"]) { typeName ->
+                        return toCSharpTypeMap[typeName]
+                    }.join(", "),
              "constants": enumClass.getEnumConstants().
                     sort { a, b -> a.name() <=> b.name() }.
                     collect { value ->

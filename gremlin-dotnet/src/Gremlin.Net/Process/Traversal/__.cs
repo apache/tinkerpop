@@ -153,7 +153,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Barrier(object barrierConsumer)
+        public static GraphTraversal<object, object> Barrier(IConsumer barrierConsumer)
         {
             return new GraphTraversal<object, object>().Barrier(barrierConsumer);            
         }
@@ -197,7 +197,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the branch step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Branch<E2>(object function)
+        public static GraphTraversal<object, E2> Branch<E2>(IFunction function)
         {
             return new GraphTraversal<object, E2>().Branch<E2>(function);            
         }
@@ -223,7 +223,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(object choiceFunction)
+        public static GraphTraversal<object, E2> Choose<E2>(IFunction choiceFunction)
         {
             return new GraphTraversal<object, E2>().Choose<E2>(choiceFunction);            
         }
@@ -231,7 +231,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(TraversalPredicate choosePredicate, ITraversal trueChoice)
+        public static GraphTraversal<object, E2> Choose<E2>(IPredicate choosePredicate, ITraversal trueChoice)
         {
             return new GraphTraversal<object, E2>().Choose<E2>(choosePredicate, trueChoice);            
         }
@@ -239,7 +239,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the choose step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Choose<E2>(TraversalPredicate choosePredicate, ITraversal trueChoice, ITraversal falseChoice)
+        public static GraphTraversal<object, E2> Choose<E2>(IPredicate choosePredicate, ITraversal trueChoice, ITraversal falseChoice)
         {
             return new GraphTraversal<object, E2>().Choose<E2>(choosePredicate, trueChoice, falseChoice);            
         }
@@ -357,7 +357,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the emit step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Emit(TraversalPredicate emitPredicate)
+        public static GraphTraversal<object, object> Emit(IPredicate emitPredicate)
         {
             return new GraphTraversal<object, object>().Emit(emitPredicate);            
         }
@@ -373,7 +373,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the filter step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Filter(TraversalPredicate predicate)
+        public static GraphTraversal<object, object> Filter(IPredicate predicate)
         {
             return new GraphTraversal<object, object>().Filter(predicate);            
         }
@@ -389,7 +389,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the flatMap step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> FlatMap<E2>(object function)
+        public static GraphTraversal<object, E2> FlatMap<E2>(IFunction function)
         {
             return new GraphTraversal<object, E2>().FlatMap<E2>(function);            
         }
@@ -413,7 +413,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the fold step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Fold<E2>(E2 seed, object foldFunction)
+        public static GraphTraversal<object, E2> Fold<E2>(E2 seed, IBiFunction foldFunction)
         {
             return new GraphTraversal<object, E2>().Fold<E2>(seed, foldFunction);            
         }
@@ -739,7 +739,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the map step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> Map<E2>(object function)
+        public static GraphTraversal<object, E2> Map<E2>(IFunction function)
         {
             return new GraphTraversal<object, E2>().Map<E2>(function);            
         }
@@ -997,7 +997,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Sack(object sackOperator)
+        public static GraphTraversal<object, object> Sack(IBiFunction sackOperator)
         {
             return new GraphTraversal<object, object>().Sack(sackOperator);            
         }
@@ -1005,7 +1005,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Sack(object sackOperator, string elementPropertyKey)
+        public static GraphTraversal<object, object> Sack(IBiFunction sackOperator, string elementPropertyKey)
         {
             return new GraphTraversal<object, object>().Sack(sackOperator, elementPropertyKey);            
         }
@@ -1073,7 +1073,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sideEffect step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> SideEffect(object consumer)
+        public static GraphTraversal<object, object> SideEffect(IConsumer consumer)
         {
             return new GraphTraversal<object, object>().SideEffect(consumer);            
         }
@@ -1239,7 +1239,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the until step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Until(TraversalPredicate untilPredicate)
+        public static GraphTraversal<object, object> Until(IPredicate untilPredicate)
         {
             return new GraphTraversal<object, object>().Until(untilPredicate);            
         }

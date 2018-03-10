@@ -26,7 +26,7 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class Operator : EnumWrapper
+    public class Operator : EnumWrapper, IBinaryOperator
     {
         private Operator(string enumValue)
             : base("Operator", enumValue)

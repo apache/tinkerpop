@@ -26,7 +26,7 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class Order : EnumWrapper
+    public class Order : EnumWrapper, IComparator
     {
         private Order(string enumValue)
             : base("Order", enumValue)
