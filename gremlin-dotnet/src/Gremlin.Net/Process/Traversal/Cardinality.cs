@@ -26,11 +26,16 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Cardinality
+    public class Cardinality : EnumWrapper
     {
-        List,
-		Set,
-		Single
+        private Cardinality(string enumValue)
+            : base("Cardinality", enumValue)
+        {            
+        }
+
+        public static Cardinality List => new Cardinality("list");
+		public static Cardinality Set => new Cardinality("set");
+		public static Cardinality Single => new Cardinality("single");
     }
     
 #pragma warning restore 1591

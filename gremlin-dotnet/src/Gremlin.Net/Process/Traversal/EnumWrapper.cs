@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,21 +21,32 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class Column : EnumWrapper
+    /// <summary>
+    ///     Represents an enum.
+    /// </summary>
+    public abstract class EnumWrapper
     {
-        private Column(string enumValue)
-            : base("Column", enumValue)
-        {            
-        }
+        /// <summary>
+        ///     Gets the name of the enum.
+        /// </summary>
+        public string EnumName { get; }
 
-        public static Column Keys => new Column("keys");
-		public static Column Values => new Column("values");
+        /// <summary>
+        ///     Gets the value of the enum.
+        /// </summary>
+        public string EnumValue { get; }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="EnumWrapper" /> class.
+        /// </summary>
+        /// <param name="enumName">The name of the enum.</param>
+        /// <param name="enumValue">The value of the enum.</param>
+        protected EnumWrapper(string enumName, string enumValue)
+        {
+            EnumName = enumName;
+            EnumValue = enumValue;
+        }
     }
-    
-#pragma warning restore 1591
 }

@@ -339,36 +339,23 @@ def toCSharpName = { enumClass, itemName ->
     return itemName.substring(0, 1).toUpperCase() + itemName.substring(1)
 }
 
-def createEnum = { enumClass, csharpToJava ->
+def createEnum = { enumClass ->
     def b = ["enumClass": enumClass,
              "constants": enumClass.getEnumConstants().
                     sort { a, b -> a.name() <=> b.name() }.
                     collect { value ->
                         def csharpName = toCSharpName(enumClass, value.name())
-                        csharpToJava.put(enumClass.simpleName + "." + csharpName, value.name())
-                        return csharpName
-                    }.join(",\n\t\t")]
+                        return "public static ${enumClass.simpleName} ${csharpName} => new ${enumClass.simpleName}(\"${value.name()}\");"
+                    }.join("\n\t\t")]
 
     def enumTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Enum.template")).make(b)
     def enumFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/" + enumClass.getSimpleName() + ".cs")
     enumFile.newWriter().withWriter{ it << enumTemplate }
 }
 
-def enumCSharpToJavaNames = [:]
 CoreImports.getClassImports().findAll { Enum.class.isAssignableFrom(it) }.
         sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }.
-        each { createEnum(it, enumCSharpToJavaNames) }
-
-def lastIndex = (enumCSharpToJavaNames.size() - 1);
-def body = new StringBuilder()
-enumCSharpToJavaNames.eachWithIndex{ node, i ->
-    body.append("""{"$node.key", "$node.value"}""")
-    body.append(i == lastIndex ? "\n" : ",\n            ")
-}
-
-def namingConversionsTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/NamingConversions.template")).make(["body":body])
-def namingConversionsFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/NamingConversions.cs")
-namingConversionsFile.newWriter().withWriter{ it << namingConversionsTemplate }
+        each { createEnum(it) }
 
 def determineVersion = {
     def env = System.getenv()
