@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -44,7 +45,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             object value = objectData;
             if (StringifyValue)
             {
-                value = value?.ToString();
+                value = string.Format(CultureInfo.InvariantCulture, "{0}", value);
             }
             return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
         }
