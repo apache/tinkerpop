@@ -41,13 +41,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             switch (reason)
             {
                 case IgnoreReason.LambdaNotSupported:
-                    reasonSuffix = " because lambdas are not supported in Gremlin.NET";
+                    reasonSuffix = " because lambdas are not supported in Gremlin.NET (TINKERPOP-1854)";
                     break;
                 case IgnoreReason.TraversalTDeserializationNotSupported:
                     reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
                     break;
-                case IgnoreReason.NeedsFurtherInvestigation:
-                    reasonSuffix = " as further investigation is required";
+                case IgnoreReason.PNotCreatedCorrectlyByGherkinRunner:
+                    reasonSuffix =
+                        " because the Gherkin runner can't call methods in TraversalPredicate class (TINKERPOP-1919)";
+                    break;
+                case IgnoreReason.NumericalValuesHaveWrongTypes:
+                    reasonSuffix = " because the asserts currently fail due to type mismatches (TINKERPOP-1918)";
+                    break;
+                case IgnoreReason.PWithinWrapsArgumentsInArray:
+                    reasonSuffix = " because P.Within() arguments are incorrectly wrapped in an array (TINKERPOP-1920)";
                     break;
             }
             return $"Scenario ignored" + reasonSuffix;
@@ -66,9 +73,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// </summary>
         TraversalTDeserializationNotSupported,
 
-        /// <summary>
-        /// Problem not yet classified and needs additional review.
-        /// </summary>
-        NeedsFurtherInvestigation
+        PNotCreatedCorrectlyByGherkinRunner,
+        NumericalValuesHaveWrongTypes,
+        PWithinWrapsArgumentsInArray
     }
 }
