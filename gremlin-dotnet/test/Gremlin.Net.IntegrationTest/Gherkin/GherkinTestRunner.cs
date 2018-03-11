@@ -37,14 +37,35 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     public class GherkinTestRunner
     {
-        private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios = new Dictionary<string, IgnoreReason>
-        {
-            { "g_V_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported },   // TINKERPOP-1866
-            { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
-            { "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name", IgnoreReason.NeedsFurtherInvestigation }, // TINKERPOP-1859??
-            { "g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.NeedsFurtherInvestigation },    // TINKERPOP-1859??
-            { "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NeedsFurtherInvestigation }  // TINKERPOP-1907
-        };
+        private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
+            new Dictionary<string, IgnoreReason>
+            {
+                { "g_V_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported },   // TINKERPOP-1866
+                { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
+                {
+                    "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+                    IgnoreReason.NumericalValuesHaveWrongTypes
+                },
+                {"g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NumericalValuesHaveWrongTypes},
+                {"g_V_hasIdXwithinXemptyXX_count", IgnoreReason.PWithinWrapsArgumentsInArray},
+                {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray},
+                {
+                    "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name",
+                    IgnoreReason.PNotCreatedCorrectlyByGherkinRunner
+                },
+                {
+                    "g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX",
+                    IgnoreReason.PNotCreatedCorrectlyByGherkinRunner
+                },
+                {
+                    "g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_whereXa_gtXbX_orXeqXbXXX_byXageX_byXweightX_byXweightX_selectXa_cX_byXnameX",
+                    IgnoreReason.PNotCreatedCorrectlyByGherkinRunner
+                },
+                {
+                    "g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX",
+                    IgnoreReason.PNotCreatedCorrectlyByGherkinRunner
+                }
+            };
         
         private static class Keywords
         {
