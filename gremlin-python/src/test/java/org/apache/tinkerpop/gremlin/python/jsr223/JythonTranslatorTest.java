@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ public class JythonTranslatorTest {
     }
 
     @Test
+    @Ignore("TINKERPOP-1898 - ultimately seems to be a problem with jython and varargs - doesn't act consistently")
     public void shouldTranslateToJythonWhenUsingLambdasAndStrategies() throws Exception {
         // the jython translation kicks in when you add a lambda so ensure that it translates when strategies are
         // present
