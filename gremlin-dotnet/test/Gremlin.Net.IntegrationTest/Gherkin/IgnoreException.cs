@@ -50,11 +50,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     reasonSuffix =
                         " because the Gherkin runner can't call methods in TraversalPredicate class (TINKERPOP-1919)";
                     break;
-                case IgnoreReason.NumericalValuesHaveWrongTypes:
-                    reasonSuffix = " because the asserts currently fail due to type mismatches (TINKERPOP-1918)";
-                    break;
                 case IgnoreReason.PWithinWrapsArgumentsInArray:
                     reasonSuffix = " because P.Within() arguments are incorrectly wrapped in an array (TINKERPOP-1920)";
+                    break;
+                case IgnoreReason.PNotDeserializationProblem:
+                    reasonSuffix = " because P.Not() cannot be deserialized by Gremlin Server (TINKERPOP-1922)";
                     break;
             }
             return $"Scenario ignored" + reasonSuffix;
@@ -74,7 +74,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         TraversalTDeserializationNotSupported,
 
         PNotCreatedCorrectlyByGherkinRunner,
-        NumericalValuesHaveWrongTypes,
-        PWithinWrapsArgumentsInArray
+        PWithinWrapsArgumentsInArray,
+        PNotDeserializationProblem
     }
 }
