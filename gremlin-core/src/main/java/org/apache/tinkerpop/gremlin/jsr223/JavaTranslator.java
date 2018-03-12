@@ -51,13 +51,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class JavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
     private final S traversalSource;
-    private final Class anonymousTraversal;
+    private final Class<?> anonymousTraversal;
     private static final Map<Class<?>, Map<String, List<Method>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
-
+    private final Map<Class<?>, Map<String,Method>> localMethodCache = new ConcurrentHashMap<>();
+    private final Method anonymousTraversalStart;
 
     private JavaTranslator(final S traversalSource) {
         this.traversalSource = traversalSource;
         this.anonymousTraversal = traversalSource.getAnonymousTraversalClass().orElse(null);
+        this.anonymousTraversalStart = getStartMethodFromAnonymousTraversal();
     }
 
     public static <S extends TraversalSource, T extends Traversal.Admin<?, ?>> JavaTranslator<S, T> of(final S traversalSource) {
@@ -104,7 +106,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             return translateObject(((Bytecode.Binding) object).value());
         else if (object instanceof Bytecode) {
             try {
-                final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
+                final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversalStart.invoke(null);
                 for (final Bytecode.Instruction instruction : ((Bytecode) object).getStepInstructions()) {
                     invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 }
@@ -116,13 +118,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             final Map<String, Object> map = new HashMap<>();
             final Configuration configuration = ((TraversalStrategyProxy) object).getConfiguration();
             configuration.getKeys().forEachRemaining(key -> map.put(key, translateObject(configuration.getProperty(key))));
-            try {
-                return map.isEmpty() ?
-                        ((TraversalStrategyProxy) object).getStrategyClass().getMethod("instance").invoke(null) :
-                        ((TraversalStrategyProxy) object).getStrategyClass().getMethod("create", Configuration.class).invoke(null, new MapConfiguration(map));
-            } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            return invokeStrategyCreationMethod(object, map);
         } else if (object instanceof Map) {
             final Map<Object, Object> map = object instanceof Tree ?
                     new Tree() :
@@ -155,6 +151,37 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             return set;
         } else
             return object;
+    }
+
+    private Object invokeStrategyCreationMethod(final Object delegate, final Map<String, Object> map) {
+        final Class<?> strategyClass = ((TraversalStrategyProxy) delegate).getStrategyClass();
+        final Map<String, Method> methodCache = localMethodCache.computeIfAbsent(strategyClass, k -> {
+            final Map<String, Method> cacheEntry = new HashMap<>();
+            try {
+                cacheEntry.put("instance", strategyClass.getMethod("instance"));
+            } catch (NoSuchMethodException ignored) {
+                // nothing - the strategy may not be constructed this way
+            }
+
+            try {
+                cacheEntry.put("create", strategyClass.getMethod("create", Configuration.class));
+            } catch (NoSuchMethodException ignored) {
+                // nothing - the strategy may not be constructed this way
+            }
+
+            if (cacheEntry.isEmpty())
+                throw new IllegalStateException(String.format("%s does can only be constructed with instance() or create(Configuration)", strategyClass.getSimpleName()));
+
+            return cacheEntry;
+        });
+
+        try {
+            return map.isEmpty() ?
+                    methodCache.get("instance").invoke(null) :
+                    methodCache.get("create").invoke(null, new MapConfiguration(map));
+        } catch (final InvocationTargetException | IllegalAccessException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
@@ -240,5 +267,16 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             }
             GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
         }
+    }
+
+    private Method getStartMethodFromAnonymousTraversal() {
+        if (this.anonymousTraversal != null) {
+            try {
+                return this.anonymousTraversal.getMethod("start");
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
+
+        return null;
     }
 }
