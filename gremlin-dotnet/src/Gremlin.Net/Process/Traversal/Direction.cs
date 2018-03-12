@@ -32,10 +32,10 @@ namespace Gremlin.Net.Process.Traversal
             : base("Direction", enumValue)
         {            
         }
-
-        public static Direction Both => new Direction("BOTH");
-		public static Direction In => new Direction("IN");
-		public static Direction Out => new Direction("OUT");
+ 
+        public static Direction Both => new Direction("BOTH"); 
+        public static Direction In => new Direction("IN"); 
+        public static Direction Out => new Direction("OUT");
     }
     
 #pragma warning restore 1591

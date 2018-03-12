@@ -32,10 +32,10 @@ namespace Gremlin.Net.Process.Traversal
             : base("Pop", enumValue)
         {            
         }
-
-        public static Pop All => new Pop("all");
-		public static Pop First => new Pop("first");
-		public static Pop Last => new Pop("last");
+ 
+        public static Pop All => new Pop("all"); 
+        public static Pop First => new Pop("first"); 
+        public static Pop Last => new Pop("last");
     }
     
 #pragma warning restore 1591

@@ -32,7 +32,7 @@ namespace Gremlin.Net.Process.Traversal
             : base("Barrier", enumValue)
         {            
         }
-
+ 
         public static Barrier NormSack => new Barrier("normSack");
     }
     

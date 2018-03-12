@@ -32,8 +32,8 @@ namespace Gremlin.Net.Process.Traversal
             : base("<%= enumClass.simpleName %>", enumValue)
         {            
         }
-
-        <%= constants %>
+<% constants.each { constant -> %> 
+        <%= constant %><%}%>
     }
     
 #pragma warning restore 1591

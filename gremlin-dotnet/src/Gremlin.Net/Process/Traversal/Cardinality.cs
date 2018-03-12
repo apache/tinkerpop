@@ -32,10 +32,10 @@ namespace Gremlin.Net.Process.Traversal
             : base("Cardinality", enumValue)
         {            
         }
-
-        public static Cardinality List => new Cardinality("list");
-		public static Cardinality Set => new Cardinality("set");
-		public static Cardinality Single => new Cardinality("single");
+ 
+        public static Cardinality List => new Cardinality("list"); 
+        public static Cardinality Set => new Cardinality("set"); 
+        public static Cardinality Single => new Cardinality("single");
     }
     
 #pragma warning restore 1591

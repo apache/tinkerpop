@@ -32,9 +32,9 @@ namespace Gremlin.Net.Process.Traversal
             : base("GraphSONVersion", enumValue)
         {            
         }
-
-        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0");
-		public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
+ 
+        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
+        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
     }
     
 #pragma warning restore 1591

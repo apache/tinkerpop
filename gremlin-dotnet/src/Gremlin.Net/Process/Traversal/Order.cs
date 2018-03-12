@@ -32,14 +32,14 @@ namespace Gremlin.Net.Process.Traversal
             : base("Order", enumValue)
         {            
         }
-
-        public static Order Decr => new Order("decr");
-		public static Order Incr => new Order("incr");
-		public static Order KeyDecr => new Order("keyDecr");
-		public static Order KeyIncr => new Order("keyIncr");
-		public static Order Shuffle => new Order("shuffle");
-		public static Order ValueDecr => new Order("valueDecr");
-		public static Order ValueIncr => new Order("valueIncr");
+ 
+        public static Order Decr => new Order("decr"); 
+        public static Order Incr => new Order("incr"); 
+        public static Order KeyDecr => new Order("keyDecr"); 
+        public static Order KeyIncr => new Order("keyIncr"); 
+        public static Order Shuffle => new Order("shuffle"); 
+        public static Order ValueDecr => new Order("valueDecr"); 
+        public static Order ValueIncr => new Order("valueIncr");
     }
     
 #pragma warning restore 1591

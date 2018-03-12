@@ -32,18 +32,18 @@ namespace Gremlin.Net.Process.Traversal
             : base("Operator", enumValue)
         {            
         }
-
-        public static Operator AddAll => new Operator("addAll");
-		public static Operator And => new Operator("and");
-		public static Operator Assign => new Operator("assign");
-		public static Operator Div => new Operator("div");
-		public static Operator Max => new Operator("max");
-		public static Operator Min => new Operator("min");
-		public static Operator Minus => new Operator("minus");
-		public static Operator Mult => new Operator("mult");
-		public static Operator Or => new Operator("or");
-		public static Operator Sum => new Operator("sum");
-		public static Operator SumLong => new Operator("sumLong");
+ 
+        public static Operator AddAll => new Operator("addAll"); 
+        public static Operator And => new Operator("and"); 
+        public static Operator Assign => new Operator("assign"); 
+        public static Operator Div => new Operator("div"); 
+        public static Operator Max => new Operator("max"); 
+        public static Operator Min => new Operator("min"); 
+        public static Operator Minus => new Operator("minus"); 
+        public static Operator Mult => new Operator("mult"); 
+        public static Operator Or => new Operator("or"); 
+        public static Operator Sum => new Operator("sum"); 
+        public static Operator SumLong => new Operator("sumLong");
     }
     
 #pragma warning restore 1591

@@ -32,9 +32,9 @@ namespace Gremlin.Net.Process.Traversal
             : base("Column", enumValue)
         {            
         }
-
-        public static Column Keys => new Column("keys");
-		public static Column Values => new Column("values");
+ 
+        public static Column Keys => new Column("keys"); 
+        public static Column Values => new Column("values");
     }
     
 #pragma warning restore 1591

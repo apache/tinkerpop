@@ -32,9 +32,9 @@ namespace Gremlin.Net.Process.Traversal
             : base("Scope", enumValue)
         {            
         }
-
-        public static Scope Global => new Scope("global");
-		public static Scope Local => new Scope("local");
+ 
+        public static Scope Global => new Scope("global"); 
+        public static Scope Local => new Scope("local");
     }
     
 #pragma warning restore 1591

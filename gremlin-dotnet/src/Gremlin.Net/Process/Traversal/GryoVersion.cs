@@ -32,7 +32,7 @@ namespace Gremlin.Net.Process.Traversal
             : base("GryoVersion", enumValue)
         {            
         }
-
+ 
         public static GryoVersion V1_0 => new GryoVersion("V1_0");
     }
     

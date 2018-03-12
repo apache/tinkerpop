@@ -32,11 +32,11 @@ namespace Gremlin.Net.Process.Traversal
             : base("T", enumValue)
         {            
         }
-
-        public static T Id => new T("id");
-		public static T Key => new T("key");
-		public static T Label => new T("label");
-		public static T Value => new T("value");
+ 
+        public static T Id => new T("id"); 
+        public static T Key => new T("key"); 
+        public static T Label => new T("label"); 
+        public static T Value => new T("value");
     }
     
 #pragma warning restore 1591

@@ -32,9 +32,9 @@ namespace Gremlin.Net.Process.Traversal
             : base("Pick", enumValue)
         {            
         }
-
-        public static Pick Any => new Pick("any");
-		public static Pick None => new Pick("none");
+ 
+        public static Pick Any => new Pick("any"); 
+        public static Pick None => new Pick("none");
     }
     
 #pragma warning restore 1591
