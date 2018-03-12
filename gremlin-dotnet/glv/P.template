@@ -30,20 +30,72 @@ namespace Gremlin.Net.Process.Traversal
     ///     A <see cref="P" /> is a predicate of the form Func&lt;object, bool&gt;.
     ///     That is, given some object, return true or false.
     /// </summary>
-    public class P
+    public class P : IPredicate
     {
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="P" /> class.
+        /// </summary>
+        /// <param name="operatorName">The name of the predicate.</param>
+        /// <param name="value">The value of the predicate.</param>
+        /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
+        public P(string operatorName, dynamic value, P other = null)
+        {
+            OperatorName = operatorName;
+            Value = value;
+            Other = other;
+        }
+
+        /// <summary>
+        ///     Gets the name of the predicate.
+        /// </summary>
+        public string OperatorName { get; }
+
+        /// <summary>
+        ///     Gets the value of the predicate.
+        /// </summary>
+        public dynamic Value { get; }
+
+        /// <summary>
+        ///     Gets an optional other predicate that is used as an argument for this predicate.
+        /// </summary>
+        public P Other { get; }
+
+        /// <summary>
+        ///     Returns a composed predicate that represents a logical AND of this predicate and another.
+        /// </summary>
+        /// <param name="otherPredicate">A predicate that will be logically-ANDed with this predicate.</param>
+        /// <returns>The composed predicate.</returns>
+        public P And(P otherPredicate)
+        {
+            return new P("and", this, otherPredicate);
+        }
+
+        /// <summary>
+        ///     Returns a composed predicate that represents a logical OR of this predicate and another.
+        /// </summary>
+        /// <param name="otherPredicate">A predicate that will be logically-ORed with this predicate.</param>
+        /// <returns>The composed predicate.</returns>
+        public P Or(P otherPredicate)
+        {
+            return new P("or", this, otherPredicate);
+        }
 <% pmethods.findAll{ !(it in ["within", "without"]) }.each { method -> %>
-        public static TraversalPredicate <%= toCSharpMethodName.call(method) %>(params object[] args)
+        public static P <%= toCSharpMethodName.call(method) %>(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("<%= method %>", value);
+            return new P("<%= method %>", value);
         }
 <% } %><% pmethods.findAll{ it in ["within", "without"] }.each { method -> %>
-        public static TraversalPredicate <%= toCSharpMethodName.call(method) %>(params object[] args)
+        public static P <%= toCSharpMethodName.call(method) %>(params object[] args)
         {
-            return new TraversalPredicate("<%= method %>", args);
+            return new P("<%= method %>", args);
         }
 <% } %>
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Other == null ? \$"{OperatorName}({Value})" : \$"{OperatorName}({Value},{Other})";
+        }
     }
 
 #pragma warning restore 1591

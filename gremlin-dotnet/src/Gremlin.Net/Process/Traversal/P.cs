@@ -30,85 +30,137 @@ namespace Gremlin.Net.Process.Traversal
     ///     A <see cref="P" /> is a predicate of the form Func&lt;object, bool&gt;.
     ///     That is, given some object, return true or false.
     /// </summary>
-    public class P
+    public class P : IPredicate
     {
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="P" /> class.
+        /// </summary>
+        /// <param name="operatorName">The name of the predicate.</param>
+        /// <param name="value">The value of the predicate.</param>
+        /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
+        public P(string operatorName, dynamic value, P other = null)
+        {
+            OperatorName = operatorName;
+            Value = value;
+            Other = other;
+        }
 
-        public static TraversalPredicate Between(params object[] args)
+        /// <summary>
+        ///     Gets the name of the predicate.
+        /// </summary>
+        public string OperatorName { get; }
+
+        /// <summary>
+        ///     Gets the value of the predicate.
+        /// </summary>
+        public dynamic Value { get; }
+
+        /// <summary>
+        ///     Gets an optional other predicate that is used as an argument for this predicate.
+        /// </summary>
+        public P Other { get; }
+
+        /// <summary>
+        ///     Returns a composed predicate that represents a logical AND of this predicate and another.
+        /// </summary>
+        /// <param name="otherPredicate">A predicate that will be logically-ANDed with this predicate.</param>
+        /// <returns>The composed predicate.</returns>
+        public P And(P otherPredicate)
+        {
+            return new P("and", this, otherPredicate);
+        }
+
+        /// <summary>
+        ///     Returns a composed predicate that represents a logical OR of this predicate and another.
+        /// </summary>
+        /// <param name="otherPredicate">A predicate that will be logically-ORed with this predicate.</param>
+        /// <returns>The composed predicate.</returns>
+        public P Or(P otherPredicate)
+        {
+            return new P("or", this, otherPredicate);
+        }
+
+        public static P Between(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("between", value);
+            return new P("between", value);
         }
 
-        public static TraversalPredicate Eq(params object[] args)
+        public static P Eq(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("eq", value);
+            return new P("eq", value);
         }
 
-        public static TraversalPredicate Gt(params object[] args)
+        public static P Gt(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("gt", value);
+            return new P("gt", value);
         }
 
-        public static TraversalPredicate Gte(params object[] args)
+        public static P Gte(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("gte", value);
+            return new P("gte", value);
         }
 
-        public static TraversalPredicate Inside(params object[] args)
+        public static P Inside(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("inside", value);
+            return new P("inside", value);
         }
 
-        public static TraversalPredicate Lt(params object[] args)
+        public static P Lt(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("lt", value);
+            return new P("lt", value);
         }
 
-        public static TraversalPredicate Lte(params object[] args)
+        public static P Lte(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("lte", value);
+            return new P("lte", value);
         }
 
-        public static TraversalPredicate Neq(params object[] args)
+        public static P Neq(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("neq", value);
+            return new P("neq", value);
         }
 
-        public static TraversalPredicate Not(params object[] args)
+        public static P Not(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("not", value);
+            return new P("not", value);
         }
 
-        public static TraversalPredicate Outside(params object[] args)
+        public static P Outside(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("outside", value);
+            return new P("outside", value);
         }
 
-        public static TraversalPredicate Test(params object[] args)
+        public static P Test(params object[] args)
         {
             var value = args.Length == 1 ? args[0] : args;
-            return new TraversalPredicate("test", value);
+            return new P("test", value);
         }
 
-        public static TraversalPredicate Within(params object[] args)
+        public static P Within(params object[] args)
         {
-            return new TraversalPredicate("within", args);
+            return new P("within", args);
         }
 
-        public static TraversalPredicate Without(params object[] args)
+        public static P Without(params object[] args)
         {
-            return new TraversalPredicate("without", args);
+            return new P("without", args);
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Other == null ? $"{OperatorName}({Value})" : $"{OperatorName}({Value},{Other})";
+        }
     }
 
 #pragma warning restore 1591
