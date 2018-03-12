@@ -364,7 +364,7 @@ namespace Gremlin.Net.UnitTest.Structure
 
             var pathStr = path.ToString();
 
-            Assert.Equal("[1, v[1], hello]", pathStr);
+            Assert.Equal("path[1, v[1], hello]", pathStr);
         }
 
         [Fact]

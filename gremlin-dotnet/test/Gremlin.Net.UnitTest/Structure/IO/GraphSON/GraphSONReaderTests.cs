@@ -229,7 +229,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Path readPath = reader.ToObject(JObject.Parse(graphSon));
 
-            Assert.Equal("[v[1], v[3], lop]", readPath.ToString());
+            Assert.Equal("path[v[1], v[3], lop]", readPath.ToString());
             Assert.Equal(new Vertex(1), readPath[0]);
             Assert.Equal(new Vertex(1), readPath["a"]);
             Assert.Equal("lop", readPath[2]);
@@ -246,7 +246,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Path readPath = reader.ToObject(JObject.Parse(graphSon));
 
-            Assert.Equal("[v[5]]", readPath.ToString());
+            Assert.Equal("path[v[5]]", readPath.ToString());
             Assert.Equal(new Vertex(5L), readPath[0]);
             Assert.Equal(new Vertex(5L), readPath["z"]);
             Assert.Equal(1, readPath.Count);

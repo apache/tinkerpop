@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
@@ -53,7 +55,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 /**
  * A collection of helpful methods for creating standard {@link Object#toString()} representations of graph-related
  * objects.
@@ -66,6 +67,7 @@ public final class StringFactory {
     private static final String E = "e";
     private static final String P = "p";
     private static final String VP = "vp";
+    private static final String PATH = "path";
     private static final String L_BRACKET = "[";
     private static final String R_BRACKET = "]";
     private static final String COMMA_SPACE = ", ";
@@ -176,7 +178,7 @@ public final class StringFactory {
     }
 
     public static String translatorString(final Translator translator) {
-        return "translator[" + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + "]";
+        return "translator" + L_BRACKET + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + R_BRACKET;
     }
 
     public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {
@@ -252,4 +254,7 @@ public final class StringFactory {
         return string.substring(1, string.length() - 1);
     }
 
+    public static String pathString(final Path path) {
+        return PATH + L_BRACKET + String.join(", ", IteratorUtils.map(path, Object::toString)) + R_BRACKET;
+    }
 }

@@ -103,7 +103,7 @@ class Path(object):
         self.objects = objects
 
     def __repr__(self):
-        return str(self.objects)
+        return "path[" + ", ".join(map(str, self.objects)) + "]"
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.objects == other.objects and self.labels == other.labels

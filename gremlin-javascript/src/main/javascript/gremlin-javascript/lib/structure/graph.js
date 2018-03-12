@@ -126,6 +126,10 @@ class Path {
     this.objects = objects;
   }
 
+  toString() {
+    return 'path[' + objects.join(", ") +  ']';
+  }
+
   equals(other) {
     if (!(other instanceof Path)) {
       return false;

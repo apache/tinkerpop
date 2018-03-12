@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -217,7 +218,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return this.objects().toString();
+        return StringFactory.pathString(this);
     }
 
     @Override
