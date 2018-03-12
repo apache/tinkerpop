@@ -59,6 +59,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {
                     "g_V_asXaX_outEXcreatedX_asXbX_inV_asXcX_inXcreatedX_asXdX_whereXa_ltXbX_orXgtXcXX_andXneqXdXXX_byXageX_byXweightX_byXinXcreatedX_valuesXageX_minX_selectXa_c_dX",
                     IgnoreReason.PNotCreatedCorrectlyByGherkinRunner
+                },
+                {
+                    "g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX",
+                    IgnoreReason.PNotDeserializationProblem
                 }
             };
         
@@ -109,7 +113,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     if (IgnoredScenarios.TryGetValue(scenario.Name, out var reason))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(reason));
-                        break;
+                        continue;
                     }
                     StepBlock? currentStep = null;
                     StepDefinition stepDefinition = null;
