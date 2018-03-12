@@ -92,10 +92,10 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3].l |
-      | d[1].l |
-      | d[1].l |
-      | d[1].l |
+      | d[3].i |
+      | d[1].i |
+      | d[1].i |
+      | d[1].i |
 
   Scenario: g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
     Given the modern graph
@@ -107,5 +107,5 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].d |
-      | d[1.0].d |
+      | d[1.0].m |
+      | d[1.0].m |

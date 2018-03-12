@@ -42,11 +42,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 { "g_V_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported },   // TINKERPOP-1866
                 { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
-                {
-                    "g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-                    IgnoreReason.NumericalValuesHaveWrongTypes
-                },
-                {"g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack", IgnoreReason.NumericalValuesHaveWrongTypes},
                 {"g_V_hasIdXwithinXemptyXX_count", IgnoreReason.PWithinWrapsArgumentsInArray},
                 {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray},
                 {
