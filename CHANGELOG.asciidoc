@@ -31,7 +31,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Jackson 2.9.4.
 * Added `idleConnectionTimeout` and `keepAliveInterval` to Gremlin Server that enables a "ping" and auto-close for seemingly dead clients.
 * Fixed a bug where lambdas in `gremlin-python` would trigger a failure if steps using python-only symbols were present (such as `as_()`).
-* Fixed a bug where lambdas in `gremlin-python` would trigger a failure if `withStrategies()` was evaluated.
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * Improved error messaging for failed serialization and deserialization of request/response messages.
