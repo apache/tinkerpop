@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Gremlin.Net.Process.Traversal;
-using TEnum = Gremlin.Net.Process.Traversal.T;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -38,7 +37,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private readonly string _text;
 
         private static readonly IDictionary<string, Type> EnumTypesByName = typeof(Scope).GetTypeInfo().Assembly
-            .GetTypes().Where(t => t.GetTypeInfo().IsEnum && t.GetTypeInfo().IsPublic)
+            .GetTypes().Where(t => t.GetTypeInfo().IsSubclassOf(typeof(EnumWrapper)) && t.GetTypeInfo().IsPublic)
             .ToDictionary(e => e.Name, e => e);
         
         private readonly object _value;
@@ -55,7 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             }
             _type = type;
             var valueName = text.Substring(separatorIndex + 1);
-            _value = Enum.Parse(type, GetCsharpName(valueName));
+            _value = _type.GetProperty(GetCsharpName(valueName)).GetValue(null);
         }
 
         private string GetCsharpName(string valueText)

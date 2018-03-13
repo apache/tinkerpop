@@ -26,11 +26,16 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Direction
+    public class Direction : EnumWrapper
     {
-        Both,
-		In,
-		Out
+        private Direction(string enumValue)
+            : base("Direction", enumValue)
+        {            
+        }
+ 
+        public static Direction Both => new Direction("BOTH"); 
+        public static Direction In => new Direction("IN"); 
+        public static Direction Out => new Direction("OUT");
     }
     
 #pragma warning restore 1591

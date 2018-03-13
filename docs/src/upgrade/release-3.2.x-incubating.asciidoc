@@ -42,6 +42,17 @@ by clients that might mysteriously disappear without properly closing their conn
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1726[TINKERPOP-1726]
 
+==== Gremlin.Net Tokens Improved
+
+The various Gremlin tokens (e.g. `T`, `Order`, `Operator`, etc.) that were implemented as Enums before in Gremlin.Net
+are now implemented as classes. This mainly allows them to implement interfaces which their Java counterparts already
+did. `T` for example now implements the new interface `IFunction` which simply mirrors its Java counterpart `Function`.
+Steps that expect objects for those interfaces as arguments now explicitly use the interface. Before, they used just
+`object` as the type for these arguments which made it hard for users to know what kind of `object` they can use.
+However, usage of these tokens themselves shouldn't change at all (e.g. `T.Id` is still `T.Id`).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1901[TINKERPOP-1901]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

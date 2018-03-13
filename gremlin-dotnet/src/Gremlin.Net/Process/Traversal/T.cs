@@ -26,12 +26,17 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum T
+    public class T : EnumWrapper, IFunction
     {
-        Id,
-		Key,
-		Label,
-		Value
+        private T(string enumValue)
+            : base("T", enumValue)
+        {            
+        }
+ 
+        public static T Id => new T("id"); 
+        public static T Key => new T("key"); 
+        public static T Label => new T("label"); 
+        public static T Value => new T("value");
     }
     
 #pragma warning restore 1591

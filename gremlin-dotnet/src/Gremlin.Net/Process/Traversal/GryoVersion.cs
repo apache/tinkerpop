@@ -26,10 +26,15 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum GryoVersion
+    public class GryoVersion : EnumWrapper
     {
-        V1_0,
-		V3_0
+        private GryoVersion(string enumValue)
+            : base("GryoVersion", enumValue)
+        {            
+        }
+ 
+        public static GryoVersion V1_0 => new GryoVersion("V1_0"); 
+        public static GryoVersion V3_0 => new GryoVersion("V3_0");
     }
     
 #pragma warning restore 1591
