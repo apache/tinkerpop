@@ -53,6 +53,18 @@ However, usage of these tokens themselves shouldn't change at all (e.g. `T.Id` i
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1901[TINKERPOP-1901]
 
+==== Gremlin.Net: Traversal Predicate Classes Merged
+
+Gremlin.Net used two classes for traversal predicates: `P` and `TraversalPredicate`. Steps that worked with traversal
+predicates expected objects of type `TraversalPredicate`, but they were constructed from the `P` class
+(e.g. `P.Gt(1)` returned a `TraversalPredicate`). Merging these two classes into the `P` class should avoid unnecessary
+confusion. Most users should not notice this change as predicates can still be constructed exactly as before, e.g.,
+`P.Gt(1).And(P.Lt(3))` still works without any modifications.
+Only users that implemented their own predicates and used `TraversalPredicate` as the base class need to change their
+implementation to now use `P` as the new base class.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1919[TINKERPOP-1919]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
