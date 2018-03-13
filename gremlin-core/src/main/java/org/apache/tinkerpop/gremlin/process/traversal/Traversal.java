@@ -426,6 +426,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public Set<TraverserRequirement> getTraverserRequirements();
 
         /**
+         * Invalidates the set of all {@link TraverserRequirement}s for this traversal.
+         */
+        public default void invalidateTraverserRequirements() {
+
+        };
+
+        /**
          * Call the {@link Step#reset} method on every step in the traversal.
          */
         public default void reset() {

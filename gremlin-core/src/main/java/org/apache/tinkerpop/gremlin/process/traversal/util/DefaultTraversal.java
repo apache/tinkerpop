@@ -166,6 +166,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public void invalidateTraverserRequirements() {
+        this.requirements = null;
+    }
+
+    @Override
     public List<Step> getSteps() {
         return this.unmodifiableSteps;
     }
