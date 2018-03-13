@@ -26,11 +26,16 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum GraphSONVersion
+    public class GraphSONVersion : EnumWrapper
     {
-        V1_0,
-		V2_0,
-		V3_0
+        private GraphSONVersion(string enumValue)
+            : base("GraphSONVersion", enumValue)
+        {            
+        }
+ 
+        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
+        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0"); 
+        public static GraphSONVersion V3_0 => new GraphSONVersion("V3_0");
     }
     
 #pragma warning restore 1591

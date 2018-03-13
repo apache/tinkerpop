@@ -26,10 +26,15 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Scope
+    public class Scope : EnumWrapper
     {
-        Global,
-		Local
+        private Scope(string enumValue)
+            : base("Scope", enumValue)
+        {            
+        }
+ 
+        public static Scope Global => new Scope("global"); 
+        public static Scope Local => new Scope("local");
     }
     
 #pragma warning restore 1591

@@ -26,10 +26,15 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Pick
+    public class Pick : EnumWrapper
     {
-        Any,
-		None
+        private Pick(string enumValue)
+            : base("Pick", enumValue)
+        {            
+        }
+ 
+        public static Pick Any => new Pick("any"); 
+        public static Pick None => new Pick("none");
     }
     
 #pragma warning restore 1591

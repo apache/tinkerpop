@@ -26,12 +26,17 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Pop
+    public class Pop : EnumWrapper
     {
-        All,
-		First,
-		Last,
-		Mixed
+        private Pop(string enumValue)
+            : base("Pop", enumValue)
+        {            
+        }
+ 
+        public static Pop All => new Pop("all"); 
+        public static Pop First => new Pop("first"); 
+        public static Pop Last => new Pop("last"); 
+        public static Pop Mixed => new Pop("mixed");
     }
     
 #pragma warning restore 1591
