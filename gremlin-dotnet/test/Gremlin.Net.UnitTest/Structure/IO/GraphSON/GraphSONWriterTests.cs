@@ -282,7 +282,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializePredicateWithTwoValues(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var predicate = new TraversalPredicate("within", new List<int> {1, 2});
+            var predicate = new P("within", new List<int> {1, 2});
 
             var serializedPredicate = writer.WriteObject(predicate);
 
@@ -295,7 +295,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializePredicateWithSingleValue(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var predicate = new TraversalPredicate("lt", 5);
+            var predicate = new P("lt", 5);
 
             var serializedPredicate = writer.WriteObject(predicate);
 

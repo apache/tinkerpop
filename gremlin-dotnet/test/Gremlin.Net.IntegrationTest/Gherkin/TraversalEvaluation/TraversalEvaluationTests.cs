@@ -55,7 +55,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         new[] {new Token("__"), new Token("in", new StringParameter("knows"))}, "__.in(\"knows\")")})}),
                 Tuple.Create("g.V().has(\"age\",P.gt(27))", 
                     new[] {new Token("has", new ITokenParameter[] { new StringParameter("age"),
-                        new TraversalPredicateParameter(
+                        new PParameter(
                             new[] { new Token("P"), new Token("gt", LiteralParameter.Create(27)) }) })}),
                 Tuple.Create("g.V().count(Scope.local)", 
                     new[] { new Token("count", new TraversalEnumParameter("Scope.local"))}),

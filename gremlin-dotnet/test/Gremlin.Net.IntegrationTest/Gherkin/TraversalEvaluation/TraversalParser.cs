@@ -406,7 +406,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             }
             if (text.Substring(i, 2).StartsWith("P."))
             {
-                return new TraversalPredicateParameter(ParseTokens(text, ref i));
+                return new PParameter(ParseTokens(text, ref i));
             }
             var parameterText = text.Substring(i, text.IndexOf(')', i) - i);
             var separatorIndex = parameterText.IndexOf(',');

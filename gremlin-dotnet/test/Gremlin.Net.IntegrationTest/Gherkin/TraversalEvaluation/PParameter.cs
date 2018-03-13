@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using Gremlin.Net.Process.Traversal;
@@ -32,17 +33,17 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
     /// <summary>
     /// Represents a parameter for a traversal predicate (ie: P.gt())
     /// </summary>
-    internal class TraversalPredicateParameter : ITokenParameter, IEquatable<TraversalPredicateParameter>
+    internal class PParameter : ITokenParameter, IEquatable<PParameter>
     {
         private IDictionary<string, object> _contextParameterValues;
         public IList<Token> Tokens { get; }
         
-        public TraversalPredicateParameter(IList<Token> tokens)
+        public PParameter(IList<Token> tokens)
         {
             Tokens = tokens;
         }
 
-        public bool Equals(TraversalPredicateParameter other)
+        public bool Equals(PParameter other)
         {
             return Tokens.SequenceEqual(other.Tokens);
         }
@@ -52,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((TraversalPredicateParameter) obj);
+            return Equals((PParameter) obj);
         }
 
         public override int GetHashCode()
@@ -69,20 +70,23 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 var token = Tokens[i];
                 token.SetContextParameterValues(_contextParameterValues);
                 var method = type.GetMethod(TraversalParser.GetCsharpName(token.Name),
-                    BindingFlags.Static | BindingFlags.Public);
+                    BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
                 if (method == null)
                 {
                     throw new InvalidOperationException($"Predicate (P) method '{token}' not found for testing");
                 }
-                instance = method.Invoke(instance,
-                    new object[] {token.Parameters.Select(p => p.GetValue()).ToArray()});
+                
+                var parameters = method.IsStatic
+                    ? new object[] {token.Parameters.Select(p => p.GetValue()).ToArray()}
+                    : token.Parameters.Select(p => p.GetValue()).ToArray();
+                instance = method.Invoke(instance, parameters);
             }
             return instance;
         }
 
         public Type GetParameterType()
         {
-            return typeof(TraversalPredicate);
+            return typeof(P);
         }
 
         public void SetContextParameterValues(IDictionary<string, object> parameterValues)

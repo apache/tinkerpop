@@ -132,7 +132,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             bytecode.AddSource("withSideEffect", "a", "josh");
             bytecode.AddStep("V", 1);
             bytecode.AddStep("values", "name");
-            bytecode.AddStep("where", new TraversalPredicate("within", "a"));
+            bytecode.AddStep("where", new P("within", "a"));
             var graphsonWriter = CreateGraphSONWriter(version);
 
             var graphSON = graphsonWriter.WriteObject(bytecode);
