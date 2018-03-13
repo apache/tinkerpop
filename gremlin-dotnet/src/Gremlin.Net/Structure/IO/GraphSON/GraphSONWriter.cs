@@ -57,7 +57,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(DateTimeOffset), new DateSerializer()},
                 {typeof(Type), new ClassSerializer()},
                 {typeof(EnumWrapper), new EnumSerializer()},
-                {typeof(TraversalPredicate), new TraversalPredicateSerializer()},
+                {typeof(P), new PSerializer()},
                 {typeof(Vertex), new VertexSerializer()},
                 {typeof(Edge), new EdgeSerializer()},
                 {typeof(Property), new PropertySerializer()},

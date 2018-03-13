@@ -308,6 +308,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in Gremlin Console which prevented handling of `gremlin.sh` flags that had an "=" between the flag and its arguments.
 * Fixed bug where `SparkMessenger` was not applying the `edgeFunction` from `MessageScope`.
 * Fixed a bug in `ComputerAwareStep` that didn't handle `reset()` properly and thus occasionally produced some extra traversers.
+* Removed `TraversalPredicate` class in Gremlin.Net. It is now included in the `P` class instead.
 
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: December 17, 2017)
