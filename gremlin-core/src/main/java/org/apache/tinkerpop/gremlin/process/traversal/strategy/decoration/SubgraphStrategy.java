@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -170,6 +171,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
+        boolean invalidateTraverserRequirements = false;
         for (final VertexStep<?> step : vertexSteps) {
             if (step.returnsEdge())
                 continue;
@@ -177,7 +179,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, (Traversal) this.vertexCriterion.clone()), step, traversal);
             } else {
                 final VertexStep<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
-                final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
+                final boolean addsPathRequirement;
+                final Step<Edge, Vertex> someVStep = (addsPathRequirement = step.getDirection() == Direction.BOTH) ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
 
@@ -189,7 +192,13 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.edgeCriterion.clone()), someEStep, traversal);
                 if (null != this.vertexCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.vertexCriterion.clone()), someVStep, traversal);
+
+                invalidateTraverserRequirements |= addsPathRequirement;
             }
+        }
+
+        if (invalidateTraverserRequirements) {
+            traversal.invalidateTraverserRequirements();
         }
 
         // turn g.V().properties() to g.V().properties().xxx
