@@ -21,21 +21,14 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class GraphSONVersion : EnumWrapper
+    /// <summary>
+    ///     Represents an operation upon two operands of the same type, producing a result of the same type as the operands.
+    ///     This is a specialization of <see cref="IBiFunction" /> for the case where the operands and the result are all of
+    ///     the same type.
+    /// </summary>
+    public interface IBinaryOperator : IBiFunction
     {
-        private GraphSONVersion(string enumValue)
-            : base("GraphSONVersion", enumValue)
-        {            
-        }
- 
-        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
-        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
     }
-    
-#pragma warning restore 1591
 }

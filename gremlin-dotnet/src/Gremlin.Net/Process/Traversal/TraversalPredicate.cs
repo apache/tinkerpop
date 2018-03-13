@@ -26,7 +26,7 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     Represents a predicate (boolean-valued function) used in a <see cref="ITraversal" />.
     /// </summary>
-    public class TraversalPredicate
+    public class TraversalPredicate : IPredicate
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="TraversalPredicate" /> class.

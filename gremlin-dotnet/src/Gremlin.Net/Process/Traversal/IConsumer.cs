@@ -21,21 +21,13 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class GraphSONVersion : EnumWrapper
+    /// <summary>
+    ///     Represents an operation that accepts a single input argument and returns no result. Unlike most other functional
+    ///     interfaces, Consumer is expected to operate via side-effects.
+    /// </summary>
+    public interface IConsumer
     {
-        private GraphSONVersion(string enumValue)
-            : base("GraphSONVersion", enumValue)
-        {            
-        }
- 
-        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
-        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
     }
-    
-#pragma warning restore 1591
 }

@@ -26,9 +26,14 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum <%= enumClass.simpleName %>
+    public class <%= enumClass.simpleName %> : <%= implementedTypes %>
     {
-        <%= constants %>
+        private <%= enumClass.simpleName %>(string enumValue)
+            : base("<%= enumClass.simpleName %>", enumValue)
+        {            
+        }
+<% constants.each { constant -> %> 
+        <%= constant %><%}%>
     }
     
 #pragma warning restore 1591

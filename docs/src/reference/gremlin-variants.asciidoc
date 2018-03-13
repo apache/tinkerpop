@@ -362,7 +362,7 @@ terminal/action methods off of `ITraversal`.
 
 === Static Enums and Methods
 
-Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin.Net as Enums.
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin.Net as classes.
 
 These can be used analogously to how they are used in Gremlin-Java.
 

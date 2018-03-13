@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,21 +21,12 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class GraphSONVersion : EnumWrapper
+    /// <summary>
+    ///     Represents a predicate (boolean-valued function) of one argument. 
+    /// </summary>
+    public interface IPredicate
     {
-        private GraphSONVersion(string enumValue)
-            : base("GraphSONVersion", enumValue)
-        {            
-        }
- 
-        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
-        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
     }
-    
-#pragma warning restore 1591
 }
