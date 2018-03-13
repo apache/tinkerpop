@@ -21,20 +21,12 @@
 
 #endregion
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
-#pragma warning disable 1591
-
-    public class <%= enumClass.simpleName %> : <%= implementedTypes %>
+    /// <summary>
+    ///     A comparison function, which imposes a total ordering on some collection of objects.
+    /// </summary>
+    public interface IComparator
     {
-        private <%= enumClass.simpleName %>(string enumValue)
-            : base("<%= enumClass.simpleName %>", enumValue)
-        {            
-        }
-<% constants.each { constant -> %> 
-        <%= constant %><%}%>
     }
-    
-#pragma warning restore 1591
 }

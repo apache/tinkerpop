@@ -30,9 +30,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            var enumName = objectData.GetType().Name;
-            var valueJavaName = NamingConversions.GetEnumJavaName(enumName, objectData.ToString());
-            return GraphSONUtil.ToTypedValue(enumName, valueJavaName);
+            EnumWrapper enumToSerialize = objectData;
+            return GraphSONUtil.ToTypedValue(enumToSerialize.EnumName, enumToSerialize.EnumValue);
         }
     }
 }

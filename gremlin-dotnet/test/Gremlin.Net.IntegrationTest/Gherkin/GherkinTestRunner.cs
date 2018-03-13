@@ -42,6 +42,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 { "g_V_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported },   // TINKERPOP-1866
                 { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
+                { "g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
                 {"g_V_hasIdXwithinXemptyXX_count", IgnoreReason.PWithinWrapsArgumentsInArray},
                 {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray},
                 {
