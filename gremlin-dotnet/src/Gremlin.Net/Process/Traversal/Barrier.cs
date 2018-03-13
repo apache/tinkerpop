@@ -26,9 +26,14 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public enum Barrier
+    public class Barrier : EnumWrapper, IConsumer
     {
-        NormSack
+        private Barrier(string enumValue)
+            : base("Barrier", enumValue)
+        {            
+        }
+ 
+        public static Barrier NormSack => new Barrier("normSack");
     }
     
 #pragma warning restore 1591
