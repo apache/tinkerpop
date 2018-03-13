@@ -190,7 +190,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         }
     }
 
-    private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
+    private Object invokeMethod(final Object delegate, final Class<?> returnType, final String methodName, final Object... arguments) {
         // populate method cache for fast access to methods in subsequent calls
         final Map<String, List<Method>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
         if (methodCache.isEmpty()) buildMethodCache(delegate, methodCache);
@@ -222,7 +222,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                     found = false;
                                     break;
                                 }
-                                Object[] varArgs = (Object[]) Array.newInstance(parameterClass, argumentsCopy.length - i);
+                                final Object[] varArgs = (Object[]) Array.newInstance(parameterClass, argumentsCopy.length - i);
                                 int counter = 0;
                                 for (int j = i; j < argumentsCopy.length; j++) {
                                     varArgs[counter++] = argumentsCopy[j];
@@ -263,11 +263,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
                 if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
-                    List<Method> list = methodCache.get(method.getName());
-                    if (null == list) {
-                        list = new ArrayList<>();
-                        methodCache.put(method.getName(), list);
-                    }
+                    final List<Method> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
                     list.add(method);
                 }
             }
