@@ -398,7 +398,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 return ParseNumber(text, ref i);
             }
-            if (text.Substring(i, 3).StartsWith("__."))
+            if (text.Length >= i + 3 && text.Substring(i, 3).StartsWith("__."))
             {
                 var startIndex = i;
                 var tokens = ParseTokens(text, ref i);

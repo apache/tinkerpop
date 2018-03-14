@@ -333,6 +333,19 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{}}";
             Assert.Equal(expected, graphSon);
         }
+
+        [Fact]
+        public void ShouldSerializeLambda()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var lambda = Lambda.Groovy("{ it.get() }");
+
+            var graphSon = writer.WriteObject(lambda);
+
+            const string expected =
+                "{\"@type\":\"g:Lambda\",\"@value\":{\"script\":\"{ it.get() }\",\"language\":\"gremlin-groovy\",\"arguments\":-1}}";
+            Assert.Equal(expected, graphSon);
+        }
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer

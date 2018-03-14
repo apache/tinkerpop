@@ -233,7 +233,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToLambda(string stringLambda, string graphName)
         {
-            throw new IgnoreException(IgnoreReason.LambdaNotSupported);
+            return Lambda.Groovy(stringLambda);
         }
 
         private static object ToNumber(string stringNumber, string graphName)

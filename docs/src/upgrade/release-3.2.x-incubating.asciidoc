@@ -42,6 +42,13 @@ by clients that might mysteriously disappear without properly closing their conn
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1726[TINKERPOP-1726]
 
+==== Gremlin.Net Lambdas
+
+Gremlin.Net now has a `Lambda` class that can be used to construct Groovy or Java lambdas which will be evaluated on the
+server.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1854[TINKERPOP-1854], link:http://tinkerpop.apache.org/docs/3.2.8/reference/#_the_lambda_solution_3[Reference Documentation - Gremlin.Net - The Lambda Solution].
+
 ==== Gremlin.Net Tokens Improved
 
 The various Gremlin tokens (e.g. `T`, `Order`, `Operator`, etc.) that were implemented as Enums before in Gremlin.Net
