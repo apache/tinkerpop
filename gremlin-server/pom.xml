@@ -255,23 +255,66 @@ limitations under the License.
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- source: https://stackoverflow.com/a/39139979/6753576 -->
+                                <!-- sets the only.when.is.snapshot.used property to true if SNAPSHOT was used, 
+                                    to the project version otherwise -->
+                                <id>build-helper-regex-is-snapshot-used</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <configuration>
+                                    <name>only.when.is.snapshot.used</name>
+                                    <value>${project.version}</value>
+                                    <regex>.*-SNAPSHOT</regex>
+                                    <replacement>true</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>com.spotify</groupId>
                         <artifactId>dockerfile-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>docker-image</id>
+                                <id>docker-image-build</id>
                                 <goals>
                                     <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <tag>${project.version}</tag>
+                                    <buildArgs>
+                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-image-tag-minor-version</id>
+                                <goals>
+                                    <goal>tag</goal>
+                                </goals>
+                                <configuration>                                                     
+                                    <tag>3.2</tag>
+                                    <skip>${only.when.is.snapshot.used}</skip>                                                     
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-image-push</id>
+                                <goals>
                                     <goal>push</goal>
                                 </goals>
+                                <configuration>                                    
+                                    <skip>${only.when.is.snapshot.used}</skip>
+                                </configuration>                                
                             </execution>
                         </executions>
                         <configuration>
                             <repository>tinkerpop/gremlin-server</repository>
-                            <tag>${project.version}</tag>
-                            <buildArgs>
-                                <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
-                            </buildArgs>
                         </configuration>
                     </plugin>
                 </plugins>                
