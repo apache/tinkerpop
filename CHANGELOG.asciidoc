@@ -283,6 +283,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Jackson 2.9.4.
 * Improved performance of `JavaTranslator` by caching reflected methods required for traversal construction.
 * Added `idleConnectionTimeout` and `keepAliveInterval` to Gremlin Server that enables a "ping" and auto-close for seemingly dead clients.
+* Fixed a bug where lambdas in `gremlin-python` would trigger a failure if steps using python-only symbols were present (such as `as_()`).
 * Fixed a bug in `NumberHelper` that led to wrong min/max results if numbers exceeded the Integer limits.
 * Delayed setting of the request identifier until `RequestMessage` construction by the builder.
 * `ReferenceElement` avoids `UnsupportedOperationException` handling in construction thus improving performance.

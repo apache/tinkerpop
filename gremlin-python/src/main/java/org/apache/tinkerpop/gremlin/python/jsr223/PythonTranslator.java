@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PythonTranslator implements Translator.ScriptTranslator {
 
@@ -108,19 +109,19 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
             if (0 == arguments.length)
-                traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
-            else if (methodName.equals("range") && 2 == arguments.length && ((Number) arguments[0]).intValue() != 0) {
+                traversalScript.append(".").append(resolveSymbol(methodName)).append("()");
+            else if (methodName.equals("range") && 2 == arguments.length)
                 if (((Number) arguments[0]).longValue() + 1 == ((Number) arguments[1]).longValue())
                     traversalScript.append("[").append(arguments[0]).append("]");
                 else
                     traversalScript.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
-            } else if (methodName.equals("limit") && 1 == arguments.length)
+            else if (methodName.equals("limit") && 1 == arguments.length)
                 traversalScript.append("[0:").append(arguments[0]).append("]");
             else if (methodName.equals("values") && 1 == arguments.length && traversalScript.length() > 3 && !STEP_NAMES.contains(arguments[0].toString()))
                 traversalScript.append(".").append(arguments[0]);
             else {
                 traversalScript.append(".");
-                String temp = SymbolHelper.toPython(methodName) + "(";
+                String temp = resolveSymbol(methodName) + "(";
                 for (final Object object : arguments) {
                     temp = temp + convertToString(object) + ",";
                 }
@@ -128,7 +129,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             }
             // clip off __.
             if (this.importStatics && traversalScript.substring(0, 3).startsWith("__.")
-                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
+                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(resolveSymbol(name))).findAny().isPresent()) {
                 traversalScript.delete(0, 3);
             }
         }
@@ -168,11 +169,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof TraversalStrategyProxy) {
-            final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
-            if (proxy.getConfiguration().isEmpty())
-                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
-            else
-                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+            return resolveTraversalStrategyProxy((TraversalStrategyProxy) object);
         } else if (object instanceof TraversalStrategy) {
             return convertToString(new TraversalStrategyProxy((TraversalStrategy) object));
         } else if (object instanceof Boolean)
@@ -180,13 +177,13 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();
         else if (object instanceof VertexProperty.Cardinality)
-            return "Cardinality." + SymbolHelper.toPython(object.toString());
+            return "Cardinality." + resolveSymbol(object.toString());
         else if (object instanceof SackFunctions.Barrier)
-            return "Barrier." + SymbolHelper.toPython(object.toString());
+            return "Barrier." + resolveSymbol(object.toString());
         else if (object instanceof TraversalOptionParent.Pick)
-            return "Pick." + SymbolHelper.toPython(object.toString());
+            return "Pick." + resolveSymbol(object.toString());
         else if (object instanceof Enum)
-            return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
+            return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + resolveSymbol(object.toString());
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element) {
@@ -234,4 +231,14 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         return lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;
     }
 
+    protected String resolveSymbol(final String methodName) {
+        return SymbolHelper.toPython(methodName);
+    }
+
+    protected String resolveTraversalStrategyProxy(final TraversalStrategyProxy proxy) {
+        if (proxy.getConfiguration().isEmpty())
+            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
+        else
+            return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+    }
 }
