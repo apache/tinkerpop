@@ -1951,7 +1951,7 @@ $ docker run tinkerpop/gremlin-server:x.y.z
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
-By default, Gremlin Server listens on port 8182. So that port should be exposed if it should be reachable on the host:
+By default, Gremlin Server listens on port 8182. So that port needs to be exposed if it should be reachable on the host:
 
 [source,bash]
 ----
