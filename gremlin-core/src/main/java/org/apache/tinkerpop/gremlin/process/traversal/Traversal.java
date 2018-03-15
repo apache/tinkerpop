@@ -427,10 +427,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
 
         /**
          * Invalidates the set of all {@link TraverserRequirement}s for this traversal.
+         * This method should be used by strategies, which mutate the traversal and possibly change the
+         * traversal's requirements.
+         * Implementations should reset the internal requirements cache, if it exists.
          */
         public default void invalidateTraverserRequirements() {
 
-        };
+        }
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.

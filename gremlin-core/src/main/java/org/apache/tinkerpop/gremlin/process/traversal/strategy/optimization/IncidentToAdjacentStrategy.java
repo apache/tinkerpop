@@ -111,6 +111,11 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
             newStep.addLabel(label);
         }
         TraversalHelper.replaceStep(step1, newStep, traversal);
+        if (step2 instanceof EdgeOtherVertexStep) {
+            // bothE().otherV() might have been the only step sequence that required path tracking. Invalidate the
+            // requirements to possibly end up with more optimized traversers.
+            traversal.invalidateTraverserRequirements();
+        }
         traversal.removeStep(step2);
     }
 

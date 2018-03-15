@@ -193,6 +193,9 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 if (null != this.vertexCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.vertexCriterion.clone()), someVStep, traversal);
 
+                // if a both() step is replaced by bothE().filter.otherV(), the traversal relies on path information,
+                // which isn't necessarily a traverser requirement at this point. To be sure, that the traversal will
+                // track path information, the (possibly cached) traverser requirements need to be invalidated.
                 invalidateTraverserRequirements |= addsPathRequirement;
             }
         }

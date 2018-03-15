@@ -22,17 +22,24 @@ import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,18 +50,14 @@ import java.util.NoSuchElementException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasNot;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -502,5 +505,44 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().properties("skill").as("b").identity().select("b").by(__.value()));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldInvalidateTraverserRequirementsIfNecessary() throws Exception {
 
+        assumeThat(graph, Matchers.not(Matchers.instanceOf(RemoteGraph.class)));
+
+        GraphTraversalSource sg;
+        GraphTraversal.Admin traversal;
+        SubgraphStrategy strategy;
+
+        strategy = SubgraphStrategy.build().vertices(has("name", P.within("josh", "lop", "ripple"))).create();
+        sg = g.withStrategies(strategy);
+
+        traversal = sg.V().outE().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        traversal = sg.V().outE().inV().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        traversal = sg.V().out().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+
+        traversal = sg.V().bothE().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        traversal = sg.V().bothE().otherV().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+        traversal = sg.V().both().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+
+        traversal = sg.V().flatMap(bothE()).iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        traversal = sg.V().flatMap(bothE().otherV()).iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+        traversal = sg.V().flatMap(both()).iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+
+        strategy = SubgraphStrategy.build().vertices(__.filter(__.simplePath())).create();
+        sg = g.withStrategies(strategy);
+
+        traversal = sg.V().out().iterate().asAdmin();
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+    }
 }
