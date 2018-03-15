@@ -87,6 +87,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTe
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
@@ -196,7 +197,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // decorations
             ReadOnlyStrategyProcessTest.class,
-            SubgraphStrategyProcessTest.class
+            SubgraphStrategyProcessTest.class,
+
+            // optimizations
+            IncidentToAdjacentStrategyProcessTest.class
     };
 
     /**
