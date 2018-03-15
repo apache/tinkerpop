@@ -26,47 +26,34 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     Represents a lambda.
     /// </summary>
-    public class Lambda : IFunction, IBiFunction, IPredicate, IUnaryOperator, IBinaryOperator, IComparator, IConsumer,
-        ISupplier
+    public interface ILambda : IFunction, IBiFunction, IPredicate, IUnaryOperator, IBinaryOperator, IComparator,
+        IConsumer, ISupplier
     {
-        private const int DefaultArgument = -1;
+    }
 
-        private Lambda(string expression, string language)
+    /// <summary>
+    ///     Provides methods to create lambdas.
+    /// </summary>
+    public static class Lambda
+    {
+        /// <summary>
+        ///     Creates a new Groovy lambda.
+        /// </summary>
+        /// <param name="expression">The lambda expression.</param>
+        /// <returns>The created lambda.</returns>
+        public static ILambda Groovy(string expression)
         {
-            LambdaExpression = expression;
-            Language = language;
+            return new StringBasedLambda(expression, "gremlin-groovy");
         }
 
         /// <summary>
-        ///     Gets the lambda expression.
-        /// </summary>
-        public string LambdaExpression { get; }
-
-        /// <summary>
-        ///     Gets the language of this lambda.
-        /// </summary>
-        public string Language { get; }
-
-        internal object Arguments => DefaultArgument;
-
-        /// <summary>
-        ///     Creates a new Groovy <see cref="Lambda"/>.
+        ///     Creates a new Python lambda.
         /// </summary>
         /// <param name="expression">The lambda expression.</param>
-        /// <returns>The created <see cref="Lambda"/>.</returns>
-        public static Lambda Groovy(string expression)
+        /// <returns>The created lambda.</returns>
+        public static ILambda Python(string expression)
         {
-            return new Lambda(expression, "gremlin-groovy");
-        }
-
-        /// <summary>
-        ///     Creates a new Python <see cref="Lambda"/>.
-        /// </summary>
-        /// <param name="expression">The lambda expression.</param>
-        /// <returns>The created <see cref="Lambda"/>.</returns>
-        public static Lambda Python(string expression)
-        {
-            return new Lambda(expression, "gremlin-python");
+            return new StringBasedLambda(expression, "gremlin-python");
         }
     }
 }

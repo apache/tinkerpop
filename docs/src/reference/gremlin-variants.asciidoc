@@ -451,8 +451,8 @@ g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<
 <1> `Lambda.Groovy()` can be used to create a Groovy lambda. 
 <2> `Lambda.Python()` can be used to create a Python lambda.
 
-The `Lambda` class implements interfaces like `IFunction` and `IPredicate` that mirror their Java counterparts which makes it possible
-to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
+The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
+their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript

@@ -26,11 +26,11 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class LambdaSerializer : IGraphSONSerializer
+    internal class StringBasedLambdaSerializer : IGraphSONSerializer
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            Lambda lambda = objectData;
+            StringBasedLambda lambda = objectData;
             var valueDict = new Dictionary<string, dynamic>
             {
                 {"script", lambda.LambdaExpression},
