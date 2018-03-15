@@ -41,19 +41,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 {"g_V_hasIdXwithinXemptyXX_count", IgnoreReason.PWithinWrapsArgumentsInArray},
-                {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray},
-                {
-                    "g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX",
-                    IgnoreReason.PNotDeserializationProblem
-                },
-                {
-                    "g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name",
-                    IgnoreReason.PNotDeserializationProblem
-                },
-                {
-                    "g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX",
-                    IgnoreReason.PNotDeserializationProblem
-                }
+                {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray}
             };
         
         private static class Keywords
