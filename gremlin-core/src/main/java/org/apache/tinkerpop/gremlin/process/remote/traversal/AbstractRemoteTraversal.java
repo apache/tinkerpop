@@ -88,11 +88,6 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     }
 
     @Override
-    public void invalidateTraverserRequirements() {
-        throw new UnsupportedOperationException("Remote traversals do not support this method");
-    }
-
-    @Override
     public void setSideEffects(final TraversalSideEffects sideEffects) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }

@@ -184,13 +184,6 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public void invalidateTraverserRequirements() {
-        if (null != this.bypassTraversal) {
-            this.bypassTraversal.invalidateTraverserRequirements();
-        }
-    }
-
-    @Override
     public int hashCode() {
         return null == this.bypassTraversal ? this.getClass().hashCode() : this.bypassTraversal.hashCode();
     }
