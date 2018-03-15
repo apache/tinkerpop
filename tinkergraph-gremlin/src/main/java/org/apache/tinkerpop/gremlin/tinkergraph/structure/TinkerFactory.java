@@ -149,13 +149,10 @@ public final class TinkerFactory {
         g.addV("loops").property(T.id, 1000).property("name", "loop").as("me").
           addE("self").to("me").
           iterate();
-        final String LABEL = "message_passing_test";
-        final String EDGE_LABEL = "msg_pass_test_edge";
-        final String PROPERTY_IN = "name";
-        final Vertex a = graph.addVertex(T.id, 2000, T.label, LABEL, PROPERTY_IN, "a");
-        final Vertex b = graph.addVertex(T.id, 2001, T.label, LABEL, PROPERTY_IN, "b");
-        a.addEdge(EDGE_LABEL, b);
-        a.addEdge(EDGE_LABEL, a);
+        g.addV("message").property(T.id, 2000).property("name", "a").as("a").
+          addV("message").property(T.id, 2001).property("name", "b").as("b").
+          addE("link").from("a").to("b").
+          addE("link").from("a").to("a").iterate();
     }
 
     private static TinkerGraph getTinkerGraphWithNumberManager() {
