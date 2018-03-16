@@ -149,6 +149,18 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             traversal.getStartStep().removeLabel(MARKER);
             return;
         }
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin t : ((TraversalParent) step).getLocalChildren()) {
+                    this.apply(t);
+                    t.getStartStep().addLabel(MARKER);
+                }
+                for (final Traversal.Admin t : ((TraversalParent) step).getGlobalChildren()) {
+                    this.apply(t);
+                    t.getStartStep().addLabel(MARKER);
+                }
+            }
+        }
         //
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
         final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
@@ -171,7 +183,6 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
-        boolean invalidateTraverserRequirements = false;
         for (final VertexStep<?> step : vertexSteps) {
             if (step.returnsEdge())
                 continue;
@@ -192,16 +203,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.edgeCriterion.clone()), someEStep, traversal);
                 if (null != this.vertexCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.vertexCriterion.clone()), someVStep, traversal);
-
-                // if a both() step is replaced by bothE().filter.otherV(), the traversal relies on path information,
-                // which isn't necessarily a traverser requirement at this point. To be sure, that the traversal will
-                // track path information, the (possibly cached) traverser requirements need to be invalidated.
-                invalidateTraverserRequirements |= addsPathRequirement;
             }
-        }
-
-        if (invalidateTraverserRequirements) {
-            traversal.invalidateTraverserRequirements();
         }
 
         // turn g.V().properties() to g.V().properties().xxx

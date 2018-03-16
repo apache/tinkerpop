@@ -166,15 +166,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void invalidateTraverserRequirements() {
-        this.requirements = null;
-        final TraversalParent parent = this.getParent();
-        if (!(parent instanceof EmptyStep)) {
-            parent.asStep().getTraversal().invalidateTraverserRequirements();
-        }
-    }
-
-    @Override
     public List<Step> getSteps() {
         return this.unmodifiableSteps;
     }

@@ -21,18 +21,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGenerator;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -42,9 +39,7 @@ public class IncidentToAdjacentStrategyProcessTest extends AbstractGremlinProces
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldInvalidateTraverserRequirementsIfNecessary() throws Exception {
-
-        assumeThat(graph, Matchers.not(Matchers.instanceOf(RemoteGraph.class)));
+    public void shouldGenerateCorrectTraversers() throws Exception {
 
         final GraphTraversalSource itag = g.withStrategies(IncidentToAdjacentStrategy.instance());
         
