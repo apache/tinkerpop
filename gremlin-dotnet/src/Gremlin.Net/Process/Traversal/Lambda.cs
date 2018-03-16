@@ -29,6 +29,20 @@ namespace Gremlin.Net.Process.Traversal
     public interface ILambda : IFunction, IBiFunction, IPredicate, IUnaryOperator, IBinaryOperator, IComparator,
         IConsumer, ISupplier
     {
+        /// <summary>
+        ///     Gets the lambda expression.
+        /// </summary>
+        string LambdaExpression { get; }
+
+        /// <summary>
+        ///     Gets the language of this lambda.
+        /// </summary>
+        string Language { get; }
+
+        /// <summary>
+        ///     Gets the arguments of this lambda.
+        /// </summary>
+        object Arguments { get;  }
     }
 
     /// <summary>
