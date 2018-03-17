@@ -53,7 +53,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     public PageRankVertexProgramStep(final Traversal.Admin traversal, final double alpha) {
         super(traversal);
         this.alpha = alpha;
-        this.modulateBy(__.<Vertex>outE().asAdmin());
+        this.modulateBy(__.outE().asAdmin());
     }
 
     @Override

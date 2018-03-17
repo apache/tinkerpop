@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
+public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<TraversalStrategy<?>> {
 
     public static final String STRATEGY = "strategy";
 
@@ -88,9 +88,32 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
         return new BaseConfiguration();
     }
 
-    @Override
-    public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+    /**
+     * Returns the "weight" of the class of this TraversalStrategy, used in {@link #compareTo}. It is recommended that
+     * this method returns a constant, i. e. the same value for all instances of some specific TraversalStrategy
+     * implementation class. Pre-defined "traversal categories" have specified "weights": {@link
+     * DecorationStrategy#COMPARISON_WEIGHT}, {@link OptimizationStrategy#COMPARISON_WEIGHT}, {@link
+     * ProviderOptimizationStrategy#COMPARISON_WEIGHT}, {@link FinalizationStrategy#COMPARISON_WEIGHT} and {@link
+     * VerificationStrategy#COMPARISON_WEIGHT}.
+     *
+     * The default implementation of this method returns 0.
+     */
+    public default int getComparisonWeight() {
         return 0;
+    }
+
+    /**
+     * TraversalStrategies are compared by their class, i. e. strategy1.compareTo(strategy2) always returns results of
+     * the same sign, when strategy1 and strategy2 are any instances of some specific implementation classes of
+     * TraversalStrategy. When strategy1 and strategy2 have the same class, strategy1.compareTo(strategy2) returns 0.
+     * <p/>
+     * This method is implemented as {@code
+     * Integer.compare(this.getComparisonWeight(), otherTraversalCategory.getComparisonWeight())}, and it is not
+     * recommended to override this implementation, {@link #getComparisonWeight()} should be overridden instead.
+     */
+    @Override
+    public default int compareTo(final TraversalStrategy<?> otherTraversalCategory) {
+        return Integer.compare(getComparisonWeight(), otherTraversalCategory.getComparisonWeight());
     }
 
     /**
@@ -98,25 +121,19 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public interface DecorationStrategy extends TraversalStrategy<DecorationStrategy> {
 
+        public static final int COMPARISON_WEIGHT = 100;
+
         @Override
         public default Class<DecorationStrategy> getTraversalCategory() {
             return DecorationStrategy.class;
         }
 
+        /**
+         * Returns {@link #COMPARISON_WEIGHT}. It's not recommended to override this method.
+         */
         @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return 0;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(VerificationStrategy.class))
-                return -1;
-            else
-                return 0;
+        default int getComparisonWeight() {
+            return COMPARISON_WEIGHT;
         }
     }
 
@@ -127,25 +144,19 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
 
+        public static final int COMPARISON_WEIGHT = 200;
+
         @Override
         public default Class<OptimizationStrategy> getTraversalCategory() {
             return OptimizationStrategy.class;
         }
 
+        /**
+         * Returns {@link #COMPARISON_WEIGHT}. It's not recommended to override this method.
+         */
         @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return 0;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(VerificationStrategy.class))
-                return -1;
-            else
-                return 0;
+        default int getComparisonWeight() {
+            return COMPARISON_WEIGHT;
         }
     }
 
@@ -155,25 +166,19 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public interface ProviderOptimizationStrategy extends TraversalStrategy<ProviderOptimizationStrategy> {
 
+        public static final int COMPARISON_WEIGHT = 300;
+
         @Override
         public default Class<ProviderOptimizationStrategy> getTraversalCategory() {
             return ProviderOptimizationStrategy.class;
         }
 
+        /**
+         * Returns {@link #COMPARISON_WEIGHT}. It's not recommended to override this method.
+         */
         @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return 0;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(VerificationStrategy.class))
-                return -1;
-            else
-                return 0;
+        default int getComparisonWeight() {
+            return COMPARISON_WEIGHT;
         }
     }
 
@@ -183,25 +188,19 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public interface FinalizationStrategy extends TraversalStrategy<FinalizationStrategy> {
 
+        public static final int COMPARISON_WEIGHT = 400;
+
         @Override
         public default Class<FinalizationStrategy> getTraversalCategory() {
             return FinalizationStrategy.class;
         }
 
+        /**
+         * Returns {@link #COMPARISON_WEIGHT}. It's not recommended to override this method.
+         */
         @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return 0;
-            else if (otherTraversalCategory.equals(VerificationStrategy.class))
-                return -1;
-            else
-                return 0;
+        default int getComparisonWeight() {
+            return COMPARISON_WEIGHT;
         }
     }
 
@@ -212,23 +211,19 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
 
+        public static final int COMPARISON_WEIGHT = 500;
+
         @Override
         public default Class<VerificationStrategy> getTraversalCategory() {
             return VerificationStrategy.class;
         }
 
+        /**
+         * Returns {@link #COMPARISON_WEIGHT}. It's not recommended to override this method.
+         */
         @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return 1;
-            else
-                return 0;
+        default int getComparisonWeight() {
+            return COMPARISON_WEIGHT;
         }
     }
 }

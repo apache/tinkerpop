@@ -254,7 +254,10 @@ public final class GryoReader implements GraphReader {
 
         final Vertex v = vertexMaker.apply(starGraph.getStarVertex());
         if (edgeMaker != null)
-            starGraph.getStarVertex().edges(d).forEachRemaining(e -> edgeMaker.apply((Attachable<Edge>) e));
+            starGraph.getStarVertex().edges(d).forEachRemaining(e -> {
+                @SuppressWarnings("unused")
+                Edge ignored = edgeMaker.apply((Attachable<Edge>) e);
+            });
         return v;
     }
 

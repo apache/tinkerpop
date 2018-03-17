@@ -70,7 +70,8 @@ public final class TimeUtil {
         final S result = supplier.get(); // warm up
         return Pair.with(IntStream.range(0, loops).mapToDouble(i -> {
             long t = System.nanoTime();
-            supplier.get();
+            @SuppressWarnings("unused")
+            final S ignored = supplier.get();
             return (System.nanoTime() - t) * 0.000001;
         }).sum() / loops, result);
     }

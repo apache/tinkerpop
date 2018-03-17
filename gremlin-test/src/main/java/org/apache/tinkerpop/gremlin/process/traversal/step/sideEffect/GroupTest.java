@@ -497,7 +497,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
-            return g.V().<String, Collection<Vertex>>group("a").by("name").cap("a");
+            return g.V().group("a").by("name").cap("a");
         }
 
         @Override
@@ -522,7 +522,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
-            return g.V().<String, Double>group("a").by(T.label).by(outE().values("weight").sum()).cap("a");
+            return g.V().group("a").by(T.label).by(outE().values("weight").sum()).cap("a");
         }
 
         @Override
@@ -532,7 +532,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
-            return g.V().repeat(both("followedBy")).times(2).<String, Long>group("a").by("songType").by(count()).cap("a");
+            return g.V().repeat(both("followedBy")).times(2).group("a").by("songType").by(count()).cap("a");
         }
 
         @Override
@@ -542,7 +542,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
-            return g.V().<String, Long>group("a").<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l)).cap("a");
+            return g.V().group("a").<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l)).cap("a");
         }
 
         @Override

@@ -222,7 +222,7 @@ public final class TinkerGraphComputerView {
     }
 
     private void removeValue(final Vertex vertex, final String key, final VertexProperty property) {
-        this.computeProperties.<List<Map<String, VertexProperty<?>>>>getOrDefault(vertex, Collections.emptyMap()).get(key).remove(property);
+        this.computeProperties.getOrDefault(vertex, Collections.emptyMap()).get(key).remove(property);
     }
 
     private List<VertexProperty<?>> getValue(final Vertex vertex, final String key) {

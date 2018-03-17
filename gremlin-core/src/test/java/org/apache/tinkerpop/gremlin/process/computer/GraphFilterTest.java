@@ -40,7 +40,9 @@ public class GraphFilterTest {
 
     @Test
     public void shouldHaveValidLegalEnumOrdering() {
-        assertTrue(GraphFilter.Legal.YES.compareTo(GraphFilter.Legal.YES) == 0);
+        @SuppressWarnings({"SelfComparison", "EqualsWithItself"})
+        int selfComparisonResult = GraphFilter.Legal.YES.compareTo(GraphFilter.Legal.YES);
+        assertEquals(0, selfComparisonResult);
         assertTrue(GraphFilter.Legal.YES.compareTo(GraphFilter.Legal.NO) < 0);
         assertTrue(GraphFilter.Legal.YES.compareTo(GraphFilter.Legal.MAYBE) < 0);
         assertTrue(GraphFilter.Legal.MAYBE.compareTo(GraphFilter.Legal.NO) < 0);
@@ -51,10 +53,10 @@ public class GraphFilterTest {
         GraphFilter graphFilter = new GraphFilter();
         graphFilter.setEdgeFilter(__.outE());
         try {
-            graphFilter.setEdgeFilter(__.<Vertex>outE().inV().outE());
+            graphFilter.setEdgeFilter(__.outE().inV().outE());
             fail("Should not allow traversals past the star graph");
         } catch (final IllegalArgumentException e) {
-            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>outE().inV().outE()).getMessage());
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.outE().inV().outE()).getMessage());
         }
     }
 
@@ -93,7 +95,7 @@ public class GraphFilterTest {
         assertEquals(Collections.emptySet(), graphFilter.getLegallyPositiveEdgeLabels(Direction.BOTH));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>outE("created").has("weight", 32));
+        graphFilter.setEdgeFilter(__.outE("created").has("weight", 32));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(Collections.singleton("created"), graphFilter.getLegallyPositiveEdgeLabels(Direction.OUT));
         assertEquals(Collections.emptySet(), graphFilter.getLegallyPositiveEdgeLabels(Direction.IN));
@@ -114,21 +116,21 @@ public class GraphFilterTest {
         assertEquals(Collections.singleton(null), graphFilter.getLegallyPositiveEdgeLabels(Direction.BOTH));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE().has("weight", 32));
+        graphFilter.setEdgeFilter(__.bothE().has("weight", 32));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(Collections.singleton(null), graphFilter.getLegallyPositiveEdgeLabels(Direction.OUT));
         assertEquals(Collections.singleton(null), graphFilter.getLegallyPositiveEdgeLabels(Direction.IN));
         assertEquals(Collections.singleton(null), graphFilter.getLegallyPositiveEdgeLabels(Direction.BOTH));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE().limit(0));
+        graphFilter.setEdgeFilter(__.bothE().limit(0));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(Collections.emptySet(), graphFilter.getLegallyPositiveEdgeLabels(Direction.OUT));
         assertEquals(Collections.emptySet(), graphFilter.getLegallyPositiveEdgeLabels(Direction.IN));
         assertEquals(Collections.emptySet(), graphFilter.getLegallyPositiveEdgeLabels(Direction.BOTH));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE("created").has("weight", 32));
+        graphFilter.setEdgeFilter(__.bothE("created").has("weight", 32));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(Collections.singleton("created"), graphFilter.getLegallyPositiveEdgeLabels(Direction.OUT));
         assertEquals(Collections.singleton("created"), graphFilter.getLegallyPositiveEdgeLabels(Direction.IN));
@@ -181,7 +183,7 @@ public class GraphFilterTest {
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE().has("weight", 32));
+        graphFilter.setEdgeFilter(__.bothE().has("weight", 32));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.IN));
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.BOTH));
@@ -191,7 +193,7 @@ public class GraphFilterTest {
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>inE().has("weight", 32));
+        graphFilter.setEdgeFilter(__.inE().has("weight", 32));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.IN));
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));
@@ -201,7 +203,7 @@ public class GraphFilterTest {
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE().limit(0));
+        graphFilter.setEdgeFilter(__.bothE().limit(0));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.IN));
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));
@@ -216,7 +218,7 @@ public class GraphFilterTest {
         assertEquals(GraphFilter.Legal.YES, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>outE().limit(10));
+        graphFilter.setEdgeFilter(__.outE().limit(10));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.IN));
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));
@@ -224,7 +226,7 @@ public class GraphFilterTest {
         assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
         //
         graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>outE("knows").limit(10));
+        graphFilter.setEdgeFilter(__.outE("knows").limit(10));
         assertTrue(graphFilter.hasEdgeFilter());
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.IN));
         assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));

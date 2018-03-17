@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inli
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -141,7 +140,7 @@ public class SubgraphStrategyTest {
 
         @Test
         public void shouldNotRetainMarkers() {
-            final SubgraphStrategy strategy = SubgraphStrategy.build().vertices(__.<Vertex>out().hasLabel("person")).create();
+            final SubgraphStrategy strategy = SubgraphStrategy.build().vertices(__.out().hasLabel("person")).create();
             final Traversal.Admin<?, ?> t = out().inE().asAdmin();
             t.setStrategies(t.getStrategies().clone().addStrategies(strategy, StandardVerificationStrategy.instance()));
             t.applyStrategies();

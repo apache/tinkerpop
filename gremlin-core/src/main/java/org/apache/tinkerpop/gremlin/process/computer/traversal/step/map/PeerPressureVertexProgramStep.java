@@ -51,7 +51,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
 
     public PeerPressureVertexProgramStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.modulateBy(__.<Vertex>outE().asAdmin());
+        this.modulateBy(__.outE().asAdmin());
     }
 
     @Override

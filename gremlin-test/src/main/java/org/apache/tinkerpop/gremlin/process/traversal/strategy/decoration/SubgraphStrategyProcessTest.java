@@ -237,14 +237,14 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldFilterComplexVertexCriterion() throws Exception {
-        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in("knows").has("name", "marko")).create()).
+        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.in("knows").has("name", "marko")).create()).
                 V().values("name"));
-        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in().has("name", "marko")).create()).
+        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.in().has("name", "marko")).create()).
                 V().values("name"));
 
-        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in("knows").where(out("created").has("name", "lop"))).create()).
+        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.in("knows").where(out("created").has("name", "lop"))).create()).
                 V().values("name"));
-        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in().where(has("name", "marko").out("created").has("name", "lop"))).create()).
+        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.in().where(has("name", "marko").out("created").has("name", "lop"))).create()).
                 V().values("name"));
 
         checkResults(Arrays.asList("marko", "vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.or(both().has("name", "marko"), has("name", "marko"))).create()).

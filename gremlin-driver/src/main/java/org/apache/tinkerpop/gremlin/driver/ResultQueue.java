@@ -130,7 +130,7 @@ final class ResultQueue {
     private <V> V validate(final String aggregateTo, final Class<?> expected) {
         if (!(expected.isAssignableFrom(aggregatedResult.getClass())))
             throw new IllegalStateException(String.format("Side-effect \"%s\" contains the type %s that is not acceptable for %s",
-                    aggregatedResult.getClass().getSimpleName(), aggregateTo));
+                    aggregatedResult.getClass().getSimpleName(), expected.getSimpleName(), aggregateTo));
 
         return (V) aggregatedResult;
     }

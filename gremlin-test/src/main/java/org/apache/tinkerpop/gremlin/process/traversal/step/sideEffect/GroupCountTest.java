@@ -267,7 +267,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
-            return g.V().out("created").<String>groupCount("a").by("name").cap("a");
+            return g.V().out("created").groupCount("a").by("name").cap("a");
         }
 
         @Override

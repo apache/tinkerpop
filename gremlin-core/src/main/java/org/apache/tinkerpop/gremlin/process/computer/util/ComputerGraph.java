@@ -325,7 +325,7 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public V value() throws NoSuchElementException {
-            return this.<V>getBaseVertexProperty().value();
+            return this.getBaseVertexProperty().value();
         }
 
         @Override
