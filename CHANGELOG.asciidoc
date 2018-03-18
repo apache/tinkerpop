@@ -274,6 +274,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added a `Lambda` class to Gremlin.Net that makes it possible to use Groovy and Python lambdas with Gremlin.Net.
 * Enums are now represented as classes in Gremlin.Net which allows to use them as arguments in more steps.
 * Bumped to Groovy 2.4.14.
 * Added `checkAdjacentVertices` option to `SubgraphStrategy`.

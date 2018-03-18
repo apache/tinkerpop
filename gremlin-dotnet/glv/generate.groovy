@@ -57,10 +57,10 @@ def toCSharpTypeMap = ["Long": "long",
                        "TraversalStrategy[]": "ITraversalStrategy[]",
                        "Function": "IFunction",
                        "BiFunction": "IBiFunction",
-                       "UnaryOperator": "object",
+                       "UnaryOperator": "IUnaryOperator",
                        "BinaryOperator": "IBinaryOperator",
                        "Consumer": "IConsumer",
-                       "Supplier": "object",
+                       "Supplier": "ISupplier",
                        "Comparator": "IComparator",
                        "VertexProgram": "object"]
 

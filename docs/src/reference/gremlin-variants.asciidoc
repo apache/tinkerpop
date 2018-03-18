@@ -46,7 +46,7 @@ implementation of Gremlin and serves as the foundation by which all other Gremli
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most language do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
 
 [source,java]
 g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
@@ -278,7 +278,7 @@ re-construction machine-side.
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most language do not support lambda introspection and thus, code analysis. In Gremlin-Python,
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python,
 a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg callable
 that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be changed via
 `gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
@@ -347,8 +347,10 @@ var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClien
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
 `IRemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
-Since Gremlin.Net currently doesn't support lambda expressions, all traversals can be translated to Gremlin-Java on the remote
-location (e.g. Gremlin Server).
+Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
+does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
+use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
+Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
 
 IMPORTANT: Gremlin.Net’s `ITraversal` interface supports the standard Gremlin methods such as `Next()`, `NextTraverser()`, `ToSet()`,
 `ToList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
@@ -436,6 +438,25 @@ edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
 NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the respective strategy on Apache TinkerPop’s
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
+
+=== The Lambda Solution
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most languages do not support lambda introspection and thus, code analysis. While Gremlin.Net doesn't support C# lambdas, it
+is still able to represent lambdas in other languages. When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator and ultimate execution engine to use.
+
+[source,csharp]
+----
+g.V().Out().Map<int>(Lambda.Groovy("it.get().value('name').length()")).Sum<int>().ToList();      <1>
+g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<int>().ToList(); <2>
+----
+
+<1> `Lambda.Groovy()` can be used to create a Groovy lambda. 
+<2> `Lambda.Python()` can be used to create a Python lambda.
+
+The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
+their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
