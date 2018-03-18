@@ -25,22 +25,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
+using static Gremlin.Net.Process.Traversal.__;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class ScenarioData
     {
         private static readonly Lazy<ScenarioData> Lazy = new Lazy<ScenarioData>(Load);
-        
-        private static readonly Regex EdgeORegex = new Regex("o=(.+?)[,}]", RegexOptions.Compiled);
-        private static readonly Regex EdgeLRegex = new Regex("l=(.+?)[,}]", RegexOptions.Compiled);
-        private static readonly Regex EdgeIRegex = new Regex("i=(.+?)[,}]", RegexOptions.Compiled);
         
         private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
 
@@ -123,12 +119,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             try
             {
-                return g.E().Group<string, object>()
-                    .By(__.Project<Edge>("o", "l", "i")
-                        .By(__.OutV().Values<string>("name")).By(__.Label()).By(__.InV().Values<string>("name")))
-                    .By(__.Tail<object>())
-                    .Next()
-                    .ToDictionary(kv => GetEdgeKey(kv.Key), kv => (Edge)kv.Value);
+                var edgeByEdgeRepr = new Dictionary<string, Edge>();
+                foreach (var edge in g.E().ToList())
+                {
+                    edgeByEdgeRepr[GetEdgeKey(g, edge)] = edge;
+                }
+                return edgeByEdgeRepr;
             }
             catch (ResponseException)
             {
@@ -137,12 +133,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
         }
 
-        private static string GetEdgeKey(string key)
+        private static string GetEdgeKey(GraphTraversalSource g, Edge edge)
         {
-            var o = EdgeORegex.Match(key).Groups[1].Value;
-            var l = EdgeLRegex.Match(key).Groups[1].Value;
-            var i = EdgeIRegex.Match(key).Groups[1].Value;
-            return o + "-" + l + "->" + i;
+            var edgeRepr = g.E(edge.Id).Project<string>("o", "l", "i")
+                .By(OutV().Values<string>("name"))
+                .By(Label())
+                .By(InV().Values<string>("name"))
+                .Next();
+            return edgeRepr["o"] + "-" + edgeRepr["l"] + "->" + edgeRepr["i"];
         }
     }
 

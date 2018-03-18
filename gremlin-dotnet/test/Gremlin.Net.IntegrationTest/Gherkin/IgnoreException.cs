@@ -46,6 +46,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.NoReason:
                     reasonSuffix = "";
                     break;
+                case IgnoreReason.ReceivedDataDoesntMatchExpected:
+                    reasonSuffix = " because received data from server doesn't match expected data.";
+                    break;
             }
             return $"Scenario ignored" + reasonSuffix;
         }
@@ -57,6 +60,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// Deserialization of g:T on GraphSON3 is not supported.
         /// </summary>
         TraversalTDeserializationNotSupported,
+        PWithinWrapsArgumentsInArray,
+        ReceivedDataDoesntMatchExpected
         NoReason
     }
 }
