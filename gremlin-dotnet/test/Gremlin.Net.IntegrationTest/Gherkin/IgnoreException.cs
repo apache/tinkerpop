@@ -40,9 +40,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             string reasonSuffix = null;
             switch (reason)
             {
-                case IgnoreReason.LambdaNotSupported:
-                    reasonSuffix = " because lambdas are not supported in Gremlin.NET (TINKERPOP-1854)";
-                    break;
                 case IgnoreReason.PWithinWrapsArgumentsInArray:
                     reasonSuffix = " because P.Within() arguments are incorrectly wrapped in an array (TINKERPOP-1920)";
                     break;
@@ -56,7 +53,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     
     public enum IgnoreReason
     {
-        LambdaNotSupported,
         PWithinWrapsArgumentsInArray,
         PNotDeserializationProblem
     }
