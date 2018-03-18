@@ -104,7 +104,7 @@ namespace Gremlin.Net.Process.Traversal
             return source;
         }
 
-        public GraphTraversalSource WithSack(object initialValue, object splitOperator)
+        public GraphTraversalSource WithSack(object initialValue, IUnaryOperator splitOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
@@ -112,7 +112,39 @@ namespace Gremlin.Net.Process.Traversal
             return source;
         }
 
-        public GraphTraversalSource WithSack(object initialValue, object splitOperator, IBinaryOperator mergeOperator)
+        public GraphTraversalSource WithSack(object initialValue, IUnaryOperator splitOperator, IBinaryOperator mergeOperator)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSack", initialValue, splitOperator, mergeOperator);
+            return source;
+        }
+
+        public GraphTraversalSource WithSack(ISupplier initialValue)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSack", initialValue);
+            return source;
+        }
+
+        public GraphTraversalSource WithSack(ISupplier initialValue, IBinaryOperator mergeOperator)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSack", initialValue, mergeOperator);
+            return source;
+        }
+
+        public GraphTraversalSource WithSack(ISupplier initialValue, IUnaryOperator splitOperator)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSack", initialValue, splitOperator);
+            return source;
+        }
+
+        public GraphTraversalSource WithSack(ISupplier initialValue, IUnaryOperator splitOperator, IBinaryOperator mergeOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));
@@ -129,6 +161,22 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         public GraphTraversalSource WithSideEffect(string key, object initialValue, IBinaryOperator reducer)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSideEffect", key, initialValue, reducer);
+            return source;
+        }
+
+        public GraphTraversalSource WithSideEffect(string key, ISupplier initialValue)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("withSideEffect", key, initialValue);
+            return source;
+        }
+
+        public GraphTraversalSource WithSideEffect(string key, ISupplier initialValue, IBinaryOperator reducer)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                                                   new Bytecode(Bytecode));

@@ -234,7 +234,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToLambda(string stringLambda, string graphName)
         {
-            throw new IgnoreException(IgnoreReason.LambdaNotSupported);
+            return Lambda.Groovy(stringLambda);
         }
 
         private static object ToT(string enumName, string graphName)

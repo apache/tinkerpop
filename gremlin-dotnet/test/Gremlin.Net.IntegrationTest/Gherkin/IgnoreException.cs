@@ -40,9 +40,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             string reasonSuffix = null;
             switch (reason)
             {
-                case IgnoreReason.LambdaNotSupported:
-                    reasonSuffix = " because lambdas are not supported in Gremlin.NET (TINKERPOP-1854)";
-                    break;
                 case IgnoreReason.TraversalTDeserializationNotSupported:
                     reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
                     break;
@@ -60,15 +57,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public enum IgnoreReason
     {
         /// <summary>
-        /// Lambdas are not supported on Gremlin.NET yet.
-        /// </summary>
-        LambdaNotSupported,
-
-        /// <summary>
         /// Deserialization of g:T on GraphSON3 is not supported.
         /// </summary>
         TraversalTDeserializationNotSupported,
-
         PWithinWrapsArgumentsInArray,
         PNotDeserializationProblem
     }
