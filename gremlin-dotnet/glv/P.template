@@ -22,6 +22,12 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -88,9 +94,18 @@ namespace Gremlin.Net.Process.Traversal
 <% } %><% pmethods.findAll{ it in ["within", "without"] }.each { method -> %>
         public static P <%= toCSharpMethodName.call(method) %>(params object[] args)
         {
-            return new P("<%= method %>", args);
+            if (args.Length == 1 && args[0] is ICollection<object> collection)
+                return new P("<%= method %>", ToGenericArray(collection));
+            else
+                return new P("<%= method %>", args);
         }
 <% } %>
+
+        private static T[] ToGenericArray<T>(ICollection<T> collection)
+        {
+            return collection?.ToArray() ?? new T[0];;
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {

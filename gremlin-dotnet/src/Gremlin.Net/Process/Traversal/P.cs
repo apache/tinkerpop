@@ -22,6 +22,12 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -148,12 +154,24 @@ namespace Gremlin.Net.Process.Traversal
 
         public static P Within(params object[] args)
         {
-            return new P("within", args);
+            if (args.Length == 1 && args[0] is ICollection<object> collection)
+                return new P("within", ToGenericArray(collection));
+            else
+                return new P("within", args);
         }
 
         public static P Without(params object[] args)
         {
-            return new P("without", args);
+            if (args.Length == 1 && args[0] is ICollection<object> collection)
+                return new P("without", ToGenericArray(collection));
+            else
+                return new P("without", args);
+        }
+
+
+        private static T[] ToGenericArray<T>(ICollection<T> collection)
+        {
+            return collection?.ToArray() ?? new T[0];;
         }
 
         /// <inheritdoc />

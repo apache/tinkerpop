@@ -43,11 +43,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 case IgnoreReason.TraversalTDeserializationNotSupported:
                     reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
                     break;
-                case IgnoreReason.PWithinWrapsArgumentsInArray:
-                    reasonSuffix = " because P.Within() arguments are incorrectly wrapped in an array (TINKERPOP-1920)";
-                    break;
-                case IgnoreReason.PNotDeserializationProblem:
-                    reasonSuffix = " because P.Not() cannot be deserialized by Gremlin Server (TINKERPOP-1922)";
+                case IgnoreReason.NoReason:
+                    reasonSuffix = "";
                     break;
             }
             return $"Scenario ignored" + reasonSuffix;
@@ -60,7 +57,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// Deserialization of g:T on GraphSON3 is not supported.
         /// </summary>
         TraversalTDeserializationNotSupported,
-        PWithinWrapsArgumentsInArray,
-        PNotDeserializationProblem
+        NoReason
     }
 }
