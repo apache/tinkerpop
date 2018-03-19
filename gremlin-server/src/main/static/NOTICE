@@ -55,6 +55,6 @@ LongAdder), which was released with the following comments:
     http://creativecommons.org/publicdomain/zero/1.0/
 
 ------------------------------------------------------------------------
-Netty 4.0.56
+Netty 4.1.21
 ------------------------------------------------------------------------
-Copyright 2011 The Netty Project
+Copyright 2014 The Netty Project
