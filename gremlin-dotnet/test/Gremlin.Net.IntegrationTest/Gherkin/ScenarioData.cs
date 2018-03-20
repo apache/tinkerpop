@@ -30,7 +30,6 @@ using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
-using static Gremlin.Net.Process.Traversal.__;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
@@ -119,28 +118,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             try
             {
-                var edgeByEdgeRepr = new Dictionary<string, Edge>();
-                foreach (var edge in g.E().ToList())
-                {
-                    edgeByEdgeRepr[GetEdgeKey(g, edge)] = edge;
-                }
-                return edgeByEdgeRepr;
+                IFunction lambda = Lambda.Groovy(
+                    "it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')");
+
+                return g.E().Group<string, Edge>()
+                    .By(lambda)
+                    .By(__.Tail<object>())
+                    .Next();
             }
             catch (ResponseException)
             {
                 // Property name might not exist
                 return EmptyEdges;
             }
-        }
-
-        private static string GetEdgeKey(GraphTraversalSource g, Edge edge)
-        {
-            var edgeRepr = g.E(edge.Id).Project<string>("o", "l", "i")
-                .By(OutV().Values<string>("name"))
-                .By(Label())
-                .By(InV().Values<string>("name"))
-                .Next();
-            return edgeRepr["o"] + "-" + edgeRepr["l"] + "->" + edgeRepr["i"];
         }
     }
 
