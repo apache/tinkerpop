@@ -105,7 +105,7 @@ public class GraphSONTypeSerializer extends TypeSerializer {
         } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
             jsonGenerator.writeStartArray();
         } else {
-            throw new IllegalStateException("Could not write prefix");
+            throw new IllegalStateException("Could not write prefix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }
 
         return writableTypeId;
@@ -122,7 +122,7 @@ public class GraphSONTypeSerializer extends TypeSerializer {
         } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
             jsonGenerator.writeEndArray();
         } else {
-            throw new IllegalStateException("Could not write suffix");
+            throw new IllegalStateException("Could not write suffix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }
 
         return writableTypeId;
