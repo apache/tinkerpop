@@ -27,11 +27,22 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,7 +60,21 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();
     private final Optional<RemoteConnection> remoteConnection;
 
-    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
+    /**
+     * Should be applied before all {@link DecorationStrategy} instances.
+     */
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = new HashSet<Class<? extends DecorationStrategy>>() {{
+        add(VertexProgramStrategy.class);
+        add(ConnectiveStrategy.class);
+        add(ElementIdStrategy.class);
+        add(EventStrategy.class);
+        add(HaltedTraverserStrategy.class);
+        add(PartitionStrategy.class);
+        add(RequirementsStrategy.class);
+        add(SackStrategy.class);
+        add(SideEffectStrategy.class);
+        add(SubgraphStrategy.class);
+    }};
 
     private RemoteStrategy() {
         remoteConnection = Optional.empty();

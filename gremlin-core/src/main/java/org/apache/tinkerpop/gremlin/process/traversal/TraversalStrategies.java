@@ -141,9 +141,9 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         });
 
         //Add dependencies by category
-        List<Class<? extends TraversalStrategy>> strategiesInPreviousCategories = new ArrayList<>();
+        final List<Class<? extends TraversalStrategy>> strategiesInPreviousCategories = new ArrayList<>();
         for (Class<? extends TraversalStrategy> category : STRATEGY_CATEGORIES) {
-            Set<Class<? extends TraversalStrategy>> strategiesInThisCategory = MultiMap.get(strategiesByCategory, category);
+            final Set<Class<? extends TraversalStrategy>> strategiesInThisCategory = MultiMap.get(strategiesByCategory, category);
             for (Class<? extends TraversalStrategy> strategy : strategiesInThisCategory) {
                 for (Class<? extends TraversalStrategy> previousStrategy : strategiesInPreviousCategories) {
                     MultiMap.put(dependencyMap, strategy, previousStrategy);
@@ -153,16 +153,16 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         //Finally sort via t-sort
-        List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s -> s.getClass()).collect(Collectors.toSet()));
-        List<Class<? extends TraversalStrategy>> sortedStrategyClasses = new ArrayList<>();
-        Set<Class<? extends TraversalStrategy>> seenStrategyClasses = new HashSet<>();
+        final List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s -> s.getClass()).collect(Collectors.toSet()));
+        final List<Class<? extends TraversalStrategy>> sortedStrategyClasses = new ArrayList<>();
+        final Set<Class<? extends TraversalStrategy>> seenStrategyClasses = new HashSet<>();
 
         while (!unprocessedStrategyClasses.isEmpty()) {
-            Class<? extends TraversalStrategy> strategy = unprocessedStrategyClasses.get(0);
+            final Class<? extends TraversalStrategy> strategy = unprocessedStrategyClasses.get(0);
             visit(dependencyMap, sortedStrategyClasses, seenStrategyClasses, unprocessedStrategyClasses, strategy);
         }
 
-        List<TraversalStrategy<?>> sortedStrategies = new ArrayList<>();
+        final List<TraversalStrategy<?>> sortedStrategies = new ArrayList<>();
         //We now have a list of sorted strategy classes
         for (Class<? extends TraversalStrategy> strategyClass : sortedStrategyClasses) {
             for (TraversalStrategy strategy : strategies) {
@@ -172,12 +172,13 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             }
         }
 
-
         return sortedStrategies;
     }
 
-
-    static void visit(Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap, List<Class<? extends TraversalStrategy>> sortedStrategyClasses, Set<Class<? extends TraversalStrategy>> seenStrategyClases, List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses, Class<? extends TraversalStrategy> strategyClass) {
+    static void visit(final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap,
+                      final List<Class<? extends TraversalStrategy>> sortedStrategyClasses,
+                      final Set<Class<? extends TraversalStrategy>> seenStrategyClases,
+                      final List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses, Class<? extends TraversalStrategy> strategyClass) {
         if (seenStrategyClases.contains(strategyClass)) {
             throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
                     + seenStrategyClases + ']');
@@ -194,7 +195,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             sortedStrategyClasses.add(strategyClass);
         }
     }
-
 
     public static final class GlobalCache {
 
