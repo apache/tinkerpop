@@ -408,6 +408,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         entry = iterator.next();
         assertEquals("marko", entry.getKey());
         assertEquals(1.9, entry.getValue().doubleValue(), 0.0001);
+    }
 
     public void g_V_order_byXlabelX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_order_byXlabelX();
