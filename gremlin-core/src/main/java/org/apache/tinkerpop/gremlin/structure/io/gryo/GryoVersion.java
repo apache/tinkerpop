@@ -320,7 +320,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
-            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 170));  // ***LAST ID***
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 174));  // ***LAST ID***
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
@@ -375,7 +375,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -537,7 +537,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
-            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 170)); // ***LAST ID***
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 174)); // ***LAST ID***
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
@@ -555,7 +555,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             // skip 171, 172 to sync with tp33
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
         }};
     }
 

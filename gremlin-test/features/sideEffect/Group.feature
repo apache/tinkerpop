@@ -242,3 +242,25 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":[666, "created", "knows", "knows"]}] |
+
+  Scenario: g_V_group_byXlabelX_byXlabel_countX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(__.label()).by(__.label().count())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"software":"d[2].l", "person":"d[4].l"}] |
+
+  Scenario: g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("m").by(__.label()).by(__.label().count()).cap("m")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"software":"d[2].l", "person":"d[4].l"}] |
