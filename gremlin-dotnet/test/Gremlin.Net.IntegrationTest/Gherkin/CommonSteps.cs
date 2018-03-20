@@ -252,8 +252,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             if (value.Type == JTokenType.Object)
             {
-                IDictionary<string, JToken> jsonMap = (JObject)value; 
-                return jsonMap.ToDictionary(kv => kv.Key, kv => ParseMapValue(kv.Value, graphName));
+                IDictionary<string, JToken> jsonMap = (JObject)value;
+                return jsonMap.ToDictionary(kv => ParseMapValue(kv.Key, graphName),
+                    kv => ParseMapValue(kv.Value, graphName));
             }
             if (value.Type == JTokenType.Array)
             {

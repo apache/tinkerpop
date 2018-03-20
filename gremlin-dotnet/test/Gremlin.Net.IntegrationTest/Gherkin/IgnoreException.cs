@@ -60,8 +60,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// Deserialization of g:T on GraphSON3 is not supported.
         /// </summary>
         TraversalTDeserializationNotSupported,
-        PWithinWrapsArgumentsInArray,
-        ReceivedDataDoesntMatchExpected
+        ReceivedDataDoesntMatchExpected,
         NoReason
     }
 }

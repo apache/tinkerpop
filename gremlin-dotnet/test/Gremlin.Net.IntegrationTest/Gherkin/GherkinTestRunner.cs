@@ -44,10 +44,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 { "g_V_valueMapXtrue_name_ageX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
                 { "g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported }, // TINKERPOP-1866
                 {"g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX", IgnoreReason.TraversalTDeserializationNotSupported},
-                {"g_V_hasIdXwithinXemptyXX_count", IgnoreReason.PWithinWrapsArgumentsInArray},
-                {"g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX", IgnoreReason.PWithinWrapsArgumentsInArray},
-                {"g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_decrX_byXkeys_incrX", IgnoreReason.ReceivedDataDoesntMatchExpected},
-                {"g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX", IgnoreReason.PWithinWrapsArgumentsInArray}
+                {"g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX", IgnoreReason.ReceivedDataDoesntMatchExpected}
             };
         
         private static class Keywords
