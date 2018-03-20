@@ -33,7 +33,8 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ComputerFinalizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> {
+public final class ComputerFinalizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy>
+    implements TraversalStrategy.FinalizationStrategy {
 
     private static final ComputerFinalizationStrategy INSTANCE = new ComputerFinalizationStrategy();
 

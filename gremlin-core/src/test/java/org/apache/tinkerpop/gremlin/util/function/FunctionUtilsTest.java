@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.util.function;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -41,7 +40,8 @@ public class FunctionUtilsTest {
     public void shouldWrapInRuntimeIfFunctionThrows() {
         final Exception t = new Exception();
         try {
-            FunctionUtils.wrapFunction(FunctionUtilsTest::throwIt).apply(t);
+            @SuppressWarnings("unused")
+            Integer ignore = FunctionUtils.wrapFunction(FunctionUtilsTest::throwIt).apply(t);
         } catch (Exception ex) {
             assertThat(ex, instanceOf(RuntimeException.class));
             assertSame(t, ex.getCause());
@@ -52,7 +52,8 @@ public class FunctionUtilsTest {
     public void shouldNoReWrapInRuntimeIfFunctionThrows() {
         final Exception t = new RuntimeException();
         try {
-            FunctionUtils.wrapFunction(FunctionUtilsTest::throwIt).apply(t);
+            @SuppressWarnings("unused")
+            Integer ignore = FunctionUtils.wrapFunction(FunctionUtilsTest::throwIt).apply(t);
         } catch (Exception ex) {
             assertThat(ex, instanceOf(RuntimeException.class));
             assertNull(ex.getCause());
@@ -115,7 +116,8 @@ public class FunctionUtilsTest {
     public void shouldWrapInRuntimeIfSupplierThrows() {
         final Exception t = new Exception();
         try {
-            FunctionUtils.wrapSupplier(() -> {
+            @SuppressWarnings("unused")
+            Object ignore = FunctionUtils.wrapSupplier(() -> {
                 throw t;
             }).get();
         } catch (Exception ex) {
@@ -128,7 +130,8 @@ public class FunctionUtilsTest {
     public void shouldNoReWrapInRuntimeIfSupplierThrows() {
         final Exception t = new RuntimeException();
         try {
-            FunctionUtils.wrapSupplier(() -> {
+            @SuppressWarnings("unused")
+            Object ignore = FunctionUtils.wrapSupplier(() -> {
                 throw t;
             }).get();
         } catch (Exception ex) {

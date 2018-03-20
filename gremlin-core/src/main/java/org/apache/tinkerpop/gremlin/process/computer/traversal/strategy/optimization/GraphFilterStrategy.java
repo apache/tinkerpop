@@ -109,18 +109,18 @@ public final class GraphFilterStrategy extends AbstractTraversalStrategy<Travers
         }
         // construct edges(...)
         if (outLabels.isEmpty() && inLabels.isEmpty() && bothLabels.isEmpty())  // out/in/both are never called, thus, filter all edges
-            return __.<Vertex>bothE().limit(0).asAdmin();
+            return __.bothE().limit(0).asAdmin();
         else {
             final String[] ins = inLabels.contains(null) ? new String[]{} : inLabels.toArray(new String[inLabels.size()]);
             final String[] outs = outLabels.contains(null) ? new String[]{} : outLabels.toArray(new String[outLabels.size()]);
             final String[] boths = bothLabels.contains(null) ? new String[]{} : bothLabels.toArray(new String[bothLabels.size()]);
 
             if (outLabels.isEmpty() && inLabels.isEmpty()) // only both has labels
-                return __.<Vertex>bothE(boths).asAdmin();
+                return __.bothE(boths).asAdmin();
             else if (inLabels.isEmpty() && bothLabels.isEmpty()) // only out has labels
-                return __.<Vertex>outE(outs).asAdmin();
+                return __.outE(outs).asAdmin();
             else if (outLabels.isEmpty() && bothLabels.isEmpty()) // only in has labels
-                return __.<Vertex>inE(ins).asAdmin();
+                return __.inE(ins).asAdmin();
             else if (bothLabels.isEmpty())                        // out and in both have labels
                 return __.<Vertex, Edge>union(__.inE(ins), __.outE(outs)).asAdmin();
             else if (outLabels.isEmpty() && ins.length > 0)       // in and both have labels (and in is not null)

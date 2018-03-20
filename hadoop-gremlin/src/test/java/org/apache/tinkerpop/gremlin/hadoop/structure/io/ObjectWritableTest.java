@@ -44,6 +44,8 @@ public class ObjectWritableTest {
         assertEquals(-1, new ObjectWritable<>("bloop").compareTo(object));
         assertEquals(0, ObjectWritable.empty().compareTo(object));
         assertEquals(0, object.compareTo(ObjectWritable.empty()));
-        assertEquals(0, object.compareTo(object));
+        @SuppressWarnings({"SelfComparison", "EqualsWithItself"})
+        int selfComparisonResult = object.compareTo(object);
+        assertEquals(0, selfComparisonResult);
     }
 }

@@ -47,7 +47,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     /**
      * toString() specific headers
      */
-    private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
+    private static final Object[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
     /**
      * {@link ImmutableMetrics} indexed by their step identifier.

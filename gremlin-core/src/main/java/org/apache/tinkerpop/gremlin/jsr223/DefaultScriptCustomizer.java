@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of the {@link ScriptCustomizer} that can create the script list from a list of files or
@@ -39,7 +40,9 @@ public class DefaultScriptCustomizer implements ScriptCustomizer {
     public DefaultScriptCustomizer(final List<File> files) {
         this(files.stream().map(f -> {
             try {
-                return Files.lines(f.toPath(), StandardCharsets.UTF_8).collect(Collectors.toList());
+                try (Stream<String> lines = Files.lines(f.toPath(), StandardCharsets.UTF_8)) {
+                    return lines.collect(Collectors.toList());
+                }
             } catch (IOException ioe) {
                 throw new IllegalStateException(ioe);
             }

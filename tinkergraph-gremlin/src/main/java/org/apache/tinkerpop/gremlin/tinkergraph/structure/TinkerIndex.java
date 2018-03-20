@@ -133,8 +133,8 @@ final class TinkerIndex<T extends Element> {
         this.indexedKeys.add(key);
 
         (Vertex.class.isAssignableFrom(this.indexClass) ?
-                this.graph.vertices.values().<T>parallelStream() :
-                this.graph.edges.values().<T>parallelStream())
+                this.graph.vertices.values().parallelStream() :
+                this.graph.edges.values().parallelStream())
                 .map(e -> new Object[]{((T) e).property(key), e})
                 .filter(a -> ((Property) a[0]).isPresent())
                 .forEach(a -> this.put(key, ((Property) a[0]).value(), (T) a[1]));

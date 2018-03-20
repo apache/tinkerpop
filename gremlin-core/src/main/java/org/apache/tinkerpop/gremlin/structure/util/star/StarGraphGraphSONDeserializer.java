@@ -58,7 +58,10 @@ public class StarGraphGraphSONDeserializer {
                     }
                 }
 
-                if (edgeMaker != null) edgeMaker.apply(starEdge);
+                if (edgeMaker != null) {
+                    @SuppressWarnings("unused")
+                    Edge ignored = edgeMaker.apply(starEdge);
+                }
             }
         }
     }

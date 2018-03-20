@@ -130,8 +130,8 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
     private void validatePointTriangles(final List<Map<String, Object>> values) {
         assertEquals(NUMBER_OF_VERTICES, values.size());
         for (int i = 0; i < NUMBER_OF_VERTICES; i++) {
-            assertTrue(values.stream().map(m -> m.<ToyPoint>get("point")).collect(Collectors.toList()).contains(new ToyPoint(i, i * 10)));
-            assertTrue(values.stream().map(m -> m.<ToyTriangle>get("triangle")).collect(Collectors.toList()).contains(new ToyTriangle(i, i * 10, i * 100)));
+            assertTrue(values.stream().map(m -> m.get("point")).collect(Collectors.toList()).contains(new ToyPoint(i, i * 10)));
+            assertTrue(values.stream().map(m -> m.get("triangle")).collect(Collectors.toList()).contains(new ToyTriangle(i, i * 10, i * 100)));
         }
     }
 }

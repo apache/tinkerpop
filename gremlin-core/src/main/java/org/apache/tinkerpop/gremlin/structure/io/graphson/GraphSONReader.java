@@ -178,7 +178,10 @@ public final class GraphSONReader implements GraphReader {
         // what it should have been anyway) stargraph format can remain unchanged across all versions
         final Map<String, Object> vertexData = mapper.readValue(inputStream, version == GraphSONVersion.V3_0 ? linkedHashMapTypeReference : mapTypeReference);
         final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
-        if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
+        if (vertexAttachMethod != null) {
+            @SuppressWarnings("unused")
+            Vertex ignored = vertexAttachMethod.apply(starGraph.getStarVertex());
+        }
 
         if (vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
             StarGraphGraphSONDeserializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);

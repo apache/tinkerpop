@@ -279,7 +279,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                     else
                         throw new IllegalStateException(String.format(
                                 "Unexpected value provided by %s for serializable class %s - expected a parameter in [null, %s implementation or Function<%s, %s>], but received %s",
-                                registry.getClass().getSimpleName(), p.getValue0().getClass().getCanonicalName(),
+                                registry.getClass().getSimpleName(), p.getValue0().getCanonicalName(),
                                 Serializer.class.getName(), Kryo.class.getSimpleName(),
                                 Serializer.class.getSimpleName(), p.getValue1()));
                 });

@@ -82,7 +82,7 @@ public class RepeatUnrollStrategyTest {
                 {__.repeat(out()).times(3), out().barrier(maxBarrierSize).out().barrier(maxBarrierSize).out().barrier(maxBarrierSize), Collections.emptyList()},
                 {__.repeat(__.local(__.select("a").out("knows"))).times(2), __.local(__.select("a").out("knows")).barrier(maxBarrierSize).local(__.select("a").out("knows")).barrier(maxBarrierSize), Collections.emptyList()},
                 {__.<Vertex>times(2).repeat(out()), out().barrier(maxBarrierSize).out().barrier(maxBarrierSize), Collections.emptyList()},
-                {__.<Vertex>out().times(2).repeat(out().as("a")).as("x"), out().out().as("a").barrier(maxBarrierSize).out().as("a").barrier(maxBarrierSize).as("x"), Collections.emptyList()},
+                {__.out().times(2).repeat(out().as("a")).as("x"), out().out().as("a").barrier(maxBarrierSize).out().as("a").barrier(maxBarrierSize).as("x"), Collections.emptyList()},
                 {__.repeat(out()).emit().times(2), __.repeat(out()).emit().times(2), Collections.emptyList()},
                 {__.repeat(out()).until(predicate), __.repeat(out()).until(predicate), Collections.emptyList()},
                 {__.repeat(out()).until(predicate).repeat(out()).times(2), __.repeat(out()).until(predicate).out().barrier(maxBarrierSize).out().barrier(maxBarrierSize), Collections.emptyList()},

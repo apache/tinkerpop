@@ -27,31 +27,37 @@ public class OperatorExceptionTest {
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToDivIsNotNumeric() {
-        Operator.div.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.div.apply("1", "1");
     }
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToMaxIsNotNumeric() {
-        Operator.max.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.max.apply("1", "1");
     }
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToMinIsNotNumeric() {
-        Operator.min.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.min.apply("1", "1");
     }
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToMinusIsNotNumeric() {
-        Operator.minus.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.minus.apply("1", "1");
     }
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToMultIsNotNumeric() {
-        Operator.mult.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.mult.apply("1", "1");
     }
 
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToSumIsNotNumeric() {
-        Operator.sum.apply("1", "1");
+        @SuppressWarnings("unused")
+        Object ignore = Operator.sum.apply("1", "1");
     }
 }
