@@ -81,6 +81,15 @@ public class GremlinServer {
      * Construct a Gremlin Server instance from {@link Settings}.
      */
     public GremlinServer(final Settings settings) {
+        this(settings, null);
+    }
+
+    /**
+     * Construct a Gremlin Server instance from {@link Settings} and {@link ExecutorService}.
+     * This constructor is useful when Gremlin Server is being used in an embedded style
+     * and there is a need to share thread pools with the hosting application.
+     */
+    public GremlinServer(final Settings settings, final ExecutorService gremlinExecutorService) {
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
         this.settings = settings;
         provideDefaultForGremlinPoolSize(settings);
@@ -108,8 +117,8 @@ public class GremlinServer {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }
 
-        serverGremlinExecutor = new ServerGremlinExecutor(settings, null, workerGroup);
-        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+        serverGremlinExecutor = new ServerGremlinExecutor(settings, gremlinExecutorService, workerGroup);
+        this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
 
         // initialize the OpLoader with configurations being passed to each OpProcessor implementation loaded
         OpLoader.init(settings);
