@@ -25,6 +25,6 @@ before_install:
 
 jobs:
   include:
-    - script: "mvn clean install -Dci"
+    - script: "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
     - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet -DskipIntegrationTests=false"
     - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript -DskipIntegrationTests=false"
