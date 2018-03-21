@@ -48,8 +48,6 @@ import java.util.Set;
  * @example <pre>
  * __.path().by(id())            // is replaced by __.path().by(id)
  * __.dedup().by(label())        // is replaced by __.dedup().by(label)
- * __.group().by(key())          // is replaced by __.group().by(key)
- * __.group().by(value())        // is replaced by __.group().by(value)
  * __.order().by(values("name")) // is replaced by __.order().by("name")
  * </pre>
  */
