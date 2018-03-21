@@ -108,7 +108,7 @@ g.V(v).values('name') <8>
 <2> If a property is added with a cardinality of `Cardinality.list`, an additional property with the provided key will be added.
 <3> A vertex property can have standard key/value properties attached to it.
 <4> Vertex property removal is identical to property removal.
-<5> It is property to get the properties of a vertex property.
+<5> Gets the meta-properties of each vertex property.
 <6> A vertex property can have any number of key/value properties attached to it.
 <7> `property(...)` will remove all existing key'd properties before adding the new single property (see `VertexProperty.Cardinality`).
 <8> If only the value of a property is needed, then `values()` can be used.
