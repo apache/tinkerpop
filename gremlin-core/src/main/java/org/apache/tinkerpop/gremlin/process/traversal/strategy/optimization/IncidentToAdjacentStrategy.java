@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
@@ -132,6 +133,10 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
         for (final Step curr : traversal.getSteps()) {
+            if (curr instanceof TraversalParent) {
+                ((TraversalParent) curr).getLocalChildren().forEach(this::apply);
+                ((TraversalParent) curr).getGlobalChildren().forEach(this::apply);
+            }
             if (isOptimizable(prev, curr)) {
                 stepsToReplace.add(Pair.with((VertexStep) prev, curr));
             }
@@ -147,5 +152,10 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return Collections.singleton(IdentityRemovalStrategy.class);
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPost() {
+        return Collections.singleton(PathRetractionStrategy.class);
     }
 }

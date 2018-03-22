@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -147,6 +148,18 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         if (traversal.getStartStep().getLabels().contains(MARKER)) {
             traversal.getStartStep().removeLabel(MARKER);
             return;
+        }
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin t : ((TraversalParent) step).getLocalChildren()) {
+                    this.apply(t);
+                    t.getStartStep().addLabel(MARKER);
+                }
+                for (final Traversal.Admin t : ((TraversalParent) step).getGlobalChildren()) {
+                    this.apply(t);
+                    t.getStartStep().addLabel(MARKER);
+                }
+            }
         }
         //
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
