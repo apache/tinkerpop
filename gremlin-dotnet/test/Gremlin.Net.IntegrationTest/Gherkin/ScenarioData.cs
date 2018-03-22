@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Remote;
@@ -37,10 +36,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     internal class ScenarioData
     {
         private static readonly Lazy<ScenarioData> Lazy = new Lazy<ScenarioData>(Load);
-        
-        private static readonly Regex EdgeORegex = new Regex("o=(.+?)[,}]", RegexOptions.Compiled);
-        private static readonly Regex EdgeLRegex = new Regex("l=(.+?)[,}]", RegexOptions.Compiled);
-        private static readonly Regex EdgeIRegex = new Regex("i=(.+?)[,}]", RegexOptions.Compiled);
         
         private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
 
@@ -123,26 +118,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             try
             {
-                return g.E().Group<string, object>()
-                    .By(__.Project<Edge>("o", "l", "i")
-                        .By(__.OutV().Values<string>("name")).By(__.Label()).By(__.InV().Values<string>("name")))
+                IFunction lambda = Lambda.Groovy(
+                    "it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')");
+
+                return g.E().Group<string, Edge>()
+                    .By(lambda)
                     .By(__.Tail<object>())
-                    .Next()
-                    .ToDictionary(kv => GetEdgeKey(kv.Key), kv => (Edge)kv.Value);
+                    .Next();
             }
             catch (ResponseException)
             {
                 // Property name might not exist
                 return EmptyEdges;
             }
-        }
-
-        private static string GetEdgeKey(string key)
-        {
-            var o = EdgeORegex.Match(key).Groups[1].Value;
-            var l = EdgeLRegex.Match(key).Groups[1].Value;
-            var i = EdgeIRegex.Match(key).Groups[1].Value;
-            return o + "-" + l + "->" + i;
         }
     }
 

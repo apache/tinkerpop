@@ -312,7 +312,7 @@ Feature: Step - order()
   Scenario: g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_decrX_byXkeys_incrX
     Given the modern graph
     And using the parameter v1 defined as "v[marko]"
-    And using the parameter l1 defined as "c[[1:it.get().value('age'),2:it.get().value('age')*2,3:it.get().value('age')*3,4:it.get().value('age')]]"
+    And using the parameter l1 defined as "c[['1':it.get().value('age'),'2':it.get().value('age')*2,'3':it.get().value('age')*3,'4':it.get().value('age')]]"
     And the traversal of
       """
       g.V(v1).hasLabel("person").map(l1).order(Scope.local).by(Column.values, Order.decr).by(Column.keys, Order.incr)
