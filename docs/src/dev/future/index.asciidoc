@@ -152,6 +152,24 @@ essentially build a subgraph which is merged into the primary graph. That subgra
 Build it locally then submit it remotely and have the server sort out the merging. It's perhaps the most natural way
 to load data. With "Gremlinito" you then get the added power of being able to traverse a local subgraph.
 
+
+== Uniform object model for GraphSON response for client drivers
+On TINKERPOP-1909, it was suggested that we are going to use refence (id/label) based object model. And, the direction is
+move towards more tidy object model contracts going forward. Reference model definitely provides big performance improvements
+especially with multi-property vertices/edges.  One thing that we can consider is to provide a configurable object 
+model. Enabling users to configure the object model (OutputFormat) as server settings (Exposing server setting is
+being discussed here TINKERPOP-1636). There will three types of output format. 
+
+* Reference: includes id and label 
+
+* GraphSONCompact: object reference along with properties 
+
+* GraphSON: object reference, properties and edge details(inE/outE). 
+=== Comments
+This will enable the clients model based on their needs and avoid multiple query if they are sure what is expected 
+from a gremlin query. If we need more details like edges/property as part of response, we can override the server 
+configuration as part of the gremlin request arguments as hint. 
+
 == Testing Framework
 
 Consider a testing framework based on the Gherkin tests from 3.x and a `gremlin-test` parent module for all the test
