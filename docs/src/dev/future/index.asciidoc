@@ -165,6 +165,7 @@ being discussed here TINKERPOP-1636). There will three types of output format.
 * GraphSONCompact: object reference along with properties 
 
 * GraphSON: object reference, properties and edge details(inE/outE). 
+
 === Comments
 This will enable the clients model based on their needs and avoid multiple query if they are sure what is expected 
 from a gremlin query. If we need more details like edges/property as part of response, we can override the server 
