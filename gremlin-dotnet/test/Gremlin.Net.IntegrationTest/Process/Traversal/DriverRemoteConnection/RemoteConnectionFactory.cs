@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
-using Gremlin.Net.Structure.IO.GraphSON;
 using DriverRemoteConnectionImpl = Gremlin.Net.Driver.Remote.DriverRemoteConnection;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
@@ -45,9 +44,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public IRemoteConnection CreateRemoteConnection(string traversalSource)
         {
-            var c = new DriverRemoteConnectionImpl(
-                new GremlinClient(new GremlinServer(TestHost, TestPort), new GraphSON2Reader(), new GraphSON2Writer(),
-                    GremlinClient.GraphSON2MimeType), traversalSource);
+            var c = new DriverRemoteConnectionImpl(new GremlinClient(new GremlinServer(TestHost, TestPort)),
+                traversalSource);
             _connections.Add(c);
             return c;
         }
