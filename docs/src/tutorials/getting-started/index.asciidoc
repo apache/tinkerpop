@@ -465,13 +465,13 @@ implementations are behind TinkerPop APIs, which open the possibility to switch 
 
 TinkerPop has always had the vision of being an abstraction over different graph databases. That much
 is not new and dates back to TinkerPop 1.x. It is in TinkerPop 3.x however that we see the introduction of the notion
-that TinkerPop is also an abstraction over different graph processors like link:http://spark.apache.org[Spark] and
-link:http://giraph.apache.org/[Giraph]. The scope of this tutorial does not permit it to delve into
-"graph processors", but the short story is that the same Gremlin statement we wrote in the examples above can be
-executed to run in distributed fashion over Spark or Hadoop. The changes required to the code to do this are not
-in the traversal itself, but in the definition of the `TraversalSource`. You can again see why we encourage, graph
-operations to be executed through that class as opposed to just using `Graph`. You can read more about these
-features in this section on link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[hadoop-gremlin].
+that TinkerPop is also an abstraction over different graph processors like link:http://spark.apache.org[Spark]. The
+scope of this tutorial does not permit it to delve into "graph processors", but the short story is that the same
+Gremlin statement we wrote in the examples above can be executed to run in distributed fashion over Spark or Hadoop.
+The changes required to the code to do this are not in the traversal itself, but in the definition of the
+`TraversalSource`. You can again see why we encourage, graph operations to be executed through that class as opposed
+to just using `Graph`. You can read more about these features in this section on
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[hadoop-gremlin].
 
 TIP: To maintain an abstraction over `Graph` creation use `GraphFactory.open()` to construct new instances. See
 the documentation for individual `Graph` implementations to learn about the configuration options to provide.

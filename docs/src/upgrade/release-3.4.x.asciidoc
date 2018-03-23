@@ -29,6 +29,14 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Removal of Giraph Support
+
+Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
+discussed in the community prior to taking this step. Users should switch to Spark for their OLAP based graph-computing
+needs.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
+
 ==== Modifications to reducing barrier steps
 
 The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:

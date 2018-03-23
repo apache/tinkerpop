@@ -75,7 +75,7 @@ limitations under the License.
          <br/>
          <li><strong>The GraphComputer (optional)</strong>: All OLAP-based graph processors must implement the primary graph interfaces mentioned above as well as a set of parallel-processing
             message-passing interfaces. However, it is possible for a data system to only implement the primary graph interfaces and still provide OLAP support to their users by integrating their
-            system with an existing <code>GraphComputer</code> implementation such as, for example, <code>SparkGraphComputer</code> or <code>GiraphGraphComputer</code> (both are provided in Apache's distribution
+            system with an existing <code>GraphComputer</code> implementation such as, for example, <code>SparkGraphComputer</code> (provided in Apache's distribution
             of TinkerPop).
          </li>
       </ol>
@@ -109,11 +109,7 @@ limitations under the License.
             into a Big(Graph)Data processor via the OLAP component of the Gremlin traversal machine. Users do not have to learn Spark's data processing language as Gremlin traversals execute
             over Spark. For graph system providers, they can boast Spark integration once a custom <code>InputRDD</code> (or <code>InputFormat</code>) is developed.
          </li>
-         <li><strong>GiraphGraphComputer</strong>: <a href="http://giraph.apache.org/">Apache Giraph</a>&trade; is a Big(Graph)Data processor that leverages <a href="http://hadoop.apache.org/">Apache Hadoop</a>&reg; and
-            <a href="http://zookeeper.apache.org/">Apache ZooKeeper</a>&trade; for executing distributed graph algorithms. <a href="http://tinkerpop.apache.org/docs/current/reference/#giraphgraphcomputer"><code>GiraphGraphComputer</code></a>
-            supports Gremlin OLAP and allows users to submit Gremlin traversals to Giraph for distributed execution. Providers can immediately advertise Giraph integration once a custom <code>InputFormat</code> is developed.
-         </li>
-         <li><strong>Hadoop support</strong>: <a href="http://hadoop.apache.org/">Apache Hadoop</a>&reg; has become a staple technology for Big Data applications. In TinkerPop, both <code>SparkGraphComputer</code> and <code>GiraphGraphComputer</code> can pull data
+         <li><strong>Hadoop support</strong>: <a href="http://hadoop.apache.org/">Apache Hadoop</a>&reg; has become a staple technology for Big Data applications. In TinkerPop, <code>SparkGraphComputer</code> can pull data
             from the Hadoop File System (<a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html">HDFS</a>). TinkerPop provides a collection of Input- and OutputFormats for different graph serialization standards as well as tooling that makes it easy for users
             to <a href="http://tinkerpop.apache.org/docs/current/reference/#interacting-with-hdfs">interact with HDFS</a> from the Gremlin Console or their application.
          </li>
@@ -155,7 +151,7 @@ limitations under the License.
          </div>
          <div class="col-sm-6 col-md-6">
            <a href="http://janusgraph.org/"><img src="images/logos/janusgraph-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
-           <a href="http://janusgraph.org/">JanusGraph</a> is an Apache2 licensed scalable, distributed graph database optimized for storing and querying graphs containing hundreds of billions of vertices and edges distributed across a multi-machine cluster. JanusGraph is a transactional database that can support thousands of concurrent users executing complex Gremlin traversals in real time. JanusGraph also provides an in-memory, compression-based OLAP processor as well as integrates with Apache TinkerPop's Spark/Giraph OLAP processors.
+           <a href="http://janusgraph.org/">JanusGraph</a> is an Apache2 licensed scalable, distributed graph database optimized for storing and querying graphs containing hundreds of billions of vertices and edges distributed across a multi-machine cluster. JanusGraph is a transactional database that can support thousands of concurrent users executing complex Gremlin traversals in real time. JanusGraph also provides an in-memory, compression-based OLAP processor as well as integrates with Apache TinkerPop's Spark OLAP processors.
          </div>
       </div>
       <br/>
@@ -188,7 +184,7 @@ limitations under the License.
          </div>
          <div class="col-sm-6 col-md-6">
            <a href="http://titan.thinkaurelius.com/"><img src="images/logos/titan-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
-           <a href="http://titan.thinkaurelius.com/">Titan</a>&trade; is an Apache2 licensed scalable, distributed graph database optimized for storing and querying graphs containing hundreds of billions of vertices and edges distributed across a multi-machine cluster. Titan is a transactional database that can support thousands of concurrent users executing complex Gremlin traversals in real time. Titan also provides an in-memory, compression-based OLAP processor as well as integrates with Apache TinkerPop's Spark/Giraph OLAP processors.
+           <a href="http://titan.thinkaurelius.com/">Titan</a>&trade; is an Apache2 licensed scalable, distributed graph database optimized for storing and querying graphs containing hundreds of billions of vertices and edges distributed across a multi-machine cluster. Titan is a transactional database that can support thousands of concurrent users executing complex Gremlin traversals in real time. Titan also provides an in-memory, compression-based OLAP processor as well as integrates with Apache TinkerPop's Spark OLAP processors.
          </div>
       </div>
       <br/>

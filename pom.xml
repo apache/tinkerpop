@@ -123,7 +123,6 @@ limitations under the License.
         <module>gremlin-dotnet</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
-        <module>giraph-gremlin</module>
         <module>neo4j-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
@@ -582,15 +581,6 @@ limitations under the License.
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <!-- conflicts with giraph-core (which appears to have more consistent dependencies) -->
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-mapper-asl</artifactId>
                     </exclusion>
                     <!-- conflict with TinkerPop tests -->
                     <exclusion>
@@ -1147,7 +1137,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>

@@ -99,9 +99,9 @@ implementation is presented below:
 NOTE: The VertexProgram and MapReduce interfaces in the `process/computer/` package are not required by the graph
 system. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
 
-IMPORTANT: TinkerPop3 provides three OLAP implementations:
+IMPORTANT: TinkerPop provides two OLAP implementations:
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraphComputer] (TinkerGraph),
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#giraphgraphcomputer[GiraphGraphComputer] (HadoopGraph), and
+and
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer] (Hadoop).
 Given the complexity of the OLAP system, it is good to study and copy many of the patterns used in these reference
 implementations.

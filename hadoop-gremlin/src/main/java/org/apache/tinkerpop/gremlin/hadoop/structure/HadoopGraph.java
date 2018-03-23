@@ -69,21 +69,6 @@ import java.util.stream.Stream;
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
         computers = {"ALL"})
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
-        method = "g_V_matchXa_knows_b__c_knows_bX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
-        computers = {"org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
-        method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
-        computers = {"org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
-        method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
-        computers = {"org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer"})
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest$Traversals",
         method = "g_V_both_both_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
@@ -144,7 +129,7 @@ import java.util.stream.Stream;
         test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
         method = "*",
         reason = "This test makes use of a sideEffect to enforce when a thread interruption is triggered and thus isn't applicable to HadoopGraph",
-        computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer", "org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer"})
+        computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$CountMatchTraversals",
         method = "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",

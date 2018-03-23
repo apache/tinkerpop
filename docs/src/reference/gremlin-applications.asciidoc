@@ -2147,15 +2147,6 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 
 NOTE: This plugin is typically only useful to the Gremlin Console and is enabled in the there by default.
 
-[[giraph-plugin]]
-=== Giraph Plugin
-
-image:giraph-logo.png[width=50,float=left]  The Giraph Plugin installs as part of `giraph-gremlin` and provides
-a number of imports and utility functions to the environment within which it is used. Those classes and functions
-provide the basis for supporting <<graphcomputer,OLAP based traversals>> using link:http://giraph.apache.org[Giraph].
-This plugin is defined in greater detail in the <<giraphgraphcomputer,GiraphGraphComputer>> section and is typically
-installed in conjuction with the <<hadoop-plugin,Hadoop-Plugin>>.
-
 [[graph-plugins]]
 === Graph Plugins
 
