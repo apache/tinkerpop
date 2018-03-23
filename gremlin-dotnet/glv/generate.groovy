@@ -321,14 +321,6 @@ def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
 
-// Process enums
-def toCSharpName = { enumClass, itemName ->
-    if (enumClass.equals(Direction.class)) {
-        itemName = itemName.toLowerCase()
-    }
-
-    return itemName.substring(0, 1).toUpperCase() + itemName.substring(1)
-}
 
 def createEnum = { enumClass ->
     def b = ["enumClass": enumClass,
@@ -341,11 +333,8 @@ def createEnum = { enumClass ->
                         return toCSharpTypeMap[typeName]
                     }.join(", "),
              "constants": enumClass.getEnumConstants().
-                    sort { a, b -> a.name() <=> b.name() }.
-                    collect { value ->
-                        def csharpName = toCSharpName(enumClass, value.name())
-                        return "public static ${enumClass.simpleName} ${csharpName} => new ${enumClass.simpleName}(\"${value.name()}\");"
-                    }]
+                    sort { a, b -> a.name() <=> b.name() },
+             "directionClass": Direction.class ]
 
     def enumTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Enum.template")).make(b)
     def enumFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/" + enumClass.getSimpleName() + ".cs")

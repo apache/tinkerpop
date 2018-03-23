@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,13 +33,35 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Direction(string enumValue)
             : base("Direction", enumValue)
-        {            
+        {
         }
- 
-        public static Direction Both => new Direction("BOTH"); 
-        public static Direction In => new Direction("IN"); 
+
+        public static Direction Both => new Direction("BOTH");
+
+        public static Direction In => new Direction("IN");
+
         public static Direction Out => new Direction("OUT");
+
+        private static readonly IDictionary<string, Direction> Properties = new Dictionary<string, Direction>
+        {
+            { "BOTH", Both },
+            { "IN", In },
+            { "OUT", Out },
+        };
+
+        /// <summary>
+        /// Gets the Direction enumeration by value.
+        /// </summary>
+        public static Direction GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Direction for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,11 +33,29 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Barrier(string enumValue)
             : base("Barrier", enumValue)
-        {            
+        {
         }
- 
+
         public static Barrier NormSack => new Barrier("normSack");
+
+        private static readonly IDictionary<string, Barrier> Properties = new Dictionary<string, Barrier>
+        {
+            { "normSack", NormSack },
+        };
+
+        /// <summary>
+        /// Gets the Barrier enumeration by value.
+        /// </summary>
+        public static Barrier GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Barrier for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

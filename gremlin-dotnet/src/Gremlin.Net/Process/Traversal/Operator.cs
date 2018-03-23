@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,21 +33,59 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Operator(string enumValue)
             : base("Operator", enumValue)
-        {            
+        {
         }
- 
-        public static Operator AddAll => new Operator("addAll"); 
-        public static Operator And => new Operator("and"); 
-        public static Operator Assign => new Operator("assign"); 
-        public static Operator Div => new Operator("div"); 
-        public static Operator Max => new Operator("max"); 
-        public static Operator Min => new Operator("min"); 
-        public static Operator Minus => new Operator("minus"); 
-        public static Operator Mult => new Operator("mult"); 
-        public static Operator Or => new Operator("or"); 
-        public static Operator Sum => new Operator("sum"); 
+
+        public static Operator AddAll => new Operator("addAll");
+
+        public static Operator And => new Operator("and");
+
+        public static Operator Assign => new Operator("assign");
+
+        public static Operator Div => new Operator("div");
+
+        public static Operator Max => new Operator("max");
+
+        public static Operator Min => new Operator("min");
+
+        public static Operator Minus => new Operator("minus");
+
+        public static Operator Mult => new Operator("mult");
+
+        public static Operator Or => new Operator("or");
+
+        public static Operator Sum => new Operator("sum");
+
         public static Operator SumLong => new Operator("sumLong");
+
+        private static readonly IDictionary<string, Operator> Properties = new Dictionary<string, Operator>
+        {
+            { "addAll", AddAll },
+            { "and", And },
+            { "assign", Assign },
+            { "div", Div },
+            { "max", Max },
+            { "min", Min },
+            { "minus", Minus },
+            { "mult", Mult },
+            { "or", Or },
+            { "sum", Sum },
+            { "sumLong", SumLong },
+        };
+
+        /// <summary>
+        /// Gets the Operator enumeration by value.
+        /// </summary>
+        public static Operator GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Operator for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Moq;
@@ -218,6 +219,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jObject);
 
             Assert.Equal(new List<object> {5, 6}, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeT(int version)
+        {
+            var graphSon = "{\"@type\":\"g:T\",\"@value\":\"label\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            T readT = reader.ToObject(JObject.Parse(graphSon));
+
+            Assert.Equal(T.Label, readT);
         }
 
         [Fact]

@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,12 +33,32 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Column(string enumValue)
             : base("Column", enumValue)
-        {            
+        {
         }
- 
-        public static Column Keys => new Column("keys"); 
+
+        public static Column Keys => new Column("keys");
+
         public static Column Values => new Column("values");
+
+        private static readonly IDictionary<string, Column> Properties = new Dictionary<string, Column>
+        {
+            { "keys", Keys },
+            { "values", Values },
+        };
+
+        /// <summary>
+        /// Gets the Column enumeration by value.
+        /// </summary>
+        public static Column GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Column for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

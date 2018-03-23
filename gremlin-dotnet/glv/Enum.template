@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,11 +33,37 @@ namespace Gremlin.Net.Process.Traversal
     {
         private <%= enumClass.simpleName %>(string enumValue)
             : base("<%= enumClass.simpleName %>", enumValue)
-        {            
+        {
         }
-<% constants.each { constant -> %> 
-        <%= constant %><%}%>
+<%
+    def toCSharpName = { enumClass, itemName ->
+        if (enumClass.equals(directionClass)) {
+            itemName = itemName.toLowerCase()
+        }
+
+        return itemName.substring(0, 1).toUpperCase() + itemName.substring(1)
     }
-    
+    constants.each { value -> %>
+        public static ${enumClass.simpleName} ${toCSharpName(enumClass, value.name())} => new ${enumClass.simpleName}("${value.name()}");
+<%  }%>
+        private static readonly IDictionary<string, <%= enumClass.simpleName %>> Properties = new Dictionary<string, <%= enumClass.simpleName %>>
+        {<%  constants.each { value -> %>
+            { "${value.name()}", ${toCSharpName(enumClass, value.name())} },<%  }%>
+        };
+
+        /// <summary>
+        /// Gets the <%= enumClass.simpleName %> enumeration by value.
+        /// </summary>
+        public static <%= enumClass.simpleName %> GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException(\$"No matching <%= enumClass.simpleName%> for value '{value}'");
+            }
+            return property;
+        }
+    }
+
+
 #pragma warning restore 1591
 }
