@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,13 +33,35 @@ namespace Gremlin.Net.Process.Traversal
     {
         private GraphSONVersion(string enumValue)
             : base("GraphSONVersion", enumValue)
-        {            
+        {
         }
- 
-        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0"); 
-        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0"); 
+
+        public static GraphSONVersion V1_0 => new GraphSONVersion("V1_0");
+
+        public static GraphSONVersion V2_0 => new GraphSONVersion("V2_0");
+
         public static GraphSONVersion V3_0 => new GraphSONVersion("V3_0");
+
+        private static readonly IDictionary<string, GraphSONVersion> Properties = new Dictionary<string, GraphSONVersion>
+        {
+            { "V1_0", V1_0 },
+            { "V2_0", V2_0 },
+            { "V3_0", V3_0 },
+        };
+
+        /// <summary>
+        /// Gets the GraphSONVersion enumeration by value.
+        /// </summary>
+        public static GraphSONVersion GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching GraphSONVersion for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

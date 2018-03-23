@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,12 +33,32 @@ namespace Gremlin.Net.Process.Traversal
     {
         private GryoVersion(string enumValue)
             : base("GryoVersion", enumValue)
-        {            
+        {
         }
- 
-        public static GryoVersion V1_0 => new GryoVersion("V1_0"); 
+
+        public static GryoVersion V1_0 => new GryoVersion("V1_0");
+
         public static GryoVersion V3_0 => new GryoVersion("V3_0");
+
+        private static readonly IDictionary<string, GryoVersion> Properties = new Dictionary<string, GryoVersion>
+        {
+            { "V1_0", V1_0 },
+            { "V3_0", V3_0 },
+        };
+
+        /// <summary>
+        /// Gets the GryoVersion enumeration by value.
+        /// </summary>
+        public static GryoVersion GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching GryoVersion for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

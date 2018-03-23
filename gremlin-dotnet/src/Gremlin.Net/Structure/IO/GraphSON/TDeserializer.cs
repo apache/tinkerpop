@@ -21,9 +21,6 @@
 
 #endregion
 
-using System;
-using System.Linq;
-using System.Reflection;
 using Gremlin.Net.Process.Traversal;
 using Newtonsoft.Json.Linq;
 
@@ -33,10 +30,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
-            var tValue = graphsonObject.ToString();
-            return typeof(T).GetProperties()
-                .First(p => string.Equals(p.Name, tValue, StringComparison.OrdinalIgnoreCase))
-                .GetValue(null);
+            return T.GetByValue(graphsonObject.ToString());
         }
     }
 }

@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,12 +33,32 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Scope(string enumValue)
             : base("Scope", enumValue)
-        {            
+        {
         }
- 
-        public static Scope Global => new Scope("global"); 
+
+        public static Scope Global => new Scope("global");
+
         public static Scope Local => new Scope("local");
+
+        private static readonly IDictionary<string, Scope> Properties = new Dictionary<string, Scope>
+        {
+            { "global", Global },
+            { "local", Local },
+        };
+
+        /// <summary>
+        /// Gets the Scope enumeration by value.
+        /// </summary>
+        public static Scope GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Scope for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

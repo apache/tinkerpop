@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,14 +33,38 @@ namespace Gremlin.Net.Process.Traversal
     {
         private T(string enumValue)
             : base("T", enumValue)
-        {            
+        {
         }
- 
-        public static T Id => new T("id"); 
-        public static T Key => new T("key"); 
-        public static T Label => new T("label"); 
+
+        public static T Id => new T("id");
+
+        public static T Key => new T("key");
+
+        public static T Label => new T("label");
+
         public static T Value => new T("value");
+
+        private static readonly IDictionary<string, T> Properties = new Dictionary<string, T>
+        {
+            { "id", Id },
+            { "key", Key },
+            { "label", Label },
+            { "value", Value },
+        };
+
+        /// <summary>
+        /// Gets the T enumeration by value.
+        /// </summary>
+        public static T GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching T for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

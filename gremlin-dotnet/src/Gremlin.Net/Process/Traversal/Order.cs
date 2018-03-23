@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,13 +33,35 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Order(string enumValue)
             : base("Order", enumValue)
-        {            
+        {
         }
- 
-        public static Order Decr => new Order("decr"); 
-        public static Order Incr => new Order("incr"); 
+
+        public static Order Decr => new Order("decr");
+
+        public static Order Incr => new Order("incr");
+
         public static Order Shuffle => new Order("shuffle");
+
+        private static readonly IDictionary<string, Order> Properties = new Dictionary<string, Order>
+        {
+            { "decr", Decr },
+            { "incr", Incr },
+            { "shuffle", Shuffle },
+        };
+
+        /// <summary>
+        /// Gets the Order enumeration by value.
+        /// </summary>
+        public static Order GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Order for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

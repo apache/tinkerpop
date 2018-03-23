@@ -240,8 +240,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToT(string enumName, string graphName)
         {
-            return typeof(T).GetProperties()
-                .First(p => string.Equals(p.Name, enumName, StringComparison.OrdinalIgnoreCase)).GetValue(null);
+            return T.GetByValue(enumName);
         }
 
         private static object ToNumber(string stringNumber, string graphName)
