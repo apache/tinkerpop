@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,13 +33,35 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Cardinality(string enumValue)
             : base("Cardinality", enumValue)
-        {            
+        {
         }
- 
-        public static Cardinality List => new Cardinality("list"); 
-        public static Cardinality Set => new Cardinality("set"); 
+
+        public static Cardinality List => new Cardinality("list");
+
+        public static Cardinality Set => new Cardinality("set");
+
         public static Cardinality Single => new Cardinality("single");
+
+        private static readonly IDictionary<string, Cardinality> Properties = new Dictionary<string, Cardinality>
+        {
+            { "list", List },
+            { "set", Set },
+            { "single", Single },
+        };
+
+        /// <summary>
+        /// Gets the Cardinality enumeration by value.
+        /// </summary>
+        public static Cardinality GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Cardinality for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

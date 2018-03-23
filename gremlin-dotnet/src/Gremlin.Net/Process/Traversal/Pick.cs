@@ -22,6 +22,9 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
+using System;
+using System.Collections.Generic;
+
 namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
@@ -30,12 +33,32 @@ namespace Gremlin.Net.Process.Traversal
     {
         private Pick(string enumValue)
             : base("Pick", enumValue)
-        {            
+        {
         }
- 
-        public static Pick Any => new Pick("any"); 
+
+        public static Pick Any => new Pick("any");
+
         public static Pick None => new Pick("none");
+
+        private static readonly IDictionary<string, Pick> Properties = new Dictionary<string, Pick>
+        {
+            { "any", Any },
+            { "none", None },
+        };
+
+        /// <summary>
+        /// Gets the Pick enumeration by value.
+        /// </summary>
+        public static Pick GetByValue(string value)
+        {
+            if (!Properties.TryGetValue(value, out var property))
+            {
+                throw new ArgumentException($"No matching Pick for value '{value}'");
+            }
+            return property;
+        }
     }
-    
+
+
 #pragma warning restore 1591
 }

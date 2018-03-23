@@ -21,12 +21,14 @@
 
 #endregion
 
+using System;
+
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     Represents an enum.
     /// </summary>
-    public abstract class EnumWrapper
+    public abstract class EnumWrapper : IEquatable<EnumWrapper>
     {
         /// <summary>
         ///     Gets the name of the enum.
@@ -47,6 +49,33 @@ namespace Gremlin.Net.Process.Traversal
         {
             EnumName = enumName;
             EnumValue = enumValue;
+        }
+
+        /// <inheritdoc />
+        public bool Equals(EnumWrapper other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(EnumName, other.EnumName) && string.Equals(EnumValue, other.EnumValue);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((EnumWrapper) obj);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((EnumName != null ? EnumName.GetHashCode() : 0) * 397) ^
+                       (EnumValue != null ? EnumValue.GetHashCode() : 0);
+            }
         }
     }
 }

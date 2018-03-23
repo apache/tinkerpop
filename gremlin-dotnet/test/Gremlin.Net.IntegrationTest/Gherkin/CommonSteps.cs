@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
@@ -239,7 +240,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToT(string enumName, string graphName)
         {
-            return Enum.Parse(typeof(T), TraversalParser.GetCsharpName(enumName));
+            return T.GetByValue(enumName);
         }
 
         private static object ToNumber(string stringNumber, string graphName)
