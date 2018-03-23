@@ -23,11 +23,12 @@ RUN apt-get update \
     && apt-get -y install software-properties-common python-software-properties apt-transport-https \
     && echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections \
     && add-apt-repository -y ppa:webupd8team/java \
-    && sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list' \
+    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list' \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
     && apt-get update \
-    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server dotnet-dev-1.0.4 subversion zip \
-    && apt-get install -y python python-dev python-pip build-essential \
+    && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server subversion zip \
+    && sh -c 'curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg' \
+    && apt-get install -y --force-yes dotnet-sdk-2.1.101 python python-dev python-pip build-essential \
     && pip install virtualenv virtualenvwrapper \
     && pip install --upgrade pip \
     && rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
