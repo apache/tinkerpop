@@ -31,6 +31,11 @@ There is no particular layout or style to this document. Simple bullet points, o
 sentences, or fully structured document headers and content are all acceptable. The main point is to capture ideas
 for future consideration when 4.x becomes the agenda of the day for The TinkerPop.
 
+If adding comments sections, please "sign" comments with initials and reference those initials here:
+
+* *spm* - Stephen Mallette
+* *as* - Ashwini Singh
+
 image:tp4-think.png[]
 
 == The Main Features
@@ -109,7 +114,7 @@ g.V(v).values(‘name’)
 This split into two Graph APIs will enables us to make a hard boundary between what the provider (vendor) needs to
 implement and what the user (developer) gets to access.
 
-=== Comments
+=== Comments [spm]
 
 There is a question mark next to `ReferenceGraph.tx()` - Transactions are a bit of an open question for future versions
 of TinkerPop and likely deserve their own section in this document. The model used for last three version of TinkerPop
@@ -126,6 +131,7 @@ problem for TinkerGraph which relied on `io()` for flushing to file storage. Thi
 link:https://issues.apache.org/jira/browse/TINKERPOP-892[TINKERPOP-892]
 * `tx()` - as discussed in the earlier paragraph
 
+[[gremlin-language-subset]]
 == Gremlin Language Subset
 
 On link:https://issues.apache.org/jira/browse/TINKERPOP-1417[TINKERPOP-1417], it was suggested that we "Create a
@@ -144,7 +150,7 @@ Thus:
 * path, simplePath, cyclicPath
 * groupCount, sum, group, count, max, min, etc. (reducing barriers)
 
-=== Comments
+=== Comments [spm]
 
 This has an interesting potential impact on GLVs because "Little Gremlin" could be implemented within them for
 client-side traversals over remote subgraphs, where the subgraph is like a remote transaction. All graph mutations
@@ -152,24 +158,53 @@ essentially build a subgraph which is merged into the primary graph. That subgra
 Build it locally then submit it remotely and have the server sort out the merging. It's perhaps the most natural way
 to load data. With "Gremlinito" you then get the added power of being able to traverse a local subgraph.
 
+[[serialization]]
+== Serialization
 
-== Uniform object model for GraphSON response for client drivers
-On TINKERPOP-1909, it was suggested that we are going to use refence (id/label) based object model. And, the direction is
-move towards more tidy object model contracts going forward. Reference model definitely provides big performance improvements
-especially with multi-property vertices/edges.  One thing that we can consider is to provide a configurable object 
-model. Enabling users to configure the object model (OutputFormat) as server settings (Exposing server setting is
-being discussed here TINKERPOP-1636). There will three types of output format. 
+Have we yet found the appropriate serialization model? We didn't have it in 2.x at all. In 3.x we went with a use case
+based approach that made a lot of sense in the first few releases of 3.x, but the use cases couldn't have conceived
+of what was to come with the development of GLVs. GLVs rendered Gryo, the decided "network option" from the use cases,
+to be pretty useless given that it is of the JVM only and GraphSON has gone through three versions now trying to find
+the appropriate format to cover the various features we've attempted to support. While GraphSON 3.0 seems to have met
+the mark for supporting our needs, it seems bloated with Java types and doesn't perform terribly well in some cases.
 
-* Reference: includes id and label 
+An ideal serialization format would be:
 
-* GraphSONCompact: object reference along with properties 
+* Compact for network transport
+* Human readable (which competes with "compact" at some level)
+* Language agnostic
+* Exposes a small set of types that makes the format easy to maintain and test
+* Extendable or perhaps built in such a way that graph providers could coerce their types to and from the types
+that TinkerPop exposes
+* Upgrade friendly so that it is possible to easily detect the version of a format and have the system act
+transparently so as to avoid the heavy configuration that users currently have to do to be sure their versions of
+TinkerPop and their version of their serializers align
 
-* GraphSON: object reference, properties and edge details(inE/outE). 
+== Uniform Object Model
 
-=== Comments
+On link:https://issues.apache.org/jira/browse/TINKERPOP-1909[TINKERPOP-1909], it was suggested that we are going to
+use reference (id/label) based object model. And, the direction is move towards more tidy object model contracts going
+forward. Reference model definitely provides big performance improvements especially with multi-property
+vertices/edges.  One thing that we can consider is to provide a configurable object model. Enabling users to
+configure the object model (OutputFormat) as server settings (Exposing server setting is being discussed here
+link:https://issues.apache.org/jira/browse/TINKERPOP-1636[TINKERPOP-1636]). There will three types of output format.
+
+* Reference: includes id and label
+* GraphSONCompact: object reference along with properties
+* GraphSON: object reference, properties and edge details(inE/outE).
+
+=== Comments [as]
+
 This will enable the clients model based on their needs and avoid multiple query if they are sure what is expected 
 from a gremlin query. If we need more details like edges/property as part of response, we can override the server 
-configuration as part of the gremlin request arguments as hint. 
+configuration as part of the gremlin request arguments as hint.
+
+=== Comments [spm]
+
+A more full object model may be necessary as we consider implementing the options of the
+<<gremlin-language-subset,Gremlin Language Subset>>. A more robust object model, or at least the option to open up a
+more robust object model, could be necessary to support features there. We should also consider that the future is not
+necessarily a GraphSON format and could be something else as described in the <<serialization,Serialization>> section.
 
 == Testing Framework
 
