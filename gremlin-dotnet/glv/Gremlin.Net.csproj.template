@@ -41,7 +41,6 @@ Please see the reference documentation at Apache TinkerPop for more information 
 NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann (versions: 0.y.z) and is now included as part of the Apache TinkerPop project.</Description>
     <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'\$(OS)' != 'Windows_NT'">true</PublicSign>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
