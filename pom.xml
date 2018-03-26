@@ -380,6 +380,7 @@ limitations under the License.
                 </dependencies>
                 <configuration>
                     <skip>${revapi.skip}</skip>
+                    <versionFormat>\d*\.\d*\.\d*.</versionFormat>
                     <analysisConfiguration><![CDATA[
                     {
                       "revapi": {
