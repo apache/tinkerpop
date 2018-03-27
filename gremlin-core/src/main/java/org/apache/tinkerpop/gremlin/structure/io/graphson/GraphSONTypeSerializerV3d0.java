@@ -64,11 +64,7 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public WritableTypeId writeTypePrefix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
-        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
-            if (canWriteTypeId()) {
-                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
-            }
-        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+        if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
             if (writableTypeId.forValue instanceof Map) {
                 writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
                 jsonGenerator.writeStartArray();
@@ -82,6 +78,8 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
             } else {
                 jsonGenerator.writeStartArray();
             }
+        } else if (canWriteTypeId()) {
+            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
         } else {
             throw new IllegalStateException("Could not write prefix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }
@@ -91,11 +89,7 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public WritableTypeId writeTypeSuffix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
-        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
-            if (canWriteTypeId()) {
-                writeTypeSuffix(jsonGenerator);
-            }
-        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+        if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
             if (writableTypeId.forValue instanceof Map) {
                 jsonGenerator.writeEndArray();
                 writeTypeSuffix(jsonGenerator);
@@ -109,6 +103,8 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
             } else {
                 jsonGenerator.writeEndArray();
             }
+        } else if (canWriteTypeId()) {
+            writeTypeSuffix(jsonGenerator);
         } else {
             throw new IllegalStateException("Could not write suffix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }

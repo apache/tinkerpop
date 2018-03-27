@@ -60,14 +60,12 @@ public class GraphSONTypeSerializerV2d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public WritableTypeId writeTypePrefix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
-        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
-            if (canWriteTypeId()) {
-                writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
-            }
-        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+        if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
             jsonGenerator.writeStartObject();
         } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
             jsonGenerator.writeStartArray();
+        } else if (canWriteTypeId()) {
+            writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(writableTypeId.forValue, getClassFromObject(writableTypeId.forValue)));
         } else {
             throw new IllegalStateException("Could not write prefix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }
@@ -77,14 +75,12 @@ public class GraphSONTypeSerializerV2d0 extends AbstractGraphSONTypeSerializer {
 
     @Override
     public WritableTypeId writeTypeSuffix(final JsonGenerator jsonGenerator, final WritableTypeId writableTypeId) throws IOException {
-        if (writableTypeId.valueShape == JsonToken.VALUE_STRING) {
-            if (canWriteTypeId()) {
-                writeTypeSuffix(jsonGenerator);
-            }
-        } else if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
+        if (writableTypeId.valueShape == JsonToken.START_OBJECT) {
             jsonGenerator.writeEndObject();
         } else if (writableTypeId.valueShape == JsonToken.START_ARRAY) {
             jsonGenerator.writeEndArray();
+        } else if (canWriteTypeId()) {
+            writeTypeSuffix(jsonGenerator);
         } else {
             throw new IllegalStateException("Could not write suffix: shape[" + writableTypeId.valueShape + "] value[" + writableTypeId.forValue + "]");
         }
