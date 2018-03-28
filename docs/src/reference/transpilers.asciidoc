@@ -17,6 +17,10 @@ limitations under the License.
 [[transpilers]]
 = Gremlin Transpilers
 
+![gremlinator][SPARQL-Gremlin]
+
+[SPARQL-Gremlin]: https://raw.githubusercontent.com/LITMUS-Benchmark-Suite/sparql-to-gremlin/master/docs/images/sparql-gremlin-logo.png
+
 There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
 data. Cypher is used to do pattern matching in graph data. The list could go on. Transpilers convert languages like
 these to Gremlin so that it becomes possible to use them in any context that Gremlin is used. In other words, a
