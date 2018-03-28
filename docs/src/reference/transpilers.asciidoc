@@ -17,16 +17,30 @@ limitations under the License.
 [[transpilers]]
 = Gremlin Transpilers
 
-![gremlinator][SPARQL-Gremlin]
-
-[SPARQL-Gremlin]: https://raw.githubusercontent.com/LITMUS-Benchmark-Suite/sparql-to-gremlin/master/docs/images/sparql-gremlin-logo.png
-
 There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
 data. Cypher is used to do pattern matching in graph data. The list could go on. Transpilers convert languages like
 these to Gremlin so that it becomes possible to use them in any context that Gremlin is used. In other words, a
 Gremlin Transpiler enables a particular query language to work on any TinkerPop-enabled graph system.
 
 == SPARQL-Gremlin
+
+image:https://raw.githubusercontent.com/LITMUS-Benchmark-Suite/sparql-to-gremlin/master/docs/images/sparql-gremlin-logo.png[gremlinator]
+
+The SPARQL-Gremlin transpiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin traversals. It is based on the  https://jena.apache.org/index.html[Apache Jena] SPARQL processor https://jena.apache.org/documentation/query/index.html[ARQ], which provides access to a syntax tree of a SPARQL query.
+
+
+The goal of this work is to bridge the query interoperability gap between the two famous, yet fairly disconnected, graph communities: Semantic Web (which relies on the RDF data model) and Graph database
+(which relies on Property graph data model).
+
+NOTE: The foundational research work on SPARQL-Gremlin transpiler (aka Gremlinator) can be found from -
+https://arxiv.org/pdf/1801.02911.pdf[Gremlinator full paper]. In this
+paper, we present and discuss the notion of graph query language
+semantics of SPARQL and Gremlin, and a formal mapping between SPARQL
+pattern matching graph patterns and Gremlin traversals. Furthermore, we
+point the interested reader to the following resourcesfor a better
+understanding: (1) Gremlinator demonstration -
+(http://gremlinator.iai.uni-bonn.de:8080/Demo/[Public Demo Mirror 1])
+and (http://195.201.31.31:8080/Demo/[Public Demo Mirror 2]); (2) A short video tutorial on how to use the demonstration - https://www.youtube.com/watch?v=Z0ETx2IBamw[here]
 
 [source,xml]
 ----
@@ -68,3 +82,336 @@ start step.
 <2> Execute a SPARQL query against the TinkerGraph instance. The `SparqlTraversalSource` uses a
 <<traversalstrategy,TraversalStrategy>> to transparently converts that SPARQL query into a standard Gremlin traversal
 and then when finally iterated, executes that against the TinkerGraph.
+
+[[prefixes]]
+Prefixes
+~~~~~~~~~
+
+The SPARQL-Gremlin transpiler supports the following prefixes to traverse the graph:
+
+[cols=",",options="header",]
+|====================================
+|Prefix |Purpose
+|`v:<label>` |label-access traversal
+|`e:<label>` |out-edge traversal
+|`p:<name>` |property traversal
+|`v:<name>` |property-value traversal
+|====================================
+
+Note that element IDs and labels are treated like normal properties, hence they can be accessed using the same pattern:
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name ?id ?label 
+	WHERE { 
+	?element v:name ?name . 
+	?element v:id ?id . 
+	?element v:label ?label .}""")
+----
+
+[[supported-queries]]
+Supported Queries
+~~~~~~~~~~~~~~~~~~
+
+The SPARQL-Gremlin transpiler is currently an on-going effort with an aim to cover the entire SPARQL 1.1 query feature spectrum, however we currently only support translation of the SPARQL 1.0 specification, especially _SELECT_ queries. The supported SPARQL query types are: 
+
+* Union 
+* Optional 
+* Order-By 
+* Group-By 
+* STAR-shaped or _neighbourhood queries_ 
+* Query modifiers, such as: 
+** Filter with _restrictions_ 
+** Count 
+** LIMIT 
+** OFFSET
+
+[[limitations]]
+Limitations
+~~~~~~~~~~~~
+
+The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) does
+not support the following cases: 
+
+* SPARQL queries with variables in the
+predicate position are not currently covered, with an exception of the
+following case:
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
+----
+
+* A SPARQL Union query with un-balanced patterns, i.e. a gremlin union
+traversal can only be generated if the unput SPARQL query has the same
+number of patterns on both the side of the union operator. For instance,
+the following SPARQL query cannot be mapped using Gremlinator, since a
+union is executed between different number of graph patterns (two
+patterns _union_ 1 pattern).
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * 
+	WHERE {
+	{?person e:created ?software . 
+	?person v:name "daniel" .}
+	UNION
+	{?software v:lang "java" .} }""")
+----
+
+* order by
+....
+Adding more here...
+....
+
+* group by
+....
+Adding more here...
+....
+
+[[examples]]
+Examples
+~~~~~~~~~
+
+The following section presents a comprehensive examples of SPARQL queries that are currently covered by the SPARQL-Gremlin transpiler.
+
+[[select-all]]
+Select All
+^^^^^^^^^^
+
+.Select all vertices in the graph.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * WHERE { }""")
+----
+
+[[match-constant-values]]
+Match Constant Values
+^^^^^^^^^^^^^^^^^^^^^
+
+.Select all vertices with the label `person`.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * WHERE {  ?person v:label "person" .}""")
+----
+
+[[select-specific-elements]]
+Select Specific Elements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.Select the values of the properties `name` and `age` for each `person` vertex.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name ?age
+WHERE {
+  ?person v:label "person" .
+  ?person v:name ?name .
+  ?person v:age ?age . }""")
+----
+
+[[pattern-matching]]
+Pattern Matching
+^^^^^^^^^^^^^^^^
+
+.Select only those persons who created a project.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name ?age
+WHERE {
+  ?person v:label "person" .
+  ?person v:name ?name .
+  ?person v:age ?age .
+  ?person e:created ?project . }""")
+----
+
+[[filtering]]
+Filtering
+^^^^^^^^^
+
+.Select only those persons who are older than 30.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name ?age
+WHERE {
+  ?person v:label "person" .
+  ?person v:name ?name .
+  ?person v:age ?age .
+  ?person e:created ?project .
+    FILTER (?age > 30) }""")
+----
+
+[[deduplication]]
+Deduplication
+^^^^^^^^^^^^^
+
+.Select the distinct names of the created projects.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT DISTINCT ?name
+WHERE {
+  ?person v:label "person" .
+  ?person e:created ?project .
+  ?project v:name ?name .
+    FILTER (?age > 30)}""")
+----
+
+[[multiple-filters]]
+Multiple Filters
+^^^^^^^^^^^^^^^^
+
+.Select the distinct names of all Java projects.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT DISTINCT ?name
+WHERE {
+  ?person v:label "person" .
+  ?person v:age ?age .
+  ?person e:created ?project .
+  ?project v:name ?name .
+  ?project v:lang ?lang .
+    FILTER (?age > 30 && ?lang == "java") }""")
+----
+
+[[pattern-filters]]
+Pattern Filter(s)
+^^^^^^^^^^^^^^^^^
+
+.A different way to filter all person who created a project.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name
+WHERE {
+  ?person v:label "person" .
+  ?person v:name ?name .
+    FILTER EXISTS { ?person e:created ?project } }""")
+----
+
+.Filter all person who did not create a project.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name
+WHERE {
+  ?person v:label "person" .
+  ?person v:name ?name .
+    FILTER NOT EXISTS { ?person e:created ?project } }""")
+----
+
+[[meta-property-access]]
+Meta-Property Access
+^^^^^^^^^^^^^^^^^^^^
+
+.Accessing the Meta-Property of a graph element. Meta-Property can be perceived as the reified statements in an RDF graph.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?name ?startTime
+WHERE {
+  ?person v:name "daniel" .
+  ?person p:location ?location .
+  ?location v:value ?name .
+  ?location v:startTime ?startTime }""")
+----
+
+[[union]]
+Union
+^^^^^
+
+.Select all persons who have developed a software in java using union.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * 
+WHERE {
+  {?person e:created ?software .}
+  UNION
+  {?software v:lang "java" .} }""")
+----
+
+[[optional]]
+Optional
+^^^^^^^^
+
+.Return the names of the persons who have created a software in java and optionally python.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?person 
+WHERE {
+  ?person v:label "person" .
+  ?person e:created ?software .
+  ?software v:lang "java" .
+  OPTIONAL {?software v:lang "python" . }}""")
+----
+
+[[order-by]]
+Order By
+^^^^^^^^
+
+.Select all vertices with the label `person` and order them by their age.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * 
+WHERE {
+  ?person v:label "person" .
+  ?person v:age ?age .
+} ORDER BY (?age)""")
+----
+
+[[group-by]]
+Group By
+^^^^^^^^
+
+.Select all vertices with the label `person` and group them by their age.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT * 
+WHERE {
+  ?person v:label "person" .
+  ?person v:age ?age .
+} GROUP BY (?age)""")
+----
+
+[[mixedcomplexaggregation-based-queries]]
+Mixed/complex/aggregation-based queries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.Count the number of projects which have been created by persons under the age of 30 and group them by age. Return only the top two.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT COUNT(?project) 
+WHERE {
+  ?person v:label "person" .
+  ?person v:age ?age . FILTER (?age < 30)
+  ?person e:created ?project .
+} GROUP BY (?age) LIMIT 2""")
+----
+
+[[star-shaped-queries]]
+STAR-shaped queries
+^^^^^^^^^^^^^^^^^^^
+
+.STAR-shaped queries are the queries that form/follow a star-shaped execution plan. These in terms of graph traversals can be perceived as path queries or neighbourhood queries. For instance, getting all the information about a specific `person` or `software`.
+
+[gremlin-groovy,existing]
+----
+g.sparql("""SELECT ?age ?software ?name ?location ?startTime 
+WHERE {
+  ?person v:name "daniel" .
+  ?person v:age ?age .
+  ?person e:created ?software .
+  ?person p:location ?location .
+  ?location v:value ?name .
+  ?location v:startTime ?startTime }""")
+----
