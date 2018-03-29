@@ -50,6 +50,20 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
             <version>${project.version}</version>
+            <!-- force the console to use netty 4.0.56.Final to comply with spark 2.2.0 which is incompatible with
+                 netty 4.1.x line used by Gremlin driver/server -->
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- We can avoid pinning the console to this version once spark is upgraded to support netty 4.1.x -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.56.Final</version>
         </dependency>
         <dependency>
             <groupId>org.gperfutils</groupId>

@@ -15,6 +15,14 @@
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-console</artifactId>
             <version>${project.version}</version>
+            <!-- console is temporarily pinned to netty 4.0.x until spark upgrades to 4.1.x - see the gremlin-console
+                 and spark-gremlin pom.xml for more information -->
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>

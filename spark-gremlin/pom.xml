@@ -233,10 +233,6 @@
                 </exclusion>
                 <exclusion>
                     <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.netty</groupId>
                     <artifactId>netty-all</artifactId>
                 </exclusion>
             </exclusions>
@@ -278,15 +274,14 @@
             <artifactId>snappy-java</artifactId>
             <version>1.1.1.7</version>
         </dependency>
+        <!-- this is the last version of netty on the 4.0.x line. spark 2.2.0 is bound to 4.0.43.Final actually.
+             4.1.x is not compatible which is what gremlin-server/console are on. allowed netty to specify the version
+             of io.netty/netty which is 3.9.9.Final. when this gets sorted, fix-up gremlin-coverage and gremlin-console
+             pom.xml files as well -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.43.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
-            <version>3.9.9.Final</version>
+            <version>4.0.56.Final</version>
         </dependency>
         <!-- TEST -->
         <dependency>
