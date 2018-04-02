@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-8]]
-=== TinkerPop 3.2.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.2.8 (Release Date: April 2, 2018)
 
 * Added a `Lambda` class to Gremlin.Net that makes it possible to use Groovy and Python lambdas with Gremlin.Net.
 * Enums are now represented as classes in Gremlin.Net which allows to use them as arguments in more steps.
@@ -48,6 +48,55 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where `SparkMessenger` was not applying the `edgeFunction` from `MessageScope`.
 * Fixed a bug in `ComputerAwareStep` that didn't handle `reset()` properly and thus occasionally produced some extra traversers.
 * Removed `TraversalPredicate` class in Gremlin.Net. It is now included in the `P` class instead.
+
+==== Bugs
+
+* TINKERPOP-1053 installed plugins are placed in a directory relative to where gremlin.sh is started
+* TINKERPOP-1509 Failing test case for tree serialization
+* TINKERPOP-1738 Proper functioning of GraphSONReader depends on order of elements in String representation
+* TINKERPOP-1758 RemoteStrategy should be before all other DecorationStrategies.
+* TINKERPOP-1855 Update Rexster links
+* TINKERPOP-1859 Complex instance of P not serializing to bytecode properly
+* TINKERPOP-1860 valueMap(True) result in error in gremlin-python
+* TINKERPOP-1862 TinkerGraph VertexProgram message passing doesn't work properly when using Direction.BOTH
+* TINKERPOP-1867 union() can produce extra traversers
+* TINKERPOP-1872 Apply edgeFunction in SparkMessenger
+* TINKERPOP-1873 min() and max() work only in the range of Integer values
+* TINKERPOP-1874 P does not appear to be serialized consistently in GraphSON
+* TINKERPOP-1879 Gremlin Console does not resepect equal sign for flag argument assignments
+* TINKERPOP-1880 Gremlin.NET Strong name signature could not be verified. (HRESULT: 0x80131045)
+* TINKERPOP-1883 gremlinpython future will never return
+* TINKERPOP-1890 getAnonymousTraversalClass() is not being generated for Java DSLs
+* TINKERPOP-1891 Serialization of P.not() for gremlin-javascript
+* TINKERPOP-1892 GLV test failures for .NET
+* TINKERPOP-1894 GraphSONMessageSerializerV2d0 fails to deserialize valid P.not()
+* TINKERPOP-1896 gremlin-python lambdas error
+* TINKERPOP-1907 Fix failing GLV test for withSack() in .NET
+* TINKERPOP-1917 gx:BigDecimal serialization broken in Gremlin.Net on systems with ',' as decimal separator
+* TINKERPOP-1918 Scenarios fail because of wrong numerical types
+* TINKERPOP-1919 Gherkin runner doesn't work with P.And() and P.Or() in Gremlin.Net
+* TINKERPOP-1920 Tests fail because P.Within() arguments are wrapped in an array in Gremlin.Net
+* TINKERPOP-1922 Gherkin features fail that contain P.not() in Gremlin.Net
+
+==== Improvements
+
+* TINKERPOP-1357 Centrality Recipes should mention pageRank and OLAP.
+* TINKERPOP-1489 Provide a Javascript Gremlin Language Variant
+* TINKERPOP-1586 SubgraphStrategy in OLAP
+* TINKERPOP-1726 Support WebSockets ping/pong keep-alive in Gremlin server
+* TINKERPOP-1842 iterate() missing in terminal steps documentation
+* TINKERPOP-1850 Range step has undocumented special values
+* TINKERPOP-1854 Support lambdas in Gremlin.Net
+* TINKERPOP-1857 GLV test suite consistency and completeness
+* TINKERPOP-1863 Delaying the setting of requestId till the RequestMessage instantiation time
+* TINKERPOP-1868 Support inject source step in Gremlin.Net
+* TINKERPOP-1870 n^2 synchronious operation in OLAP WorkerExecutor.execute() method
+* TINKERPOP-1877 Add new graph data for specialized testing scenarios
+* TINKERPOP-1884 Bump to Netty 4.0.56.Final
+* TINKERPOP-1885 Various Gremlin.Net documentation updates
+* TINKERPOP-1901 Enable usage of enums in more steps in Gremlin.Net
+* TINKERPOP-1908 Bump to Groovy 2.4.14
+* TINKERPOP-1911 Refactor JavaTranslator to cache all reflective calls
 
 [[release-3-2-7]]
 === TinkerPop 3.2.7 (Release Date: December 17, 2017)
