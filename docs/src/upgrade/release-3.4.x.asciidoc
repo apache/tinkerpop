@@ -37,6 +37,39 @@ needs.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
 
+==== Improvements in `min()` and `max()`
+
+Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now operate over any `Comparable` value. The common workaround was the combination
+of `order().by()` and `limit()` as shown here:
+
+[source,groovy]
+----
+gremlin> g.V().values('name').order().by().limit(1)      // workaround for min()
+==>josh
+gremlin> g.V().values('name').order().by(decr).limit(1)  // workaround for max()
+==>vadas
+----
+
+Any attempt to use `min()` or `max()` on non-numeric values lead to an exception:
+
+[source,groovy]
+----
+gremlin> g.V().values('name').min()
+java.lang.String cannot be cast to java.lang.Number
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+With the changes in this release these kind of queries became a lot easier:
+
+[source,groovy]
+----
+gremlin> g.V().values('name').min()
+==>josh
+gremlin> g.V().values('name').max()
+==>vadas
+----
+
 ==== Modifications to reducing barrier steps
 
 The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:

@@ -845,7 +845,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#max-step" target="_blank">Reference Documentation - Max Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2 extends Number> GraphTraversal<S, E2> max() {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> max() {
         this.asAdmin().getBytecode().addStep(Symbols.max);
         return this.asAdmin().addStep(new MaxGlobalStep<>(this.asAdmin()));
     }
@@ -857,7 +857,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#max-step" target="_blank">Reference Documentation - Max Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> max(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.max, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep<>(this.asAdmin()));
     }
@@ -869,7 +869,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#min-step" target="_blank">Reference Documentation - Min Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2 extends Number> GraphTraversal<S, E2> min() {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> min() {
         this.asAdmin().getBytecode().addStep(Symbols.min);
         return this.asAdmin().addStep(new MinGlobalStep<>(this.asAdmin()));
     }
@@ -881,7 +881,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#min-step" target="_blank">Reference Documentation - Min Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> min(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.min, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep<>(this.asAdmin()));
     }

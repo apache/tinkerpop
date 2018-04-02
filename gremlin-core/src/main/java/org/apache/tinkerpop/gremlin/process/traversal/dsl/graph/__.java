@@ -403,28 +403,28 @@ public class __ {
     /**
      * @see GraphTraversal#min()
      */
-    public static <A, B extends Number> GraphTraversal<A, B> min() {
+    public static <A, B extends Comparable> GraphTraversal<A, B> min() {
         return __.<A>start().min();
     }
 
     /**
      * @see GraphTraversal#min(Scope)
      */
-    public static <A, B extends Number> GraphTraversal<A, B> min(final Scope scope) {
+    public static <A, B extends Comparable> GraphTraversal<A, B> min(final Scope scope) {
         return __.<A>start().min(scope);
     }
 
     /**
      * @see GraphTraversal#max()
      */
-    public static <A, B extends Number> GraphTraversal<A, B> max() {
+    public static <A, B extends Comparable> GraphTraversal<A, B> max() {
         return __.<A>start().max();
     }
 
     /**
      * @see GraphTraversal#max(Scope)
      */
-    public static <A, B extends Number> GraphTraversal<A, B> max(final Scope scope) {
+    public static <A, B extends Comparable> GraphTraversal<A, B> max(final Scope scope) {
         return __.<A>start().max(scope);
     }
 

@@ -32,7 +32,7 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
+public final class MinGlobalStep<S extends Comparable> extends ReducingBarrierStep<S, S> {
 
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);

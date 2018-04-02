@@ -345,9 +345,31 @@ public final class NumberHelper {
         return getHelper(clazz).min.apply(a, b);
     }
 
+    public static Comparable min(final Comparable a, final Comparable b) {
+        if (a instanceof Number && b instanceof Number) {
+            final Number an = (Number) a, bn = (Number) b;
+            final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
+            return (Comparable) getHelper(clazz).min.apply(an, bn);
+        }
+        return isNonValue(a) ? b :
+                isNonValue(b) ? a :
+                        a.compareTo(b) < 0 ? a : b;
+    }
+
     public static Number max(final Number a, final Number b) {
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).max.apply(a, b);
+    }
+
+    public static Comparable max(final Comparable a, final Comparable b) {
+        if (a instanceof Number && b instanceof Number) {
+            final Number an = (Number) a, bn = (Number) b;
+            final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
+            return (Comparable) getHelper(clazz).max.apply(an, bn);
+        }
+        return isNonValue(a) ? b :
+                isNonValue(b) ? a :
+                        a.compareTo(b) > 0 ? a : b;
     }
 
     public static Integer compare(final Number a, final Number b) {
@@ -414,5 +436,9 @@ public final class NumberHelper {
 
     private static boolean isNumber(final Number number) {
         return number != null && !number.equals(Double.NaN);
+    }
+
+    private static boolean isNonValue(final Object value) {
+        return value instanceof Double && !isNumber((Double) value);
     }
 }

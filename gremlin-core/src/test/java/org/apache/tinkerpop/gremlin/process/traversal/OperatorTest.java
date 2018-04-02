@@ -38,7 +38,7 @@ public class OperatorTest {
     /**
      * Required to verify that Operator can handle Number type, that it doesn't know explicitly.
      */
-    static class CustomNumber extends Number {
+    static class CustomNumber extends Number implements Comparable<CustomNumber> {
 
         public final static CustomNumber ONE = new CustomNumber(1);
         public final static CustomNumber TEN = new CustomNumber(10);
@@ -67,6 +67,11 @@ public class OperatorTest {
         @Override
         public double doubleValue() {
             return n;
+        }
+
+        @Override
+        public int compareTo(final CustomNumber anotherCustomNumber) {
+            return Integer.compare(n, anotherCustomNumber.n);
         }
     }
 

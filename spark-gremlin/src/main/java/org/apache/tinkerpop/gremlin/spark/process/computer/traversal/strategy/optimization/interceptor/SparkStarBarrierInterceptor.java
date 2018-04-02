@@ -110,11 +110,11 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
                     .getFinal();
         } else if (endStep instanceof MinGlobalStep) {
             result = nextRDD.isEmpty() ? null : nextRDD
-                    .map(traverser -> (Number) traverser.get())
+                    .map(traverser -> (Comparable) traverser.get())
                     .fold(Double.NaN, NumberHelper::min);
         } else if (endStep instanceof MaxGlobalStep) {
             result = nextRDD.isEmpty() ? null : nextRDD
-                    .map(traverser -> (Number) traverser.get())
+                    .map(traverser -> (Comparable) traverser.get())
                     .fold(Double.NaN, NumberHelper::max);
         } else if (endStep instanceof FoldStep) {
             final BinaryOperator biOperator = endStep.getBiOperator();

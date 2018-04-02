@@ -51,12 +51,12 @@ public enum Operator implements BinaryOperator<Object> {
     },
     min {
         public Object apply(final Object a, final Object b) {
-            return NumberHelper.min((Number) a, (Number) b);
+            return NumberHelper.min((Comparable) a, (Comparable) b);
         }
     },
     max {
         public Object apply(final Object a, final Object b) {
-            return NumberHelper.max((Number) a, (Number) b);
+            return NumberHelper.max((Comparable) a, (Comparable) b);
         }
     },
     assign {

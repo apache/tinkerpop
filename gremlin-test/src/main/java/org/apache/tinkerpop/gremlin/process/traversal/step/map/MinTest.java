@@ -46,15 +46,19 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_age_fold_minXlocalX();
 
-    public abstract Traversal<Vertex, Number> get_g_V_foo_min();
+    public abstract Traversal<Vertex, Comparable> get_g_V_foo_min();
 
-    public abstract Traversal<Vertex, Number> get_g_V_foo_fold_minXlocalX();
+    public abstract Traversal<Vertex, Comparable> get_g_V_foo_fold_minXlocalX();
+
+    public abstract Traversal<Vertex, String> get_g_V_name_min();
+
+    public abstract Traversal<Vertex, String> get_g_V_name_fold_minXlocalX();
 
     public abstract Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min();
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX();
 
-    public abstract Traversal<Vertex, Number> get_g_V_foo_injectX9999999999X_min();
+    public abstract Traversal<Vertex, Comparable> get_g_V_foo_injectX9999999999X_min();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -75,7 +79,7 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_foo_min() {
-        final Traversal<Vertex, Number> traversal = get_g_V_foo_min();
+        final Traversal<Vertex, Comparable> traversal = get_g_V_foo_min();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
@@ -83,9 +87,25 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_foo_fold_minXlocalX() {
-        final Traversal<Vertex, Number> traversal = get_g_V_foo_fold_minXlocalX();
+        final Traversal<Vertex, Comparable> traversal = get_g_V_foo_fold_minXlocalX();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_name_min() {
+        final Traversal<Vertex, String> traversal = get_g_V_name_min();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_name_fold_minXlocalX() {
+        final Traversal<Vertex, String> traversal = get_g_V_name_fold_minXlocalX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh"), traversal);
     }
 
     @Test
@@ -112,10 +132,10 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_foo_injectX9999999999X_min() {
-        final Traversal<Vertex, Number> traversal = get_g_V_foo_injectX9999999999X_min();
+        final Traversal<Vertex, Comparable> traversal = get_g_V_foo_injectX9999999999X_min();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        assertEquals(9999999999L, traversal.next().longValue());
+        assertEquals(9999999999L, traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -132,13 +152,23 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Number> get_g_V_foo_min() {
+        public Traversal<Vertex, Comparable> get_g_V_foo_min() {
             return g.V().values("foo").min();
         }
 
         @Override
-        public Traversal<Vertex, Number> get_g_V_foo_fold_minXlocalX() {
+        public Traversal<Vertex, Comparable> get_g_V_foo_fold_minXlocalX() {
             return g.V().values("foo").fold().min(Scope.local);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_min() {
+            return g.V().values("name").min();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_name_fold_minXlocalX() {
+            return g.V().values("name").fold().min(Scope.local);
         }
 
         @Override
@@ -152,7 +182,7 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Number> get_g_V_foo_injectX9999999999X_min() {
+        public Traversal<Vertex, Comparable> get_g_V_foo_injectX9999999999X_min() {
             return g.V().values("foo").inject(9999999999L).min();
         }
     }

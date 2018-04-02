@@ -37,6 +37,17 @@ Feature: Step - min()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_name_min
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").min()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+
   Scenario: g_V_age_fold_minXlocalX
     Given the modern graph
     And the traversal of
@@ -56,6 +67,17 @@ Feature: Step - min()
       """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_name_fold_minXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").fold().min(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
 
   Scenario: g_V_repeatXbothX_timesX5X_age_min
     Given the modern graph

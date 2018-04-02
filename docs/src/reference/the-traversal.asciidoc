@@ -1471,16 +1471,17 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[max-step]]
 === Max Step
 
-The `max()`-step (*map*) operates on a stream of numbers and determines which is the largest number in the stream.
+The `max()`-step (*map*) operates on a stream of comparable objects and determines which is the last object according to its natural order in the stream.
 
 [gremlin-groovy,modern]
 ----
 g.V().values('age').max()
 g.V().repeat(both()).times(3).values('age').max()
+g.V().values('name').max()
 ----
 
 IMPORTANT: `max(local)` determines the max of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Number`-type objects. For any other object, a max of `Double.NaN` is returned.
+This works for `Collection` and `Comparable`-type objects.
 
 *Additional References*
 
@@ -1504,7 +1505,7 @@ g.V().repeat(both()).times(3).values('age').dedup().mean()
 thus altering the average.
 
 IMPORTANT: `mean(local)` determines the mean of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Number`-type objects. For any other object, a mean of `Double.NaN` is returned.
+This works for `Collection` and `Number`-type objects.
 
 *Additional References*
 
@@ -1515,16 +1516,17 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[min-step]]
 === Min Step
 
-The `min()`-step (*map*) operates on a stream of numbers and determines which is the smallest number in the stream.
+The `min()`-step (*map*) operates on a stream of comparable objects and determines which is the first object according to its natural order in the stream.
 
 [gremlin-groovy,modern]
 ----
 g.V().values('age').min()
 g.V().repeat(both()).times(3).values('age').min()
+g.V().values('name').min()
 ----
 
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
-This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
+This works for `Collection` and `Comparable`-type objects.
 
 *Additional References*
 
@@ -2537,7 +2539,7 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[sum-step]]
 === Sum Step
 
-The `sum()`-step (*map*) operates on a stream of numbers and sums the numbers together to yield a double. Note that
+The `sum()`-step (*map*) operates on a stream of numbers and sums the numbers together to yield a result. Note that
 the current traverser number is multiplied by the traverser bulk to determine how many such numbers are being
 represented.
 
@@ -2548,7 +2550,7 @@ g.V().repeat(both()).times(3).values('age').sum()
 ----
 
 IMPORTANT: `sum(local)` determines the sum of the current, local object (not the objects in the traversal stream).
-This works for `Collection`-type objects. For any other object, a sum of `Double.NaN` is returned.
+This works for `Collection`-type objects.
 
 *Additional References*
 

@@ -31,16 +31,6 @@ public class OperatorExceptionTest {
     }
 
     @Test(expected = ClassCastException.class)
-    public void shouldThrowIfValueToMaxIsNotNumeric() {
-        Operator.max.apply("1", "1");
-    }
-
-    @Test(expected = ClassCastException.class)
-    public void shouldThrowIfValueToMinIsNotNumeric() {
-        Operator.min.apply("1", "1");
-    }
-
-    @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToMinusIsNotNumeric() {
         Operator.minus.apply("1", "1");
     }
