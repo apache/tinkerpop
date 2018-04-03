@@ -23,9 +23,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.3.2
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: April 2, 2018*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-2[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.2/CHANGELOG.asciidoc#release-3-3-2[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -51,7 +51,6 @@ Now that the Java `Set` is coerced to a `List` in Gremin Python, the Java `Set` 
 require a `Set` will need to manually convert their `List` to a `Set`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1844[TINKERPOP-1844]
-
 
 == TinkerPop 3.3.1
 
