@@ -339,8 +339,7 @@ g.V().hasLabel("person").
 GraphTraversalSource g;
 g = graph.traversal();                                                         // local OLTP
 g = graph.traversal().withRemote(DriverRemoteConnection.using("server.yaml"))  // remote OLTP
-g = graph.traversal().withComputer(SparkGraphComputer.class);                  // distributed OLAP
-g = graph.traversal().withComputer(GiraphGraphComputer.class);                 // distributed OLAP</code>
+g = graph.traversal().withComputer(SparkGraphComputer.class);                  // distributed OLAP/code>
 </pre>
        </div>
        <br/>

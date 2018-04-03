@@ -110,7 +110,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
       mv ext/spark-gremlin .ext/
       cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'SparkGremlinPlugin' > .ext/plugins.txt
       ;;
-    "implementations-hadoop-start" | "implementations-hadoop-end" | "implementations-spark" | "implementations-giraph" | "olap-spark-yarn")
+    "implementations-hadoop-start" | "implementations-hadoop-end" | "implementations-spark" | "olap-spark-yarn")
       # deactivate Neo4j plugin to prevent version conflicts between TinkerPop's Spark jars and Neo4j's Spark jars
       mkdir .ext
       mv ext/neo4j-gremlin .ext/
@@ -121,9 +121,8 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
       mkdir .ext
       mv ext/neo4j-gremlin .ext/
       mv ext/spark-gremlin .ext/
-      mv ext/giraph-gremlin .ext/
       mv ext/hadoop-gremlin .ext/
-      cat ext/plugins.txt | tee .ext/plugins.all | grep -v 'Neo4jGremlinPlugin\|SparkGremlinPlugin\|GiraphGremlinPlugin\|HadoopGremlinPlugin' > .ext/plugins.txt
+      cat ext/plugins.txt | tee .ext/plugins.all | grep -v 'Neo4jGremlinPlugin\|SparkGremlinPlugin\|HadoopGremlinPlugin' > .ext/plugins.txt
       ;;
   esac
 
@@ -135,7 +134,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   awk -f ${AWK_SCRIPTS}/prepare.awk |
   awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" -v PYTHONPATH="${TP_HOME}/gremlin-python/target/classes/Lib" |
   awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template |
-  HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
+  HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
   ${lb} awk -f ${AWK_SCRIPTS}/ignore.awk   |
   ${lb} awk -f ${AWK_SCRIPTS}/prettify.awk |
   ${lb} awk -f ${AWK_SCRIPTS}/cleanup.awk  |

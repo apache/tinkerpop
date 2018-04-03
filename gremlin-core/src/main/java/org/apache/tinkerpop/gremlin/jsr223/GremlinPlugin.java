@@ -30,8 +30,8 @@ public interface GremlinPlugin {
     /**
      * The name of the module.  This name should be unique (use a namespaced approach) as naming clashes will
      * prevent proper module operations. Modules developed by TinkerPop will be prefixed with "tinkerpop."
-     * For example, TinkerPop's implementation of Giraph would be named "tinkerpop.giraph".  If Facebook were
-     * to do their own implementation the implementation might be called "facebook.giraph".
+     * For example, TinkerPop's implementation of Spark would be named "tinkerpop.spark".  If Facebook were
+     * to do their own implementation the implementation might be called "facebook.spark".
      */
     public String getName();
 

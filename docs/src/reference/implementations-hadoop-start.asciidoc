@@ -34,9 +34,8 @@ using both TinkerPop3's OLTP and OLAP graph computing models.
 IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
 started with Hadoop, please see the
 link:http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
-tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is advisable that the reader also
-familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark
-(link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
+tutorial. Moreover, if using `SparkGraphComputer` it is advisable that the reader also
+familiarize their self with and Spark (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
 
 === Installing Hadoop-Gremlin
 
@@ -87,11 +86,7 @@ distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop
 Note that the locations in `HADOOP_GREMLIN_LIBS` can be colon-separated (`:`) and all jars from all locations will
 be loaded into the cluster. Locations can be local paths (e.g. `/path/to/libs`), but may also be prefixed with a file
 scheme to reference files or directories in different file systems (e.g. `hdfs:///path/to/distributed/libs`).
-Typically, only the jars of the respective GraphComputer are required to be loaded (e.g. `GiraphGraphComputer` plugin lib
-directory).
-
-[source,shell]
-export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
+Typically, only the jars of the respective `GraphComputer` are required to be loaded.
 
 === Properties Files
 
@@ -113,21 +108,9 @@ spark.master=local[4]
 spark.executor.memory=1g
 spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
 gremlin.spark.persistContext=true
-#####################################
-# GiraphGraphComputer Configuration #
-#####################################
-giraph.minWorkers=2
-giraph.maxWorkers=2
-giraph.useOutOfCoreGraph=true
-giraph.useOutOfCoreMessages=true
-mapreduce.map.java.opts=-Xmx1024m
-mapreduce.reduce.java.opts=-Xmx1024m
-giraph.numInputThreads=2
-giraph.numComputeThreads=2
 
 A review of the Hadoop-Gremlin specific properties are provided in the table below. For the respective OLAP
-engines (<<sparkgraphcomputer,`SparkGraphComputer`>> or <<giraphgraphcomputer,`GiraphGraphComputer`>>) refer
-to their respective documentation for configuration options.
+engines (<<sparkgraphcomputer,`SparkGraphComputer`>> refer to their respective documentation for configuration options.
 
 [width="100%",cols="2,10",options="header"]
 |=========================================================
@@ -145,7 +128,7 @@ Along with the properties above, the numerous link:http://hadoop.apache.org/docs
 can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
 
 IMPORTANT: As the size of the graphs being processed becomes large, it is important to fully understand how the
-underlying OLAP engine (e.g. Spark, Giraph, etc.) works and understand the numerous parameterizations offered by
+underlying OLAP engine (e.g. Spark, etc.) works and understand the numerous parameterizations offered by
 these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times,
 garbage collection issues, etc.
 
@@ -183,16 +166,10 @@ supports the following two implementations.
 * <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop3 OLAP computations.
 ** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via
 Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
-* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Apache Giraph to execute TinkerPop3 OLAP computations.
-** The graph should fit within the total RAM of the Hadoop cluster (graph size restriction), though "out-of-core"
-processing is possible. Message passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with
 their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of
 the Gremlin Console session if it is not already activated.
-
-Note that `SparkGraphComputer` and `GiraphGraphComputer` are loaded via their respective plugins. Typically only
-one plugin or the other is loaded depending on the desired `GraphComputer` to use.
 
 [source,text]
 ----
@@ -205,8 +182,6 @@ plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 plugin activated: tinkerpop.hadoop
-gremlin> :install org.apache.tinkerpop giraph-gremlin x.y.z
-==>loaded: [org.apache.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [tinkerpop.giraph]
 gremlin> :install org.apache.tinkerpop spark-gremlin x.y.z
 ==>loaded: [org.apache.tinkerpop, spark-gremlin, x.y.z] - restart the console to use [tinkerpop.spark]
 gremlin> :q
@@ -219,13 +194,10 @@ plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 plugin activated: tinkerpop.hadoop
-gremlin> :plugin use tinkerpop.giraph
-==>tinkerpop.giraph activated
 gremlin> :plugin use tinkerpop.spark
 ==>tinkerpop.spark activated
 ----
 
-WARNING: Hadoop, Spark, and Giraph all depend on many of the same libraries (e.g. ZooKeeper, Snappy, Netty, Guava,
+WARNING: Hadoop and Spark all depend on many of the same libraries (e.g. ZooKeeper, Snappy, Netty, Guava,
 etc.). Unfortunately, typically these dependencies are not to the same versions of the respective libraries. As such,
-it is best to *not* have both Spark and Giraph plugins loaded in the same console session nor in the same Java
-project (though intelligent `<exclusion>`-usage can help alleviate conflicts in a Java project).
+it is may be necessary to manually cleanup dependency conflicts among different plugins.

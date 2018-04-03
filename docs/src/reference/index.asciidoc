@@ -41,7 +41,6 @@ include::implementations-neo4j.asciidoc[]
 // console is to have a new asciidoc page.
 include::implementations-hadoop-start.asciidoc[]
 include::implementations-spark.asciidoc[]
-include::implementations-giraph.asciidoc[]
 include::implementations-hadoop-end.asciidoc[]
 
 include::gremlin-variants.asciidoc[]

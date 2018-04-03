@@ -25,7 +25,7 @@ TMP_DIR=$3
 INSTALL_TEMPLATE="docs/preprocessor/install-plugins.groovy"
 INSTALL_FILE="${TMP_DIR}/install-plugins.groovy"
 
-plugins=("hadoop-gremlin" "spark-gremlin" "giraph-gremlin" "neo4j-gremlin")
+plugins=("hadoop-gremlin" "spark-gremlin" "neo4j-gremlin")
 # plugins=()
 pluginsCount=${#plugins[@]}
 
