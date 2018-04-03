@@ -84,8 +84,7 @@ start step.
 and then when finally iterated, executes that against the TinkerGraph.
 
 [[prefixes]]
-Prefixes
-~~~~~~~~~
+=== Prefixes
 
 The SPARQL-Gremlin transpiler supports the following prefixes to traverse the graph:
 
@@ -110,10 +109,11 @@ g.sparql("""SELECT ?name ?id ?label
 ----
 
 [[supported-queries]]
-Supported Queries
-~~~~~~~~~~~~~~~~~~
+=== Supported Queries
 
-The SPARQL-Gremlin transpiler is currently an on-going effort with an aim to cover the entire SPARQL 1.1 query feature spectrum, however we currently only support translation of the SPARQL 1.0 specification, especially _SELECT_ queries. The supported SPARQL query types are: 
+The SPARQL-Gremlin transpiler is currently an on-going effort with an aim to cover the entire SPARQL 1.1 query feature
+spectrum, however we currently only support translation of the SPARQL 1.0 specification, especially _SELECT_ queries.
+The supported SPARQL query types are:
 
 * Union 
 * Optional 
@@ -127,29 +127,25 @@ The SPARQL-Gremlin transpiler is currently an on-going effort with an aim to cov
 ** OFFSET
 
 [[limitations]]
-Limitations
-~~~~~~~~~~~~
+=== Limitations
 
 The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) does
 not support the following cases: 
 
-* SPARQL queries with variables in the
-predicate position are not currently covered, with an exception of the
-following case:
+* SPARQL queries with variables in the predicate position are not currently covered, with an exception of the following
+case:
 
-[gremlin-groovy,existing]
+[source,groovy]
 ----
 g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
 ----
 
-* A SPARQL Union query with un-balanced patterns, i.e. a gremlin union
-traversal can only be generated if the unput SPARQL query has the same
-number of patterns on both the side of the union operator. For instance,
-the following SPARQL query cannot be mapped using Gremlinator, since a
-union is executed between different number of graph patterns (two
-patterns _union_ 1 pattern).
+* A SPARQL Union query with un-balanced patterns, i.e. a gremlin union traversal can only be generated if the input
+SPARQL query has the same number of patterns on both the side of the union operator. For instance, the following
+SPARQL query cannot be mapped using Gremlinator, since a union is executed between different number of graph patterns
+(two patterns _union_ 1 pattern).
 
-[gremlin-groovy,existing]
+[source,groovy]
 ----
 g.sparql("""SELECT * 
 	WHERE {
@@ -170,16 +166,15 @@ Adding more here...
 ....
 
 [[examples]]
-Examples
-~~~~~~~~~
+=== Examples
 
-The following section presents a comprehensive examples of SPARQL queries that are currently covered by the SPARQL-Gremlin transpiler.
+The following section presents a comprehensive examples of SPARQL queries that are currently covered by the
+SPARQL-Gremlin transpiler.
 
 [[select-all]]
-Select All
-^^^^^^^^^^
+==== Select All
 
-.Select all vertices in the graph.
+Select all vertices in the graph.
 
 [gremlin-groovy,existing]
 ----
@@ -187,10 +182,9 @@ g.sparql("""SELECT * WHERE { }""")
 ----
 
 [[match-constant-values]]
-Match Constant Values
-^^^^^^^^^^^^^^^^^^^^^
+==== Match Constant Values
 
-.Select all vertices with the label `person`.
+Select all vertices with the label `person`.
 
 [gremlin-groovy,existing]
 ----
@@ -198,10 +192,9 @@ g.sparql("""SELECT * WHERE {  ?person v:label "person" .}""")
 ----
 
 [[select-specific-elements]]
-Select Specific Elements
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== Select Specific Elements
 
-.Select the values of the properties `name` and `age` for each `person` vertex.
+Select the values of the properties `name` and `age` for each `person` vertex.
 
 [gremlin-groovy,existing]
 ----
@@ -213,10 +206,9 @@ WHERE {
 ----
 
 [[pattern-matching]]
-Pattern Matching
-^^^^^^^^^^^^^^^^
+==== Pattern Matching
 
-.Select only those persons who created a project.
+Select only those persons who created a project.
 
 [gremlin-groovy,existing]
 ----
@@ -229,10 +221,9 @@ WHERE {
 ----
 
 [[filtering]]
-Filtering
-^^^^^^^^^
+==== Filtering
 
-.Select only those persons who are older than 30.
+Select only those persons who are older than 30.
 
 [gremlin-groovy,existing]
 ----
@@ -241,31 +232,29 @@ WHERE {
   ?person v:label "person" .
   ?person v:name ?name .
   ?person v:age ?age .
-  ?person e:created ?project .
     FILTER (?age > 30) }""")
 ----
 
 [[deduplication]]
-Deduplication
-^^^^^^^^^^^^^
+==== Deduplication
 
-.Select the distinct names of the created projects.
+Select the distinct names of the created projects.
 
 [gremlin-groovy,existing]
 ----
 g.sparql("""SELECT DISTINCT ?name
 WHERE {
   ?person v:label "person" .
+  ?person v:age ?age .
   ?person e:created ?project .
   ?project v:name ?name .
     FILTER (?age > 30)}""")
 ----
 
 [[multiple-filters]]
-Multiple Filters
-^^^^^^^^^^^^^^^^
+==== Multiple Filters
 
-.Select the distinct names of all Java projects.
+Select the distinct names of all Java projects.
 
 [gremlin-groovy,existing]
 ----
@@ -276,14 +265,13 @@ WHERE {
   ?person e:created ?project .
   ?project v:name ?name .
   ?project v:lang ?lang .
-    FILTER (?age > 30 && ?lang == "java") }""")
+    FILTER (?age > 30 && ?lang = "java") }""")
 ----
 
 [[pattern-filters]]
-Pattern Filter(s)
-^^^^^^^^^^^^^^^^^
+==== Pattern Filter(s)
 
-.A different way to filter all person who created a project.
+A different way to filter all person who created a project.
 
 [gremlin-groovy,existing]
 ----
@@ -294,7 +282,7 @@ WHERE {
     FILTER EXISTS { ?person e:created ?project } }""")
 ----
 
-.Filter all person who did not create a project.
+Filter all person who did not create a project.
 
 [gremlin-groovy,existing]
 ----
@@ -305,27 +293,10 @@ WHERE {
     FILTER NOT EXISTS { ?person e:created ?project } }""")
 ----
 
-[[meta-property-access]]
-Meta-Property Access
-^^^^^^^^^^^^^^^^^^^^
-
-.Accessing the Meta-Property of a graph element. Meta-Property can be perceived as the reified statements in an RDF graph.
-
-[gremlin-groovy,existing]
-----
-g.sparql("""SELECT ?name ?startTime
-WHERE {
-  ?person v:name "daniel" .
-  ?person p:location ?location .
-  ?location v:value ?name .
-  ?location v:startTime ?startTime }""")
-----
-
 [[union]]
-Union
-^^^^^
+==== Union
 
-.Select all persons who have developed a software in java using union.
+Select all persons who have developed a software in java using union.
 
 [gremlin-groovy,existing]
 ----
@@ -337,12 +308,11 @@ WHERE {
 ----
 
 [[optional]]
-Optional
-^^^^^^^^
+==== Optional
 
-.Return the names of the persons who have created a software in java and optionally python.
+Return the names of the persons who have created a software in java and optionally python.
 
-[gremlin-groovy,existing]
+[source,groovy]
 ----
 g.sparql("""SELECT ?person 
 WHERE {
@@ -353,10 +323,9 @@ WHERE {
 ----
 
 [[order-by]]
-Order By
-^^^^^^^^
+==== Order By
 
-.Select all vertices with the label `person` and order them by their age.
+Select all vertices with the label `person` and order them by their age.
 
 [gremlin-groovy,existing]
 ----
@@ -368,12 +337,11 @@ WHERE {
 ----
 
 [[group-by]]
-Group By
-^^^^^^^^
+==== Group By
 
-.Select all vertices with the label `person` and group them by their age.
+Select all vertices with the label `person` and group them by their age.
 
-[gremlin-groovy,existing]
+[source,groovy]
 ----
 g.sparql("""SELECT * 
 WHERE {
@@ -383,12 +351,12 @@ WHERE {
 ----
 
 [[mixedcomplexaggregation-based-queries]]
-Mixed/complex/aggregation-based queries
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Mixed/complex/aggregation-based queries
 
-.Count the number of projects which have been created by persons under the age of 30 and group them by age. Return only the top two.
+Count the number of projects which have been created by persons under the age of 30 and group them by age. Return only
+the top two.
 
-[gremlin-groovy,existing]
+[source,groovy]
 ----
 g.sparql("""SELECT COUNT(?project) 
 WHERE {
@@ -398,11 +366,29 @@ WHERE {
 } GROUP BY (?age) LIMIT 2""")
 ----
 
-[[star-shaped-queries]]
-STAR-shaped queries
-^^^^^^^^^^^^^^^^^^^
+[[meta-property-access]]
+==== Meta-Property Access
 
-.STAR-shaped queries are the queries that form/follow a star-shaped execution plan. These in terms of graph traversals can be perceived as path queries or neighbourhood queries. For instance, getting all the information about a specific `person` or `software`.
+Accessing the Meta-Property of a graph element. Meta-Property can be perceived as the reified statements in an RDF
+graph.
+
+[gremlin-groovy,theCrew]
+----
+g = graph.traversal(SparqlTraversalSource)
+g.sparql("""SELECT ?name ?startTime
+WHERE {
+  ?person v:name "daniel" .
+  ?person p:location ?location .
+  ?location v:value ?name .
+  ?location v:startTime ?startTime }""")
+----
+
+[[star-shaped-queries]]
+==== STAR-shaped queries
+
+STAR-shaped queries are the queries that form/follow a star-shaped execution plan. These in terms of graph traversals
+can be perceived as path queries or neighborhood queries. For instance, getting all the information about a specific
+`person` or `software`.
 
 [gremlin-groovy,existing]
 ----
