@@ -32,9 +32,9 @@ limitations under the License.
     <Authors>Apache TinkerPop</Authors>
     <Description>Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
 
-Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Gremlin is the graph traversal language of TinkerPop. It can be described as a functional, data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's property graph.
+Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Gremlin is the graph traversal language of TinkerPop. It can be described as a functional, data-flow language that enables users to succinctly express complex traversals on (or queries of) their application’s property graph.
 
-Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including "dot notation" for function chaining (a.b.c), round bracket function arguments (a(b,c)), and support for global namespaces (a(b()) vs a(__.b())). As such, anyone familiar with Gremlin-Java will immediately be able to work with Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
+Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including “dot notation” for function chaining (a.b.c), round bracket function arguments (a(b,c)), and support for global namespaces (a(b()) vs a(__.b())). As such, anyone familiar with Gremlin-Java will immediately be able to work with Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
 
 Please see the reference documentation at Apache TinkerPop for more information on usage.
 
