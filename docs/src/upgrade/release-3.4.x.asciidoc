@@ -37,6 +37,19 @@ needs.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
 
+==== Deprecation Removal
+
+The following deprecated classes, methods or fields have been removed in this version:
+
+* `gremlin-core`
+** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
+** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+
+Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
+understand how to resolve this breaking change.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]
+
 ==== Modifications to reducing barrier steps
 
 The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:
@@ -122,3 +135,22 @@ gremlin> g.V(1).
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
+
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== TraversalEngine Moved
+
+The `TraversalEngine` interface was deprecated in 3.2.0 along with all related methods that used it and classes that
+implemented it. It was replaced by the `Computer` interface and provided a much nicer way to plug different
+implementations of `Computer` into a traversal. `TraversalEngine` was never wholly removed however as it had some deep
+dependencies in the inner workings of the test suite. That infrastructure has largely remained as is until now.
+
+As of 3.4.0, `TraversalEngine` is no longer in `gremlin-core` and can instead be found in `gremlin-test` as it is
+effectively a "test-only" component and serves no other real function. As explained in the javadocs going back to
+3.2.0, providers should implement the `Computer` class and use that instead. At this point, graph providers should have
+long ago moved to the `Computer` infrastructure as methods for constructing a `TraversalSource` with a
+`TraversalEngine` were long ago removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]

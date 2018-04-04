@@ -20,10 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
@@ -236,7 +234,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public MatchAlgorithm getMatchAlgorithm() {
         if (null == this.matchAlgorithm)
-            this.initializeMatchAlgorithm(this.traverserStepIdAndLabelsSetByChild ? TraversalEngine.Type.COMPUTER : TraversalEngine.Type.STANDARD);
+            this.initializeMatchAlgorithm(this.traverserStepIdAndLabelsSetByChild);
         return this.matchAlgorithm;
     }
 
@@ -324,13 +322,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return bindings;
     }
 
-    private void initializeMatchAlgorithm(final TraversalEngine.Type traversalEngineType) {
+    private void initializeMatchAlgorithm(final boolean onComputer) {
         try {
             this.matchAlgorithm = this.matchAlgorithmClass.getConstructor().newInstance();
         } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-        this.matchAlgorithm.initialize(traversalEngineType, this.matchTraversals);
+        this.matchAlgorithm.initialize(onComputer, this.matchTraversals);
     }
 
     private boolean hasPathLabel(final Path path, final Set<String> labels) {
@@ -362,7 +360,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         while (true) {
             if (this.first) {
                 this.first = false;
-                this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
+                this.initializeMatchAlgorithm(false);
                 if (null != this.keepLabels &&
                         this.keepLabels.containsAll(this.matchEndLabels) &&
                         this.keepLabels.containsAll(this.matchStartLabels))
@@ -416,7 +414,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         while (true) {
             if (this.first) {
                 this.first = false;
-                this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
+                this.initializeMatchAlgorithm(true);
                 if (null != this.keepLabels &&
                         this.keepLabels.containsAll(this.matchEndLabels) &&
                         this.keepLabels.containsAll(this.matchStartLabels))
@@ -692,7 +690,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         public static Function<List<Traversal.Admin<Object, Object>>, IllegalStateException> UNMATCHABLE_PATTERN = traversals -> new IllegalStateException("The provided match pattern is unsolvable: " + traversals);
 
 
-        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals);
+        public void initialize(final boolean onComputer, final List<Traversal.Admin<Object, Object>> traversals);
 
         public default void recordStart(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
 
@@ -708,7 +706,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         private List<Traversal.Admin<Object, Object>> traversals;
 
         @Override
-        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals) {
+        public void initialize(final boolean onComputer, final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
         }
 
@@ -728,8 +726,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         protected int counter = 0;
         protected boolean onComputer;
 
-        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals) {
-            this.onComputer = traversalEngineType.equals(TraversalEngine.Type.COMPUTER);
+        public void initialize(final boolean onComputer, final List<Traversal.Admin<Object, Object>> traversals) {
+            this.onComputer = onComputer;
             this.bundles = traversals.stream().map(Bundle::new).collect(Collectors.toList());
         }
 
