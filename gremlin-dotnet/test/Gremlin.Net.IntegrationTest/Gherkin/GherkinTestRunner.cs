@@ -38,10 +38,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
-            new Dictionary<string, IgnoreReason>
-            {
-                {"g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX", IgnoreReason.ReceivedDataDoesntMatchExpected}
-            };
+            new Dictionary<string, IgnoreReason>();
         
         private static class Keywords
         {
