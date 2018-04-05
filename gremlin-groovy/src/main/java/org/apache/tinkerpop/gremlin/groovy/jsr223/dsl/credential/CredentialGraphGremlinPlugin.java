@@ -24,7 +24,8 @@ import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
- * Plugin for the "credentials graph".  This plugin imports the {@link CredentialGraph} to its environment.
+ * Plugin for the Credentials DSL that helps maintain a list of users and passwords in a graph for use with Gremlin
+ * Server authentication.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -38,6 +39,9 @@ public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
         try {
             imports = DefaultImportCustomizer.build()
                     .addClassImports(CredentialGraph.class)
+                    .addClassImports(CredentialTraversalDsl.class)
+                    .addClassImports(CredentialTraversal.class)
+                    .addClassImports(CredentialTraversalSource.class)
                     .addMethodImports(CredentialGraph.class.getMethod("credentials", Graph.class))
                     .create();
         } catch (Exception ex) {
