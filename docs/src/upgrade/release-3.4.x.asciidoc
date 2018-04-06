@@ -122,3 +122,25 @@ gremlin> g.V(1).
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
+
+=== Upgrading for Providers
+
+==== Graph Providers
+
+===== Removed hadoop-gremlin Test Artifact
+
+The `hadoop-gremlin` module no longer generates a test jar that can be used as a test dependency in other modules.
+Generally speaking, that approach tends to be a bad practice and can cause build problems with Maven that aren't always
+obvious to troubleshoot. With the removal of `giraph-gremlin` for 3.4.0, it seemed even less useful to have this
+test artifact present. All tests are still present. The follow provides a basic summary of how this refactoring
+occurred:
+
+* A new `AbstractFileGraphProvider` was created in `gremlin-test` which provided a lot of the features that
+`HadoopGraphProvider` was exposing. Both `HadoopGraphProvider` and `SparkHadoopGraphProvider` extend from that class
+now.
+* `ToyIoRegistry` and related classes were moved to `gremlin-test`.
+* The various tests that validated capabilities of `Storage` have been moved to `spark-gremlin` and are part of those
+tests now. Obviously, that makes those tests specific to Spark testing now. If that location creates a problem for some
+reason, that decision can be revisited at some point.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1410[TINKERPOP-1410]

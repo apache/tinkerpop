@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
@@ -34,9 +33,9 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONRecordW
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoRecordWriter;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.ToyIoRegistry;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.ToyPoint;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.ToyTriangle;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.ToyIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.ToyPoint;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.ToyTriangle;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.T;
