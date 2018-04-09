@@ -2398,7 +2398,7 @@ g.V().out().as('a').out().as('b').out().as('c').
     by('name')
 ----
 
-By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are are acyclic.
+By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are acyclic.
 
 [gremlin-groovy]
 ----
@@ -3134,7 +3134,7 @@ of the Gremlin traversal machine's compiler. There are 5 categories of strategie
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
  * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
- * There are are some final adjustments/cleanups/analyses required before executing the traversal (*finalization*).
+ * There are some final adjustments/cleanups/analyses required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
 NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
