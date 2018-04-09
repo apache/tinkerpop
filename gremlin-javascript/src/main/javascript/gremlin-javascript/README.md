@@ -29,7 +29,7 @@ property graph.
 Gremlin-Javascript implements Gremlin within the JavaScript language and can be used on Node.js.
 
 ```bash
-npm install gremlin-javascript
+npm install gremlin
 ```
 
 Please see the [reference documentation][docs] at Apache TinkerPop for more information.
