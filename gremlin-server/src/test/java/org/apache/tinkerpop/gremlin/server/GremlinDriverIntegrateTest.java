@@ -1244,11 +1244,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
         }
 
-        // keep the testing here until "rebind" is completely removed
-        final Client reboundLegacy = cluster.connect().rebind("graph");
-        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", vLegacy.value("name"));
-
         final Client rebound = cluster.connect().alias("graph");
         final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
@@ -1270,11 +1265,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
-
-        // keep the testing here until "rebind" is completely removed
-        final Client reboundLegacy = cluster.connect().rebind("graph");
-        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", vLegacy.value("name"));
 
         final Client rebound = cluster.connect().alias("graph");
         final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
@@ -1298,11 +1288,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        // keep the testing here until "rebind" is completely removed
-        final Client clientLegacy = client.rebind("g1");
-        final Vertex vLegacy = clientLegacy.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", vLegacy.value("name"));
-
         final Client clientAliased = client.alias("g1");
         final Vertex v = clientAliased.submit("g.addV().property('name','jason')").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
@@ -1325,14 +1310,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        // keep the testing here until "rebind" is completely removed
-        final Client reboundLegacy = client.rebind("graph");
-        assertEquals("stephen", reboundLegacy.submit("n='stephen'").all().get().get(0).getString());
-        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name',n)").all().get().get(0).getVertex();
-        assertEquals("stephen", vLegacy.value("name"));
-
         final Client aliased = client.alias("graph");
-        assertEquals("jason", reboundLegacy.submit("n='jason'").all().get().get(0).getString());
+        assertEquals("jason", aliased.submit("n='jason'").all().get().get(0).getString());
         final Vertex v = aliased.submit("g.addVertex('name',n)").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
 
@@ -1353,12 +1332,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final ResponseException re = (ResponseException) root;
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
-
-        // keep the testing here until "rebind" is completely removed
-        final Client clientLegacy = client.rebind("g1");
-        assertEquals("stephen", clientLegacy.submit("n='stephen'").all().get().get(0).getString());
-        final Vertex vLegacy = clientLegacy.submit("g.addV().property('name',n)").all().get().get(0).getVertex();
-        assertEquals("stephen", vLegacy.value("name"));
 
         final Client clientAliased = client.alias("g1");
         assertEquals("jason", clientAliased.submit("n='jason'").all().get().get(0).getString());

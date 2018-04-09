@@ -23,11 +23,12 @@ NEED AND IMAGE
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-This release also includes changes from <<release-3-3-2, 3.3.2>>.
+This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
 * Change the `toString()` of `Path` to be standardized as other graph elements are.
 * Fixed a bug in `ReducingBarrierStep`, that returned the provided seed value despite no elements being available.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
+* Removed previously deprecated `rebindings` options from the Java driver API.
 * Removed support for Giraph.
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)

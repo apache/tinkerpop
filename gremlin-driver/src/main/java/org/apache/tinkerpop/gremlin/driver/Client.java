@@ -94,31 +94,9 @@ public abstract class Client {
      * server to a variable called "g" for the context of the requests made through that {@code Client}.
      *
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
-     * @deprecated As of release 3.1.0, replaced by {@link #alias(String)}
-     */
-    @Deprecated
-    public Client rebind(final String graphOrTraversalSource) {
-        return alias(graphOrTraversalSource);
-    }
-
-    /**
-     * Create a new {@code Client} that aliases the specified {@link Graph} or {@link TraversalSource} name on the
-     * server to a variable called "g" for the context of the requests made through that {@code Client}.
-     *
-     * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
      */
     public Client alias(final String graphOrTraversalSource) {
         return alias(makeDefaultAliasMap(graphOrTraversalSource));
-    }
-
-    /**
-     * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
-     * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
-     * the created {@code Client}.
-     */
-    @Deprecated
-    public Client rebind(final Map<String,String> rebindings) {
-        return alias(rebindings);
     }
 
     /**
@@ -444,29 +422,10 @@ public abstract class Client {
          * {@inheritDoc}
          */
         @Override
-        @Deprecated
-        public Client rebind(final String graphOrTraversalSource) {
-            return alias(graphOrTraversalSource);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
         public Client alias(final String graphOrTraversalSource) {
             final Map<String,String> aliases = new HashMap<>();
             aliases.put("g", graphOrTraversalSource);
             return alias(aliases);
-        }
-
-        /**
-         * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
-         * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
-         * the created {@code Client}.
-         */
-        @Deprecated
-        public Client rebind(final Map<String,String> rebindings) {
-            return alias(rebindings);
         }
 
         /**
@@ -541,30 +500,15 @@ public abstract class Client {
      * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
      * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
      */
-    public final static class AliasClusteredClient extends ReboundClusteredClient {
-        public AliasClusteredClient(final Client client, final Map<String, String> rebindings,
-                                    final Client.Settings settings) {
-            super(client, rebindings, settings);
-        }
-    }
-
-    /**
-     * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
-     * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
-     *
-     * @deprecated As of release 3.1.1-incubating, replaced by {@link AliasClusteredClient}.
-     */
-    @Deprecated
-    public static class ReboundClusteredClient extends Client {
+    public static class AliasClusteredClient extends Client {
         private final Client client;
         private final Map<String,String> aliases = new HashMap<>();
         final CompletableFuture<Void> close = new CompletableFuture<>();
 
-        ReboundClusteredClient(final Client client, final Map<String,String> rebindings,
-                               final Client.Settings settings) {
+        AliasClusteredClient(final Client client, final Map<String,String> aliases, final Client.Settings settings) {
             super(client.cluster, settings);
             this.client = client;
-            this.aliases.putAll(rebindings);
+            this.aliases.putAll(aliases);
         }
 
         @Override
@@ -638,15 +582,6 @@ public abstract class Client {
         @Override
         public boolean isClosing() {
             return close.isDone();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Deprecated
-        public Client rebind(final String graphOrTraversalSource) {
-            return alias(graphOrTraversalSource);
         }
 
         /**

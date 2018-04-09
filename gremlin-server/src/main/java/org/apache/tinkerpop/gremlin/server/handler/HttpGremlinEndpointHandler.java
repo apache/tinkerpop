@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -108,11 +107,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
 
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link #ARGS_ALIASES_DOT}.
-     */
-    @Deprecated
-    private static final String ARGS_REBINDINGS_DOT = Tokens.ARGS_REBINDINGS + ".";
     private static final String ARGS_ALIASES_DOT = Tokens.ARGS_ALIASES + ".";
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
@@ -365,18 +359,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_BINDINGS_DOT))
                     .forEach(kv -> bindings.put(kv.getKey().substring(ARGS_BINDINGS_DOT.length()), kv.getValue().get(0)));
 
-            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
-            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
-            // removed from the protocol
-            final boolean hasRebindings = decoder.parameters().entrySet().stream().anyMatch(kv -> kv.getKey().startsWith(ARGS_REBINDINGS_DOT));
-            final boolean hasAliases = decoder.parameters().entrySet().stream().anyMatch(kv -> kv.getKey().startsWith(ARGS_ALIASES_DOT));
-            if (hasRebindings && hasAliases)
-                throw new IllegalArgumentException("prefer use of the 'aliases' parameter over 'rebindings' and do not use both");
-
             final Map<String, String> aliases = new HashMap<>();
-            final String rebindingOrAliasParameter = hasRebindings ? ARGS_REBINDINGS_DOT : ARGS_ALIASES_DOT;
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(rebindingOrAliasParameter))
-                    .forEach(kv -> aliases.put(kv.getKey().substring(rebindingOrAliasParameter.length()), kv.getValue().get(0)));
+            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_ALIASES_DOT))
+                    .forEach(kv -> aliases.put(kv.getKey().substring(ARGS_ALIASES_DOT.length()), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
             final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
@@ -401,16 +386,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
-            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
-            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
-            // removed from the protocol
-            final boolean hasRebindings = body.has(Tokens.ARGS_REBINDINGS);
-            final boolean hasAliases = body.has(Tokens.ARGS_ALIASES);
-            if (hasRebindings && hasAliases)
-                throw new IllegalArgumentException("prefer use of the 'aliases' parameter over 'rebindings' and do not use both");
-
-            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-            final JsonNode aliasesNode = body.get(rebindingOrAliasParameter);
+            final JsonNode aliasesNode = body.get(Tokens.ARGS_ALIASES);
             if (aliasesNode != null && !aliasesNode.isObject())
                 throw new IllegalArgumentException("aliases must be a Map");
 

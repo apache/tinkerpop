@@ -50,12 +50,6 @@ public final class Tokens {
     public static final String ARGS_AGGREGATE_TO = "aggregateTo";
     public static final String ARGS_SIDE_EFFECT_KEY = "sideEffectKey";
 
-    /**
-     * @deprecated As of release 3.1.0-incubating, replaced by {@link #ARGS_ALIASES}.
-     */
-    @Deprecated
-    public static final String ARGS_REBINDINGS = "rebindings";
-
     public static final String VAL_AGGREGATE_TO_BULKSET = "bulkset";
     public static final String VAL_AGGREGATE_TO_LIST = "list";
     public static final String VAL_AGGREGATE_TO_MAP = "map";

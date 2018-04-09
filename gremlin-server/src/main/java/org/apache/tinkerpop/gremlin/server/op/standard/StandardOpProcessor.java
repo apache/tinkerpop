@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -115,22 +114,9 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
             final RequestMessage msg = context.getRequestMessage();
             final Bindings bindings = new SimpleBindings();
 
-            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
-            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
-            // removed from the protocol
-            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
-            final boolean hasAliases = msg.getArgs().containsKey(Tokens.ARGS_ALIASES);
-            if (hasRebindings && hasAliases) {
-                final String error = "Prefer use of the 'aliases' parameter over 'rebindings' and do not use both";
-                throw new OpProcessorException(error, ResponseMessage.build(msg)
-                        .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
-            }
-
-            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-
             // alias any global bindings to a different variable.
-            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
-                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+            if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_ALIASES);
                 for (Map.Entry<String,String> aliasKv : aliases.entrySet()) {
                     boolean found = false;
 
