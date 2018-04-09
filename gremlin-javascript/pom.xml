@@ -269,6 +269,9 @@ limitations under the License.
             <id>glv-javascript-deploy</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>npm</name>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -289,7 +292,12 @@ limitations under the License.
                             </execution>
                         </executions>
                         <configuration>
-                            <skip>${skipIntegrationTests}</skip>
+                            <!--
+                            skip needs to be overridden given how the <configuration> is specified in the main build.
+                            it should be fine to just always deploy because this <profile> needs to be manually
+                            activated and that should be good enough given our deployment process.
+                            -->
+                            <skip>false</skip>
                             <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
                             <nodeVersion>v6.12.3</nodeVersion>
                         </configuration>
