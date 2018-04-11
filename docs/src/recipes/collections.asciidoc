@@ -64,9 +64,9 @@ g.V().fold().unfold().values('name')
 g.V().store('a').cap('a').unfold().values('name')
 ----
 
-The above examples show that `unfold()` works quite well when you want don't want to preserve the `List` structure of
-the traverser as it just flattens `List` traversers to the traversal stream. The above examples only have one `List`
-as a result, but consider what happens when there is more than one:
+The above examples show that `unfold()` works quite well when you don't want to preserve the `List` structure of the
+traverser as it just flattens `List` traversers to the traversal stream. The above examples only have one `List` as a
+result, but consider what happens when there is more than one:
 
 [gremlin-groovy,modern]
 ----
