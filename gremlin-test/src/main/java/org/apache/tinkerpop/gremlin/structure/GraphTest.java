@@ -49,7 +49,12 @@ import java.util.stream.IntStream;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -118,15 +123,39 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UPSERT, supported = false)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
         final Object o = graphProvider.convertId("1", Vertex.class);
-        graph.addVertex(T.id, o);
+        graph.addVertex(T.id, o, "name", "marko");
         try {
-            graph.addVertex(T.id, o);
+            graph.addVertex(T.id, o, "name", "stephen");
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
             assertThat(ex, instanceOf(Graph.Exceptions.vertexWithIdAlreadyExists(0).getClass()));
         }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UPSERT)
+    public void shouldUpsertWhenAssigningSameIdOnVertex() {
+        final Object o = graphProvider.convertId("1", Vertex.class);
+        graph.addVertex(T.id, o, "name", "marko");
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(o).next();
+            assertEquals(o, v.id());
+            assertEquals("marko", v.value("name"));
+            assertVertexEdgeCounts(graph, 1, 0);
+        });
+
+        graph.addVertex(T.id, o, "name", "stephen");
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(o).next();
+            assertEquals(o, v.id());
+            assertEquals("stephen", v.value("name"));
+            assertVertexEdgeCounts(graph, 1, 0);
+        });
     }
 
     @Test

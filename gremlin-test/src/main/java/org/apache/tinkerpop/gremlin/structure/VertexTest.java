@@ -37,9 +37,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_BOOLEAN_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_DOUBLE_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_FLOAT_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_LONG_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,10 +67,10 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NUMERIC_IDS)
         public void shouldAddEdgeWithUserSuppliedNumericId() {
             final Vertex v = graph.addVertex();
-            v.addEdge("self", v, T.id, 1000l);
+            v.addEdge("self", v, T.id, 1000L);
             tryCommit(graph, graph -> {
-                final Edge e = graph.edges(1000l).next();
-                assertEquals(1000l, e.id());
+                final Edge e = graph.edges(1000L).next();
+                assertEquals(1000L, e.id());
             });
         }
 
@@ -251,18 +262,43 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_UPSERT, supported = false)
         public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
             final Vertex v = graph.addVertex();
             final Object o = graphProvider.convertId("1", Edge.class);
-            v.addEdge("self", v, T.id, o);
+            v.addEdge("self", v, T.id, o, "weight", 1);
 
             try {
-                v.addEdge("self", v, T.id, o);
+                v.addEdge("self", v, T.id, o, "weight", 1);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
                 validateException(Graph.Exceptions.edgeWithIdAlreadyExists(o), ex);
             }
+        }
 
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_UPSERT)
+        public void shouldUpsertWhenAssigningSameIdOnEdge() {
+            final Vertex v = graph.addVertex();
+            final Object o = graphProvider.convertId("1", Edge.class);
+            v.addEdge("self", v, T.id, o, "weight", 1);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(o).next();
+                assertEquals(o, e.id());
+                assertEquals(1, (int) e.value("weight"));
+                assertVertexEdgeCounts(graph, 1, 1);
+            });
+
+            v.addEdge("self", v, T.id, o, "weight", 2);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(o).next();
+                assertEquals(o, e.id());
+                assertEquals(2, (int) e.value("weight"));
+                assertVertexEdgeCounts(graph, 1, 1);
+            });
         }
 
         @Test
@@ -289,8 +325,8 @@ public class VertexTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         public void shouldHaveStandardStringRepresentationWithProperties() {
             final Vertex v = graph.addVertex("name", "marko", "age", 34);
             assertEquals(StringFactory.vertexString(v), v.toString());
@@ -462,9 +498,9 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
         public void shouldAutotypeLongProperties() {
             final Vertex v = graph.addVertex();
-            v.property(VertexProperty.Cardinality.single, "long", 1l);
+            v.property(VertexProperty.Cardinality.single, "long", 1L);
             final Long best = v.value("long");
-            assertEquals(best, Long.valueOf(1l));
+            assertEquals(best, Long.valueOf(1L));
         }
 
         @Test
@@ -516,9 +552,9 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
-        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
         public void shouldNotGetConcurrentModificationException() {
             for (int i = 0; i < 25; i++) {
