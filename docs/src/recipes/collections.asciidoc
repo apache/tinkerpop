@@ -324,7 +324,7 @@ g.V().
           by(values))
 ----
 
-The addition steps above `unfold()` the `Map` to key-value entries and filter the values for "n/a" and remove them
+The additional steps above `unfold()` the `Map` to key-value entries and filter the values for "n/a" and remove them
 prior to reconstructing the `Map` with the method shown earlier. To go a step further, apply the pattern presented
 earlier to flatten `List` values within a `Map`:
 
