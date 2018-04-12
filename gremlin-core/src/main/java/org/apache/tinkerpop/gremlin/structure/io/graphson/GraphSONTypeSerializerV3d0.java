@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -124,7 +125,7 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
                 mapped = Tree.class;
             else
                 mapped = Map.class;
-        } else if (List.class.isAssignableFrom(c))
+        } else if (List.class.isAssignableFrom(c) || BulkSet.class.isAssignableFrom(c))  // coerce BulkSet to List as their behavior on iteration is identical
             mapped = List.class;
         else if (Set.class.isAssignableFrom(c))
             mapped = Set.class;

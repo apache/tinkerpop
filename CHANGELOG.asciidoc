@@ -20,6 +20,13 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
+[[release-3-3-3]]
+=== TinkerPop 3.3.3 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-2-9, 3.2.9>>.
+
+* Coerced `BulkSet` to `g:List` in GraphSON 3.0.
+
 [[release-3-3-2]]
 === TinkerPop 3.3.2 (Release Date: April 2, 2018)
 
