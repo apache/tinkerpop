@@ -40,14 +40,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             string reasonSuffix = null;
             switch (reason)
             {
-                case IgnoreReason.TraversalTDeserializationNotSupported:
-                    reasonSuffix = " as deserialization of g:T on GraphSON3 is not supported";
-                    break;
                 case IgnoreReason.NoReason:
                     reasonSuffix = "";
-                    break;
-                case IgnoreReason.ReceivedDataDoesntMatchExpected:
-                    reasonSuffix = " because received data from server doesn't match expected data.";
                     break;
             }
             return $"Scenario ignored" + reasonSuffix;
