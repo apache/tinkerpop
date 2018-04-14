@@ -491,7 +491,7 @@ limitations under the License.
     </table>
     <p><strong>Note</strong> that upgrade documentation was only introduced at 3.1.1-incubating which is why there are no links "upgrade" links in versions prior to that one.
     <h4>Verifying Downloads</h4>
-    <p>All downloads have associated PGP and MD5 signatures to help verify a distribution provided by a mirror. To verify a distribution via PGP or GPG first download the
+    <p>All downloads have associated PGP and SHA1 signatures to help verify a distribution provided by a mirror. To verify a distribution via PGP or GPG first download the
        <a href="https://www.apache.org/dist/tinkerpop/KEYS">KEYS</a> file (it is important to use the linked file which is from the main distribution directory and not a
        mirror. Next download the appropriate "asc" signature file for the relevant distribution (again, this file should come from the <a href="https://www.apache.org/dist/tinkerpop/">main
        distribution directory</a> - note that older releases will have such files in the <a href="https://archive.apache.org/dist/tinkerpop/">archives</a> or if released under Apache
@@ -517,7 +517,7 @@ limitations under the License.
       gpg --verify apache-gremlin-console-x.y.z-bin.zip.asc apache-gremlin-console-x.y.z-bin.zip
       </code></pre>
     </p>
-    <p>Alternatively, consider verifying the MD5 signature on the files. An MD5 signature consists of 32 hex characters, and a SHA1 signature consists of 40 hex characters.
+    <p>Alternatively, consider verifying the SHA1 signature on the files. An SHA1 signature consists of 40 hex characters.
        Ensure that the generated signature string matches the signature string published in the files above.</p>
  </div>
 </div>
