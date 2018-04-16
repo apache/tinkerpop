@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.gremlin.spark.util;
 
 import org.apache.tinkerpop.gremlin.groovy.util.MetaRegistryUtil;
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.*;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -49,7 +49,7 @@ public final class SugarTestHelper {
      */
     public static void clearRegistry() {
         final Set<Class> implementationsToClear = new HashSet<>(CORE_IMPLEMENTATIONS);
-        implementationsToClear.addAll(HadoopGraphProvider.IMPLEMENTATION);
+        implementationsToClear.addAll(SparkHadoopGraphProvider.IMPLEMENTATION);
 
         MetaRegistryUtil.clearRegistry(implementationsToClear);
     }

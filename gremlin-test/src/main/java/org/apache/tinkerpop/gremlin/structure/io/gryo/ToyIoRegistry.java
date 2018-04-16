@@ -17,12 +17,11 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 
 import java.util.HashMap;
 import java.util.Map;

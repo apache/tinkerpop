@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
@@ -28,7 +28,6 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,16 +35,14 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ToyTriangle {
+public final class ToyPoint {
 
     private final int x;
     private final int y;
-    private final int z;
 
-    public ToyTriangle(final int x, final int y, final int z) {
+    public ToyPoint(final int x, final int y) {
         this.x = x;
         this.y = y;
-        this.z = z;
     }
 
     public int getX() {
@@ -56,65 +53,57 @@ public final class ToyTriangle {
         return this.y;
     }
 
-    public int getZ() {
-        return this.z;
-    }
-
     public int hashCode() {
-        return this.x + this.y + this.z;
+        return this.x + this.y;
     }
 
     public boolean equals(final Object other) {
-        return other instanceof ToyTriangle && ((ToyTriangle) other).x == this.x && ((ToyTriangle) other).y == this.y && ((ToyTriangle) other).z == this.z;
+        return other instanceof ToyPoint && ((ToyPoint) other).x == this.x && ((ToyPoint) other).y == this.y;
     }
 
     @Override
     public String toString() {
-        return "[" + this.x + "," + this.y + "," + this.z + "]";
+        return "[" + this.x + "," + this.y + "]";
     }
 
-    public static class ToyTriangleSerializer implements SerializerShim<ToyTriangle> {
+    public static class ToyPointSerializer implements SerializerShim<ToyPoint> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ToyTriangle toyTriangle) {
-            output.writeInt(toyTriangle.x);
-            output.writeInt(toyTriangle.y);
-            output.writeInt(toyTriangle.z);
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ToyPoint toyPoint) {
+            output.writeInt(toyPoint.x);
+            output.writeInt(toyPoint.y);
         }
 
         @Override
-        public <I extends InputShim> ToyTriangle read(final KryoShim<I, ?> kryo, final I input, final Class<ToyTriangle> toyTriangleClass) {
-            return new ToyTriangle(input.readInt(), input.readInt(), input.readInt());
+        public <I extends InputShim> ToyPoint read(final KryoShim<I, ?> kryo, final I input, final Class<ToyPoint> toyPointClass) {
+            return new ToyPoint(input.readInt(), input.readInt());
         }
     }
 
+    public static class ToyPointJacksonSerializer extends StdScalarSerializer<ToyPoint> {
 
-    public static class ToyTriangleJacksonSerializer extends StdScalarSerializer<ToyTriangle> {
-
-        public ToyTriangleJacksonSerializer() {
-            super(ToyTriangle.class);
+        public ToyPointJacksonSerializer() {
+            super(ToyPoint.class);
         }
 
         @Override
-        public void serialize(final ToyTriangle toyTriangle, final JsonGenerator jsonGenerator,
+        public void serialize(final ToyPoint toyPoint, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField("x", toyTriangle.x);
-            jsonGenerator.writeObjectField("y", toyTriangle.y);
-            jsonGenerator.writeObjectField("z", toyTriangle.z);
+            jsonGenerator.writeObjectField("x", toyPoint.x);
+            jsonGenerator.writeObjectField("y", toyPoint.y);
             jsonGenerator.writeEndObject();
         }
     }
 
-    public static class ToyTriangleJacksonDeSerializer extends AbstractObjectDeserializer<ToyTriangle> {
+    public static class ToyPointJacksonDeSerializer extends AbstractObjectDeserializer<ToyPoint> {
 
-        public ToyTriangleJacksonDeSerializer() {
-            super(ToyTriangle.class);
+        public ToyPointJacksonDeSerializer() {
+            super(ToyPoint.class);
         }
 
         @Override
-        public ToyTriangle createObject(final Map<String, Object> map) {
-            return new ToyTriangle((int) map.get("x"), (int) map.get("y"), (int) map.get("z"));
+        public ToyPoint createObject(final Map<String, Object> map) {
+            return new ToyPoint((int) map.get("x"), (int) map.get("y"));
         }
     }
-
 }
