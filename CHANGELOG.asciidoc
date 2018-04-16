@@ -333,6 +333,11 @@ This release also includes changes from <<release-3-2-6, 3.2.6>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
+[[release-3-2-9]]
+=== TinkerPop 3.2.9 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+* Bumped to httpclient 4.5.5.
+
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: April 2, 2018)
 
