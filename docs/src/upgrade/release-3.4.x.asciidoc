@@ -37,6 +37,13 @@ needs.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
 
+==== Removal of Rebindings Options
+
+The "rebindings" option is no longer supported for clients. It was deprecated long ago at 3.1.0. The server will not
+respond to them on any channel - websockets, nio or HTTP. Use the "aliases" option instead.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
+
 ==== Improvements in `min()` and `max()`
 
 Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now operate over any `Comparable` value. The common workaround was the combination
@@ -77,11 +84,16 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+* `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
+** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
+** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
 
 ==== Modifications to reducing barrier steps
 
