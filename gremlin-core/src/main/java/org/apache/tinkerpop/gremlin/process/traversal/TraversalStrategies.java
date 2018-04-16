@@ -82,8 +82,8 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     }
 
     /**
-     * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
-     * This method must ensure that the strategies are sorted prior to application.
+     * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal}. This method must ensure that the
+     * strategies are sorted prior to application.
      *
      * @param traversal the traversal to apply the strategies to
      */

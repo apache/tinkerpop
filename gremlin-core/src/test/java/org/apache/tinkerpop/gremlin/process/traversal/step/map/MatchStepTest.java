@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -200,7 +199,7 @@ public class MatchStepTest extends StepTest {
         // MAKE SURE THE SORT ORDER CHANGES AS MORE RESULTS ARE RETURNED BY ONE OR THE OTHER TRAVERSAL
         Traversal.Admin<?, ?> traversal = __.match(as("a").out().as("b"), as("c").in().as("d")).asAdmin();
         MatchStep.CountMatchAlgorithm countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
-        countMatchAlgorithm.initialize(TraversalEngine.Type.STANDARD, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
+        countMatchAlgorithm.initialize(false, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
         Traversal.Admin<Object, Object> firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
         Traversal.Admin<Object, Object> secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
         //
@@ -246,7 +245,7 @@ public class MatchStepTest extends StepTest {
         ///////  MAKE SURE WHERE PREDICATE TRAVERSALS ARE ALWAYS FIRST AS THEY ARE SIMPLY .hasNext() CHECKS
         traversal = __.match(as("a").out().as("b"), as("c").in().as("d"), where("a", P.eq("b"))).asAdmin();
         countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
-        countMatchAlgorithm.initialize(TraversalEngine.Type.STANDARD, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
+        countMatchAlgorithm.initialize(false, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
         assertEquals(3, countMatchAlgorithm.bundles.size());
         firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
         secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
@@ -334,7 +333,7 @@ public class MatchStepTest extends StepTest {
                 .asAdmin();
         traversal.applyStrategies(); // necessary to enure step ids are unique
         final MatchStep.CountMatchAlgorithm countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
-        countMatchAlgorithm.initialize(TraversalEngine.Type.COMPUTER, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
+        countMatchAlgorithm.initialize(true, ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
         Traversal.Admin<Object, Object> firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
         Traversal.Admin<Object, Object> secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
         Traversal.Admin<Object, Object> thirdPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(2);
