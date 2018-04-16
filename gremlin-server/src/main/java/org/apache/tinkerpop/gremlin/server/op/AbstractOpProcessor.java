@@ -290,13 +290,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
     protected static void attemptCommit(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
         if (strict) {
-            // validations should have already been performed in StandardOpProcessor, but a failure in bindings maker
-            // at the time of the eval might raise through here at which point the validation didn't yet happen. better
-            // to just check again
-            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
-            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
-                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+            if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_ALIASES);
                 graphManager.commit(new HashSet<>(aliases.values()));
             } else {
                 graphManager.commitAll();
@@ -308,13 +303,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
     protected static void attemptRollback(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
         if (strict) {
-            // validations should have already been performed in StandardOpProcessor, but a failure in bindings maker
-            // at the time of the eval might raise through here at which point the validation didn't yet happen. better
-            // to just check again
-            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
-            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
-                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+            if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_ALIASES);
                 graphManager.rollback(new HashSet<>(aliases.values()));
             } else {
                 graphManager.rollbackAll();

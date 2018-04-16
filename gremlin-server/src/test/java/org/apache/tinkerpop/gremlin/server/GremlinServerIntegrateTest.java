@@ -982,24 +982,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void shouldStillSupportDeprecatedRebindingsParameterOnServer() throws Exception {
-        // this test can be removed when the rebindings arg is removed
-        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
-            final Map<String,String> rebindings = new HashMap<>();
-            rebindings.put("xyz", "graph");
-            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "xyz.addVertex('name','jason')")
-                    .addArg(Tokens.ARGS_REBINDINGS, rebindings).create();
-            final List<ResponseMessage> responses = client.submit(request);
-            assertEquals(1, responses.size());
-
-            final DetachedVertex v = ((ArrayList<DetachedVertex>) responses.get(0).getResult().getData()).get(0);
-            assertEquals("jason", v.value("name"));
-        }
-    }
-
-    @Test
     public void shouldSupportLambdasUsingWithRemote() throws Exception {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal().withRemote(conf);
