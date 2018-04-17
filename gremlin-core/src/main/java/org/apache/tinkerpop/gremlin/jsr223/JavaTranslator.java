@@ -256,10 +256,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<Method>> methodCache) {
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
-                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
-                    final List<Method> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
-                    list.add(method);
-                }
+                final List<Method> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
+                list.add(method);
             }
             GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
         }
