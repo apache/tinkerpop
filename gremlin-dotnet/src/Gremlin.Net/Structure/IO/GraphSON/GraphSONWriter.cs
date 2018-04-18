@@ -63,7 +63,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(Property), new PropertySerializer()},
                 {typeof(VertexProperty), new VertexPropertySerializer()},
                 {typeof(AbstractTraversalStrategy), new TraversalStrategySerializer()},
-                {typeof(ILambda), new LambdaSerializer()}
+                {typeof(ILambda), new LambdaSerializer()},
+
+                //Extended
+                {typeof(TimeSpan), new TimeSpanConverter()}
             };
 
         /// <summary>
