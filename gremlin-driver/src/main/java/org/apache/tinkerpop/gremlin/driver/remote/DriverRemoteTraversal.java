@@ -40,9 +40,9 @@ import java.util.function.Supplier;
 
 /**
  * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver. This {@link Traversal} implementation is
- * typically iterated from with {@link RemoteStep} where it the {@link #nextTraverser()} method is called. While
- * this class provides implementations for both {@link #next()} and {@link #hasNext()} that unroll "bulked" results,
- * those methods are not called directly from with TinkerPop remoting.
+ * typically iterated from {@link RemoteStep} where the {@link #nextTraverser()} method is called. While this class
+ * provides implementations for both {@link #next()} and {@link #hasNext()} that unroll "bulked" results, those methods
+ * are not called directly from with TinkerPop remoting.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
