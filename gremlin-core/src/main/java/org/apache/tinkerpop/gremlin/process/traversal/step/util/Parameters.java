@@ -171,8 +171,13 @@ public final class Parameters implements Cloneable, Serializable {
      * Set parameters given key/value pairs.
      */
     public void set(final TraversalParent parent, final Object... keyValues) {
-        Parameters.legalPropertyKeyValueArray(keyValues);
+        if (keyValues.length % 2 != 0)
+            throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
+
         for (int i = 0; i < keyValues.length; i = i + 2) {
+            if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof T) && !(keyValues[i] instanceof Traversal))
+                throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
+
             if (keyValues[i + 1] != null) {
                 // track the list of traversals that are present so that elsewhere in Parameters there is no need
                 // to iterate all values to not find any. also grab available labels in traversal values
@@ -251,15 +256,6 @@ public final class Parameters implements Cloneable, Serializable {
 
     public String toString() {
         return this.parameters.toString();
-    }
-
-    private static void legalPropertyKeyValueArray(final Object... propertyKeyValues) throws IllegalArgumentException {
-        if (propertyKeyValues.length % 2 != 0)
-            throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
-        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T) && !(propertyKeyValues[i] instanceof Traversal))
-                throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
-        }
     }
 
     private void addTraversal(final Traversal.Admin t) {
