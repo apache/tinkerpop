@@ -1141,34 +1141,6 @@ public interface Graph extends AutoCloseable, Host {
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
         }
-
-        /**
-         * Deprecated as of 3.2.3, not replaced.
-         *
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-944">TINKERPOP-944</a>
-         */
-        @Deprecated
-        public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id) {
-            return (null == id) ?
-                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
-                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
-        }
-
-        /**
-         * Deprecated as of 3.2.3, not replaced.
-         *
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-944">TINKERPOP-944</a>
-         */
-        @Deprecated
-        public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id, final Exception rootCause) {
-            NoSuchElementException elementNotFoundException;
-            if (null == id)
-                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
-            else
-                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
-            elementNotFoundException.initCause(rootCause);
-            return elementNotFoundException;
-        }
     }
 
     /**

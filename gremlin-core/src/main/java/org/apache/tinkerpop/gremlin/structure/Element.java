@@ -144,14 +144,5 @@ public abstract interface Element {
         public static IllegalArgumentException labelCanNotBeAHiddenKey(final String label) {
             return new IllegalArgumentException("Label can not be a hidden key: " + label);
         }
-
-        /**
-         * @deprecated As of release 3.1.0, not replaced - this exception is no longer enforced by the test suite.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-297">TINKERPOP-297</a>
-         */
-        @Deprecated
-        public static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {
-            return new IllegalStateException(String.format("%s with id %s was removed.", clazz.getSimpleName(), id));
-        }
     }
 }
