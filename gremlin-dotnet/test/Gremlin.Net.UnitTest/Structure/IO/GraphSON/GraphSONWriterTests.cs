@@ -346,6 +346,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                 "{\"@type\":\"g:Lambda\",\"@value\":{\"script\":\"{ it.get() }\",\"language\":\"gremlin-groovy\",\"arguments\":-1}}";
             Assert.Equal(expected, graphSon);
         }
+
+        [Fact]
+        public void ShouldSerializeTimeSpan()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var timeSpan = new TimeSpan(5, 4, 3, 2, 1);
+
+            var graphSon = writer.WriteObject(timeSpan);
+
+            const string expected = "{\"@type\":\"gx:Duration\",\"@value\":\"P5DT4H3M2.001S\"}";
+            Assert.Equal(expected, graphSon);
+        }
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer

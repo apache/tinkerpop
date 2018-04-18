@@ -320,6 +320,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.NotNull(d);
             Assert.Equal("g:Traverser", (string)d["@type"]);
         }
+
+        [Fact]
+        public void ShouldDeserializeDurationToTimeSpan()
+        {
+            var serializedValue = "{\"@type\":\"gx:Duration\",\"@value\":\"PT120H\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            TimeSpan deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(TimeSpan.FromDays(5), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
