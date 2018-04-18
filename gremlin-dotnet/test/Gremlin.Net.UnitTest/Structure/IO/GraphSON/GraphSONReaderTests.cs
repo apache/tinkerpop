@@ -23,9 +23,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -36,6 +39,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         private GraphSONReader CreateStandardGraphSONReader()
         {
             return new GraphSONReader();
+        }
+
+        //During CI, we encountered a case where Newtonsoft.Json version 9.0.0
+        //was loaded although there is no obvious direct nor indirect dependency
+        //on that version of the library. An explicit reference to version
+        //11.0.0 from Gremlin.Net.UnitTest fixes that, however, it is
+        //still unclear what causes the downgrade. Until resolution, we keep this test.
+        [Fact]
+        public void NewtonsoftJsonVersionShouldSupportReallyBigIntegers()
+        {
+            Assert.Equal(new Version(11, 0, 0, 0), typeof(JToken).Assembly.GetName().Version);
         }
 
         [Fact]
@@ -319,6 +333,102 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.NotNull(d);
             Assert.Equal("g:Traverser", (string)d["@type"]);
+        }
+
+        [Fact]
+        public void ShouldDeserializeDurationToTimeSpan()
+        {
+            var serializedValue = "{\"@type\":\"gx:Duration\",\"@value\":\"PT120H\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            TimeSpan deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(TimeSpan.FromDays(5), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeBigInteger()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeBigIntegerValueAsString()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeReallyBigIntegerValue()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789987654321123456789987654321}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789987654321123456789987654321"), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeByte()
+        {
+            var serializedValue = "{\"@type\":\"gx:Byte\",\"@value\":1}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(1, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeByteBuffer()
+        {
+            var serializedValue = "{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeChar()
+        {
+            var serializedValue = "{\"@type\":\"gx:Char\",\"@value\":\"x\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal('x', deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeInt16()
+        {
+            var serializedValue = "{\"@type\":\"gx:Int16\",\"@value\":100}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(100, deserializedValue);
         }
     }
 

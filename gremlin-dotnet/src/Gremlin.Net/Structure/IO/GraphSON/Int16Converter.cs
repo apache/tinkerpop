@@ -22,19 +22,13 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer
+    internal class Int16Converter : NumberConverter
     {
-        private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-        
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            DateTimeOffset value = objectData;
-            var ticks = (value - UnixStart).Ticks;
-            return GraphSONUtil.ToTypedValue("Date", ticks / TimeSpan.TicksPerMillisecond);
-        }
+        protected override string GraphSONTypeName => "Int16";
+        protected override Type HandledType => typeof(short);
+        protected override string Prefix => "gx";
     }
 }
