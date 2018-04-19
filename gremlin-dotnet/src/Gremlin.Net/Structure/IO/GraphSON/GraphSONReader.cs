@@ -53,7 +53,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"g:VertexProperty", new VertexPropertyDeserializer()},
                 {"g:Path", new PathDeserializer()},
                 {"g:T", new TDeserializer()},
-                {"gx:BigDecimal", new DecimalConverter()}
+
+                //Extended
+                {"gx:BigDecimal", new DecimalConverter()},
+                {"gx:Duration", new TimeSpanConverter()}
             };
 
         /// <summary>
