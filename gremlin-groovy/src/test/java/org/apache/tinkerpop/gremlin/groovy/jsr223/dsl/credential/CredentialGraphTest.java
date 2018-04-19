@@ -33,8 +33,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
 /**
+ * These tests cover old functionality prior to the new method for DSL implementation.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As for release 3.3.3, replaced by {@link CredentialTraversalDslTest}.
  */
+@Deprecated
 public class CredentialGraphTest {
 
     @Test

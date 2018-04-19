@@ -23,6 +23,33 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.3.2
 
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asciidoc#release-3-3-3[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Credential DSL Changes
+
+The Credential DSL has been modified to work as a standard Java-based Gremlin DSL. The now deprecated old approach
+used a "graph wrapping" style that was developed long before the
+link:http://tinkerpop.apache.org/docs/current/reference/#gremlin-java-dsl[recommended method] for building DSLs was
+published. Under this new model, the DSL is initialized via traversal as follows:
+
+[source,java]
+----
+CredentialTraversalSource credentials = graph.traversal(CredentialTraversalSource.class)
+credentials.user("stephen","password").iterate()
+credentials.users("stephen").valueMap().next()
+credentials.users().count().next()
+credentials.users("stephen").drop().iterate()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1903[TINKERPOP-1903],
+link:http://tinkerpop.apache.org/docs/3.3.2/reference/#security[Reference Documentation - Security]
+
+== TinkerPop 3.3.2
+
 *Release Date: April 2, 2018*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.2/CHANGELOG.asciidoc#release-3-3-2[changelog] for a complete list of all the modifications that are part of this release.
