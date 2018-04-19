@@ -456,6 +456,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(new TimeSpan(12, 30, 45), deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeOffsetDateTime()
+        {
+            var serializedValue = "{\"@type\":\"gx:OffsetDateTime\",\"@value\":\"2007-12-03T10:15:30+01:00\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(new DateTimeOffset(2007, 12, 3, 10, 15, 30, TimeSpan.FromHours(1)), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
