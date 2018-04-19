@@ -370,6 +370,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                 var jObject = JObject.Parse(serializedValue);
             });
         }
+
+        [Fact]
+        public void ShouldDeserializeByte()
+        {
+            var serializedValue = "{\"@type\":\"gx:Byte\",\"@value\":1}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(1, deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer

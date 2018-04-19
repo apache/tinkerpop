@@ -371,6 +371,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             const string expected = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789987654321123456789987654321\"}";
             Assert.Equal(expected, graphSon);
         }
+
+        [Fact]
+        public void ShouldSerializeByte()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject((byte)1);
+
+            Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":1}", graphSon);
+        }
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer
