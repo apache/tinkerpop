@@ -30,7 +30,11 @@ namespace Gremlin.Net.Driver.Exceptions
     /// </summary>
     public class ResponseException : Exception
     {
-        internal ResponseException(string message) : base(message)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ResponseException" /> class.
+        /// </summary>
+        /// <param name="message">The error message string.</param>
+        public ResponseException(string message) : base(message)
         {
         }
     }
