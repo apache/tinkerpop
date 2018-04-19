@@ -431,6 +431,19 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(new DateTime(2016, 1, 1, 0, 0, 0), deserializedValue);
             Assert.Equal(DateTimeKind.Local, deserializedValue.Kind);
         }
+
+        [Fact]
+        public void ShouldDeserializeLocalDateTime()
+        {
+            var serializedValue = "{\"@type\":\"gx:LocalDateTime\",\"@value\":\"2016-01-01T12:30\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            DateTime deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(new DateTime(2016, 1, 1, 12, 30, 0), deserializedValue);
+            Assert.Equal(DateTimeKind.Local, deserializedValue.Kind);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
