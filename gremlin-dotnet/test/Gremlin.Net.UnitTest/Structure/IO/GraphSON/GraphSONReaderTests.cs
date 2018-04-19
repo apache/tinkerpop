@@ -468,6 +468,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(new DateTimeOffset(2007, 12, 3, 10, 15, 30, TimeSpan.FromHours(1)), deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializePeriod()
+        {
+            var serializedValue = "{\"@type\":\"gx:Period\",\"@value\":\"P1Y6M15D\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(TimeSpan.FromDays(560), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
