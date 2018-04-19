@@ -457,10 +457,10 @@ their Java counterparts which makes it possible to use lambdas with Gremlin.Net 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
 
-
-Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the JavaScript language. It targets Node.js runtime
-and can be used on different operating systems on any Node.js 4 or above. Since the JavaScript naming conventions are
-very similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin-JavaScript.
+image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
+JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 4 or
+above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
+between Gremlin-Java and Gremlin-JavaScript.
 
 [source,bash]
 npm install gremlin-javascript
