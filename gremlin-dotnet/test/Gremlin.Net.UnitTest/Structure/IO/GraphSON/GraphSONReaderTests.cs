@@ -23,9 +23,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -36,7 +39,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         private GraphSONReader CreateStandardGraphSONReader()
         {
             return new GraphSONReader();
-        }
+            }
 
         [Fact]
         public void ShouldDeserializeWithCustomDeserializerForNewType()
@@ -331,6 +334,41 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             TimeSpan deserializedValue = reader.ToObject(jObject);
 
             Assert.Equal(TimeSpan.FromDays(5), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeBigInteger()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeBigIntegerValueAsString()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Fact]
+        public void CannotDeserializeTooBigIntegerWithOldNewtonsoftJson()
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789987654321123456789987654321}";
+
+            Assert.Throws<JsonReaderException>(() =>
+            {
+                var jObject = JObject.Parse(serializedValue);
+            });
         }
     }
 

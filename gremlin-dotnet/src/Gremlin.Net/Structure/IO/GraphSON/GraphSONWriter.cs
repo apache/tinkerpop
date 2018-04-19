@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
@@ -63,7 +64,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(ILambda), new LambdaSerializer()},
 
                 //Extended
-                {typeof(TimeSpan), new TimeSpanConverter()}
+                {typeof(TimeSpan), new TimeSpanConverter()},
+                {typeof(BigInteger), new BigIntegerConverter()}
             };
 
         /// <summary>

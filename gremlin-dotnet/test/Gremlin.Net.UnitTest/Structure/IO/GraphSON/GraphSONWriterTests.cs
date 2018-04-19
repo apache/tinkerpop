@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -356,6 +357,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var graphSon = writer.WriteObject(timeSpan);
 
             const string expected = "{\"@type\":\"gx:Duration\",\"@value\":\"P5DT4H3M2.001S\"}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeBigInteger()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var bigInteger = BigInteger.Parse("123456789987654321123456789987654321");
+
+            var graphSon = writer.WriteObject(bigInteger);
+
+            const string expected = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789987654321123456789987654321\"}";
             Assert.Equal(expected, graphSon);
         }
     }
