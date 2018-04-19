@@ -68,7 +68,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(BigInteger), new BigIntegerConverter()},
                 {typeof(byte), new ByteConverter()},
                 {typeof(byte[]), new ByteBufferSerializer()},
-                {typeof(char), new CharConverter() }
+                {typeof(char), new CharConverter() },
+                {typeof(short), new Int16Converter() }
             };
 
         /// <summary>

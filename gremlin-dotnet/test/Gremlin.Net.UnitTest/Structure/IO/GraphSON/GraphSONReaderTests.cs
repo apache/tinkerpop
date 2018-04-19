@@ -480,6 +480,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(TimeSpan.FromDays(560), deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeInt16()
+        {
+            var serializedValue = "{\"@type\":\"gx:Int16\",\"@value\":100}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(100, deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer

@@ -62,7 +62,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"gx:LocalDateTime", new LocalDateTimeDeserializer()},
                 {"gx:LocalTime", new LocalTimeDeserializer()},
                 {"gx:OffsetDateTime", new OffsetDateTimeDeserializer()},
-                {"gx:Period", new TimeSpanConverter() }
+                {"gx:Period", new TimeSpanConverter() },
+                {"gx:Int16", new Int16Converter() }
             };
 
         /// <summary>

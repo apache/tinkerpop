@@ -401,6 +401,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal("{\"@type\":\"gx:Char\",\"@value\":\"x\"}", graphSon);
         }
+
+        [Fact]
+        public void ShouldSerializeInt16()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject((short)100);
+
+            Assert.Equal("{\"@type\":\"g:Int16\",\"@value\":100}", graphSon);
+        }
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer
