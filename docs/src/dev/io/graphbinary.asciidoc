@@ -142,11 +142,11 @@ The total length is not part of the message as the transport layer will provide 
 - `0x87`: MonthDay
 - `0x88`: OffsetDateTime
 - `0x89`: OffsetTime
-- `0x90`: Period
-- `0x92`: Year
-- `0x93`: YearMonth
-- `0x94`: ZonedDateTime
-- `0x95`: ZoneOffset
+- `0x8a`: Period
+- `0x8b`: Year
+- `0x8c`: YearMonth
+- `0x8d`: ZonedDateTime
+- `0x8e`: ZoneOffset
 
 === Data Type Formats
 
@@ -596,7 +596,7 @@ Format: `{year}{month}`
 Where:
 
 - `{year}` is an `Int`.
-- `{month} is a `Byte` from 1 to 12.
+- `{month}` is a `Byte` from 1 to 12.
 
 ==== ZonedDateTime
 
