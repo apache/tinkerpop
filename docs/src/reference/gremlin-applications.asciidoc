@@ -1351,9 +1351,9 @@ the `Graph`, consider specifying a unique constraint as well.
 
 To aid with the management of a credentials graph, Gremlin Server provides a Gremlin Console plugin which can be
 used to add and remove users so as to ensure that the schema is adhered to, thus ensuring compatibility with Gremlin
- Server.  In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its
- capabilities (though one could use it programmatically, if desired).  This plugin is distributed with the Gremlin
- Console so it does not have to be "installed".  It does however need to be activated:
+Server. In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its
+capabilities (though one could use it programmatically, if desired). This plugin is distributed with the Gremlin
+Console so it does not have to be "installed". It does however need to be activated:
 
 [source,groovy]
 gremlin> :plugin use tinkerpop.credentials
@@ -1365,15 +1365,22 @@ Please see the example usage as follows:
 ----
 graph = TinkerGraph.open()
 graph.createIndex("username",Vertex.class)
-credentials = credentials(graph)
-credentials.createUser("stephen","password")
-credentials.createUser("daniel","better-password")
-credentials.createUser("marko","rainbow-dash")
-credentials.findUser("marko").properties()
-credentials.countUsers()
-credentials.removeUser("daniel")
-credentials.countUsers()
+credentials = graph.traversal(CredentialTraversalSource.class)
+credentials.user("stephen","password")
+credentials.user("daniel","better-password")
+credentials.user("marko","rainbow-dash")
+credentials.users("marko").valueMap()
+credentials.users().count()
+credentials.users("daniel").drop()
+credentials.users().count()
 ----
+
+NOTE: The Credentials DSL is built using TinkerPop's DSL Annotation Processor described <<gremlin-java-dsl,here>>.
+
+IMPORTANT: In the above example, an empty in-memory TinkerGraph was used for demonstrating the API of the DSL.
+Obviously, this data will not be retained and usable with Gremlin Server. It would be important to configure
+TinkerGraph to persist that data or to manually persist it (e.g. write the graph data to Gryo) once changes are
+complete. Alternatively, use a persistent graph to hold the credentials and configure Gremlin Server accordingly.
 
 [[krb5authenticator]]
 ===== Kerberos Authentication
