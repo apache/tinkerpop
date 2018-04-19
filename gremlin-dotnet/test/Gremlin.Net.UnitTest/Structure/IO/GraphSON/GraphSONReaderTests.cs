@@ -382,6 +382,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(1, deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeByteBuffer()
+        {
+            var serializedValue = "{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer

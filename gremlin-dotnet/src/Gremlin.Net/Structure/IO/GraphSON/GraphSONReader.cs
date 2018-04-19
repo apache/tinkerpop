@@ -54,7 +54,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"gx:BigDecimal", new DecimalConverter()},
                 {"gx:Duration", new TimeSpanConverter()},
                 {"gx:BigInteger", new BigIntegerConverter()},
-                {"gx:Byte", new ByteConverter()}
+                {"gx:Byte", new ByteConverter()},
+                {"gx:ByteBuffer", new ByteBufferSerializer()}
             };
 
         /// <summary>

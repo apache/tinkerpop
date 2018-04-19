@@ -381,6 +381,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":1}", graphSon);
         }
+
+        [Fact]
+        public void ShouldSerializeByteBuffer()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"));
+
+            Assert.Equal("{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}", graphSon);
+        }
     }
 
     internal class TestGraphSONSerializer : IGraphSONSerializer
