@@ -406,6 +406,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal('x', deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeInstant()
+        {
+            var serializedValue = "{\"@type\":\"gx:Instant\",\"@value\":\"2016-12-14T16:39:19.349Z\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(new DateTime(2016, 12, 14, 16, 39, 19, 349, DateTimeKind.Utc), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
