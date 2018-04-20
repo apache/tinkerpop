@@ -17,9 +17,9 @@ limitations under the License.
 
 = TinkerPop 3.4.0
 
-NEED AN IMAGE
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=225]
 
-*NOT NAMED YET*
+*Avant-Gremlin Construction #3 for Theremin and Flowers*
 
 == TinkerPop 3.4.0
 

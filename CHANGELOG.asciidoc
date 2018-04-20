@@ -16,9 +16,9 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.4.0 (NOT NAMED YET)
+== TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
-NEED AND IMAGE
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: NOT OFFICIALLY RELEASED YET)
