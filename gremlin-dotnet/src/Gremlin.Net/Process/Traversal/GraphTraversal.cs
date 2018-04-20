@@ -1323,6 +1323,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the select step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<S, E2> Select<E2> (Pop pop, ITraversal keyTraversal)
+        {
+            Bytecode.AddStep("select", pop, keyTraversal);
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the select step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<S, E2> Select<E2> (string selectKey)
         {
             Bytecode.AddStep("select", selectKey);
@@ -1338,6 +1347,15 @@ namespace Gremlin.Net.Process.Traversal
             args.AddRange(otherSelectKeys);
             Bytecode.AddStep("select", args.ToArray());
             return Wrap<S, IDictionary<string, E2>>(this);
+        }
+
+        /// <summary>
+        ///     Adds the select step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Select<E2> (ITraversal keyTraversal)
+        {
+            Bytecode.AddStep("select", keyTraversal);
+            return Wrap<S, E2>(this);
         }
 
         /// <summary>
