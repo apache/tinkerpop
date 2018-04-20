@@ -252,17 +252,30 @@ final class TraversalSerializersV3d0 {
             final Bytecode bytecode = new Bytecode();
 
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                if (jsonParser.getCurrentName().equals(GraphSONTokens.SOURCE)) {
+                final String current = jsonParser.getCurrentName();
+                if (current.equals(GraphSONTokens.SOURCE) || current.equals(GraphSONTokens.STEP)) {
                     jsonParser.nextToken();
-                    final List<List<Object>> instructions = deserializationContext.readValue(jsonParser, listListJavaType);
-                    for (final List<Object> instruction : instructions) {
-                        bytecode.addSource((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
-                    }
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.STEP)) {
-                    jsonParser.nextToken();
-                    final List<List<Object>> instructions = deserializationContext.readValue(jsonParser, listListJavaType);
-                    for (final List<Object> instruction : instructions) {
-                        bytecode.addStep((String) instruction.get(0), Arrays.copyOfRange(instruction.toArray(), 1, instruction.size()));
+
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+
+                        // there should be a list now and the first item in the list is always string and is the step name
+                        // skip the start array
+                        jsonParser.nextToken();
+
+                        final String stepName = jsonParser.getText();
+
+                        // iterate through the rest of the list for arguments until it gets to the end
+                        final List<Object> arguments = new ArrayList<>();
+                        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                            // we don't know the types here, so let the deserializer figure that business out
+                            arguments.add(deserializationContext.readValue(jsonParser, Object.class));
+                        }
+
+                        // if it's not a "source" then it must be a "step"
+                        if (current.equals(GraphSONTokens.SOURCE))
+                            bytecode.addSource(stepName, arguments.toArray());
+                        else
+                            bytecode.addStep(stepName, arguments.toArray());
                     }
                 }
             }
