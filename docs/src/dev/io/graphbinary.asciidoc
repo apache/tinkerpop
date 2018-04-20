@@ -40,7 +40,7 @@ Quick examples, using hexadecimal notation to represent each byte:
 
 - `01 00 00 00 01`: a 32-bit integer number, that represents the decimal number 1. It’s composed by the
 type_code `0x01` and four bytes to describe the value.
-- `01 00 00 00 ff`: a 32-bit integer, representing the 256.
+- `01 00 00 00 ff`: a 32-bit integer, representing the number 256.
 - `02 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02` and eight bytes
 to describe the value.
 
