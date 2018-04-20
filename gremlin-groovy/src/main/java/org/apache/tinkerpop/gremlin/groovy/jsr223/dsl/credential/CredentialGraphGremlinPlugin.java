@@ -38,11 +38,9 @@ public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
     static {
         try {
             imports = DefaultImportCustomizer.build()
-                    .addClassImports(CredentialGraph.class)
                     .addClassImports(CredentialTraversalDsl.class)
                     .addClassImports(CredentialTraversal.class)
                     .addClassImports(CredentialTraversalSource.class)
-                    .addMethodImports(CredentialGraph.class.getMethod("credentials", Graph.class))
                     .create();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
