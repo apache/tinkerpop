@@ -340,7 +340,7 @@ GraphTraversalSource g;
 g = graph.traversal();                                                         // local OLTP
 g = graph.traversal().withRemote(DriverRemoteConnection.using("server.yaml"))  // remote OLTP
 g = graph.traversal().withComputer(SparkGraphComputer.class);                  // distributed OLAP/code>
-</pre>
+          </code></pre>
        </div>
        <br/>
     </div>
@@ -391,5 +391,7 @@ g = graph.traversal().withComputer(SparkGraphComputer.class);                  /
           });
        </script>
     </div>
+    <br/>
+    <br/>
  </div>
 </div>
