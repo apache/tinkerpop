@@ -499,6 +499,19 @@ Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submi
 * `Traversal.next()`
 * `Traversal.toList()`
 
+=== GraphSON3 Support
+
+GraphSON3, which is the default serialization format in Gremlin Server 3.3+, is not yet supported in Gremlin-JavaScript.
+We are planning to support it in the upcoming versions. In the meantime, if you want to use Gremlin-JavaScript against
+the Gremlin Server 3.3 you must include the GraphSON2 serializer.
+
+In the server yaml configuration file, add the following line under `serializers`:
+
+[source]
+----
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0] }}
+----
+
 === Static Enums and Methods
 
 Gremlin has various tokens (e.g. `t`, `P`, `order`, `direction`, etc.) that are represented in Gremlin-JavaScript as
