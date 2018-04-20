@@ -338,6 +338,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Bumped to httpclient 4.5.5.
+* Improved performance of GraphSON deserialization of `Bytecode`.
 
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: April 2, 2018)
