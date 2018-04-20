@@ -327,9 +327,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // there record
         Thread.sleep(3000);
 
-        assertThat(recordingAppender.logContainsAny(".*Checking channel - sending ping to client after idle period of .*$"), is(true));
-
         client.close();
+
+        // stop the server to be sure that logs flush
+        stopServer();
+
+        assertThat(recordingAppender.logContainsAny(".*Checking channel - sending ping to client after idle period of .*$"), is(true));
     }
 
     @Test
