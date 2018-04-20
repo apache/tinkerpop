@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraph;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversal;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalDsl;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -40,14 +40,14 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.Credenti
 
 /**
  * A simple implementation of an {@link Authenticator} that uses a {@link Graph} instance as a credential store.
- * Management of the credential store can be handled through the {@link CredentialGraph} DSL.
+ * Management of the credential store can be handled through the {@link CredentialTraversalDsl} DSL.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SimpleAuthenticator implements Authenticator {
     private static final Logger logger = LoggerFactory.getLogger(SimpleAuthenticator.class);
     private static final byte NUL = 0;
-    private CredentialGraph credentialStore;
+    private CredentialTraversalSource credentialStore;
 
     /**
      * The location of the configuration file that contains the credentials database.
@@ -82,7 +82,7 @@ public class SimpleAuthenticator implements Authenticator {
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
         }
 
-        credentialStore = CredentialGraph.credentials(graph);
+        credentialStore = graph.traversal(CredentialTraversalSource.class);
         logger.info("CredentialGraph initialized at {}", credentialStore);
     }
 
@@ -98,17 +98,15 @@ public class SimpleAuthenticator implements Authenticator {
 
         final String username = credentials.get(PROPERTY_USERNAME);
         final String password = credentials.get(PROPERTY_PASSWORD);
-        try {
-            user = credentialStore.findUser(username);
-        } catch (IllegalStateException ex) {
-            // typically thrown when there are multiple users with the same name in the credential store
-            logger.warn(ex.getMessage());
-            throw new AuthenticationException("Username and/or password are incorrect", ex);
-        } catch (Exception ex) {
-            throw new AuthenticationException("Username and/or password are incorrect", ex);
-        }
+        final CredentialTraversal<Vertex,Vertex> t = credentialStore.users(username);
+        if (!t.hasNext())
+            throw new AuthenticationException("Username and/or password are incorrect");
 
-        if (null == user)  throw new AuthenticationException("Username and/or password are incorrect");
+        user = t.next();
+        if (t.hasNext()) {
+            logger.warn("There is more than one user with the username [{}] - usernames must be unique", username);
+            throw new AuthenticationException("Username and/or password are incorrect");
+        }
 
         final String hash = user.value(PROPERTY_PASSWORD);
         if (!BCrypt.checkpw(password, hash))
