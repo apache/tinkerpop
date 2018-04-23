@@ -69,8 +69,8 @@ public interface GraphManager {
      *
      * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
      *         {@link TraversalSource} itself
-     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
-     * {@link #getTraversalSource(String)} (String)} - note that the expectation is this method return an immutable
+     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getTraversalSourceNames()} and
+     * {@link #getTraversalSource(String)} - note that the expectation is this method return an immutable
      * {@code Map} which was not the expectation prior to 3.2.5.
      */
     @Deprecated

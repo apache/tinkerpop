@@ -96,8 +96,8 @@ public final class DefaultGraphManager implements GraphManager {
      *
      * @return a {@code Map} where the key is the name of the {@link TraversalSource} and the value is the
      * {@link TraversalSource} itself
-     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSource(String)} ()} and
-     * {@link #getTraversalSource(String)} (String)}
+     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSourceNames()} and
+     * {@link #getTraversalSource(String)}
      */
     @Deprecated
     public final Map<String, TraversalSource> getTraversalSources() {
