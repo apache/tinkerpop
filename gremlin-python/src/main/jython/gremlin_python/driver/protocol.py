@@ -80,21 +80,21 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
                 {'sasl': base64.b64encode(auth).decode()})
             self.write(request_id, request_message)
             data = self._transport.read()
+            # Allow recursive call for auth
             self.data_received(data, results_dict)
         elif status_code == 204:
             result_set.stream.put_nowait([])
             del results_dict[request_id]
+            return status_code
         elif status_code in [200, 206]:
             results = []
             for msg in data["result"]["data"]:
                 results.append(
                     self._message_serializer.deserialize_message(msg))
             result_set.stream.put_nowait(results)
-            if status_code == 206:
-                data = self._transport.read()
-                self.data_received(data, results_dict)
-            else:
+            if status_code == 200:
                 del results_dict[request_id]
+            return status_code
         else:
             del results_dict[request_id]
             raise GremlinServerError(
