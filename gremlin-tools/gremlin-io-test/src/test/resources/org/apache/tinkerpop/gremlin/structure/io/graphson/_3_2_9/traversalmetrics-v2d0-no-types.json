@@ -1,0 +1,48 @@
+{
+  "dur" : 0.625789,
+  "metrics" : [ {
+    "dur" : 0.099721,
+    "counts" : {
+      "traverserCount" : 4,
+      "elementCount" : 4
+    },
+    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+    "annotations" : {
+      "percentDur" : 15.93524334879648
+    },
+    "id" : "7.0.0()"
+  }, {
+    "dur" : 0.156114,
+    "counts" : {
+      "traverserCount" : 13,
+      "elementCount" : 13
+    },
+    "name" : "VertexStep(OUT,vertex)",
+    "annotations" : {
+      "percentDur" : 24.946747226301518
+    },
+    "id" : "2.0.0()"
+  }, {
+    "dur" : 0.155405,
+    "counts" : {
+      "traverserCount" : 7,
+      "elementCount" : 7
+    },
+    "name" : "VertexStep(OUT,vertex)",
+    "annotations" : {
+      "percentDur" : 24.83345025240137
+    },
+    "id" : "3.0.0()"
+  }, {
+    "dur" : 0.214549,
+    "counts" : {
+      "traverserCount" : 1,
+      "elementCount" : 1
+    },
+    "name" : "TreeStep",
+    "annotations" : {
+      "percentDur" : 34.284559172500636
+    },
+    "id" : "4.0.0()"
+  } ]
+}

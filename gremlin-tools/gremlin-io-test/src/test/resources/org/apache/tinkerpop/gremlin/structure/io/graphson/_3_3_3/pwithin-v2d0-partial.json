@@ -1,0 +1,10 @@
+{
+  "@type" : "g:P",
+  "@value" : {
+    "predicate" : "within",
+    "value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    } ]
+  }
+}
