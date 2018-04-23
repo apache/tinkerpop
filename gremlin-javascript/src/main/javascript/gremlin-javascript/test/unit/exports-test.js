@@ -69,5 +69,7 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.driver.RemoteConnection, 'function');
     assert.strictEqual(typeof glvModule.driver.RemoteStrategy, 'function');
     assert.strictEqual(typeof glvModule.driver.RemoteTraversal, 'function');
+    assert.strictEqual(typeof glvModule.driver.DriverRemoteConnection, 'function');
+    assert.strictEqual(glvModule.driver.DriverRemoteConnection.name, 'DriverRemoteConnection');
   });
 });

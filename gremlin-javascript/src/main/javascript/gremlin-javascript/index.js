@@ -22,20 +22,22 @@
  */
 'use strict';
 
-var t = require('./lib/process/traversal');
-var gt = require('./lib/process/graph-traversal');
-var strategiesModule = require('./lib/process/traversal-strategy');
-var graph = require('./lib/structure/graph');
-var gs = require('./lib/structure/io/graph-serializer');
-var rc = require('./lib/driver/remote-connection');
-var Bytecode = require('./lib/process/bytecode');
-var utils = require('./lib/utils');
+const t = require('./lib/process/traversal');
+const gt = require('./lib/process/graph-traversal');
+const strategiesModule = require('./lib/process/traversal-strategy');
+const graph = require('./lib/structure/graph');
+const gs = require('./lib/structure/io/graph-serializer');
+const rc = require('./lib/driver/remote-connection');
+const Bytecode = require('./lib/process/bytecode');
+const utils = require('./lib/utils');
+const DriverRemoteConnection = require('./lib/driver/driver-remote-connection');
 
 module.exports = {
   driver: {
     RemoteConnection: rc.RemoteConnection,
     RemoteStrategy: rc.RemoteStrategy,
-    RemoteTraversal: rc.RemoteTraversal
+    RemoteTraversal: rc.RemoteTraversal,
+    DriverRemoteConnection: DriverRemoteConnection
   },
   process: {
     Bytecode: Bytecode,
