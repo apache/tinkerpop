@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,11 +74,10 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     public TraversalVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         final TraversalStrategies computerSpecificStrategies = this.getTraversal().getStrategies().clone();
-        TraversalStrategies.GlobalCache.getStrategies(graph.getClass())
-                .toList()
-                .stream()
-                .filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy)
-                .forEach(computerSpecificStrategies::addStrategies);
+
+        IteratorUtils.filter(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList(),
+                s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).forEach(computerSpecificStrategies::addStrategies);
+
         computerSpecificTraversal.setStrategies(computerSpecificStrategies);
         computerSpecificTraversal.setSideEffects(new MemoryTraversalSideEffects(this.getTraversal().getSideEffects()));
         computerSpecificTraversal.setParent(this);
