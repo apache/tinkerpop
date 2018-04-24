@@ -176,12 +176,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                         this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep ||  // same as above, but if using TraversalVertexProgramStep directly
                         (this.traversal.get().getParent().asStep().getNextStep() instanceof ProfileStep && // same as above, but needed for profiling
                                 this.traversal.get().getParent().asStep().getNextStep().getNextStep() instanceof ComputerResultStep));
+
         // determine how to store halted traversers
-        this.haltedTraverserStrategy = ((HaltedTraverserStrategy) this.traversal.get().getStrategies().toList()
-                .stream()
-                .filter(strategy -> strategy instanceof HaltedTraverserStrategy)
-                .findAny()
-                .orElse(HaltedTraverserStrategy.reference()));
+        final Iterator<?> itty = IteratorUtils.filter(this.traversal.get().getStrategies().toList(), strategy -> strategy instanceof HaltedTraverserStrategy).iterator();
+        this.haltedTraverserStrategy = itty.hasNext() ? (HaltedTraverserStrategy) itty.next() : HaltedTraverserStrategy.reference();
+
         // register traversal side-effects in memory
         this.memoryComputeKeys.addAll(MemoryTraversalSideEffects.getMemoryComputeKeys(this.traversal.get()));
         // register MapReducer memory compute keys
