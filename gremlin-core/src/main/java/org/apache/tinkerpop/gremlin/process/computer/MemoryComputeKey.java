@@ -79,14 +79,17 @@ public final class MemoryComputeKey<A> implements Serializable, Cloneable {
     public MemoryComputeKey<A> clone() {
         try {
             final MemoryComputeKey<A> clone = (MemoryComputeKey<A>) super.clone();
-            for (final Method method : this.reducer.getClass().getMethods()) {
-                if (method.getName().equals("clone") && 0 == method.getParameterCount()) {
-                    clone.reducer = (BinaryOperator<A>) method.invoke(this.reducer);
-                    break;
-                }
+
+            try {
+                final Method cloneMethod = this.reducer.getClass().getMethod("clone");
+                if (cloneMethod != null)
+                    clone.reducer = (BinaryOperator<A>) cloneMethod.invoke(this.reducer);
+            } catch(Exception ignored) {
+
             }
+
             return clone;
-        } catch (final IllegalAccessException | InvocationTargetException | CloneNotSupportedException e) {
+        } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
