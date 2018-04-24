@@ -21,16 +21,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.Collections;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
@@ -39,11 +38,10 @@ import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
-
-    private static final RequirementsStep emptyRequirementStep = new RequirementsStep<>(null, Collections.EMPTY_SET);
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -53,10 +51,10 @@ public class StandardVerificationStrategyTest {
                 {"__.repeat(sum()).times(2)", repeat(sum()).times(2), false},
                 {"__.repeat(out().count())", repeat(out().count()), false},
                 // traversals that should pass verification
-                {"__.V().profile().requirementsStep()",
-                        __.V().profile().asAdmin().addStep(emptyRequirementStep), true},
-                {"__.V().profile('metrics').cap('metrics').requirementsStep()",
-                        __.V().profile("metrics").asAdmin().addStep(emptyRequirementStep), true}
+                {"__.V().profile()",
+                        __.V().profile(), true},
+                {"__.V().profile('metrics').cap('metrics')",
+                        __.V().profile("metrics").cap("metrics"), true}
         });
     }
 
@@ -71,19 +69,34 @@ public class StandardVerificationStrategyTest {
 
     @Test
     public void shouldBeVerified() {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(StandardVerificationStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
+        final Traversal copy = copyAndConfigureTraversal(traversal);
 
         if (legalTraversal) {
-            traversal.asAdmin().applyStrategies();
+            copy.asAdmin().applyStrategies();
+
+            // try to also apply strategies with iterate() so that a NoneStep is added - for consistency sake we want
+            // to be able to run a profile and get no result back with this.
+            final Traversal forIteration = copyAndConfigureTraversal(traversal);
+            forIteration.iterate();
         } else {
             try {
-                traversal.asAdmin().applyStrategies();
+                copy.asAdmin().applyStrategies();
                 fail("The strategy should not allow traversal: " + this.traversal);
             } catch (IllegalStateException ise) {
                 assertTrue(true);
             }
         }
+    }
+
+    private static Traversal copyAndConfigureTraversal(final Traversal traversalToCopy) {
+        final Traversal copy = traversalToCopy.asAdmin().clone();
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(StandardVerificationStrategy.instance());
+
+        // just add a junk requirement
+        RequirementsStrategy.addRequirements(strategies, TraverserRequirement.BULK);
+
+        copy.asAdmin().setStrategies(strategies);
+        return copy;
     }
 }
