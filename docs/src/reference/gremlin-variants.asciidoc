@@ -462,16 +462,23 @@ their Java counterparts which makes it possible to use lambdas with Gremlin.Net 
 == Gremlin-JavaScript
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
-JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 4 or
+JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 6 or
 above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
 between Gremlin-Java and Gremlin-JavaScript.
 
 [source,bash]
-npm install gremlin-javascript
+npm install gremlin
 
 The Gremlin-JavaScript provides `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
 in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implementation in order to communicate with
 <<gremlin-server,GremlinServer>>.
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const Graph = gremlin.structure.Graph;
+const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+----
 
 A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
 
@@ -493,27 +500,45 @@ IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard G
 
 === RemoteConnection Submission
 
-Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a
-`RemoteConnection` using terminal/action methods off of `Traversal`.
+In a similar way as in other GLVs, there are various ways to submit a traversal to a
+`RemoteConnection` using terminal/action methods off of `Traversal`. Given that I/O operations in Node.js are
+asynchronous by default, this terminal methods return a `Promise`.
 
-* `Traversal.next()`
-* `Traversal.toList()`
+* `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
+* `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
+link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
+* `Traversal.iterate()`: Returns a `Promise` without a value.
+
+
+For example:
+
+[source,javascript]
+----
+g.V().hasLabel('person').values('name').toList()
+  .then(names => console.log(names));
+----
+
+You can `await` the promises if you are using `async` functions.
+
+[source,javascript]
+----
+const names = await g.V().hasLabel('person').values('name').toList();
+console.log(names);
+----
 
 === Static Enums and Methods
 
 Gremlin has various tokens (e.g. `t`, `P`, `order`, `direction`, etc.) that are represented in Gremlin-JavaScript as
 objects.
 
-These can be used analogously to how they are used in Gremlin-Java.
-
 [source,javascript]
-g.V().hasLabel("person").has("age",P.gt(30)).Order().By("age", order.decr).toList()
+g.V().hasLabel('person').has('age', P.gt(30)).order().by('age', order.decr).toList()
 
 These objects must be required manually from the `process` namespace:
 
 [source,javascript]
 ----
-const gremlin = require('gremlin-javascript');
+const gremlin = require('gremlin');
 const P = gremlin.process.P;
 ----
 
@@ -521,7 +546,7 @@ Finally, using static `__` anonymous traversals like `__.out()` can be expressed
 
 [source,javascript]
 ----
-const gremlin = require('gremlin-javascript');
+const gremlin = require('gremlin');
 const __ = gremlin.process.statics;
 
 g.V().repeat(__.out()).times(2).values("name").fold().toList();
