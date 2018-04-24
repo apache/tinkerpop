@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,8 +64,7 @@ public final class VertexProgramHelper {
         if (configuration instanceof AbstractConfiguration)
             ((AbstractConfiguration) configuration).setDelimiterParsingDisabled(true);
         try {
-            final String byteString = Arrays.toString(Serializer.serializeObject(object));
-            configuration.setProperty(key, byteString.substring(1, byteString.length() - 1));
+            configuration.setProperty(key, Base64.getEncoder().encodeToString(Serializer.serializeObject(object)));
         } catch (final IOException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
@@ -73,12 +72,8 @@ public final class VertexProgramHelper {
 
     public static <T> T deserialize(final Configuration configuration, final String key) {
         try {
-            final String[] stringBytes = configuration.getString(key).split(",");
-            byte[] bytes = new byte[stringBytes.length];
-            for (int i = 0; i < stringBytes.length; i++) {
-                bytes[i] = Byte.valueOf(stringBytes[i].trim());
-            }
-            return (T) Serializer.deserializeObject(bytes);
+
+            return (T) Serializer.deserializeObject(Base64.getDecoder().decode(configuration.getString(key).getBytes()));
         } catch (final IOException | ClassNotFoundException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
