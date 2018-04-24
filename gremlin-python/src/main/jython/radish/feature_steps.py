@@ -25,6 +25,7 @@ from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope
 from radish import given, when, then
 from hamcrest import *
 
+regex_all = re.compile(r"Pop\.all")
 regex_and = re.compile(r"([(.,\s])and\(")
 regex_as = re.compile(r"([(.,\s])as\(")
 regex_from = re.compile(r"([(.,\s])from\(")
@@ -235,6 +236,7 @@ def _table_assertion(data, result, ctx, ordered):
 
 def _translate(traversal):
     replaced = traversal.replace("\n", "")
+    replaced = regex_all.sub(r"Pop.all_", replaced)
     replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_from.sub(r"\1from_(", replaced)
     replaced = regex_global.sub(r"\1global_", replaced)
