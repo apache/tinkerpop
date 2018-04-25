@@ -531,3 +531,47 @@ Feature: Step - select()
       | result |
       | d[2].l |
       | d[2].l |
+
+  Scenario: g_V_asXaX_groupXmX_by_byXbothE_countX_barrier_selectXmX_selectXselectXaXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").group("m").by().by(__.bothE().count()).barrier().select("m").select(__.select("a"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+      | d[1].l |
+      | d[3].l |
+      | d[3].l |
+      | d[1].l |
+      | d[1].l |
+
+  Scenario: g_V_asXaX_groupXmX_by_byXbothE_countX_barrier_selectXmX_selectXselectXaXX_byXmathX_plus_XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").group("m").by().by(__.bothE().count()).barrier().select("m").select(__.select("a")).by(__.math("_+_"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].d |
+      | d[2].d |
+      | d[6].d |
+      | d[6].d |
+      | d[2].d |
+      | d[2].d |
+
+  Scenario: g_V_asXaX_outXknowsX_asXaX_selectXall_constantXaXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out("knows").as("a").select(Pop.all, __.constant("a"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[v[marko],v[vadas]] |
+      | l[v[marko],v[josh]] |

@@ -2340,6 +2340,22 @@ g.V(1).as("a").repeat(out().as("a")).times(2).select(last, "a")
 g.V(1).as("a").repeat(out().as("a")).times(2).select(all, "a")
 ----
 
+In addition to the previously shown examples, where `select()` was used to select an element based on a static key, `select()` can also accept a traversal
+that emits a key.
+
+WARNING: Since the key used by `select(<traversal>)` cannot be determined at compile time, the `TraversalSelectStep` enables full path tracking.
+
+[gremlin-groovy,modern]
+----
+g.withSideEffect("alias", ["marko":"okram"]).V().  <1>
+  values("name").sack(assign).                     <2>
+  optional(select("alias").select(sack()))         <3>
+----
+
+<1> Inject a name alias map and start the traversal from all vertices.
+<2> Select all `name` values and store them as the current traverser's sack value.
+<3> Optionally select the alias for the current name from the injected map.
+
 [[using-where-with-select]]
 ==== Using Where with Select
 
@@ -2371,6 +2387,8 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-org.apache.tinkerpop.gremlin.process.traversal.Pop-java.lang.String-++[`select(Pop,String)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-java.lang.String-++[`select(String)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-java.lang.String-java.lang.String-java.lang.String...-++[`select(String,String,String...)`],
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`select(Traversal)`],
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-org.apache.tinkerpop.gremlin.process.traversal.Pop-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`select(Pop,Traversal)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Column.html++[`Column`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`]
 

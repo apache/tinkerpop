@@ -112,6 +112,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
@@ -731,6 +732,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.select, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.last, selectKey));
+    }
+
+    /**
+     * Map the {@link Traverser} to the object specified by the key returned by the {@code keyTraversal} and apply the {@link Pop} operation
+     * to it.
+     *
+     * @param keyTraversal the traversal expression that selects the key to project
+     * @return the traversal with an appended {@link SelectStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
+     * @since 3.3.3
+     */
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final Traversal<S, E2> keyTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.select, pop, keyTraversal);
+        return this.asAdmin().addStep(new TraversalSelectStep<>(this.asAdmin(), pop, keyTraversal));
+    }
+
+    /**
+     * Map the {@link Traverser} to the object specified by the key returned by the {@code keyTraversal}. Note that unlike other uses of
+     * {@code select} where there are multiple keys, this use of {@code select} with a traversal does not produce a
+     * {@code Map}.
+     *
+     * @param keyTraversal the traversal expression that selects the key to project
+     * @return the traversal with an appended {@link TraversalSelectStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
+     * @since 3.3.3
+     */
+    public default <E2> GraphTraversal<S, E2> select(final Traversal<S, E2> keyTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.select, keyTraversal);
+        return this.asAdmin().addStep(new TraversalSelectStep<>(this.asAdmin(), null, keyTraversal));
     }
 
     /**

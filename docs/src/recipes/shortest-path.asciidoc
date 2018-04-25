@@ -95,5 +95,44 @@ calculated cost. With some slight modifications given the use of `select` it bec
 the output. Note that the path with the lowest "cost" actually has a longer path length as determined by the graph
 structure.
 
+The following query illustrates how `select(<traversal>)` can be used to find all shortest weighted undirected paths
+in the modern toy graph.
 
+[gremlin-groovy,modern]
+----
+g.withSack(0.0).V().as("from").       <1>
+  repeat(bothE().
+         sack(sum).
+           by("weight").
+         otherV().                    <2>
+         where(neq("from")).as("to"). <3>
+         group("m").                  <4>
+           by(select("from","to")).
+           by(sack().min()).
+         filter(project("s","x").     <5>
+                  by(sack()).
+                  by(select("m").select(select("from","to"))).
+                where("s", eq("x"))).
+         group("p").                  <6>
+           by(select("from", "to")).
+           by(map(union(path().by("name").by("weight"),
+                        sack()).fold())).
+         barrier()).
+  cap("p").unfold().
+  order().                            <7>
+    by(select(keys).select("from").id()).
+    by(select(keys).select("to").id()).
+  barrier().
+  dedup().                            <8>
+    by(select(keys).select(values).order(local).by(id))
+----
+
+<1> Start the traversal from all vertices with an initial sack value of 0.
+<2> Traverse into all directions and sum up the edge weight values.
+<3> Filter out the initial start vertex.
+<4> For the current start and end vertex, update the minimum sack value (weighted length of the path).
+<5> Compare the current weighted path length to the current minimum weighted path length between the 2 vertices. Eliminate traversers that found a path that is longer than the current shortest path.
+<6> Update the path and weighted path length for the current start and end vertex pair.
+<7> Order the output by the start vertex id and then the end vertex id (for better readability).
+<8> Deduplicate vertex pairs (the shortest path from `v[1]` to `v[6]` is the same as the path from `v[6]` to `v[1]`).
 

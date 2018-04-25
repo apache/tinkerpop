@@ -352,6 +352,20 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#select(Pop, Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final Traversal<A, B> keyTraversal) {
+        return __.<A>start().select(pop, keyTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#select(Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> select(final Traversal<A, B> keyTraversal) {
+        return __.<A>start().select(keyTraversal);
+    }
+
+    /**
      * @see GraphTraversal#unfold()
      */
     public static <A> GraphTraversal<A, A> unfold() {
