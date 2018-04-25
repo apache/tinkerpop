@@ -1828,6 +1828,76 @@ section. It controls the maximum number of parameters that can be passed to the 
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
 
+==== Properties of Elements
+
+It was mentioned above at the start of this "Best Practices" section that serialization of graph elements (i.e.
+`Vertex`, `Edge`, and `VertexProperty`) can be expensive and that it is best to only return the data that is required
+by the requesting system. This point begs for further clarification as there are a number of ways to use and configure
+Gremlin Server which might influence its interpretation.
+
+To begin to discuss these nuances, first consider the method of making requests to Gremlin Server: script or bytecode.
+For scripts, that will mean that users are sending string representation of Gremlin to the server directly through a
+driver over websockets or through the HTTP. For bytecode, users will be utilize a <<gremlin-variants, Gremlin GLV>>
+which will construct bytecode for them and submit the request to the server upon iteration of their traversal.
+
+In either case, it is important to also consider the method of "detachment". Detachment refers to the manner in which
+a graph element is disconnected from the graph for purpose of serialization. Depending on the case and configuration,
+graph elements may be detached with or without properties. Cases where they include properties is generally referred
+to as "detached elements" and cases where properties are not included are "reference elements".
+
+With the type of request and detachment model in mind, it is now possible to discuss how best to consider element
+properties in relation to them all in concert.
+
+For script-based requests, users should take care when returning graph elements. By default, elements will be returned
+as detached elements and will thus serialize with all properties that are bound to them. As such, Gryo and GraphSON
+serializers will write all properties in the return payload. Script-based requests should definitely follow the best
+practice of only returning the data required by the application.
+
+NOTE: Gryo does have the exception for the `GryoMessageSerializerGremlinV1d0` with the `serializeResultToString`
+option enabled, which will simply convert all results using the Java `toString()` method prior to serialization and
+is typically only use by the Gremlin Console for remote sessions where the actual object from the server is not of use.
+
+For bytecode-based requests, graph elements have reference detachment and thus only return the `id` and `label` of
+the elements. While this approach alleviates a potential performance problem that the script approach exposes, it is
+still important to follow the practice of being specific about the data that is required by the requesting application
+as it won't arrive on the client side without that declaration.
+
+Ultimately, the detachment model should have little impact to Gremlin usage if the best practice of specifying only
+the data required by the application is adhered to. In other words, while there may be a difference in the contents
+of return values for these traversals:
+
+[source,java]
+----
+// properties returned from g.V().hasLabel('person') because this is using the
+// Script API with full detachment
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+ResultSet results = client.submit("g.V().hasLabel('person')");
+
+// no properties returned from g.V().hasLabel("person") because this is using
+// Bytecode API with reference detachment
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().
+                               withRemote('conf/remote-graph.properties');
+List<Vertex> results = g.V().hasLabel("person").toList();
+----
+
+There is no difference if re-written using the best practice of requesting only the data the application needs:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+ResultSet results = client.submit("g.V().hasLabel('person').valueMap(true,'name')");
+
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().
+                               withRemote('conf/remote-graph.properties');
+List<Vertex> results = g.V().hasLabel("person").valueMap(true,'name').toList();
+----
+
+Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
+
 ==== Cache Management
 
 If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
