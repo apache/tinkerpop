@@ -47,6 +47,7 @@ This release also includes changes from <<release-3-2-9, 3.2.9>>.
 
 * Coerced `BulkSet` to `g:List` in GraphSON 3.0.
 * Deprecated `CredentialsGraph` DSL in favor of `CredentialsTraversalDsl` which uses the recommended method for Gremlin DSL development.
+* Allowed `iterate()` to be called after `profile()`.
 
 [[release-3-3-2]]
 === TinkerPop 3.3.2 (Release Date: April 2, 2018)
