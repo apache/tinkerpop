@@ -309,6 +309,32 @@ Feature: Step - addV()
       | m[{"temp": ["test"], "name": ["lop"]}] |
       | m[{"temp": ["test"], "name": ["ripple"]}] |
 
+  Scenario: g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And the traversal of
+      """
+      g.withSideEffect("a", "name").addV().property(__.select("a"), "marko").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+    And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
   Scenario: g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX
     Given the empty graph
     And the graph initializer of

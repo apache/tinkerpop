@@ -39,10 +39,8 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -72,6 +70,8 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name();
 
     public abstract Traversal<Vertex, String> get_g_addVXV_hasXname_markoX_propertiesXnameX_keyX_label();
+
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name();
 
     public abstract Traversal<Vertex, Map<Object, Object>> get_g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX();
 
@@ -263,6 +263,17 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name();
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_addVXV_hasXname_markoX_propertiesXnameX_keyX_label() {
         final Traversal<Vertex, String> traversal = get_g_addVXV_hasXname_markoX_propertiesXnameX_keyX_label();
         printTraversalForm(traversal);
@@ -335,6 +346,11 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name() {
             return g.withSideEffect("a", "marko").addV().property("name", select("a")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name() {
+            return g.withSideEffect("a", "name").addV().property(select("a"),"marko").values("name");
         }
 
         @Override
