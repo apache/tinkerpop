@@ -22,6 +22,9 @@ import groovy.lang.Closure;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -387,5 +390,13 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(101, engine.getClassCacheLoadCount());
         assertEquals(1, engine.getClassCacheLoadFailureCount());
         assertEquals(100, engine.getClassCacheLoadSuccessCount());
+    }
+
+    @Test
+    public void shouldEvalForLambda() throws Exception {
+        // https://issues.apache.org/jira/browse/TINKERPOP-1953
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Lambda l = (Lambda) engine.eval(" org.apache.tinkerpop.gremlin.util.function.Lambda.function(\"{ it.get() }\")");
+        assertEquals("{ it.get() }", l.getLambdaScript());
     }
 }

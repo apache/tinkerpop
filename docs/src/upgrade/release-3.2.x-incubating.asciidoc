@@ -21,6 +21,30 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+== TinkerPop 3.2.9
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.8/CHANGELOG.asciidoc#release-3-2-9[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Lambda Construction
+
+It was realized quite shortly after release of 3.2.8 that there was a bug in construction of `Lambda` instances:
+
+[source,text]
+----
+gremlin> org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }")
+(class: org/apache/tinkerpop/gremlin/util/function/Lambda$function, method: callStatic signature: (Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;) Illegal type in constant pool
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+----
+
+The problem was related to a bug in Groovy 2.4.14 and was fixed in 2.4.15.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1953[TINKERPOP-1953]
+
 == TinkerPop 3.2.8
 
 *Release Date: April 2, 2018*
