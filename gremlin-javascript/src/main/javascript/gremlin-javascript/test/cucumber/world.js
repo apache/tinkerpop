@@ -111,16 +111,14 @@ function getEdges(connection) {
     .next()
     .then(it => {
       const edges = {};
-      Object.keys(it.value).map(key => {
-        edges[getEdgeKey(key)] = it.value[key];
+      it.value.forEach((v, k) => {
+        edges[getEdgeKey(k)] = v;
       });
       return edges;
     });
 }
 
 function getEdgeKey(key) {
-  const o = /o=(.+?)[,}]/.exec(key)[1];
-  const l = /l=(.+?)[,}]/.exec(key)[1];
-  const i = /i=(.+?)[,}]/.exec(key)[1];
-  return o + "-" + l + "->" + i;
+  // key is a map
+  return key.get('o') + "-" + key.get('l') + "->" + key.get('i');
 }

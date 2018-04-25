@@ -37,7 +37,7 @@ const t = traversalModule.t;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
 // Use false for GraphSON3.
-const mapAsObject = true;
+const mapAsObject = false;
 
 const parsers = [
   [ 'd\\[([\\d.]+)\\]\\.[ilfdm]', toNumeric ],
@@ -233,7 +233,7 @@ function toNumeric(stringValue) {
 }
 
 function toVertex(name) {
-  return this.getData().vertices[name];
+  return this.getData().vertices.get(name);
 }
 
 function toVertexId(name) {
