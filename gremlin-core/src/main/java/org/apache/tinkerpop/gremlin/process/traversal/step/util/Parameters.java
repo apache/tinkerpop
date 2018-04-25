@@ -174,26 +174,30 @@ public final class Parameters implements Cloneable, Serializable {
         if (keyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
 
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof T) && !(keyValues[i] instanceof Traversal))
+        for (int ix = 0; ix < keyValues.length; ix = ix + 2) {
+            if (!(keyValues[ix] instanceof String) && !(keyValues[ix] instanceof T) && !(keyValues[ix] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
 
-            if (keyValues[i + 1] != null) {
-                // track the list of traversals that are present so that elsewhere in Parameters there is no need
-                // to iterate all values to not find any. also grab available labels in traversal values
-                if (keyValues[i + 1] instanceof Traversal.Admin) {
-                    final Traversal.Admin t = (Traversal.Admin) keyValues[i + 1];
-                    addTraversal(t);
-                    if (parent != null) parent.integrateChild(t);
+            if (keyValues[ix + 1] != null) {
+
+                // check both key and value for traversal instances. track the list of traversals that are present so
+                // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab
+                // available labels in traversal values
+                for (int iy = 0; iy < 2; iy++) {
+                    if (keyValues[ix + iy] instanceof Traversal.Admin) {
+                        final Traversal.Admin t = (Traversal.Admin) keyValues[ix + iy];
+                        addTraversal(t);
+                        if (parent != null) parent.integrateChild(t);
+                    }
                 }
 
-                List<Object> values = this.parameters.get(keyValues[i]);
+                List<Object> values = this.parameters.get(keyValues[ix]);
                 if (null == values) {
                     values = new ArrayList<>();
-                    values.add(keyValues[i + 1]);
-                    this.parameters.put(keyValues[i], values);
+                    values.add(keyValues[ix + 1]);
+                    this.parameters.put(keyValues[ix], values);
                 } else {
-                    values.add(keyValues[i + 1]);
+                    values.add(keyValues[ix + 1]);
                 }
             }
         }
