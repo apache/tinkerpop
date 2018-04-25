@@ -203,7 +203,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
          * Keeps track of {@link GraphComputer} and/or {@link Graph} classes that have been initialized to the
          * classloader so that they do not have to be reflected again.
          */
-        private static Map<Class, Boolean> LOADED = new ConcurrentHashMap<>();
+        private static Set<Class> LOADED = ConcurrentHashMap.newKeySet();
 
         private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
         private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();
@@ -249,28 +249,27 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
-            // be sure to load the class so that its static{} traversal strategy registration component is loaded.
-            // this is more important for GraphComputer classes as they are typically not instantiated prior to
-            // strategy usage like Graph classes.
-            LOADED.computeIfAbsent(graphOrGraphComputerClass, unused ->  {
-                final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
-                    graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
-                    graphOrGraphComputerClass.getCanonicalName();
-
-                try {
+            try {
+                // be sure to load the class so that its static{} traversal strategy registration component is loaded.
+                // this is more important for GraphComputer classes as they are typically not instantiated prior to
+                // strategy usage like Graph classes.
+                if (!LOADED.contains(graphOrGraphComputerClass)) {
+                    final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
+                            graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
+                            graphOrGraphComputerClass.getCanonicalName();
                     Class.forName(graphComputerClassName);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
 
-                // keep track of stuff we already loaded once - stuff in this if/statement isn't cheap and this
-                // method gets called a lot, basically every time a new traversal gets spun up (that includes
-                // child traversals. perhaps it is possible to just check the cache keys for this information, but
-                // it's not clear if this method will be called with something not in the cache and if it is and
-                // it results in error, then we'd probably not want to deal with this block again anyway
-                return true;
-            });
-            
+                    // keep track of stuff we already loaded once - stuff in this if/statement isn't cheap and this
+                    // method gets called a lot, basically every time a new traversal gets spun up (that includes
+                    // child traversals. perhaps it is possible to just check the cache keys for this information, but
+                    // it's not clear if this method will be called with something not in the cache and if it is and
+                    // it results in error, then we'd probably not want to deal with this block again anyway
+                    LOADED.add(graphOrGraphComputerClass);
+                }
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+
             if (GRAPH_CACHE.containsKey(graphOrGraphComputerClass)) {
                 return GRAPH_CACHE.get(graphOrGraphComputerClass);
             } else if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
@@ -284,6 +283,4 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             }
         }
     }
-
-
 }
