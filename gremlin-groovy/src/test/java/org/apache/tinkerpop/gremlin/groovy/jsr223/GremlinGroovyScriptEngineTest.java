@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -602,5 +603,13 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(101, engine.getClassCacheLoadCount());
         assertEquals(1, engine.getClassCacheLoadFailureCount());
         assertEquals(100, engine.getClassCacheLoadSuccessCount());
+    }
+
+    @Test
+    public void shouldEvalForLambda() throws Exception {
+        // https://issues.apache.org/jira/browse/TINKERPOP-1953
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Lambda l = (Lambda) engine.eval(" org.apache.tinkerpop.gremlin.util.function.Lambda.function(\"{ it.get() }\")");
+        assertEquals("{ it.get() }", l.getLambdaScript());
     }
 }
