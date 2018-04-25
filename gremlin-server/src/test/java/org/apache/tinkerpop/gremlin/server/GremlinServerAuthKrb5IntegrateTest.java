@@ -97,7 +97,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         settings.ssl = sslConfig;
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         settings.authentication = authSettings;
-        authSettings.className = Krb5Authenticator.class.getName();
+        authSettings.authenticator = Krb5Authenticator.class.getName();
         final Map<String,Object> authConfig = new HashMap<>();
         authConfig.put("principal", kdcServer.serverPrincipal);
         authConfig.put("keytab", kdcServer.serviceKeytabFile.getAbsolutePath());

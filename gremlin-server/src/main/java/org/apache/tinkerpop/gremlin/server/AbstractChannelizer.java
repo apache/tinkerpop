@@ -179,12 +179,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     }
 
     private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
-        String authenticatorClass = null;
-        if (config.authenticator == null) {
-            authenticatorClass = config.className;
-        } else {
-            authenticatorClass = config.authenticator;
-        }
+        final String authenticatorClass = config.authenticator;
         try {
             final Class<?> clazz = Class.forName(authenticatorClass);
             final Authenticator authenticator = (Authenticator) clazz.newInstance();

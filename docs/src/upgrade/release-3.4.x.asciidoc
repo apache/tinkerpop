@@ -91,12 +91,15 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
 ** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
+* `gremlin-server`
+** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings.className`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707]
 
 ==== Modifications to reducing barrier steps
 
