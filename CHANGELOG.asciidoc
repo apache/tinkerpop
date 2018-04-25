@@ -341,6 +341,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to httpclient 4.5.5.
 * Bumped to Groovy 2.4.15 - fixes bug with `Lambda` construction.
 * Improved performance of GraphSON deserialization of `Bytecode`.
+* Improved performance of traversal construction.
 
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: April 2, 2018)

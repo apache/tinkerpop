@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -198,6 +199,12 @@ public interface TraversalStrategies extends Serializable, Cloneable {
 
     public static final class GlobalCache {
 
+        /**
+         * Keeps track of {@link GraphComputer} and/or {@link Graph} classes that have been initialized to the
+         * classloader so that they do not have to be reflected again.
+         */
+        private static Set<Class> LOADED = ConcurrentHashMap.newKeySet();
+
         private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
         private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();
 
@@ -244,20 +251,33 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
             try {
                 // be sure to load the class so that its static{} traversal strategy registration component is loaded.
-                // this is more important for GraphComputer classes as they are typically not instantiated prior to strategy usage like Graph classes.
-                final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
+                // this is more important for GraphComputer classes as they are typically not instantiated prior to
+                // strategy usage like Graph classes.
+                if (!LOADED.contains(graphOrGraphComputerClass)) {
+                    final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
                         graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
                         graphOrGraphComputerClass.getCanonicalName();
-                Class.forName(graphComputerClassName);
+                    Class.forName(graphComputerClassName);
+
+                    // keep track of stuff we already loaded once - stuff in this if/statement isn't cheap and this
+                    // method gets called a lot, basically every time a new traversal gets spun up (that includes
+                    // child traversals. perhaps it is possible to just check the cache keys for this information, but
+                    // it's not clear if this method will be called with something not in the cache and if it is and
+                    // it results in error, then we'd probably not want to deal with this block again anyway
+                    LOADED.add(graphOrGraphComputerClass);
+                }
             } catch (final ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
-                final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
-                return null == traversalStrategies ? GRAPH_CACHE.get(Graph.class) : traversalStrategies;
+            
+            if (GRAPH_CACHE.containsKey(graphOrGraphComputerClass)) {
+                return GRAPH_CACHE.get(graphOrGraphComputerClass);
+            } else if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
+                return GRAPH_CACHE.get(Graph.class);
+            } else if (GRAPH_COMPUTER_CACHE.containsKey(graphOrGraphComputerClass)) {
+                return GRAPH_COMPUTER_CACHE.get(graphOrGraphComputerClass);
             } else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass)) {
-                final TraversalStrategies traversalStrategies = GRAPH_COMPUTER_CACHE.get(graphOrGraphComputerClass);
-                return null == traversalStrategies ? GRAPH_COMPUTER_CACHE.get(GraphComputer.class) : traversalStrategies;
+                return GRAPH_COMPUTER_CACHE.get(GraphComputer.class);
             } else {
                 throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
             }
