@@ -38,10 +38,8 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -69,6 +67,8 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<String, List<String>>> get_g_withSideEffectXa_testX_V_hasLabelXsoftwareX_propertyXtemp_selectXaXX_valueMapXname_tempX();
 
     public abstract Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name();
+
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name();
 
     // 3.0.0 DEPRECATIONS
     @Deprecated
@@ -296,6 +296,17 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name();
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
 
     public static class Traversals extends AddVertexTest {
 
@@ -357,6 +368,11 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, String> get_g_withSideEffectXa_markoX_addV_propertyXname_selectXaXX_name() {
             return g.withSideEffect("a", "marko").addV().property("name", select("a")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXa_nameX_addV_propertyXselectXaX_markoX_name() {
+            return g.withSideEffect("a", "name").addV().property(select("a"),"marko").values("name");
         }
     }
 }
