@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -159,7 +160,7 @@ public final class TinkerHelper {
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (vertex.outEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.outEdges.values().forEach(edges::addAll);
+                    IteratorUtils.filter(vertex.outEdges.values(), Objects::nonNull).forEach(edges::addAll);
                 else if (edgeLabels.length == 1)
                     edges.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
                 else
@@ -169,7 +170,7 @@ public final class TinkerHelper {
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
             if (vertex.inEdges != null) {
                 if (edgeLabels.length == 0)
-                    vertex.inEdges.values().forEach(edges::addAll);
+                    IteratorUtils.filter(vertex.inEdges.values(), Objects::nonNull).forEach(edges::addAll);
                 else if (edgeLabels.length == 1)
                     edges.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
                 else
