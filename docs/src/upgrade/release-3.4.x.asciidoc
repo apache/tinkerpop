@@ -84,6 +84,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions.elementAlreadyRemoved(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions.elementNotFound(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions.elementNotFound(Class, Object, Exception)`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
