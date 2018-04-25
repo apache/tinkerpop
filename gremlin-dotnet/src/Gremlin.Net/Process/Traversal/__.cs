@@ -999,6 +999,14 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, E2> Select<E2>(Pop pop, ITraversal keyTraversal)
+        {
+            return new GraphTraversal<object, E2>().Select<E2>(pop, keyTraversal);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, E2> Select<E2>(string selectKey)
         {
             return new GraphTraversal<object, E2>().Select<E2>(selectKey);            
@@ -1012,6 +1020,14 @@ namespace Gremlin.Net.Process.Traversal
             return otherSelectKeys.Length == 0
                 ? new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(selectKey1, selectKey2)
                 : new GraphTraversal<object, IDictionary<string, E2>>().Select<E2>(selectKey1, selectKey2, otherSelectKeys);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the select step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Select<E2>(ITraversal keyTraversal)
+        {
+            return new GraphTraversal<object, E2>().Select<E2>(keyTraversal);            
         }
 
         /// <summary>

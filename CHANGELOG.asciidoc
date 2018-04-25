@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-9, 3.2.9>>.
 
+* Implemented `TraversalSelectStep` which allows to `select()` runtime-generated keys.
 * Coerced `BulkSet` to `g:List` in GraphSON 3.0.
 * Deprecated `CredentialsGraph` DSL in favor of `CredentialsTraversalDsl` which uses the recommended method for Gremlin DSL development.
 * Allowed `iterate()` to be called after `profile()`.
