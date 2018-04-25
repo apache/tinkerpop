@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * `hadoop-gremlin` no longer generates a test artifact.
 * Fixed a bug in `ReducingBarrierStep`, that returned the provided seed value despite no elements being available.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
+* Removed previously deprecated Credentials DSL infrastructure.
 * Moved `TraversalEngine` to `gremlin-test` as it has long been only used in testing infrastructure.
 * Removed previously deprecated `rebindings` options from the Java driver API.
 * Removed support for Giraph.
