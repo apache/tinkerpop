@@ -35,16 +35,6 @@ import java.util.function.Function;
  * the interface also defines similar features for {@link TraversalSource} objects.
  */
 public interface GraphManager {
-    /**
-     * Get a list of the {@link Graph} instances and their binding names.
-     *
-     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
-     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
-     * {@link #getGraph(String)} - note that the expectation is this method return an immutable {@code Map} which was
-     * not the expectation prior to 3.2.5.
-     */
-    @Deprecated
-    public Map<String, Graph> getGraphs();
 
     /**
      * Get a {@link Set} of {@link String} graphNames corresponding to names stored in the graph's
@@ -63,18 +53,6 @@ public interface GraphManager {
      * Add or update the specified {@link Graph} with the specified name to {@code Map<String, Graph>} .
      */
     public void putGraph(final String graphName, final Graph g);
-
-    /**
-     * Get a list of the {@link TraversalSource} instances and their binding names
-     *
-     * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
-     *         {@link TraversalSource} itself
-     * @deprecated  As of release 3.2.5, replaced by a combination of {@link #getTraversalSourceNames()} and
-     * {@link #getTraversalSource(String)} - note that the expectation is this method return an immutable
-     * {@code Map} which was not the expectation prior to 3.2.5.
-     */
-    @Deprecated
-    public Map<String, TraversalSource> getTraversalSources();
 
     /**
      * Get a {@code Set} of the names of the the stored {@link TraversalSource} instances.

@@ -84,16 +84,20 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
-** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions.elementAlreadyRemoved(Class, Object)`
-** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions.elementNotFound(Class, Object)`
-** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions.elementNotFound(Class, Object, Exception)`
+** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions#elementAlreadyRemoved(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object, Exception)`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
 ** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
 * `gremlin-server`
-** `org.apache.tinkerpop.gremlin.server.Settings.serializedResponseTimeout`
-** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings.className`
+** `org.apache.tinkerpop.gremlin.server.GraphManager#getGraphs()`
+** `org.apache.tinkerpop.gremlin.server.GraphManager#getTraversalSources()`
+** `org.apache.tinkerpop.gremlin.server.Settings#serializedResponseTimeout`
+** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings#className`
+** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService)`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor#makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer serializer, boolean, List, ResponseStatusCode code)`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.
@@ -101,7 +105,8 @@ understand how to resolve this breaking change.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954]
 
 ==== Modifications to reducing barrier steps
 

@@ -228,18 +228,9 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         return Collections.emptyMap();
     }
 
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                      final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code) throws Exception {
-        return makeFrame(ctx, msg, serializer, useBinary, aggregate, code, Collections.emptyMap());
-    }
-
-    protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                   final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                   final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
+                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
         try {
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
