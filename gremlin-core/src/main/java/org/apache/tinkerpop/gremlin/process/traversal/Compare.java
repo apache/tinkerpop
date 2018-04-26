@@ -36,6 +36,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
      * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     eq {
         @Override
@@ -61,6 +63,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#equals}.  Otherwise they are evaluated
      * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     neq {
         @Override
@@ -83,6 +87,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
      * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     gt {
         @Override
@@ -108,6 +114,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
      * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     gte {
         @Override
@@ -130,6 +138,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
      * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     lt {
         @Override
@@ -155,6 +165,8 @@ public enum Compare implements BiPredicate<Object, Object> {
      * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
      * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
      * operations to be a bit more forgiving with respect to comparing different number types.
+     *
+     * @since 3.0.0-incubating
      */
     lte {
         @Override

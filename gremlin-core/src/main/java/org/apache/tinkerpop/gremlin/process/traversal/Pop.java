@@ -19,20 +19,28 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 /**
+ * Methods for extracting an item from a collection.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum Pop {
 
     /**
-     * The first item in an ordered collection (i.e. <code>collection[0]</code>)
+     * The first item in an ordered collection (i.e. {@code collection[0]}).
+     *
+     * @since 3.0.0-incubating
      */
     first,
     /**
-     * The last item in an ordered collection (i.e. <code>collection[collection.size()-1]</code>)
+     * The last item in an ordered collection (i.e. {@code collection[collection.size()-1]}).
+     *
+     * @since 3.0.0-incubating
      */
     last,
     /**
-     * Get all the items and return them as a list
+     * Get all the items and return them as a list.
+     *
+     * @since 3.0.0-incubating
      */
     all
 }

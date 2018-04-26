@@ -28,6 +28,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
+ * Predefined {@code Predicate} values that can be used with
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -121,62 +122,137 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     //////////////// statics
 
+    /**
+     * Determines if values are equal.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> eq(final V value) {
         return new P(Compare.eq, value);
     }
 
+    /**
+     * Determines if values are not equal.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> neq(final V value) {
         return new P(Compare.neq, value);
     }
 
+    /**
+     * Determines if a value is less than another.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> lt(final V value) {
         return new P(Compare.lt, value);
     }
 
+    /**
+     * Determines if a value is less than or equal to another.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> lte(final V value) {
         return new P(Compare.lte, value);
     }
 
+    /**
+     * Determines if a value is greater than another.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> gt(final V value) {
         return new P(Compare.gt, value);
     }
 
+    /**
+     * Determines if a value is greater than or equal to another.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> gte(final V value) {
         return new P(Compare.gte, value);
     }
 
+    /**
+     * Determines if a value is within (exclusive) the range of the two specified values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> inside(final V first, final V second) {
         return new AndP<V>(Arrays.asList(new P(Compare.gt, first), new P(Compare.lt, second)));
     }
 
+    /**
+     * Determines if a value is not within (exclusive) of the range of the two specified values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> outside(final V first, final V second) {
         return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
     }
 
+    /**
+     * Determines if a value is within (inclusive) of the range of the two specified values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> between(final V first, final V second) {
         return new AndP<V>(Arrays.asList(new P(Compare.gte, first), new P(Compare.lt, second)));
     }
 
+    /**
+     * Determines if a value is within the specified list of values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> within(final V... values) {
         return P.within(Arrays.asList(values));
     }
 
+    /**
+     * Determines if a value is within the specified list of values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> within(final Collection<V> value) {
         return new P(Contains.within, value);
     }
 
+    /**
+     * Determines if a value is not within the specified list of values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> without(final V... values) {
         return P.without(Arrays.asList(values));
     }
 
+    /**
+     * Deermines if a value is not within the specified list of values.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> without(final Collection<V> value) {
         return new P(Contains.without, value);
     }
 
+    /**
+     * Construct an instance of {@code P} from a {@code BiPredicate}.
+     *
+     * @since 3.0.0-incubating
+     */
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
     }
 
+    /**
+     * The opposite of the specified {@code P}.
+     *
+     * @since 3.0.0-incubating
+     */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
     }
