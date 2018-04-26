@@ -23,10 +23,18 @@ import java.util.Map;
 import java.util.Random;
 
 /**
+ * Provides {@code Comparator} instances for ordering traversers.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Order implements Comparator<Object> {
 
+    /**
+     * Order in ascending fashion
+     *
+     * @since 3.0.0-incubating
+     */
     incr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -39,7 +47,14 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return decr;
         }
-    }, decr {
+    },
+
+    /**
+     * Order in descending fashion.
+     *
+     * @since 3.0.0-incubating
+     */
+    decr {
         @Override
         public int compare(final Object first, final Object second) {
             return first instanceof Number && second instanceof Number
@@ -53,7 +68,8 @@ public enum Order implements Comparator<Object> {
         }
     },
     /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
+     * @since 3.0.0-incubating
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link org.apache.tinkerpop.gremlin.structure.Column#keys}.
      */
     @Deprecated
     keyIncr {
@@ -68,7 +84,8 @@ public enum Order implements Comparator<Object> {
         }
     },
     /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
+     * @since 3.0.0-incubating
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link org.apache.tinkerpop.gremlin.structure.Column#values}.
      */
     @Deprecated
     valueIncr {
@@ -83,7 +100,8 @@ public enum Order implements Comparator<Object> {
         }
     },
     /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
+     * @since 3.0.0-incubating
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link org.apache.tinkerpop.gremlin.structure.Column#keys}.
      */
     @Deprecated
     keyDecr {
@@ -98,7 +116,8 @@ public enum Order implements Comparator<Object> {
         }
     },
     /**
-     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
+     * @since 3.0.0-incubating
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link org.apache.tinkerpop.gremlin.structure.Column#values}.
      */
     @Deprecated
     valueDecr {
