@@ -38,6 +38,8 @@ public enum Contains implements BiPredicate<Object, Collection> {
 
     /**
      * The first object is within the {@link Collection} provided in the second object.
+     *
+     * @since 3.0.0-incubating
      */
     within {
         @Override
@@ -48,6 +50,8 @@ public enum Contains implements BiPredicate<Object, Collection> {
 
     /**
      * The first object is not within the {@link Collection} provided in the second object.
+     *
+     * @since 3.0.0-incubating
      */
     without {
         @Override
