@@ -104,15 +104,6 @@ public class Settings {
     public long scriptEvaluationTimeout = 30000L;
 
     /**
-     * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
-     * total serialization time allowed for the request.  Defaults to 0 which disables this setting.
-     *
-     * @deprecated As of release 3.2.1, replaced wholly by {@link #scriptEvaluationTimeout}.
-     */
-    @Deprecated
-    public long serializedResponseTimeout = 0L;
-
-    /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
      * to the client.
      */

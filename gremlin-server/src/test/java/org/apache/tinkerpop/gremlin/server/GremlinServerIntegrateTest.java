@@ -59,7 +59,6 @@ import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -70,7 +69,6 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.nio.channels.ClosedChannelException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +90,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -176,9 +173,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldReceiveFailureTimeOutOnScriptEval":
                 settings.scriptEvaluationTimeout = 1000;
-                break;
-            case "shouldReceiveFailureTimeOutOnTotalSerialization":
-                settings.serializedResponseTimeout = 1;
                 break;
             case "shouldBlockRequestWhenTooBig":
                 settings.maxContentLength = 1024;
@@ -805,24 +799,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // scriptEvaluationTimeout which is at 30 seconds by default
             final List<ResponseMessage> responses = client.submit("while(true){}");
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
-
-            // validate that we can still send messages to the server
-            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.2.1, replaced by tests covering {@link Settings#scriptEvaluationTimeout}.
-     */
-    @Test
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
-        try (SimpleClient client = TestClientFactory.createWebSocketClient()){
-            final List<ResponseMessage> responses = client.submit("(0..<100000)");
-
-            // the last message should contain the error
-            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());

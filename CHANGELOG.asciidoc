@@ -32,6 +32,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
 * Removed previously deprecated Credentials DSL infrastructure.
 * Moved `TraversalEngine` to `gremlin-test` as it has long been only used in testing infrastructure.
+* Removed previously deprecated Gremlin Server setting for `serializedResponseTimeout`.
 * Removed previously deprecated Structure API exceptions related to "element not found" situations.
 * Removed previously deprecated `rebindings` options from the Java driver API.
 * Removed previously deprecated `AuthenticationSettings.className` configuration option in Gremlin Server.
