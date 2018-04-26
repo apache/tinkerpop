@@ -24,10 +24,18 @@ import java.util.Random;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 /**
+ * Provides {@code Comparator} instances for ordering traversers.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Order implements Comparator<Object> {
 
+    /**
+     * Order in ascending fashion
+     *
+     * @since 3.0.0-incubating
+     */
     incr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -40,7 +48,14 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return decr;
         }
-    }, decr {
+    },
+
+    /**
+     * Order in descending fashion.
+     *
+     * @since 3.0.0-incubating
+     */
+    decr {
         @Override
         public int compare(final Object first, final Object second) {
             return first instanceof Number && second instanceof Number

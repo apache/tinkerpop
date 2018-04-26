@@ -19,15 +19,26 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 /**
- * Many {@link Step} instance can have a variable scope.
- * {@link Scope#global}: the step operates on the entire traversal.
- * {@link Scope#local}: the step operates on the current object in the step.
+ * Many {@link Step} instance can have a variable scope which alter the manner in which the step will behave in
+ * relation to how the traversers are processed.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum Scope {
 
-    global, local;
+    /**
+     * Informs the step to operate on the entire traversal.
+     *
+     * @since 3.0.0-incubating
+     */
+    global,
+
+    /**
+     * Informs the step to operate on the current object in the step.
+     *
+     * @since 3.0.0-incubating
+     */
+    local;
 
     public Scope opposite() {
         return global.equals(this) ? local : global;
