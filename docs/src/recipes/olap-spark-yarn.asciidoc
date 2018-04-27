@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[olap-spark-yarn]]
-OLAP traversals with Spark on YARN
-----------------------------------
+== OLAP traversals with Spark on YARN
 
 TinkerPop's combination of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]
 and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_files[HadoopGraph] allows for running
@@ -26,8 +25,7 @@ where Spark runs locally or where the cluster is managed by a Spark server. Howe
 via the http://hadoop.apache.org/[Hadoop 2.x] Resource Manager (YARN), which requires `SparkGraphComputer` to be
 configured differently. This recipe describes this configuration.
 
-Approach
-~~~~~~~~
+=== Approach
 
 Most configuration problems of TinkerPop with Spark on YARN stem from three reasons:
 
@@ -40,8 +38,8 @@ The current recipe follows a minimalist approach in which no dependencies are ad
 included in the TinkerPop binary distribution. The Hadoop cluster's Spark installation is completely ignored. This
 approach minimizes the chance of dependency version conflicts.
 
-Prerequisites
-~~~~~~~~~~~~~
+=== Prerequisites
+
 This recipe is suitable for both a real external and a local pseudo Hadoop cluster. While the recipe is maintained
 for the vanilla Hadoop pseudo-cluster, it has been reported to work on real clusters with Hadoop distributions
 from various vendors.
@@ -79,8 +77,7 @@ export HADOOP_GREMLIN_LIBS=$GREMLIN_HOME/empty
 bin/gremlin.sh
 ----
 
-Running the job
-~~~~~~~~~~~~~~~
+=== Running the job
 
 You can now run a gremlin OLAP query with Spark on YARN:
 
@@ -119,8 +116,7 @@ the YARN Resource Manager UI (e.g. \http://rm.your.domain:8088/cluster), provide
 `yarn.log-aggregation-enable` property set to `true`. See the Spark documentation for
 https://spark.apache.org/docs/latest/running-on-yarn.html#debugging-your-application[additional hints].
 
-Explanation
-~~~~~~~~~~~
+=== Explanation
 
 This recipe does not require running the `bin/hadoop/init-tp-spark.sh` script described in the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] and thus is also
@@ -140,8 +136,8 @@ The `gremlin.spark.persistContext` property is explained in the reference docume
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
 follow-up OLAP queries answered faster, because you skip the overhead for getting resources from YARN.
 
-Additional configuration options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Additional configuration options
+
 This recipe does most of the graph configuration in the Gremlin Console so that environment variables can be used and
 the chance of configuration mistakes is minimal. Once you have your setup working, it is probably easier to make a copy
 of the `conf/hadoop/hadoop-gryo.properties` file and put the property values specific to your environment there. This is
