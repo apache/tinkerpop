@@ -22,6 +22,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.giraph.job.GiraphJob;
@@ -166,7 +167,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 try {
                     VertexProgram.createVertexProgram(this.hadoopGraph, ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
                 } catch (final IllegalStateException e) {
-                    if (e.getCause() instanceof NumberFormatException)
+                    // NumberFormatException is likely no longer a possibility here after 3.2.9 as the internal
+                    // serialization format for traversals changed from a delimited list of bytes as a string to a
+                    // base64 encoded string. under the base64 model we shouldn't see NumberFormatException anymore
+                    // but i left it here for now, just in case there's something i'm not seeing. see
+                    // VertexProgramHelper.deserialize() for more information related to this handling
+                    final Throwable root = ExceptionUtils.getRootCause(e);
+                    if (root instanceof NumberFormatException || root instanceof IOException || root instanceof ClassNotFoundException)
                         throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
                 }
                 // remove historic combiners in configuration propagation (this occurs when job chaining)

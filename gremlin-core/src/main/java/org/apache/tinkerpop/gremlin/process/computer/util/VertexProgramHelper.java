@@ -72,8 +72,19 @@ public final class VertexProgramHelper {
 
     public static <T> T deserialize(final Configuration configuration, final String key) {
         try {
-
-            return (T) Serializer.deserializeObject(Base64.getDecoder().decode(configuration.getString(key).getBytes()));
+            // a bit of a weird double try-catch here. Base64 can throw an IllegalArgumentException if given some
+            // bad data to deserialize. that needs to be caught and then re-cast as a IOException so that downstream
+            // systems can better catch and react to the error. giraph is the big hassle here it seems - see
+            // GiraphGraphComputer.run() for more related notes on this specifically where
+            // VertexProgram.createVertexProgram() is called as it has special handling for errors related to
+            // deserialization. if not handled properly, giraph will hang in tests. i don't want to over-tweak this
+            // code too much for two reasons (1) dont want to alter method signatures too much or mess with existing
+            // logic within 3.2.x (2) giraph is dead in 3.4.x so no point to trying to make this a ton more elegant.
+            try {
+                return (T) Serializer.deserializeObject(Base64.getDecoder().decode(configuration.getString(key).getBytes()));
+            } catch (IllegalArgumentException iae) {
+                throw new IOException(iae.getMessage());
+            }
         } catch (final IOException | ClassNotFoundException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
