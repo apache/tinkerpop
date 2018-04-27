@@ -67,7 +67,14 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return incr;
         }
-    }, shuffle {
+    },
+
+    /**
+     * Order in a random fashion.
+     *
+     * @since 3.0.0-incubating
+     */
+    shuffle {
         @Override
         public int compare(final Object first, final Object second) {
             return RANDOM.nextBoolean() ? -1 : 1;
