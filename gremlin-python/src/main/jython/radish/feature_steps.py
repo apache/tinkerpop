@@ -43,11 +43,7 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = [
-    "g.V(v1Id).out().inject(v2).values(\"name\")",  # bug in attachment won't connect v2
-    # not sure yet
-    "g.V(v1).hasLabel(\"person\").map(l1).order(Scope.local).by(Column.values, Order.decr).by(Column.keys, Order.incr)"
-    ]
+ignores = []
 
 
 @given("the {graph_name:w} graph")
