@@ -133,7 +133,7 @@ g.V().as('a').
       hasNot('endTime').as('c').
       select('a','b','c').by('name').by(value).by('startTime') // determine the current location of each person
 g.V().has('name','gremlin').inE('uses').
-      order().by('skill',incr).as('a').
+      order().by('skill',asc).as('a').
       outV().as('b').
       select('a','b').by('skill').by('name') // rank the users of gremlin by their skill level
 ----

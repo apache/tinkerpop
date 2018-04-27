@@ -49,8 +49,8 @@ g.V().out('knows').out('created').  <1>
     select('java').unfold().        <3>
   in('created').hasLabel('person'). <4>
   order().                          <5>
-    by(inE().count(),decr).         <6>
-    by('age',incr).
+    by(inE().count(),desc).         <6>
+    by('age',asc).
   dedup().limit(10).values('name')  <7>
 ----
 

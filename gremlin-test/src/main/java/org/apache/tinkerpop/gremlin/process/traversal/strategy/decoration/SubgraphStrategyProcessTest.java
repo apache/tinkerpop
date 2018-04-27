@@ -484,7 +484,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkResults(makeMapList(1, "seattle", 1L), sg.V().groupCount().by("location"));
         //
         sg = g.withStrategies(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
-        checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
+        checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.asc).values("location"));
         //
         sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put(SubgraphStrategy.VERTICES, __.has("location"));

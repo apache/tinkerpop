@@ -49,7 +49,7 @@ public class MyApplication {
     // assumes that args[1] and args[2] are range boundaries
     Iterator<Map<String,Double>> result =
       g.V().hasLabel("product").
-        order().by("unitPrice", incr).
+        order().by("unitPrice", asc).
         range(Integer.valueOf(args[1]), Integer.valueOf(args[2])).
         valueMap("name", "unitPrice")
 

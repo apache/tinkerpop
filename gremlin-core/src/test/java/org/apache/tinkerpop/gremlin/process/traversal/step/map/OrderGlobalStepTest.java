@@ -45,7 +45,13 @@ public class OrderGlobalStepTest extends StepTest {
                 __.order().by("age", Order.decr),
                 __.order().by(outE().count(), Order.incr),
                 __.order().by("age", Order.incr).by(outE().count(), Order.incr),
-                __.order().by(outE().count(), Order.incr).by("age", Order.incr)
+                __.order().by(outE().count(), Order.incr).by("age", Order.incr),
+                __.order().by(Order.desc),
+                __.order().by("age", Order.asc),
+                __.order().by("age", Order.desc),
+                __.order().by(outE().count(), Order.asc),
+                __.order().by("age", Order.asc).by(outE().count(), Order.asc),
+                __.order().by(outE().count(), Order.asc).by("age", Order.asc)
         );
     }
 

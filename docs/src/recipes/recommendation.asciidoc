@@ -134,7 +134,7 @@ g.V().has('person','name','alice').as('her').     <1>
       out('bought').where(without('self')).       <4>
       groupCount().
       order(local).
-        by(values, decr)                          <5>
+        by(values, desc)                          <5>
 ----
 
 <1> Find "alice" who is the person for whom the product recommendation is being made.
@@ -183,7 +183,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).
       select(values).
       order(local).
-        by(decr).limit(local, 1)
+        by(desc).limit(local, 1)
 ----
 
 With the maximum value available, it can be used to chose those "person" vertices that have the three products in
@@ -199,7 +199,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(decr).limit(local, 1).as("m").
+        by(desc).limit(local, 1).as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys)
 ----
@@ -217,7 +217,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(decr).limit(local, 1).as("m").
+        by(desc).limit(local, 1).as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys).
       out("bought").where(without("self"))
@@ -235,13 +235,13 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(decr).limit(local, 1).as("m").
+        by(desc).limit(local, 1).as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys).
       out("bought").where(without("self")).
       groupCount().
       order(local).
-        by(values, decr).
+        by(values, desc).
         by(select(keys).values("name")).
       unfold().select(keys).values("name")
 ----
@@ -257,7 +257,7 @@ g.V().has('person','name','alice').as('her').
       out('bought').where(without('self')).
       groupCount().
       order(local).
-        by(values, decr)
+        by(values, desc)
 ----
 
 The above traversal performs a full ranking of items based on all the connected data. That could be a time consuming
@@ -280,7 +280,7 @@ g.V().has('person','name','alice').as('her').
       out('bought').where(without('self')).timeLimit(1000).
       groupCount().
       order(local).
-        by(values, decr)
+        by(values, desc)
 ----
 
 In using sampling methods, it is important to consider that the natural ordering of edges in the graph may not produce

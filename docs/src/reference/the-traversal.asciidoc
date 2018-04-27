@@ -1147,10 +1147,10 @@ Note that the examples below use the <<the-crew-toy-graph,The Crew>> toy data se
 [gremlin-groovy,theCrew]
 ----
 g.V().as('person').
-      properties('location').order().by('startTime',incr).limit(2).value().as('location').
+      properties('location').order().by('startTime',asc).limit(2).value().as('location').
       select('person','location').by('name').by() <1>
 g.V().as('person').
-      local(properties('location').order().by('startTime',incr).limit(2)).value().as('location').
+      local(properties('location').order().by('startTime',asc).limit(2)).value().as('location').
       select('person','location').by('name').by() <2>
 ----
 
@@ -1626,8 +1626,8 @@ When the objects of the traversal stream need to be sorted, `order()`-step (*map
 [gremlin-groovy,modern]
 ----
 g.V().values('name').order()
-g.V().values('name').order().by(decr)
-g.V().hasLabel('person').order().by('age', incr).values('name')
+g.V().values('name').order().by(desc)
+g.V().hasLabel('person').order().by('age', asc).values('name')
 ----
 
 One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it
@@ -1637,8 +1637,8 @@ comparison of their properties.
 [gremlin-groovy,modern]
 ----
 g.V().values('name')
-g.V().order().by('name',incr).values('name')
-g.V().order().by('name',decr).values('name')
+g.V().order().by('name',asc).values('name')
+g.V().order().by('name',desc).values('name')
 ----
 
 The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting.
@@ -1647,10 +1647,10 @@ based on the age of the person.
 
 [gremlin-groovy,modern]
 ----
-g.V().hasLabel('person').order().by(outE('created').count(), incr).
-                                 by('age', incr).values('name')
-g.V().hasLabel('person').order().by(outE('created').count(), incr).
-                                 by('age', decr).values('name')
+g.V().hasLabel('person').order().by(outE('created').count(), asc).
+                                 by('age', asc).values('name')
+g.V().hasLabel('person').order().by(outE('created').count(), asc).
+                                 by('age', desc).values('name')
 ----
 
 Randomizing the order of the traversers at a particular point in the traversal is possible with `Order.shuffle`.
@@ -1666,10 +1666,10 @@ It is possible to use `order(local)` to order the current local object and not t
 
 [gremlin-groovy,modern]
 ----
-g.V().values('age').fold().order(local).by(decr) <1>
-g.V().values('age').order(local).by(decr) <2>
-g.V().groupCount().by(inE().count()).order(local).by(values, decr) <3>
-g.V().groupCount().by(inE().count()).order(local).by(keys, incr) <4>
+g.V().values('age').fold().order(local).by(desc) <1>
+g.V().values('age').order(local).by(desc) <2>
+g.V().groupCount().by(inE().count()).order(local).by(values, desc) <3>
+g.V().groupCount().by(inE().count()).order(local).by(keys, asc) <4>
 ----
 
 <1> The ages are gathered into a list and then that list is sorted in decreasing order.
@@ -1679,11 +1679,16 @@ g.V().groupCount().by(inE().count()).order(local).by(keys, incr) <4>
 
 NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
+NOTE: Prior to version 3.3.4, ordering was defined by `Order.incr` for ascending order and `Order.decr` for descending
+order. That approach is now deprecated with the preferred method shown in the examples which uses the more common
+forms for query languages in `Order.asc` and Order.desc.
+
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#order--++[`order()`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#order-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`order(Scope)`],
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`],
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
 
 [[pagerank-step]]
 === PageRank Step
@@ -1700,7 +1705,7 @@ g.V().hasLabel('person').
   pageRank().
     by(outE('knows')).
     by('friendRank').
-  order().by('friendRank',decr).valueMap('name','friendRank')
+  order().by('friendRank',desc).valueMap('name','friendRank')
 ----
 
 The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
@@ -1712,7 +1717,7 @@ g.V().hasLabel('person').
   pageRank().
     by(outE('knows')).
     by('friendRank').
-  order().by('friendRank',decr).valueMap('name','friendRank').explain()
+  order().by('friendRank',desc).valueMap('name','friendRank').explain()
 ----
 
 *Additional References*
@@ -1871,7 +1876,7 @@ g.V().out('created').
   project('a','b').
     by('name').
     by(__.in('created').count()).
-  order().by(select('b'),decr).
+  order().by(select('b'),desc).
   select('a')
 g.V().has('name','marko').
                project('out','in').
@@ -1974,7 +1979,7 @@ Finally, an example is provided using `PageRankVertexProgram` which doesn't use 
 g = graph.traversal().withComputer()
 g.V().hasLabel('person').
   program(PageRankVertexProgram.build().property('rank').create(graph)).
-    order().by('rank', incr).
+    order().by('rank', asc).
   valueMap('name', 'rank')
 ----
 
@@ -2304,11 +2309,11 @@ ranking.
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(values,decr).limit(local, 5)
+      order(local).by(values,desc).limit(local, 5)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(values,decr).limit(local, 5).select(keys)
+      order(local).by(values,desc).limit(local, 5).select(keys)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(values,decr).limit(local, 5).select(keys).unfold()
+      order(local).by(values,desc).limit(local, 5).select(keys).unfold()
 ----
 
 Similarly, for extracting the values from a path or map.
@@ -2320,7 +2325,7 @@ g = graph.traversal()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().
-      groupCount().order(local).by(values,decr).limit(local, 5) <3>
+      groupCount().order(local).by(values,desc).limit(local, 5) <3>
 ----
 
 <1> Which artist sung how many songs?
@@ -2632,10 +2637,10 @@ that can be used to time execution of a body of code.
 
 [gremlin-groovy,modern]
 ----
-g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()
-clock(1) {g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()}
-g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()
-clock(1) {g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()}
+g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,desc).next()
+clock(1) {g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,desc).next()}
+g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,desc).next()
+clock(1) {g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,desc).next()}
 ----
 
 In essence, the relative order is respected, even through the number of traversers at each vertex is not. The primary
@@ -3087,7 +3092,7 @@ A few more examples of the use of `Scope` are provided below:
 ----
 g.V().both().group().by(label).select('software').dedup(local)
 g.V().groupCount().by(label).select(values).min(local)
-g.V().groupCount().by(label).order(local).by(values,decr)
+g.V().groupCount().by(label).order(local).by(values,desc)
 g.V().fold().sample(local,2)
 ----
 

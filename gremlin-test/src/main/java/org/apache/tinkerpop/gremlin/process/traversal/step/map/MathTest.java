@@ -33,7 +33,7 @@ import java.util.function.BiFunction;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
-import static org.apache.tinkerpop.gremlin.process.traversal.Order.decr;
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.math;
@@ -54,7 +54,7 @@ public abstract class MathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Integer, Double> get_g_withSackX1X_injectX1X_repeatXsackXsumX_byXconstantX1XXX_timesX5X_emit_mathXsin__X_byXsackX();
 
-    public abstract Traversal<Vertex, String> get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_decrX_selectXcX();
+    public abstract Traversal<Vertex, String> get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_descX_selectXcX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -94,8 +94,8 @@ public abstract class MathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_decrX_selectXcX() {
-        final Traversal<Vertex, String> traversal = get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_decrX_selectXcX();
+    public void g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_descX_selectXcX() {
+        final Traversal<Vertex, String> traversal = get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_descX_selectXcX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("ripple", "josh", "marko", "vadas", "lop", "peter"), traversal);
     }
@@ -123,8 +123,8 @@ public abstract class MathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_decrX_selectXcX() {
-            return g.V().project("a", "b", "c").by(bothE().values("weight").sum()).by(bothE().count()).by("name").order().by(math("a / b"), decr).select("c");
+        public Traversal<Vertex, String> get_g_V_projectXa_b_cX_byXbothE_weight_sumX_byXbothE_countX_byXnameX_order_byXmathXa_div_bX_descX_selectXcX() {
+            return g.V().project("a", "b", "c").by(bothE().values("weight").sum()).by(bothE().count()).by("name").order().by(math("a / b"), desc).select("c");
         }
     }
 }

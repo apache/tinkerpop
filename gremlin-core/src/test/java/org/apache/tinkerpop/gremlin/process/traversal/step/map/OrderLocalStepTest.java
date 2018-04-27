@@ -47,7 +47,13 @@ public class OrderLocalStepTest extends StepTest {
                 __.order(Scope.local).by("age", Order.decr),
                 __.order(Scope.local).by(outE().count(), Order.incr),
                 __.order(Scope.local).by("age", Order.incr).by(outE().count(), Order.incr),
-                __.order(Scope.local).by(outE().count(), Order.incr).by("age", Order.incr)
+                __.order(Scope.local).by(outE().count(), Order.incr).by("age", Order.incr),
+                __.order(Scope.local).by(Order.desc),
+                __.order(Scope.local).by("age", Order.asc),
+                __.order(Scope.local).by("age", Order.desc),
+                __.order(Scope.local).by(outE().count(), Order.asc),
+                __.order(Scope.local).by("age", Order.asc).by(outE().count(), Order.asc),
+                __.order(Scope.local).by(outE().count(), Order.asc).by("age", Order.asc)
         );
     }
 

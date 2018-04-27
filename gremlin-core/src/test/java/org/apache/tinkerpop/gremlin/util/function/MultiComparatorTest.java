@@ -39,20 +39,20 @@ public class MultiComparatorTest {
 
     @Test
     public void shouldHandleShuffleCorrectly() {
-        MultiComparator<Object> comparator = new MultiComparator<>(Arrays.asList(Order.incr, Order.decr, Order.shuffle));
+        MultiComparator<Object> comparator = new MultiComparator<>(Arrays.asList(Order.asc, Order.desc, Order.shuffle));
         assertTrue(comparator.isShuffle()); // because its a shuffle, the comparator simply returns 0
         for (int i = 0; i < 100; i++) {
             assertEquals(0, comparator.compare(RANDOM.nextInt(), RANDOM.nextInt()));
         }
         //
-        comparator = new MultiComparator<>(Arrays.asList(Order.incr, Order.shuffle, Order.decr));
+        comparator = new MultiComparator<>(Arrays.asList(Order.asc, Order.shuffle, Order.desc));
         assertEquals(1, comparator.compare(1, 2));
         assertEquals(-1, comparator.compare(2, 1));
         assertEquals(0, comparator.compare(2, 2));
         assertEquals(2, comparator.startIndex);
         assertFalse(comparator.isShuffle());
         //
-        comparator = new MultiComparator<>(Arrays.asList(Order.incr, Order.shuffle, Order.decr, Order.shuffle, Order.incr));
+        comparator = new MultiComparator<>(Arrays.asList(Order.asc, Order.shuffle, Order.desc, Order.shuffle, Order.asc));
         assertEquals(-1, comparator.compare(1, 2));
         assertEquals(1, comparator.compare(2, 1));
         assertEquals(0, comparator.compare(2, 2));

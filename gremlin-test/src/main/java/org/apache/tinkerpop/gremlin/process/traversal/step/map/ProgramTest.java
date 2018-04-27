@@ -71,7 +71,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_programXpageRankX();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX();
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_ascX_valueMapXname_rankX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_aggregateXxX_byXlangX_groupCount_programXTestProgramX_asXaX_selectXa_xX();
 
@@ -91,8 +91,8 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_decrX_valueMapXname_rankX() {
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX();
+    public void g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_ascX_valueMapXname_rankX() {
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_ascX_valueMapXname_rankX();
         printTraversalForm(traversal);
         int counter = 0;
         double lastRank = Double.MIN_VALUE;
@@ -148,8 +148,8 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX() {
-            return g.V().hasLabel("person").program(PageRankVertexProgram.build().property("rank").create(graph)).order().by("rank", Order.incr).valueMap("name", "rank");
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_ascX_valueMapXname_rankX() {
+            return g.V().hasLabel("person").program(PageRankVertexProgram.build().property("rank").create(graph)).order().by("rank", Order.asc).valueMap("name", "rank");
         }
 
         @Override

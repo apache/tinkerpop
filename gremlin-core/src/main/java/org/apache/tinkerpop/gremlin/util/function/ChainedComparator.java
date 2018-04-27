@@ -43,7 +43,7 @@ public final class ChainedComparator<S, C extends Comparable> implements Compara
     public ChainedComparator(final boolean traversers, final List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators) {
         this.traversers = traversers;
         if (comparators.isEmpty())
-            this.comparators.add(new Pair<>(new IdentityTraversal(), (Comparator) Order.incr));
+            this.comparators.add(new Pair<>(new IdentityTraversal(), (Comparator) Order.asc));
         else
             this.comparators.addAll(comparators);
         this.isShuffle = (Comparator) (this.comparators.get(this.comparators.size() - 1).getValue1()) == Order.shuffle;

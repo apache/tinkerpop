@@ -118,8 +118,8 @@ public class FeatureCoverageTest {
             "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX",
             "get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
             "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
-            "g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX",
-            "g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name",
+            "g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX",
+            "g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name",
             // Pop tests not organized right for GLVs
             "g_V_valueMap_selectXpop_aX",
             "g_V_selectXa_bX",

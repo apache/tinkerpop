@@ -90,7 +90,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> traversal) {
-        this.modulateBy(traversal, Order.incr);
+        this.modulateBy(traversal, Order.asc);
     }
 
     @Override
@@ -100,7 +100,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public List<Pair<Traversal.Admin<S, C>, Comparator<C>>> getComparators() {
-        return this.comparators.isEmpty() ? Collections.singletonList(new Pair<>(new IdentityTraversal(), (Comparator) Order.incr)) : Collections.unmodifiableList(this.comparators);
+        return this.comparators.isEmpty() ? Collections.singletonList(new Pair<>(new IdentityTraversal(), (Comparator) Order.asc)) : Collections.unmodifiableList(this.comparators);
     }
 
     @Override

@@ -125,13 +125,13 @@ Feature: Step - select()
       | m[{"a": "lop", "b": "lop"}] |
       | m[{"a": "peter", "b": "peter"}] |
 
-  Scenario: g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX
+  Scenario: g_V_hasXname_gremlinX_inEXusesX_order_byXskill_ascX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX
     Given the crew graph
     And the traversal of
       """
       g.V().has("name", "gremlin").
         inE("uses").
-        order().by("skill", Order.incr).as("a").
+        order().by("skill", Order.asc).as("a").
         outV().as("b").
         select("a", "b").
           by("skill").

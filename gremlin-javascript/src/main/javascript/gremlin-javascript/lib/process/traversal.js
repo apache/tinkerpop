@@ -260,7 +260,7 @@ module.exports = {
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
-  order: toEnum('Order', 'decr incr shuffle'),
+  order: toEnum('Order', 'asc decr desc incr shuffle'),
   pick: toEnum('Pick', 'any none'),
   pop: toEnum('Pop', 'all first last mixed'),
   scope: toEnum('Scope', 'global local'),

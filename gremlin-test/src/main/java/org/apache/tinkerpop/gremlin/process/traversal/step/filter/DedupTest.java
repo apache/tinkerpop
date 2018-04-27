@@ -77,7 +77,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path();
 
-    public abstract Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup();
+    public abstract Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup();
 
     public abstract Traversal<Vertex, String> get_g_V_both_both_dedup_byXoutE_countX_name();
 
@@ -253,8 +253,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
-        final Traversal<Vertex, String> traversal = get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup();
+    public void g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup() {
+        final Traversal<Vertex, String> traversal = get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(4, names.size());
@@ -370,8 +370,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
-            return g.V().outE().as("e").inV().as("v").select("e").order().by("weight", Order.incr).select("v").<String>values("name").dedup();
+        public Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup() {
+            return g.V().outE().as("e").inV().as("v").select("e").order().by("weight", Order.asc).select("v").<String>values("name").dedup();
         }
 
         @Override

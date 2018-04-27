@@ -143,7 +143,7 @@ file.withWriter { writer ->
   writer.write(toJson(Column.keys, "Column", "", "v2d0-partial"))
   writer.write(toJson(Direction.OUT, "Direction", "", "v2d0-partial"))
   writer.write(toJson(Operator.sum, "Operator", "", "v2d0-partial"))
-  writer.write(toJson(Order.incr, "Order", "", "v2d0-partial"))
+  writer.write(toJson(Order.shuffle, "Order", "", "v2d0-partial"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", "", "v2d0-partial"))
   writer.write(toJson(Pop.all, "Pop", "", "v2d0-partial"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", "v2d0-partial"))
@@ -272,7 +272,7 @@ file.withWriter { writer ->
   writer.write(toJson(Column.keys, "Column", "", "v2d0-no-types"))
   writer.write(toJson(Direction.OUT, "Direction", "", "v2d0-no-types"))
   writer.write(toJson(Operator.sum, "Operator", "", "v2d0-no-types"))
-  writer.write(toJson(Order.incr, "Order", "", "v2d0-no-types"))
+  writer.write(toJson(Order.shuffle, "Order", "", "v2d0-no-types"))
   writer.write(toJson(Pop.all, "Pop", "", "v2d0-no-types"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", "", "v2d0-no-types"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", "v2d0-no-types"))
@@ -2777,7 +2777,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 ----
 {
   "@type" : "g:Order",
-  "@value" : "incr"
+  "@value" : "shuffle"
 }
 ----
 
@@ -5138,7 +5138,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 ----
 {
   "@type" : "g:Order",
-  "@value" : "incr"
+  "@value" : "shuffle"
 }
 ----
 

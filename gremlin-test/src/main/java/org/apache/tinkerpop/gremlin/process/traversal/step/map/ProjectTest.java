@@ -40,7 +40,7 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX();
 
-    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX();
+    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -56,8 +56,8 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX() {
-        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX();
+    public void g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX() {
+        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(4, names.size());
@@ -75,8 +75,8 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX() {
-            return g.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(__.select("b"), Order.decr).select("a");
+        public Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX() {
+            return g.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(__.select("b"), Order.desc).select("a");
         }
     }
 }

@@ -320,11 +320,11 @@ Feature: Step - match()
       | m[{"a":"v[josh]","b":"v[lop]"}] |
       | m[{"a":"v[peter]","b":"v[lop]"}] |
 
-  Scenario: g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX
+  Scenario: g_V_matchXa_outEXcreatedX_order_byXweight_descX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().match(__.as("a").outE("created").order().by("weight", Order.decr).limit(1).inV().as("b"),
+      g.V().match(__.as("a").outE("created").order().by("weight", Order.desc).limit(1).inV().as("b"),
                   __.as("b").has("lang", "java")).select("a", "b").by("name")
       """
     When iterated to list

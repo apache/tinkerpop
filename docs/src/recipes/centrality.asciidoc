@@ -34,7 +34,7 @@ g.V().group().by().by(inE().count())                  <2>
 g.V().group().by().by(outE().count())                 <3>
 g.V().project("v","degree").by().by(bothE().count())  <4>
 g.V().project("v","degree").by().by(bothE().count()). <5>
-  order().by(select("degree"), decr).
+  order().by(select("degree"), desc).
   limit(4)
 ----
 
@@ -158,9 +158,9 @@ give it the highest rank. Consider the following example using the Grateful Dead
 ----
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g.V().repeat(groupCount('m').by('name').out()).times(5).cap('m').                <1>
-  order(local).by(values, decr).limit(local, 10).next()                          <2>
+  order(local).by(values, desc).limit(local, 10).next()                          <2>
 g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m'). <3>
-  order(local).by(values, decr).limit(local, 10).next()
+  order(local).by(values, desc).limit(local, 10).next()
 ----
 
 <1> The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
