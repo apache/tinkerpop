@@ -270,9 +270,86 @@ class PathSerializer extends TypeSerializer {
   }
 }
 
+class Path3Serializer extends TypeSerializer {
+  deserialize(obj) {
+    const value = obj[valueKey];
+    return new g.Path(this.reader.read(value['labels']), this.reader.read(value['objects']));
+  }
+}
+
 class TSerializer extends TypeSerializer {
   deserialize(obj) {
     return t.t[obj[valueKey]];
+  }
+}
+
+class ArraySerializer extends TypeSerializer {
+  constructor(typeKey) {
+    super();
+    this.typeKey = typeKey;
+  }
+
+  deserialize(obj) {
+    const value = obj[valueKey];
+    if (!Array.isArray(value)) {
+      throw new Error('Expected Array, obtained: ' + value);
+    }
+    return value.map(x => this.reader.read(x));
+  }
+
+  /** @param {Array} item */
+  serialize(item) {
+    return {
+      [typeKey]: this.typeKey,
+      [valueKey]: item.map(x => this.writer.adaptObject(x))
+    };
+  }
+
+  canBeUsedFor(value) {
+    return Array.isArray(value);
+  }
+}
+
+class MapSerializer extends TypeSerializer {
+  deserialize(obj) {
+    const value = obj[valueKey];
+    if (!Array.isArray(value)) {
+      throw new Error('Expected Array, obtained: ' + value);
+    }
+    const result = new Map();
+    for (let i = 0; i < value.length; i += 2) {
+      result.set(this.reader.read(value[i]), this.reader.read(value[i + 1]));
+    }
+    return result;
+  }
+
+  /** @param {Map} map */
+  serialize(map) {
+    const arr = [];
+    map.forEach((v, k) => {
+      arr.push(this.writer.adaptObject(k));
+      arr.push(this.writer.adaptObject(v));
+    });
+    return {
+      [typeKey]: 'g:Map',
+      [valueKey]: arr
+    };
+  }
+
+  canBeUsedFor(value) {
+    return value instanceof Map;
+  }
+}
+
+class ListSerializer extends ArraySerializer {
+  constructor() {
+    super('g:List');
+  }
+}
+
+class SetSerializer extends ArraySerializer {
+  constructor() {
+    super('g:Set');
   }
 }
 
@@ -281,11 +358,15 @@ module.exports = {
   EdgeSerializer,
   EnumSerializer,
   LambdaSerializer,
+  ListSerializer,
   LongSerializer,
+  MapSerializer,
   NumberSerializer,
+  Path3Serializer,
   PathSerializer,
   PropertySerializer,
   PSerializer,
+  SetSerializer,
   TSerializer,
   TraverserSerializer,
   typeKey,
