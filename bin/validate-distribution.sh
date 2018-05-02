@@ -26,6 +26,7 @@
 # curl -L -O https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 # gpg --import KEYS
 
+COMMITTERS=$(curl -Ls https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS | grep -Po '(?<=<)[^<]*(?=@apache.org>)' | uniq)
 TMP_DIR="/tmp/tpdv"
 
 # Required. Only the latest version on each release stream is available on dist.
@@ -72,6 +73,8 @@ mkdir -p ${TMP_DIR}
 rm -rf ${TMP_DIR}/*
 cd ${TMP_DIR}
 
+curl -Ls https://people.apache.org/keys/committer/ | grep -v invalid > ${TMP_DIR}/.committers
+
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
@@ -94,11 +97,24 @@ echo "OK"
 echo "* validating signatures and checksums ... "
 
 echo -n "  * PGP signature ... "
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Theodore Ratte Wilmes (CODE SIGNING KEY) <twilmes@apache.org>"'` -eq 1 ] || \
-[ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Jason Plurad (CODE SIGNING KEY) <pluradj@apache.org>"'` -eq 1 ] || \
-{ echo "failed"; exit 1; }
+gpg --verify ${ZIP_FILENAME}.asc ${ZIP_FILENAME} > ${TMP_DIR}/.verify 2>&1
+
+verified=0
+
+for committer in ${COMMITTERS[@]}
+do
+  if [[ `grep -F ${committer} ${TMP_DIR}/.verify` ]]; then
+    fp=$(cat ${TMP_DIR}/.committers | grep "id='${committer}'" | grep -Po '(?<=>)[A-Z0-9 ]*(?=<)' 2> /dev/null)
+    if [ ! -z "${fp}" ]; then
+      if [[ `grep -F "${fp}" ${TMP_DIR}/.verify` ]]; then
+        verified=1
+      fi
+    fi
+  fi
+  [ ${verified} -eq 1 ] && break
+done
+
+[ ${verified} -eq 1 ] || { echo "failed"; exit 1; }
 echo "OK"
 
 echo -n "  * MD5 checksum ... "
