@@ -361,14 +361,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
-        public void CannotDeserializeTooBigIntegerWithOldNewtonsoftJson()
+        public void ShouldDeserializeReallyBigIntegerValue()
         {
             var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789987654321123456789987654321}";
+            var reader = CreateStandardGraphSONReader();
 
-            Assert.Throws<JsonReaderException>(() =>
-            {
-                var jObject = JObject.Parse(serializedValue);
-            });
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789987654321123456789987654321"), deserializedValue);
         }
 
         [Fact]
