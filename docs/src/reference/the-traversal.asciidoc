@@ -429,7 +429,7 @@ g.V().both().both().both().count().iterate().toString()  <2>
 ----
 
 <1> `LazyBarrierStrategy` is a default strategy and thus, does not need to be explicitly activated.
-<1> With `LazyBarrierStrategy` activated, `barrier()` steps are automatically inserted where appropriate.
+<2> With `LazyBarrierStrategy` activated, `barrier()` steps are automatically inserted where appropriate.
 
 *Additional References*
 
