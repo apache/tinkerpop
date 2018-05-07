@@ -127,14 +127,9 @@ during this period.
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
-.. Update `gremlin-io-test` (from 3.3.0 on - this module was not available prior to the 3.3.x line):
-... Build new test files with `mvn clean install -pl gremlin-tools/gremlin-io-test -Dio`
-... If necessary copy relevant portions of IO dev documentation from `target/dev-docs` to the actual asciidoc file at `docs/src/dev/io` (this is basically just for GraphSON).
-... Generate test files for other lines of TinkerPop releases that don't have `gremlin-io-test` to automate that process (refers to the 3.2.x line):
-.... Scripts to "back generate" test data files can be found in the comments of `docs/src/dev/io/graphson.asciidoc`and `docs/src/dev/io/gryo.asciidoc` and can be pasted into a Gremlin Console instance that matches the target version expected of the test files. Once generated these files can be copied to the branch that requires them.
-.... It is worth double checking the output file counts against past versions as the number of files should match. Obviously, if new test types were added to the model then those would have to be accounted for. Update the scripts as necessary.
-.... The `CompatibilitiesTest` will need to be updated - it is a troublesome test which needs to be adjusted on each release (doesn't appear to be a good way to test all of its features without this hassle).
-... Commit and push all files to the repository after doing a build with `mvn clean install` to verify that there are no problems.
+.. Be sure that `gremlin-io-test` has been updated (from 3.3.0 on - this module was not available prior to the 3.3.x line)
+... This is typically a post-release task, but it's worthing checking to be sure in case the step was somehow overlooked.
+... Instructions for updating the module are described in the <<io,IO Documentation and Testing Section>>.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
