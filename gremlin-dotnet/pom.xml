@@ -31,14 +31,13 @@ limitations under the License.
         <module>src</module>
         <module>test</module>
     </modules>
-
+    
     <build>
         <plugins>
             <plugin>
                 <groupId>org.eobjects.build</groupId>
                 <artifactId>dotnet-maven-plugin</artifactId>
                 <extensions>true</extensions>
-                <version>0.14</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
@@ -99,5 +98,16 @@ limitations under the License.
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- bumping past 0.20 yields build errors - not sure what is amiss there -->
+                <plugin>
+                    <groupId>org.eobjects.build</groupId>
+                    <artifactId>dotnet-maven-plugin</artifactId>
+                    <extensions>true</extensions>
+                    <version>0.20</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

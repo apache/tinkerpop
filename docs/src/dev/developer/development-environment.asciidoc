@@ -25,7 +25,7 @@ configure a development environment for TinkerPop.
 == System Configuration
 
 At a minimum, development of TinkerPop requires link:http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java 1.8.0_40+]
-and link:https://maven.apache.org/download.cgi[Maven 3.0.5+]. Maven is used as the common build system, which even
+and link:https://maven.apache.org/download.cgi[Maven 3.1.0+]. Maven is used as the common build system, which even
 controls the builds of non-JVM link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
@@ -209,6 +209,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
+* Check the effective `pom.xml`: `mvn -pl gremlin-python -Pglv-python help:effective-pom -Doutput=withProfilePom.xml`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 ** Execute with the `-DincludeNeo4j` option to include transactional tests.

@@ -88,12 +88,6 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>hyracks-releases</id>
-            <url>http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/</url>
-        </repository>
-    </repositories>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
