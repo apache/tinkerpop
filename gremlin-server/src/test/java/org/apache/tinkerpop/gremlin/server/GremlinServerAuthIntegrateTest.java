@@ -54,7 +54,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Override
     public Settings overrideSettings(final Settings settings) {
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
-        authSettings.className = SimpleAuthenticator.class.getName();
+        authSettings.authenticator = SimpleAuthenticator.class.getName();
 
         // use a credentials graph with one user in it: stephen/password
         final Map<String,Object> authConfig = new HashMap<>();

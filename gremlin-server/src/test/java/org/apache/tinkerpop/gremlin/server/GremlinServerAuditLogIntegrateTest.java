@@ -115,7 +115,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         settings.authentication = authSettings;
         authSettings.enableAuditLog = AUDIT_LOG_ENABLED;
-        authSettings.className = Krb5Authenticator.class.getName();
+        authSettings.authenticator = Krb5Authenticator.class.getName();
         final Map<String,Object> authConfig = new HashMap<>();
         authSettings.config = authConfig;
 

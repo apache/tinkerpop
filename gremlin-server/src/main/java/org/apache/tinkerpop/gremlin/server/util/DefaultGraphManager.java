@@ -65,19 +65,6 @@ public final class DefaultGraphManager implements GraphManager {
         });
     }
 
-    /**
-     * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
-     * configuration file.
-     *
-     * @return a {@code Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
-     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getGraphNames()} and
-     * {@link #getGraph(String)}
-     */
-    @Deprecated
-    public final Map<String, Graph> getGraphs() {
-        return graphs;
-    }
-
     public final Set<String> getGraphNames() {
         return graphs.keySet();
     }
@@ -88,20 +75,6 @@ public final class DefaultGraphManager implements GraphManager {
 
     public final void putGraph(final String graphName, final Graph g) {
         graphs.put(graphName, g);
-    }
-
-    /**
-     * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
-     * initialization scripts.
-     *
-     * @return a {@code Map} where the key is the name of the {@link TraversalSource} and the value is the
-     * {@link TraversalSource} itself
-     * @deprecated As of release 3.2.5, replaced by a combination of {@link #getTraversalSourceNames()} and
-     * {@link #getTraversalSource(String)}
-     */
-    @Deprecated
-    public final Map<String, TraversalSource> getTraversalSources() {
-        return traversalSources;
     }
 
     public final Set<String> getTraversalSourceNames() {

@@ -68,7 +68,6 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -301,14 +300,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         }
 
                         handleIterator(context, new SideEffectIterator(sideEffects.get(sideEffectKey.get()), sideEffectKey.get()));
-                    } catch (TimeoutException ex) {
-                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
-                        logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(ex).create());
-                        onError(graph, context);
-                        return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a side-effect on iteration for request [%s].", msg.getRequestId()), ex);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)

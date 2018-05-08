@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -43,7 +42,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A base {@link OpProcessor} implementation that processes an {@code Iterator} of results in a generalized way while
@@ -64,16 +62,12 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     }
 
     /**
-     * Provides a generic way of iterating a result set back to the client. Implementers should respect the
-     * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
-     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
-     * cases.
+     * Provides a generic way of iterating a result set back to the client.
      *
      * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
      * @param itty The result to iterator
-     * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
      */
-    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException, InterruptedException {
+    protected void handleIterator(final Context context, final Iterator itty) throws InterruptedException {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -95,10 +89,6 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     .create());
             return;
         }
-
-        // timer for the total serialization time
-        final StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
 
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
@@ -204,18 +194,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                 // this isn't blocking the IO thread - just a worker.
                 TimeUnit.MILLISECONDS.sleep(10);
             }
-
-            stopWatch.split();
-            if (settings.serializedResponseTimeout > 0 && stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
-                final String timeoutMsg = String.format("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s",
-                        warnOnce ? "[Gremlin Server paused writes to client as messages were not being consumed quickly enough]" : "");
-                throw new TimeoutException(timeoutMsg.trim());
-            }
-
-            stopWatch.unsplit();
         }
-
-        stopWatch.stop();
     }
 
     /**
@@ -249,18 +228,9 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         return Collections.emptyMap();
     }
 
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                      final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code) throws Exception {
-        return makeFrame(ctx, msg, serializer, useBinary, aggregate, code, Collections.emptyMap());
-    }
-
-    protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                   final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                   final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
+                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
         try {
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)

@@ -56,15 +56,6 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     private final ScheduledExecutorService scheduledExecutorService;
     private final Channelizer channelizer;
 
-    /**
-     * @deprecated As of release 3.2.8, replaced by {@link #OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService, Channelizer)}
-     */
-    @Deprecated
-    public OpSelectorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
-                             final ScheduledExecutorService scheduledExecutorService) {
-        this(settings, graphManager, gremlinExecutor, scheduledExecutorService, null);
-    }
-
     public OpSelectorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
                              final ScheduledExecutorService scheduledExecutorService, final Channelizer channelizer) {
         this.settings = settings;

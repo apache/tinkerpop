@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
-import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -103,15 +102,6 @@ public class Settings {
      * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
      */
     public long scriptEvaluationTimeout = 30000L;
-
-    /**
-     * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
-     * total serialization time allowed for the request.  Defaults to 0 which disables this setting.
-     *
-     * @deprecated As of release 3.2.1, replaced wholly by {@link #scriptEvaluationTimeout}.
-     */
-    @Deprecated
-    public long serializedResponseTimeout = 0L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
@@ -411,16 +401,7 @@ public class Settings {
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
          */
-        public String authenticator = null;
-
-        /**
-         * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
-         * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
-         * not specified.
-         * @deprecated As of release 3.2.5, replaced by {@link #authenticator}.
-         */
-        @Deprecated
-        public String className = AllowAllAuthenticator.class.getName();
+        public String authenticator = AllowAllAuthenticator.class.getName();
 
         /**
          * The fully qualified class name of the {@link AbstractAuthenticationHandler} implementation.
