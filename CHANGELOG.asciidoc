@@ -21,13 +21,28 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-9]]
-=== TinkerPop 3.2.9 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.2.9 (Release Date: May 8, 2018)
 
 * Fixed bug where path history was not being preserved for keys in mutations.
 * Bumped to httpclient 4.5.5.
 * Bumped to Groovy 2.4.15 - fixes bug with `Lambda` construction.
 * Improved performance of GraphSON deserialization of `Bytecode`.
 * Improved performance of traversal construction.
+
+====  Bugs
+
+* TINKERPOP-1947 Path history isn't preserved for keys in mutations
+
+==== Improvements
+
+* TINKERPOP-1755 No docs for ReferenceElements
+* TINKERPOP-1912 Remove MD5 checksums
+* TINKERPOP-1934 Bump to latest version of httpclient
+* TINKERPOP-1936 Performance enhancement to Bytecode deserialization
+* TINKERPOP-1944 JavaScript GLV: DriverRemoteConnection is not exported in the root module
+* TINKERPOP-1950 Traversal construction performance enhancements
+* TINKERPOP-1953 Bump to Groovy 2.4.15
+
 
 [[release-3-2-8]]
 === TinkerPop 3.2.8 (Release Date: April 2, 2018)
