@@ -23,9 +23,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.2.9
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: May 8, 2018*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.2.8/CHANGELOG.asciidoc#release-3-2-9[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.9/CHANGELOG.asciidoc#release-3-2-9[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
