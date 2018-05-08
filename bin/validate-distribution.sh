@@ -22,11 +22,7 @@
 # artifacts. You must have gpg installed and must import the
 # published KEYS file in order for that aspect of the validation
 # to pass.
-#
-# curl -L -O https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
-# gpg --import KEYS
 
-COMMITTERS=$(curl -Ls https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS | grep -Po '(?<=<)[^<]*(?=@apache.org>)' | uniq)
 TMP_DIR="/tmp/tpdv"
 
 # Required. Only the latest version on each release stream is available on dist.
@@ -73,6 +69,9 @@ mkdir -p ${TMP_DIR}
 rm -rf ${TMP_DIR}/*
 cd ${TMP_DIR}
 
+COMMITTERS=$(curl -Ls https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS | tee ${TMP_DIR}/KEYS | grep -Po '(?<=<)[^<]*(?=@apache.org>)' | uniq)
+gpg --import ${TMP_DIR}/KEYS 2> /dev/null && rm ${TMP_DIR}/KEYS
+
 curl -Ls https://people.apache.org/keys/committer/ | grep -v invalid > ${TMP_DIR}/.committers
 
 # validate downloads
@@ -97,7 +96,7 @@ echo "OK"
 echo "* validating signatures and checksums ... "
 
 echo -n "  * PGP signature ... "
-gpg --verify ${ZIP_FILENAME}.asc ${ZIP_FILENAME} > ${TMP_DIR}/.verify 2>&1
+gpg --verify --with-fingerprint ${ZIP_FILENAME}.asc ${ZIP_FILENAME} > ${TMP_DIR}/.verify 2>&1
 
 verified=0
 
@@ -117,11 +116,11 @@ done
 [ ${verified} -eq 1 ] || { echo "failed"; exit 1; }
 echo "OK"
 
-echo -n "  * MD5 checksum ... "
-EXPECTED=`cat ${ZIP_FILENAME}.md5`
-ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
-[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
-echo "OK"
+#echo -n "  * MD5 checksum ... "
+#EXPECTED=`cat ${ZIP_FILENAME}.md5`
+#ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
+#[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
+#echo "OK"
 
 echo -n "  * SHA1 checksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.sha1`
