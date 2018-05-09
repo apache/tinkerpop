@@ -38,9 +38,11 @@ import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -119,12 +121,20 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHandleMaps() {
-        GraphTraversalSource g = graph.traversal();
-        String script = GroovyTranslator.of("g").translate(g.V().id().is(new LinkedHashMap() {{
+        final GraphTraversalSource g = graph.traversal();
+        final String script = GroovyTranslator.of("g").translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
         }}).asAdmin().getBytecode());
-        assertEquals(script, "g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])");
+        assertEquals("g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])", script);
+    }
+
+    @Test
+    public void shouldHandleEmptyMaps() {
+        final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
+        final GraphTraversalSource g = graph.traversal();
+        final String script = GroovyTranslator.of("g").translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
+        assertEquals("g.inject([]).map({it.get()})", script);
     }
 
     @Test
