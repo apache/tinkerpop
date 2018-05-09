@@ -71,7 +71,7 @@ public final class TinkerGraphCountStrategy extends AbstractTraversalStrategy<Tr
             return;
         for (int i = 1; i < steps.size() - 1; i++) {
             final Step current = steps.get(i);
-            if (!(current instanceof MapStep ||
+            if (!(//current instanceof MapStep ||  // MapSteps will not necessarily emit an element as demonstrated in https://issues.apache.org/jira/browse/TINKERPOP-1958
                     current instanceof IdentityStep ||
                     current instanceof NoOpBarrierStep ||
                     current instanceof CollectingBarrierStep) ||

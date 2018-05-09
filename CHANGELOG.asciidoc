@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed a bug in `TinkerGraphCountStrategy`, which didn't consider that certain map steps may not emit an element.
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)
