@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyChooseTest {
 
     public static class Traversals extends ChooseTest {
+
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())")
@@ -62,6 +63,16 @@ public abstract class GroovyChooseTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').as('p1').choose(outE('knows'), out('knows')).as('p2').select('p1', 'p2').by('name')");
+        }
+
+        @Override
+        public Traversal<Integer, List<Integer>> get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.inject(1).choose(__.is(1), __.constant(10).fold(), __.fold())")
+        }
+
+        @Override
+        public Traversal<Integer, List<Integer>> get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.inject(2).choose(__.is(1), __.constant(10).fold(), __.fold())")
         }
     }
 }

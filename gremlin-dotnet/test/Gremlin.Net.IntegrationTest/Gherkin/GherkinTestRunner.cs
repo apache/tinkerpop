@@ -38,7 +38,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
-            new Dictionary<string, IgnoreReason>();
+            new Dictionary<string, IgnoreReason>()
+            {
+                { "g_injectX1X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason },
+                { "g_injectX2X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason }
+            };
         
         private static class Keywords
         {
