@@ -83,7 +83,11 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public PageRankVertexProgram generateProgram(final Graph graph, final Memory memory) {
+    public PageRankVertexProgram generateProgram(final Memory memory, final Graph... graphs) {
+        if (graphs.length != 1) {
+            throw new IllegalArgumentException("Must provide one graph to use, received " + graphs.length);
+        }
+        final Graph graph = graphs[0];
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
         final PageRankVertexProgram.Builder builder = PageRankVertexProgram.build()

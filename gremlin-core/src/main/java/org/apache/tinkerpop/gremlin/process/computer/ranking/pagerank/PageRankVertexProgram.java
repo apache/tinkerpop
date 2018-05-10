@@ -75,7 +75,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public void loadState(final Graph graph, final Configuration configuration) {
+    public void loadState(final Configuration configuration, final Graph... graphs) {
+        if (graphs.length != 1) {
+            throw new IllegalArgumentException("Must provide one graph to use, received " + graphs.length);
+        }
+        final Graph graph = graphs[0];
         if (configuration.containsKey(INITIAL_RANK_TRAVERSAL))
             this.initialRankTraversal = PureTraversal.loadState(configuration, INITIAL_RANK_TRAVERSAL, graph);
         if (configuration.containsKey(EDGE_TRAVERSAL)) {

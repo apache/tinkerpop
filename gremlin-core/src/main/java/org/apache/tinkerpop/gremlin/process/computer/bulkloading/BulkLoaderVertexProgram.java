@@ -147,7 +147,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     }
 
     @Override
-    public void loadState(final Graph graph, final Configuration config) {
+    public void loadState(final Configuration config, final Graph... graphs) {
         configuration = new BaseConfiguration();
         if (config != null) {
             ConfigurationUtils.copy(config, configuration);
@@ -325,9 +325,12 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
         @SuppressWarnings("unchecked")
         @Override
-        public BulkLoaderVertexProgram create(final Graph graph) {
-            ConfigurationUtils.append(graph.configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
-            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
+        public BulkLoaderVertexProgram create(final Graph... graphs) {
+            if (graphs.length == 0) {
+                throw new IllegalArgumentException("Must provide at least one graph to use");
+            }
+            ConfigurationUtils.append(graphs[0].configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
+            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(configuration, graphs);
         }
 
         private void setGraphConfigurationProperty(final String key, final Object value) {

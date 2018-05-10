@@ -67,8 +67,23 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @param graph         the graph that the VertexProgram will run against
      * @param configuration the configuration to load the state of the VertexProgram from.
+     * @deprecated As of release 3.2.8, replaced by {@link #loadState(Configuration, Graph...)}
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1861">TINKERPOP-1861</a>
      */
+    @Deprecated
     public default void loadState(final Graph graph, final Configuration configuration) {
+        loadState(configuration, graph);
+    }
+
+    /**
+     * When it is necessary to load the state of the VertexProgram, this method is called.
+     * This is typically required when the VertexProgram needs to be serialized to another machine.
+     * Note that what is loaded is simply the instance state, not any processed data.
+     *
+     * @param graphs        the graph that the VertexProgram will run against
+     * @param configuration the configuration to load the state of the VertexProgram from.
+     */
+    public default void loadState(final Configuration configuration, final Graph... graphs) {
 
     }
 
@@ -218,14 +233,31 @@ public interface VertexProgram<M> extends Cloneable {
      * @param configuration A configuration with requisite information to build a vertex program
      * @param <V>           The vertex program type
      * @return the newly constructed vertex program
+     * @deprecated As of release 3.2.8, replaced by {@link #createVertexProgram(Configuration, Graph...)}
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1861">TINKERPOP-1861</a>
      */
+    @Deprecated
     public static <V extends VertexProgram> V createVertexProgram(final Graph graph, final Configuration configuration) {
+        return createVertexProgram(configuration, graph);
+    }
+
+    /**
+     * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
+     * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.
+     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided graph and configuration.
+     *
+     * @param configuration A configuration with requisite information to build a vertex program
+     * @param graphs        The graphs that the vertex program will execute against
+     * @param <V>           The vertex program type
+     * @return the newly constructed vertex program
+     */
+    public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration, final Graph... graphs) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM));
             final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final V vertexProgram = constructor.newInstance();
-            vertexProgram.loadState(graph, configuration);
+            vertexProgram.loadState(configuration, graphs);
             return vertexProgram;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -240,7 +272,7 @@ public interface VertexProgram<M> extends Cloneable {
          */
         public Builder configure(final Object... keyValues);
 
-        public <P extends VertexProgram> P create(final Graph graph);
+        public <P extends VertexProgram> P create(final Graph... graphs);
 
     }
 
