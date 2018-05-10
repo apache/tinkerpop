@@ -2733,7 +2733,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded.
 * Updated README with release instructions.
 
-TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)
 
 * First official release of TinkerPop3 and thus, no changes.
