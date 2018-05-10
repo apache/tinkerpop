@@ -146,6 +146,7 @@ limitations under the License.
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
+        <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.0.56.Final</netty.version>
         <slf4j.version>1.7.21</slf4j.version>
@@ -659,7 +660,7 @@ limitations under the License.
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
-                <version>1.2.17</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

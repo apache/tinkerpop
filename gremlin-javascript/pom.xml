@@ -25,36 +25,6 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-javascript</artifactId>
     <name>Apache TinkerPop :: Gremlin Javascript</name>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-server</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
@@ -81,21 +51,22 @@ limitations under the License.
                 <artifactId>gmavenplus-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                        <version>1.2.17</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
                         <groupId>org.apache.tinkerpop</groupId>
                         <artifactId>gremlin-server</artifactId>
                         <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                        <version>${log4j.version}</version>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-ant</artifactId>
+                        <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
+                        <classifier>indy</classifier>
+                        <scope>runtime</scope>
                     </dependency>
                 </dependencies>
                 <executions>
