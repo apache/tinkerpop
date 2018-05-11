@@ -110,7 +110,7 @@ limitations under the License.
         </contributor>
     </contributors>
     <prerequisites>
-        <maven>3.0.5</maven>
+        <maven>3.1.0</maven>
     </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
@@ -144,6 +144,7 @@ limitations under the License.
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
+        <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.0.56.Final</netty.version>
         <slf4j.version>1.7.21</slf4j.version>
@@ -170,6 +171,11 @@ limitations under the License.
     <build>
         <directory>${basedir}/target</directory>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -433,7 +439,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>3.7.0</version>
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
@@ -450,7 +456,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20</version>
+                    <version>2.21.0</version>
                     <configuration>
                         <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
@@ -462,7 +468,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.20</version>
+                    <version>2.21.0</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -501,7 +507,7 @@ limitations under the License.
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -654,7 +660,7 @@ limitations under the License.
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
-                <version>1.2.17</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -1356,7 +1362,6 @@ limitations under the License.
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.17</version>
                         <configuration>
                             <argLine>-Dlog4j.configuration=${log4j-silent.properties}
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true

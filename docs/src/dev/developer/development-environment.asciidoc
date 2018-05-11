@@ -209,6 +209,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
+* Check the effective `pom.xml`: `mvn -pl gremlin-python -Pglv-python help:effective-pom -Doutput=withProfilePom.xml`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 ** Execute with the `-DincludeNeo4j` option to include transactional tests.
