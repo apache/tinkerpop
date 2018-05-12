@@ -821,9 +821,14 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/</sourceDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${asciidoc.input.dir}/</directory>
+                                            <targetPath>${htmlsingle.output.dir}/</targetPath>
+                                            <excludes>${asciidoc.input.dir}/static/*.*</excludes>
+                                        </resource>
+                                    </resources>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
