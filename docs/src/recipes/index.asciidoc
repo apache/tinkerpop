@@ -90,12 +90,12 @@ prior to submitting a recipe.
 
 To contribute a recipe, first clone the repository:
 
-[source, shell]
+[source,shell]
 git clone https://github.com/apache/tinkerpop.git
 
 The recipes can be found in this directory:
 
-[source, shell]
+[source,shell]
 ls docs/src/recipes
 
 Each recipe exists within a separate `.asciidoc` file.  The file name should match the name of the recipe. Recipe names
