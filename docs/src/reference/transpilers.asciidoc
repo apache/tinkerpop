@@ -24,7 +24,7 @@ Gremlin Transpiler enables a particular query language to work on any TinkerPop-
 
 == SPARQL-Gremlin
 
-image::gremlin-standing.png[]
+image::gremlintron.png[width=225]
 
 The SPARQL-Gremlin transpiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin
 traversals. It uses the https://jena.apache.org/index.html[Apache Jena] SPARQL processor
