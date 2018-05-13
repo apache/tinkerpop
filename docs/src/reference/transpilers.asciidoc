@@ -24,23 +24,20 @@ Gremlin Transpiler enables a particular query language to work on any TinkerPop-
 
 == SPARQL-Gremlin
 
-image:https://raw.githubusercontent.com/LITMUS-Benchmark-Suite/sparql-to-gremlin/master/docs/images/sparql-gremlin-logo.png[gremlinator]
+image::gremlin-standing.png[]
 
-The SPARQL-Gremlin transpiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin traversals. It is based on the  https://jena.apache.org/index.html[Apache Jena] SPARQL processor https://jena.apache.org/documentation/query/index.html[ARQ], which provides access to a syntax tree of a SPARQL query.
+The SPARQL-Gremlin transpiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin
+traversals. It uses the https://jena.apache.org/index.html[Apache Jena] SPARQL processor
+link:https://jena.apache.org/documentation/query/index.html[ARQ], which provides access to a syntax tree of a
+SPARQL query.
 
+The goal of this work is to bridge the query interoperability gap between the two famous, yet fairly disconnected,
+graph communities: Semantic Web (which relies on the RDF data model) and Graph database (which relies on property graph
+data model).
 
-The goal of this work is to bridge the query interoperability gap between the two famous, yet fairly disconnected, graph communities: Semantic Web (which relies on the RDF data model) and Graph database
-(which relies on Property graph data model).
-
-NOTE: The foundational research work on SPARQL-Gremlin transpiler (aka Gremlinator) can be found from -
-https://arxiv.org/pdf/1801.02911.pdf[Gremlinator full paper]. In this
-paper, we present and discuss the notion of graph query language
-semantics of SPARQL and Gremlin, and a formal mapping between SPARQL
-pattern matching graph patterns and Gremlin traversals. Furthermore, we
-point the interested reader to the following resourcesfor a better
-understanding: (1) Gremlinator demonstration -
-(http://gremlinator.iai.uni-bonn.de:8080/Demo/[Public Demo Mirror 1])
-and (http://195.201.31.31:8080/Demo/[Public Demo Mirror 2]); (2) A short video tutorial on how to use the demonstration - https://www.youtube.com/watch?v=Z0ETx2IBamw[here]
+NOTE: The foundational research work on SPARQL-Gremlin transpiler (aka Gremlinator) can be found in the
+link:https://arxiv.org/pdf/1801.02911.pdf[Gremlinator paper]. This paper presents the graph query language semantics of
+SPARQL and Gremlin, and a formal mapping between SPARQL pattern matching graph patterns and Gremlin traversals.
 
 [source,xml]
 ----
@@ -111,9 +108,9 @@ g.sparql("""SELECT ?name ?id ?label
 [[supported-queries]]
 === Supported Queries
 
-The SPARQL-Gremlin transpiler is currently an on-going effort with an aim to cover the entire SPARQL 1.1 query feature
-spectrum, however we currently only support translation of the SPARQL 1.0 specification, especially _SELECT_ queries.
-The supported SPARQL query types are:
+The SPARQL-Gremlin transpiler currently supports translation of the SPARQL 1.0 specification, especially `SELECT`
+queries, though there is an on-going effort to cover the entire SPARQL 1.1 query feature spectrum. The supported
+SPARQL query types are:
 
 * Union 
 * Optional 
@@ -129,8 +126,7 @@ The supported SPARQL query types are:
 [[limitations]]
 === Limitations
 
-The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) does
-not support the following cases: 
+The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) does not support the following cases:
 
 * SPARQL queries with variables in the predicate position are not currently covered, with an exception of the following
 case:
@@ -143,7 +139,7 @@ g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
 * A SPARQL Union query with un-balanced patterns, i.e. a gremlin union traversal can only be generated if the input
 SPARQL query has the same number of patterns on both the side of the union operator. For instance, the following
 SPARQL query cannot be mapped using Gremlinator, since a union is executed between different number of graph patterns
-(two patterns _union_ 1 pattern).
+(two patterns `union` 1 pattern).
 
 [source,groovy]
 ----
