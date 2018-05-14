@@ -97,6 +97,8 @@ integration tests and therefore must be actively switched on with `-DskipIntegra
 [source,text]
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
+See the <<release-environment,Release Environment>> section for more information on release manager configurations.
+
 [[dotnet-environment]]
 === DotNet Environment
 
@@ -114,33 +116,16 @@ and `test` directories of the `gremlin-dotnet` module  which will signify to Ma
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
 `gremlin-dotnet` in full.
 
-For those who will release TinkerPop, it is also necessary to install link:http://www.mono-project.com/[Mono]. The
-release process is known to work with 5.0.1, so it is best to probably install that version. Release managers should
-probably also do an install of link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it
-will help with environmental setup. To get an environment ready to deploy to NuGet, it is necessary to have a
-NuGet API key (PMC members who have NuGet accounts can help with that). The API key should be added to `NuGet.Config`
-with the following:
-
-[source,text]
-----
-mono nuget.exe setApiKey [your-api-key]
-----
-
-This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
-`mvn deploy`, this file will be referenced on the automated `nuget push`.
-
-See release documentation for more information on configuration for release.
-
+See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[nodejs-environment]]
 === JavaScript Environment
+
 When building `gremlin-javascript`, mvn command will include a local copy of Node.js runtime and npm inside your project
 using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
 other existing Node.js runtime instances in your machine.
 
-The release manager should have the authentication token set, for more information see the Release Environment
-section below.
-
+See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[release-environment]]
 === Release Environment
@@ -152,9 +137,9 @@ link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
 link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
 using Apache Subversion (SVN).
 
-Uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically installed by the build
-process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy environments and username
-and password combinations. The file typically looks like this:
+For Python releases, uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically
+installed by the build process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy
+environments and username and password combinations. The file typically looks like this:
 
 [source,text]
 ----
@@ -164,7 +149,6 @@ index-servers=
     pypitest
 
 [pypitest]
-repository = https://testpypi.python.org/pypi
 username = <username>
 password =
 
@@ -174,12 +158,30 @@ username = <username>
 password =
 ----
 
-The release manager shall use the project's pypi credentials, which are available in the PMC repository.
-The `password` should be left blank so the deployment process in Maven will prompt for it at deployment time.
+The release manager shall use the project's pypi credentials, which are available in the
+link:https://svn.apache.org/repos/private/pmc/tinkerpop[PMC SVN repository]. The `password` should be left blank so
+the deployment process in Maven will prompt for it at deployment time.
+
+For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 5.0.1,
+so it is best to probably install that version. Release managers should probably also do an install of
+link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it will help with environmental setup.
+To get an environment ready to deploy to NuGet, it is necessary to have a NuGet API key. First, create an account with
+link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net package in nuget
+so that you can deploy. Next, generate an API key for your account on the nuget website. The API key should be added
+to `NuGet.Config` with the following:
+
+[source,text]
+----
+mono nuget.exe setApiKey [your-api-key]
+----
+
+This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
+`mvn deploy`, this file will be referenced on the automated `nuget push`.
 
 To deploy `gremlin-javascript` on the link:https://www.npmjs.com[npm registry], the release manager must set the
 authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser` command. This
-must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system.
+must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system. If
+this account is newly created then request that a PMC member add your account to the "gremlin" package on npm.
 
 [[building-testing]]
 == Building and Testing
