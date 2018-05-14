@@ -73,6 +73,9 @@ class Connection:
         return future
 
     def _receive(self):
-        data = self._transport.read()
-        self._protocol.data_received(data, self._results)
+        while True:
+            data = self._transport.read()
+            status_code = self._protocol.data_received(data, self._results)
+            if status_code != 206:
+                break
         self._pool.put_nowait(self)
