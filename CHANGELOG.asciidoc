@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Removed recursive handling of streaming results from Gremlin-Python driver to avoid max recursion depth errors.
+
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)
