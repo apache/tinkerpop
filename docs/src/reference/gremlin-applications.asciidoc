@@ -668,7 +668,7 @@ They are all still evaluated locally.
    <version>x.y.z</version>
 </dependency>
 ----
-                         gremlin-groovy
+
 image:gremlin-java.png[width=175,float=left] TinkerPop3 comes equipped with a reference client for Java-based
 applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server
 and get back results.
