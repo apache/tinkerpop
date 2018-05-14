@@ -509,6 +509,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1599[TINKERPOP-1599]
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
+==== Graph Database Providers
+
 ===== SimplePathStep and CyclicPathStep now PathFilterStep
 
 The Gremlin traversal machine use to support two step instructions: `SimplePathStep` and `CyclicPathStep`. These have
@@ -636,13 +638,11 @@ removed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1562[TINKERPOP-1562]
 
-
 ==== SSL Client Authentication
 
 Added new server configuration option `ssl.needClientAuth`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1602[TINKERPOP-1602]
-
 
 === Upgrading for Providers
 
@@ -691,7 +691,6 @@ public void addHasContainer(final HasContainer hasContainer) {
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1482[TINKERPOP-1482],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1502[TINKERPOP-1502]
-
 
 ===== Duplicate Multi-Properties
 
