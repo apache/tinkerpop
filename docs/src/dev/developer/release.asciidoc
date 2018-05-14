@@ -348,11 +348,11 @@ link:http://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in
 
 [source,text]
 ----
-Subject: TinkerPop xx.yy.zz Released: [name of release line]
+Subject: Apache TinkerPop xx.yy.zz Released: [name of release line]
 
 Hello,
 
-TinkerPop xx.yy.zz has just been released. [some text to introduce the release - e.g. whether or not
+Apache TinkerPop xx.yy.zz has just been released. [some text to introduce the release - e.g. whether or not
 there is breaking change, an important game-changing feature or two, etc.]
 
 The release artifacts can be found at this location:
@@ -387,7 +387,7 @@ https://www.nuget.org/packages/Gremlin.Net/xx.yy.zz
 
 Javascript artifacts are available in npm:
 
-https://www.npmjs.com/package/gremlin
+https://www.npmjs.com/package/gremlin/v/xx.yy.zz
 
 [include the release line logo image]
 ----
