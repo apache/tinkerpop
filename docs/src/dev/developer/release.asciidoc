@@ -34,7 +34,7 @@ execute.
 IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
 properly for release and includes a `.glv` files in the various GLV modules, so that they all build in full.
 
-=== Development Versions
+== Development Versions
 
 A "development version" or "snapshot" (in Java parlance) is not an "official" release. Artifacts produced for a
 snapshot are solely for the convenience of providers and other developers who want to use the latest releases of
