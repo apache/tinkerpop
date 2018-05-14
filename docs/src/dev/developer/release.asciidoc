@@ -180,22 +180,30 @@ formatted properly - the easiest way to is to view the `CHANGELOG.asciidoc` to b
 GitHub viewer.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
-`project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
+`project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 ORDER BY type, Id ASC`.
 ... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`.
 This formula can help construct each line item for the CHANGELOG if column `A` is the issue number, `B` is the
 issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking"," \*(breaking)*",""))`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
-.. Format "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
+.. Format "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those - already accounted for if using the suggested formula above)
 . Update "upgrade documentation":
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
+. Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
+.. This step should only be performed by the release manager for the newest line of code (i.e. if release 3.3.x, 3.2.x and 3.1.x,
+then only do this step for 3.3.x (tp33 branch), and update the site for all releases).
+.. Update the `template/header-footer.html`.
+.. Update `index.html`.
+.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
 . `git diff` and review the updated files
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
-.. This step should update the Gremlin.Net project file with the newly bumped version.
+.. This step should update the Gremlin.Net project file and Gremlin Javascript package file with the newly bumped version.
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have a gray background and do not show the results of the commands.
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
@@ -209,26 +217,12 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
-.. `rm -f dev/*.md5
+.. `rm -f dev/*.md5`
 .. `cd dev/xx.yy.zz`
 .. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e 's/tinkerpop-tinkerpop/tinkerpop/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
-. Perform JIRA administration tasks:
-.. "Release" the current version and set the "release date"
-.. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
-. Prepare Git administration tasks. Note that this work can be performed at the release manager's discretion. It may be wise to wait until a successful VOTE is eminent before reopening development. Apply the following steps as needed per release branch:
-.. Make the appropriate branching changes as required by the release and bump the version to `SNAPSHOT` with
-`mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
-.. `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
-.. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
-.. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
-.. `mvn deploy -DskipTests` - deploy the new `SNAPSHOT`
-.. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
-.. Commit and push the `SNAPSHOT` changes to git
-.. Send email to advise that code freeze is lifted.
-.. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
@@ -248,17 +242,36 @@ for generating javadoc and without that the binary distributions won't contain t
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
-. Update home page site with references to latest distribution - specifically:
-.. Update the `template/header-footer.html`.
-.. Update `index.html`.
-.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+. `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
 . This step should only occur after the website is updated and all links are working. If there are releases present in
 SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
 if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
 code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
+
+== Post-release Tasks
+
+A number of administration tasks should be taken care of after release is public. Some of these items can be performed
+during the VOTE period at the release manager's discretion, though it may be wise to wait until a successful VOTE is
+eminent before reopening development. When there are multiple release managers, it's best to coordinate these tasks
+as one individual may simply just handle them all.
+
+. Perform JIRA administration tasks:
+.. "Release" the current version and set the "release date"
+.. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
+. Prepare Git administration tasks. Apply the following steps as needed per release branch:
+.. Make the appropriate branching changes as required by the release and bump the version to `SNAPSHOT` with
+`mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
+.. `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
+.. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
+.. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
+.. `mvn deploy -DskipTests` - deploy the new `SNAPSHOT`
+.. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
+.. Commit and push the `SNAPSHOT` changes to git
+. Send email to advise that code freeze is lifted.
+. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review,
+then once consensus is reached removed those branches.
 
 == Email Templates
 
