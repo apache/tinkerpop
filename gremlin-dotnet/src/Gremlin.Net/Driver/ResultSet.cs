@@ -28,7 +28,8 @@ using System.Collections.Generic;
 namespace Gremlin.Net.Driver
 {
     /// <summary>
-    /// Ashiwni
+    /// A ResultSet is returned from the submission of a Gremlin script to the server and represents the results provided by the server
+    /// ResultSet includes enumerable data and status attributes.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public sealed class ResultSet<T> : IReadOnlyCollection<T>
