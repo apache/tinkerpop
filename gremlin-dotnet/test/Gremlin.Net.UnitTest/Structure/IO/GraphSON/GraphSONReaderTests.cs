@@ -39,7 +39,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         private GraphSONReader CreateStandardGraphSONReader()
         {
             return new GraphSONReader();
-            }
+        }
+
+        //During CI, we encountered a case where Newtonsoft.Json version 9.0.0
+        //was loaded although there is no obvious direct nor indirect dependency
+        //on that version of the library. An explicit reference to version
+        //11.0.0 from Gremlin.Net.UnitTest fixes that, however, it is
+        //still unclear what causes the downgrade. Until resolution, we keep this test.
+        [Fact]
+        public void NewtonsoftJsonVersionShouldSupportReallyBigIntegers()
+        {
+            Assert.Equal(new Version(11, 0, 0, 0), typeof(JToken).Assembly.GetName().Version);
+        }
 
         [Fact]
         public void ShouldDeserializeWithCustomDeserializerForNewType()
