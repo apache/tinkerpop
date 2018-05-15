@@ -504,6 +504,30 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(100, deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeZoneOffset()
+        {
+            var serializedValue = "{\"@type\":\"gx:ZoneOffset\",\"@value\":\"+03:06:09\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(new TimeSpan(3, 6, 9), deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeNegativeZoneOffset()
+        {
+            var serializedValue = "{\"@type\":\"gx:ZoneOffset\",\"@value\":\"-03:06:09\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(new TimeSpan(-3, -6, -9), deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
