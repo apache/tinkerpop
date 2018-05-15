@@ -528,6 +528,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(new TimeSpan(-3, -6, -9), deserializedValue);
         }
+
+        [Fact]
+        public void ShouldDeserializeInetAddress()
+        {
+            var serializedValue = "{\"@type\":\"gx:InetAddress\",\"@value\":\"localhost\"}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal("localhost", deserializedValue);
+        }
     }
 
     internal class TestGraphSONDeserializer : IGraphSONDeserializer
