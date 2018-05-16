@@ -78,8 +78,10 @@ namespace Gremlin.Net.Driver
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 
-        private async Task<IReadOnlyCollection<T>> ReceiveAsync<T>()
+        private async Task<ResultSet<T>> ReceiveAsync<T>()
         {
+            ResultSet<T> resultSet = null;
+            Dictionary<string, object> statusAttributes = null;
             ResponseStatus status;
             IAggregator aggregator = null;
             var isAggregatingSideEffects = false;
@@ -114,11 +116,18 @@ namespace Gremlin.Net.Driver
                             result.Add(d);
                         }
                 }
+
+                if (status.Code == ResponseStatusCode.Success || status.Code == ResponseStatusCode.NoContent)
+                {
+                    statusAttributes = receivedMsg.Status.Attributes;
+                }
+
             } while (status.Code == ResponseStatusCode.PartialContent || status.Code == ResponseStatusCode.Authenticate);
 
-            if (isAggregatingSideEffects)
-                return new List<T> {(T) aggregator.GetAggregatedResult()};
-            return result;
+
+            resultSet = new ResultSet<T>(isAggregatingSideEffects ? new List<T> { (T)aggregator.GetAggregatedResult() } : result, statusAttributes);
+                
+            return resultSet;
         }
 
         private async Task AuthenticateAsync()
