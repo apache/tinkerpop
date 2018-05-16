@@ -52,8 +52,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
                 //Extended
                 {"gx:BigDecimal", new DecimalConverter()},
-                {"gx:Duration", new TimeSpanConverter()},
-                {"gx:BigInteger", new BigIntegerConverter()},
+                {"gx:Duration", new TimeSpanDeserializer()},
+                {"gx:BigInteger", new BigIntegerDeserializer()},
                 {"gx:Byte", new ByteConverter()},
                 {"gx:ByteBuffer", new ByteBufferSerializer()},
                 {"gx:Char", new CharConverter()},
@@ -62,7 +62,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"gx:LocalDateTime", new LocalDateTimeDeserializer()},
                 {"gx:LocalTime", new LocalTimeDeserializer()},
                 {"gx:OffsetDateTime", new OffsetDateTimeDeserializer()},
-                {"gx:Period", new TimeSpanConverter() },
+                {"gx:Period", new TimeSpanDeserializer() },
                 {"gx:Int16", new Int16Converter() },
                 {"gx:ZoneOffset", new ZoneOffsetDeserializer() },
                 {"gx:InetAddress", new InetAddressDeserializer() }

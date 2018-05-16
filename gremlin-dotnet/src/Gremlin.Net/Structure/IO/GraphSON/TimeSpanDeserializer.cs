@@ -21,21 +21,13 @@
 
 #endregion
 
-using System;
-using System.Collections.Generic;
 using System.Xml;
 using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class TimeSpanConverter : IGraphSONSerializer, IGraphSONDeserializer
+    internal class TimeSpanDeserializer : IGraphSONDeserializer
     {
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            TimeSpan value = objectData;
-            return GraphSONUtil.ToTypedValue("Duration", XmlConvert.ToString(value), "gx");
-        }
-
         public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
             var duration = graphsonObject.ToObject<string>();

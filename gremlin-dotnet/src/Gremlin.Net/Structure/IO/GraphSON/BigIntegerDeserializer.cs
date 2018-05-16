@@ -21,21 +21,14 @@
 
 #endregion
 
-using System.Collections.Generic;
 using System.Numerics;
 using System.Xml;
 using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class BigIntegerConverter : IGraphSONDeserializer, IGraphSONSerializer
+    internal class BigIntegerDeserializer : IGraphSONDeserializer
     {
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-        {
-            BigInteger value = objectData;
-            return GraphSONUtil.ToTypedValue("BigInteger", value.ToString(), "gx");
-        }
-
         public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
             var bigInteger = graphsonObject.ToObject<string>();
