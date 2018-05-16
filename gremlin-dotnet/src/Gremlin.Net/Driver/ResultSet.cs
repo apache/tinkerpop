@@ -31,18 +31,29 @@ namespace Gremlin.Net.Driver
     /// A ResultSet is returned from the submission of a Gremlin script to the server and represents the results provided by the server
     /// ResultSet includes enumerable data and status attributes.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of the result elements</typeparam>
     public sealed class ResultSet<T> : IReadOnlyCollection<T>
     {
         /// <summary>
-        ///  Gets and Sets the read only collection
+        ///  Gets or sets the data from the response
         /// </summary>
-        public IReadOnlyCollection<T> Data { get; set; }
+        public IReadOnlyCollection<T> Data { get; }
 
         /// <summary>
-        /// Gets or Sets the status attributes from the gremlin response
+        /// Gets or sets the status attributes from the gremlin response
         /// </summary>
-        public Dictionary<string, object> StatusAttributes { get; set; }
+        public Dictionary<string, object> StatusAttributes { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the ResultSet class for the specified data and status attributes.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="attributes"></param>
+        public ResultSet(IReadOnlyCollection<T> data, Dictionary<string, object> attributes)
+        {
+            this.Data = data;
+            this.StatusAttributes = attributes;
+        }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
@@ -71,9 +82,9 @@ namespace Gremlin.Net.Driver
         /// <summary>
         /// Casts a IReadOnlyCollection to ResultSet
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of the result elements</typeparam>
+        /// <param name="data"> result data</param>
+        /// <returns>IReadOnlyCollection as ResultSet</returns>
         public static ResultSet<T> AsResultSet<T>(this IReadOnlyCollection<T> data)
         {
             if (!(data is ResultSet<T> resultSet))

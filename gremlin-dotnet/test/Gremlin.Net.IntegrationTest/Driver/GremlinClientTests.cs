@@ -30,6 +30,8 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
 using Xunit;
 using Gremlin.Net.Structure.IO.GraphSON;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Gremlin.Net.IntegrationTest.Driver
 {
@@ -174,16 +176,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                var expectedResult = new List<int> { 1, 2, 3, 4, 5 };
-                var requestMsg = $"{nameof(expectedResult)}";
-                var bindings = new Dictionary<string, object> { { nameof(expectedResult), expectedResult } };
-
-                var response = await gremlinClient.SubmitAsync<int>(requestMsg, bindings);
+                var requestMsg = _requestMessageProvider.GetDummyMessage();
+                var response = await gremlinClient.SubmitAsync<int>(requestMsg);
 
                 var resultSet = response.AsResultSet();
-
                 Assert.NotNull(resultSet.StatusAttributes);
 
+                var values= resultSet.StatusAttributes["@value"] as JArray;
+                Assert.True(values.First.ToString().Equals("host"));
             }
         }
 
