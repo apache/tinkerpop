@@ -97,7 +97,7 @@ g.V().union(limit(3).fold(),tail(3).fold())    <1>
 g.V().union(limit(3).fold(),tail(3).fold()).
   local(unfold().                              <2>
         order().
-          by(bothE().count(),decr).
+          by(bothE().count(),desc).
         limit(1).
         fold())
 g.V().union(limit(3).fold(),tail(3).fold()).   <3>

@@ -34,7 +34,7 @@ Feature: Step - project()
       | m[{"a":"d[2].l", "b":"d[32].i"}] |
       | m[{"a":"d[1].l", "b":"d[35].i"}] |
 
-  Scenario: g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX
+  Scenario: g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX
     Given the modern graph
     And the traversal of
       """
@@ -43,7 +43,7 @@ Feature: Step - project()
           by("name").
           by(__.in("created").count()).
         order().
-          by(__.select("b"), Order.decr).
+          by(__.select("b"), Order.desc).
         select("a")
       """
     When iterated to list

@@ -36,7 +36,7 @@ conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINA
 graph = TinkerGraph.open(conf)
 TinkerFactory.generateTheCrew(graph)
 g = graph.traversal()
-
+               
 toGryo = { o, type, mapper, suffix = "" ->
     def fileToWriteTo = new File("io-output/test-case-data/gryo/" + type.toLowerCase().replace(" ","") + "-" + suffix + ".kryo")
     if (fileToWriteTo.exists()) fileToWriteTo.delete()
@@ -75,7 +75,7 @@ toGryo(VertexProperty.Cardinality.list, "Cardinality", mapper, "v1d0")
 toGryo(Column.keys, "Column", mapper, "v1d0")
 toGryo(Direction.OUT, "Direction", mapper, "v1d0")
 toGryo(Operator.sum, "Operator", mapper, "v1d0")
-toGryo(Order.incr, "Order", mapper, "v1d0")
+toGryo(Order.shuffle, "Order", mapper, "v1d0")
 toGryo(Pop.all, "Pop", mapper, "v1d0")
 toGryo(org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.any, "Pick", mapper, "v1d0")
 toGryo(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", mapper, "v1d0")

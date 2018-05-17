@@ -51,9 +51,9 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
 
-    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name();
+    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name();
 
-    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X();
+    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name_limitX2X();
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX();
 
@@ -99,8 +99,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_pageRank_order_byXpageRank_decrX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_decrX_name();
+    public void g_V_pageRank_order_byXpageRank_descX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_descX_name();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(6, names.size());
@@ -137,8 +137,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_pageRank_order_byXpageRank_decrX_name_limitX2X() {
-        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X();
+    public void g_V_pageRank_order_byXpageRank_descX_name_limitX2X() {
+        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_descX_name_limitX2X();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(2, names.size());
@@ -256,13 +256,13 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name() {
-            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.decr).values("name");
+        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name() {
+            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.desc).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X() {
-            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.decr).<String>values("name").limit(2);
+        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name_limitX2X() {
+            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.desc).<String>values("name").limit(2);
         }
 
         @Override

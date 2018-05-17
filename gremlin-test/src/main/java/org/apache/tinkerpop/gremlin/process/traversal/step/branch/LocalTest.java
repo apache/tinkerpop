@@ -225,7 +225,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            return g.V().local(properties("location").order().by(T.value, Order.incr).range(0, 2)).value();
+            return g.V().local(properties("location").order().by(T.value, Order.asc).range(0, 2)).value();
         }
 
         @Override

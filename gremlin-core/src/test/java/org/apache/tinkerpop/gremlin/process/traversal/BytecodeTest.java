@@ -44,9 +44,9 @@ public class BytecodeTest {
     @Test
     public void shouldHaveProperHashAndEquality() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Traversal.Admin traversal1 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.keys).order().by(Order.decr).asAdmin();
-        final Traversal.Admin traversal2 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.keys).order().by(Order.decr).asAdmin();
-        final Traversal.Admin traversal3 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.values).order().by(Order.decr).asAdmin();
+        final Traversal.Admin traversal1 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.keys).order().by(Order.desc).asAdmin();
+        final Traversal.Admin traversal2 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.keys).order().by(Order.desc).asAdmin();
+        final Traversal.Admin traversal3 = g.V().out().repeat(__.out().in()).times(2).groupCount().by(__.outE().count()).select(Column.values).order().by(Order.desc).asAdmin();
 
         assertEquals(traversal1, traversal2);
         assertNotEquals(traversal1, traversal3);

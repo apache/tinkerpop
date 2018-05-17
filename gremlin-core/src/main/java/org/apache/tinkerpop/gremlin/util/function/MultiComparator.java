@@ -51,7 +51,7 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
     @Override
     public int compare(final C objectA, final C objectB) {
         if (this.comparators.isEmpty()) {
-            return Order.incr.compare(objectA, objectB);
+            return Order.asc.compare(objectA, objectB);
         } else {
             for (int i = this.startIndex; i < this.comparators.size(); i++) {
                 final int comparison = this.comparators.get(i).compare(this.getObject(objectA, i), this.getObject(objectB, i));

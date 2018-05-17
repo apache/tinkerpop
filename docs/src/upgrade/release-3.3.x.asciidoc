@@ -27,6 +27,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.4/CHANGELOG.asciidoc#release-3-3-4[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Introducing Order.asc and Order.desc
+
+The `Order` enum originally introduced `incr` for ascending order and `decr` for descending order. It's not clear why
+they were named this way when common querying parlance would call for `asc` and `desc` for those respective cases. Note
+that `incr` and `decr` have not been removed - just deprecated and thus marked for future removal. Prefer `asc` and
+`desc` going forward when writing Gremlin and look to update existing code using the deprecated values.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1956[TINKERPOP-1956]
 
 == TinkerPop 3.3.3
 

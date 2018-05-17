@@ -36,7 +36,11 @@ namespace Gremlin.Net.Process.Traversal
         {
         }
 
+        public static Order Asc => new Order("asc");
+
         public static Order Decr => new Order("decr");
+
+        public static Order Desc => new Order("desc");
 
         public static Order Incr => new Order("incr");
 
@@ -44,7 +48,9 @@ namespace Gremlin.Net.Process.Traversal
 
         private static readonly IDictionary<string, Order> Properties = new Dictionary<string, Order>
         {
+            { "asc", Asc },
             { "decr", Decr },
+            { "desc", Desc },
             { "incr", Incr },
             { "shuffle", Shuffle },
         };

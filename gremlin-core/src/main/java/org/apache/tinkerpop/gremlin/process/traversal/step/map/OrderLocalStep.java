@@ -72,7 +72,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S>
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> traversal) {
-        this.addComparator((Traversal.Admin<S, C>) traversal, (Comparator) Order.incr);
+        this.addComparator((Traversal.Admin<S, C>) traversal, (Comparator) Order.asc);
     }
 
     @Override
@@ -82,7 +82,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S>
 
     @Override
     public List<Pair<Traversal.Admin<S, C>, Comparator<C>>> getComparators() {
-        return this.comparators.isEmpty() ? Collections.singletonList(new Pair<>(new IdentityTraversal(), (Comparator) Order.incr)) : Collections.unmodifiableList(this.comparators);
+        return this.comparators.isEmpty() ? Collections.singletonList(new Pair<>(new IdentityTraversal(), (Comparator) Order.asc)) : Collections.unmodifiableList(this.comparators);
     }
 
     @Override

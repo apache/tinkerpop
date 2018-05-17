@@ -39,7 +39,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection);
 
-            var orderedAges = g.V().Values<int>("age").Order().By(Order.Decr).ToList();
+            var orderedAges = g.V().Values<int>("age").Order().By(Order.Desc).ToList();
 
             Assert.Equal(new List<int> {35, 32, 29, 27}, orderedAges);
         }

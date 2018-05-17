@@ -256,8 +256,8 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                     by(select(keys).values("performances")).
                     by(select(values)).
                     order().
-                    by(select("z"), Order.decr).
-                    by(select("y"), Order.incr).
+                    by(select("z"), Order.desc).
+                    by(select("y"), Order.asc).
                     limit(5).store("m").select("x");
         }
 

@@ -72,6 +72,8 @@ namespace Gremlin.Net.Process.Traversal
             {"Order.Decr", "decr"},
             {"Order.Incr", "incr"},
             {"Order.Shuffle", "shuffle"},
+            {"Order.Asc", "asc"},
+            {"Order.Desc", "desc"},
             {"Pick.Any", "any"},
             {"Pick.None", "none"},
             {"Pop.All", "all"},

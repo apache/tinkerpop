@@ -145,7 +145,7 @@ public class Model {
         addGraphProcessEntry(Column.keys, "Column", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Direction.OUT, "Direction", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Operator.sum, "Operator", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addGraphProcessEntry(Order.incr, "Order", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Order.shuffle, "Order", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Pop.all, "Pop", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());

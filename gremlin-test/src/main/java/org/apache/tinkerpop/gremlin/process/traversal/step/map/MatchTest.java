@@ -42,7 +42,7 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.Order.decr;
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
@@ -166,7 +166,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX();
 
     // test order barriers
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_descX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
 
 
     @Test
@@ -587,8 +587,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
+    public void g_V_matchXa_outEXcreatedX_order_byXweight_descX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_outEXcreatedX_order_byXweight_descX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
                 "a", "marko", "b", "lop",
@@ -892,9 +892,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_decrX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_outEXcreatedX_order_byXweight_descX_limitX1X_inV_b__b_hasXlang_javaXX_selectXa_bX_byXnameX() {
             return g.V().match(
-                    as("a").outE("created").order().by("weight", decr).limit(1).inV().as("b"),
+                    as("a").outE("created").order().by("weight", desc).limit(1).inV().as("b"),
                     as("b").has("lang", "java")).
                     <String>select("a", "b").by("name");
         }

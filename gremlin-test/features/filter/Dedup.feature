@@ -169,11 +169,11 @@ Feature: Step - dedup()
       | p[v[josh],v[lop],v[marko]] |
       | p[v[peter],v[lop],v[marko]] |
 
-  Scenario: g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup
+  Scenario: g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup
     Given the modern graph
     And the traversal of
       """
-      g.V().outE().as("e").inV().as("v").select("e").order().by("weight", Order.incr).select("v").values("name").dedup()
+      g.V().outE().as("e").inV().as("v").select("e").order().by("weight", Order.asc).select("v").values("name").dedup()
       """
     When iterated to list
     Then the result should be unordered

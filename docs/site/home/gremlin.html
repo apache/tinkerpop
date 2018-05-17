@@ -153,7 +153,7 @@ g.V().has("name","gremlin").
   out("bought").aggregate("stash").
   in("bought").out("bought").
     where(not(within("stash"))).
-  groupCount().order(local).by(values,decr)
+  groupCount().order(local).by(values,desc)
 </code></pre>
                 </div>
                 <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">
@@ -177,7 +177,7 @@ g.V().hasLabel("person").
   pageRank().
     by("friendRank").
     by(outE("knows")).
-  order().by("friendRank",decr).
+  order().by("friendRank",desc).
   limit(10)</code></pre>
                 </div>
                 <div class="col-xs-7" style="border-left: thin solid #000000;height:148px">

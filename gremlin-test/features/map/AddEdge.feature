@@ -336,7 +336,7 @@ Feature: Step - addE()
     And the graph should return 1 for count of "g.V(v1).in(\"created\").has(\"name\",\"lop\")"
     And the graph should return 1 for count of "g.V(v1).outE(\"created\")"
 
-  Scenario: g_addEXV_outE_label_groupCount_orderXlocalX_byXvalues_decrX_selectXkeysX_unfold_limitX1XX_fromXV_hasXname_vadasXX_toXV_hasXname_lopXX
+  Scenario: g_addEXV_outE_label_groupCount_orderXlocalX_byXvalues_descX_selectXkeysX_unfold_limitX1XX_fromXV_hasXname_vadasXX_toXV_hasXname_lopXX
     Given the empty graph
     And the graph initializer of
       """
@@ -356,7 +356,7 @@ Feature: Step - addE()
     And using the parameter v2 defined as "v[vadas]"
     And the traversal of
       """
-      g.addE(__.V().outE().label().groupCount().order(Scope.local).by(Column.values, Order.decr).select(Column.keys).unfold().limit(1)).from(__.V().has("name", "vadas")).to(__.V().has("name", "lop"))
+      g.addE(__.V().outE().label().groupCount().order(Scope.local).by(Column.values, Order.desc).select(Column.keys).unfold().limit(1)).from(__.V().has("name", "vadas")).to(__.V().has("name", "lop"))
       """
     When iterated to list
     Then the result should have a count of 1
