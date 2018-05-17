@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponentVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
@@ -2421,6 +2423,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Executes a Connected Component algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link ConnectedComponentVertexProgram}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#connectedcomponent-step" target="_blank">Reference Documentation - ConnectedComponent Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S, E> connectedComponent() {
+        this.asAdmin().getBytecode().addStep(Symbols.connectedComponent);
+        return this.asAdmin().addStep((Step<E, E>) new ConnectedComponentVertexProgramStep(this.asAdmin()));
+    }
+
+    /**
      * Executes a Peer Pressure community detection algorithm over the graph.
      *
      * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
@@ -2798,6 +2812,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         public static final String pageRank = "pageRank";
         public static final String peerPressure = "peerPressure";
+        public static final String connectedComponent = "connectedComponent";
         public static final String program = "program";
 
         public static final String by = "by";

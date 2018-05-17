@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
@@ -115,6 +116,7 @@ public class SparkHadoopGraphProvider extends AbstractFileGraphProvider {
         if (null != loadGraphWith &&
                 !test.equals(ProgramTest.Traversals.class) &&
                 !test.equals(PageRankTest.Traversals.class) &&
+                !test.equals(ConnectedComponentTest.Traversals.class) &&
                 !test.equals(PeerPressureTest.Traversals.class) &&
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining

@@ -57,6 +57,10 @@ import java.util.Iterator;
         method = "*",
         reason = "hmmmm")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest",
+        method = "*",
+        reason = "hmmmm")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest",
         method = "*",
         reason = "hmmmm")

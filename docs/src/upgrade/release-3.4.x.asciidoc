@@ -29,6 +29,38 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== connectedComponent() Step
+
+In prior version of TinkerPop, it was recommended that the identification of
+link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component] instances in a graph be
+computed by way of a reasonably complex bit of Gremlin that looked something like this:
+
+[source,groovy]
+----
+g.V().emit(cyclicPath().or().not(both())).repeat(both()).until(cyclicPath()).
+  path().aggregate("p").
+  unfold().dedup().
+  map(__.as("v").select("p").unfold().
+         filter(unfold().where(eq("v"))).
+         unfold().dedup().order().by(id).fold()).
+  dedup()
+----
+
+The above approach had a number of drawbacks that included a large execution cost as well as incompatibilities in OLAP.
+To simplify usage of this commonly use graph algorithm, TinkerPop 3.4.0 introduces the `connectedComponent()` step
+which reduces the above operation to:
+
+[source,groovy]
+----
+g.withComputer().V().connectedComponent()
+----
+
+It is important to note that this step does require the use of a `GraphComputer` to work, as it utilizes a
+`VertexProgram` behind the scenes.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1967[TINKERPOP-1967],
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation]
+
 ==== Removal of Giraph Support
 
 Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were

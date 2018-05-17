@@ -18,7 +18,13 @@ limitations under the License.
 == Connected Components
 
 Gremlin can be used to find link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[connected components]
-in a graph. Consider the following graph which has three connected components:
+in a graph. As of TinkerPop 3.4.0, the process has been simplified to the `connectedComponent()`-step which is
+described in more detail in the link:
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
+
+The `connectedComponent()`-step replaces the original recipe described below from earlier versions of TinkerPop,
+however the algorithm from that old recipe remains interesting for educational purposes and has thus not been removed.
+The original recipe considers the following graph which has three connected components:
 
 image:connected-components.png[width=600]
 
