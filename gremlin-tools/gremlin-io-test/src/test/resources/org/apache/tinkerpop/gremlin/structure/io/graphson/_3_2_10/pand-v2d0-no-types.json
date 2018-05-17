@@ -1,0 +1,10 @@
+{
+  "predicate" : "and",
+  "value" : [ {
+    "predicate" : "gt",
+    "value" : 0
+  }, {
+    "predicate" : "lt",
+    "value" : 10
+  } ]
+}

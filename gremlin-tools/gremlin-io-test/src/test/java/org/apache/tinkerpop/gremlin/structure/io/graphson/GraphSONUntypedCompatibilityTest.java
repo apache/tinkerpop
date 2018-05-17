@@ -64,6 +64,8 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
                 {GraphSONCompatibility.V2D0_NO_TYPE_3_2_8, mapperV2 },
                 {GraphSONCompatibility.V1D0_3_2_9, mapperV1 },
                 {GraphSONCompatibility.V2D0_NO_TYPE_3_2_9, mapperV2 },
+                {GraphSONCompatibility.V1D0_3_2_10, mapperV1 },
+                {GraphSONCompatibility.V2D0_NO_TYPE_3_2_10, mapperV2 },
                 {GraphSONCompatibility.V1D0_3_3_0, mapperV1 },
                 {GraphSONCompatibility.V2D0_NO_TYPE_3_3_0, mapperV2 },
                 {GraphSONCompatibility.V1D0_3_3_1, mapperV1 },
@@ -71,7 +73,9 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
                 {GraphSONCompatibility.V1D0_3_3_2, mapperV1 },
                 {GraphSONCompatibility.V2D0_NO_TYPE_3_3_2, mapperV2 },
                 {GraphSONCompatibility.V1D0_3_3_3, mapperV1 },
-                {GraphSONCompatibility.V2D0_NO_TYPE_3_3_3, mapperV2 }
+                {GraphSONCompatibility.V2D0_NO_TYPE_3_3_3, mapperV2 },
+                {GraphSONCompatibility.V1D0_3_3_4, mapperV1 },
+                {GraphSONCompatibility.V2D0_NO_TYPE_3_3_4, mapperV2 }
         });
     }
 
