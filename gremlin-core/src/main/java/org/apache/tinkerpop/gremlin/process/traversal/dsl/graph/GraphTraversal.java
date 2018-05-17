@@ -2421,10 +2421,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Executes a Peer Pressure community detection algorithm over the graph.
+     * Executes an arbitrary {@link VertexProgram} over the graph.
      *
-     * @return the traversal with the appended {@link PeerPressureVertexProgramStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#peerpressure-step" target="_blank">Reference Documentation - PeerPressure Step</a>
+     * @return the traversal with the appended {@link ProgramVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#program-step" target="_blank">Reference Documentation - Program Step</a>
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> program(final VertexProgram<?> vertexProgram) {
