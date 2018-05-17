@@ -1,0 +1,5 @@
+{
+  "script" : "{ it.get() }",
+  "language" : "gremlin-groovy",
+  "arguments" : 1
+}
