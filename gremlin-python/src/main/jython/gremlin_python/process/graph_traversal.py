@@ -194,6 +194,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("coin", *args)
         return self
 
+    def connectedComponent(self, *args):
+        self.bytecode.add_step("connectedComponent", *args)
+        return self
+
     def constant(self, *args):
         self.bytecode.add_step("constant", *args)
         return self

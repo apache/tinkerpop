@@ -625,6 +625,41 @@ g.V().coin(1.0)
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin-double-++[`coin(double)`]
 
+[[connectedcomponent-step]]
+=== ConnectedComponent Step
+
+The `connectedComponent()` step performs a computation to identify link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component]
+instances in a graph. When this step completes, the vertices will be labelled with a component identifier to denote
+the component to which they are associated.
+
+IMPORTANT: The `connectedComponent()`-step is a `VertexComputing`-step and as such, can only be used against a graph
+that supports `GraphComputer` (OLAP).
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().
+  connectedComponent().
+    with(ConnectedComponent.propertyName, 'component').
+  project('name','component').
+    by('name').
+    by('component')
+g.V().hasLabel('person').
+  connectedComponent().
+    with(ConnectedComponent.propertyName, 'component').
+    with(ConnectedComponent.edges, outE('knows')).
+  project('name','component').
+    by('name').
+    by('component')
+----
+
+Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
+configuration keys from the `ConnectedComponent` class and is automatically imported to the Gremlin Console.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#connectedComponent--++[`connectedComponent()`]
+
 [[constant-step]]
 === Constant Step
 

@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Replaced `Parameterizing.addPropertyMutations()` with `Configuring.configure()`.
 * Changed interface hierarchy for `Parameterizing` and `Mutating` interfaces as they are tightly related.
 * Introduced the `with()` step modulator which can supply configuration options to `Configuring` steps.
+* Added `connectedComponent()` step and related `VertexProgram`.
 * Added `supportsUpsert()` option to `VertexFeatures` and `EdgeFeatures`.
 * `min()` and `max()` now support all types implementing `Comparable`.
 * Change the `toString()` of `Path` to be standardized as other graph elements are.

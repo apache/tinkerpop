@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVerte
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
@@ -49,6 +50,7 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMa
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
@@ -251,6 +253,8 @@ public final class CoreImports {
         // graph computer
         CLASS_IMPORTS.add(Computer.class);
         CLASS_IMPORTS.add(ComputerResult.class);
+        CLASS_IMPORTS.add(ConnectedComponent.class);
+        CLASS_IMPORTS.add(ConnectedComponentVertexProgram.class);
         CLASS_IMPORTS.add(GraphComputer.class);
         CLASS_IMPORTS.add(Memory.class);
         CLASS_IMPORTS.add(VertexProgram.class);

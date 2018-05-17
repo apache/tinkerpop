@@ -48,6 +48,10 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest",
+        method = "*",
+        reason = "hmmmm")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "*",
         reason = "The test suite does not support profiling or lambdas and for groovy tests: 'Could not locate method: GraphTraversalSource.withStrategies([{traversalCategory=interface org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy$DecorationStrategy}])'")
