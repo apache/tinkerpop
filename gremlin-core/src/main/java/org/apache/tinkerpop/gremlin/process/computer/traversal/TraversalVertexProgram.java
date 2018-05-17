@@ -63,6 +63,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -82,15 +83,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-
 /**
- * TraversalVertexProgram enables the evaluation of a {@link Traversal} on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
- * At the start of the computation, each {@link Vertex} (or {@link org.apache.tinkerpop.gremlin.structure.Edge}) is assigned a single {@link Traverser}.
- * For each traverser that is local to the vertex, the vertex looks up its current location in the traversal and processes that step.
- * If the outputted traverser of the step references a local structure on the vertex (e.g. the vertex, an incident edge, its properties, or an arbitrary object),
- * then the vertex continues to compute the next traverser. If the traverser references another location in the graph,
- * then the traverser is sent to that location in the graph via a message. The messages of TraversalVertexProgram are traversers.
- * This continues until all traversers in the computation have halted.
+ * {@code TraversalVertexProgram} enables the evaluation of a {@link Traversal} on a {@link GraphComputer}.
+ * At the start of the computation, each {@link Vertex} (or {@link Edge}) is assigned a single {@link Traverser}.
+ * For each traverser that is local to the vertex, the vertex looks up its current location in the traversal and
+ * processes that step. If the outputted traverser of the step references a local structure on the vertex (e.g. the
+ * vertex, an incident edge, its properties, or an arbitrary object), then the vertex continues to compute the next
+ * traverser. If the traverser references another location in the graph, then the traverser is sent to that location
+ * in the graph via a message. The messages of TraversalVertexProgram are traversers. This continues until all
+ * traversers in the computation have halted.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
