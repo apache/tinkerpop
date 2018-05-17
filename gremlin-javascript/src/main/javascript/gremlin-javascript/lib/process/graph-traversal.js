@@ -343,6 +343,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal connectedComponent method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  connectedComponent(...args) {
+    this.bytecode.addStep('connectedComponent', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal constant method.
    * @param {...Object} args
    * @returns {GraphTraversal}

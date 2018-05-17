@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 public class GraphTraversalTest {
     private static final Logger logger = LoggerFactory.getLogger(GraphTraversalTest.class);
 
-    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "with", "option", "iterate", "to", "from", "profile", "pageRank", "peerPressure", "program", "none"));
+    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "with", "option", "iterate", "to", "from", "profile", "pageRank", "connectedComponent", "peerPressure", "program", "none"));
     private static Set<String> NO_ANONYMOUS = new HashSet<>(Arrays.asList("start", "__"));
     private static Set<String> IGNORES_BYTECODE = new HashSet<>(Arrays.asList("asAdmin", "iterate", "mapValues", "mapKeys"));
 
