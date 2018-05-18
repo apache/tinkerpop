@@ -507,7 +507,7 @@ limitations under the License.
                                         </property>
                                         <property>
                                             <name>settingsFile</name>
-                                            <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/driver/remote/gremlin-server-integration.yaml</value>
+                                            <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml</value>
                                         </property>
                                         <property>
                                             <name>executionName</name>

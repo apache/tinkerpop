@@ -33,7 +33,7 @@ let connection;
 
 describe('Traversal', function () {
   before(function () {
-    connection = helper.getConnection();
+    connection = helper.getConnection('gmodern');
     return connection.open();
   });
   after(function () {

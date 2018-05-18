@@ -122,7 +122,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
     }
 
     public static void startServer() throws Exception {
-        final InputStream stream = RemoteGraphProvider.class.getResourceAsStream("gremlin-server-integration.yaml");
+        final InputStream stream = GremlinServer.class.getResourceAsStream("gremlin-server-integration.yaml");
         final Settings settings = Settings.read(stream);
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
 

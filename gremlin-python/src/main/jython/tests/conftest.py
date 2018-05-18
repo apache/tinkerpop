@@ -38,7 +38,7 @@ def connection(request):
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
-        conn = Connection('ws://localhost:45940/gremlin', 'g', protocol,
+        conn = Connection('ws://localhost:45940/gremlin', 'gmodern', protocol,
                           lambda: TornadoTransport(), executor, pool)
     except OSError:
         executor.shutdown()
@@ -53,7 +53,7 @@ def connection(request):
 @pytest.fixture
 def client(request):
     try:
-        client = Client('ws://localhost:45940/gremlin', 'g')
+        client = Client('ws://localhost:45940/gremlin', 'gmodern')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -65,7 +65,7 @@ def client(request):
 @pytest.fixture
 def remote_connection(request):
     try:
-        remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'gmodern')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:

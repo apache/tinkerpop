@@ -33,16 +33,17 @@ public class ServerTestHelper {
      */
     public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
         final String buildDir = System.getProperty("build.dir");
-        final String homeDir = buildDir.substring(0, buildDir.indexOf("gremlin-server") + "gremlin-server".length());
+        final String homeDir = buildDir.substring(0, buildDir.indexOf("gremlin-server") + "gremlin-server".length()) +
+                File.separator + "src" + File.separator + "test" + File.separator +"scripts";
 
         overridenSettings.scriptEngines.get("gremlin-groovy").scripts = overridenSettings.scriptEngines
                 .get("gremlin-groovy").scripts.stream()
-                .map(s -> new File(s).isAbsolute() ? s : homeDir + File.separator + s)
+                .map(s -> new File(s).isAbsolute() ? s : homeDir + s.substring(s.lastIndexOf(File.separator)))
                 .collect(Collectors.toList());
 
         overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
                 .map(kv -> {
-                    kv.setValue(homeDir + File.separator + kv.getValue());
+                    kv.setValue(homeDir + kv.getValue().substring(kv.getValue().lastIndexOf(File.separator)));
                     return kv;
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

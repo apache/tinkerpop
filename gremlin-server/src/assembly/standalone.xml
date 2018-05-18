@@ -38,9 +38,6 @@ limitations under the License.
         <fileSet>
             <directory>scripts</directory>
             <outputDirectory>/scripts</outputDirectory>
-            <excludes>
-                <exclude>generate-all.groovy</exclude>
-            </excludes>
         </fileSet>
         <fileSet>
             <directory>../target/docs/htmlsingle</directory>
