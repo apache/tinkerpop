@@ -24,8 +24,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
 
 /**
+ * Helps create a variety of different toy graphs for testing and learning purposes.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -33,6 +43,9 @@ public final class TinkerFactory {
 
     private TinkerFactory() {}
 
+    /**
+     * Create the "classic" graph which was the original toy graph from TinkerPop 2.x.
+     */
     public static TinkerGraph createClassic() {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
@@ -43,6 +56,9 @@ public final class TinkerFactory {
         return g;
     }
 
+    /**
+     * Generate the graph in {@link #createClassic()} into an existing graph.
+     */
     public static void generateClassic(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, "name", "marko", "age", 29);
         final Vertex vadas = g.addVertex(T.id, 2, "name", "vadas", "age", 27);
@@ -58,12 +74,19 @@ public final class TinkerFactory {
         peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
     }
 
+    /**
+     * Create the "modern" graph which has the same structure as the "classic" graph from TinkerPop 2.x but includes
+     * 3.x features like vertex labels.
+     */
     public static TinkerGraph createModern() {
         final TinkerGraph g = getTinkerGraphWithNumberManager();
         generateModern(g);
         return g;
     }
 
+    /**
+     * Generate the graph in {@link #createModern()} into an existing graph.
+     */
     public static void generateModern(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29);
         final Vertex vadas = g.addVertex(T.id, 2, T.label, "person", "name", "vadas", "age", 27);
@@ -79,6 +102,10 @@ public final class TinkerFactory {
         peter.addEdge("created", lop, T.id, 12, "weight", 0.2d);
     }
 
+    /**
+     * Create the "the crew" graph which is a TinkerPop 3.x toy graph showcasing many 3.x features like meta-properties,
+     * multi-properties and graph variables.
+     */
     public static TinkerGraph createTheCrew() {
         final Configuration conf = getNumberIdManagerConfiguration();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
@@ -87,6 +114,9 @@ public final class TinkerFactory {
         return g;
     }
 
+    /**
+     * Generate the graph in {@link #createTheCrew()} into an existing graph.
+     */
     public static void generateTheCrew(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko");
         final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen");
@@ -137,21 +167,67 @@ public final class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
+    /**
+     * Creates the "kitchen sink" graph which is a collection of structures (e.g. self-loops) that aren't represented
+     * in other graphs and are useful for various testing scenarios.
+     */
     public static TinkerGraph createKitchenSink() {
         final TinkerGraph g = getTinkerGraphWithNumberManager();
         generateKitchenSink(g);
         return g;
     }
 
+    /**
+     * Generate the graph in {@link #createKitchenSink()} into an existing graph.
+     */
     public static void generateKitchenSink(final TinkerGraph graph) {
         final GraphTraversalSource g = graph.traversal();
         g.addV("loops").property(T.id, 1000).property("name", "loop").as("me").
-          addE("self").to("me").
+          addE("self").to("me").property(T.id, 1001).
           iterate();
         g.addV("message").property(T.id, 2000).property("name", "a").as("a").
           addV("message").property(T.id, 2001).property("name", "b").as("b").
-          addE("link").from("a").to("b").
-          addE("link").from("a").to("a").iterate();
+          addE("link").from("a").to("b").property(T.id, 2002).
+          addE("link").from("a").to("a").property(T.id, 2003).iterate();
+    }
+
+    /**
+     * Creates the "grateful dead" graph which is a larger graph than most of the toy graphs but has real-world
+     * structure and application and is therefore useful for demonstrating more complex traversals. Unlike the
+     * other graphs, this creation process relies on a local data files for creation. Specifically, it requires
+     * {@code grateful-dead.kryo} to be present. It will check the following common directories in the listed order
+     * to try to load this graph: {@code ./}, {@code data/}, {@code ../data/} as these are the common places to find
+     * this file from normal TinkerPop packaging. If the file cannot be found in those directories an
+     * {@code IllegalStateException}.
+     */
+    public static TinkerGraph createGratefulDead() {
+        final TinkerGraph g = getTinkerGraphWithNumberManager();
+        generateGratefulDead(g);
+        return g;
+    }
+
+    /**
+     * Generate the graph in {@link #createGratefulDead()} into an existing graph.
+     */
+    public static void generateGratefulDead(final TinkerGraph graph) {
+        final String fileName = "grateful-dead.kryo";
+        final List<String> files = Arrays.asList(fileName,
+                "data/" + fileName,
+                ".." + File.separator + "data" + File.separator + fileName);
+
+        for (String fn : files) {
+            final File f = new File(fn);
+            if (f.exists()) {
+                try {
+                    graph.io(gryo()).readGraph(fn);
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+
+        if (!graph.vertices().hasNext())
+            throw new IllegalStateException("grateful-dead.kryo cannot be found");
     }
 
     private static TinkerGraph getTinkerGraphWithNumberManager() {
