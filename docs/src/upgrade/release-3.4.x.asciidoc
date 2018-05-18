@@ -230,3 +230,22 @@ long ago moved to the `Computer` infrastructure as methods for constructing a `T
 `TraversalEngine` were long ago removed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]
+
+==== Upsert Graph Feature
+
+Some `Graph` implementations may be able to offer upsert functionality for vertices and edges, which can help improve
+usability and performance. To help make it clear to users that a graph operates in this fashion, the `supportsUpsert()`
+feature has been added to both `Graph.VertexFeatures` and `Graph.EdgeFeatures`. By default, both of these methods will
+return `false`.
+
+Should a provider wish to support this feature, the behavior of `addV()` and/or `addE()` should change such that when
+a vertex or edge with the same identifier is provided, the respective step will insert the new element if that value
+is not present or update an existing element if it is found. The method by which the provider "identifies" an element
+is completely up to the capabilities of that provider. In the most simple fashion, a graph could simply check the
+value of the supplied `T.id`, however graphs that support some form of schema will likely have other methods for
+determining whether or not an existing element is present.
+
+The extent to which TinkerPop tests "upsert" is fairly narrow. Graph providers that choose to support this feature
+should consider their own test suites carefully to ensure appropriate coverage.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1685[TINKERPOP-1685]

@@ -504,6 +504,7 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_DUPLICATE_MULTI_PROPERTIES = "DuplicateMultiProperties";
             public static final String FEATURE_META_PROPERTIES = "MetaProperties";
             public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
+            public static final String FEATURE_UPSERT = "Upsert";
 
             /**
              * Gets the {@link VertexProperty.Cardinality} for a key.  By default, this method will return
@@ -565,6 +566,20 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
+             * Determines if the {@code Graph} implementation uses upsert functionality as opposed to insert
+             * functionality for {@link #addVertex(String)}. This feature gives graph providers some flexibility as
+             * to how graph mutations are treated. For graph providers, testing of this feature (as far as TinkerPop
+             * is concerned) only covers graphs that can support user supplied identifiers as there is no other way
+             * for TinkerPop to know what aspect of a vertex is unique to appropriately apply assertions. Graph
+             * providers, especially those who support schema features, may have other methods for uniquely identifying
+             * a vertex and should therefore resort to their own body of tests to validate this feature.
+             */
+            @FeatureDescriptor(name = FEATURE_UPSERT)
+            public default boolean supportsUpsert() {
+                return false;
+            }
+
+            /**
              * Gets features related to "properties" on a {@link Vertex}.
              */
             public default VertexPropertyFeatures properties() {
@@ -579,6 +594,7 @@ public interface Graph extends AutoCloseable, Host {
         public interface EdgeFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_EDGES = "AddEdges";
             public static final String FEATURE_REMOVE_EDGES = "RemoveEdges";
+            public static final String FEATURE_UPSERT = "Upsert";
 
             /**
              * Determines if an {@link Edge} can be added to a {@code Vertex}.
@@ -594,6 +610,21 @@ public interface Graph extends AutoCloseable, Host {
             @FeatureDescriptor(name = FEATURE_REMOVE_EDGES)
             public default boolean supportsRemoveEdges() {
                 return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementation uses upsert functionality as opposed to insert
+             * functionality for {@link Vertex#addEdge(String, Vertex, Object...)}. This feature gives graph providers
+             * some flexibility as to how graph mutations are treated. For graph providers, testing of this feature
+             * (as far as TinkerPop is concerned) only covers graphs that can support user supplied identifiers as
+             * there is no other way for TinkerPop to know what aspect of a edge is unique to appropriately apply
+             * assertions. Graph providers, especially those who support schema features, may have other methods for
+             * uniquely identifying a edge and should therefore resort to their own body of tests to validate this
+             * feature.
+             */
+            @FeatureDescriptor(name = FEATURE_UPSERT)
+            public default boolean supportsUpsert() {
+                return false;
             }
 
             /**

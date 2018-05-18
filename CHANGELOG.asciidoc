@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
+* Added `supportsUpsert()` option to `VertexFeatures` and `EdgeFeatures`.
 * `min()` and `max()` now support all types implementing `Comparable`.
 * Change the `toString()` of `Path` to be standardized as other graph elements are.
 * `hadoop-gremlin` no longer generates a test artifact.
