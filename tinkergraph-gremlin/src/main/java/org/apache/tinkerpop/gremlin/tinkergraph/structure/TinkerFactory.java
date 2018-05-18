@@ -24,11 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
@@ -193,12 +192,7 @@ public final class TinkerFactory {
 
     /**
      * Creates the "grateful dead" graph which is a larger graph than most of the toy graphs but has real-world
-     * structure and application and is therefore useful for demonstrating more complex traversals. Unlike the
-     * other graphs, this creation process relies on a local data files for creation. Specifically, it requires
-     * {@code grateful-dead.kryo} to be present. It will check the following common directories in the listed order
-     * to try to load this graph: {@code ./}, {@code data/}, {@code ../data/} as these are the common places to find
-     * this file from normal TinkerPop packaging. If the file cannot be found in those directories an
-     * {@code IllegalStateException}.
+     * structure and application and is therefore useful for demonstrating more complex traversals.
      */
     public static TinkerGraph createGratefulDead() {
         final TinkerGraph g = getTinkerGraphWithNumberManager();
@@ -210,24 +204,12 @@ public final class TinkerFactory {
      * Generate the graph in {@link #createGratefulDead()} into an existing graph.
      */
     public static void generateGratefulDead(final TinkerGraph graph) {
-        final String fileName = "grateful-dead.kryo";
-        final List<String> files = Arrays.asList(fileName,
-                "data/" + fileName,
-                ".." + File.separator + "data" + File.separator + fileName);
-
-        for (String fn : files) {
-            final File f = new File(fn);
-            if (f.exists()) {
-                try {
-                    graph.io(gryo()).readGraph(fn);
-                } catch (Exception ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
+        final InputStream stream = TinkerFactory.class.getResourceAsStream("grateful-dead.kryo");
+        try {
+            graph.io(gryo()).reader().create().readGraph(stream, graph);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
         }
-
-        if (!graph.vertices().hasNext())
-            throw new IllegalStateException("grateful-dead.kryo cannot be found");
     }
 
     private static TinkerGraph getTinkerGraphWithNumberManager() {
