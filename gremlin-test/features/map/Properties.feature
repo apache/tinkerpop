@@ -17,6 +17,20 @@
 
 Feature: Step - properties()
 
+  Scenario: g_V_hasXageX_propertiesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age").properties("name").value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh  |
+      | peter |
+
   Scenario: g_V_hasXageX_propertiesXname_ageX_value
     Given the modern graph
     And the traversal of

@@ -68,9 +68,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -107,19 +105,6 @@ public class FeatureCoverageTest {
             // GLV suite doesn't support property identifiers and related assertions
             "g_V_hasXageX_properties_hasXid_nameIdX_value",
             "g_V_hasXageX_properties_hasXid_nameIdAsStringX_value",
-            "g_V_hasXageX_propertiesXnameX",
-            // grateful dead graph not supported in GLV suite
-            "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
-            "g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX",
-            "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
-            "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
-            "g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count",
-            "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX",
-            "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX",
-            "get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
-            "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
-            "g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX",
-            "g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name",
             // Pop tests not organized right for GLVs
             "g_V_valueMap_selectXpop_aX",
             "g_V_selectXa_bX",
@@ -135,7 +120,6 @@ public class FeatureCoverageTest {
             "g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack");
 
     @Test
-    // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
