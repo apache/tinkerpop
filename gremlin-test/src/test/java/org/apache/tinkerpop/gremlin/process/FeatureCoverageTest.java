@@ -127,9 +127,6 @@ public class FeatureCoverageTest {
             "g_V_selectXaX",
             // assertion doesn't seem to want to work right for embedded lists
             "g_V_asXa_bX_out_asXcX_path_selectXkeysX",
-            // probably need TINKERPOP-1877
-            "g_V_bothEXselfX",
-            "g_V_bothXselfX",
             // ugh - BigInteger?
             "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
             // ugh - clone

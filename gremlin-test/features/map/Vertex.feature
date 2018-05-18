@@ -473,3 +473,27 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | ripple |
       | ripple |
       | ripple |
+
+  Scenario: g_V_hasLabelXloopsX_bothEXselfX
+    Given the sink graph
+    And the traversal of
+    """
+    g.V().hasLabel("loops").bothE("self")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[loop-self->loop] |
+      | e[loop-self->loop] |
+
+  Scenario: g_V_hasLabelXloopsX_bothXselfX
+    Given the sink graph
+    And the traversal of
+    """
+    g.V().hasLabel("loops").both("self")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[loop] |
+      | v[loop] |
