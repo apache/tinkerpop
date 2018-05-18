@@ -137,7 +137,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                         append(convertToString(entry.getValue())).
                         append("),");
             }
-            map.deleteCharAt(map.length() - 1);
+
+            // only need to remove this last bit if entries were added
+            if (!((Map<?, ?>) object).isEmpty())
+                map.deleteCharAt(map.length() - 1);
+
             return map.append("]").toString();
         } else if (object instanceof Long)
             return object + "L";
