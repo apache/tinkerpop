@@ -43,9 +43,7 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = [
-    "g.V(v1Id).out().inject(v2).values(\"name\")",  # bug in attachment won't connect v2
-           ]
+ignores = []
 
 
 @given("the {graph_name:w} graph")
