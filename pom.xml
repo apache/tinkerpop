@@ -285,6 +285,12 @@ limitations under the License.
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

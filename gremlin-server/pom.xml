@@ -275,9 +275,9 @@ limitations under the License.
                                 <goals>
                                     <goal>tag</goal>
                                 </goals>
-                                <configuration>                                                     
-                                    <tag>3.2</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>                                                     
+                                <configuration>
+                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
+                                    <skip>${only.when.is.snapshot.used}</skip>
                                 </configuration>
                             </execution>
                             <execution>
@@ -285,9 +285,9 @@ limitations under the License.
                                 <goals>
                                     <goal>push</goal>
                                 </goals>
-                                <configuration>                                    
+                                <configuration>
                                     <skip>${only.when.is.snapshot.used}</skip>
-                                </configuration>                                
+                                </configuration>
                             </execution>
                         </executions>
                         <configuration>
