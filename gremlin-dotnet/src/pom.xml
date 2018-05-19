@@ -89,6 +89,54 @@ limitations under the License.
                             <nugetAddEnabled>false</nugetAddEnabled>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>pack-dotnet-template</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />                                       
+                                        <if>
+                                            <available file="mono" filepath="${env.PATH}"/>
+                                            <then>
+                                                <if>
+                                                    <available file="Gremlin.Net/bin/nuget.exe"/>
+                                                    <then>
+                                                        <echo>nuget.exe already downloaded and at Gremlin.Net/bin/nuget.exe.</echo>
+                                                    </then>
+
+                                                    <else>
+                                                        <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
+                                                            <arg line="https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe"/>
+                                                        </exec>
+                                                    </else>
+                                                </if>
+                                                <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
+                                                    <arg line="nuget.exe pack ../../Gremlin.Net.Template/Gremlin.Net.Template.nuspec"/>
+                                                </exec>
+                                            </then>
+                                            <else>
+                                                <echo>Skipping packaging of Gremlin.Net.Template as mono is not available</echo>
+                                            </else>
+                                        </if>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>20020829</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -200,6 +248,12 @@ def engine = new groovy.text.GStringTemplateEngine()
 def csprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
 def csprojFile = new File('${project.basedir}/Gremlin.Net/Gremlin.Net.csproj')
 csprojFile.newWriter().withWriter{ it << csprojTemplate }
+def templateCsprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.Template.csproj.template')).make(["projectVersion":versionToUse])
+def templateCsprojFile = new File('${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.csproj')
+templateCsprojFile.newWriter().withWriter{ it << templateCsprojTemplate }
+def nuspecTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.Template.nuspec.template')).make(["projectVersion":versionToUse])
+def nuspecFile = new File('${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.nuspec')
+nuspecFile.newWriter().withWriter{ it << nuspecTemplate }
 ]]>
                                         </script>
                                     </scripts>

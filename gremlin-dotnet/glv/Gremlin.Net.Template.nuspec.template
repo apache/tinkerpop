@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Gremlin.Net.Template</id>
+        <title>Gremlin.Net Template</title>
+        <version>$projectVersion</version>
+        <description>Gremlin.Net template to create a console application with dotnet new.</description>
+        <authors>Apache TinkerPop</authors>
+        <licenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</licenseUrl>
+        <projectUrl>http://tinkerpop.apache.org</projectUrl>
+        <tags>TinkerPop Gremlin Gremlin.Net</tags>
+        <packageTypes>
+            <packageType name="Template" />
+        </packageTypes>
+    </metadata>
+    <files>
+        <file src=".template.config/template.json" target="content/.template.config" />
+        <file src="Gremlin.Net.Template.csproj" target="content" />
+        <file src="*.cs" target="content" />
+</files>
+</package>

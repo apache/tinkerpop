@@ -105,6 +105,8 @@ See the <<release-environment,Release Environment>> section for more information
 The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=2.1.101) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
+In order to pack the Gremlin.Net Template project, it is also necessary to install link:http://www.mono-project.com/[Mono].
+The template will still be built and tested when Mono is not present but packing will be skipped.
 
 `gremlin-dotnet` can be built and tested from the command line with:
 
