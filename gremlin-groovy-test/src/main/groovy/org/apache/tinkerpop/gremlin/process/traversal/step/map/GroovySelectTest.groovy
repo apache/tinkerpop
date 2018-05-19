@@ -177,27 +177,83 @@ public abstract class GroovySelectTest {
         // TINKERPOP-619: select should not throw
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop) {
-            final String root = "g.V."
-            new ScriptTraversal<>(g, "gremlin-groovy", root + (null == pop ? "select('a')" : "select(${pop}, 'a')"))
+        public Traversal<Vertex, Object> get_g_V_selectXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select('a')")
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX(final Pop pop) {
-            final String root = "g.V."
-            new ScriptTraversal<>(g, "gremlin-groovy", root + (null == pop ? "select('a', 'b')" : "select(${pop}, 'a', 'b')"))
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select('a', 'b')")
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
-            final String root = "g.V.valueMap."
-            new ScriptTraversal<>(g, "gremlin-groovy", root + (null == pop ? "select('a')" : "select(${pop}, 'a')"))
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select('a')")
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
-            final String root = "g.V.valueMap."
-            new ScriptTraversal<>(g, "gremlin-groovy", root + (null == pop ? "select('a', 'b')" : "select(${pop}, 'a', 'b')"))
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXa_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select('a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXfirst_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.first, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXfirst_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.first, 'a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXfirst_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.first, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXfirst_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.first, 'a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXlast_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.last, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXlast_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.last, 'a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXlast_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.last, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlast_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.last, 'a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXall_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.all, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXall_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select(Pop.all, 'a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXall_aX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.all, 'a')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXall_a_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap().select(Pop.all, 'a', 'b')")
         }
 
         // when labels don't exist

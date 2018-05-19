@@ -105,11 +105,6 @@ public class FeatureCoverageTest {
             // GLV suite doesn't support property identifiers and related assertions
             "g_V_hasXageX_properties_hasXid_nameIdX_value",
             "g_V_hasXageX_properties_hasXid_nameIdAsStringX_value",
-            // Pop tests not organized right for GLVs
-            "g_V_valueMap_selectXpop_aX",
-            "g_V_selectXa_bX",
-            "g_V_valueMap_selectXpop_a_bX",
-            "g_V_selectXaX",
             // assertion doesn't seem to want to work right for embedded lists
             "g_V_asXa_bX_out_asXcX_path_selectXkeysX",
             // ugh - BigInteger?

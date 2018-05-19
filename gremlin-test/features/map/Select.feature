@@ -535,3 +535,138 @@ Feature: Step - select()
     Then the result should be unordered
       | result |
       | d[0].l |
+
+  Scenario: g_V_selectXa_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select("a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select("a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXa_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select("a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXfirst_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.first, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXfirst_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.first, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXfirst_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.first, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXfirst_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.first, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXlast_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.last, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXlast_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.last, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXlast_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.last, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXlast_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.last, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXall_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.all, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXall_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select(Pop.all, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXall_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.all, "a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_valueMap_selectXall_a_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().select(Pop.all, "a","b")
+      """
+    When iterated to list
+    Then the result should be empty
