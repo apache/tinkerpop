@@ -26,6 +26,10 @@ limitations under the License.
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
     <packaging>${packaging.type}</packaging>
+    <properties>
+        <nugetVersion>4.4.1</nugetVersion>
+        <nugetExe>nuget-${nugetVersion}.exe</nugetExe>
+    </properties>
 
     <build>
         <plugins>
@@ -106,19 +110,19 @@ limitations under the License.
                                             <available file="mono" filepath="${env.PATH}"/>
                                             <then>
                                                 <if>
-                                                    <available file="Gremlin.Net/bin/nuget.exe"/>
+                                                    <available file="${nugetExe}"/>
                                                     <then>
-                                                        <echo>nuget.exe already downloaded and at Gremlin.Net/bin/nuget.exe.</echo>
+                                                        <echo>nuget.exe already downloaded.</echo>
                                                     </then>
 
                                                     <else>
-                                                        <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
-                                                            <arg line="https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe"/>
+                                                        <exec executable="wget" failonerror="true">
+                                                            <arg line="https://dist.nuget.org/win-x86-commandline/v${nugetVersion}/nuget.exe -O ${nugetExe}"/>
                                                         </exec>
                                                     </else>
                                                 </if>
-                                                <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
-                                                    <arg line="nuget.exe pack ../../Gremlin.Net.Template/Gremlin.Net.Template.nuspec"/>
+                                                <exec executable="mono" failonerror="true">
+                                                    <arg line="${nugetExe} pack Gremlin.Net.Template/Gremlin.Net.Template.nuspec"/>
                                                 </exec>
                                             </then>
                                             <else>
@@ -178,14 +182,14 @@ limitations under the License.
                                     <tasks>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
                                         <if>
-                                            <available file="Gremlin.Net/bin/nuget.exe"/>
+                                            <available file="${nugetExe}"/>
                                             <then>
-                                                <echo>nuget.exe already downloaded and at Gremlin.Net/bin/nuget.exe.</echo>
+                                                <echo>nuget.exe already downloaded.</echo>
                                             </then>
 
                                             <else>
-                                                <exec dir="Gremlin.Net/bin" executable="wget" failonerror="true">
-                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe"/>
+                                                <exec executable="wget" failonerror="true">
+                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v${nugetVersion}/nuget.exe -O ${nugetExe}"/>
                                                 </exec>
                                             </else>
                                         </if>
@@ -194,8 +198,8 @@ limitations under the License.
                                         until https://github.com/NuGet/Home/issues/4095 we have to have to specify
                                         the "ConfigFile" option to nuget.
                                         -->
-                                        <exec dir="Gremlin.Net/bin" executable="mono" failonerror="true">
-                                            <arg line="nuget.exe push Gremlin.Net.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                        <exec executable="mono" failonerror="true">
+                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
