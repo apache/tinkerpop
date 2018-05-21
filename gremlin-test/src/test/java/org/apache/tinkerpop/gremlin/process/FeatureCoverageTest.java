@@ -157,7 +157,7 @@ public class FeatureCoverageTest {
                 MeanTest.class,
                 MinTest.class,
                 OrderTest.class,
-                PageRankTest.class,
+                //PageRankTest.class,
                 PathTest.class,
                 // PeerPressureTest.class,
                 // ProfileTest.class,
