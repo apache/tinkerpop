@@ -14,17 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+// @author Daniel Kuppitz (anwer on gremlin user list)
+// @author Robert Dale (answer on gremlin user list)
+// @author Marc de Lignie
+
 [[connected-components]]
 == Connected Components
 
 Gremlin can be used to find link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[connected components]
-in a graph. As of TinkerPop 3.4.0, the process has been simplified to the `connectedComponent()`-step which is
-described in more detail in the link:
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
+in a graph. In a directed graph like in TinkerPop, components can be weakly or strongly connected. This recipe is
+restricted to finding link:https://en.wikipedia.org/wiki/Directed_graph#Directed_graph_connectivity[weakly
+connected components], in which the direction of edges is not taken into account.
 
-The `connectedComponent()`-step replaces the original recipe described below from earlier versions of TinkerPop,
-however the algorithm from that old recipe remains interesting for educational purposes and has thus not been removed.
-The original recipe considers the following graph which has three connected components:
+Depending on the size of the graph, three solution regimes can be discriminated:
+
+1. Small graphs that fit in the memory of a single machine
+
+2. Medium graphs backed by storage for which a linear scan is still feasible. This regime is left to third party
+TinkerPop implementations, since TinkerPop itself has no storage-backed reference implementations. The idea is that
+component membership is stored in the graph, rather than in memory.
+
+3. Large graphs requiring an OLAP approach to yield results in a reasonable time.
+
+
+These regimes are discussed separately using the following graph with three weakly connected components:
 
 image:connected-components.png[width=600]
 
@@ -41,46 +55,75 @@ g.addV().property(id, "A").as("a").
   addE("link").from("d").to("e").iterate()
 ----
 
-One way to detect the various subgraphs would be to do something like this:
+
+===== Small graphs
+
+Connected components in a small graph can be determined with both an OLTP traversal and the OLAP
+`connectedComponent()`-step. The `connectedComponent()`-step is available as of TinkerPop 3.4.0 and is
+described in more detail in the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
+
+A straightforward way to detect the various subgraphs with an OLTP traversal is to do this:
 
 [gremlin-groovy,existing]
 ----
-g.V().emit(cyclicPath().or().not(both())).repeat(both()).until(cyclicPath()).  <1>
-  path().aggregate("p").                                                       <2>
-  unfold().dedup().                                                            <3>
-  map(__.as("v").select("p").unfold().                                         <4>
-         filter(unfold().where(eq("v"))).
-         unfold().dedup().order().by(id).fold()).
-  dedup()                                                                      <5>
+g.V().emit(cyclicPath().or().not(both())).                                    <1>
+    repeat(__.where(without('a')).store('a').both()).until(cyclicPath()).     <2>
+    group().by(path().unfold().limit(1)).                                     <3>
+    by(path().unfold().dedup().fold()).                                       <4>
+    select(values).unfold()                                                   <5>
 ----
 
-<1> Iterate all vertices and repeatedly traverse over both incoming and outgoing edges (TinkerPop doesn't support
-unidirectional graphs directly so it must be simulated by ignoring the direction with `both`). Note the use of `emit`
-prior to `repeat` as this allows for return of a single length path.
-<2> Aggregate the `path()` of the emitted vertices to "p". It is within these paths that the list of connected
-components will be identified. Obviously the paths list are duplicative in the sense that they contains different
-paths traveled over the same vertices.
-<3> Unroll the elements in the path list with `unfold` and `dedup`.
-<4> Use the first vertex in each path to filter against the paths stored in "p". When a path is found that has the
-vertex in it, dedup the vertices in the path, order it by the identifier. Each path output from this `map` step
-represents a connected component.
-<5> The connected component list is duplicative given the nature of the paths in "p", but now that the vertices within
-the paths are ordered, a final `dedup` will make the list of connective components unique.
+<1> The initial emit() step allows for output of isolated vertices, in addition to the discovery of
+components as described in (2).
 
-NOTE: This is a nice example of where running smaller pieces of a large Gremlin statement make it easier to see what
-is happening at each step. Consider running this example one line at a time (or perhaps even in a step at a time) to
-see the output at each point.
+<2> The entire component to which the first returned vertex belongs, is visited. To allow for components of any
+structure, a repeat loop is applied that only stops for a particular branch of the component when it detects a cyclic
+path.  Collection `'a'` is used to keep track of visited vertices, for both subtraversals within a component
+and new traversals resulting from the `g.V()` linear scan.
 
-While the above approach returns results nicely, the traversal doesn't appear to work with OLAP. A less efficient
-approach, but one more suited for OLAP execution looks quite similar but does not use `dedup` as heavily (thus
-`GraphComputer` is forced to analyze far more paths):
+<3> While `'a'` nicely keeps track of vertices already visited, the actual components need to be extracted from the
+path information of surviving traversers. The `path().unfold().limit(1)` closure provides the starting vertex
+of surviving traversers, which can be used to group the components.
+
+<4> This clause collects the unique vertices from all paths with the same starting vertex, thus from the same
+weak component.
+
+<5> The values of the groupby map contain the lists of vertices making up the requested components.
+
+This algorithm completes in linear time with the number of vertices and edges, because a traversal is started for each
+vertex and each edge with its associated out-vertex is visited exactly once.
+
+
+==== Large graphs
+
+Large graphs require an OLAP solution with a custom VertexProgram that can be run using a graph implementation's
+GraphComputer, in particular `SparkGraphComputer` on a `HadoopGraph`. The OLAP solution also runs faster for most
+medium-sized graphs, that is when these graph have a 'natural' structure with a limited maximum path length.
+
+The TinkerPop library of vertex programs contains the `WeakComponentsVertexProgram` which can be run in the same
+way as the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#peerpressurevertexprogram[PeerPressureVertexProgram]:
 
 [gremlin-groovy,existing]
 ----
-g.withComputer().V().emit(cyclicPath().or().not(both())).repeat(both()).until(cyclicPath()).
-  aggregate("p").by(path()).cap("p").unfold().limit(local, 1).
-  map(__.as("v").select("p").unfold().
-         filter(unfold().where(eq("v"))).
-         unfold().dedup().order().by(id).fold()
-  ).toSet()
+result = g.getGraph().compute().
+    program(WeakComponentsVertexProgram.build().maxIterations(100).create()).
+    mapReduce(ClusterPopulationMapReduce.build().create()).
+    mapReduce(ClusterCountMapReduce.build().create()).
+    submit().get()
+result.memory().clusterPopulation
+gResult = result.graph().traversal()
+gResult.V().valueMap(true)
 ----
+
+The vertex program has interconnected vertices exchange id's and store the lowest id until no vertex receives a
+lower id. This algorithm is commonly applied in
+link:https://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] systems, e.g. in
+link:https://spark.apache.org/graphx[Apache Spark GraphX].
+
+==== Scalability
+
+ToDo:
+ - limits and run time regime 1
+ - test of friendster graph regime 3
+ - discuss: link:http://www.vldb.org/pvldb/vol7/p1821-yan.pdf[http://www.vldb.org/pvldb/vol7/p1821-yan.pdf]
