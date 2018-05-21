@@ -670,3 +670,19 @@ Feature: Step - select()
       """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_asXa_bX_out_asXcX_path_selectXkeysX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a", "b").out().as("c").path().select(Column.keys)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[l[a,b],l[c]] |
+      | l[l[a,b],l[c]] |
+      | l[l[a,b],l[c]] |
+      | l[l[a,b],l[c]] |
+      | l[l[a,b],l[c]] |
+      | l[l[a,b],l[c]] |

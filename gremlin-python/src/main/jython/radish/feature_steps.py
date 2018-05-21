@@ -43,7 +43,7 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = []
+ignores = ["g.V().as(\"a\", \"b\").out().as(\"c\").path().select(Column.keys)"]
 
 
 @given("the {graph_name:w} graph")
