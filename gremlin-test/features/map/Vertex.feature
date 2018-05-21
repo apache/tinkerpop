@@ -449,12 +449,25 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | v[vadas] |
       | v[josh] |
 
+  # this test deviates from the setup of the java test, but the intent is the same. the java test drops lop and then
+  # tries to query it as part of the group of ids. here, rather than drop, we simply use an id that doesn't exist
+  # which is simulated by an edge identifier.
   Scenario: g_VX1_2_3_4X_name
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And using the parameter v2Id defined as "v[vadas].id"
+    And using the parameter v3Id defined as "e[marko-knows->josh].id"
+    And using the parameter v4Id defined as "v[josh].id"
+    And the traversal of
       """
-      the test manipulates a static dataset which is not supported by the language of the feature files"
+      g.V(v1Id, v2Id, v3Id, v4Id).values("name")
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
 
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph
