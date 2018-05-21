@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,8 +64,7 @@ public final class VertexProgramHelper {
         if (configuration instanceof AbstractConfiguration)
             ((AbstractConfiguration) configuration).setDelimiterParsingDisabled(true);
         try {
-            final String byteString = Arrays.toString(Serializer.serializeObject(object));
-            configuration.setProperty(key, byteString.substring(1, byteString.length() - 1));
+            configuration.setProperty(key, Base64.getEncoder().encodeToString(Serializer.serializeObject(object)));
         } catch (final IOException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
@@ -73,12 +72,19 @@ public final class VertexProgramHelper {
 
     public static <T> T deserialize(final Configuration configuration, final String key) {
         try {
-            final String[] stringBytes = configuration.getString(key).split(",");
-            byte[] bytes = new byte[stringBytes.length];
-            for (int i = 0; i < stringBytes.length; i++) {
-                bytes[i] = Byte.valueOf(stringBytes[i].trim());
+            // a bit of a weird double try-catch here. Base64 can throw an IllegalArgumentException if given some
+            // bad data to deserialize. that needs to be caught and then re-cast as a IOException so that downstream
+            // systems can better catch and react to the error. giraph is the big hassle here it seems - see
+            // GiraphGraphComputer.run() for more related notes on this specifically where
+            // VertexProgram.createVertexProgram() is called as it has special handling for errors related to
+            // deserialization. if not handled properly, giraph will hang in tests. i don't want to over-tweak this
+            // code too much for two reasons (1) dont want to alter method signatures too much or mess with existing
+            // logic within 3.2.x (2) giraph is dead in 3.4.x so no point to trying to make this a ton more elegant.
+            try {
+                return (T) Serializer.deserializeObject(Base64.getDecoder().decode(configuration.getString(key).getBytes()));
+            } catch (IllegalArgumentException iae) {
+                throw new IOException(iae.getMessage());
             }
-            return (T) Serializer.deserializeObject(bytes);
         } catch (final IOException | ClassNotFoundException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
