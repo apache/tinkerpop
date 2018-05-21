@@ -212,7 +212,7 @@ limitations under the License.
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>${skipIntegrationTests}</skip>
+                    <skip>${skipTests}</skip>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
                     <nodeVersion>v6.12.3</nodeVersion>
                 </configuration>
