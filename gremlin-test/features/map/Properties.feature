@@ -66,3 +66,17 @@ Feature: Step - properties()
       | d[32].i |
       | peter |
       | d[35].i |
+
+  Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      GLV suite doesn't support property identifiers and related assertions
+      """
+
+  Scenario: g_V_hasXageX_properties_hasXid_nameIdAsStringX_value
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      GLV suite doesn't support property identifiers and related assertions
+      """

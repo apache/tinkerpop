@@ -53,7 +53,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
@@ -97,20 +96,6 @@ import static org.junit.Assert.assertThat;
 public class FeatureCoverageTest {
 
     private static Pattern scenarioName = Pattern.compile("^\\s*Scenario:\\s*(.*)$");
-
-    private static final List<String> testToIgnore = Arrays.asList(
-            // deprecated tests
-            "g_V_addVXlabel_animal_age_0X",
-            "g_addVXlabel_person_name_stephenX",
-            // GLV suite doesn't support property identifiers and related assertions
-            "g_V_hasXageX_properties_hasXid_nameIdX_value",
-            "g_V_hasXageX_properties_hasXid_nameIdAsStringX_value",
-            // ugh - BigInteger?
-            "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-            // ugh - clone
-            "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
-            // wont round right or something
-            "g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack");
 
     @Test
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
@@ -193,7 +178,6 @@ public class FeatureCoverageTest {
                                            t.getSimpleName().replace("Test", "") + ".feature";
             final Set<String> testMethods = Stream.of(t.getDeclaredMethods())
                     .filter(m -> m.isAnnotationPresent(Test.class))
-                    .filter(m -> !testToIgnore.contains(m.getName()))
                     .map(Method::getName).collect(Collectors.toSet());
 
             final File featureFile = new File(featureFileName);
