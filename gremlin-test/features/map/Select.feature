@@ -515,3 +515,23 @@ Feature: Step - select()
       | result |
       | d[2].l |
       | d[2].l |
+
+  Scenario: g_V_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select("a")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_selectXaX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().select("a").count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].l |

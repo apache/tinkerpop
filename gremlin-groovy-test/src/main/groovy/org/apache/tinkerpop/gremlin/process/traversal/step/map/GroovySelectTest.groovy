@@ -104,6 +104,11 @@ public abstract class GroovySelectTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(__.outE().count().is(0L), __.as('a'), __.as('b')).choose(select('a'),select('a'),select('b'))")
         }
 
+        @Override
+        public Traversal<Vertex, Long> get_g_V_selectXaX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.select('a').count")
+        }
+
         // below are original back()-tests
 
         @Override

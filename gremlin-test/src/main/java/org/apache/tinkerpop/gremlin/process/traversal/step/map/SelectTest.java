@@ -83,6 +83,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX();
 
+    public abstract Traversal<Vertex, Long> get_g_V_selectXaX_count();
+
     // below are original back()-tests
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id);
@@ -342,6 +344,14 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
         assertEquals(3, yCounter);
         assertEquals(3, xCounter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXaX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_selectXaX_count();
+        printTraversalForm(traversal);
+        assertEquals(0L, traversal.next().longValue());
     }
 
     // below are original back()-tests
@@ -723,6 +733,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX() {
             return g.V().choose(__.outE().count().is(0L), __.as("a"), __.as("b")).choose(__.select("a"), __.select("a"), __.select("b"));
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_selectXaX_count() {
+            return g.V().select("a").count();
         }
 
         // below are original back()-tests
