@@ -30,12 +30,12 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.Partitioner;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.launcher.SparkLauncher;
+import org.apache.spark.serializer.KryoRegistrator;
 import org.apache.spark.serializer.KryoSerializer;
+import org.apache.spark.serializer.Serializer;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
@@ -87,7 +87,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.GREMLIN_SPARK_PERSIST_CONTEXT;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.GREMLIN_SPARK_SKIP_PARTITIONER;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.SPARK_KRYO_REGISTRATION_REQUIRED;
+import static org.apache.tinkerpop.gremlin.hadoop.Constants.SPARK_SERIALIZER;
+
 /**
+ * {@link GraphComputer} implementation for Apache Spark.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
@@ -118,8 +128,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         this.sparkConfiguration = new HadoopConfiguration();
     }
 
+    /**
+     * Sets the number of workers. If the {@code spark.master} configuration is configured with "local" then it will
+     * change that configuration to use the specified number of worker threads.
+     */
     @Override
-    public GraphComputer workers(final int workers) {
+    public SparkGraphComputer workers(final int workers) {
         super.workers(workers);
         if (this.sparkConfiguration.containsKey(SparkLauncher.SPARK_MASTER) && this.sparkConfiguration.getString(SparkLauncher.SPARK_MASTER).startsWith("local")) {
             this.sparkConfiguration.setProperty(SparkLauncher.SPARK_MASTER, "local[" + this.workers + "]");
@@ -129,9 +143,75 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     }
 
     @Override
-    public GraphComputer configure(final String key, final Object value) {
+    public SparkGraphComputer configure(final String key, final Object value) {
         this.sparkConfiguration.setProperty(key, value);
         return this;
+    }
+
+    /**
+     * Sets the configuration option for {@code spark.master} which is the cluster manager to connect to which may be
+     * one of the <a href="https://spark.apache.org/docs/latest/submitting-applications.html#master-urls">allowed master URLs</a>.
+     */
+    public SparkGraphComputer master(final String clusterManager) {
+        return configure(SparkLauncher.SPARK_MASTER, clusterManager);
+    }
+
+    /**
+     * Determines if the Spark context should be left open preventing Spark from garbage collecting unreferenced RDDs.
+     */
+    public SparkGraphComputer persistContext(final boolean persist) {
+        return configure(GREMLIN_SPARK_PERSIST_CONTEXT, persist);
+    }
+
+    /**
+     * Specifies the method by which the {@link VertexProgram} created graph is persisted. By default, it is configured
+     * to use {@code StorageLevel#MEMORY_ONLY()}
+     */
+    public SparkGraphComputer graphStorageLevel(final StorageLevel storageLevel) {
+        return configure(GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, storageLevel.description());
+    }
+
+    public SparkGraphComputer persistStorageLevel(final StorageLevel storageLevel) {
+        return configure(GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, storageLevel.description());
+    }
+
+    /**
+     * Determines if the graph RDD should be partitioned or not. By default, this value is {@code false}.
+     */
+    public SparkGraphComputer skipPartitioner(final boolean skip) {
+        return configure(GREMLIN_SPARK_SKIP_PARTITIONER, skip);
+    }
+
+    /**
+     * Determines if the graph RDD should be cached or not. If {@code true} then
+     * {@link #graphStorageLevel(StorageLevel)} is ignored. By default, this value is {@code false}.
+     */
+    public SparkGraphComputer skipGraphCache(final boolean skip) {
+        return configure(GREMLIN_SPARK_SKIP_GRAPH_CACHE, skip);
+    }
+
+    /**
+     * Specifies the {@code org.apache.spark.serializer.Serializer} implementation to use. By default, this value is
+     * set to {@code org.apache.spark.serializer.KryoSerializer}.
+     */
+    public SparkGraphComputer serializer(final Class<? extends Serializer> serializer) {
+        return configure(SPARK_SERIALIZER, serializer.getCanonicalName());
+    }
+
+    /**
+     * Specifies the {@code org.apache.spark.serializer.KryoRegistrator} to use to install additional types. By
+     * default this value is set to TinkerPop's {@link GryoRegistrator}.
+     */
+    public SparkGraphComputer sparkKryoRegistrator(final Class<? extends KryoRegistrator> registrator) {
+        return configure(Constants.SPARK_KRYO_REGISTRATOR, registrator.getCanonicalName());
+    }
+
+    /**
+     * Determines if kryo registration is required such that attempts to serialize classes that are not registered
+     * will result in an error. By default this value is {@code false}.
+     */
+    public SparkGraphComputer kryoRegistrationRequired(final boolean required) {
+        return configure(SPARK_KRYO_REGISTRATION_REQUIRED, required);
     }
 
     @Override
@@ -184,8 +264,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
-            final boolean skipPartitioner = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false);
-            final boolean skipPersist = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, false);
+            final boolean skipPartitioner = graphComputerConfiguration.getBoolean(GREMLIN_SPARK_SKIP_PARTITIONER, false);
+            final boolean skipPersist = graphComputerConfiguration.getBoolean(GREMLIN_SPARK_SKIP_GRAPH_CACHE, false);
             if (inputFromHDFS) {
                 String inputLocation = Constants
                         .getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION),
@@ -270,7 +350,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         assert loadedGraphRDD.partitioner().isPresent();
                     } else {
                         assert skipPartitioner == !loadedGraphRDD.partitioner().isPresent(); // no easy way to test this with a test case
-                        this.logger.debug("Partitioning has been skipped for the loaded graphRDD via " + Constants.GREMLIN_SPARK_SKIP_PARTITIONER);
+                        this.logger.debug("Partitioning has been skipped for the loaded graphRDD via " + GREMLIN_SPARK_SKIP_PARTITIONER);
                     }
                 }
                 // if the loaded graphRDD was already partitioned previous, then this coalesce/repartition will not take place
@@ -282,7 +362,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 }
                 // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
                 if (!skipPersist && (!inputFromSpark || partitioned || filtered))
-                    loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
+                    loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
 
                 // final graph with view (for persisting and/or mapReducing -- may be null and thus, possible to save space/time)
                 JavaPairRDD<Object, VertexWritable> computedGraphRDD = null;
@@ -363,7 +443,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         });
                         // if there is only one MapReduce to execute, don't bother wasting the clock cycles.
                         if (this.mapReducers.size() > 1)
-                            mapReduceRDD = mapReduceRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
+                            mapReduceRDD = mapReduceRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
                     }
 
                     for (final MapReduce mapReduce : this.mapReducers) {
@@ -410,11 +490,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // clear properties that should not be propagated in an OLAP chain
                 graphComputerConfiguration.clearProperty(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
                 graphComputerConfiguration.clearProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR);
-                graphComputerConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE);
-                graphComputerConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_PARTITIONER);
+                graphComputerConfiguration.clearProperty(GREMLIN_SPARK_SKIP_GRAPH_CACHE);
+                graphComputerConfiguration.clearProperty(GREMLIN_SPARK_SKIP_PARTITIONER);
                 return new DefaultComputerResult(InputOutputHelper.getOutputGraph(graphComputerConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
             } finally {
-                if (!graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+                if (!graphComputerConfiguration.getBoolean(GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     Spark.close();
             }
         });
