@@ -64,6 +64,11 @@ public class TinkerGraphCountStrategyTest {
         for (final TraversalStrategy strategy : this.otherStrategies) {
             strategies.addStrategies(strategy);
         }
+        if (this.optimized == null) {
+            this.optimized = this.original.asAdmin().clone();
+            this.optimized.asAdmin().setStrategies(strategies);
+            this.optimized.asAdmin().applyStrategies();
+        }
         this.original.asAdmin().setStrategies(strategies);
         this.original.asAdmin().applyStrategies();
         assertEquals(this.optimized, this.original);
@@ -81,17 +86,17 @@ public class TinkerGraphCountStrategyTest {
                 {__.V().count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().as("a").count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out()).count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out()).identity().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out().groupCount()).identity().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().label().map(s -> s.get().length()).count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().as("a").map(select("a")).count(), countStep(Vertex.class),TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out()).count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out().groupCount()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().label().map(s -> s.get().length()).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().as("a").map(select("a")).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 //
-                {__.V(), __.V(), Collections.emptyList()},
-                {__.V().out().count(), __.V().out().count(), Collections.emptyList()},
-                {__.V(1).count(), __.V(1).count(), Collections.emptyList()},
-                {__.count(), __.count(), Collections.emptyList()},
-                {__.V().map(out().groupCount("m")).identity().count().as("a"), __.V().map(out().groupCount("m")).identity().count().as("a"), Collections.emptyList()},
+                {__.V(), null, Collections.emptyList()},
+                {__.V().out().count(), null, Collections.emptyList()},
+                {__.V(1).count(), null, Collections.emptyList()},
+                {__.count(), null, Collections.emptyList()},
+                {__.V().map(out().groupCount("m")).identity().count().as("a"), null, Collections.emptyList()},
         });
     }
 }
