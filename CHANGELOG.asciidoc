@@ -368,6 +368,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed recursive handling of streaming results from Gremlin-Python driver to avoid max recursion depth errors.
 * Improved performance of `TraversalVertexProgram` and related infrastructure.
 * Fixed bug in `GroovyTranslator` that didn't properly handle empty `Map` objects.
+* Added concrete configuration methods to `SparkGraphComputer` to make a more clear API for configuring it.
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)
