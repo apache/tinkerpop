@@ -181,9 +181,9 @@ For .NET releases, install link:http://www.mono-project.com/[Mono]. The release 
 so it is best to probably install that version. Release managers should probably also do an install of
 link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it will help with environmental setup.
 To get an environment ready to deploy to NuGet, it is necessary to have a NuGet API key. First, create an account with
-link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net package in nuget
-so that you can deploy. Next, generate an API key for your account on the nuget website. The API key should be added
-to `NuGet.Config` with the following:
+link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net and
+the Gremlin.Net.Template package in nuget so that you can deploy. Next, generate an API key for your account on the
+nuget website. The API key should be added to `NuGet.Config` with the following:
 
 [source,text]
 ----
