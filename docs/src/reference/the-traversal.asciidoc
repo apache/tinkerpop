@@ -2698,6 +2698,67 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Column.html++[`Column`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`]
 
+[[shortestpath-step]]
+=== ShortestPath step
+
+The `shortestPath()`-step provides an easy way to find shortest non-cyclic paths in a graph. It is configurable
+using the `with()`-modulator with the options given below.
+
+[width="100%",cols="3,3,15,5",options="header"]
+|=========================================================
+| Key | Type | Description | Default
+| `target` | `Traversal` | Sets a filter traversal for the end vertices (e.g. `__.has('name','marko')`). | all vertices (`__.identity()`)
+| `edges` | `Traversal` or `Direction` | Sets a `Traversal` that emits the edges to traverse from the current vertex or the `Direction` to traverse during the shortest path discovery. | `Direction.BOTH`
+| `distance` | `Traversal` or `String` | Sets the `Traversal` that calculates the distance for the current edge or the name of an edge property to use for the distance calculations. | `__.constant(1)`
+| `maxDistance` | `Number` | Sets the distance limit for all shortest paths. | none
+| `includeEdges` | `Boolean` | Whether to include edges in the result or not. | `false`
+|=========================================================
+
+[gremlin-groovy,modern]
+----
+g = g.withComputer()
+g.V().shortestPath() <1>
+g.V().has('person','name','marko').shortestPath() <2>
+g.V().shortestPath().with(ShortestPath.target, __.has('name','peter')) <3>
+g.V().shortestPath().
+        with(ShortestPath.edges, Direction.IN).
+        with(ShortestPath.target, __.has('name','josh')) <4>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')) <5>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')).
+        with(ShortestPath.distance, 'weight') <6>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')).
+        with(ShortestPath.includeEdges, true) <7>
+----
+
+<1> Find all shortest paths.
+<2> Find all shortest paths from `marko`.
+<3> Find all shortest paths to `peter`.
+<4> Find all in-directed paths to `josh`.
+<5> Find all shortest paths from `marko` to `josh`.
+<6> Find all shortest paths from `marko` to `josh` using a custom distance property.
+<7> Find all shortest paths from `marko` to `josh` and include edges in the result.
+
+[gremlin-groovy,modern]
+----
+g.inject(g.withComputer().V().shortestPath().
+           with(ShortestPath.distance, 'weight').
+           with(ShortestPath.includeEdges, true).
+           with(ShortestPath.maxDistance, 1).toList().toArray()).
+  map(unfold().values('name','weight').fold()) <1>
+----
+
+<1> Find all shortest paths using a custom distance property and limit the distance to 1. Inject the result into a OLTP `GraphTraversal` in order to be able to select properties from all elements in all paths.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#shortestPath--++[`shortestPath()`]
+
 [[simplepath-step]]
 === SimplePath Step
 

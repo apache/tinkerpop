@@ -496,15 +496,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public void setGraph(final Graph graph);
 
         public default boolean equals(final Traversal.Admin<S, E> other) {
-            final List<Step> steps = this.getSteps();
-            final List<Step> otherSteps = other.getSteps();
-            if (steps.size() == otherSteps.size()) {
-                for (int i = 0; i < steps.size(); i++) {
-                    if (!steps.get(i).equals(otherSteps.get(i))) {
-                        return false;
+            if (this.getClass().equals(other.getClass())) {
+                final List<Step> steps = this.getSteps();
+                final List<Step> otherSteps = other.getSteps();
+                if (steps.size() == otherSteps.size()) {
+                    for (int i = 0; i < steps.size(); i++) {
+                        if (!steps.get(i).equals(otherSteps.get(i))) {
+                            return false;
+                        }
                     }
+                    return true;
                 }
-                return true;
             }
             return false;
         }

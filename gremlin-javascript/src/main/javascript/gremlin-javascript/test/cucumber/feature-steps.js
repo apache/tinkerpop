@@ -80,6 +80,21 @@ const ignoredScenarios = {
   'g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXEDGES_outEX_withXPROPERTY_NAME_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_both_dedup_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_directionXINX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_targetXhasXname_markoXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_targetXvaluesXnameX_isXmarkoXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_targetXhasLabelXsoftwareXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_targetXhasXname_joshXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_danielX_shortestPath_targetXhasXname_stephenXX_edgesXbothEXusesXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXsong_name_MIGHT_AS_WELLX_shortestPath_targetXhasXsong_name_MAYBE_YOU_KNOW_HOW_I_FEELXX_edgesXoutEXfollowedByXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_maxDistanceX1X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_vadasX_shortestPath_distanceXweightX_maxDistanceX1_3X': new IgnoreError(ignoreReason.computerNotSupported),
 };
 
 defineSupportCode(function(methods) {

@@ -129,7 +129,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(List.class, "List");
                     put(Set.class, "Set");
 
-                    // Tinkerpop Graph objects
+                    // TinkerPop Graph objects
                     put(Lambda.class, "Lambda");
                     put(Vertex.class, "Vertex");
                     put(Edge.class, "Edge");

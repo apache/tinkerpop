@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Connecte
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -2465,6 +2466,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep((Step<E, E>) new ConnectedComponentVertexProgramStep(this.asAdmin()));
     }
 
+
+    /**
+     * Executes a Shortest Path algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link ShortestPathVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#shortestpath-step" target="_blank">Reference Documentation - ShortestPath Step</a>
+     */
+    public default GraphTraversal<S, Path> shortestPath() {
+        if (this.asAdmin().getEndStep() instanceof GraphStep) {
+            // This is very unfortunate, but I couldn't find another way to make it work. Without the additional
+            // IdentityStep, TraversalVertexProgram doesn't handle halted traversers as expected (it ignores both:
+            // HALTED_TRAVERSER stored in memory and stored as vertex properties); instead it just emits all vertices.
+            this.identity();
+        }
+        this.asAdmin().getBytecode().addStep(Symbols.shortestPath);
+        return (GraphTraversal<S, Path>) ((Traversal.Admin) this.asAdmin())
+                .addStep(new ShortestPathVertexProgramStep(this.asAdmin()));
+    }
+
     /**
      * Executes an arbitrary {@link VertexProgram} over the graph.
      *
@@ -2897,6 +2917,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String pageRank = "pageRank";
         public static final String peerPressure = "peerPressure";
         public static final String connectedComponent = "connectedComponent";
+        public static final String shortestPath = "shortestPath";
         public static final String program = "program";
 
         public static final String by = "by";

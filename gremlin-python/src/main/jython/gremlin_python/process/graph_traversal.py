@@ -438,6 +438,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("select", *args)
         return self
 
+    def shortestPath(self, *args):
+        self.bytecode.add_step("shortestPath", *args)
+        return self
+
     def sideEffect(self, *args):
         self.bytecode.add_step("sideEffect", *args)
         return self

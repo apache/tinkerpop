@@ -49,6 +49,16 @@ length three), but this example is not considering that.
 <2> It might be interesting to know the path lengths for all paths between vertex "1" and "5".
 <3> Alternatively, one might wish to do a path length distribution over all the paths.
 
+The following code block demonstrates how the shortest path from `v[1]` to `v[5]` can be queried in OLAP, using the `shortestPath()` step.
+
+[gremlin-groovy,existing]
+----
+g = g.withComputer()
+g.V(1).shortestPath().
+  with(ShortestPath.edges, Direction.OUT).
+  with(ShortestPath.target, hasId(5))
+----
+
 The previous example defines the length of the path by the number of vertices in the path, but the "path" might also
 be measured by data within the graph itself. The following example use the same graph structure as the previous example,
 but includes a "weight" on the edges, that will be used to help determine the "cost" of a particular path:
@@ -95,6 +105,17 @@ calculated cost. With some slight modifications given the use of `select` it bec
 the output. Note that the path with the lowest "cost" actually has a longer path length as determined by the graph
 structure.
 
+The next code block demonstrates how the `shortestPath()` step can be used in OLAP to determine the shortest weighted path.
+
+[gremlin-groovy,existing]
+----
+g = g.withComputer()
+g.V(1).shortestPath().
+  with(ShortestPath.edges, Direction.OUT).
+  with(ShortestPath.distance, 'weight').
+  with(ShortestPath.target, hasId(5))
+----
+
 The following query illustrates how `select(<traversal>)` can be used to find all shortest weighted undirected paths
 in the modern toy graph.
 
@@ -136,3 +157,44 @@ g.withSack(0.0).V().as("from").       <1>
 <7> Order the output by the start vertex id and then the end vertex id (for better readability).
 <8> Deduplicate vertex pairs (the shortest path from `v[1]` to `v[6]` is the same as the path from `v[6]` to `v[1]`).
 
+Again, this can be translated into an OLAP query using the `shortestPath()` step.
+
+[gremlin-groovy,existing]
+----
+result = g.withComputer().V().
+  shortestPath().
+    with(ShortestPath.distance, 'weight').
+    with(ShortestPath.includeEdges, true).
+  filter(count(local).is(gt(1))).
+  group().
+    by(project('from','to').
+         by(limit(local, 1)).
+         by(tail(local, 1))).
+  unfold().
+  order().
+    by(select(keys).select('from').id()).
+    by(select(keys).select('to').id()).toList()
+----
+
+The obvious difference in the result is the absence of property values in the OLAP result. Since OLAP traversers are not
+allowed to leave the local star graph, it's not possible to have the exact same result in an OLAP query. However, the determined
+shortest paths can be passed back into the OLTP `GraphTraversalSource`, which can then be used to query the values.
+
+[gremlin-groovy,existing]
+----
+g.withSideEffect('v', []).                            <1>
+  inject(result.toArray()).as('kv').select(values).
+  unfold().
+  map(unfold().as('v_or_e').
+      coalesce(V().where(eq('v_or_e')).store('v'),
+               select('v').tail(local, 1).bothE().where(eq('v_or_e'))).
+      values('name','weight').
+      fold()).
+  group().
+    by(select('kv').select(keys)).unfold().
+  order().
+    by(select(keys).select('from').id()).
+    by(select(keys).select('to').id()).toList()
+----
+
+<1> The side-effect `v` is used to keep track of the last processed vertex, hence it needs to be an order-preserving list. Without this explicit definition `v` would become a `BulkSet` which doesn't preserve the insert order.
