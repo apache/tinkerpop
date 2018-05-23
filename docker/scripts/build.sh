@@ -67,9 +67,6 @@ touch gremlin-python/.glv
 touch gremlin-dotnet/src/.glv
 touch gremlin-dotnet/test/.glv
 
-rm gremlin-console/.docker
-rm gremlin-server/.docker
-
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
   echo "Copying settings.xml"

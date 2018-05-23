@@ -338,12 +338,6 @@ limitations under the License.
 
         <profile>
             <id>docker-images</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>.docker</exists>
-                </file>
-            </activation>
             <build>
                 <plugins>                    
                     <plugin>

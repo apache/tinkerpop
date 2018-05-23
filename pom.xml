@@ -349,7 +349,6 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
-                        <exclude>**/.docker</exclude>
                         <exclude>bin/gremlin.sh</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
                         <exclude>**/Debug/**</exclude>

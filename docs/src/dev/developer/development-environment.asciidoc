@@ -136,9 +136,7 @@ The Docker images can be built from the command line with:
 ----
 mvn clean install -Pdocker-images
 ----
-which enables the "docker-images" Maven profile or in a more automated fashion simply add a `.docker` file to the
-directories of the `gremlin-server` and/or `gremlin-console` modules which will signify to Maven that Docker is present
-in the environment.
+which enables the "docker-images" Maven profile.
 
 
 [[release-environment]]

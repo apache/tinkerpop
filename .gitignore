@@ -20,7 +20,6 @@ __pycache__/
 *.py[cdo]
 __version__.py
 .glv
-.docker
 settings.xml
 tools/
 [Dd]ebug/
