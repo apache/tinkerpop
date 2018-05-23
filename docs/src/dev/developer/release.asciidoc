@@ -233,6 +233,11 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
 . Review the GLV releases at link:https://pypi.org/project/gremlinpython/[PyPi],
 link:https://www.nuget.org/packages/Gremlin.Net/[nuget] and link:https://www.npmjs.com/package/gremlin[npm]
+. Deploy the Docker images
+.. `mvn deploy -pl gremlin-console -DskipTests -Pdocker-images`
+.. `mvn deploy -pl gremlin-server -DskipTests -Pdocker-images`
+. Review the deployed Docker images at link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Console]
+and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
