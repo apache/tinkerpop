@@ -93,7 +93,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             return JsonConvert.SerializeObject(ToDict(objectData));
         }
 
-        internal dynamic ToDict(dynamic objectData)
+        /// <summary>
+        ///     Transforms an object into its GraphSON representation including type information.
+        /// </summary>
+        /// <param name="objectData">The object to transform.</param>
+        /// <returns>A GraphSON representation of the object ready to be serialized.</returns>
+        public dynamic ToDict(dynamic objectData)
         {
             var type = objectData.GetType();
             if (TryGetSerializerFor(out IGraphSONSerializer serializer, type))
