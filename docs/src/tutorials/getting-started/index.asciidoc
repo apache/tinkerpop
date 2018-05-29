@@ -199,24 +199,26 @@ as an example. First, you need to create this graph:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-v1 = graph.addVertex(id, 1, label, "person", "name", "marko", "age", 29)
-v2 = graph.addVertex(id, 3, label, "software", "name", "lop", "lang", "java")
-v1.addEdge("created", v2, id, 9, "weight", 0.4)
+g = graph.traversal()
+g.addV("person").property(id, 1).property("name", "marko").property("age", 29).as('v1').
+  addV("software").property(id, 3).property("name", "lop").property("lang", "java").as('v2').
+  addE("created").property(id, 9).property("weight", 0.4).from('v1').to('v2')
 ----
 
-There are a number of important things to consider in the above code. First, recall that `id` and `label` are
-"reserved" for special usage in TinkerPop and are members of the enum, `T`. Those "keys" supplied to the creation
-method are link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imported]
-to the console, which allows you to access them without having to specify their owning enum. Think of it as a
+There are a number of important things to consider in the above code. First, recall that `id` is "reserved" for
+special usage in TinkerPop and is a members of the enum, `T`. The `T` enum has other important structural values like
+`label` as well. Note that the Gremlin Console link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imports]
+the enum values of `T`, which allows you to access them without having to specify their owning enum. Think of it as a
 shorthand form that enables a more fluid code style. You would normally refer to them as `T.id` and `T.label`. Without
 that static importing you would instead have to write:
 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-v1 = graph.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29)
-v2 = graph.addVertex(T.id, 3, T.label, "software", "name", "lop", "lang", "java")
-v1.addEdge("created", v2, id, 9, "weight", 0.4)
+g = graph.traversal()
+g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as('v1').
+  addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as('v2').
+  addE("created").property(T.id, 9).property("weight", 0.4).from('v1').to('v2')
 ----
 
 NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important static import
@@ -226,9 +228,8 @@ for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
 
-Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. It is the first
-parameter supplied, followed by the `Vertex` to which `v1` should be connected. Therefore, this usage of `addEdge` is
-creating an edge that goes _out_ of `v1` and into `v2` with a label of "created".
+Finally, the `as()` steps label the value held at a particular step so that you can reference back to it later in the
+traversal. In this case, that allows you to reference both vertices as "v1" and "v2" during edge creation.
 
 === Graph Traversal - Staying Simple
 

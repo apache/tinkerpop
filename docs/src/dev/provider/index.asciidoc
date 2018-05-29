@@ -46,6 +46,86 @@ provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party
 Gremlin-JS, etc.) will integrate properly. Finally, please feel free to use the logo on the left to promote your
 TinkerPop3 implementation.
 
+[[graph-structure-api]]
+=== Graph Structure API
+
+The graph structure API of TinkerPop3 provides the interfaces necessary to create a TinkerPop enabled system and
+exposes the basic components of a property graph to include `Graph`, `Vertex`, `Edge`, `VertexProperty` and `Property`.
+The structure API can be used directly as follows:
+
+[source,java]
+Graph graph = TinkerGraph.open(); <1>
+Vertex marko = graph.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
+Vertex vadas = graph.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
+Vertex lop = graph.addVertex(T.label, "software", T.id, 3, "name", "lop", "lang", "java");
+Vertex josh = graph.addVertex(T.label, "person", T.id, 4, "name", "josh", "age", 32);
+Vertex ripple = graph.addVertex(T.label, "software", T.id, 5, "name", "ripple", "lang", "java");
+Vertex peter = graph.addVertex(T.label, "person", T.id, 6, "name", "peter", "age", 35);
+marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5f); <3>
+marko.addEdge("knows", josh, T.id, 8, "weight", 1.0f);
+marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
+josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
+josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
+peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
+
+<1> Create a new in-memory `TinkerGraph` and assign it to the variable `graph`.
+<2> Create a vertex along with a set of key/value pairs with `T.label` being the vertex label and `T.id` being the vertex id.
+<3> Create an edge along with a  set of key/value pairs with the edge label being specified as the first argument.
+
+In the above code all the vertices are created first and then their respective edges. There are two "accessor tokens":
+`T.id` and `T.label`. When any of these, along with a set of other key value pairs is provided to
+`Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along
+with the provided key/value pair properties appended to it.
+
+Below is a sequence of basic graph mutation operations represented in Java 8. One of the major differences between
+TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned
+in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8
+and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a big effort was made to ensure that
+both languages are as similar as possible.
+
+image:basic-mutation.png[width=240,float=right]
+[source,java]
+----
+// create a new graph
+Graph graph = TinkerGraph.open();
+// add a software vertex with a name property
+Vertex gremlin = graph.addVertex(T.label, "software",
+                             "name", "gremlin"); <1>
+// only one vertex should exist
+assert(IteratorUtils.count(graph.vertices()) == 1)
+// no edges should exist as none have been created
+assert(IteratorUtils.count(graph.edges()) == 0)
+// add a new property
+gremlin.property("created",2009) <2>
+// add a new software vertex to the graph
+Vertex blueprints = graph.addVertex(T.label, "software",
+                                "name", "blueprints"); <3>
+// connect gremlin to blueprints via a dependsOn-edge
+gremlin.addEdge("dependsOn",blueprints); <4>
+// now there are two vertices and one edge
+assert(IteratorUtils.count(graph.vertices()) == 2)
+assert(IteratorUtils.count(graph.edges()) == 1)
+// add a property to blueprints
+blueprints.property("created",2010) <5>
+// remove that property
+blueprints.property("created").remove() <6>
+// connect gremlin to blueprints via encapsulates
+gremlin.addEdge("encapsulates",blueprints) <7>
+assert(IteratorUtils.count(graph.vertices()) == 2)
+assert(IteratorUtils.count(graph.edges()) == 2)
+// removing a vertex removes all its incident edges as well
+blueprints.remove() <8>
+gremlin.remove() <9>
+// the graph is now empty
+assert(IteratorUtils.count(graph.vertices()) == 0)
+assert(IteratorUtils.count(graph.edges()) == 0)
+// tada!
+----
+
+The above code samples are just examples of how the structure API can be used to access a graph. Those APIs are then
+used internally by the process API (i.e. Gremlin) to access any graph that implements those structure API interfaces
+to execute queries. Typically, the structure API methods are not used directly by end-users.
+
 === Implementing Gremlin-Core
 
 The classes that a graph system provider should focus on implementing are itemized below. It is a good idea to study

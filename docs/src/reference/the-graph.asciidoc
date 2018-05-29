@@ -238,6 +238,8 @@ not support transactions.
 ----
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
 gremlin> graph.features()
 ==>FEATURES
 > GraphFeatures
@@ -245,23 +247,23 @@ gremlin> graph.features()
 >-- Computer: false
 >-- Persistence: true
 ...
-gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
+gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> graph.addVertex("name","stephen")  <3>
+gremlin> g.addV("person").("name","stephen")  <3>
 ==>v[0]
-gremlin> graph.tx().commit() <4>
+gremlin> g.tx().commit() <4>
 ==>null
-gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
+gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> graph.tx().isOpen()
+gremlin> g.tx().isOpen()
 ==>false
-gremlin> graph.addVertex("name","marko") <6>
+gremlin> g.addV("person").("name","marko") <6>
 Open a transaction before attempting to read/write the transaction
-gremlin> graph.tx().open() <7>
+gremlin> g.tx().open() <7>
 ==>null
-gremlin> graph.addVertex("name","marko") <8>
+gremlin> g.addV("person").("name","marko") <8>
 ==>v[1]
-gremlin> graph.tx().commit()
+gremlin> g.tx().commit()
 ==>null
 ----
 
@@ -286,14 +288,15 @@ is bound to the current thread of execution. Consider the following example to d
 
 [source,java]
 ----
-graph.addVertex("name","stephen");
+GraphTraversalSource g = graph.traversal();
+g.addV("person").("name","stephen").iterate();
 
 Thread t1 = new Thread(() -> {
-    graph.addVertex("name","josh");
+    g.addV("person").("name","josh").iterate();
 });
 
 Thread t2 = new Thread(() -> {
-    graph.addVertex("name","marko");
+    g.addV("person").("name","marko").iterate();
 });
 
 t1.start()
@@ -302,14 +305,14 @@ t2.start()
 t1.join()
 t2.join()
 
-graph.tx().commit();
+g.tx().commit();
 ----
 
 The above code shows three vertices added to `graph` in three different threads: the current thread, `t1` and
 `t2`.  One might expect that by the time this body of code finished executing, that there would be three vertices
 persisted to the `Graph`.  However, given the `ThreadLocal` nature of transactions, there really were three separate
 transactions created in that body of code (i.e. one for each thread of execution) and the only one committed was the
-first call to `addVertex` in the primary thread of execution.  The other two calls to that method within `t1` and `t2`
+first call to `addV()` in the primary thread of execution.  The other two calls to that method within `t1` and `t2`
 were never committed and thus orphaned.
 
 A `Graph` that `supportsThreadedTransactions` is one that allows for a `Graph` to operate outside of that constraint,
@@ -319,14 +322,15 @@ different threads operating within the same transaction, the above code could be
 [source,java]
 ----
 Graph threaded = graph.tx().createThreadedTx();
-threaded.addVertex("name","stephen");
+GraphTraversalSource g = graph.traversal();
+g.addV("person").("name","stephen").iterate();
 
 Thread t1 = new Thread(() -> {
-    threaded.addVertex("name","josh");
+    threaded.addV("person").("name","josh").iterate();
 });
 
 Thread t2 = new Thread(() -> {
-    threaded.addVertex("name","marko");
+    threaded.addV("person").("name","marko").iterate();
 });
 
 t1.start()
@@ -335,7 +339,7 @@ t2.start()
 t1.join()
 t2.join()
 
-threaded.tx().commit();
+g.tx().commit();
 ----
 
 In the above case, the call to `graph.tx().createThreadedTx()` creates a new `Graph` instance that is unbound from the
