@@ -2961,8 +2961,7 @@ g.V().as('a').out('knows').as('b').
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
-edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop (see
-link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
+edges.
 
 *Additional References*
 
