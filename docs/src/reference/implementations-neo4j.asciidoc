@@ -62,7 +62,7 @@ configuration file must be edited to include the `Neo4jGremlinPlugin` as shown i
 
 === Indices
 
-Neo4j 2.x indices leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces
+Neo4j 2.x indices leverage vertex labels to partition the index space. TinkerPop does not provide method interfaces
 for defining schemas/indices for the underlying graph system. Thus, in order to create indices, it is important to
 call the Neo4j API directly.
 
@@ -175,7 +175,7 @@ by simply placing the Cypher string in `graph.cypher(...)` before submission to 
 
 === Multi-Label
 
-TinkerPop3 requires every `Element` to have a single, immutable string label (i.e. a `Vertex`, `Edge`, and
+TinkerPop requires every `Element` to have a single, immutable string label (i.e. a `Vertex`, `Edge`, and
 `VertexProperty`). In Neo4j, a `Node` (vertex) can have an
 link:http://neo4j.com/docs/developer-manual/current/#graphdb-neo4j-labels[arbitrary number of labels] while a `Relationship`
 (edge) can have one and only one. Furthermore, in Neo4j, `Node` labels are mutable while `Relationship` labels are

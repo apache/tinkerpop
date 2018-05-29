@@ -39,17 +39,17 @@ This document attempts to address the needs of the different providers that have
 [[graph-system-provider-requirements]]
 == Graph System Provider Requirements
 
-image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this
+image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop 3.x is a Java8 API. The implementation of this
 core API and its validation via the `gremlin-test` suite is all that is required of a graph system provider wishing to
-provide a TinkerPop3-enabled graph engine. Once a graph system has a valid implementation, then all the applications
+provide a TinkerPop-enabled graph engine. Once a graph system has a valid implementation, then all the applications
 provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scala,
 Gremlin-JS, etc.) will integrate properly. Finally, please feel free to use the logo on the left to promote your
-TinkerPop3 implementation.
+TinkerPop implementation.
 
 [[graph-structure-api]]
 === Graph Structure API
 
-The graph structure API of TinkerPop3 provides the interfaces necessary to create a TinkerPop enabled system and
+The graph structure API of TinkerPop provides the interfaces necessary to create a TinkerPop enabled system and
 exposes the basic components of a property graph to include `Graph`, `Vertex`, `Edge`, `VertexProperty` and `Property`.
 The structure API can be used directly as follows:
 
@@ -77,11 +77,7 @@ In the above code all the vertices are created first and then their respective e
 `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along
 with the provided key/value pair properties appended to it.
 
-Below is a sequence of basic graph mutation operations represented in Java 8. One of the major differences between
-TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned
-in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8
-and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a big effort was made to ensure that
-both languages are as similar as possible.
+Below is a sequence of basic graph mutation operations represented in Java 8.
 
 image:basic-mutation.png[width=240,float=right]
 [source,java]
@@ -160,7 +156,7 @@ image:pipes-character-1.png[width=110,float=right] The most important interfaces
 package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite`
 will ensure that the semantics of the methods implemented are correct. Moreover, there are numerous `Exceptions`
 classes with static exceptions that should be thrown by the graph system so that all the exceptions and their
-messages are consistent amongst all TinkerPop3 implementations.
+messages are consistent amongst all TinkerPop implementations.
 
 [[olap-implementations]]
 ==== OLAP Implementations
@@ -219,7 +215,7 @@ that will be readable by the receiving vertices in the subsequent round.
 
 ===== Implementing MapReduce Emitters
 
-image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model
+image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop is similar to the model
 popularized by link:http://hadoop.apache.org[Hadoop]. The primary difference is that all Mappers process the vertices
 of the graph, not an arbitrary key/value pair. However, the vertices' edges can not be accessed -- only their
 properties. This greatly reduces the amount of data needed to be pushed through the MapReduce engine as any edge
@@ -274,7 +270,7 @@ public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 <1> If the MapReduce job has a reduce, then use one data structure (`reduceMap`), else use another (`mapList`). The
 difference being that a reduction requires a grouping by key and therefore, the `Map<K,Queue<V>>` definition. If no
 reduction/grouping is required, then a simple `Queue<KeyValue<K,V>>` can be leveraged.
-<2> If reduce is to follow, then increment the Map with a new value for the key. `MapHelper` is a TinkerPop3 class
+<2> If reduce is to follow, then increment the Map with a new value for the key. `MapHelper` is a TinkerPop class
 with static methods for adding data to a Map.
 <3> If no reduce is to follow, then simply append a KeyValue to the queue.
 <4> When the map phase is complete, any map-result sorting required can be executed at this point.
@@ -767,7 +763,7 @@ SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${
 
 === Accessibility via GremlinPlugin
 
-image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop3 do not distribute with
+image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop do not distribute with
 any graph system implementations besides TinkerGraph. If your implementation is stored in a Maven repository (e.g.
 Maven Central Repository), then it is best to provide a <<gremlin-plugins,`GremlinPlugin`>> implementation so the respective jars can be
 downloaded according and when required by the user. Neo4j's GremlinPlugin is provided below for reference.
@@ -793,7 +789,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 === In-Depth Implementations
 
 image:gremlin-painting.png[width=200,float=right] The graph system implementation details presented thus far are
-minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a
+minimum requirements necessary to yield a valid TinkerPop implementation. However, there are other areas that a
 graph system provider can tweak to provide an implementation more optimized for their underlying graph engine. Typical
 areas of focus include:
 

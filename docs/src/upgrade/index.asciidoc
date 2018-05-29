@@ -41,3 +41,5 @@ include::release-3.2.x-incubating.asciidoc[]
 include::release-3.1.x-incubating.asciidoc[]
 
 include::release-3.0.x-incubating.asciidoc[]
+
+include::appendix.asciidoc[]

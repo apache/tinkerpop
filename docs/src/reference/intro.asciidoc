@@ -35,9 +35,7 @@ called "TinkerPop Modern" as it is a modern variation of the original demo graph
 in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
 TIP: The TinkerPop graph is available with <<tinkergraph-gremlin,TinkerGraph>> via `TinkerFactory.createModern()`.
-TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
-Note that there also exists the classic `TinkerFactory.createClassic()` which is the graph used in TinkerPop2 and does
-not include vertex labels.
+TinkerGraph is the reference implementation of TinkerPop and is used in nearly all the examples in this documentation.
 
 TIP: All of the toy graphs available in TinkerPop are described in
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-graphs[The Gremlin Console] tutorial.
@@ -46,7 +44,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-g
 .TinkerPop Modern
 image::tinkerpop-modern.png[width=500]
 
-TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. Similar to computing in general, graph
+TinkerPop 3.x is the third incarnation of the TinkerPop graph computing framework. Similar to computing in general, graph
 computing makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the
 data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology]. The process
 of the graph is the means by which the structure is analyzed. The typical form of graph processing is called a
@@ -58,7 +56,7 @@ who are utilizing a graph system from a graph provider. While the components of 
 they are described in greater detail in the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy]
 tutorial.
 
-.Primary components of the TinkerPop3 *structure* API 
+.Primary components of the TinkerPop *structure* API
  * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
  * `Element`: maintains a collection of properties and a string label denoting the element type.
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
@@ -66,7 +64,7 @@ tutorial.
  * `Property<V>`: a string key associated with a `V` value.
   ** `VertexProperty<V>`: a string key associated with a `V` value as well as a collection of `Property<U>` properties (*vertices only*)
 
-.Primary components of the TinkerPop3 *process* API
+.Primary components of the TinkerPop *process* API
  * `TraversalSource`: a generator of traversals for a particular graph, link:http://en.wikipedia.org/wiki/Domain-specific_language[domain specific language] (DSL), and execution engine.
  ** `Traversal<S,E>`: a functional data flow process transforming objects of type `S` into object of type `E`.
  *** `GraphTraversal`: a traversal DSL that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
@@ -74,20 +72,20 @@ tutorial.
  ** `VertexProgram`: code executed at all vertices in a logically parallel manner with intercommunication via message passing.
  ** `MapReduce`: a computations that analyzes all vertices in the graph in parallel and yields a single reduced result.
 
-IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2]
-free software license. However, note that the underlying graph engine used with TinkerPop3 may have a different
+IMPORTANT: TinkerPop is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2]
+free software license. However, note that the underlying graph engine used with TinkerPop may have a different
 license. Thus, be sure to respect the license caveats of the graph system product.
 
-image:tinkerpop-enabled.png[width=135,float=left] When a graph system implements the TinkerPop3 structure and process
+image:tinkerpop-enabled.png[width=135,float=left] When a graph system implements the TinkerPop structure and process
 link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered
-_TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for
+_TinkerPop-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for
 their respective time and space complexity. The purpose of this documentation is to describe the structure/process
-dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of graph system-agnostic
+dichotomy at length and in doing so, explain how to leverage TinkerPop for the sole purpose of graph system-agnostic
 graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both APIs
 is provided.
 
-NOTE: The TinkerPop3 API rides a fine line between providing concise "query language" method names and respecting
-Java method naming standards. The general convention used throughout TinkerPop3 is that if a method is "user exposed,"
+NOTE: The TinkerPop API rides a fine line between providing concise "query language" method names and respecting
+Java method naming standards. The general convention used throughout TinkerPop is that if a method is "user exposed,"
 then a concise name is provided (e.g. `out()`, `path()`, `repeat()`). If the method is primarily for graph systems
 providers, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`,
 `getElementComputeKeys()`).
@@ -107,7 +105,7 @@ more about it in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[G
 == The Graph Process
 
 image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph
-traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a
+traversals. The TinkerPop process API is focused on allowing users to create graph traversals in a
 syntactically-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk
 across the elements of a graph according to the referential structure explicit within the graph data structure.
 For example: _"What software does vertex 1's friends work on?"_ This English-statement can be represented in the
@@ -191,8 +189,8 @@ out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept
-is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata
+In TinkerPop, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept
+is new to TinkerPop and provides the means by which steps remain stateless. A traverser maintains all the metadata
 about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser,
 the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the
 <<path-step,`path()`>>-step.
@@ -215,13 +213,13 @@ g.V(marko).repeat(out()).times(2).values('name')
 ----
 
 WARNING: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>-step. Thus,
-never rely on the iteration order between TinkerPop3 releases and even within a release (as traversal optimizations
+never rely on the iteration order between TinkerPop releases and even within a release (as traversal optimizations
 may alter the flow).
 
 == On Gremlin Language Variants
 
 Gremlin is written in Java 8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with
-TinkerPop3), Gremlin-Python (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala],
+TinkerPop), Gremlin-Python (packaged with TinkerPop), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala],
 Gremlin-JavaScript, Gremlin-Clojure (known as link:https://github.com/clojurewerkz/ogre[Ogre]), etc.
 It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se.
 Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages
@@ -232,7 +230,7 @@ variants wishes to offer arbitrary computations beyond the provided Gremlin step
 
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is
 the <<gremlin-console,Gremlin Console>> -- an interactive programming environment exists that does not require
-code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin
+code compilation. For learning TinkerPop and interacting with a live graph system in an ad hoc manner, the Gremlin
 Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns
 are presented below.
 
@@ -264,7 +262,7 @@ Please see the <<gremlin-variants, Gremlin Variants>> section for more informati
 == Graph System Integration
 
 image:provider-integration.png[width=395,float=right] TinkerPop is a framework composed of various interoperable
-components. At the foundation there is the <<graph,core TinkerPop3 API>> which defines what a `Graph`, `Vertex`,
+components. At the foundation there is the <<graph,core TinkerPop API>> which defines what a `Graph`, `Vertex`,
 `Edge`, etc. are. At minimum a graph system provider must implement the core API. Once implemented, the Gremlin
 <<traversal,traversal language>> is available to the graph system's users. However, the provider can go further and
 develop specific <<traversalstrategy,`TraversalStrategy`>> optimizations that allow the graph system to inspect a

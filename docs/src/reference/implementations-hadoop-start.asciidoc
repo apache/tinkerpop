@@ -28,8 +28,8 @@ limitations under the License.
 
 image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed
 computing framework that is used to process data represented across a multi-machine compute cluster. When the
-data in the Hadoop cluster represents a TinkerPop3 graph, then Hadoop-Gremlin can be used to process the graph
-using both TinkerPop3's OLTP and OLAP graph computing models.
+data in the Hadoop cluster represents a TinkerPop graph, then Hadoop-Gremlin can be used to process the graph
+using both TinkerPop's OLTP and OLAP graph computing models.
 
 IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
 started with Hadoop, please see the
@@ -160,10 +160,10 @@ image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to ex
 `GraphComputer`. The OLTP examples presented previously are reproduced below, but using `TraversalVertexProgram`
 for the execution of the Gremlin traversal.
 
-A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin
+A `Graph` in TinkerPop can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin
 supports the following two implementations.
 
-* <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop3 OLAP computations.
+* <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop OLAP computations.
 ** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via
 Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
 

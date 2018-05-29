@@ -17,7 +17,7 @@ limitations under the License.
 [[graphcomputer]]
 = The GraphComputer
 
-image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a
+image:graphcomputer-puffers.png[width=350,float=right] TinkerPop provides two primary means of interacting with a
 graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and
 link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OLTP-based
 graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only
@@ -39,7 +39,7 @@ walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, al
 `VertexProgram`. The programs send messages to one another with the topological structure of the graph acting as the
 communication network (though random message passing possible). In many respects, the messages passed are like
 the OLTP traversers moving from vertex-to-vertex. However, all messages are moving independent of one another, in
-parallel. Once a vertex program is finished computing, TinkerPop3's OLAP engine supports any number
+parallel. Once a vertex program is finished computing, TinkerPop's OLAP engine supports any number
 link:http://en.wikipedia.org/wiki/MapReduce[`MapReduce`] jobs over the resultant graph.
 
 IMPORTANT: `GraphComputer` was designed from the start to be used within a multi-JVM, distributed environment --
@@ -87,7 +87,7 @@ g.V().valueMap()
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's
 link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine.
 In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph],
-link:https://hama.apache.org/[Hama]. TinkerPop3 extends the
+link:https://hama.apache.org/[Hama]. TinkerPop extends the
 popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
 [[mapreduce]]
@@ -97,7 +97,7 @@ The BSP model proposed by Pregel stores the results of the computation in a dist
 elements in the graph. In many situations, it is necessary to aggregate those resultant properties into a single
 result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex
 (i.e. link:http://en.wikipedia.org/wiki/Community_structure[a graph clustering algorithm]). At the end of the
-computation, each vertex will have a property denoting the cluster it was assigned to. TinkerPop3 provides the
+computation, each vertex will have a property denoting the cluster it was assigned to. TinkerPop provides the
 ability to answer global questions about the clusters. For instance, in order to answer the following questions,
 `MapReduce` jobs are required:
 
@@ -106,7 +106,7 @@ ability to answer global questions about the clusters. For instance, in order to
  * What is the average age of each vertex in each cluster?
  * What is the degree distribution of the vertices in each cluster?
 
-A compressed representation of the `MapReduce` API in TinkerPop3 is provided below. The key idea is that the
+A compressed representation of the `MapReduce` API in TinkerPop is provided below. The key idea is that the
 `map`-stage processes all vertices to emit key/value pairs. Those values are aggregated on their respective key
 for the `reduce`-stage to do its processing to ultimately yield more key/value pairs.
 
@@ -155,14 +155,15 @@ result.memory().clusterPopulation
 result.memory().clusterCount
 ----
 
-IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the
+IMPORTANT: The MapReduce model of TinkerPop does not support MapReduce chaining. Thus, the order in which the
 MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a
 `Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not fed back
 into a `map()`.
 
 == A Collection of VertexPrograms
 
-TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
+TinkerPop provides a collection of VertexPrograms that implement common algorithms. This section discusses the various
+implementations.
 
 IMPORTANT: The vertex programs presented are what are provided as of TinkerPop x.y.z. Over time, with future releases,
 more algorithms will be added.
@@ -416,7 +417,7 @@ is provided in the SparkGraphComputer section.
 image:batch-graph.png[width=220,float=left] The `BulkLoaderVertexProgram` provides a generalized way for loading
 graphs of any size into a persistent `Graph`. It is especially useful for large graphs (i.e. hundreds of millions
 or billions of edges) as it can take advantage of the parallel processing offered by `GraphComputer` instances. The
-input can be any existing `Graph` database supporting TinkerPop3 or any of the Hadoop GraphInputFormats (e.g.
+input can be any existing `Graph` database supporting TinkerPop or any of the Hadoop GraphInputFormats (e.g.
 `GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). The following example demonstrates how to load data
 from one TinkerGraph to another:
 

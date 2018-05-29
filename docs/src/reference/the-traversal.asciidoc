@@ -44,7 +44,7 @@ image::step-types.png[width=650]
 A `GraphTraversal<S,E>` is spawned from a `GraphTraversalSource`. It can also be spawned anonymously (i.e. empty)
 via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal`
 inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided
-in the TinkerPop3 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
+in the TinkerPop link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
 The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 IMPORTANT: The basics for starting a traversal are described in <<the-graph-process,The Graph Process>> section as
@@ -1024,8 +1024,8 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 
 image::inject-step.png[width=800]
 
-One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily
-into a traversal stream. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
+The concept of "injectable steps" makes it possible to insert objects arbitrarily into a traversal stream. In general,
+`inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
 [gremlin-groovy,modern]
 ----
@@ -2809,7 +2809,7 @@ g.E().valueMap()
 ----
 
 It is important to note that the map of a vertex maintains a list of values for each key. The map of an edge or
-vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop3 leverage
+vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop leverage
 <<vertex-properties,vertex properties>> which are support multiple values per key. Using the <<the-crew-toy-graph,
 "The Crew">> toy graph, the point is made explicit.
 
@@ -2961,7 +2961,7 @@ g.V().as('a').out('knows').as('b').
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
-edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see
+edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop (see
 link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
 
 *Additional References*
@@ -3157,7 +3157,7 @@ meets its criteria, can mutate it accordingly. Traversal strategies are executed
 of the Gremlin traversal machine's compiler. There are 5 categories of strategies which are itemized below:
 
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
- * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
+ * There is a more efficient way to express the traversal at the TinkerPop level (*optimization*).
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
  * There are some final adjustments/cleanups/analyses required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
@@ -3257,7 +3257,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
 The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing
 their `HasContainers` to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists.
-Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `ProviderOptimizationStrategy` category
+Given that the strategy uses non-TinkerPop provided steps, it should go into the `ProviderOptimizationStrategy` category
 to ensure the added step does not interfere with the assumptions of the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
@@ -3269,11 +3269,11 @@ t.toString()
 ----
 
 WARNING: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is
-that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the
-optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, provider
+that optimization strategies should only rewrite the traversal using TinkerPop steps. This ensures that the
+optimizations executed at the end of the optimization strategy round are TinkerPop compliant. From there, provider
 optimizations can analyze the traversal and rewrite the traversal as desired using graph system specific steps (e.g.
 replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If provider optimizations use graph system specific
-steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or
+steps and implement `OptimizationStrategy`, then other TinkerPop optimizations may fail to optimize the traversal or
 mis-understand the graph system specific step behaviors (e.g. `ProviderVertexStep extends VertexStep`) and yield
 incorrect semantics.
 
@@ -3305,7 +3305,7 @@ g.V().hasLabel('person'). <1>
 <8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
 <9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
-A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to
+A collection of useful `DecorationStrategy` strategies are provided with TinkerPop and are generally useful to
 end-users.  The following sub-sections detail these strategies:
 
 === ElementIdStrategy

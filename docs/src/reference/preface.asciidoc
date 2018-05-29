@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[preface]]
-= TinkerPop3 Documentation
+= TinkerPop Documentation
 
 In the beginning...
 
@@ -74,7 +74,7 @@ The machines, simply moving algorithmically through Gremlin's world, endorsed hi
 more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the
 world's end, where there would be forever currently, emanatingly engulfing that which is -- The TinkerPop.
 
-== TinkerPop3
+== TinkerPop
 
 image::tinkerpop3-splash.png[width=450]
 
@@ -86,7 +86,5 @@ realized realizations are just as real. For that is -- The TinkerPop.
 
 image::gremlintron.png[width=400]
 
-NOTE: TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes,
-Gremlin, Frames, Furnace, and Rexster. With TinkerPop3, all of these projects have been merged and are generally
-known as Gremlin. *Blueprints* -> Gremlin Structure API : *Pipes* -> `GraphTraversal` : *Frames* -> `Traversal` :
-*Furnace* -> `GraphComputer` and `VertexProgram` : *Rexster* -> GremlinServer.
+NOTE: For more information about differences between TinkerPop 3.x and earlier versions, please see the
+link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#appendix

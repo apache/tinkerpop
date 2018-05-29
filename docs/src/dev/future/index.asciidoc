@@ -40,8 +40,8 @@ image:tp4-think.png[]
 
 == The Main Features
 
-TinkerPop4 should focus on the most successful aspects of TinkerPop3 and it should avoid the traps realized in TinkerPop3.
-These items include:
+TinkerPop 4.x should focus on the most successful aspects of TinkerPop 3.x and it should avoid the traps realized in
+TinkerPop 3.x. These items include:
 
 * The concept of Gremlin as both a virtual machine and language.
 ** A standard bytecode specification should be provided.

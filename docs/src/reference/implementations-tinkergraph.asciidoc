@@ -28,8 +28,8 @@ limitations under the License.
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
 persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with
-TinkerPop3 and serves as the reference implementation for other providers to study in order to understand the
-semantics of the various methods of the TinkerPop3 API. Its status as a reference implementation does not however imply
+TinkerPop and serves as the reference implementation for other providers to study in order to understand the
+semantics of the various methods of the TinkerPop API. Its status as a reference implementation does not however imply
 that it is not suitable for production. TinkerGraph has many practical use cases in production applications and their
 development. Some examples of TinkerGraph use cases include:
 
@@ -102,7 +102,7 @@ clock(1000){g.V().has('name','Garcia').iterate()} <2>
 <1> Determine the average runtime of 1000 vertex lookups when no `name`-index is defined.
 <2> Determine the average runtime of 1000 vertex lookups when a `name`-index is defined.
 
-IMPORTANT: Each graph system will have different mechanism by which indices and schemas are defined. TinkerPop3
+IMPORTANT: Each graph system will have different mechanism by which indices and schemas are defined. TinkerPop
 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other
 graph systems, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding
 data to the graph.

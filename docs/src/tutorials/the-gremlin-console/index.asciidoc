@@ -98,8 +98,8 @@ for all TinkerPop examples and test cases.
 * `createModern()` - The TinkerPop 3.x representation of the "classic" graph, where the main difference is that vertex
 labels are defined and the "weight" edge property is a `double` rather than a `float`
 (link:http://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram]).
-* `createTheCrew()` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x (as compared to
-2.x) such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex properties and multi-properties]
+* `createTheCrew()` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x such as
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex meta-properties and multi-properties]
 (link:http://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram]).
 
 [gremlin-groovy]
