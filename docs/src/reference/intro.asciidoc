@@ -31,13 +31,16 @@ dots) and edges (arcs, lines). When modeling a graph in a computer and applying 
 the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This
 structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example
 property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is
-called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 back in 2009 (i.e. the good
-ol' days -- it was the best of times and it was the worst of times).
+called "TinkerPop Modern" as it is a modern variation of the original demo graph distributed with TinkerPop0 back
+in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
 TIP: The TinkerPop graph is available with <<tinkergraph-gremlin,TinkerGraph>> via `TinkerFactory.createModern()`.
 TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
 Note that there also exists the classic `TinkerFactory.createClassic()` which is the graph used in TinkerPop2 and does
 not include vertex labels.
+
+TIP: All of the toy graphs available in TinkerPop are described in
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-graphs[The Gremlin Console] tutorial.
 
 [[tinkerpop-modern]]
 .TinkerPop Modern
@@ -48,6 +51,12 @@ computing makes a distinction between *structure* (graph) and *process* (travers
 data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology]. The process
 of the graph is the means by which the structure is analyzed. The typical form of graph processing is called a
 link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
+
+Generally speaking, the structure or "graph" API is meant for link:http://tinkerpop.apache.org/providers.html[graph providers]
+who are implementing the TinkerPop interfaces and the process or "traversal" API (i.e. Gremlin) is meant for end-users
+who are utilizing a graph system from a graph provider. While the components of the process API are itemized below,
+they are described in greater detail in the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy]
+tutorial.
 
 .Primary components of the TinkerPop3 *structure* API 
  * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
@@ -88,136 +97,11 @@ providers, then the standard Java naming convention is followed (e.g. `getNextSt
 image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references
 between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if
 they share an incident edge. A property is attached to an element and an element has a set of properties. A property
-is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the
-methods necessary to create such a structure. The TinkerPop graph previously diagrammed can be created with the
-following Java 8 code. Note that this graph is available as an in-memory TinkerGraph using
-`TinkerFactory.createClassic()`.
-
-[source,java]
-Graph graph = TinkerGraph.open(); <1>
-Vertex marko = graph.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
-Vertex vadas = graph.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
-Vertex lop = graph.addVertex(T.label, "software", T.id, 3, "name", "lop", "lang", "java");
-Vertex josh = graph.addVertex(T.label, "person", T.id, 4, "name", "josh", "age", 32);
-Vertex ripple = graph.addVertex(T.label, "software", T.id, 5, "name", "ripple", "lang", "java");
-Vertex peter = graph.addVertex(T.label, "person", T.id, 6, "name", "peter", "age", 35);
-marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5f); <3>
-marko.addEdge("knows", josh, T.id, 8, "weight", 1.0f);
-marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
-josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
-josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
-peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
-
-<1> Create a new in-memory `TinkerGraph` and assign it to the variable `graph`.
-<2> Create a vertex along with a set of key/value pairs with `T.label` being the vertex label and `T.id` being the vertex id.
-<3> Create an edge along with a  set of key/value pairs with the edge label being specified as the first argument.
-
-In the above code all the vertices are created first and then their respective edges. There are two "accessor tokens":
-`T.id` and `T.label`. When any of these, along with a set of other key value pairs is provided to
-`Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along
-with the provided key/value pair properties appended to it.
-
-WARNING: Many graph systems do not allow the user to specify an element ID and in such cases, an exception is thrown.
-
-NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This
-functionality did not exist in TinkerPop2. Element ids are still immutable in TinkerPop3 as they were in TinkerPop2.
-
-=== Mutating the Graph
-
-Below is a sequence of basic graph mutation operations represented in Java 8. One of the major differences between
-TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned
-in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8
-and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a big effort was made to ensure that
-both languages are as similar as possible.
-
-WARNING: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used.
-It is possible to determine which derivative of Gremlin is being used by mousing over the code block.  The word "JAVA"
-or "GROOVY" will appear in the top right corner of the code block.
-
-image:basic-mutation.png[width=240,float=right]
-[source,java]
-// create a new graph
-Graph graph = TinkerGraph.open();
-// add a software vertex with a name property
-Vertex gremlin = graph.addVertex(T.label, "software",
-                             "name", "gremlin"); <1>
-// only one vertex should exist
-assert(IteratorUtils.count(graph.vertices()) == 1)
-// no edges should exist as none have been created
-assert(IteratorUtils.count(graph.edges()) == 0)
-// add a new property
-gremlin.property("created",2009) <2>
-// add a new software vertex to the graph
-Vertex blueprints = graph.addVertex(T.label, "software",
-                                "name", "blueprints"); <3>
-// connect gremlin to blueprints via a dependsOn-edge
-gremlin.addEdge("dependsOn",blueprints); <4>
-// now there are two vertices and one edge
-assert(IteratorUtils.count(graph.vertices()) == 2)
-assert(IteratorUtils.count(graph.edges()) == 1)
-// add a property to blueprints
-blueprints.property("created",2010) <5>
-// remove that property
-blueprints.property("created").remove() <6>
-// connect gremlin to blueprints via encapsulates
-gremlin.addEdge("encapsulates",blueprints) <7>
-assert(IteratorUtils.count(graph.vertices()) == 2)
-assert(IteratorUtils.count(graph.edges()) == 2)
-// removing a vertex removes all its incident edges as well
-blueprints.remove() <8>
-gremlin.remove() <9>
-// the graph is now empty
-assert(IteratorUtils.count(graph.vertices()) == 0)
-assert(IteratorUtils.count(graph.edges()) == 0)
-// tada!
-
-IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the
-link:http://www.groovy-lang.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of
-Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language
-and for production users to connect to their graph and execute traversals in an interactive manner. Moreover,
-Gremlin-Groovy provides various syntax simplifications.
-
-TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see
-<<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded
-programmatically via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of
-`g.V().out().values('name')` as well as a host of other conveniences.
-
-Here is the same code, but using Gremlin-Groovy in the <<gremlin-console,Gremlin Console>>.
-
-[source,groovy]
-----
-$ bin/gremlin.sh
-
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-gremlin> graph = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> gremlin = graph.addVertex(label,'software','name','gremlin')
-==>v[0]
-gremlin> gremlin.property('created',2009)
-==>vp[created->2009]
-gremlin> blueprints = graph.addVertex(label,'software','name','blueprints')
-==>v[3]
-gremlin> gremlin.addEdge('dependsOn',blueprints)
-==>e[5][0-dependsOn->3]
-gremlin> blueprints.property('created',2010)
-==>vp[created->2010]
-gremlin> blueprints.property('created').remove()
-==>null <1>
-gremlin> gremlin.addEdge('encapsulates',blueprints)
-==>e[7][0-encapsulates->3]
-gremlin> blueprints.remove()
-==>null
-gremlin> gremlin.remove()
-==>null
-----
-
-<1> A `==>null` output is usually from a `void` method call and simply indicates that there was no problem with the
-invocation. If there were a problem, an error would be output or an exception would be thrown.
-
-IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph
-systems that support them) see the section dedicated to <<transactions,transactions>>.
+is a key/value pair, where the key is always a character `String`. Conceptual knowledge of how a graph is composed is
+essential to end-users working with graphs, however, as mentioned earlier, the structure API is not the appropriate
+way for users to think when building applications with TinkerPop. The structure API is reserved for usage by graph
+providers. Those interested in implementing the structure API to make their graph system TinkerPop enabled can learn
+more about it in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Graph Provider] documentation.
 
 [[the-graph-process]]
 == The Graph Process
