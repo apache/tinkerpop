@@ -526,8 +526,9 @@ as "objects":
 m = result[0].object <4>
 m.sort {it.value}
 script = """
-         matthias = graph.addVertex('name','matthias')
-         matthias.addEdge('co-creator',g.V().has('name','marko').next())
+         g.addV('person',).property('name','matthias').as('matthias').
+           V().has('person','name','marko').as('marko').
+           addE('co-creator').from('matthias').to('marko')
          """
 :> @script   <5>
 :> g.V().has('name','matthias').out('co-creator').values('name')

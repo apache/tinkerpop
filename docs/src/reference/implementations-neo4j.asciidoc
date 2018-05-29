@@ -76,11 +76,11 @@ The Gremlin-Console session below demonstrates Neo4j indices. For more informati
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
+g = graph.traversal()
 graph.cypher("CREATE INDEX ON :person(name)")
 graph.tx().commit()  <1>
-graph.addVertex(label,'person','name','marko')
-graph.addVertex(label,'dog','name','puppy')
-g = graph.traversal()
+g.addV('person').property('name','marko')
+g.addV('dog').property('name','puppy')
 g.V().hasLabel('person').has('name','marko').values('name')
 graph.close()
 ----
@@ -191,7 +191,8 @@ An example use case is presented below.
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-vertex = (Neo4jVertex) graph.addVertex('human::animal') <1>
+g = graph.traversal()
+vertex = (Neo4jVertex) g.addV('human::animal').next() <1>
 vertex.label() <2>
 vertex.labels() <3>
 vertex.addLabel('organism') <4>
@@ -202,7 +203,6 @@ vertex.addLabel('organism') <6>
 vertex.labels()
 vertex.removeLabel('human') <7>
 vertex.label()
-g = graph.traversal()
 g.V().has(label,'organism') <8>
 g.V().has(label,of('organism')) <9>
 g.V().has(label,of('organism')).has(label,of('animal'))
