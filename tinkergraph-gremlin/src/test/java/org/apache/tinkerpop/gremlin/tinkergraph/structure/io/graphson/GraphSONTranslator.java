@@ -29,23 +29,40 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
     private final JavaTranslator<S, T> wrappedTranslator;
-    private final GraphSONMapper mapper = GraphSONMapper.build()
-            .addCustomModule(GraphSONXModuleV2d0.build().create(false)).version(GraphSONVersion.V2_0).create();
-    private final GraphSONWriter writer = GraphSONWriter.build().mapper(mapper).create();
-    private final GraphSONReader reader = GraphSONReader.build().mapper(mapper).create();
+    private final GraphSONWriter writer;
+    private final GraphSONReader reader;
 
     public GraphSONTranslator(final JavaTranslator<S, T> wrappedTranslator) {
+        this(wrappedTranslator, GraphSONVersion.V2_0);
+    }
+
+    public GraphSONTranslator(final JavaTranslator<S, T> wrappedTranslator, final GraphSONVersion version) {
         this.wrappedTranslator = wrappedTranslator;
+        final GraphSONMapper mapper;
+        if (version == GraphSONVersion.V2_0) {
+            mapper = GraphSONMapper.build()
+                    .addCustomModule(GraphSONXModuleV2d0.build().create(false)).version(GraphSONVersion.V2_0).create();
+        } else if (version == GraphSONVersion.V3_0) {
+            mapper = GraphSONMapper.build()
+                    .addCustomModule(GraphSONXModuleV3d0.build().create(false)).version(GraphSONVersion.V3_0).create();
+        } else {
+            throw new IllegalArgumentException("GraphSONVersion." + version.name() + " is not supported for testing");
+        }
+
+        writer = GraphSONWriter.build().mapper(mapper).create();
+        reader = GraphSONReader.build().mapper(mapper).create();
     }
 
     @Override
@@ -58,7 +75,6 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             this.writer.writeObject(outputStream, bytecode);
-            // System.out.println(new String(outputStream.toByteArray()));
             return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
