@@ -111,7 +111,8 @@ under release is protected. Tweaks to documentation and other odds and ends rela
 during this period.
 . At some point during the week:
 .. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
-.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV pre-releases.
+.. Build and test the Docker images: `mvn clean install -pl gremlin-server,gremlin-console -Pdocker-images`
+.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV and Docker image pre-releases.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 .. Review JIRA tickets in the release and ensure that:
