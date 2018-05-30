@@ -26,8 +26,9 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphGraphSONTranslatorProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGraphSONTranslatorProcessStandardTest {
+@GraphProviderClass(provider = AbstractTinkerGraphGraphSONTranslatorProvider.TinkerGraphGraphSONv2TranslatorProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphGraphSONv2TranslatorProcessStandardTest {
 }

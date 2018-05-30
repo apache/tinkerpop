@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
@@ -33,7 +34,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,8 +45,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
+public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
@@ -55,11 +59,15 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             EventStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
+    private final GraphSONVersion version;
+
+    AbstractTinkerGraphGraphSONTranslatorProvider(final GraphSONVersion version) {
+        this.version = version;
+    }
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
-
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put("skipTest", SKIP_TESTS.contains(testMethodName) || SKIP_TESTS.contains(test.getCanonicalName()));
         return config;
@@ -69,10 +77,39 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
     public GraphTraversalSource traversal(final Graph graph) {
         if ((Boolean) graph.configuration().getProperty("skipTest"))
             return graph.traversal();
-            //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g))));
+            return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g), version)));
+        }
+    }
+
+    public static class TinkerGraphGraphSONv2TranslatorProvider extends AbstractTinkerGraphGraphSONTranslatorProvider {
+        public TinkerGraphGraphSONv2TranslatorProvider() {
+            super(GraphSONVersion.V2_0);
+        }
+    }
+
+    public static class TinkerGraphGraphSONv3TranslatorProvider extends AbstractTinkerGraphGraphSONTranslatorProvider {
+        public TinkerGraphGraphSONv3TranslatorProvider() {
+            super(GraphSONVersion.V3_0);
+        }
+    }
+
+    @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
+    public static class TinkerGraphGraphSONv2TranslatorComputerProvider extends TinkerGraphGraphSONv2TranslatorProvider {
+
+        @Override
+        public GraphTraversalSource traversal(final Graph graph) {
+            return super.traversal(graph).withComputer();
+        }
+    }
+
+    @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
+    public static class TinkerGraphGraphSONv3TranslatorComputerProvider extends TinkerGraphGraphSONv3TranslatorProvider {
+
+        @Override
+        public GraphTraversalSource traversal(final Graph graph) {
+            return super.traversal(graph).withComputer();
         }
     }
 }

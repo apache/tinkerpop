@@ -19,19 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class TinkerGraphGraphSONTranslatorComputerProvider extends TinkerGraphGraphSONTranslatorProvider {
-
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        return super.traversal(graph).withComputer();
-    }
+@RunWith(ProcessStandardSuite.class)
+@GraphProviderClass(provider = AbstractTinkerGraphGraphSONTranslatorProvider.TinkerGraphGraphSONv3TranslatorProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphGraphSONv3TranslatorProcessStandardTest {
 }
