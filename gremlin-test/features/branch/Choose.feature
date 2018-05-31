@@ -122,3 +122,30 @@ Feature: Step - choose()
       | m[{"p1":"vadas", "p2":"vadas"}] |
       | m[{"p1":"josh", "p2":"josh"}] |
       | m[{"p1":"peter", "p2":"peter"}] |
+
+  Scenario: g_injectX1X_chooseXisX1X__constantX10Xfold__foldX
+    Given the empty graph
+    And using the parameter d10 defined as "d[10].i"
+    And using the parameter d1 defined as "d[1].i"
+    And the traversal of
+      """
+      g.inject(d1).choose(__.is(d1), __.constant(d10).fold(), __.fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[10].i] |
+
+  Scenario: g_injectX2X_chooseXisX1X__constantX10Xfold__foldX
+    Given the empty graph
+    And using the parameter d10 defined as "d[10].i"
+    And using the parameter d1 defined as "d[1].i"
+    And using the parameter d2 defined as "d[2].i"
+    And the traversal of
+      """
+      g.inject(d2).choose(__.is(d1), __.constant(d10).fold(), __.fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[2].i] |

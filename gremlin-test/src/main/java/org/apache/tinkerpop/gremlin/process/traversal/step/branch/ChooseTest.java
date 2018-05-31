@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -30,7 +31,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -42,6 +45,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -63,6 +68,10 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX();
+
+    public abstract Traversal<Integer, List<Integer>> get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
+
+    public abstract Traversal<Integer, List<Integer>> get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -128,6 +137,22 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         ), traversal);
     }
 
+    @Test
+    public void g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
+        final Traversal<Integer, List<Integer>> traversal = get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.singletonList(10), traversal.next());
+        assertThat(traversal.hasNext(), is(false));
+    }
+
+    @Test
+    public void g_injectX2X_chooseXisX1X__constantX10Xfold__foldX() {
+        final Traversal<Integer, List<Integer>> traversal = get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.singletonList(2), traversal.next());
+        assertThat(traversal.hasNext(), is(false));
+    }
+
     public static class Traversals extends ChooseTest {
 
         @Override
@@ -163,6 +188,16 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX() {
             return g.V().hasLabel("person").as("p1").choose(outE("knows"), out("knows")).as("p2").<String>select("p1", "p2").by("name");
+        }
+
+        @Override
+        public Traversal<Integer, List<Integer>> get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
+            return g.inject(1).choose(__.is(1), __.constant(10).fold(), __.fold());
+        }
+
+        @Override
+        public Traversal<Integer, List<Integer>> get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX() {
+            return g.inject(2).choose(__.is(1), __.constant(10).fold(), __.fold());
         }
     }
 }

@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -62,7 +64,13 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             this.traversalOptions.get(pickToken).add(traversalOption);
         else
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
+
+        // adding an IdentityStep acts as a placeholder when reducing barriers get in the way - see the
+        // standardAlgorithm() method for more information.
+        if (TraversalHelper.hasStepOfAssignableClass(ReducingBarrierStep.class, traversalOption))
+            traversalOption.addStep(0, new IdentityStep(traversalOption));
         traversalOption.addStep(new EndStep(traversalOption));
+
         if (!this.hasBarrier && !TraversalHelper.getStepsOfAssignableClassRecursively(Barrier.class, traversalOption).isEmpty())
             this.hasBarrier = true;
         this.integrateChild(traversalOption);
@@ -89,32 +97,54 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Iterator<Traverser.Admin<E>> standardAlgorithm() {
         while (true) {
             if (!this.first) {
+                // this block is ignored on the first pass through the while(true) giving the opportunity for
+                // the traversalOptions to be prepared. Iterate all of them and simply return the ones that yield
+                // results. applyCurrentTraverser() will have only injected the current traverser into the options
+                // that met the choice requirements.  Note that in addGlobalChildOption an IdentityStep was added to
+                // be a holder for that current traverser. That allows us to check that first step for an injected
+                // traverser as part of the condition for using that traversal option in the output. This is necessary
+                // because barriers like fold(), max(), etc. will always return true for hasNext() even if a traverser
+                // was not seeded in applyCurrentTraverser().
                 for (final List<Traversal.Admin<S, E>> options : this.traversalOptions.values()) {
                     for (final Traversal.Admin<S, E> option : options) {
-                        if (option.hasNext())
+                        if (option.getStartStep().hasNext() && option.hasNext())
                             return option.getEndStep();
                     }
                 }
             }
+
             this.first = false;
-            ///
+
+            // pass the current traverser to applyCurrentTraverser() which will make the "choice" of traversal to
+            // apply with the given traverser. as this is in a while(true) this phase essentially prepares the options
+            // for execution above
             if (this.hasBarrier) {
                 if (!this.starts.hasNext())
                     throw FastNoSuchElementException.instance();
                 while (this.starts.hasNext()) {
-                    this.handleStart(this.starts.next());
+                    this.applyCurrentTraverser(this.starts.next());
                 }
             } else {
-                this.handleStart(this.starts.next());
+                this.applyCurrentTraverser(this.starts.next());
             }
         }
     }
 
-    private final void handleStart(final Traverser.Admin<S> start) {
+    /**
+     * Choose the right traversal option to apply and seed those options with this traverser.
+     */
+    private void applyCurrentTraverser(final Traverser.Admin<S> start) {
+        // first get the value of the choice based on the current traverser and use that to select the right traversal
+        // option to which that traverser should be routed
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
-        final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+        final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ?
+                this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+
+        // if a branch is identified, then split the traverser and add it to the start of the option so that when
+        // that option is iterated (in the calling method) that value can be applied.
         if (null != branch)
             branch.forEach(traversal -> traversal.addStart(start.split()));
+
         if (choice != Pick.any) {
             final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
             if (null != anyBranch)
