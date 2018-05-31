@@ -25,6 +25,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
+* Moved `Parameterizing` interface to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with other marker interfaces of its type.
+* Replaced `Parameterizing.addPropertyMutations()` with `Configuring.configure()`.
+* Changed interface hierarchy for `Parameterizing` and `Mutating` interfaces as they are tightly related.
+* Introduced the `with()` step modulator which can supply configuration options to `Configuring` steps.
 * Added `supportsUpsert()` option to `VertexFeatures` and `EdgeFeatures`.
 * `min()` and `max()` now support all types implementing `Comparable`.
 * Change the `toString()` of `Path` to be standardized as other graph elements are.

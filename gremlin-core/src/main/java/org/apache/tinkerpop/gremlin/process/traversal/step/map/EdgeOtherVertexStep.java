@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,7 +34,8 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
+public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements Configuring {
+    protected Parameters parameters = new Parameters();
 
     public EdgeOtherVertexStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -49,6 +52,16 @@ public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
             }
         }
         throw new IllegalStateException("The path history of the traverser does not contain a previous vertex: " + traverser.path());
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.parameters.set(null, keyValues);
     }
 
     @Override

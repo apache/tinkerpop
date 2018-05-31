@@ -16,14 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 /**
  * An interface for {@link Step} implementations that hold a {@link Parameters} object, which fold in arguments from
  * other steps. It is typically used on mutating steps, such as {@code addV()}, where calls to {@code property(k,v)}
- * are folded in as parameters to that add vertex step.
+ * are folded in as parameters to that add vertex step, but it may be used for any step that could benefit from
+ * modulation.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

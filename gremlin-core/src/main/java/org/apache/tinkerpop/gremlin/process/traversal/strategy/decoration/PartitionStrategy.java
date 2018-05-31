@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -203,7 +203,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             // ends up being a Vertex or not.  AddPropertyStep currently chooses to simply not bother
             // to use the additional "property mutations" if the Element being mutated is a Edge or
             // VertexProperty
-            ((Mutating) step).addPropertyMutations(partitionKey, writePartition);
+            ((Mutating) step).configure(partitionKey, writePartition);
 
             if (includeMetaProperties) {
                 // GraphTraversal folds g.addV().property('k','v') to just AddVertexStep/AddVertexStartStep so this
@@ -216,7 +216,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                         final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
                         v.forEach(o -> {
                             final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
-                            addPropertyStep.addPropertyMutations(partitionKey, writePartition);
+                            addPropertyStep.configure(partitionKey, writePartition);
                             addPropertyStepsToAppend.add(addPropertyStep);
 
                             // need to remove the parameter from the AddVertex/StartStep because it's now being added

@@ -23,12 +23,16 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -42,9 +46,12 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class PageRankVertexProgramStep extends VertexProgramStep implements TraversalParent, ByModulating, TimesModulating {
+public final class PageRankVertexProgramStep extends VertexProgramStep
+        implements TraversalParent, ByModulating, TimesModulating, Configuring {
 
+    private Parameters parameters = new Parameters();
     private PureTraversal<Vertex, Edge> edgeTraversal;
     private String pageRankProperty = PageRankVertexProgram.PAGE_RANK;
     private int times = 20;
@@ -53,23 +60,59 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     public PageRankVertexProgramStep(final Traversal.Admin traversal, final double alpha) {
         super(traversal);
         this.alpha = alpha;
-        this.modulateBy(__.<Vertex>outE().asAdmin());
+        this.configure(PageRank.EDGES, __.<Vertex>outE().asAdmin());
     }
 
+    @Override
+    public void configure(final Object... keyValues) {
+        if (keyValues[0].equals(PageRank.EDGES)) {
+            if (!(keyValues[1] instanceof Traversal))
+                throw new IllegalArgumentException("PageRank.EDGES requires a Traversal as its argument");
+            this.edgeTraversal = new PureTraversal<>(((Traversal<Vertex,Edge>) keyValues[1]).asAdmin());
+            this.integrateChild(this.edgeTraversal.get());
+        } else if (keyValues[0].equals(PageRank.PROPERTY_NAME)) {
+            if (!(keyValues[1] instanceof String))
+                throw new IllegalArgumentException("PageRank.PROPERTY_NAME requires a String as its argument");
+            this.pageRankProperty = (String) keyValues[1];
+        } else if (keyValues[0].equals(PageRank.TIMES)) {
+            if (!(keyValues[1] instanceof Integer))
+                throw new IllegalArgumentException("PageRank.TIMES requires an Integer as its argument");
+            this.times = (int) keyValues[1];
+        }else {
+            this.parameters.set(this, keyValues);
+        }
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    /**
+     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
+     */
+    @Deprecated
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> edgeTraversal) {
-        this.edgeTraversal = new PureTraversal<>((Traversal.Admin<Vertex, Edge>) edgeTraversal);
-        this.integrateChild(this.edgeTraversal.get());
+        configure(PageRank.EDGES, edgeTraversal);
     }
 
+    /**
+     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
+     */
+    @Deprecated
     @Override
     public void modulateBy(final String pageRankProperty) {
-        this.pageRankProperty = pageRankProperty;
+        configure(PageRank.PROPERTY_NAME, pageRankProperty);
     }
 
+    /**
+     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
+     */
+    @Deprecated
     @Override
     public void modulateTimes(int times) {
-        this.times = times;
+        configure(PageRank.TIMES, times);
     }
 
     @Override
@@ -117,5 +160,25 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.edgeTraversal.hashCode() ^ this.pageRankProperty.hashCode() ^ this.times;
+    }
+
+    /**
+     * Configuration options to be passed to the {@link GraphTraversal#with(String, Object)} step.
+     */
+    public static class PageRank {
+        /**
+         * Configures number of iterations that the algorithm should run.
+         */
+        public static final String TIMES = Graph.Hidden.hide("tinkerpop.pageRank.times");
+
+        /**
+         * Configures the edge to traverse when calculating the pagerank.
+         */
+        public static final String EDGES = Graph.Hidden.hide("tinkerpop.pageRank.edges");
+
+        /**
+         * Configures the name of the property within which to store the pagerank value.
+         */
+        public static final String PROPERTY_NAME = Graph.Hidden.hide("tinkerpop.pageRank.propertyName");
     }
 }

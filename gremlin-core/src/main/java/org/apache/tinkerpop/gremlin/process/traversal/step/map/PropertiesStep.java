@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -33,8 +35,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCloseable {
+public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCloseable, Configuring {
 
+    protected Parameters parameters = new Parameters();
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
 
@@ -42,6 +45,16 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCl
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.parameters.set(null, keyValues);
     }
 
     @Override

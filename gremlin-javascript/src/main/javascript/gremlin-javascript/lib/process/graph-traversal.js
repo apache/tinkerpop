@@ -1137,7 +1137,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  with(...args) {
+  with_(...args) {
     this.bytecode.addStep('with', args);
     return this;
   }

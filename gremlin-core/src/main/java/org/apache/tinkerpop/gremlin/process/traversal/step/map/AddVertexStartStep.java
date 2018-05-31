@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -47,7 +46,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing, Scoping {
+        implements Mutating<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -79,7 +78,7 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     }
 
     @Override
-    public void addPropertyMutations(final Object... keyValues) {
+    public void configure(final Object... keyValues) {
         this.parameters.set(this, keyValues);
     }
 
