@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -113,9 +114,9 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name();
 
-    public abstract Traversal<Vertex, Edge> get_g_V_bothEXselfX();
+    public abstract Traversal<Vertex, Edge> get_g_V_hasLabelXloopsX_bothEXselfX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_bothXselfX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXloopsX_bothXselfX();
 
     // GRAPH VERTEX/EDGE
 
@@ -575,10 +576,9 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_V_bothEXselfX() {
-        g.addV().as("a").addE("self").to("a").iterate();
-        final Traversal<Vertex, Edge> traversal = get_g_V_bothEXselfX();
+    @LoadGraphWith(SINK)
+    public void g_V_hasLabelXloopsX_bothEXselfX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_hasLabelXloopsX_bothEXselfX();
         printTraversalForm(traversal);
 
         List<Edge> edges = traversal.toList();
@@ -587,10 +587,9 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_V_bothXselfX() {
-        g.addV().as("a").addE("self").to("a").iterate();
-        final Traversal<Vertex, Vertex> traversal = get_g_V_bothXselfX();
+    @LoadGraphWith(SINK)
+    public void g_V_hasLabelXloopsX_bothXselfX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXloopsX_bothXselfX();
         printTraversalForm(traversal);
 
         List<Vertex> vertices = traversal.toList();
@@ -751,13 +750,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_bothEXselfX() {
-            return g.V().bothE("self");
+        public Traversal<Vertex, Edge> get_g_V_hasLabelXloopsX_bothEXselfX() {
+            return g.V().hasLabel("loops").bothE("self");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_bothXselfX() {
-            return g.V().both("self");
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXloopsX_bothXselfX() {
+            return g.V().hasLabel("loops").both("self");
         }
     }
 }

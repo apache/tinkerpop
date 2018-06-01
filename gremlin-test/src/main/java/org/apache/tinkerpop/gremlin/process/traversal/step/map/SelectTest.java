@@ -117,13 +117,37 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     // TINKERPOP-619: select should not throw
 
-    public abstract Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop);
+    public abstract Traversal<Vertex, Object> get_g_V_selectXaX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX(final Pop pop);
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX();
 
-    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop);
+    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXaX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop);
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXa_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_selectXfirst_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXfirst_a_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXfirst_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXfirst_a_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_selectXlast_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXlast_a_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXlast_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlast_a_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_selectXall_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXall_a_bX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXall_aX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXall_a_bX();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(final Object v1Id);
 
@@ -542,41 +566,129 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_selectXaX() {
-        Stream.of(Pop.values()).forEach(pop -> {
-            final Traversal<Vertex, Object> traversal = get_g_V_selectXaX(pop);
-            printTraversalForm(traversal);
-            assertEquals(Collections.emptyList(), traversal.toList());
-        });
+        final Traversal<Vertex, Object> traversal = get_g_V_selectXaX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
     }
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_selectXa_bX() {
-        Stream.of(Pop.values()).forEach(pop -> {
-            final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXa_bX(pop);
-            printTraversalForm(traversal);
-            assertEquals(Collections.emptyList(), traversal.toList());
-        });
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXa_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_valueMap_selectXpop_aX() {
-        Stream.of(Pop.values()).forEach(pop -> {
-            final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXpop_aX(pop);
-            printTraversalForm(traversal);
-            assertEquals(Collections.emptyList(), traversal.toList());
-        });
+    public void g_V_valueMap_selectXaX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXaX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_valueMap_selectXpop_a_bX() {
-        Stream.of(Pop.values()).forEach(pop -> {
-            final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXpop_a_bX(pop);
-            printTraversalForm(traversal);
-            assertEquals(Collections.emptyList(), traversal.toList());
-        });
+    public void g_V_valueMap_selectXa_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXa_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXfirst_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_selectXfirst_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXfirst_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXfirst_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXfirst_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXfirst_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXfirst_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXfirst_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXlast_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_selectXlast_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXlast_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXlast_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXlast_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXlast_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXlast_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXlast_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXall_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_selectXall_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_selectXall_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXall_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXall_aX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXall_aX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_selectXall_a_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXall_a_bX();
+        printTraversalForm(traversal);
+        assertEquals(Collections.emptyList(), traversal.toList());
     }
 
     // when labels don't exist
@@ -848,23 +960,83 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         // TINKERPOP-619: select should not throw
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop) {
-            return g.V().select(pop, "a");
+        public Traversal<Vertex, Object> get_g_V_selectXaX() {
+            return g.V().select("a");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX(final Pop pop) {
-            return g.V().select(pop, "a", "b");
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX() {
+            return g.V().select("a", "b");
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
-            return g.V().valueMap().select(pop, "a");
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXaX() {
+            return g.V().valueMap().select("a");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
-            return g.V().valueMap().select(pop, "a", "b");
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXa_bX() {
+            return g.V().valueMap().select("a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXfirst_aX() {
+            return g.V().select(Pop.first, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXfirst_a_bX() {
+            return g.V().select(Pop.first, "a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXfirst_aX() {
+            return g.V().valueMap().select(Pop.first, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXfirst_a_bX() {
+            return g.V().valueMap().select(Pop.first, "a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXlast_aX() {
+            return g.V().select(Pop.last, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXlast_a_bX() {
+            return g.V().select(Pop.last, "a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXlast_aX() {
+            return g.V().valueMap().select(Pop.last, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlast_a_bX() {
+            return g.V().valueMap().select(Pop.last, "a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_selectXall_aX() {
+            return g.V().select(Pop.all, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXall_a_bX() {
+            return g.V().select(Pop.all, "a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXall_aX() {
+            return g.V().valueMap().select(Pop.all, "a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXall_a_bX() {
+            return g.V().valueMap().select(Pop.all, "a", "b");
         }
 
         // when labels don't exist

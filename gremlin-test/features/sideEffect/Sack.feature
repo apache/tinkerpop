@@ -109,3 +109,25 @@ Feature: Step - sack()
       | result |
       | d[1.0].m |
       | d[1.0].m |
+
+  Scenario: g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      GLV Suite does not support BigInteger assignments at this time.
+      """
+
+  Scenario: g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      This test is bound pretty tightly to the JVM in that it requires a UnaryOperator cast to get the right
+      withSack() method called. Not sure how that would work with a GLV.
+      """
+
+  Scenario: g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      Something strange happens with rounding that prevents GLVs from asserting this result properly.
+      """

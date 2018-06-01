@@ -355,3 +355,16 @@ Feature: Step - order()
       | result |
       | m[{"3":"d[87].i","2":"d[58].i","1":"d[29].i","4":"d[29].i"}] |
 
+  Scenario: g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      TODO
+      """
+
+  Scenario: g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      TODO
+      """
