@@ -1910,7 +1910,7 @@ mechanics of Gremlin OLAP (<<graphcomputer,`GraphComputer`>>).
 ----
 private TraverserSet<Object> haltedTraversers;
 
-public void loadState(final Graph graph, final Configuration configuration) {
+public void loadState(Graph graph, Configuration configuration) {
   VertexProgram.super.loadState(graph, configuration);
   this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
   this.programStep = new TraversalMatrix<>(this.traversal.get()).getStepById(configuration.getString(ProgramVertexProgramStep.STEP_ID));
@@ -1922,13 +1922,13 @@ public void loadState(final Graph graph, final Configuration configuration) {
   this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
 }
 
-public void storeState(final Configuration configuration) {
+public void storeState(Configuration configuration) {
   VertexProgram.super.storeState(configuration);
   // if halted traversers is null or empty, it does nothing
   TraversalVertexProgram.storeHaltedTraversers(configuration, this.haltedTraversers);
 }
 
-public void setup(final Memory memory) {
+public void setup(Memory memory) {
   if(!this.haltedTraversers.isEmpty()) {
     // do what you like with the halted master traversal traversers
   }
@@ -1936,7 +1936,7 @@ public void setup(final Memory memory) {
   this.haltedTraversers = null;
 }
 
-public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+public void execute(Vertex vertex, Messenger messenger, Memory memory) {
   // once used, no need to keep that information around (workers)
   if(null != this.haltedTraversers)
     this.haltedTraversers = null;
@@ -1956,10 +1956,10 @@ public void execute(final Vertex vertex, final Messenger messenger, final Memory
                new TraverserSet<>(this.traversal().get().getTraverserGenerator().generate("an example", this.programStep, 1l)));
   }
 
-public boolean terminate(final Memory memory) {
+public boolean terminate(Memory memory) {
   // the master-traversal will have halted traversers
   assert memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
-  final TraverserSet<String> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+  TraverserSet<String> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
   // it will only have the traversers sent to the master traversal via memory
   assert haltedTraversers.stream().map(Traverser::get).filter(s -> s.equals("an example")).findAny().isPresent();
   // it will not contain the worker traversers distributed throughout the vertices
@@ -3173,11 +3173,11 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal) {
+    public void apply(Traversal.Admin<?, ?> traversal) {
         if (traversal.getSteps().size() <= 1)
             return;
 
-        for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+        for (IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
             if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
                 TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
                 traversal.removeStep(identityStep);
@@ -3224,17 +3224,17 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal) {
+    public void apply(Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        for (final GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
-            final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+        for (GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
+            TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
                 if (currentStep instanceof HasStep) {
-                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                    for (HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
                         if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
                             tinkerGraphStep.addHasContainer(hasContainer);
                     }
@@ -3609,11 +3609,11 @@ any custom methods required by the DSL:
 ----
 public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
-    public SocialTraversalSourceDsl(final Graph graph, final TraversalStrategies traversalStrategies) {
+    public SocialTraversalSourceDsl(Graph graph, TraversalStrategies traversalStrategies) {
         super(graph, traversalStrategies);
     }
 
-    public SocialTraversalSourceDsl(final Graph graph) {
+    public SocialTraversalSourceDsl(Graph graph) {
         super(graph);
     }
 

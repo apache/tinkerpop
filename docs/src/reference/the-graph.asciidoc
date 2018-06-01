@@ -206,9 +206,9 @@ itself can be altered via these `Transaction` methods:
 
 [source,java]
 ----
-public Transaction onReadWrite(final Consumer<Transaction> consumer);
+public Transaction onReadWrite(Consumer<Transaction> consumer);
 
-public Transaction onClose(final Consumer<Transaction> consumer);
+public Transaction onClose(Consumer<Transaction> consumer);
 ----
 
 Providing a `Consumer` function to `onReadWrite` allows definition of how a transaction starts when a read or a write
@@ -405,9 +405,9 @@ that file back into a different instance:
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
+Graph graph = TinkerFactory.createModern();
 graph.io(IoCore.graphml()).writeGraph("tinkerpop-modern.xml");
-final Graph newGraph = TinkerGraph.open();
+Graph newGraph = TinkerGraph.open();
 newGraph.io(IoCore.graphml()).readGraph("tinkerpop-modern.xml");
 ----
 
@@ -415,13 +415,13 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
-try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
+Graph graph = TinkerFactory.createModern();
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
     graph.io(IoCore.graphml()).writer().normalize(true).create().writeGraph(os, graph);
 }
 
-final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
+Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
     newGraph.io(IoCore.graphml()).reader().create().readGraph(stream, newGraph);
 }
 ----
@@ -469,10 +469,10 @@ called `tinkerpop-modern.json` and then how to read that file back into a differ
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
+Graph graph = TinkerFactory.createModern();
 graph.io(graphson()).writeGraph("tinkerpop-modern.json");
 
-final Graph newGraph = TinkerGraph.open();
+Graph newGraph = TinkerGraph.open();
 newGraph.io(graphson()).readGraph("tinkerpop-modern.json");
 ----
 
@@ -482,14 +482,14 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
-try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
-    final GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().normalize(true).create()
+Graph graph = TinkerFactory.createModern();
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
+    GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().normalize(true).create()
     graph.io(graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
 }
 
-final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
+Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
     newGraph.io(graphson()).reader().create().readGraph(stream, newGraph);
 }
 ----
@@ -710,10 +710,10 @@ Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and c
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
+Graph graph = TinkerFactory.createModern();
 graph.io(gryo()).writeGraph("tinkerpop-modern.kryo");
 
-final Graph newGraph = TinkerGraph.open();
+Graph newGraph = TinkerGraph.open();
 newGraph.io(gryo()).readGraph("tinkerpop-modern.kryo");
 ----
 
@@ -723,13 +723,13 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph graph = TinkerFactory.createModern();
-try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
+Graph graph = TinkerFactory.createModern();
+try (OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
     graph.io(GryoIo.build(GryoVersion.V1_0)).writer().create().writeGraph(os, graph);
 }
 
-final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
+Graph newGraph = TinkerGraph.open();
+try (InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
     newGraph.io(GryoIo.build(GryoVersion.V1_0)).reader().create().readGraph(stream, newGraph);
 }
 ----
