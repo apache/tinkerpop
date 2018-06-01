@@ -40,6 +40,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             string reasonSuffix = null;
             switch (reason)
             {
+                case IgnoreReason.EmbeddedListAssertion:
+                    reasonSuffix = "This test returns an embedded list in the result and the Gherkin processor does not parse that correctly";
+                    break;
                 case IgnoreReason.NoReason:
                     reasonSuffix = "";
                     break;
@@ -55,6 +58,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// </summary>
         TraversalTDeserializationNotSupported,
         ReceivedDataDoesntMatchExpected,
-        NoReason
+        NoReason,
+        EmbeddedListAssertion
     }
 }

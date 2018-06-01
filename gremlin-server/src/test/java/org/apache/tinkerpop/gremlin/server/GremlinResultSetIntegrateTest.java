@@ -70,14 +70,6 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     private Cluster cluster;
     private Client client;
 
-    @Override
-    public Settings overrideSettings(final Settings settings) {
-        final Map<String,Object> m = new HashMap<>();
-        m.put("files", Collections.singletonList("scripts/generate-modern.groovy"));
-        settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
-        return settings;
-    }
-
     @Before
     public void beforeTest() {
         final MessageSerializer serializer = new GryoMessageSerializerV3d0();
@@ -99,7 +91,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("g");
+        final Client aliased = client.alias("gmodern");
         final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
         final List<Result> results = resultSetUnrolled.all().get();
 
@@ -109,25 +101,25 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleNullResult() throws Exception {
-        final ResultSet results = client.submit("g.V().drop().iterate();null");
+        final ResultSet results = client.submit("gmodern.V().drop().iterate();null");
         assertNull(results.all().get().get(0).getObject());
     }
 
     @Test
     public void shouldHandleVoidResult() throws Exception {
-        final ResultSet results = client.submit("g.V().drop().iterate()");
+        final ResultSet results = client.submit("gmodern.V().drop().iterate()");
         assertEquals(0, results.all().get().size());
     }
 
     @Test
     public void shouldHandleEmptyResult() throws Exception {
-        final ResultSet results = client.submit("g.V(100,1000,1000)");
+        final ResultSet results = client.submit("gmodern.V(100,1000,1000)");
         assertEquals(0, results.all().get().size());
     }
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        final ResultSet results = client.submit("g.V(1).next()");
+        final ResultSet results = client.submit("gmodern.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
 
@@ -146,46 +138,46 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandleVertexResultWithLiteSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_LITE_V1D0).create();
         final Client clientLite = cluster.connect();
-        final ResultSet results = clientLite.submit("g.V(1).next()");
+        final ResultSet results = clientLite.submit("gmodern.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(ReferenceVertex.class));
 
-        assertEquals(1L, v.id());
+        assertEquals(1, v.id());
         assertEquals("person", v.label());
         assertEquals(0, IteratorUtils.count(v.properties()));
     }
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
-        final ResultSet results = client.submit("g.V().properties('name').next()");
+        final ResultSet results = client.submit("gmodern.V().properties('name').next()");
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
         assertThat(v, instanceOf(DetachedVertexProperty.class));
     }
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
-        final ResultSet results = client.submit("g.E().next()");
+        final ResultSet results = client.submit("gmodern.E().next()");
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
     }
 
     @Test
     public void shouldHandlePropertyResult() throws Exception {
-        final ResultSet results = client.submit("g.E().properties('weight').next()");
+        final ResultSet results = client.submit("gmodern.E().properties('weight').next()");
         final Property<Double> p = results.all().get().get(0).getProperty();
         assertThat(p, instanceOf(DetachedProperty.class));
     }
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        final ResultSet results = client.submit("g.V().out().path()");
+        final ResultSet results = client.submit("gmodern.V().out().path()");
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(DetachedPath.class));
     }
 
     @Test
     public void shouldHandleTinkerGraphResult() throws Exception {
-        final ResultSet results = client.submit("graph");
+        final ResultSet results = client.submit("modern");
         final Graph graph = results.all().get().get(0).get(TinkerGraph.class);
 
         // test is "lossy for id" because TinkerGraph is configured by default to use the ANY id manager
@@ -196,7 +188,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleMapIteratedResult() throws Exception {
-        final ResultSet results = client.submit("g.V().groupCount().by(bothE().count())");
+        final ResultSet results = client.submit("gmodern.V().groupCount().by(bothE().count())");
         final List<Result> resultList = results.all().get();
         final Map m = resultList.get(0).get(HashMap.class);
         assertEquals(2, m.size());
@@ -206,7 +198,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleMapObjectResult() throws Exception {
-        final ResultSet results = client.submit("g.V().groupCount().by(bothE().count()).next()");
+        final ResultSet results = client.submit("gmodern.V().groupCount().by(bothE().count()).next()");
         final List<Result> resultList = results.all().get();
         assertEquals(2, resultList.size());
         final Map.Entry firstEntry = resultList.get(0).get(HashMap.Entry.class);

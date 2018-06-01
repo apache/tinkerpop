@@ -27,6 +27,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.asciidoc#release-3-2-10[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== TinkerFactory.createGratefulDead()
+
+The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. It has always been available as a
+packaged dataset that needed to be loaded through the various IO options available, while other toy graphs had the
+benefit of `TinkerFactory` to help get them bootstrapped. For 3.2.10, Grateful Dead is now more conveniently loaded
+via that same method as the other toy graphs with `TinkerFactory.createGratefulDead()`.
 
 == TinkerPop 3.2.9
 

@@ -17,6 +17,20 @@
 
 Feature: Step - properties()
 
+  Scenario: g_V_hasXageX_propertiesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age").properties("name").value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh  |
+      | peter |
+
   Scenario: g_V_hasXageX_propertiesXname_ageX_value
     Given the modern graph
     And the traversal of
@@ -58,4 +72,18 @@ Feature: Step - properties()
     Then nothing should happen because
       """
       The test suite doesn't do well with vertex property values.
+      """
+
+  Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      GLV suite doesn't support property identifiers and related assertions
+      """
+
+  Scenario: g_V_hasXageX_properties_hasXid_nameIdAsStringX_value
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      GLV suite doesn't support property identifiers and related assertions
       """

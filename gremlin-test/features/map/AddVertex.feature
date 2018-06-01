@@ -335,6 +335,7 @@ Feature: Step - addV()
       | result |
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
+
   Scenario: g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX
     Given the empty graph
     And the graph initializer of

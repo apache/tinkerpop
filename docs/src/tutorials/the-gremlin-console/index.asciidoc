@@ -117,9 +117,8 @@ However, if you find that a larger graph might be helpful, there is another opti
 
 [gremlin-groovy]
 ----
-graph = TinkerGraph.open()
-graph.io(gryo()).readGraph('data/grateful-dead.kryo')
-graph
+graph = TinkerFactory.createGratefulDead()
+g = graph.traversal()
 ----
 
 The Grateful Dead graph ships with the Gremlin Console and the data can be found in several formats (along with the

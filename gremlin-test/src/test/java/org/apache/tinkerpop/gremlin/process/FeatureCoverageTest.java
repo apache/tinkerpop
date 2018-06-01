@@ -53,7 +53,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
@@ -68,9 +67,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -100,45 +97,7 @@ public class FeatureCoverageTest {
 
     private static Pattern scenarioName = Pattern.compile("^\\s*Scenario:\\s*(.*)$");
 
-    private static final List<String> testToIgnore = Arrays.asList(
-            // deprecated tests
-            "g_V_addVXlabel_animal_age_0X",
-            "g_addVXlabel_person_name_stephenX",
-            // GLV suite doesn't support property identifiers and related assertions
-            "g_V_hasXageX_properties_hasXid_nameIdX_value",
-            "g_V_hasXageX_properties_hasXid_nameIdAsStringX_value",
-            "g_V_hasXageX_propertiesXnameX",
-            // grateful dead graph not supported in GLV suite
-            "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
-            "g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX",
-            "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
-            "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
-            "g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count",
-            "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX",
-            "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX",
-            "get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
-            "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
-            "g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX",
-            "g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name",
-            // Pop tests not organized right for GLVs
-            "g_V_valueMap_selectXpop_aX",
-            "g_V_selectXa_bX",
-            "g_V_valueMap_selectXpop_a_bX",
-            "g_V_selectXaX",
-            // assertion doesn't seem to want to work right for embedded lists
-            "g_V_asXa_bX_out_asXcX_path_selectXkeysX",
-            // probably need TINKERPOP-1877
-            "g_V_bothEXselfX",
-            "g_V_bothXselfX",
-            // ugh - BigInteger?
-            "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-            // ugh - clone
-            "g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack",
-            // wont round right or something
-            "g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack");
-
     @Test
-    // @Ignore("As it stands we won't have all of these tests migrated initially so there is no point to running this in full - it can be flipped on later")
     public void shouldImplementAllProcessTestsAsFeatures() throws Exception {
 
         // TEMPORARY while test framework is under development - all tests should ultimately be included
@@ -181,7 +140,7 @@ public class FeatureCoverageTest {
                 MeanTest.class,
                 MinTest.class,
                 OrderTest.class,
-                PageRankTest.class,
+                //PageRankTest.class,
                 PathTest.class,
                 // PeerPressureTest.class,
                 // ProfileTest.class,
@@ -219,7 +178,6 @@ public class FeatureCoverageTest {
                                            t.getSimpleName().replace("Test", "") + ".feature";
             final Set<String> testMethods = Stream.of(t.getDeclaredMethods())
                     .filter(m -> m.isAnnotationPresent(Test.class))
-                    .filter(m -> !testToIgnore.contains(m.getName()))
                     .map(Method::getName).collect(Collectors.toSet());
 
             final File featureFile = new File(featureFileName);

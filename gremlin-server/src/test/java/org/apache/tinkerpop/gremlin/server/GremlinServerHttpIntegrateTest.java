@@ -72,14 +72,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should413OnPostWithResultTooLarge":
                 settings.maxContentLength = 31;
                 break;
-            case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResult":
-            case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
-            case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases":
-            case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases":
-                final Map<String,Object> m = new HashMap<>();
-                m.put("files", Collections.singletonList("scripts/generate-classic.groovy"));
-                settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
-                break;
             case "should200OnPOSTTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
@@ -326,7 +318,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResult() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=g.V()"));
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=gclassic.V()"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -505,7 +497,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"gclassic.V()\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -541,7 +533,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"aliases\":{\"g1\":\"gclassic\"}}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());

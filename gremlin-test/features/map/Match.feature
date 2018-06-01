@@ -393,3 +393,137 @@ Feature: Step - match()
       | d[0].l |
       | d[0].l |
 
+  Scenario: g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").in("sungBy").as("b"),
+                  __.as("a").in("writtenBy").as("c"),
+                  __.as("b").out("writtenBy").as("d"),
+                  __.as("c").out("sungBy").as("d"),
+                  __.as("d").has("name", "Garcia"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[Garcia]","b":"v[CREAM PUFF WAR]","c":"v[CREAM PUFF WAR]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CREAM PUFF WAR]","c":"v[CRYPTICAL ENVELOPMENT]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[CREAM PUFF WAR]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[CRYPTICAL ENVELOPMENT]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Grateful_Dead]","b":"v[CANT COME DOWN]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Grateful_Dead]","b":"v[THE ONLY TIME IS NOW]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
+
+  Scenario: g_V_matchXa_hasXsong_name_sunshineX__a_mapX0followedBy_weight_meanX_b__a_0followedBy_c__c_filterXweight_whereXgteXbXXX_outV_dX_selectXdX_byXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").has("song", "name", "HERE COMES SUNSHINE"),
+                  __.as("a").map(__.inE("followedBy").values("weight").mean()).as("b"),
+                  __.as("a").inE("followedBy").as("c"),
+                  __.as("c").filter(__.values("weight").where(P.gte("b"))).outV().as("d")).
+            select("d").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | THE MUSIC NEVER STOPPED |
+      | PROMISED LAND           |
+      | PLAYING IN THE BAND     |
+      | CASEY JONES             |
+      | BIG RIVER               |
+      | EL PASO                 |
+      | LIBERTY                 |
+      | LOOKS LIKE RAIN         |
+
+  Scenario: g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").in("sungBy").as("b"),
+                  __.as("a").in("sungBy").as("c"),
+                  __.as("b").out("writtenBy").as("d"),
+                  __.as("c").out("writtenBy").as("e"),
+                  __.as("d").has("name", "George_Harrison"),
+                  __.as("e").has("name", "Bob_Marley"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[Garcia]","b":"v[I WANT TO TELL YOU]","c":"v[STIR IT UP]","d":"v[George_Harrison]","e":"v[Bob_Marley]"}] |
+
+  Scenario: g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").has("name", "Garcia"),
+                  __.as("a").in("writtenBy").as("b"),
+                  __.as("a").in("sungBy").as("b"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[Garcia]","b":"v[CREAM PUFF WAR]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]"}] |
+
+  Scenario: g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count
+    Given the grateful graph
+    And the traversal of
+      """
+       g.V().hasLabel("song").match(
+                    __.as("a").values("name").as("b"),
+                    __.as("a").values("performances").as("c")).select("b", "c").count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[584].l |
+
+  Scenario: g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").out("followedBy").count().is(P.gt(10)).as("b"),
+                  __.as("a").in("followedBy").count().is(P.gt(10)).as("b")).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[6].l |
+
+  Scenario: g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").in("sungBy").as("b"),
+                  __.as("a").in("writtenBy").as("c"),
+                  __.as("b").out("writtenBy").as("d")).
+            where(__.as("c").out("sungBy").as("d")).
+            where(__.as("d").has("name", "Garcia"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[Garcia]","b":"v[CREAM PUFF WAR]","c":"v[CREAM PUFF WAR]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CREAM PUFF WAR]","c":"v[CRYPTICAL ENVELOPMENT]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[CREAM PUFF WAR]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[CRYPTICAL ENVELOPMENT]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Grateful_Dead]","b":"v[CANT COME DOWN]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
+      | m[{"a":"v[Grateful_Dead]","b":"v[THE ONLY TIME IS NOW]","c":"v[DOWN SO LONG]","d":"v[Garcia]"}] |
+
+  Scenario: g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().match(__.as("a").has("name", "Garcia"),
+                  __.as("a").in("writtenBy").as("b"),
+                  __.as("b").out("followedBy").as("c"),
+                  __.as("c").out("writtenBy").as("d"),
+                  __.where("d", P.neq("a")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[DRUMS]","d":"v[Grateful_Dead]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[THE OTHER ONE]","d":"v[Weir]"}] |
+      | m[{"a":"v[Garcia]","b":"v[CRYPTICAL ENVELOPMENT]","c":"v[WHARF RAT]","d":"v[Hunter]"}] |
+

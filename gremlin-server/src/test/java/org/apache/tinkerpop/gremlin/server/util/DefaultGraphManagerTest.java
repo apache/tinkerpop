@@ -47,9 +47,14 @@ public class DefaultGraphManagerTest {
         final Set<String> graphNames = graphManager.getGraphNames();
 
         assertNotNull(graphNames);
-        assertEquals(1, graphNames.size());
+        assertEquals(6, graphNames.size());
 
-        assertEquals(graphNames.toArray()[0], "graph");
+        assertThat(graphNames.contains("graph"), is(true));
+        assertThat(graphNames.contains("classic"), is(true));
+        assertThat(graphNames.contains("modern"), is(true));
+        assertThat(graphNames.contains("crew"), is(true));
+        assertThat(graphNames.contains("sink"), is(true));
+        assertThat(graphNames.contains("grateful"), is(true));
         assertThat(graphManager.getGraph("graph"), instanceOf(TinkerGraph.class));
     }
 
@@ -60,9 +65,14 @@ public class DefaultGraphManagerTest {
         final Bindings bindings = graphManager.getAsBindings();
 
         assertNotNull(bindings);
-        assertEquals(1, bindings.size());
-        assertThat(bindings.get("graph"), instanceOf(TinkerGraph.class));
+        assertEquals(6, bindings.size());
         assertThat(bindings.containsKey("graph"), is(true));
+        assertThat(bindings.containsKey("classic"), is(true));
+        assertThat(bindings.containsKey("modern"), is(true));
+        assertThat(bindings.containsKey("crew"), is(true));
+        assertThat(bindings.containsKey("sink"), is(true));
+        assertThat(bindings.containsKey("grateful"), is(true));
+        assertThat(bindings.get("graph"), instanceOf(TinkerGraph.class));
     }
 
     @Test
@@ -84,8 +94,14 @@ public class DefaultGraphManagerTest {
 
         final Set<String> graphNames = graphManager.getGraphNames();
         assertNotNull(graphNames);
-        assertEquals(2, graphNames.size());
+        assertEquals(7, graphNames.size());
         assertThat(graphNames.contains("newGraph"), is(true));
+        assertThat(graphNames.contains("graph"), is(true));
+        assertThat(graphNames.contains("classic"), is(true));
+        assertThat(graphNames.contains("modern"), is(true));
+        assertThat(graphNames.contains("crew"), is(true));
+        assertThat(graphNames.contains("sink"), is(true));
+        assertThat(graphNames.contains("grateful"), is(true));
         assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
     }
 
@@ -97,14 +113,14 @@ public class DefaultGraphManagerTest {
         graphManager.putGraph("newGraph", graph);
         final Set<String> graphNames = graphManager.getGraphNames();
         assertNotNull(graphNames);
-        assertEquals(2, graphNames.size());
+        assertEquals(7, graphNames.size());
         assertThat(graphNames.contains("newGraph"), is(true));
         assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
 
         graphManager.removeGraph("newGraph");
 
         final Set<String> graphNames2 = graphManager.getGraphNames();
-        assertEquals(1, graphNames2.size());
+        assertEquals(6, graphNames2.size());
         assertThat(graphNames2.contains("newGraph"), is(false));
     }
 
