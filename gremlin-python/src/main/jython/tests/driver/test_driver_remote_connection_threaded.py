@@ -41,6 +41,7 @@ def test_conns_in_threads(remote_connection):
     child.join()
     child2.join()
 
+
 def test_conn_in_threads(remote_connection):
     q = queue.Queue()
     child = Thread(target=_executor, args=(q, remote_connection))
@@ -53,13 +54,14 @@ def test_conn_in_threads(remote_connection):
     child.join()
     child2.join()
 
+
 def _executor(q, conn):
     close = False
     if not conn:
         # This isn't a fixture so close manually
         close = True
         conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'g', pool_size=4)
+            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
     try:
         g = Graph().traversal().withRemote(conn)
         future = g.V().promise()

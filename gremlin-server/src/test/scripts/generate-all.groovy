@@ -17,6 +17,11 @@
  * under the License.
  */
 
+// An example of an initialization script that can be configured to run in Gremlin Server.
+// Functions defined here will go into global cache and will not be removed from there
+// unless there is a reset of the ScriptEngine.
+def addItUp(x, y) { x + y }
+
 // an init script that returns a Map allows explicit setting of global bindings.
 def globals = [:]
 
@@ -27,16 +32,38 @@ globals << [hook : [
     TinkerFactory.generateClassic(classic)
     TinkerFactory.generateModern(modern)
     TinkerFactory.generateTheCrew(crew)
+    TinkerFactory.generateGratefulDead(grateful)
     TinkerFactory.generateKitchenSink(sink)
-    grateful.io(gryo()).readGraph('data/grateful-dead.kryo')
+
+    // a wild bit of trickery here. the process tests use an INTEGER id manager when LoadGraphWith is used. this
+    // closure provides a way to to manually override the various id managers for TinkerGraph - the graph on which
+    // all of these remote tests are executed - so that the tests will pass nicely. an alternative might have been
+    // to have a special test TinkerGraph config for setting up the id manager properly, but based on how we do
+    // things now, that test config would have been mixed in with release artifacts and there would have been ugly
+    // exclusions to make packaging work properly.
+    allowSetOfIdManager = { graph, idManagerFieldName ->
+        java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
+        idManagerField.setAccessible(true)
+        java.lang.reflect.Field modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers")
+        modifiersField.setAccessible(true)
+        modifiersField.setInt(idManagerField, modifiersField.getModifiers() & ~java.lang.reflect.Modifier.FINAL)
+
+        idManagerField.set(graph, TinkerGraph.DefaultIdManager.INTEGER)
+    }
+
+    [classic, modern, crew, sink, grateful].each{
+      allowSetOfIdManager(it, "vertexIdManager")
+      allowSetOfIdManager(it, "edgeIdManager")
+      allowSetOfIdManager(it, "vertexPropertyIdManager")
+    }
   }
 ] as LifeCycleHook]
 
 // add default TraversalSource instances for each graph instance
 globals << [gclassic : classic.traversal()]
 globals << [gmodern : modern.traversal()]
+globals << [g : graph.traversal()]
 globals << [gcrew : crew.traversal()]
 globals << [ggraph : graph.traversal()]
-globals << [g : modern.traversal()]
 globals << [ggrateful : grateful.traversal()]
 globals << [gsink : sink.traversal()]

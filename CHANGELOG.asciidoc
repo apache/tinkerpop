@@ -26,6 +26,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `branch()` where reducing steps as options would produce incorrect results.
 * Removed recursive handling of streaming results from Gremlin-Python driver to avoid max recursion depth errors.
 * Improved performance of `TraversalVertexProgram` and related infrastructure.
+* Added `createGratefulDead()`to `TinkerFactory` to help make it easier to try to instantiate that toy graph.
+* Added identifiers to edges in the Kitchen Sink toy graph.
+* Refactored the Gremlin Server integration testing framework and streamlined that infrastructure.
 * Fixed bug in `GroovyTranslator` that didn't properly handle empty `Map` objects.
 * Added concrete configuration methods to `SparkGraphComputer` to make a more clear API for configuring it.
 * Fixed a bug in `TinkerGraphCountStrategy`, which didn't consider that certain map steps may not emit an element.

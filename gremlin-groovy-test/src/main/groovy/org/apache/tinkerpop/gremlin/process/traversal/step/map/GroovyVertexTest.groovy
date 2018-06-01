@@ -185,13 +185,13 @@ public abstract class GroovyVertexTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_bothEXselfX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().bothE('self')")
+        public Traversal<Vertex, Edge> get_g_V_hasLabelXloopsX_bothEXselfX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('loops').bothE('self')")
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_bothXselfX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().both('self')")
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXloopsX_bothXselfX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('loops').both('self')")
         }
     }
 }

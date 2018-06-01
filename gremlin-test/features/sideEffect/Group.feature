@@ -161,7 +161,6 @@ Feature: Step - group()
       | ripple |
       | lop |
 
-  # TODO: can we change the traversal to allow for a better assertion
   Scenario: g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX
     Given the grateful graph
     And the traversal of

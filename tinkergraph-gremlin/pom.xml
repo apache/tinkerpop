@@ -127,6 +127,25 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>copy-gratefuldead-to-tinkergraph-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>src/main/resources/org/apache/tinkerpop/gremlin/tinkergraph/structure</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <exclude>grateful-dead.kryo</exclude>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>copy-gio-from-tmp-to-resources</id>
                                 <phase>prepare-package</phase>
                                 <goals>

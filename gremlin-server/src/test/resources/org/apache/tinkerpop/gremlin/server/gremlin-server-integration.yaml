@@ -19,14 +19,19 @@ host: localhost
 port: 45940
 scriptEvaluationTimeout: 30000
 graphs: {
-  graph: conf/tinkergraph-empty.properties}
+  graph: conf/tinkergraph-empty.properties,
+  classic: conf/tinkergraph-empty.properties,
+  modern: conf/tinkergraph-empty.properties,
+  crew: conf/tinkergraph-empty.properties,
+  grateful: conf/tinkergraph-empty.properties,
+  sink: conf/tinkergraph-empty.properties}
 plugins:
   - tinkerpop.tinkergraph
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/empty-sample.groovy]}}
+    scripts: [scripts/generate-all.groovy]}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0], custom: [groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer]}}
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0], custom: [groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer]}}

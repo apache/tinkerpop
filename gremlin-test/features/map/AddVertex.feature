@@ -335,3 +335,17 @@ Feature: Step - addV()
       | result |
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
+
+  Scenario: g_V_addVXlabel_animal_age_0X
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      This API is deprecated - will not test.
+      """
+
+  Scenario: g_addVXlabel_person_name_stephenX
+    Given an unsupported test
+    Then nothing should happen because
+      """
+      This API is deprecated - will not test.
+      """

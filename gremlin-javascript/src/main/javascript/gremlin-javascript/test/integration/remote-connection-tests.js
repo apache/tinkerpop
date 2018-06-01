@@ -31,7 +31,7 @@ let connection;
 
 describe('DriverRemoteConnection', function () {
   before(function () {
-    connection = helper.getConnection();
+    connection = helper.getConnection('gmodern');
     return connection.open();
   });
   after(function () {

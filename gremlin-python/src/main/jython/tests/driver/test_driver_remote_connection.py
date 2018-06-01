@@ -37,7 +37,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
-        assert "remoteconnection[ws://localhost:45940/gremlin,g]" == str(remote_connection)
+        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
         g = Graph().traversal().withRemote(remote_connection)
 
         assert long(6) == g.V().count().toList()[0]
@@ -233,7 +233,7 @@ def test_in_tornado_app(remote_connection):
     @gen.coroutine
     def go():
         conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'g', pool_size=4)
+            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
         g = Graph().traversal().withRemote(conn)
         yield gen.sleep(0)
         assert len(g.V().toList()) == 6
