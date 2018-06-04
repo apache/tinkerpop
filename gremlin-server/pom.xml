@@ -245,5 +245,69 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>docker-images</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>dockerImages</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!--
+                    Deploying docker images will happen out of the normal jvm artifact deployment flow, so disable that
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docker-image-build</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <tag>${project.version}</tag>
+                                    <buildArgs>
+                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-image-tag-minor-version</id>
+                                <goals>
+                                    <goal>tag</goal>
+                                </goals>
+                                <configuration>
+                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
+                                    <skip>${only.when.is.snapshot.used}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-image-push</id>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${only.when.is.snapshot.used}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <repository>tinkerpop/gremlin-server</repository>
+                        </configuration>
+                    </plugin>
+                </plugins>                
+            </build>
+        </profile>
     </profiles>
 </project>

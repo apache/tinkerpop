@@ -281,7 +281,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
                 latch.countDown();
             });
 
-            assertThat(latch.await(3000, TimeUnit.MILLISECONDS), is(true));
+            assertThat(latch.await(10000, TimeUnit.MILLISECONDS), is(true));
 
             assertEquals(500, count1.get());
             assertEquals(150, count2.get());

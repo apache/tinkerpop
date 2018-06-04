@@ -111,7 +111,8 @@ under release is protected. Tweaks to documentation and other odds and ends rela
 during this period.
 . At some point during the week:
 .. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
-.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV pre-releases.
+.. Build and test the Docker images: `mvn clean install -pl gremlin-server,gremlin-console -DdockerImages`
+.. Deploy a final SNAPSHOT to the snapshot repository as well as GLV and Docker image pre-releases.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 .. Review JIRA tickets in the release and ensure that:
@@ -235,6 +236,11 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
 . Review the GLV releases at link:https://pypi.org/project/gremlinpython/[PyPi],
 link:https://www.nuget.org/packages/Gremlin.Net/[nuget] and link:https://www.npmjs.com/package/gremlin[npm]
+. Deploy the Docker images
+.. `mvn deploy -pl gremlin-console -DskipTests -DdockerImages`
+.. `mvn deploy -pl gremlin-server -DskipTests -DdockerImages`
+. Review the deployed Docker images at link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Console]
+and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.

@@ -106,7 +106,7 @@ The build optionally requires link:https://www.microsoft.com/net/core[.NET Core 
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
-`gremlin-dotnet` can be build and tested from the command line with:
+`gremlin-dotnet` can be built and tested from the command line with:
 
 [source,text]
 mvn clean install -Pgremlin-dotnet
@@ -126,6 +126,19 @@ using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.
 other existing Node.js runtime instances in your machine.
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
+
+[[docker-environment]]
+=== Docker Environment
+
+The build optionally requires Docker to build Docker images of Gremlin Server and Gremlin Console. The Docker images
+can be built from the command line with:
+
+[source,text]
+----
+mvn clean install -pl gremlin-server,gremlin-console -DdockerImages
+----
+
+which enables the "docker-images" Maven profile.
 
 [[release-environment]]
 === Release Environment
@@ -182,6 +195,13 @@ To deploy `gremlin-javascript` on the link:https://www.npmjs.com[npm registry], 
 authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser` command. This
 must be done only once, as the auth token doesn't have an expiration date and it's stored on your file system. If
 this account is newly created then request that a PMC member add your account to the "gremlin" package on npm.
+
+Deploying Docker images to link:https://hub.docker.com/[Docker Hub] requires an account that is a member of the TinkerPop
+organization. So if you don't already have an account on Docker Hub then create one and request that
+a PMC member adds your account to the TinkerPop organization. Afterwards, authentication information needs to be added to
+the `~/.docker/config.json` file. This information can simply be added with the `docker login` command which will ask for
+credentials. This must be done only once. Finally, `docker push` can be used to push images to Docker Hub which will
+be done automatically on `mvn deploy` or it can be triggered manually with `mvn dockerfile:push`.
 
 [[building-testing]]
 == Building and Testing
