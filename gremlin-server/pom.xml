@@ -287,7 +287,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>
+                                    <skip>${only.when.is.prerelease.version}</skip>
                                 </configuration>
                             </execution>
                             <execution>
@@ -309,7 +309,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>
+                                    <skip>${only.when.is.prerelease.version}</skip>
                                 </configuration>
                             </execution>
                         </executions>
