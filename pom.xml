@@ -290,6 +290,22 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
+                        <!-- sets the only.when.is.prerelease.version property to true if a prerelease version was used, 
+                            to the project version otherwise -->
+                        <id>build-helper-regex-is-prerelease-version</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>only.when.is.prerelease.version</name>
+                            <value>${project.version}</value>
+                            <regex>.*-.*</regex>
+                            <replacement>true</replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>parse-version</id>
                         <goals>
                             <goal>parse-version</goal>
