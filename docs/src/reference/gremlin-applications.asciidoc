@@ -355,6 +355,7 @@ Like, execution mode, it is also possible to pass multiple scripts by specifying
 
 [[gremlin-console-docker-image]]
 === Docker Image
+
 The Gremlin Console can also be started as a link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Docker image]:
 
 [source,text]
@@ -1935,6 +1936,7 @@ immediately forget the script after execution. In this way, the function does no
 
 [[gremlin-server-docker-image]]
 === Docker Image
+
 The Gremlin Server can also be started as a link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Docker image]:
 
 [source,text]
