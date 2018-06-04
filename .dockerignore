@@ -1,5 +1,7 @@
 **/*.log
 **/target
+!gremlin-server/target/apache-tinkerpop-gremlin-server-*
+!gremlin-console/target/apache-tinkerpop-gremlin-console-*
 *.iml
 .idea
 **/*.DS_Store
