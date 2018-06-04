@@ -25,8 +25,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_NL_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_NL_O_OB_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -56,6 +58,10 @@ public class DefaultTraverserGeneratorFactoryTest {
         traversal.applyStrategies();
         assertEquals(B_O_S_SE_SL_Traverser.class, traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l).getClass());
         //
+        traversal = traversalSource.V().repeat(__.repeat(__.out())).times(10).asAdmin();
+        traversal.applyStrategies();
+        assertEquals(B_NL_O_S_SE_SL_Traverser.class, traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l).getClass());
+        //
         traversal = traversalSource.V().out().sack().asAdmin();
         traversal.applyStrategies();
         assertEquals(B_O_S_SE_SL_Traverser.class, traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l).getClass());
@@ -79,6 +85,10 @@ public class DefaultTraverserGeneratorFactoryTest {
         traversal = traversalSource.withBulk(false).V().out().path().asAdmin();
         traversal.applyStrategies();
         assertEquals(LP_O_OB_P_S_SE_SL_Traverser.class, traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l).getClass());
+        //
+        traversal = traversalSource.withBulk(false).V().repeat(__.repeat(__.out())).times(10).path().asAdmin();
+        traversal.applyStrategies();
+        assertEquals(LP_NL_O_OB_P_S_SE_SL_Traverser.class, traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l).getClass());
 
     }
 }
