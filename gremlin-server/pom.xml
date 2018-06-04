@@ -294,10 +294,23 @@ limitations under the License.
                             </execution>
                             <execution>
                                 <id>docker-image-push</id>
+                                <phase>deploy</phase>
                                 <goals>
                                     <goal>push</goal>
                                 </goals>
                                 <configuration>
+                                    <tag>${project.version}</tag>
+                                    <skip>${only.when.is.snapshot.used}</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-image-push-minor-version</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                                <configuration>
+                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
                                     <skip>${only.when.is.snapshot.used}</skip>
                                 </configuration>
                             </execution>
