@@ -29,6 +29,21 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.as
 
 === Upgrading for Users
 
+==== Docker Images
+
+Docker images are now available on link:https://hub.docker.com/u/tinkerpop/[Docker Hub] for Gremlin Console and Gremlin
+Server.
+
+[source,text]
+----
+$ docker run -it tinkerpop/gremlin-console:x.y.z
+$ docker run tinkerpop/gremlin-server:x.y.z
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1897[TINKERPOP-1897],
+link:http://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
+link:http://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
+
 ==== TinkerFactory.createGratefulDead()
 
 The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. It has always been available as a
