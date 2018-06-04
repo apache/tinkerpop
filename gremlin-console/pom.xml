@@ -338,8 +338,24 @@ limitations under the License.
 
         <profile>
             <id>docker-images</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>dockerImages</name>
+                </property>
+            </activation>
             <build>
-                <plugins>                    
+                <plugins>
+                    <!--
+                    Deploying docker images will happen out of the normal jvm artifact deployment flow, so disable that
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>com.spotify</groupId>
                         <artifactId>dockerfile-maven-plugin</artifactId>

@@ -129,15 +129,16 @@ See the <<release-environment,Release Environment>> section for more information
 
 [[docker-environment]]
 === Docker Environment
-The build optionally requires Docker to build Docker images of Gremlin Server and Gremlin Console.
 
-The Docker images can be built from the command line with:
+The build optionally requires Docker to build Docker images of Gremlin Server and Gremlin Console. The Docker images
+can be built from the command line with:
+
 [source,text]
 ----
-mvn clean install -Pdocker-images
+mvn clean install -pl gremlin-server,gremlin-console -DdockerImages
 ----
-which enables the "docker-images" Maven profile.
 
+which enables the "docker-images" Maven profile.
 
 [[release-environment]]
 === Release Environment
