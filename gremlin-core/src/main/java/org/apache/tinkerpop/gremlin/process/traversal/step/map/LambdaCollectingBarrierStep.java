@@ -32,19 +32,6 @@ import java.util.function.Consumer;
  */
 public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
 
-    /**
-     * @deprecated As of release 3.2.0, replaced by use of {@link NoOpBarrierStep}.
-     */
-    @Deprecated
-    public enum Consumers implements Consumer<TraverserSet<Object>> {
-        noOp {
-            @Override
-            public void accept(final TraverserSet<Object> traverserSet) {
-
-            }
-        }
-    }
-
     private final Consumer<TraverserSet<S>> barrierConsumer;
 
     public LambdaCollectingBarrierStep(final Traversal.Admin traversal, final Consumer<TraverserSet<S>> barrierConsumer, final int maxBarrierSize) {

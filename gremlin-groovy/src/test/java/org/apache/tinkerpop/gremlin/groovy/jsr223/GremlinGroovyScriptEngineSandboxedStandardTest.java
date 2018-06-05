@@ -61,15 +61,15 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest {
     public void shouldEvalGraphTraversalSource() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("g", g);
-            bindings.put("marko", convertToVertexId(graph, "marko"));
-            assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
-        }
+        GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("marko", convertToVertexId(graph, "marko"));
+        assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(notSandboxed)) {
-            final Bindings bindings = engine.createBindings();
+        engine = new GremlinGroovyScriptEngine(notSandboxed);
+        try {
+            bindings = engine.createBindings();
             bindings.put("g", g);
             bindings.put("marko", convertToVertexId(graph, "marko"));
             engine.eval("g.V(marko).next()", bindings);
@@ -79,28 +79,27 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest {
             assertThat(ex.getMessage(), containsString("The variable [g] is undeclared."));
         }
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("g", g);
-            bindings.put("marko", convertToVertexId(graph, "marko"));
-            assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
-            assertEquals(g.V(convertToVertexId(graph, "marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
-        }
+        engine = new GremlinGroovyScriptEngine(sandboxed);
+        bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("marko", convertToVertexId(graph, "marko"));
+        assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
+        assertEquals(g.V(convertToVertexId(graph, "marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
     }
 
     @Test
     public void shouldEvalGraph() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("graph", graph);
-            bindings.put("marko", convertToVertexId(graph, "marko"));
-            assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
-        }
+        GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        Bindings bindings = engine.createBindings();
+        bindings.put("graph", graph);
+        bindings.put("marko", convertToVertexId(graph, "marko"));
+        assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(notSandboxed)) {
-            final Bindings bindings = engine.createBindings();
+        engine = new GremlinGroovyScriptEngine(notSandboxed);
+        try {
+            bindings = engine.createBindings();
             bindings.put("graph", graph);
             bindings.put("marko", convertToVertexId(graph, "marko"));
             assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
@@ -110,8 +109,9 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest {
             assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
         }
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(notSandboxed)) {
-            final Bindings bindings = engine.createBindings();
+        engine = new GremlinGroovyScriptEngine(notSandboxed);
+        try {
+            bindings = engine.createBindings();
             bindings.put("graph", graph);
             bindings.put("x", convertToVertexId(graph, "marko"));
             assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(x).next()", bindings));
@@ -121,19 +121,17 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest {
             assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
         }
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("graph", graph);
-            bindings.put("marko", convertToVertexId(graph, "marko"));
-            assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
-        }
+        engine = new GremlinGroovyScriptEngine(sandboxed);
+        bindings = engine.createBindings();
+        bindings.put("graph", graph);
+        bindings.put("marko", convertToVertexId(graph, "marko"));
+        assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
 
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("graph", graph);
-            bindings.put("x", convertToVertexId(graph, "marko"));
-            assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(x).next()", bindings));
-        }
+        engine = new GremlinGroovyScriptEngine(sandboxed);
+        bindings = engine.createBindings();
+        bindings.put("graph", graph);
+        bindings.put("x", convertToVertexId(graph, "marko"));
+        assertEquals(graph.vertices(convertToVertexId(graph, "marko")).next(), engine.eval("graph.vertices(x).next()", bindings));
     }
 
     private Object convertToVertexId(final Graph graph, final String vertexName) {

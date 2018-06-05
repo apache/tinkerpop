@@ -70,35 +70,33 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
         final File f = TestHelper.generateTempFileFromResource(graph.getClass(), GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox-empty-static-variable-types.yaml", ".yaml");
         System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
-            assertThat(engine.eval("new Boolean(true)"), is(true));
-            assertThat(engine.eval("new Boolean(true).toString()"), is("true"));
-        }
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+        assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
+        assertThat(engine.eval("new Boolean(true)"), is(true));
+        assertThat(engine.eval("new Boolean(true).toString()"), is("true"));
     }
 
     @Test
     public void shouldEvalAsTheMethodIsWhiteListed() throws Exception {
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
-            assertThat(engine.eval("new Boolean(true)"), is(true));
-            assertThat(engine.eval("new Boolean(true).toString()"), is("true"));
-        }
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+        assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
+        assertThat(engine.eval("new Boolean(true)"), is(true));
+        assertThat(engine.eval("new Boolean(true).toString()"), is("true"));
     }
 
     @Test
     public void shouldEvalAsGroovyPropertiesWhenWhiteListed() throws Exception {
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            assertThat(Arrays.equals("test".getBytes(), (byte[]) engine.eval("'test'.bytes")), is(true));
-        }
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+        assertThat(Arrays.equals("test".getBytes(), (byte[]) engine.eval("'test'.bytes")), is(true));
     }
 
     @Test
     public void shouldPreventMaliciousStuffWithSystemButAllowSomeMethodsOnSystem() throws Exception {
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+        try {
             assertThat((long) engine.eval("System.currentTimeMillis()"), greaterThan(0L));
             assertThat((long) engine.eval("System.nanoTime()"), greaterThan(0L));
 
@@ -113,7 +111,8 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
     @Test
     public void shouldPreventMaliciousStuffWithFile() throws Exception {
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+        try {
             engine.eval("java.nio.file.FileSystems.getDefault()");
             fail("Should have a compile error because class/method is not white listed");
         } catch (Exception ex) {
@@ -126,13 +125,13 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvalOnGAsTheMethodIsWhiteListed() throws Exception {
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
-        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
-            final Bindings bindings = engine.createBindings();
-            bindings.put("g", g);
-            bindings.put("marko", convertToVertexId(graph, "marko"));
-            assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
-            assertEquals(g.V(convertToVertexId(graph, "marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
-        }
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
+
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("marko", convertToVertexId(graph, "marko"));
+        assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
+        assertEquals(g.V(convertToVertexId(graph, "marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
     }
 
     private Object convertToVertexId(final Graph graph, final String vertexName) {

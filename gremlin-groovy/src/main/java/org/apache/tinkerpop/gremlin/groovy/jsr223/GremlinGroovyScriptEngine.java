@@ -29,7 +29,6 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
@@ -89,8 +88,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
-        implements AutoCloseable, GremlinScriptEngine {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements GremlinScriptEngine {
 
     private static final Logger log = LoggerFactory.getLogger(GremlinGroovyScriptEngine.class);
     /**
@@ -307,15 +305,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         inner.put(HIDDEN_G, b);
 
         return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G).translate(bytecode), inner);
-    }
-
-    /**
-     * @deprecated As of release 3.2.4, not replaced as this class will not implement {@code AutoCloseable} in the
-     * future.
-     */
-    @Override
-    @Deprecated
-    public void close() throws Exception {
     }
 
     /**

@@ -82,8 +82,10 @@ gremlin> g.V().values('name').max()
 The following deprecated classes, methods or fields have been removed in this version:
 
 * `gremlin-core`
-** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep.Consumers`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer#makeHasContainers(String, P)`
 ** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions#elementAlreadyRemoved(Class, Object)`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object)`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object, Exception)`
@@ -91,6 +93,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
 ** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
+* `gremlin-groovy`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.close()` - no longer implements `AutoCloseable`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.GraphManager#getGraphs()`
 ** `org.apache.tinkerpop.gremlin.server.GraphManager#getTraversalSources()`
@@ -98,6 +102,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings#className`
 ** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor#makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer serializer, boolean, List, ResponseStatusCode code)`
+* `hadoop-graph`
+** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphInputFormat()`
+** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphOutputFormat()`
 
 Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
 understand how to resolve this breaking change.

@@ -98,30 +98,6 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
         }
     }
 
-    /**
-     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphReader()}.
-     */
-    @Deprecated
-    public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
-        try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.2.0, replaced by {@link HadoopConfiguration#getGraphWriter()}.
-     */
-    @Deprecated
-    public Class<OutputFormat<NullWritable, VertexWritable>> getGraphOutputFormat() {
-        try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER));
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
     public String getInputLocation() {
         return this.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
     }

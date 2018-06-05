@@ -182,22 +182,4 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         }
         return true;
     }
-
-
-    /**
-     * @deprecated As of release 3.2.4. Providers should handle composite {@link P#and} predicates and not rely on splitting.
-     */
-    @Deprecated
-    public static HasContainer[] makeHasContainers(final String key, final P<?> predicate) {
-        if (predicate instanceof AndP) {
-            final List<P<?>> predicates = ((AndP) predicate).getPredicates();
-            final HasContainer[] hasContainers = new HasContainer[predicates.size()];
-            for (int i = 0; i < predicates.size(); i++) {
-                hasContainers[i] = new HasContainer(key, predicates.get(i));
-            }
-            return hasContainers;
-        } else {
-            return new HasContainer[]{new HasContainer(key, predicate)};
-        }
-    }
 }
