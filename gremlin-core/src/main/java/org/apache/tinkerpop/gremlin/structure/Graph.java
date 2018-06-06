@@ -1239,7 +1239,7 @@ public interface Graph extends AutoCloseable, Host {
         /**
          * The list of {@link GraphComputer} implementations by class name that a test should opt-out from using (i.e. other
          * graph computers not in this list will execute the test).  This setting should only be included when
-         * the test is one that uses the {@link ComputerTraversalEngine} - it will otherwise be ignored.  By
+         * the test is one that uses the {@code TraversalEngine.COMPUTER} - it will otherwise be ignored.  By
          * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
          * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
          */
