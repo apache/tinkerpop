@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -35,8 +37,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring {
 
+    protected Parameters parameters = new Parameters();
     private final String[] edgeLabels;
     private Direction direction;
     private final Class<E> returnClass;
@@ -46,6 +49,16 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         this.direction = direction;
         this.edgeLabels = edgeLabels;
         this.returnClass = returnClass;
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.parameters.set(null, keyValues);
     }
 
     @Override

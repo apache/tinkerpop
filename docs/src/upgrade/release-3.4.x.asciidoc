@@ -29,6 +29,42 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== with() Step
+
+This version of TinkerPop introduces the `with()` step to Gremlin. It isn't really a step but is instead a step
+modulator. This modulator allows the step it is modifying to accept configurations that can be used to alter the
+behavior of the step itself. A good example of its usage is shown with the revised syntax of the `pageRank()` step
+which now uses `with()` to replace the old `by()` options:
+
+[groovy]
+----
+g.V().hasLabel('person').
+  pageRank().
+    with(PageRank.EDGES, __.outE('knows')).
+    with(PageRank.PROPERTY_NAME, 'friendRank').
+  order().
+    by('friendRank',desc).
+  valueMap('name','friendRank')
+----
+
+A similar change was made for `peerPressure()` step:
+
+[groovy]
+----
+g.V().hasLabel('person').
+  peerPressure().
+    with(PeerPressure.PROPERTY_NAME, 'cluster').
+  group().
+    by('cluster').
+    by('name')
+----
+
+Note that the `by()` modulators still work, but should be considered deprecated and open for removal in a future
+release where breaking changes are allowed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
+link:http://tinkerpop.apache.org/docs/current/reference/#with-step[Reference Documentation]
+
 ==== Removal of Giraph Support
 
 Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
@@ -204,6 +240,19 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
 === Upgrading for Providers
 
 ==== Graph Database Providers
+
+===== Configuring Interface
+
+There were some changes to interfaces that were related to `Step`. A new `Configuring` interface was added that was
+helpful in the implementation of the `with()` step modulator. This new interface extends the `Parameterizing` interface
+(which moved to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with the other step interfaces) and
+in turn is extended by the `Mutating` interface. Making this change meant that the `Mutating.addPropertyMutations()`
+method could be removed in favor of the new `Configuring.configure()` method.
+
+All of the changes above basically mean, that if the `Mutating` interface was being used in prior versions, the
+`addPropertyMutations()` method simply needs to be changed to `configure()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975]
 
 ===== Removed hadoop-gremlin Test Artifact
 

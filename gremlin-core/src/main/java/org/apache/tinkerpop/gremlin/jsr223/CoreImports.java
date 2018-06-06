@@ -48,6 +48,8 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMa
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -258,8 +260,10 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ClusterPopulationMapReduce.class);
         CLASS_IMPORTS.add(MemoryTraversalSideEffects.class);
         CLASS_IMPORTS.add(PeerPressureVertexProgram.class);
+        CLASS_IMPORTS.add(PeerPressureVertexProgramStep.PeerPressure.class);
         CLASS_IMPORTS.add(PageRankMapReduce.class);
         CLASS_IMPORTS.add(PageRankVertexProgram.class);
+        CLASS_IMPORTS.add(PageRankVertexProgramStep.PageRank.class);
         CLASS_IMPORTS.add(GraphFilterStrategy.class);
         CLASS_IMPORTS.add(TraversalVertexProgram.class);
         CLASS_IMPORTS.add(VertexProgramStrategy.class);

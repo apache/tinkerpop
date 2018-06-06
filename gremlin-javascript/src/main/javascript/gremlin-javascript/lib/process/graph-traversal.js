@@ -1132,6 +1132,16 @@ class GraphTraversal extends Traversal {
     return this;
   }
   
+  /**
+   * Graph traversal with method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  with_(...args) {
+    this.bytecode.addStep('with', args);
+    return this;
+  }
+  
 }
 
 function callOnEmptyTraversal(fnName, args) {

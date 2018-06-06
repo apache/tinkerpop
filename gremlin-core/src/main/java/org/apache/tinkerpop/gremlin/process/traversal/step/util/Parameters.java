@@ -48,6 +48,8 @@ import java.util.function.Supplier;
  */
 public final class Parameters implements Cloneable, Serializable {
 
+    public static final Parameters EMPTY = new Parameters();
+
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private Map<Object, List<Object>> parameters = new HashMap<>();

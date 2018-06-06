@@ -28,7 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import java.lang.reflect.Modifier
 
 def toJsMap = ["in": "in_",
-               "from": "from_"]
+               "from": "from_",
+               "with": "with_"]
 
 def toJs = { symbol -> toJsMap.getOrDefault(symbol, symbol) }
 

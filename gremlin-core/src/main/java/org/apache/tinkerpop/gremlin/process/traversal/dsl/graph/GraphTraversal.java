@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
@@ -2074,10 +2075,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Step endStep = this.asAdmin().getEndStep();
         if ((endStep instanceof AddVertexStep || endStep instanceof AddEdgeStep || endStep instanceof AddVertexStartStep || endStep instanceof AddEdgeStartStep) &&
                 keyValues.length == 0 && null == cardinality) {
-            ((Mutating) endStep).addPropertyMutations(key, value);
+            ((Mutating) endStep).configure(key, value);
         } else {
             this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value));
-            ((AddPropertyStep) this.asAdmin().getEndStep()).addPropertyMutations(keyValues);
+            ((AddPropertyStep) this.asAdmin().getEndStep()).configure(keyValues);
         }
         return this;
     }
@@ -2496,6 +2497,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaCollectingBarrierStep<>(this.asAdmin(), (Consumer) barrierConsumer, Integer.MAX_VALUE));
     }
 
+    //// WITH-MODULATOR
+
+    /**
+     * Provides a configuration to a step in the form of a key and value pair. The key of the configuration must be
+     * step specific and therefore a configuration could be supplied that is not known to be valid until execution.
+     *
+     * @param key the key of the configuration to apply to a step
+     * @param value the value of the configuration to apply to a step
+     * @return the traversal with a modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#with-step" target="_blank">Reference Documentation - With Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> with(final String key, final Object value) {
+        this.asAdmin().getBytecode().addStep(Symbols.with, key, value);
+        final Object[] configPair = { key, value };
+        ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
+        return this;
+    }
 
     //// BY-MODULATORS
 
@@ -2801,6 +2820,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String program = "program";
 
         public static final String by = "by";
+        public static final String with = "with";
         public static final String times = "times";
         public static final String as = "as";
         public static final String option = "option";

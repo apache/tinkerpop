@@ -1705,10 +1705,14 @@ g = graph.traversal().withComputer()
 g.V().pageRank().by('pageRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
-    by(outE('knows')).
-    by('friendRank').
+    with(PageRank.EDGES, __.outE('knows')).
+    with(PageRank.PROPERTY_NAME, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank')
 ----
+
+Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
+configuration keys from the static `PageRank` inner class on `PageRankVertexProgramStep` and is automatically
+imported to the Gremlin Console.
 
 The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
 
@@ -1717,8 +1721,8 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 g = graph.traversal().withComputer()
 g.V().hasLabel('person').
   pageRank().
-    by(outE('knows')).
-    by('friendRank').
+    with(PageRank.EDGES, __.outE('knows')).
+    with(PageRank.PROPERTY_NAME, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank').explain()
 ----
 
@@ -1812,9 +1816,16 @@ IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, ca
 g = graph.traversal().withComputer()
 g.V().peerPressure().by('cluster').values('cluster')
 g.V().hasLabel('person').
-  peerPressure().by('cluster').
-  group().by('cluster').by('name')
+  peerPressure().
+    with(PeerPressure.PROPERTY_NAME, 'cluster').
+  group().
+    by('cluster').
+    by('name')
 ----
+
+Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
+configuration keys from the static `PeerPressure` inner class on `PeerPressureVertexProgramStep` and is automatically
+imported to the Gremlin Console.
 
 *Additional References*
 
@@ -2969,6 +2980,13 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#where-java.lang.String-org.apache.tinkerpop.gremlin.process.traversal.P-++[`where(String,P)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#where-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`where(Traversal)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
+
+[[with-step]]
+=== With Step
+
+The `with()`-step is not an actual step, but is instead a "step modulator" which modifies the behavior of the step
+prior to it. The `with()`-step provides additional "configuration" information to steps that implement the `Configuring`
+interface. Steps that allow for this type of modulation will explicitly state so in their documentation.
 
 [[a-note-on-predicates]]
 == A Note on Predicates

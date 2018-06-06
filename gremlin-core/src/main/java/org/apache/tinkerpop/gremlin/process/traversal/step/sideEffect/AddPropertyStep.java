@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -37,9 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 import java.util.List;
 import java.util.Set;
@@ -48,7 +45,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Parameterizing, Scoping {
+        implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
@@ -76,7 +73,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     }
 
     @Override
-    public void addPropertyMutations(final Object... keyValues) {
+    public void configure(final Object... keyValues) {
         this.parameters.set(this, keyValues);
     }
 

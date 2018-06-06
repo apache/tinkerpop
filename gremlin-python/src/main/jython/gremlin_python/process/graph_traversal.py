@@ -505,6 +505,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("where", *args)
         return self
 
+    def with_(self, *args):
+        self.bytecode.add_step("with", *args)
+        return self
+
 
 class __(object):
     graph_traversal = GraphTraversal

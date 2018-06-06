@@ -24,9 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -46,8 +48,9 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring {
 
+    protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
     protected Object[] ids;
     protected transient Supplier<Iterator<E>> iteratorSupplier;
@@ -69,6 +72,16 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     public String toString() {
         return StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.parameters.set(null, keyValues);
     }
 
     public Class<E> getReturnClass() {
