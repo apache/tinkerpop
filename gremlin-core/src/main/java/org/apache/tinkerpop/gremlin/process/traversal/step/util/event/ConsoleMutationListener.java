@@ -83,11 +83,6 @@ public class ConsoleMutationListener implements MutationListener {
     }
 
     @Override
-    public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-        // do nothing - deprecated
-    }
-
-    @Override
     public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
         System.out.println("Vertex [" + element.toString() + "] property [" + oldValue + "] change to [" + setValue + "] in graph [" + graph.toString() + "]");
     }

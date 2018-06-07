@@ -57,53 +57,23 @@ import java.util.List;
  */
 public final class EventStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
     private final EventQueue eventQueue;
-    private final Class<?> detachmentFactory;
+    private final Detachment detachment;
 
     private EventStrategy(final Builder builder) {
         this.eventQueue = builder.eventQueue;
         this.eventQueue.setListeners(builder.listeners);
-        this.detachmentFactory = builder.detachmentFactory;
+        this.detachment = builder.detachment;
     }
 
-    public Class<?> getDetachmentFactory() {
-        return this.detachmentFactory;
+    public Detachment getDetachment() {
+        return this.detachment;
     }
 
     /**
      * Applies the appropriate detach operation to elements that will be raised in mutation events.
      */
     public <R> R detach(final R attached) {
-        if (null == detachmentFactory)
-            return attached;
-        else if (detachmentFactory.equals(DetachedFactory.class))
-            return DetachedFactory.detach(attached, true);
-        else if (detachmentFactory.equals(ReferenceFactory.class))
-            return ReferenceFactory.detach(attached);
-        else
-            throw new IllegalStateException("Unknown detachment option using " + detachmentFactory.getSimpleName());
-    }
-
-    /**
-     * For newly created properties that do not yet exist, an empty {@link Property} is required that just contains
-     * a key as a reference.
-     */
-    public <R extends Property> R empty(final Element element, final String key) {
-        // currently the "no detachment" model simply returns a Detached value to maintain consistency with the
-        // original API that already existed (where returning "Detached" was the only option). This could probably
-        // change in the future to use an "empty" property or perhaps the "change" event API could change all together
-        // and have a different return.
-        if (null == detachmentFactory || detachmentFactory.equals(DetachedFactory.class)) {
-            if (element instanceof Vertex)
-                return (R) new DetachedVertexProperty(null, key, null, null);
-            else
-                return (R) new DetachedProperty(key, null);
-        } else if (detachmentFactory.equals(ReferenceFactory.class)) {
-            if (element instanceof Vertex)
-                return (R) new ReferenceVertexProperty(new DetachedVertexProperty(null, key, null, null));
-            else
-                return (R) new ReferenceProperty(new DetachedProperty(key, null));
-        } else
-            throw new IllegalStateException("Unknown empty detachment option using " + detachmentFactory.getSimpleName());
+        return (R) detachment.detach(attached);
     }
 
     @Override
@@ -132,7 +102,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
     public final static class Builder {
         private final List<MutationListener> listeners = new ArrayList<>();
         private EventQueue eventQueue = new DefaultEventQueue();
-        private Class<?> detachmentFactory = DetachedFactory.class;
+        private Detachment detachment = Detachment.DETACHED_WITH_PROPERTIES;
 
         Builder() {}
 
@@ -147,20 +117,70 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         }
 
         /**
-         * Configures the method of detachment for element provided in mutation callback events. If configured with
-         * {@code null} for no detachment with a transactional graph, be aware that accessing the evented elements
-         * after {@code commit()} will likely open new transactions.
-         *
-         * @param factoryClass must be either {@code null} (for no detachment), {@link ReferenceFactory} for elements
-         *                     with no properties or {@link DetachedFactory} for elements with properties.
+         * Configures the method of detachment for element provided in mutation callback events. The default is
+         * {@link Detachment#DETACHED_WITH_PROPERTIES}.
          */
-        public Builder detach(final Class<?> factoryClass) {
-            detachmentFactory = factoryClass;
+        public Builder detach(final Detachment detachment) {
+            this.detachment = detachment;
             return this;
         }
 
         public EventStrategy create() {
             return new EventStrategy(this);
+        }
+    }
+
+    /**
+     * A common interface for detachment.
+     */
+    public interface Detacher {
+        public Object detach(final Object object);
+    }
+
+    /**
+     * Options for detaching elements from the graph during eventing.
+     */
+    public enum Detachment implements Detacher {
+        /**
+         * Does not detach the element from the graph. It should be noted that if this option is used with
+         * transactional graphs new transactions may be opened if these elements are accessed after a {@code commit()}
+         * is called.
+         */
+        NONE {
+            @Override
+            public Object detach(final Object object) {
+                return object;
+            }
+        },
+
+        /**
+         * Uses {@link DetachedFactory} to detach and includes properties of elements that have them.
+         */
+        DETACHED_WITH_PROPERTIES {
+            @Override
+            public Object detach(final Object object) {
+                return DetachedFactory.detach(object, true);
+            }
+        },
+
+        /**
+         * Uses {@link DetachedFactory} to detach and does not include properties of elements that have them.
+         */
+        DETACHED_NO_PROPERTIES {
+            @Override
+            public Object detach(final Object object) {
+                return DetachedFactory.detach(object, false);
+            }
+        },
+
+        /**
+         * Uses {@link ReferenceFactory} to detach which only includes id and label of elements.
+         */
+        REFERENCE {
+            @Override
+            public Object detach(final Object object) {
+                return ReferenceFactory.detach(object);
+            }
         }
     }
 

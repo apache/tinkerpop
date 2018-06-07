@@ -113,6 +113,27 @@ gremlin> g.V().values('name').max()
 ==>vadas
 ----
 
+==== EventStrategy API
+
+There were some minor modifications to how `EventStrategy` is constructed and what can be expected from events raised
+from the addition of new properties.
+
+With respect to the change in terms of `EventStrategy` construction, the `detach()` builder method formerly took a
+`Class` as an argument and that `Class` was meant to be one of the various "detachment factories" or `null`. That
+approach was a bit confusing, so that signature has changed to `detach(EventStrategy.Detachment)` where the argument
+is a more handy enum of detachment options.
+
+As for the changes related to events themselves, it is first worth noting that the previously deprecated
+`vertexPropertyChanged(Vertex, Property, Object, Object...)` on `MutationListener` has been removed for what should
+have originally been the correct signature of `vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)`. In
+prior versions when this method and its related `edgePropertyChanged()` and `vertexPropertyPropertyChanged()` were
+triggered by way of the addition of a new property a "fake" property was included with a `null` value for the
+"oldValue" argument to these methods (as it did not exist prior to this event). That was a bit awkward to reason about
+when dealing with that event. To make this easier, the event now raises with a `VertexProperty.empty()` or
+`Property.empty()` instance, which can be evaluated with `equals()` easily to determine if the property is new or not.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
@@ -122,6 +143,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep.Consumers`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer#makeHasContainers(String, P)`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`
 ** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions#elementAlreadyRemoved(Class, Object)`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object)`
 ** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object, Exception)`
