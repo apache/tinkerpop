@@ -37,6 +37,7 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,8 +65,6 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinTest.class);
 
-    protected static final Map<Pair<Class<?>, String>, Boolean> featureCache = new HashMap<>();
-
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Configuration config;
@@ -84,20 +83,10 @@ public abstract class AbstractGremlinTest {
 
         graphProvider = GraphManager.getGraphProvider();
 
+        // pre-check if available from graph provider to avoid graph creation
         final Optional<Graph.Features> staticFeatures = graphProvider.getStaticFeatures();
         if (staticFeatures.isPresent()) {
-            for (FeatureRequirement fr : featureRequirementSet) {
-                try {
-                    assumeThat(String.format("StaticFeatures of the graph do not support all of the features required by this test so it will be ignored: %s.%s=%s",
-                            fr.featureClass().getSimpleName(), fr.feature(), fr.supported()),
-                            staticFeatures.get().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
-                } catch (NoSuchMethodException nsme) {
-                    throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
-                } catch (UnsupportedOperationException uoe) {
-                    // no worries - it just means that we can't use the cache to support this check and will have to
-                    // incur the cost of instantiating a graph instance directly
-                }
-            }
+            assumeRequirementsAreMetForTest(featureRequirementSet, staticFeatures.get(), true);
         }
 
         graphProvider.getTestListener().ifPresent(l -> l.onTestStart(this.getClass(), name.getMethodName()));
@@ -110,18 +99,10 @@ public abstract class AbstractGremlinTest {
         graph = graphProvider.openTestGraph(config);
         g = graphProvider.traversal(graph);
 
-        for (FeatureRequirement fr : featureRequirementSet) {
-            try {
-                // even if we checked static features above it's of little cost to recheck again with the real graph
-                // once it is instantiated. the real cost savings is preventing graph creation in the first place so
-                // let's double check that all is legit.
-                assumeThat(String.format("%s does not support all of the features required by this test so it will be ignored: %s.%s=%s",
-                                graph.getClass().getSimpleName(), fr.featureClass().getSimpleName(), fr.feature(), fr.supported()),
-                        graph.features().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
-            } catch (NoSuchMethodException nsme) {
-                throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
-            }
-        }
+        // even if we checked static features earlier it's of little cost to recheck again with the real graph
+        // once it is instantiated. the real cost savings is preventing graph creation in the first place so
+        // let's double check that all is legit.
+        assumeRequirementsAreMetForTest(featureRequirementSet, graph.features(), false);
 
         beforeLoadGraphWith(graph);
 
@@ -129,6 +110,25 @@ public abstract class AbstractGremlinTest {
         graphProvider.loadGraphData(graph, loadGraphWith, this.getClass(), name.getMethodName());
 
         afterLoadGraphWith(graph);
+    }
+
+    private static void assumeRequirementsAreMetForTest(final Set<FeatureRequirement> featureRequirementSet,
+                                                        final Graph.Features features, final boolean staticCheck)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        for (FeatureRequirement fr : featureRequirementSet) {
+            try {
+                assumeThat(String.format("Features of the graph do not support all of the features required by this test so it will be ignored: %s.%s=%s",
+                        fr.featureClass().getSimpleName(), fr.feature(), fr.supported()),
+                        features.supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+            } catch (NoSuchMethodException nsme) {
+                throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
+            } catch (UnsupportedOperationException uoe) {
+                // no worries if this is a check of static features - it just means that we can't use the cache to
+                // support this check and will have to incur the cost of instantiating a graph instance directly. but,
+                // if this is not a static check then something else is amiss and we should throw.
+                if (staticCheck) throw uoe;
+            }
+        }
     }
 
     protected void beforeLoadGraphWith(final Graph g) throws Exception {
