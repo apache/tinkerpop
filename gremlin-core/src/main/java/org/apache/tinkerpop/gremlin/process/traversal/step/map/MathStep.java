@@ -86,6 +86,19 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     }
 
     @Override
+    public ElementRequirement getMaxRequirement() {
+        // this is a trick i saw in DedupGlobalStep that allows ComputerVerificationStrategy to be happy for OLAP.
+        // it's a bit more of a hack here. in DedupGlobalStep, the dedup operation really only just needs the ID, but
+        // here the true max requirement is PROPERTIES, but because of how map() works in this implementation in
+        // relation to CURRENT, if we don't access the path labels, then we really only just operate on the stargraph
+        // and are thus OLAP safe. In tracing around the code a bit, I don't see a problem with taking this approach,
+        // but I suppose a better way might be make it more clear when this step is dealing with an actual path and
+        // when it is not and/or adjust ComputerVerificationStrategy to cope with the situation where math() is only
+        // dealing with the local stargraph.
+        return (variables.contains(CURRENT) && variables.size() == 1) ? ElementRequirement.ID : PathProcessor.super.getMaxRequirement();
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.equation, this.traversalRing);
     }
