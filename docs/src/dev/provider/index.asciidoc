@@ -662,6 +662,10 @@ should validate that the ignored tests are appropriately bypassed and that there
 definitions.  Moreover, implementers should consider filling gaps in their own test suites, especially when
 IO-related tests are being ignored.
 
+TIP: If it is expensive to construct a new `Graph` instance, consider implementing `GraphProvider.getStaticFeatures()`
+which can help by caching a static feature set for instances produced by that `GraphProvider` and allow the test suite
+to avoid that construction cost if the test is ignored.
+
 The only test-class that requires any code investment is the `GraphProvider` implementation class. This class is a
 used by the test suite to construct `Graph` configurations and instances and provides information about the
 implementation itself.  In most cases, it is best to simply extend `AbstractGraphProvider` as it provides many
