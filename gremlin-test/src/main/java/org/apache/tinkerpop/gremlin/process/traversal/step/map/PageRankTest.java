@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep.PageRank;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -64,7 +64,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
 
-    public abstract Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXPROPERTY_NAME_pageRankXX_withXEDGES_inEXX_withXTIMES_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
+    public abstract Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankXX_withXedges_inEXX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
 
     public abstract Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
 
@@ -245,7 +245,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXPROPERTY_NAME_pageRankXX_withXEDGES_inEXX_withXTIMES_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX() {
         // [{2.0=[v[4], v[4], v[4], v[4]], 1.0=[v[6], v[6], v[6], v[1], v[1], v[1]], software=[v[5], v[3], v[3], v[3]]}]
-        final Traversal<Vertex, Map<Object, List<Vertex>>> traversal = get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXPROPERTY_NAME_pageRankXX_withXEDGES_inEXX_withXTIMES_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
+        final Traversal<Vertex, Map<Object, List<Vertex>>> traversal = get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankXX_withXedges_inEXX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
         printTraversalForm(traversal);
         final Map<Object, List<Vertex>> map = traversal.next();
         assertFalse(traversal.hasNext());
@@ -322,8 +322,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXPROPERTY_NAME_pageRankXX_withXEDGES_inEXX_withXTIMES_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX() {
-            return g.V().out("created").group("m").by(T.label).pageRank(1.0).with(PageRank.PROPERTY_NAME, "pageRank").with(PageRank.EDGES, __.inE()).with(PageRank.TIMES, 1).in("created").group("m").by("pageRank").cap("m");
+        public Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankXX_withXedges_inEXX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX() {
+            return g.V().out("created").group("m").by(T.label).pageRank(1.0).with(PageRank.propertyName, "pageRank").with(PageRank.edges, __.inE()).with(PageRank.times, 1).in("created").group("m").by("pageRank").cap("m");
         }
     }
 }

@@ -40,8 +40,8 @@ which now uses `with()` to replace the old `by()` options:
 ----
 g.V().hasLabel('person').
   pageRank().
-    with(PageRank.EDGES, __.outE('knows')).
-    with(PageRank.PROPERTY_NAME, 'friendRank').
+    with(PageRank.edges, __.outE('knows')).
+    with(PageRank.propertyName, 'friendRank').
   order().
     by('friendRank',desc).
   valueMap('name','friendRank')
@@ -53,7 +53,7 @@ A similar change was made for `peerPressure()` step:
 ----
 g.V().hasLabel('person').
   peerPressure().
-    with(PeerPressure.PROPERTY_NAME, 'cluster').
+    with(PeerPressure.propertyName, 'cluster').
   group().
     by('cluster').
     by('name')

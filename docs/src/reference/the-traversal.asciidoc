@@ -1705,14 +1705,13 @@ g = graph.traversal().withComputer()
 g.V().pageRank().by('pageRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
-    with(PageRank.EDGES, __.outE('knows')).
-    with(PageRank.PROPERTY_NAME, 'friendRank').
+    with(PageRank.edges, __.outE('knows')).
+    with(PageRank.propertyName, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank')
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
-configuration keys from the static `PageRank` inner class on `PageRankVertexProgramStep` and is automatically
-imported to the Gremlin Console.
+configuration keys from the `PageRank` and is automatically imported to the Gremlin Console.
 
 The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
 
@@ -1721,8 +1720,8 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 g = graph.traversal().withComputer()
 g.V().hasLabel('person').
   pageRank().
-    with(PageRank.EDGES, __.outE('knows')).
-    with(PageRank.PROPERTY_NAME, 'friendRank').
+    with(PageRank.edges, __.outE('knows')).
+    with(PageRank.propertyName, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank').explain()
 ----
 
@@ -1817,15 +1816,14 @@ g = graph.traversal().withComputer()
 g.V().peerPressure().by('cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
-    with(PeerPressure.PROPERTY_NAME, 'cluster').
+    with(PeerPressure.propertyName, 'cluster').
   group().
     by('cluster').
     by('name')
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
-configuration keys from the static `PeerPressure` inner class on `PeerPressureVertexProgramStep` and is automatically
-imported to the Gremlin Console.
+configuration keys from the `PeerPressure` class and is automatically imported to the Gremlin Console.
 
 *Additional References*
 

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.Pee
 import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
@@ -57,23 +56,23 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
 
     public PeerPressureVertexProgramStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.configure(PeerPressure.EDGES, __.<Vertex>outE().asAdmin());
+        this.configure(PeerPressure.edges, __.<Vertex>outE().asAdmin());
     }
 
     @Override
     public void configure(final Object... keyValues) {
-        if (keyValues[0].equals(PeerPressureVertexProgramStep.PeerPressure.EDGES)) {
+        if (keyValues[0].equals(PeerPressure.edges)) {
             if (!(keyValues[1] instanceof Traversal))
-                throw new IllegalArgumentException("PeerPressure.EDGES requires a Traversal as its argument");
+                throw new IllegalArgumentException("PeerPressure.edges requires a Traversal as its argument");
             this.edgeTraversal = new PureTraversal<>(((Traversal<Vertex,Edge>) keyValues[1]).asAdmin());
             this.integrateChild(this.edgeTraversal.get());
-        } else if (keyValues[0].equals(PeerPressureVertexProgramStep.PeerPressure.PROPERTY_NAME)) {
+        } else if (keyValues[0].equals(PeerPressure.propertyName)) {
             if (!(keyValues[1] instanceof String))
-                throw new IllegalArgumentException("PeerPressure.PROPERTY_NAME requires a String as its argument");
+                throw new IllegalArgumentException("PeerPressure.propertyName requires a String as its argument");
             this.clusterProperty = (String) keyValues[1];
-        } else if (keyValues[0].equals(PeerPressureVertexProgramStep.PeerPressure.TIMES)) {
+        } else if (keyValues[0].equals(PeerPressure.times)) {
             if (!(keyValues[1] instanceof Integer))
-                throw new IllegalArgumentException("PeerPressure.TIMES requires an Integer as its argument");
+                throw new IllegalArgumentException("PeerPressure.times requires an Integer as its argument");
             this.times = (int) keyValues[1];
         }else {
             this.parameters.set(this, keyValues);
@@ -96,7 +95,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> edgeTraversal) {
-        configure(PeerPressure.EDGES, edgeTraversal);
+        configure(PeerPressure.edges, edgeTraversal);
     }
 
     /**
@@ -105,7 +104,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateBy(final String clusterProperty) {
-        configure(PeerPressure.PROPERTY_NAME, clusterProperty);
+        configure(PeerPressure.propertyName, clusterProperty);
     }
 
     /**
@@ -114,7 +113,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateTimes(int times) {
-        configure(PeerPressure.TIMES, times);
+        configure(PeerPressure.times, times);
     }
 
     @Override
@@ -158,23 +157,4 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
         this.integrateChild(this.edgeTraversal.get());
     }
 
-    /**
-     * Configuration options to be passed to the {@link GraphTraversal#with(String, Object)} step.
-     */
-    public static class PeerPressure {
-        /**
-         * Configures number of iterations that the algorithm should run.
-         */
-        public static final String TIMES = Graph.Hidden.hide("tinkerpop.peerPressure.times");
-
-        /**
-         * Configures the edge to traverse when determining clusters.
-         */
-        public static final String EDGES = Graph.Hidden.hide("tinkerpop.peerPressure.edges");
-
-        /**
-         * Configures the name of the property within which to store the cluster value.
-         */
-        public static final String PROPERTY_NAME = Graph.Hidden.hide("tinkerpop.peerPressure.propertyName");
-    }
 }
