@@ -113,6 +113,22 @@ gremlin> g.V().values('name').max()
 ==>vadas
 ----
 
+==== Nested loop support
+
+Traversals now support nesting of `repeat()` loops.
+
+These can now be used to repeat another traversal while in a looped context, either inside the body of a `repeat()` or in its step modifiers (`until()` or `emit()`).
+
+[source,groovy]
+----
+gremlin> g.V().repeat(__.in('traverses').repeat(__.in('develops')).emit()).emit().values('name')
+==>stephen
+==>matthias
+==>marko
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-967[TINKERPOP-967]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
