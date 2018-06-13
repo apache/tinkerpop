@@ -63,7 +63,7 @@ Note that the `by()` modulators still work, but should be considered deprecated 
 release where breaking changes are allowed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
-link:http://tinkerpop.apache.org/docs/current/reference/#with-step[Reference Documentation]
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
 
 ==== Removal of Giraph Support
 
@@ -258,8 +258,7 @@ This method can be implemented to return a cacheable set of features for a `Grap
 Assuming this method is faster than the cost of creating a new `Graph` instance, the test suite should execute
 significantly faster depending on how many tests end up being ignored.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1518[TINKERPOP-1518],
-link:
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1518[TINKERPOP-1518]
 
 ===== Configuring Interface
 
