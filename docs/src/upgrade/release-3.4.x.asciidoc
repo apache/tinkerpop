@@ -129,8 +129,8 @@ have originally been the correct signature of `vertexPropertyChanged(Vertex, Ver
 prior versions when this method and its related `edgePropertyChanged()` and `vertexPropertyPropertyChanged()` were
 triggered by way of the addition of a new property a "fake" property was included with a `null` value for the
 "oldValue" argument to these methods (as it did not exist prior to this event). That was a bit awkward to reason about
-when dealing with that event. To make this easier, the event now raises with a `VertexProperty.empty()` or
-`Property.empty()` instance, which can be evaluated with `equals()` easily to determine if the property is new or not.
+when dealing with that event. To make this easier, the event now raises with a `KeyedVertexProperty` or
+`KeyedProperty` instance, which only contains a property key and no value in them.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
 

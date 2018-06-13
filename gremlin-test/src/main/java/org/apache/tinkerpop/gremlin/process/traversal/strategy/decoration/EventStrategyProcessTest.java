@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
@@ -633,7 +635,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -750,7 +753,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -925,7 +929,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals(VertexProperty.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedVertexProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }
@@ -1102,7 +1107,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(ReferenceVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -1219,7 +1225,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -1396,7 +1403,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(ReferenceVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals(VertexProperty.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedVertexProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }
@@ -1572,7 +1580,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(vp, element);
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -1689,7 +1698,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(Property.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -1866,7 +1876,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(v, element);
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals(VertexProperty.empty(), oldValue);
+                assertThat(oldValue, instanceOf(KeyedVertexProperty.class));
+                assertEquals("new", oldValue.key());
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }

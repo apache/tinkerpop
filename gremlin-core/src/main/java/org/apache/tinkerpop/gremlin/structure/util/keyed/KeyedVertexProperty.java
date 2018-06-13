@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.util.empty;
+package org.apache.tinkerpop.gremlin.structure.util.keyed;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -29,14 +29,17 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * A utility implementation of a {@link Property} that only has a key but no value and no meta-properties.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class EmptyVertexProperty<V> implements VertexProperty<V> {
+public final class KeyedVertexProperty<V> implements VertexProperty<V> {
 
-    private static final EmptyVertexProperty INSTANCE = new EmptyVertexProperty();
+    private final String key;
 
-    public static <U> VertexProperty<U> instance() {
-        return INSTANCE;
+    public KeyedVertexProperty(final String key) {
+        if (null == key || key.isEmpty()) throw new IllegalArgumentException("key cannot be null");
+        this.key = key;
     }
 
     @Override
@@ -66,7 +69,7 @@ public final class EmptyVertexProperty<V> implements VertexProperty<V> {
 
     @Override
     public String key() {
-        throw Property.Exceptions.propertyDoesNotExist();
+        return this.key;
     }
 
     @Override
@@ -92,5 +95,20 @@ public final class EmptyVertexProperty<V> implements VertexProperty<V> {
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return Collections.emptyIterator();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final KeyedVertexProperty<?> that = (KeyedVertexProperty<?>) o;
+
+        return key.equals(that.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
     }
 }

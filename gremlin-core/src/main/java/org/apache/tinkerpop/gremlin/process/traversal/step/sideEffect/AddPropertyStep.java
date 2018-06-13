@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 
 import java.util.List;
 import java.util.Set;
@@ -97,17 +99,17 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
             if (element instanceof Vertex)
                 evt = new Event.VertexPropertyChangedEvent(eventStrategy.detach((Vertex) element),
                         newProperty ?
-                                VertexProperty.empty() :
+                                new KeyedVertexProperty(key) :
                                 eventStrategy.detach((VertexProperty) currentProperty), value, vertexPropertyKeyValues);
             else if (element instanceof Edge)
                 evt = new Event.EdgePropertyChangedEvent(eventStrategy.detach((Edge) element),
                         newProperty ?
-                                Property.empty() :
+                                new KeyedProperty(key) :
                                 eventStrategy.detach(currentProperty), value);
             else if (element instanceof VertexProperty)
                 evt = new Event.VertexPropertyPropertyChangedEvent(eventStrategy.detach((VertexProperty) element),
                         newProperty ?
-                                Property.empty() :
+                                new KeyedProperty(key) :
                                 eventStrategy.detach(currentProperty), value);
             else
                 throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), element));

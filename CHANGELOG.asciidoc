@@ -38,7 +38,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
 * Removed previously deprecated Credentials DSL infrastructure.
 * Moved `TraversalEngine` to `gremlin-test` as it has long been only used in testing infrastructure.
-* Events from `EventStrategy` raised from "new" mutations will now return a true "empty" property from `VertexProperty.empty()` or `Property.empty()` as is appropriate.
+* Events from `EventStrategy` raised from "new" mutations will now return a `KeyedVertexProperty` or `KeyedProperty` as is appropriate.
 * `MutationListener#vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)` no longer has a default implementation.
 * Removed previously deprecated `MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`.
 * Removed previously deprecated `OpSelectorHandler` constructor.
