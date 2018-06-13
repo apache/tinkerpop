@@ -29,20 +29,23 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -61,6 +64,7 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinTest.class);
+
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Configuration config;
@@ -75,8 +79,16 @@ public abstract class AbstractGremlinTest {
         final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
         final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
         final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
+        final Set<FeatureRequirement> featureRequirementSet = getFeatureRequirementsForTest(testMethod, loadGraphWiths);
 
         graphProvider = GraphManager.getGraphProvider();
+
+        // pre-check if available from graph provider to avoid graph creation
+        final Optional<Graph.Features> staticFeatures = graphProvider.getStaticFeatures();
+        if (staticFeatures.isPresent()) {
+            assumeRequirementsAreMetForTest(featureRequirementSet, staticFeatures.get(), true);
+        }
+
         graphProvider.getTestListener().ifPresent(l -> l.onTestStart(this.getClass(), name.getMethodName()));
         config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName(), loadGraphWithData);
 
@@ -87,31 +99,10 @@ public abstract class AbstractGremlinTest {
         graph = graphProvider.openTestGraph(config);
         g = graphProvider.traversal(graph);
 
-        // get feature requirements on the test method and add them to the list of ones to check
-        final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
-        final List<FeatureRequirement> frs = new ArrayList<>(Arrays.asList(featureRequirement));
-
-        // if the graph is loading data then it will come with it's own requirements
-        if (loadGraphWiths.length > 0) frs.addAll(loadGraphWiths[0].value().featuresRequired());
-
-        // if the graph has a set of feature requirements bundled together then add those
-        final FeatureRequirementSet[] featureRequirementSets = testMethod.getAnnotationsByType(FeatureRequirementSet.class);
-        if (featureRequirementSets.length > 0)
-            frs.addAll(Arrays.stream(featureRequirementSets)
-                    .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
-
-        // process the unique set of feature requirements
-        final Set<FeatureRequirement> featureRequirementSet = new HashSet<>(frs);
-        for (FeatureRequirement fr : featureRequirementSet) {
-            try {
-                //System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
-                assumeThat(String.format("%s does not support all of the features required by this test so it will be ignored: %s.%s=%s",
-                                graph.getClass().getSimpleName(), fr.featureClass().getSimpleName(), fr.feature(), fr.supported()),
-                        graph.features().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
-            } catch (NoSuchMethodException nsme) {
-                throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
-            }
-        }
+        // even if we checked static features earlier it's of little cost to recheck again with the real graph
+        // once it is instantiated. the real cost savings is preventing graph creation in the first place so
+        // let's double check that all is legit.
+        assumeRequirementsAreMetForTest(featureRequirementSet, graph.features(), false);
 
         beforeLoadGraphWith(graph);
 
@@ -119,6 +110,25 @@ public abstract class AbstractGremlinTest {
         graphProvider.loadGraphData(graph, loadGraphWith, this.getClass(), name.getMethodName());
 
         afterLoadGraphWith(graph);
+    }
+
+    private static void assumeRequirementsAreMetForTest(final Set<FeatureRequirement> featureRequirementSet,
+                                                        final Graph.Features features, final boolean staticCheck)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        for (FeatureRequirement fr : featureRequirementSet) {
+            try {
+                assumeThat(String.format("Features of the graph do not support all of the features required by this test so it will be ignored: %s.%s=%s",
+                        fr.featureClass().getSimpleName(), fr.feature(), fr.supported()),
+                        features.supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+            } catch (NoSuchMethodException nsme) {
+                throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
+            } catch (UnsupportedOperationException uoe) {
+                // no worries if this is a check of static features - it just means that we can't use the cache to
+                // support this check and will have to incur the cost of instantiating a graph instance directly. but,
+                // if this is not a static check then something else is amiss and we should throw.
+                if (staticCheck) throw uoe;
+            }
+        }
     }
 
     protected void beforeLoadGraphWith(final Graph g) throws Exception {
@@ -261,6 +271,24 @@ public abstract class AbstractGremlinTest {
 
     public static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
         AbstractGremlinTest.verifyUniqueStepIds(traversal, 0, new HashSet<>());
+    }
+
+    private static Set<FeatureRequirement> getFeatureRequirementsForTest(final Method testMethod, final LoadGraphWith[] loadGraphWiths) {
+        // get feature requirements on the test method and add them to the list of ones to check
+        final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
+        final List<FeatureRequirement> frs = new ArrayList<>(Arrays.asList(featureRequirement));
+
+        // if the graph is loading data then it will come with it's own requirements
+        if (loadGraphWiths.length > 0) frs.addAll(loadGraphWiths[0].value().featuresRequired());
+
+        // if the graph has a set of feature requirements bundled together then add those
+        final FeatureRequirementSet[] featureRequirementSets = testMethod.getAnnotationsByType(FeatureRequirementSet.class);
+        if (featureRequirementSets.length > 0)
+            frs.addAll(Arrays.stream(featureRequirementSets)
+                    .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
+
+        // process the unique set of feature requirements
+        return new HashSet<>(frs);
     }
 
     private static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal, final int depth, final Set<String> ids) {

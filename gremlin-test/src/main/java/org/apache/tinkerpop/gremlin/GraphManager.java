@@ -183,6 +183,11 @@ public class GraphManager {
             if (innerGraphProvider instanceof AutoCloseable)
                 ((AutoCloseable) innerGraphProvider).close();
         }
+
+        @Override
+        public Optional<Graph.Features> getStaticFeatures() {
+            return innerGraphProvider.getStaticFeatures();
+        }
     }
 
 }

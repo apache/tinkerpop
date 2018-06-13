@@ -241,6 +241,26 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
 
 ==== Graph Database Providers
 
+===== Caching Graph Features
+
+For graph implementations that have expensive creation times, it can be time consuming to run the TinkerPop test suite
+as each test run requires a `Graph` instance even if the test is ultimately ignored becaue it doesn't pass the feature
+checks. To possibly help alleviate this problem, the `GraphProvider` interface now includes this method:
+
+[source,java]
+----
+public default Optional<Graph.Features> getStaticFeatures() {
+    return Optional.empty();
+}
+----
+
+This method can be implemented to return a cacheable set of features for a `Graph` generated from that `GraphProvider`.
+Assuming this method is faster than the cost of creating a new `Graph` instance, the test suite should execute
+significantly faster depending on how many tests end up being ignored.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1518[TINKERPOP-1518],
+link:
+
 ===== Configuring Interface
 
 There were some changes to interfaces that were related to `Step`. A new `Configuring` interface was added that was
