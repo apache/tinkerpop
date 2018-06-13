@@ -44,7 +44,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public void incrLoops(final String stepLabel) {
-        // If we encounter a new stack label then grow the stack otherwise increment the loop count
+        // If we encounter a new step label then grow the stack otherwise increment the loop count
         if (this.nestedLoops.size() == 0 || !this.nestedLoops.peek().hasLabel(stepLabel)) {
             this.nestedLoops.add(new LabelledCounter(stepLabel, (short)1));
         }
@@ -85,20 +85,20 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     /////////////////
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof B_NL_O_S_SE_SL_Traverser)) return false;
         if (!super.equals(o)) return false;
 
         B_NL_O_S_SE_SL_Traverser<?> that = (B_NL_O_S_SE_SL_Traverser<?>) o;
 
-        return nestedLoops.equals(that.nestedLoops);
+        return this.nestedLoops.equals(that.nestedLoops);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + nestedLoops.hashCode();
+        result = 31 * result + this.nestedLoops.hashCode();
         return result;
     }
 }

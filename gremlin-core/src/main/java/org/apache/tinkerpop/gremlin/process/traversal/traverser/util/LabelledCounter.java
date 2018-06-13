@@ -28,11 +28,11 @@ import java.io.Serializable;
  */
 public class LabelledCounter implements Serializable {
 
-    private String label;
+    private final String label;
 
-    private MutableShort count;
+    private final MutableShort count;
 
-    public LabelledCounter(String label, short initialCount) {
+    public LabelledCounter(final String label, final short initialCount) {
         if (label == null) {
             throw new NullPointerException("Label is null");
         }
@@ -40,7 +40,7 @@ public class LabelledCounter implements Serializable {
         this.count = new MutableShort(initialCount);
     }
 
-    public boolean hasLabel(String label){
+    public boolean hasLabel(final String label){
         return this.label.equals(label);
     }
 
@@ -53,20 +53,20 @@ public class LabelledCounter implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof LabelledCounter)) return false;
 
         LabelledCounter that = (LabelledCounter) o;
 
-        if (!label.equals(that.label)) return false;
-        return count.equals(that.count);
+        if (!this.label.equals(that.label)) return false;
+        return this.count.equals(that.count);
     }
 
     @Override
     public int hashCode() {
-        int result = label.hashCode();
-        result = 31 * result + count.hashCode();
+        int result = this.label.hashCode();
+        result = 31 * result + this.count.hashCode();
         return result;
     }
 }
