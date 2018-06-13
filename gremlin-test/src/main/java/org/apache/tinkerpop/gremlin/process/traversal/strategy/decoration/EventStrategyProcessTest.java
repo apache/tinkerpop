@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -634,8 +633,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(DetachedVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -752,8 +750,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
@@ -928,44 +925,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(DetachedVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
-                assertEquals("dah", setValue);
-                triggered.set(true);
-            }
-        };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener);
-
-        if (graph.features().graph().supportsTransactions())
-            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
-
-        final EventStrategy eventStrategy = builder.create();
-        final GraphTraversalSource gts = create(eventStrategy);
-
-        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
-        tryCommit(graph);
-
-        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
-        assertThat(triggered.get(), is(true));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldDetachVertexPropertyWhenNewDeprecated() {
-        final AtomicBoolean triggered = new AtomicBoolean(false);
-        final Vertex v = graph.addVertex();
-        final String label = v.label();
-        final Object id = v.id();
-        v.property("old","blah");
-
-        final MutationListener listener = new AbstractMutationListener() {
-            @Override
-            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-                assertThat(element, instanceOf(DetachedVertex.class));
-                assertEquals(label, element.label());
-                assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
+                assertEquals(VertexProperty.empty(), oldValue);
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }
@@ -1069,7 +1029,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1109,7 +1069,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1142,13 +1102,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(ReferenceVertexProperty.class));
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1187,7 +1146,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1227,7 +1186,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1260,13 +1219,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1302,7 +1260,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1335,7 +1293,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1369,7 +1327,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1408,7 +1366,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1425,7 +1383,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldRefereceVertexPropertyWhenNew() {
+    public void shouldReferenceVertexPropertyWhenNew() {
         final AtomicBoolean triggered = new AtomicBoolean(false);
         final Vertex v = graph.addVertex();
         final String label = v.label();
@@ -1438,49 +1396,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertThat(element, instanceOf(ReferenceVertex.class));
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
+                assertEquals(VertexProperty.empty(), oldValue);
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
-
-        if (graph.features().graph().supportsTransactions())
-            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
-
-        final EventStrategy eventStrategy = builder.create();
-        final GraphTraversalSource gts = create(eventStrategy);
-
-        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
-        tryCommit(graph);
-
-        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
-        assertThat(triggered.get(), is(true));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldReferenceVertexPropertyWhenNewDeprecated() {
-        final AtomicBoolean triggered = new AtomicBoolean(false);
-        final Vertex v = graph.addVertex();
-        final String label = v.label();
-        final Object id = v.id();
-        v.property("old","blah");
-
-        final MutationListener listener = new AbstractMutationListener() {
-            @Override
-            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-                assertThat(element, instanceOf(ReferenceVertex.class));
-                assertEquals(label, element.label());
-                assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
-                assertEquals("dah", setValue);
-                triggered.set(true);
-            }
-        };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1512,7 +1433,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1541,7 +1462,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1578,7 +1499,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1618,7 +1539,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1651,13 +1572,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(vp, element);
                 assertEquals(label, element.label());
                 assertEquals(value, element.value());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1696,7 +1616,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1736,7 +1656,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1769,13 +1689,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(label, element.label());
                 assertEquals(inId, element.inVertex().id());
                 assertEquals(outId, element.outVertex().id());
-                assertEquals(null, oldValue.value());
-                assertEquals("new", oldValue.key());
+                assertEquals(Property.empty(), oldValue);
                 assertEquals("yay!", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1811,7 +1730,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1845,7 +1764,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1880,7 +1799,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1917,7 +1836,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -1947,49 +1866,12 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 assertEquals(v, element);
                 assertEquals(label, element.label());
                 assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
+                assertEquals(VertexProperty.empty(), oldValue);
                 assertEquals("dah", setValue);
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
-
-        if (graph.features().graph().supportsTransactions())
-            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
-
-        final EventStrategy eventStrategy = builder.create();
-        final GraphTraversalSource gts = create(eventStrategy);
-
-        gts.V(v).property(VertexProperty.Cardinality.single, "new", "dah").iterate();
-        tryCommit(graph);
-
-        assertEquals(2, IteratorUtils.count(g.V(v).properties()));
-        assertThat(triggered.get(), is(true));
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldUseActualVertexPropertyWhenNewDeprecated() {
-        final AtomicBoolean triggered = new AtomicBoolean(false);
-        final Vertex v = graph.addVertex();
-        final String label = v.label();
-        final Object id = v.id();
-        v.property("old","blah");
-
-        final MutationListener listener = new AbstractMutationListener() {
-            @Override
-            public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-                assertEquals(v, element);
-                assertEquals(label, element.label());
-                assertEquals(id, element.id());
-                assertEquals("new", oldValue.key());
-                assertEquals(null, oldValue.value());
-                assertEquals("dah", setValue);
-                triggered.set(true);
-            }
-        };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -2021,7 +1903,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -2051,7 +1933,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 triggered.set(true);
             }
         };
-        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(ReferenceFactory.class);
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener).detach(EventStrategy.Detachment.REFERENCE);
 
         if (graph.features().graph().supportsTransactions())
             builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
@@ -2083,7 +1965,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+        public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
 
         }
 
@@ -2208,11 +2090,6 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
             vertexPropertyPropertyChangedEvent.incrementAndGet();
             order.add("vp-property-changed-" + element.id());
-        }
-
-        @Override
-        public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
-            // do nothing - deprecated
         }
 
         @Override
