@@ -105,8 +105,6 @@ See the <<release-environment,Release Environment>> section for more information
 The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=2.1.101) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
-In order to pack the Gremlin.Net Template project, it is also necessary to install link:http://www.mono-project.com/[Mono].
-The template will still be built and tested when Mono is not present but packing will be skipped.
 
 `gremlin-dotnet` can be built and tested from the command line with:
 
@@ -117,6 +115,14 @@ which enables the "gremlin-dotnet" Maven profile or in a more automated fashion 
 and `test` directories of the `gremlin-dotnet` module  which will signify to Maven that the environment is .NET-ready.
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
 `gremlin-dotnet` in full.
+
+In order to pack the Gremlin.Net.Template project, it is also necessary to install link:http://www.mono-project.com/[Mono].
+The template can still be built and tested without Mono but packing will be skipped.
+To pack the template (which will also download the link:https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference[NuGet CLI tool])
+the `nuget` property has to be set:
+
+[source,text]
+mvn clean install -Dnuget
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
