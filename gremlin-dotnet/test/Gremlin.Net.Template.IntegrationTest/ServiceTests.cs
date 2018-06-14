@@ -33,13 +33,14 @@ namespace Gremlin.Net.Template.IntegrationTest
     {
         private const string TestHost = "localhost";
         private const int TestPort = 45940;
+        private const string TestTraversalSource = "gmodern";
 
         [Fact]
         public void ShouldReturnExpectedCreators()
         {
             using (var client = CreateClient())
             {
-                var g = new Graph().Traversal().WithRemote(new DriverRemoteConnection(client));
+                var g = new Graph().Traversal().WithRemote(new DriverRemoteConnection(client, TestTraversalSource));
                 var service = new Service(g);
             
                 var creators = service.FindCreatorsOfSoftware("lop");
