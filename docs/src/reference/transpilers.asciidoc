@@ -131,7 +131,7 @@ The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) do
 * SPARQL queries with variables in the predicate position are not currently covered, with an exception of the following
 case:
 
-[source,text]
+[source,groovy]
 ----
 g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
 ----
@@ -141,7 +141,7 @@ SPARQL query has the same number of patterns on both the side of the union opera
 SPARQL query cannot be mapped using Gremlinator, since a union is executed between different number of graph patterns
 (two patterns `union` 1 pattern).
 
-[source,text]
+[source,groovy]
 ----
 g.sparql("""SELECT * WHERE {
 	{?person e:created ?software .
@@ -163,7 +163,7 @@ g.sparql("""SELECT ?age WHERE {
 
 Whereas, the following SPARQL query will be invalid:
 
-[source,text]
+[source,groovy]
 ----
 g.sparql("""SELECT ?person WHERE {
       ?person v:label "person" .
