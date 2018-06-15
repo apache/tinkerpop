@@ -131,7 +131,7 @@ The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) do
 * SPARQL queries with variables in the predicate position are not currently covered, with an exception of the following
 case:
 
-[source,groovy]
+[source,text]
 ----
 g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
 ----
@@ -141,24 +141,72 @@ SPARQL query has the same number of patterns on both the side of the union opera
 SPARQL query cannot be mapped using Gremlinator, since a union is executed between different number of graph patterns
 (two patterns `union` 1 pattern).
 
-[source,groovy]
+[source,text]
 ----
-g.sparql("""SELECT * 
-	WHERE {
-	{?person e:created ?software . 
-	?person v:name "daniel" .}
+g.sparql("""SELECT * WHERE {
+	{?person e:created ?software .
+	?person v:name "josh" .}
 	UNION
 	{?software v:lang "java" .} }""")
 ----
 
-* order by
-....
-Adding more here...
-....
+* A non-Group key variable cannot be projected in a SPARQL query. This is a SPARQL langauge limitation rather than that of Gremlin/TinkerPop. Apache Jena throws the exception " Non-group key variable in SELECT" if this occurs.
+For instance, in a SPARQL query with GROUP-BY clause, only the variable on which the grouping is declared, can be projected. The following query is valid:
 
-* group by
+[source,groovy]
+----
+g.sparql("""SELECT ?age WHERE {
+    ?person v:label "person" .
+    ?person v:age ?age .
+    ?person v:name ?name .} GROUP BY (?age)""")
+----
+
+Whereas, the following SPARQL query will be invalid:
+
+[source,text]
+----
+g.sparql("""SELECT ?person WHERE {
+      ?person v:label "person" .
+      ?person v:age ?age .
+      ?person v:name ?name .} GROUP BY (?age)""")
+----
+
+
+* In a SPARQL query with an ORDER-BY clause, the ordering occurs wrt to the first projected variable in the query. You may choose any number of variable to be projected, however, the first variable in the selection will be the ordering decider.
+For instance, in the query:
+
+
+[source,groovy]
+----
+g.sparql("""SELECT ?name ?age WHERE {
+    ?person v:label "person" .
+    ?person v:age ?age .
+    ?person v:name ?name . } ORDER BY (?age)""")
+----
+
+the result set will be ordered according to the `?name` variable (in ascending order by default) despite having passed `?age` in the order by. Whereas, for the following query:
+
+[source,groovy]
+----
+g.sparql("""SELECT ?age ?name WHERE {
+    ?person v:label "person" .
+    ?person v:age ?age .
+    ?person v:name ?name . } ORDER BY (?age)""")
+----
+
+the result set will be ordered according to the `?age` (as it is the first projected variable). Finally, for the select all case (`SELECT *`):
+
+[source,groovy]
+----
+g.sparql("""SELECT *
+WHERE { ?person v:label "person" . ?person v:age ?age . ?person v:name ?name . } ORDER BY (?age)""")
+----
+
+The the variable encountered first will be the ordering decider, i.e. since we have `?person` being encountered first, the result set will be ordered according to the `?person` variable (which are vertex id).
+
+* OPTIONAL
 ....
-Adding more here...
+currently fixing this...
 ....
 
 [[examples]]
@@ -264,6 +312,7 @@ WHERE {
     FILTER (?age > 30 && ?lang = "java") }""")
 ----
 
+////
 [[pattern-filters]]
 ==== Pattern Filter(s)
 
@@ -288,6 +337,7 @@ WHERE {
   ?person v:name ?name .
     FILTER NOT EXISTS { ?person e:created ?project } }""")
 ----
+////
 
 [[union]]
 ==== Union
@@ -325,11 +375,12 @@ Select all vertices with the label `person` and order them by their age.
 
 [gremlin-groovy,existing]
 ----
-g.sparql("""SELECT * 
+g.sparql("""SELECT ?age ?name
 WHERE {
   ?person v:label "person" .
   ?person v:age ?age .
-} ORDER BY (?age)""")
+  ?person v:name ?name .
+} ORDER BY (?age))
 ----
 
 [[group-by]]
@@ -337,9 +388,9 @@ WHERE {
 
 Select all vertices with the label `person` and group them by their age.
 
-[source,groovy]
+[gremlin-groovy,existing]
 ----
-g.sparql("""SELECT * 
+g.sparql("""SELECT ?age 
 WHERE {
   ?person v:label "person" .
   ?person v:age ?age .
@@ -354,7 +405,7 @@ the top two.
 
 [source,groovy]
 ----
-g.sparql("""SELECT COUNT(?project) 
+g.sparql("""SELECT (COUNT(?project) as ?p)
 WHERE {
   ?person v:label "person" .
   ?person v:age ?age . FILTER (?age < 30)
@@ -388,12 +439,11 @@ can be perceived as path queries or neighborhood queries. For instance, getting 
 
 [gremlin-groovy,existing]
 ----
-g.sparql("""SELECT ?age ?software ?name ?location ?startTime 
+g.sparql("""SELECT ?age ?software ?lang ?name
 WHERE {
-  ?person v:name "daniel" .
+  ?person v:name "josh" .
   ?person v:age ?age .
   ?person e:created ?software .
-  ?person p:location ?location .
-  ?location v:value ?name .
-  ?location v:startTime ?startTime }""")
+  ?software v:lang ?lang .
+  ?software v:name ?name . }""")
 ----
