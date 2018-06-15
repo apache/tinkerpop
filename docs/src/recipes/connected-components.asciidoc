@@ -37,7 +37,6 @@ component membership is stored in the graph, rather than in memory.
 
 3. Large graphs requiring an approach with `HadoopGraph` and `SparkGraphComputer` to yield results in a reasonable time.
 
-
 These regimes are discussed separately using the following graph with three weakly connected components:
 
 image:connected-components.png[width=600]
@@ -70,6 +69,7 @@ g.withComputer().V().connectedComponent().
 ----
 
 A straightforward way to detect the various subgraphs with an OLTP traversal is to do this:
+
 [gremlin-groovy,existing]
 ----
 g.V().emit(cyclicPath().or().not(both())).                                    <1>
@@ -95,8 +95,6 @@ weak component.
 
 <5> The values of the groupby map contain the lists of vertices making up the requested components.
 
-
-
 ==== Small graph scalability
 
 The scalability of the OLTP traversal and the `connectedComponent()`-step for in-memory graphs is shown in the figures
@@ -118,7 +116,6 @@ every cycle each vertex has to be checked for being
 pure depth-first-search or breadth-first-search implementations, connected-component algotithms should scale
 as [.big]##O##(V+E). For the traversals in the figure above this is almost the case.
 
-
 [[cc-scale-ratio]]
 .Run times for finding connected components in a randomly generated graph with 10 components, each consisting of 6400 vertices
 image::cc-scale-ratio.png[width=600]
@@ -129,7 +126,6 @@ the components are more mesh-like and the ConnectedComponentVertexProgram needs 
 characteristics show clearly from the graph. Indeed, for a given number of vertices, the run time of the
 `connectedComponent()`-step does not depend on the number of edges, but rather on the maximum shortest path length in
 the graph.
-
 
 ==== Large graphs
 
@@ -142,10 +138,8 @@ either with the `gremlin.hadoop.defaultGraphComputer` property or as part of the
 
 Scalability of the the `connectedComponent()`-step with `SparkGraphComputer` is high, but note that:
 
-* the graph should fit in the memory of the Spark cluster to allow the VertexProgram to run its cycles without spilling
-intermediate results to disk and loosing most of the gains from the distributed processing
-
-* as discussed for small graphs, the BSP algorithm does not play well with graphs having a large shortest path between
+* The graph should fit in the memory of the Spark cluster to allow the VertexProgram to run its cycles without spilling
+intermediate results to disk and loosing most of the gains from the distributed processing.
+* As discussed for small graphs, the BSP algorithm does not play well with graphs having a large shortest path between
 any pair of vertices. Overcoming this limitation is still a
 link:http://www.vldb.org/pvldb/vol7/p1821-yan.pdf[subject of academic research].
-
