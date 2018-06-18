@@ -92,6 +92,13 @@ public class RepeatUnrollStrategyTest {
                 {__.repeat(__.outE().inV()).times(2), __.outE().inV().barrier(maxBarrierSize).outE().inV().barrier(maxBarrierSize), Collections.emptyList()},
                 {__.repeat(__.outE().filter(path()).inV()).times(2), __.outE().filter(path()).inV().barrier(maxBarrierSize).outE().filter(path()).inV().barrier(maxBarrierSize), Collections.singletonList(IncidentToAdjacentStrategy.instance())},
                 {__.repeat(__.outE().inV()).times(2), __.out().barrier(maxBarrierSize).out().barrier(maxBarrierSize), Collections.singletonList(IncidentToAdjacentStrategy.instance())},
+                // Nested Loop tests
+                {__.repeat(out().repeat(out()).times(0)).times(1), __.out().repeat(out()).times(0).barrier(maxBarrierSize), Collections.emptyList()},
+                {__.repeat(out().repeat(out()).times(1)).times(1), __.out().out().barrier(maxBarrierSize), Collections.emptyList()},
+                {__.repeat(out()).until(__.repeat(out()).until(predicate)), __.repeat(out()).until(__.repeat(out()).until(predicate)), Collections.emptyList()},
+                {__.repeat(__.repeat(out()).times(2)).until(predicate), __.repeat(__.out().barrier(maxBarrierSize).out().barrier(maxBarrierSize)).until(predicate), Collections.emptyList()},
+                {__.repeat(__.repeat(out("created")).until(__.has("name", "ripple"))), __.repeat(__.repeat(out("created")).until(__.has("name", "ripple"))), Collections.emptyList()},
+
         });
     }
 }
